@@ -274,11 +274,20 @@ async function runGroup(
   ctx.llm.registerAdapter(['scripted'], adapter)
 
   const started = Date.now()
-  const handle = await ctx.agents.create({
-    sessionId: SessionId(`u04-${group}`),
-    setup: async (agentCtx: Context) => void await ctx.agentPresets.mount(agentCtx, presetId),
-  })
-  const agent: Agent = handle.agent
+  // Create through the LOOP, then mount the preset onto the live agent's own
+  // context. This order is load-bearing and was found by measurement, not by
+  // reading: `ctx.agents.create({ setup })` runs the setup callback BEFORE the
+  // driver is started, so a turn submitted after it never runs -- the adapter was
+  // called ZERO times and the cost axis read zero for every group, which looks
+  // exactly like a comparison that found no difference. Creating through
+  // `agentLoop.create` and mounting afterwards gives a live driver, and the
+  // adapter is then called once per turn as expected. The preset still composes
+  // through the real roster, so the tool catalog is the preset's.
+  const agent: Agent = await ctx.agentLoop.create(
+    SessionId(`u04-${group}`),
+    { provider: 'scripted', model: 'scripted' },
+  )
+  await ctx.agentPresets.mount(agent.ctx, presetId)
 
   // DRIVE ONE REAL TURN. Without this the cost axis reads zero for every group,
   // and a zero series compared across groups reports a difference of nothing
@@ -286,7 +295,15 @@ async function runGroup(
   // for an ordinary turn (`dsh-agent/lib/types/runtime-types.d.ts:192`), and
   // `whenIdle` is the observed edge that the turn is over -- both are the real
   // Agent API, not a test-only path.
+  // BOTH counters are read before the turn and differenced after it. The adapter
+  // is SHARED across the three groups -- that is what makes the model a
+  // controlled variable -- so its totals are cumulative, and reporting the raw
+  // total would attribute group C0's tokens to C2. An earlier version of this
+  // file did exactly that and produced a monotone token series (4, 8, 12) that
+  // looked like a finding about the compositions and was an artefact of the
+  // shared counter. The per-group delta is the measurement.
   const callsBefore = adapter.calls
+  const tokensBefore = adapter.outputTokens
   agent.followup(createUserMessage({
     content: [{ type: 'text', text: 'u04 task' }],
     source: { kind: 'plugin', plugin: 'u04-paired-comparison', form: 'prompt' },
@@ -294,6 +311,7 @@ async function runGroup(
   await agent.whenIdle()
   const wallMs = Date.now() - started
   const callsThisGroup = adapter.calls - callsBefore
+  const tokensThisGroup = adapter.outputTokens - tokensBefore
 
   // The scope key is the AGENT OBJECT. Passing `agent.ctx` collapses to the
   // global layer and reports zero tools -- the false negative M8.5 records.
@@ -307,7 +325,7 @@ async function runGroup(
     hasWorkTool: names.includes('work'),
     hasInstructions: names.some(name => /instruction/i.test(name)) || ctx.get('agentInstructions' as never) !== undefined,
     modelCalls: callsThisGroup,
-    outputTokens: adapter.outputTokens,
+    outputTokens: tokensThisGroup,
     wallMs,
     completionQuality: 'scripted: one text answer, no tool call',
     promptSectionCount: sections.length,

@@ -1,8 +1,8 @@
 # M9.13 — isolation and lifecycle gates C12-C18
 
 Runner: `packages/dsh-daily-work/src/isolation.test.ts`
-sha256: `03db45deea31e0f90ac30f633e49c0068a41055806063a6cf2cc3c262528d258`
-Result: **38 passed / 38**, `vitest run` exit 0. Typecheck exit 0 for both the
+sha256: `4c456f42e45ccde930a0a580e020ef2653b7ccf6e4ce9efa1963cc9b9678c823`
+Result: **39 passed / 39**, `vitest run` exit 0. Typecheck exit 0 for both the
 package and (separately) the test file, which the package tsconfig excludes.
 
 Rig: one real `Context`, real `AgentLoop`, real `SubagentRuntime`, the real
@@ -388,7 +388,7 @@ export PATH="/d/DSH/tools/bin:/d/DSH/src/dsh-src/node_modules/.bin:$PATH"
 npx vitest run src/isolation.test.ts --maxWorkers=1 --no-file-parallelism
 ```
 
-38 tests, all passing. `tsc.txt` records both the package-wide typecheck and an
+39 tests, all passing. `tsc.txt` records both the package-wide typecheck and an
 explicit typecheck of the test file — the package `tsconfig.json` excludes
 `src/**/*.test.ts`, so the test file is NOT covered by the package-wide run, and
 the evidence states that rather than implying coverage.

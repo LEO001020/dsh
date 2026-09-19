@@ -2,7 +2,7 @@
 
 ARTIFACT: packages/dsh-daily-work/src/research-chain.test.ts
   29 tests, 1 file, all passing. tsc build config exit 0.
-  sha256 7fbf00d744999f9fdf4f3c019dedfb61a7b7361d7c5711c643b0383f655e08d5
+  sha256 424226da9bab3a153cb9ae1572dd09dc4ee1ce77d5231408b7f97142cf0ab3ae
 
   SUBJECT UNDER TEST, read-only, NOT edited by this slice:
     src/web-search.ts        8d6ec8fca407daba46f7cde629d7a3d4ff8d00418746fa9806c14d7ba2226649
@@ -11,6 +11,32 @@ ARTIFACT: packages/dsh-daily-work/src/research-chain.test.ts
   The plugin file changed under this slice while it ran (another agent added
   `credentialRef`, which validates the reference name). The slice was re-read and
   the tests re-run against the new content; the hash above is what was tested.
+
+
+-------------------------------------------------------------------------------
+RESULT PER GATE
+-------------------------------------------------------------------------------
+
+  R01  PASS OFFLINE for the four links and all seven failure shapes.
+       NOT fully closed: the live search-API contract is BLOCKED_EXTERNAL.
+       Recommended status: PARTIAL, or BLOCKED_EXTERNAL for the live link.
+       It must NOT be recorded as a full PASS.
+
+  R02  PASS. The tier vocabulary cannot express `primary_read` or `understood`,
+       and the only mutator requires a named transition with its own evidence.
+
+  R05  PASS. Two orderings are distinguished on the production loop, on the wire
+       and in the response index, with one finding recorded (the naive seq
+       predicate is wrong for exclusive tools) and the non-prover boundary
+       asserted rather than implied.
+
+  R07  PASS. Both stimuli measured on the dispatched `GenerateOptions`, with the
+       request assembly quoted and the estimate-versus-wire distinction
+       demonstrated.
+
+  gates.json is NOT edited by this slice -- it is the dispatcher's to record, and
+  another agent is writing it. At capture time it still read R01/R05/R07 as
+  NOT_RUN and R02 as PASS; the evidence above is what would move them.
 
 
 -------------------------------------------------------------------------------
@@ -199,13 +225,14 @@ Two orderings are constructed on the production AgentLoop and distinguished.
 FINDING, and the reason the naive predicate is wrong. The obvious predicate --
 "was the effect's `tool/call` event logged before the observation's `tool/result`
 event?" -- is WRONG, and the test demonstrates it rather than avoiding it. With
-EXCLUSIVE (non-concurrency-safe) tools, `runGroup` fills the pool one call at a
-time and calls `commitReady()` between calls
-(core/agent-loop/src/tool-calls.ts:220-231), so the second call's `tool/call`
-event is appended AFTER the first call's result -- even though both came from one
-model message. The naive predicate classifies that case as "observed then
-sampled" when it is in fact "same response". The test asserts both verdicts side
-by side: `naive(exclusive) === 'observed_then_sampled'` while
+EXCLUSIVE (non-concurrency-safe) tools, `executeToolCalls` forms an exclusive call
+into a group of ONE and awaits it to completion before appending the next call
+(`const group = mode === 'parallel' ? planned.slice(next) : [first]`,
+core/agent-loop/src/tool-calls.ts:90), so the second call's `tool/call` event is
+appended AFTER the first call's result -- even though both came from one model
+message. The naive predicate classifies that case as "observed then sampled" when
+it is in fact "same response". The test asserts both verdicts side by side:
+`naive(exclusive) === 'observed_then_sampled'` while
 `classify(exclusive) === 'same_response'`, with the response index as the
 tie-breaker of record. Anyone reading this gate off sequence numbers alone would
 get the exclusive case backwards.

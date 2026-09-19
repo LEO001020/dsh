@@ -1,0 +1,83 @@
+{
+  "gate": "U05",
+  "kind": "CANARY_PROCEDURE_EXECUTED_AGAINST_CURRENT_VERSION",
+  "candidateVersion": {
+    "commit": "ddefc45fbc7f8e46dd73185e68295696d1297887",
+    "note": "the PINNED version, not a candidate. A real canary run sets DSH_SRC_ROOT to the candidate tree."
+  },
+  "dailyHome": "D:/DSH/home/daily",
+  "dailyHomeTouched": false,
+  "gates": [
+    {
+      "id": "F1",
+      "name": "built launcher present",
+      "status": "PASS",
+      "detail": "launcher runs; sha256 69c49c871735dc7e...",
+      "launcher": "D:\\DSH\\src\\dsh-src\\apps\\cli\\lib\\bin.js",
+      "launcherSha256": "69c49c871735dc7ee81ec51f266bbec129f075fd5066e046374f4b13ab02a705"
+    },
+    {
+      "id": "F2",
+      "name": "profile resolves and includes the extension host row",
+      "status": "FAIL",
+      "detail": "--dump-config exited 1; daily-work-host present: false; stderr: file:///D:/DSH/src/dsh-src/packages/boot/app-boot/lib/index.js:957\r\n\t\tif (template === void 0) throw new Error(`${binName}: profile ${JSON.stringify(name)} does not exist; create it with 'dsh plugin --profile ${name} add <package>'`);\r\n\t\t                               ^\r\n\r\nError: dsh: profile \"daily"
+    },
+    {
+      "id": "F3",
+      "name": "sandbox enforcement claim unchanged",
+      "status": "FAIL",
+      "detail": "the write-only boundary claim is present; enforcement 'partial' literal present: false",
+      "boundaryClaimPresent": true,
+      "partialLiteralPresent": false
+    },
+    {
+      "id": "F4",
+      "name": "extension typechecks against the candidate checkout",
+      "status": "FAIL",
+      "detail": "tsc exited 1: "
+    },
+    {
+      "id": "F5",
+      "name": "extension declares a bundle patch and is built",
+      "status": "PASS",
+      "detail": "declares dsh.bundle.patch: true; patch file exists: true; lib/host-plugin.js built: true",
+      "declaresPatch": true,
+      "patchExists": true,
+      "builtLib": true
+    },
+    {
+      "id": "F6",
+      "name": "the daily home was not written",
+      "status": "PASS",
+      "detail": "no daily home exists at D:/DSH/home/daily, so nothing could be written to it (file list null before and after)",
+      "dailyHome": "D:/DSH/home/daily",
+      "dailyHomeDigestBefore": null,
+      "dailyHomeDigestAfter": null,
+      "dailyHomeExists": false
+    },
+    {
+      "id": "F7",
+      "name": "the canary home was exercised",
+      "status": "PASS",
+      "detail": "canary home holds 0 files after the run"
+    }
+  ],
+  "blocked": [
+    {
+      "gate": "U05-new-version",
+      "status": "BLOCKED_EXTERNAL",
+      "reason": "No new DSH/Node/plugin/model version is installable here. The checkout is pinned at ddefc45fbc7f8e46dd73185e68295696d1297887 and no network is authorized, so the \"new version\" half of this gate has nothing to validate. The PROCEDURE above is real and was executed against the current version in a fresh temp home, which is the part that can be closed honestly."
+    },
+    {
+      "gate": "U05-live-provider",
+      "status": "BLOCKED_EXTERNAL",
+      "reason": "compatibility.lock.json records live_provider_budget_authorized: false, so no model version can be exercised."
+    }
+  ],
+  "summary": {
+    "pass": 4,
+    "fail": 3,
+    "notRun": 0,
+    "blockedExternal": 2
+  }
+}

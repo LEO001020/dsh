@@ -5,11 +5,11 @@
   "deployment_identity": "0ca14d4ee0ebea5eb85a3f72d66f48d839356f1b336c0e4f11f9a4f8ddf2ab7c",
   "summary": {
     "total": 104,
-    "PASS": 83,
+    "PASS": 85,
     "FAIL": 2,
     "RUNNING": 0,
     "BLOCKED_EXTERNAL": 1,
-    "NOT_RUN": 12,
+    "NOT_RUN": 10,
     "NOT_APPLICABLE": 6
   },
   "promotion_decision": "NOT_READY",

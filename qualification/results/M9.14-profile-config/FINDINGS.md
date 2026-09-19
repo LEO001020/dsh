@@ -194,8 +194,11 @@ completed` with a real assistant message.
    mistake is to reach for `!!js process.env.…` here.
 2. **A launcher subprocess importing a relative TypeScript plugin needs that
    file to sit under a package that resolves `@deepseek-ai/*`.** A patch
-   directory under the OS temp root has no such ancestor and the import fails
-   with `Cannot find package '@deepseek-ai/dsh-llm'`.
+   directory under the OS temp root — or under `qualification/results/` — has no
+   such ancestor and the import fails with
+   `Cannot find package '@deepseek-ai/dsh-llm'`. Both the test suite and
+   `make-a10-runs.mjs` therefore read the adapter from
+   `packages/dsh-daily-work/m914-mock-llm.ts`.
 3. **`--help` does not report non-activating entries.** The app's help prints
    before the tree's activation audit, so `dsh --profile X --help` exits 0 with
    empty stderr even when a row is invalid. The A04 invalid-config case needed a
@@ -205,6 +208,10 @@ completed` with a real assistant message.
    other row is followed by a `# ==` separator; keeping that blank line made an
    identical row read as "changed". Caught by the test failing on
    `agent-presets`, which no documented difference touches.
+5. **The Web host's process token is a live credential.** `run-a12.mjs` redacts
+   it before writing the transcript, because the transcript is a repository
+   artifact and a working token does not belong in version control. The evidence
+   only needs to show that the URL line's shape was produced.
 
 ## Reproducing
 
@@ -245,5 +252,20 @@ here reads or writes `D:\DSH\home\canary*`.
 | `runs/a12-sdk-boundary.txt` | The credential-boundary transcript |
 | `runs/a10-*/` | Per-script CLI stream, stderr, exit code, and persisted Session |
 | `dumps/` | Regenerated resolved graphs, `make-dumps.mjs` |
-| `patches/` | The A04 one-field patch and the A10 keyless overlay + adapter |
+| `patches/` | Hand-runnable copies of the A04 patch and the A10 keyless overlay |
 | `run-a12.mjs`, `make-dumps.mjs`, `make-a10-runs.mjs` | The drivers |
+
+## Note for whoever commits this
+
+`packages/dsh-daily-work/m914-mock-llm.ts` is the scripted A10 adapter, and it
+sits at the package root on purpose: it is TypeScript importing
+`@deepseek-ai/dsh-llm`, and Node resolves bare specifiers by walking up from the
+FILE's directory. Both the vitest suite and `make-a10-runs.mjs` read it there.
+
+An earlier revision of this slice kept a junction farm under this evidence
+directory to make the same import resolve, and that farm was committed by a
+concurrent `git add -A`. It has been removed and
+`qualification/results/**/node_modules/` is now in `.gitignore`. Nothing in this
+directory needs it any more: the test suite was verified to pass 25/25 with the
+farm gone, and the standalone overlay was re-pointed at the package.
+

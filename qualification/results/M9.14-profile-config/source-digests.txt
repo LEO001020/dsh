@@ -1,20 +1,21 @@
 === source digests for M9.14 (gates A04 A05 A08 A09 A10 A12) ===
-date: 2026-09-19T11:36:58Z
+date: 2026-09-19T11:59:14Z
 
 --- this repo: the artifacts under test ---
 2a05d6701789a037ec14479ae54e942416da9bd98e8ef93711020ee9db4dedb6 *packages/dsh-daily-work/src/profile-config.test.ts
+a466a9cd73fe09653e341bceda535687ae5bd6dc5b65d14846626d0867605c32 *packages/dsh-daily-work/m914-mock-llm.ts
 547a59b2d1661bb4c0666e8bad46eafb4c9f4b771436c0bcf8e6b09873d5a7b1 *profiles/daily-candidate/cordis.patch.yml
 82a6a9bec91e8f3057587d42b7634d6ad110c055c4a19df159f540901af79a04 *profiles/stock-canary/cordis.patch.yml
 
 --- this repo: the drivers that regenerate the recorded evidence ---
 c38cc6a66aec5a89f5d3cc22fb9a84779737bb057bae14946ca7e2e7009319ff *qualification/results/M9.14-profile-config/run-a12.mjs
 d1e3251eca3edbb80a665017d9e782cf0de35fd38e3105bd98dcd76bbcc94173 *qualification/results/M9.14-profile-config/make-dumps.mjs
-8357f45a8c0b01da4c6cf2117e955699c07fe105f511b749d3db3dfcf09479f6 *qualification/results/M9.14-profile-config/make-a10-runs.mjs
+825fb1609f358e8e1617c68537db25598c42549f9992a51d99cf3ea7617187bf *qualification/results/M9.14-profile-config/make-a10-runs.mjs
 
---- the fixtures the drivers stage ---
+--- the standalone stimuli (hand-runnable copies) ---
 336938c1a915252d66fc2500865e32a02d85fa05e73f08932e7ff4b497b23ee7 *qualification/results/M9.14-profile-config/patches/a04-one-field.yml
-65ae047a4989d29a2abb8bb85213a8c0a3e76809d8bbaa8ac7e236b9eed2aee8 *qualification/results/M9.14-profile-config/patches/a10-headless-keyless.yml
-a466a9cd73fe09653e341bceda535687ae5bd6dc5b65d14846626d0867605c32 *qualification/results/M9.14-profile-config/patches/m914-mock-llm.ts
+50b30c1b2c94171918594dd244c38a3cb3bee844f2033b5606c6f328eab1b156 *qualification/results/M9.14-profile-config/patches/a10-headless-keyless.yml
+e51a112ca1838baf3033a282ea6c62dcc23461f053242bdbcd7df069fa9696cb *qualification/results/M9.14-profile-config/patches/README.md
 
 --- recorded dumps (make-dumps.mjs) ---
 d0c2560691efc73db9f1d44e9bd46c6c0428e8e3dad681c907982df1313d3f0d *qualification/results/M9.14-profile-config/dumps/a04-one-field.yml
@@ -32,9 +33,9 @@ d8929cea43835722cbea0e1df281016456212161ea92435361ef537c1d158153 *qualification/
 6d6fbd715cf965753b0f2f451c33e0cd1ed44d220c5ccccb371f55b56abbc39d *qualification/results/M9.14-profile-config/runs/a12-web-host.txt
 6e5d0895a179db78240935101578db4815ac924dc8868a08b08749476f092316 *qualification/results/M9.14-profile-config/runs/a12-sdk-boundary.txt
 0e5d2a6000603195d7c53b68ee835df2b000528d69fb35d47236bc2c2f91d278 *qualification/results/M9.14-profile-config/runs/falsification.txt
-a263bd7ae1d9f31cfe2560b1dd4e3ce2dc7d90f3e2b06b046f85ae44ec076ec4 *qualification/results/M9.14-profile-config/runs/a10-business-failure/stdout.jsonl
-e17bd04d7c16c83d1ea74e2229f994f29f7363a17996865557e1c4d74d55fbd4 *qualification/results/M9.14-profile-config/runs/a10-huge-output/stdout.jsonl
-729cdaf74888c62c0c0b2c0a74316e3abdfe6585d36711354b1b56d4ab9a3b9a *qualification/results/M9.14-profile-config/runs/a10-smoke/stdout.jsonl
+4a3f7bd3c91a9b3b7aa9eab6bb2f36fd2626b8ef32881253d978b465075bc50f *qualification/results/M9.14-profile-config/runs/a10-business-failure/stdout.jsonl
+a8a105f40c38438eabfdc38dd78988329022a06c2aa3c1999527c7b96ca494a9 *qualification/results/M9.14-profile-config/runs/a10-huge-output/stdout.jsonl
+64928995b2716d66f8bfe36eeac0286a8ecb3e9ac109d80ee31ee92871436f60 *qualification/results/M9.14-profile-config/runs/a10-smoke/stdout.jsonl
 e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855 *qualification/results/M9.14-profile-config/runs/a10-business-failure/stderr.txt
 e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855 *qualification/results/M9.14-profile-config/runs/a10-huge-output/stderr.txt
 e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855 *qualification/results/M9.14-profile-config/runs/a10-smoke/stderr.txt

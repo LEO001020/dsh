@@ -622,6 +622,29 @@ describe('C12: every nesting path is either accounted for or explicitly refused'
       }),
     ).rejects.toThrow(/depth 2 exceeds maxDepth 1/)
   })
+
+  it('the shipped delegation tool DOES carry the deployment cap, unlike the workflow path', async () => {
+    // The complement of the test above, and the reason the C2 profile patch's
+    // `subagent.maxDepth: 1` is not simply decorative. `tool-subagent` reads
+    // `runtimeCtx.subagents.resolveMaxDepth(config.maxDepth)`
+    // (tool-subagent/src/index.ts:515) and passes the result into the request, so
+    // the SHIPPED tool always sends a concrete cap:
+    //
+    //   resolveMaxDepth(configured) { return configured ?? (this.settingsSource()).maxDepth }
+    //   (subagent/src/index.ts:248-251)
+    //
+    // With no per-tool config, that is the runtime's settings default — which is
+    // the `subagent` config row the deployment patch writes. Asserted here through
+    // the public resolver so the mechanism is checked rather than described.
+    const r = await rig({ maxDepth: 1 })
+    expect(r.ctx.subagents.resolveMaxDepth(undefined)).toBe(1)
+    // An explicit per-tool value wins over the settings default.
+    expect(r.ctx.subagents.resolveMaxDepth(3)).toBe(3)
+    // `'provider-managed'` means "send no cap", which is the ONLY way this
+    // resolver returns undefined — and it is a deployment-config choice, never a
+    // model argument (the tool's parameters carry no maxDepth).
+    expect(r.ctx.subagents.resolveMaxDepth('provider-managed')).toBeUndefined()
+  })
 })
 
 // ---------------------------------------------------------------------------

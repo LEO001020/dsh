@@ -1,12 +1,12 @@
 # source-digests: sha256 of every file this slice's claims rest on.
-# captured 2026-09-19T19:49:05+08:00
+# captured 2026-09-19T19:57:45+08:00
 #
 # SUBJECT UNDER TEST (read-only; NOT edited by this slice):
 8d6ec8fca407daba46f7cde629d7a3d4ff8d00418746fa9806c14d7ba2226649 *src/web-search.ts
 1ede5df10b05e0afdb5a9840ad046a034389bdfe1a108d68b38af77cc1d05350 *src/web-search-plugin.ts
 #
 # THE SLICE'S OWN ARTIFACT:
-7fbf00d744999f9fdf4f3c019dedfb61a7b7361d7c5711c643b0383f655e08d5 *src/research-chain.test.ts
+424226da9bab3a153cb9ae1572dd09dc4ee1ce77d5231408b7f97142cf0ab3ae *src/research-chain.test.ts
 #
 # DSH SOURCE QUOTED IN THE TEST'S COMMENTS AND ASSERTIONS:
 70393ce16a880977f819c590176fce963c6772f48db26bd2f2274b2d81795e02 *packages/web/web/src/index.ts
@@ -33,8 +33,12 @@ abd8ef57c34ad6ddbc21ba83398092f6aff64ac5c0f38efb353cebb04f654ad4 *packages/core/
 # QUALIFICATION INPUTS:
 890a74db993fdb7fd4c67ffcd26a620162be9a0fe0f3802e6b1f6687cd9236e1 *compatibility.lock.json
 b6e68075e097b5d790a406cb92820465381b6a716a84b53b0a8b8d99d584ad47 *qualification/specs/gate-spec.json
-98d3395344787e68ddad9539e17904facb5d97535147900c99433d1682fe0e70 *qualification/gates.json
+b19d0c4bb759fac29bd3ccc99e40eb0065a4a9ffb47304d01c56aa2eaf1a55c2 *qualification/gates.json
 #
 # DELIVERY PLAN (read-only, outside the repo; the R02/R05/R07 requirement text):
 62ba6e2bac87a116c8e15bc5d54c05f821e4029e2f6873076b76199315dba269 *MASTER_EXECUTION_PROMPT.zh-CN.md
 ae936e60603d2116265f3dd0b244c52a677e2cac16b5eb79b909f1dedb0b1b25 *ACCEPTANCE.zh-CN.md
+#
+# EVIDENCE ARTIFACTS OF THIS SLICE:
+64a6d8c1f1e974b06c6291b173ffb74f8c158e6a7d9a7451c6e6db7636058820 *qualification/results/M9.16-research-chain/tests.txt
+2aa732041af048650a7baaf6bef5249df5c19b4a1457a5c01b3fe1cc6f30a27d *qualification/results/M9.16-research-chain/tsc.txt

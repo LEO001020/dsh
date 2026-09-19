@@ -786,10 +786,12 @@ interface OrderingRig {
    * This is the fact the gate actually needs. A call's position in the event log
    * is NOT it: with exclusive tools the second call is appended after the first
    * call's result has already been committed, even though both calls came from
-   * one model response (`core/agent-loop/src/tool-calls.ts:220-231` fills the
-   * pool one call at a time and calls `commitReady()` between them). The response
-   * that CONTAINED the call is what determines whether its parameters could have
-   * depended on the observation.
+   * one model response. `executeToolCalls` forms an exclusive call into a group
+   * of ONE (`const group = mode === 'parallel' ? planned.slice(next) : [first]`,
+   * core/agent-loop/src/tool-calls.ts:90) and awaits each group to completion, so
+   * each exclusive call commits its result before the next call is even appended.
+   * The response that CONTAINED the call is what determines whether its
+   * parameters could have depended on the observation.
    */
   readonly responseIndexFor: ReadonlyMap<string, number>
 }
@@ -952,9 +954,10 @@ describe('R05: observation-then-sampling, distinguishable in a controlled case',
     expect(rig.responseIndexFor.get('effect-1')).toBe(0)
 
     // The trap, asserted explicitly: the effect's call IS logged after the
-    // probe's result, because serialization commits as it goes. The sequence
-    // numbers alone would call this "observed then sampled", and that would be
-    // wrong.
+    // probe's result, because an exclusive call is its own group of one and its
+    // result commits before the next call is appended
+    // (core/agent-loop/src/tool-calls.ts:90). The sequence numbers alone would
+    // call this "observed then sampled", and that would be wrong.
     expect(rig.toolResultSeqs.get('probe-1')!).toBeLessThan(rig.toolCallSeqs.get('effect-1')!)
 
     // The correct reading: one response contained both, so no observation had

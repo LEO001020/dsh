@@ -24,24 +24,24 @@
     "cost": [
       {
         "group": "C0",
-        "modelCalls": 0,
-        "outputTokens": 0
+        "modelCalls": 1,
+        "outputTokens": 4
       },
       {
         "group": "C1",
-        "modelCalls": 0,
-        "outputTokens": 0
+        "modelCalls": 1,
+        "outputTokens": 4
       },
       {
         "group": "C2",
-        "modelCalls": 0,
-        "outputTokens": 0
+        "modelCalls": 1,
+        "outputTokens": 4
       }
     ],
     "wallTime": [
       {
         "group": "C0",
-        "mountAndCreateMs": 28
+        "mountAndCreateMs": 27
       },
       {
         "group": "C1",
@@ -89,21 +89,21 @@
     "observationsPerGroup": 1,
     "callStats": {
       "n": 3,
-      "min": 0,
-      "max": 0,
-      "mean": 0
+      "min": 1,
+      "max": 1,
+      "mean": 1
     },
     "tokenStats": {
       "n": 3,
-      "min": 0,
-      "max": 0,
-      "mean": 0
+      "min": 4,
+      "max": 4,
+      "mean": 4
     },
     "wallStats": {
       "n": 3,
       "min": 7,
-      "max": 28,
-      "mean": 14.333333333333334
+      "max": 27,
+      "mean": 14
     },
     "winnerDeclared": false,
     "reason": "one observation per group gives no variance estimate, so no difference on any axis can be distinguished from noise. The gate forbids declaring a winner without a statistical basis and this run does not have one."

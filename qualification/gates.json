@@ -1534,7 +1534,7 @@
     "stimulus": "独立检索→原文fetch→完整相关范围→引用。",
     "oracle": "每步有真实来源与版本，key缺失/抓取失败不伪造结果。",
     "status": "NOT_RUN",
-    "note": "PARTIAL: The search chain is implemented through ctx.web with the unavailable-versus-empty rule preserved. No live provider search has run."
+    "note": "PARTIAL: The four links are proven against DIFFERENT substrates, and each test says which. Retrieval is proven against a controlled fake (a loopback server answering the ported provider shape); the original fetch, the range bound and the citation are proven against a REAL loopback HTTP server through the shipped HttpFetchProvider. The failed-is-never-empty rule is asserted from BOTH sides: five failure shapes each get their own error code, AND a working provider that finds nothing still yields No results found -- so the distinction is pinned in both directions. The SSRF guard runs its shipped resolver for four addresses and refuses all four; where a test must reach loopback it passes the provider own documented HttpFetchResolver seam rather than monkeypatching a module. STAYS PARTIAL: the live half (that a real search API answers in the shape the ported provider expects) is BLOCKED_EXTERNAL, because live_provider_budget_authorized is false."
   },
   {
     "id": "R02",
@@ -1544,12 +1544,16 @@
     "stimulus": "只保存PDF字节，未把正文呈现给root。",
     "oracle": "标bytes_captured而非primary_read/understood。",
     "status": "PASS",
-    "note": "Evidence state distinguishes presence from entitlement and never reports an unobserved success.",
+    "note": "Two INDEPENDENT barriers against accidental promotion. (1) EvidenceTier is a union that does not CONTAIN primary_read or understood -- they are unspellable, not merely refused. (2) The only mutator demands a named transition carrying its own evidence, and it refuses skipped steps, backwards steps, unevidenced transitions, and the subtle one: a `parsed` transition that does not declare its COVERAGE, so a partial parse cannot be silently upgraded while the tier is promoted.",
     "deployment_identity": "0ca14d4ee0ebea5eb85a3f72d66f48d839356f1b336c0e4f11f9a4f8ddf2ab7c",
     "evidence": [
       {
         "path": "qualification/results/M7.1-web-search-port/PORT-NOTES.md",
         "sha256": "79ca0b1e5740c994500b5e18f22f9a18b951c99a8fccabad1aea80fe93416dda"
+      },
+      {
+        "path": "qualification/results/M9.16-research-chain/FINDINGS.md",
+        "sha256": "d0755544f625cbd20b2f388a68b06531afcacbd0e74c71135b1f229af19ff06c"
       }
     ]
   },
@@ -1594,8 +1598,15 @@
     "required_for": "daily_ready",
     "stimulus": "结果未返回前同response中已有依赖effect参数。",
     "oracle": "可在受控案例识别两种顺序；普通语义依赖审计不装普遍证明器。",
-    "status": "NOT_RUN",
-    "note": "Observation-then-sampling ordering has not been measured."
+    "status": "PASS",
+    "note": "Two orderings distinguished on the production loop, in BOTH the response index and on the wire. IMPORTANT FINDING: the OBVIOUS predicate -- was the effect tool/call logged before the observation tool/result? -- is WRONG. For exclusive tools the call is logged AFTER the result, because executeToolCalls makes each exclusive call a group of one (tool-calls.ts:90). The naive predicate classifies that case as observed-then-sampled when in fact both calls came from ONE response. The test asserts both verdicts side by side rather than hiding the trap, so anyone reading this gate off sequence numbers would get the exclusive case backwards. No universal semantic-dependency prover is claimed.",
+    "deployment_identity": "0ca14d4ee0ebea5eb85a3f72d66f48d839356f1b336c0e4f11f9a4f8ddf2ab7c",
+    "evidence": [
+      {
+        "path": "qualification/results/M9.16-research-chain/FINDINGS.md",
+        "sha256": "d0755544f625cbd20b2f388a68b06531afcacbd0e74c71135b1f229af19ff06c"
+      }
+    ]
   },
   {
     "id": "R06",
@@ -1621,8 +1632,15 @@
     "required_for": "daily_ready",
     "stimulus": "只更新无关动态状态与改变工具顺序两种情况。",
     "oracle": "实际请求差异可解释；不用累计surface估计代替wire事实。",
-    "status": "NOT_RUN",
-    "note": "Prompt stability has not been measured."
+    "status": "PASS",
+    "note": "Both stimuli measured on the dispatched GenerateOptions, with buildRequest, headerEquals and orderTools quoted by line: (a) only unrelated dynamic state updated, (b) the tool ORDER changed. The actual REQUEST differences are explainable in both cases. contentGeneration -- the cumulative surface quantity the oracle explicitly names as a substitute to avoid -- is used NOWHERE in the file.",
+    "deployment_identity": "0ca14d4ee0ebea5eb85a3f72d66f48d839356f1b336c0e4f11f9a4f8ddf2ab7c",
+    "evidence": [
+      {
+        "path": "qualification/results/M9.16-research-chain/FINDINGS.md",
+        "sha256": "d0755544f625cbd20b2f388a68b06531afcacbd0e74c71135b1f229af19ff06c"
+      }
+    ]
   },
   {
     "id": "R08",

@@ -13,10 +13,15 @@
  *
  * The rig is the one from terminal.test.ts, with the same three constraints it
  * documents: real Agents are required because the terminal service rejects a
- * forged owner, mount order is load-bearing, and `danger-full-access` is required
- * because a confined spawn never resolves on this platform. That last one is a
- * real limitation of this qualification, not a convenience: everything here is
- * measured with the sandbox OFF, and FINDINGS.md says so.
+ * forged owner, mount order is load-bearing, and `read-only` mode cannot be used
+ * because spawn never resolves under it on this platform.
+ *
+ * CONFINEMENT: M6 qualified the terminal ONLY with the sandbox off, which is the
+ * configuration a daily driver least wants. That limitation turns out to be
+ * specific to `read-only`. `workspace-write` resolves (~940 ms) and enforces
+ * (proven by a denied write outside the workspace), so the gates run under BOTH
+ * modes here: unconfined in the three main blocks, and under a real ACL-wrapped
+ * sandbox in the final block. `read-only` remains NOT_RUN and is not claimed.
  *
  * `ctx.terminals` ONLY. `ctx.terminalController` is the human Web terminal
  * running with system-user privilege; wrapping it would be privilege escalation
@@ -55,6 +60,9 @@ const BACKEND_TYPE = 'shell'
 /** Every wait reason the send contract can report. None of them is success. */
 const WAIT_REASONS = ['stdin_read', 'inferred_idle', 'timeout', 'session_exit'] as const
 
+/** The sandbox modes this file exercises. */
+type SandboxMode = 'danger-full-access' | 'workspace-write'
+
 interface Rig {
   readonly ctx: Context
   agent(id: string): Promise<Agent>
@@ -66,11 +74,23 @@ interface Rig {
  * from terminal.test.ts, which documents each trap; the short version is that a
  * plugin cannot see a service mounted BESIDE it, and that a plugin whose
  * injections are unsatisfied waits silently rather than failing.
+ *
+ * WHY THE MODE IS A PARAMETER: M6 recorded that `spawn` never resolves under a
+ * confined mode and therefore qualified the terminal ONLY unconfined. That is
+ * true of `read-only`, but NOT of `workspace-write`, which was measured at
+ * ~940 ms on this machine. Since a gate closed with the sandbox ON is a
+ * materially stronger result than one closed with it off, the mode is a
+ * parameter and the confinement-sensitive gates run under BOTH. `read-only`
+ * remains NOT_RUN because it still hangs (M6, re-confirmed by the coordinator).
+ *
+ * `danger-full-access` makes the backend skip `sandbox.confine` entirely
+ * (terminal-bash/src/index.ts:102), so the unconfined arm exercises no ACL
+ * wrapper at all; the `workspace-write` arm does.
  */
-async function rig(): Promise<Rig> {
+async function rig(mode: SandboxMode = 'danger-full-access'): Promise<Rig> {
   const ctx = new Context()
   await mountAgentLoopTestDependencies(ctx)
-  await ctx.plugin(SandboxPolicy as never, { mode: 'danger-full-access' } as never)
+  await ctx.plugin(SandboxPolicy as never, { mode } as never)
   await ctx.plugin(LocalSandboxProvider as never, {} as never)
   await ctx.plugin(SubprocessRuntime)
   await ctx.plugin(AgentLoop, { agents: [] })
@@ -661,4 +681,179 @@ describe('T08: error and framing', () => {
     await r.ctx.terminals.kill(owner, id, 'test cleanup')
     await r.close()
   }, 60_000)
+})
+
+/**
+ * The confinement arm.
+ *
+ * M6 qualified the terminal ONLY with the sandbox off, because `spawn` never
+ * resolves under `read-only` on this machine. That left the whole M6/M9.2 result
+ * resting on the configuration a daily driver LEAST wants: a capability proven
+ * only when confinement is disabled.
+ *
+ * `workspace-write` is a different story. It resolves (~940 ms measured here),
+ * so the same gates can be exercised with the Windows ACL runner actually
+ * wrapping the shell. This block is what turns "qualified unconfined" into
+ * "qualified under a real confinement mode" for the three gates in this file.
+ *
+ * WHAT THIS DOES AND DOES NOT COVER: `workspace-write` is a real sandbox mode
+ * and the ACL wrapper is in the spawn path, which the write-denial assertion
+ * below proves is ENFORCING rather than merely present. `read-only` is still
+ * NOT_RUN and is not claimed. These are not the only two modes, and no
+ * confinement claim is made about any mode not exercised here.
+ */
+describe('T05/T06/T08 under workspace-write confinement', () => {
+  it('the confinement arm is real: writes are enforced, not merely configured', async () => {
+    // Without this, the arm below could be running unconfined while claiming
+    // otherwise, and every "under confinement" result would be meaningless.
+    // A denied write outside the workspace and an allowed write inside it is
+    // what proves the ACL runner is actually in the path.
+    const r = await rig('workspace-write')
+    const owner = await r.agent('owner-ww')
+    const session = await r.ctx.terminals.spawn(owner, { type: BACKEND_TYPE })
+    const id = session.sessionId
+
+    const policy = r.ctx.sandboxPolicy.resolve({ session: owner.session })
+    expect(policy.mode).toBe('workspace-write')
+    measured('WW workspaceRoot', policy.workspaceRoot)
+
+    const outside = join(tmpdir(), `dsh-ww-denied-${Date.now()}.txt`)
+    const inside = join(policy.workspaceRoot, `dsh-ww-allowed-${Date.now()}.txt`)
+    rmSync(outside, { force: true })
+    rmSync(inside, { force: true })
+
+    const asShell = (path: string): string => path.replace(/\\/g, '/')
+    const denied = await send(r.ctx, owner, id, `Set-Content -Path '${asShell(outside)}' -Value DENIED`)
+    await sleep(1_000)
+    const allowed = await send(r.ctx, owner, id, `Set-Content -Path '${asShell(inside)}' -Value ALLOWED`)
+    await sleep(1_000)
+
+    // The sandbox refused the outside write and permitted the inside one. Both
+    // halves matter: a denial alone could mean the write path is broken.
+    expect(existsSync(outside)).toBe(false)
+    expect(existsSync(inside)).toBe(true)
+    measured('WW denied-write waitReason', denied.waitReason)
+    measured('WW allowed-write waitReason', allowed.waitReason)
+
+    rmSync(outside, { force: true })
+    rmSync(inside, { force: true })
+    await r.ctx.terminals.kill(owner, id, 'test cleanup')
+    await r.close()
+  }, 90_000)
+
+  it('T05 under confinement: SIGINT still reaches a running cell on its own path', async () => {
+    const r = await rig('workspace-write')
+    const owner = await r.agent('owner-ww-t05')
+    const session = await r.ctx.terminals.spawn(owner, { type: BACKEND_TYPE })
+    const id = session.sessionId
+    const lateToken = 'WW-LATE'
+
+    const cell = r.ctx.terminals.startSend(owner, id, {
+      text: `Start-Sleep -Seconds 12; Write-Output ${TOKEN(lateToken)}`,
+      submit: true,
+    })
+    await sleep(2_500)
+
+    const signalStartedAt = Date.now()
+    const signalResult = await r.ctx.terminals.signal(owner, id, 'SIGINT')
+    const signalMs = Date.now() - signalStartedAt
+    expect(signalMs).toBeLessThan(1_500)
+    expect(signalResult.delivered).toBe(true)
+
+    const settled = await cell.done
+    expect(WAIT_REASONS).toContain(settled.waitReason)
+    expect(settled.waitReason).not.toBe('session_exit')
+    expect(settled.sessionStatus.kind).toBe('running')
+    measured('WW T05 signalMs', signalMs)
+    measured('WW T05 signalResult', JSON.stringify(signalResult))
+    measured('WW T05 settled', `${settled.waitReason} ${JSON.stringify(settled.sessionStatus)}`)
+
+    // The command really stopped: its token never appears, even past the point
+    // it would have finished on its own.
+    await sleep(11_000)
+    expect(scrollback(r.ctx, owner, id)).not.toContain(lateToken)
+
+    await r.ctx.terminals.kill(owner, id, 'test cleanup')
+    await r.close()
+  }, 90_000)
+
+  it('T06 under confinement: state does not cross a context boundary', async () => {
+    // The id-reuse and non-adoption result, with the ACL wrapper in the path.
+    const first = await rig('workspace-write')
+    const firstOwner = await first.agent('ww-same-owner')
+    const firstSession = await first.ctx.terminals.spawn(firstOwner, { type: BACKEND_TYPE })
+    const historicalId = firstSession.sessionId
+    const marker = 'WW-HISTORICAL-MARKER'
+    await first.ctx.terminals.startSend(firstOwner, historicalId, {
+      text: `Write-Output ${TOKEN(marker)}`,
+      submit: true,
+    }).done
+    await sleep(800)
+    expect(scrollback(first.ctx, firstOwner, historicalId)).toContain(marker)
+    await first.ctx.terminals.kill(firstOwner, historicalId, 'first generation teardown')
+    await first.close()
+
+    const second = await rig('workspace-write')
+    const secondOwner = await second.agent('ww-same-owner')
+    expect(second.ctx.terminals.list(secondOwner)).toHaveLength(0)
+    expect(() => second.ctx.terminals.read(secondOwner, historicalId, { offset: 0, count: 10 }))
+      .toThrow(/unknown PTY session/)
+
+    const secondSession = await second.ctx.terminals.spawn(secondOwner, { type: BACKEND_TYPE })
+    expect(String(secondSession.sessionId)).toBe(String(historicalId))
+    expect(scrollback(second.ctx, secondOwner, secondSession.sessionId)).not.toContain(marker)
+    expect(secondSession.motd).not.toContain(marker)
+    measured('WW T06 reused id', String(secondSession.sessionId))
+
+    await second.ctx.terminals.kill(secondOwner, secondSession.sessionId, 'second generation teardown')
+    await second.close()
+  }, 90_000)
+
+  it('T08 under confinement: a forged marker still settles early, and a failure is still not success', async () => {
+    const r = await rig('workspace-write')
+    const honestOwner = await r.agent('ww-t08-honest')
+    const honestSession = await r.ctx.terminals.spawn(honestOwner, { type: BACKEND_TYPE })
+    const forgedOwner = await r.agent('ww-t08-forged')
+    const forgedSession = await r.ctx.terminals.spawn(forgedOwner, { type: BACKEND_TYPE })
+    const lateToken = 'WW-FORGED-LATE'
+
+    const honest = await send(
+      r.ctx,
+      honestOwner,
+      honestSession.sessionId,
+      `Start-Sleep -Seconds 3; Write-Output ${TOKEN('WW-BASELINE')}`,
+    )
+    const forged = await send(
+      r.ctx,
+      forgedOwner,
+      forgedSession.sessionId,
+      `[Console]::Write([char]27+']133;D;0'+[char]7+'dsh> '); Start-Sleep -Seconds 12; Write-Output ${TOKEN(lateToken)}`,
+    )
+
+    // Same bound and same reasoning as the unconfined arm: < 1500 ms is only
+    // reachable by accepting the forged framing, since the honest path needs
+    // idleSilenceMs = 3000 ms of quiet.
+    expect(forged.elapsedMs).toBeLessThan(1_500)
+    expect(honest.elapsedMs).toBeGreaterThan(2_500)
+    expect(WAIT_REASONS).toContain(forged.waitReason)
+    expect(forged.waitReason).not.toBe('session_exit')
+    measured('WW T08 honest elapsedMs', honest.elapsedMs)
+    measured('WW T08 forged elapsedMs', forged.elapsedMs)
+    measured('WW T08 forged waitReason', forged.waitReason)
+    expect(scrollback(r.ctx, forgedOwner, forgedSession.sessionId)).not.toContain(lateToken)
+
+    // A failing command under confinement is still not a success.
+    const boom = await send(r.ctx, honestOwner, honestSession.sessionId, "throw 'WW-BOOM'")
+    expect(boom.keys.filter(key => /exit|success|ok|fail|error/i.test(key))).toEqual([])
+    expect(WAIT_REASONS).toContain(boom.waitReason)
+    expect(boom.waitReason).not.toBe('session_exit')
+    expect(boom.sessionStatus.kind).toBe('running')
+
+    await sleep(12_000)
+    expect(scrollback(r.ctx, forgedOwner, forgedSession.sessionId)).toContain(lateToken)
+
+    await r.ctx.terminals.kill(honestOwner, honestSession.sessionId, 'test cleanup')
+    await r.ctx.terminals.kill(forgedOwner, forgedSession.sessionId, 'test cleanup')
+    await r.close()
+  }, 120_000)
 })

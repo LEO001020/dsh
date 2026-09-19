@@ -47,10 +47,21 @@ const OVERLAY = [
   '',
 ].join('\n')
 
-const ADAPTER = readFileSync(
-  'D:/DSH/work/dsh-native-daily/qualification/results/M9.14-profile-config/patches/m914-mock-llm.ts',
-  'utf8',
-)
+/**
+ * The scripted adapter, kept at the package root rather than beside this script.
+ *
+ * It is TypeScript importing `@deepseek-ai/dsh-llm`, and Node resolves those
+ * bare specifiers by walking up from the FILE's directory. This script's own
+ * directory has no such ancestor, so a sibling copy fails with
+ * `Cannot find package '@deepseek-ai/dsh-llm'` — reproduced, and the reason a
+ * junction farm once had to exist here. `patches/a10-headless-keyless.yml`
+ * points at this same file, so a hand run and this script run the same adapter.
+ *
+ * The vitest suite inlines its own copy so the stimulus stays visible next to
+ * the assertions; if you change one, change both.
+ */
+const ADAPTER_PATH = join(PKG, 'm914-mock-llm.ts')
+const ADAPTER = readFileSync(ADAPTER_PATH, 'utf8')
 
 function run(script, label) {
   const home = mkdtempSync('D:/DSH/work/dsh-native-daily/.m914-a10home-')
