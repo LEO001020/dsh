@@ -407,9 +407,34 @@ export const runRecordSchema = z.object({
   version: z.literal(1),
   runId: z.string().min(1),
   /**
-   * Monotonic run epoch. Bumped when a run is re-adopted by a new host
-   * generation. A callback carrying a stale epoch must be rejected rather than
-   * allowed to write authoritative state.
+   * Monotonic run epoch. **Currently NOT enforced in the product.**
+   *
+   * This field exists to distinguish host generations, so that a callback from a
+   * superseded generation can be refused instead of writing authoritative state.
+   * The comparison that would do that lives in `recovery.ts`'s
+   * `applyWorkerSettlement`, which refuses a settlement whose epoch does not match
+   * the record's.
+   *
+   * That guard is **unreachable from any production path**: `recovery.ts` has no
+   * non-test importer, `applyWorkerSettlement` has no caller outside its own
+   * module and that test, and outside `recovery.ts` nothing reads or writes this
+   * field after `initialRunRecord` sets it to 1. So nothing bumps it and nothing
+   * checks it.
+   *
+   * This comment previously said a stale-epoch callback "must be rejected". That
+   * was a requirement stated as if it were enforcement, which is the same defect
+   * shape this project found three times (the launch port and the Goal handover
+   * had zero production callers; this guard is unreachable). Presence of a guard
+   * is not enforcement; reachability is.
+   *
+   * What IS enforced today, for the case that matters most: a live Agent's
+   * identity, by `tool-protocol-guards.ts` comparing the registry entry by object
+   * (`ctx.agents.get(id) === owner`), which covers an in-process resume. The
+   * cross-PROCESS generation case, which this field promises, is not covered.
+   *
+   * To close it: call `applyWorkerSettlement` from whatever path receives a
+   * worker settlement. That path does not exist yet, so wiring one would mean
+   * inventing a caller rather than connecting a real one.
    */
   epoch: z.number().int().min(1),
   rootSessionId: z.string().min(1),
