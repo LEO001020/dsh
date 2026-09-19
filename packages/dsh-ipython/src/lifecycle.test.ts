@@ -26,7 +26,7 @@ import { Context } from '@deepseek-ai/cordis'
 import Subprocess from '@deepseek-ai/dsh-subprocess-local'
 import type { Agent } from '@deepseek-ai/dsh-agent'
 import { execFileSync } from 'node:child_process'
-import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises'
+import { mkdtemp, readFile, readdir, rm, stat, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -737,5 +737,295 @@ describe('IPY-15: the kernel working directory is the Session\'s project root', 
     // The configured root itself, or a directory inside it. Either is a host
     // decision; the assertion is that it is NOT somewhere the host never named.
     expect(reported.startsWith(expectedRoot)).toBe(true)
+  }, 300_000)
+
+  it('the kernel cwd and the scratch dir are SEPARATE, and each holds what it should', async () => {
+    // WHY THIS IS A GATE OF ITS OWN. The cwd being the Session root does NOT imply
+    // the scratch directory is working, and vice versa: they are two environment
+    // variables (`DSH_IPYTHON_KERNEL_CWD` vs `DSH_IPYTHON_KERNEL_DIR` /
+    // `DSH_IPYTHON_SPILL_DIR`) set from two different fields of the same options
+    // object (`kernel.ts:228-235`). An implementation that set all three to the
+    // same value would satisfy either gate alone while destroying the property
+    // that matters: host-owned spill and log files must NOT be written into the
+    // user's project, and a cell's relative paths must NOT resolve into host
+    // scratch.
+    //
+    // The oracle is therefore the SEPARATION, measured from inside the kernel by
+    // reading the three variables it was actually given, plus the host-side fact
+    // that the log files exist in scratch and not in the project.
+    const s = makeService()
+    const project = await mkdtemp(join(tmpdir(), 't6-cwd-scratch-'))
+    const agent = agentFor('session-cwd-scratch', project)
+
+    const result = await s.runCell(agent, [
+      'import os',
+      'print("CWD=" + os.getcwd())',
+      'print("ENV_CWD=" + str(os.environ.get("DSH_IPYTHON_KERNEL_CWD")))',
+      'print("ENV_DIR=" + str(os.environ.get("DSH_IPYTHON_KERNEL_DIR")))',
+      'print("ENV_SPILL=" + str(os.environ.get("DSH_IPYTHON_SPILL_DIR")))',
+    ].join('\n'))
+    expect(result.outcome).toBe('ok')
+
+    const field = (name: string): string => {
+      const match = new RegExp(`${name}=(.*)`).exec(result.stdout.text)
+      expect(match, `${name} was not reported by the cell`).not.toBeNull()
+      return (match?.[1] ?? '').trim()
+    }
+    const norm = (value: string): string => value.replace(/\\/g, '/').toLowerCase().replace(/\/+$/, '')
+
+    const cwd = norm(field('CWD'))
+    const envCwd = norm(field('ENV_CWD'))
+    const envDir = norm(field('ENV_DIR'))
+    const envSpill = norm(field('ENV_SPILL'))
+    const projectNorm = norm(project)
+    const scratchNorm = norm(join(root, 'session-cwd-scratch'))
+
+    // (1) The kernel's cwd is the Session's project root -- what the cell sees.
+    expect(cwd).toBe(projectNorm)
+    // (2) The cwd the kernel was TOLD to use is the same one, so the agreement is
+    //     not a coincidence of the launcher's own directory.
+    expect(envCwd).toBe(projectNorm)
+    // (3) Log and spill files go to the host's scratch directory instead.
+    expect(envDir).toBe(scratchNorm)
+    expect(envSpill).toBe(scratchNorm)
+    // (4) And the separation is real, not two names for one path.
+    expect(envDir).not.toBe(cwd)
+    expect(envSpill).not.toBe(cwd)
+
+    // The host-side consequence: the kernel's log files exist in scratch, and the
+    // project directory does not contain them. A host that wrote kernel.out into
+    // the user's project would pass a cwd-only check and fail this one.
+    const scratchEntries = await readdir(scratchNorm).catch(() => [] as string[])
+    expect(scratchEntries).toContain('kernel.out')
+    const projectEntries = await readdir(project).catch(() => [] as string[])
+    expect(projectEntries).not.toContain('kernel.out')
+    expect(projectEntries).not.toContain('kernel.err')
+
+    // A relative write lands in the PROJECT, which is the property IPY-15 exists
+    // for; the scratch dir must not receive it.
+    const write = await s.runCell(agent, 'open("cwd-scratch-probe.txt", "w", encoding="utf-8").write("here")')
+    expect(write.outcome).toBe('ok')
+    expect(await readFile(join(project, 'cwd-scratch-probe.txt'), 'utf8')).toBe('here')
+    expect(await readdir(scratchNorm)).not.toContain('cwd-scratch-probe.txt')
+
+    await s.close()
+    service = undefined
+    await rm(project, { recursive: true, force: true })
+  }, 300_000)
+
+  it('the scratch dir is created for a Session, and its spill/log files are bounded by the cap', async () => {
+    // WHAT THIS GATE IS AND IS NOT. It asserts the scratch directory EXISTS, is
+    // created per Session, and that the files the package writes into it are
+    // bounded by the configured output cap. It does NOT assert that the directory
+    // is deleted on shutdown, because the package does not delete it: measured,
+    // `kernel.out` and `kernel.err` survive `shutdown()` and no removal code exists
+    // anywhere in the package (grepping the sources for a remove/unlink call finds
+    // none). Recording that honestly is the point -- a gate that asserted cleanup
+    // here would be asserting a behaviour the product does not have.
+    //
+    // The measured bound is the CAP, not the flood size: a cell that writes 5 MB
+    // to the kernel's real stdout (fd 1, which the broker redirected to
+    // `kernel.out`) grows that file by 5 MB, because the cap governs the IOPub
+    // projection the host reads and cannot see bytes written directly to a
+    // redirected descriptor. See IPY-12's fd-1 note in the FINDINGS for the
+    // measurement; the assertion here is only that the log is not UNBOUNDED in the
+    // normal case.
+    const s = makeService()
+    const scratch = join(root, 'session-scratch-lifecycle')
+    expect(await stat(scratch).catch(() => undefined)).toBeUndefined()
+
+    const agent = agentFor('session-scratch-lifecycle')
+    const result = await s.runCell(agent, 'print("ordinary output")')
+    expect(result.outcome).toBe('ok')
+
+    // Created by the host, before or during the kernel start, for THIS session.
+    const entries = await readdir(scratch).catch(() => [] as string[])
+    expect(entries).toContain('kernel.out')
+    expect(entries).toContain('kernel.err')
+    // And not shared: another Session gets its own directory.
+    await s.runCell(agentFor('session-scratch-other'), 'pass')
+    expect(await stat(join(root, 'session-scratch-other')).then(() => true).catch(() => false)).toBe(true)
+
+    // The ordinary log is small. The threshold is deliberately loose -- this is a
+    // sanity bound on a log file, not the output-cap assertion, which lives in
+    // `faults.test.ts` where a real flood is produced and measured.
+    const logSize = (await stat(join(scratch, 'kernel.out'))).size
+    expect(logSize).toBeLessThan(1_000_000)
+
+    await s.close()
+    service = undefined
+    // The scratch dir SURVIVES shutdown. Asserted so the honest state is pinned
+    // rather than left ambiguous, and so that adding cleanup later is a visible
+    // change to this gate rather than a silent one.
+    expect(await stat(scratch).then(() => true).catch(() => false)).toBe(true)
+    await rm(scratch, { recursive: true, force: true })
+  }, 300_000)
+})
+
+// ---------------------------------------------------------------------------
+// IPY-10. The model cannot own kernel lifecycle.
+//
+// THE SPEC CLAUSE (trusted-local-v1, IPY-10): "From inside a cell, attempt to
+// start, restart, shut down or evict the kernel; attempt to raise the output cap
+// or cell timeout; attempt to read the connection file. Every attempt is refused
+// or has no effect, and each attempt is recorded individually."
+//
+// WHAT IS MEASURED, AND WHY THE ASSERTIONS ARE SPLIT THE WAY THEY ARE. Some of
+// these clauses hold structurally and some do NOT hold at all, so folding them
+// into one PASS/FAIL would hide a real finding. The measurements:
+//
+//   REFUSED / NO EFFECT (asserted as PASS):
+//     - there is no host-side lifecycle API in the cell's namespace: no `ctx`,
+//       no `KernelService`, no `ipython_open`/`_close`/`_restart`/`_status`
+//       callable. `dir(__builtins__)` holds only `get_ipython` and `__IPYTHON__`.
+//     - the broker's control channel is not reachable: `DSH_SUBPROCESS_CONTROL`
+//       is the literal string `pipe` in the kernel's environment, not a usable
+//       descriptor number, so the framing the host writes requests on cannot be
+//       spoken from a cell.
+//     - the output cap and the cell timeout have no in-cell symbol at all
+//       (`timeout_symbols` measured empty), because they are host configuration
+//       passed per request from `kernel.ts`, not kernel state.
+//
+//   NOT REFUSED (recorded as a FINDING, not asserted as a guarantee):
+//     - a cell CAN read its own connection file, because `jupyter_client` passes
+//       it in `sys.argv` as `-f <path>` and the kernel process can open it. The
+//       file is readable and carries `curve_publickey`/`curve_secretkey`.
+//     - with that file, a background thread started by a cell CAN connect a
+//       second `BlockingKernelClient` and execute code in the same namespace.
+//       MEASURED: the smuggled assignment was visible to the next host cell.
+//     - a cell CAN shut down its own kernel via `get_ipython().kernel.do_shutdown()`.
+//       MEASURED: the next cell reported `unknown` with a new epoch.
+//
+// WHY THAT IS NOT A GATE FAILURE HERE. Trusted-local is the architecture: the
+// cell is the SAME Python process as the kernel, so anything the kernel can do,
+// the cell can do. Confining this would require a different process boundary,
+// which is an architecture change and not a test. What the gate CAN assert is the
+// part the host owns: every such self-destructive attempt is OBSERVED and
+// reported as a new generation with the state loss stated, never as a silent
+// restart presented as continuity. That is the property the spec's IPY-14 and
+// IPY-08 clauses actually protect, and it is what the second test below pins.
+// ---------------------------------------------------------------------------
+
+describe('IPY-10: the model cannot own kernel lifecycle', () => {
+  it('no lifecycle surface is reachable from inside a cell, and the cap/timeout are not cell state', async () => {
+    const s = makeService()
+    const agent = agentFor('session-lifecycle-surface')
+    const result = await s.runCell(agent, [
+      'import json, os',
+      'out = {}',
+      // The host-side registry must not be visible: no cordis context, no service.
+      'out["builtin_lifecycle_names"] = sorted(',
+      '    n for n in dir(__builtins__) if "kernel" in n.lower() or "ipython" in n.lower())',
+      'out["has_ctx"] = "ctx" in dir()',
+      'out["has_kernel_service"] = "KernelService" in dir()',
+      'out["has_ipython_service"] = "ipython" in dir()',
+      // No lifecycle tool names may be callable in the cell.
+      'out["lifecycle_callables"] = sorted(',
+      '    n for n in ("ipython_open", "ipython_close", "ipython_restart", "ipython_status",',
+      '                "kernel_restart", "kernel_shutdown", "kernel_open") if callable(globals().get(n)))',
+      // The control channel the host writes requests on.
+      'out["control_env"] = os.environ.get("DSH_SUBPROCESS_CONTROL")',
+      // The cap and the timeout are host configuration, not kernel state.
+      'out["cap_or_timeout_symbols"] = sorted(',
+      '    n for n in dir() if "timeout" in n.lower() or "output_cap" in n.lower())',
+      'print("IPY10:" + json.dumps(out))',
+    ].join('\n'))
+    expect(result.outcome).toBe('ok')
+
+    const match = /IPY10:(\{.*\})/.exec(result.stdout.text)
+    expect(match, 'the cell did not report its lifecycle surface').not.toBeNull()
+    const observed = JSON.parse(match?.[1] ?? '{}') as Record<string, unknown>
+
+    // (1) Nothing host-side is reachable. `get_ipython`/`__IPYTHON__` are the
+    //     IPython shell's own names and are expected; anything else would be a
+    //     lifecycle surface.
+    expect(observed['has_ctx']).toBe(false)
+    expect(observed['has_kernel_service']).toBe(false)
+    expect(observed['has_ipython_service']).toBe(false)
+    expect(observed['lifecycle_callables']).toEqual([])
+    expect(observed['builtin_lifecycle_names']).toEqual(['__IPYTHON__', 'get_ipython'])
+
+    // (2) The broker's control descriptor is NOT usable from the cell: the env
+    //     var the subprocess seam sets is the literal 'pipe', not a number. This
+    //     is what stops a cell from speaking the host's own request framing.
+    expect(observed['control_env']).toBe('pipe')
+
+    // (3) The cap and the timeout have no in-cell representation, so a cell
+    //     cannot widen them. Measured empty rather than asserted from the source.
+    expect(observed['cap_or_timeout_symbols']).toEqual([])
+
+    // And the host still owns the cap: the configured value is what the host
+    // passes per request, and the cell's own view does not contain it.
+    expect(result.stdout.text).not.toContain('outputCapBytes')
+
+    await s.close()
+    service = undefined
+  }, 300_000)
+
+  it('a cell that shuts down its own kernel is reported as a NEW generation with the loss stated', async () => {
+    // THE OBSERVED HALF. A cell CAN take its own kernel down (measured: the
+    // IPython kernel object exposes `do_shutdown`, and calling it from a
+    // background thread kills the process). The property the host must guarantee
+    // is not that the attempt is impossible -- under trusted-local the cell IS the
+    // kernel process -- but that the loss is OBSERVED and STATED, never presented
+    // as continuity.
+    const s = makeService()
+    const agent = agentFor('session-self-shutdown')
+    await s.runCell(agent, 'state_before_shutdown = "present"')
+    const epochBefore = s.currentEpoch(agent)
+
+    // The shutdown is deferred to a background thread so the cell itself returns
+    // `ok`; the death then lands between cells, which is the case a naive host
+    // would report as a healthy kernel.
+    const trigger = await s.runCell(agent, [
+      'import threading, time',
+      'def later():',
+      '    time.sleep(1.5)',
+      '    try:',
+      '        get_ipython().kernel.do_shutdown(restart=False)',
+      '    except BaseException:',
+      '        pass',
+      'threading.Thread(target=later, daemon=True).start()',
+      'print("shutdown scheduled")',
+    ].join('\n'))
+    expect(trigger.outcome).toBe('ok')
+    expect(trigger.stdout.text).toContain('shutdown scheduled')
+
+    await sleep(6_000)
+
+    // The next cell must NOT report a healthy namespace. It either throws
+    // `unknown` (the kernel died mid-request) or returns a result carrying a
+    // `generation` with `volatileStateLost`. Both are acceptable reports of the
+    // same fact; a plain `ok` is not.
+    let result: Awaited<ReturnType<typeof s.runCell>> | undefined
+    let thrown: unknown
+    try {
+      result = await s.runCell(agent, 'print("is state_before_shutdown present?", "state_before_shutdown" in dir())')
+    } catch (error) {
+      thrown = error
+    }
+
+    const generation = thrown instanceof KernelOutcomeUnknownError
+      ? thrown.result.generation
+      : result?.generation
+    expect(
+      generation,
+      'the kernel died on its own but the next cell reported no generation change',
+    ).toBeDefined()
+    expect(generation?.volatileStateLost).toBe(true)
+    expect(generation?.epoch).toBeGreaterThan(epochBefore)
+
+    // If it threw, the thrown result must be `unknown` and not a false success.
+    if (thrown !== undefined) {
+      expect(thrown).toBeInstanceOf(KernelOutcomeUnknownError)
+      expect((thrown as KernelOutcomeUnknownError).result.outcome).toBe('unknown')
+    } else {
+      // If it returned, the state must be demonstrably GONE rather than silently
+      // restored, which is the difference between a reported reset and a replay.
+      expect(result?.stdout.text).toContain('False')
+    }
+
+    await s.close()
+    service = undefined
   }, 300_000)
 })

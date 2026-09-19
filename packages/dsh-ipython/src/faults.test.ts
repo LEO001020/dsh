@@ -19,12 +19,14 @@
  */
 import { Context } from '@deepseek-ai/cordis'
 import Subprocess from '@deepseek-ai/dsh-subprocess-local'
+import type { Agent } from '@deepseek-ai/dsh-agent'
 import { mkdtemp, rm, stat } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { KernelHost, KernelOutcomeUnknownError } from './kernel.ts'
+import { KernelService } from './kernel-plugin.ts'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
 const BROKER = resolve(HERE, 'broker.py')
@@ -33,6 +35,7 @@ const PYTHON = process.env['DSH_PYTHON'] ?? 'C:/Users/hzq00/AppData/Local/Progra
 let ctx: Context
 let root: string
 let host: KernelHost | undefined
+let service: KernelService | undefined
 
 beforeEach(async () => {
   ctx = new Context()
@@ -41,6 +44,10 @@ beforeEach(async () => {
 })
 
 afterEach(async () => {
+  if (service !== undefined) {
+    await service.close().catch(() => undefined)
+    service = undefined
+  }
   if (host !== undefined) {
     await host.shutdown().catch(() => undefined)
     host = undefined
@@ -247,4 +254,203 @@ describe('requirement 11: kernel death changes the generation', () => {
     expect(after.outcome).toBe('ok')
     expect(after.stdout.text).toContain('marker present: False')
   }, 240_000)
+})
+
+// ---------------------------------------------------------------------------
+// IPY-07 (second half): a cell that TIMES OUT is not silently abandoned, and the
+// loss of its state is reported rather than implied.
+//
+// WHAT IS MEASURED, and why the assertion is `unknown` rather than `interrupted`.
+// A pure-Python loop that overruns `cellTimeoutMs` is NOT interrupted by the
+// timeout itself: the timeout path in `broker.py:655-664` reports the cell
+// unsettled and calls `_unknown_result`, which resets the kernel. Measured with
+// `cellTimeoutMs: 6000, interruptGraceMs: 4000`: the call threw
+// `KernelOutcomeUnknownError` after 8.2 s, the epoch advanced 1 -> 2, the kernel
+// PID CHANGED (29896 -> 36552), and the pre-timeout variable was gone.
+//
+// So a timeout destroys volatile state. That is a real product behaviour and it is
+// asserted as such, because the alternative -- reporting `interrupted` for a cell
+// that was never interrupted -- would be a false claim about what happened.
+// ---------------------------------------------------------------------------
+
+describe('IPY-07: a cell that overruns the budget is classified, and its state loss is stated', () => {
+  it('a timeout reports unknown with a NEW epoch and a replaced kernel, never a false success', async () => {
+    const h = makeHost({ cellTimeoutMs: 6_000, interruptGraceMs: 4_000 })
+    const started = await h.start()
+    const pidBefore = started.pid
+    const epochBefore = h.currentEpoch
+    await h.execute('kept_across_timeout = "value set before the overrun"')
+
+    const beganAt = Date.now()
+    let thrown: unknown
+    try {
+      await h.execute('while True:\n    pass')
+    } catch (error) {
+      thrown = error
+    }
+    const elapsed = Date.now() - beganAt
+
+    // The outcome must be `unknown`, and it must be an ERROR rather than a
+    // returned result: a caller that ignored a field would otherwise mistake a
+    // reset kernel for a completed cell.
+    expect(thrown).toBeInstanceOf(KernelOutcomeUnknownError)
+    const unknown = thrown as KernelOutcomeUnknownError
+    expect(unknown.result.outcome).toBe('unknown')
+    expect(unknown.result.generation?.volatileStateLost).toBe(true)
+    expect(unknown.result.generation?.epoch).toBeGreaterThan(epochBefore)
+    // The reason names the budget, so the report says WHY rather than only THAT.
+    expect(unknown.result.generation?.reason).toContain('6000 ms')
+
+    // The elapsed time is bounded: the cell must be classified, not waited on
+    // forever. The bound is generous (budget + grace + a start allowance) and is
+    // asserted so a regression that hung would fail rather than time out opaquely.
+    expect(elapsed).toBeLessThan(60_000)
+
+    // The kernel was REPLACED, and the host can see that: a new pid, alive.
+    const after = await h.status()
+    expect(after.alive).toBe(true)
+    expect(after.pid).toBeDefined()
+    expect(after.pid).not.toBe(pidBefore)
+
+    // And the pre-timeout variable is GONE -- the consequence the epoch change
+    // was announcing. Asserting this is what makes "volatileStateLost: true" a
+    // fact rather than a label.
+    const state = await h.execute('print("kept_across_timeout present:", "kept_across_timeout" in dir())')
+    expect(state.outcome).toBe('ok')
+    expect(state.stdout.text).toContain('kept_across_timeout present: False')
+  }, 300_000)
+
+  it('the replacement kernel after a timeout is genuinely usable', async () => {
+    // A reset that left an unusable kernel would satisfy the classification test
+    // above while being a worse product: the Session would be dead. This is the
+    // "reuse" half of the requirement.
+    const h = makeHost({ cellTimeoutMs: 5_000, interruptGraceMs: 4_000 })
+    await h.start()
+    await h.execute('while True:\n    pass').catch(() => undefined)
+
+    const usable = await h.execute('print("replacement usable:", 21 * 2)')
+    expect(usable.outcome).toBe('ok')
+    expect(usable.stdout.text).toContain('replacement usable: 42')
+  }, 300_000)
+})
+
+// ---------------------------------------------------------------------------
+// IPY-07 (restart): restart semantics -- what survives and what does not.
+//
+// MEASURED, and the numbers are the assertion's basis: `restart()` advanced the
+// epoch 1 -> 2, replaced the kernel PID (19352 -> 36164), and the variable set
+// before the restart was gone (`survives_restart present: False`), while the
+// replacement answered a new cell correctly. The kernel's cwd was preserved
+// across the restart, which matters: a restart that silently moved the kernel to
+// a scratch directory would reintroduce the wrong-relative-path defect for every
+// cell after it.
+// ---------------------------------------------------------------------------
+
+describe('IPY-07: restart replaces the kernel and preserves its working directory', () => {
+  it('restart advances the epoch, replaces the process, loses the namespace, and keeps the cwd', async () => {
+    // THE SERVICE IS THE SUBJECT, not a bare `KernelHost`. The service is the layer
+    // that creates the kernel's working directory (`kernel-plugin.ts:180`); a
+    // `KernelHost` constructed by hand with a directory that does not exist fails
+    // with the broker's own `NotADirectoryError`, which is a fact about the
+    // harness and not about the product. Measured: that is exactly how the first
+    // version of this test failed.
+    const project = await mkdtemp(join(tmpdir(), 't6-restart-project-'))
+    const s = service = new KernelService(ctx, {
+      pythonExecutable: PYTHON,
+      brokerScript: BROKER,
+      root,
+    })
+    const agent = {
+      session: { header: { id: 'restart', cwd: project } },
+    } as unknown as Agent
+
+    await s.runCell(agent, 'survives_restart = "set before the restart"')
+    const before = await s.status(agent)
+    expect(before).toBeDefined()
+    if (before === undefined) throw new Error('no status for a live kernel')
+    const epochBefore = before.epoch
+    expect(s.currentEpoch(agent)).toBe(epochBefore)
+
+    const epochAfter = await s.restart(agent)
+    const after = await s.status(agent)
+    expect(after).toBeDefined()
+    if (after === undefined) throw new Error('no status after the restart')
+
+    // (1) A restart is a NEW GENERATION, always -- it is not a no-op.
+    expect(epochAfter).toBeGreaterThan(epochBefore)
+    expect(s.currentEpoch(agent)).toBe(epochAfter)
+    expect(after.epoch).toBe(epochAfter)
+    // (2) The PROCESS is replaced, not merely the epoch counter. This is the
+    //     assertion that separates a real restart from a bookkeeping change.
+    expect(before.pid).toBeDefined()
+    expect(after.pid).toBeDefined()
+    expect(after.pid).not.toBe(before.pid)
+    // (3) The kernel is alive and usable afterwards.
+    expect(after.alive).toBe(true)
+    // (4) The cwd SURVIVES the restart: a restarted kernel that lost its
+    //     directory would silently root every later cell somewhere else, which is
+    //     the wrong-relative-path defect IPY-15 exists to prevent.
+    expect(after.kernelCwd).toBe(before.kernelCwd)
+    expect(after.kernelCwdEnforced).toBe(true)
+    expect((after.kernelCwd ?? '').replace(/\\/g, '/').toLowerCase())
+      .toBe(project.replace(/\\/g, '/').toLowerCase())
+
+    // (5) The namespace is GONE, and the replacement is still usable. Both are
+    //     asserted because either alone is satisfiable by a broken kernel.
+    const state = await s.runCell(agent, 'print("survives_restart present:", "survives_restart" in dir())')
+    expect(state.outcome).toBe('ok')
+    expect(state.stdout.text).toContain('survives_restart present: False')
+    const usable = await s.runCell(agent, 'print("usable after restart:", 6 * 7)')
+    expect(usable.stdout.text).toContain('usable after restart: 42')
+
+    await s.close()
+    service = undefined
+    await rm(project, { recursive: true, force: true })
+  }, 300_000)
+})
+
+// ---------------------------------------------------------------------------
+// IPY-12 (boundary): the output cap governs the IOPub projection, NOT the
+// kernel's real stdout descriptor.
+//
+// THIS IS A FINDING, PINNED SO IT CANNOT BE FORGOTTEN. A cell that writes to
+// fd 1 directly (`os.write(1, ...)`) bypasses the cap completely: the bytes go to
+// the file the broker redirected stdout into (`kernel.out` in the scratch
+// directory), and IOPub never carries them. MEASURED with a 4096-byte cap: the
+// cell reported `stdoutBytes: 10`, `truncated: false`, and `kernel.out` grew from
+// 0 to exactly 5,000,000 bytes.
+//
+// The consequence is bounded by a host-side file rather than by host memory, so it
+// is not the OOM class the cap exists to prevent. It IS a silent-loss class: a
+// model that writes to fd 1 sees a clean, untruncated result and never learns that
+// 5 MB went somewhere it cannot read. The test asserts the observed behaviour
+// rather than a guarantee, so that a future change either keeps this exact
+// boundary or fails here and has to say why.
+// ---------------------------------------------------------------------------
+
+describe('IPY-12: the cap bounds the cell projection, and a direct fd-1 write is a measured boundary', () => {
+  it('stdout written through the cell\'s own fd 1 is NOT capped, and is recorded as such', async () => {
+    const cap = 4_096
+    const h = makeHost({ outputCapBytes: cap, cellTimeoutMs: 180_000 })
+    await h.start()
+    const logPath = join(root, 'kernel.out')
+    const sizeBefore = (await stat(logPath).catch(() => undefined))?.size ?? 0
+
+    const result = await h.execute('import os\nos.write(1, b"B" * 5_000_000)\nprint("CELL-DONE")')
+    expect(result.outcome).toBe('ok')
+
+    // What the MODEL sees: small, untruncated, and therefore not obviously lossy.
+    expect(result.stdout.totalBytes).toBeLessThan(cap)
+    expect(result.stdout.truncated).toBe(false)
+    expect(result.stdout.text).toContain('CELL-DONE')
+
+    // What actually happened: the bytes landed in the kernel's log file.
+    const sizeAfter = (await stat(logPath)).size
+    expect(sizeAfter - sizeBefore).toBe(5_000_000)
+
+    // The bound that IS enforced is on IOPub, which is what the cap governs. A
+    // normal print flood through the cap is asserted in the requirement-10 tests
+    // above; this test exists to record that fd-1 is outside it.
+    expect(result.stdout.text).not.toContain('BBBB')
+  }, 300_000)
 })
