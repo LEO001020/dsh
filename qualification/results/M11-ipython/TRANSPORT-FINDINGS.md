@@ -45,28 +45,61 @@ This also revises the M0 note's framing. The warning is not evidence that
 jupyter_client cannot encrypt; it is evidence that the *default* path does not,
 and that a caller who does not ask for encryption silently gets none.
 
-### A correlation defect in the `required` mode
+### A correlation defect in the `required` mode — RESOLVED, not a defect
 
-`transport-probe.json` records `reply_msg_id_matches: false` for
-`transport_encryption='required'`, while `'auto'` and the default both match.
+`transport-probe.json` recorded `reply_msg_id_matches: false` for
+`transport_encryption='required'`, while `'auto'` and the default both matched.
 A shell reply whose `parent_header.msg_id` does not match the request is exactly
-the condition IPY-06 says must not be able to complete a cell.
+the condition IPY-06 says must not be able to complete a cell, so this was
+recorded as an open question rather than dismissed.
 
-This is **not** yet a confirmed product defect: it is one observation from a
-probe that does not control message ordering. It is recorded as an open question
-that M3's implementation must answer with a deliberate test, because if `required`
-genuinely breaks correlation then encryption and correct cell attribution are in
-tension and the choice must be made explicitly rather than discovered later.
+`probe-correlation.py` repeated the sequence 5 times in all three modes and
+recorded every reply's parent id. **The mismatch is present in ALL THREE modes,
+including the unencrypted default:**
+
+```
+default:        curve=False matched=4/5
+curve_required: curve=True  matched=4/5
+curve_auto:     curve=True  matched=4/5
+```
+
+And the single mismatch in each mode has the same shape:
+
+```
+request:         ..._36856_2      (execute_request)
+first reply:     kernel_info_reply, parent ..._36856_1
+next on channel: execute_reply,     parent ..._36856_2   <- the real answer
+```
+
+So it is not an encryption problem at all. `wait_for_ready` sends a
+`kernel_info_request`, and its reply can still be queued on the shell channel
+when the first `execute` is issued; a consumer that takes the first shell message
+reads that leftover frame. The reply for the actual request arrives next, with
+the correct parent.
+
+**Conclusion: encryption and cell attribution are NOT in tension.** `required`
+mode is safe to adopt, and `reply_msg_id_matches: false` in the earlier probe was
+a measurement artefact of reading one message without filtering.
+
+The episode is worth keeping in the record because it establishes a requirement
+the implementation must honour: **the reader MUST filter by `parent_header.msg_id`
+and must not treat "the next shell message" as "the answer".** That is IPY-06, and
+this is the concrete reason it is not optional — a real stray frame exists on
+every kernel start, so the naive reader is wrong immediately rather than rarely.
+
 
 ## Consequences for M3
 
-1. Start kernels with **`transport_encryption='required'`** (or `'auto'`), never
-   the default. Assert the curve keys are present in the connection file and that
-   the plaintext warning is absent — a test, not a convention, because the
-   failure mode is silent.
+1. Start kernels with **`transport_encryption='required'`**, never the default.
+   Assert the curve keys are present in the connection file and that the plaintext
+   warning is absent — a test, not a convention, because the failure mode is
+   silent.
 2. Do not attempt IPC on Windows. A cross-platform start path must select the
    transport by capability rather than assuming the POSIX answer.
-3. Resolve the `required`-mode correlation question before relying on that mode.
+3. **Filter shell replies by `parent_header.msg_id`.** A stray `kernel_info_reply`
+   is queued on the shell channel at every kernel start, so "read the next shell
+   message" is wrong on the first cell of every kernel, not merely under a rare
+   race. This is IPY-06 and it is now backed by a reproduced frame.
 
 ## Other mechanics confirmed by the same probes
 
