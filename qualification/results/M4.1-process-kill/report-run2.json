@@ -1,0 +1,62 @@
+{
+  "phase": "reconciled",
+  "killSignalRequested": "SIGKILL",
+  "killRequestAccepted": true,
+  "childExitCode": null,
+  "childExitSignal": "SIGKILL",
+  "terminatedAbruptly": true,
+  "childBeliefStates": {
+    "task-0": "launching",
+    "task-1": "accepted",
+    "task-2": "executing",
+    "task-3": "executing"
+  },
+  "childBeliefReserved": 20,
+  "recordSurvived": true,
+  "afterStates": {
+    "task-0": "launching",
+    "task-1": "accepted",
+    "task-2": "executing",
+    "task-3": "executing"
+  },
+  "afterReserved": 20,
+  "decisions": [
+    {
+      "taskId": "task-0",
+      "next": "unknown",
+      "releaseSlot": false,
+      "reason": "no Session and no live Agent for the reserved child id; whether the child was ever created cannot be established from local evidence, so it is quarantined rather than relaunched"
+    },
+    {
+      "taskId": "task-1",
+      "next": "unknown",
+      "releaseSlot": false,
+      "reason": "no Session and no live Agent for the reserved child id; whether the child was ever created cannot be established from local evidence, so it is quarantined rather than relaunched"
+    },
+    {
+      "taskId": "task-2",
+      "next": "unknown",
+      "releaseSlot": false,
+      "reason": "no Session and no live Agent for the reserved child id; whether the child was ever created cannot be established from local evidence, so it is quarantined rather than relaunched"
+    },
+    {
+      "taskId": "task-3",
+      "next": "unknown",
+      "releaseSlot": false,
+      "reason": "no Session and no live Agent for the reserved child id; whether the child was ever created cannot be established from local evidence, so it is quarantined rather than relaunched"
+    }
+  ],
+  "recovery": {
+    "phase": "paused",
+    "reason": "this run was not authorized to continue after a host restart; it resumes paused with its pending work visible"
+  },
+  "checks": {
+    "childTerminatedAbruptly": true,
+    "everyAdmittedTaskPersisted": true,
+    "reservationSurvivedExactly": true,
+    "reconciliationNeverReplayed": true,
+    "reconciliationNeverReleasedASlot": true,
+    "recoveryCameBackPaused": true
+  },
+  "verdict": "PASS"
+}

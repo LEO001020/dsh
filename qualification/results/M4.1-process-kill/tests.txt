@@ -1,0 +1,97 @@
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.8 [39m[90mD:/DSH/work/dsh-native-daily/packages/dsh-daily-work[39m
+
+ [32m✓[39m src/reconcile.test.ts[2m > [22mreconcileTask: the five positions[2m > [22mD03: a reservation that provably never launched returns to prepared[32m 1[2mms[22m[39m
+ [32m✓[39m src/reconcile.test.ts[2m > [22mreconcileTask: the five positions[2m > [22mD03/D04: a reserved id with no trace is unknown, not relaunchable[32m 0[2mms[22m[39m
+ [32m✓[39m src/reconcile.test.ts[2m > [22mreconcileTask: the five positions[2m > [22mD05: a pending prompt is left to native Inbox recovery[32m 0[2mms[22m[39m
+ [32m✓[39m src/reconcile.test.ts[2m > [22mreconcileTask: the five positions[2m > [22mD06: claim with no request confirmation is unknown[32m 0[2mms[22m[39m
+ [32m✓[39m src/reconcile.test.ts[2m > [22mreconcileTask: the five positions[2m > [22mD07: a request with no terminal turn is unknown, never retried[32m 0[2mms[22m[39m
+ [32m✓[39m src/reconcile.test.ts[2m > [22mreconcileTask: the five positions[2m > [22mD07: an interrupted turn is unknown, not safely redoable[32m 0[2mms[22m[39m
+ [32m✓[39m src/reconcile.test.ts[2m > [22mreconcileTask: the five positions[2m > [22mD09: a turn that ended in error is unknown, not failed-and-retryable[32m 0[2mms[22m[39m
+ [32m✓[39m src/reconcile.test.ts[2m > [22mreconcileTask: the five positions[2m > [22mD08: a completed turn with a result ref goes to settling, not confirmed[32m 0[2mms[22m[39m
+ [32m✓[39m src/reconcile.test.ts[2m > [22mreconcileTask: the five positions[2m > [22ma completed turn with no result ref is settling, not confirmed[32m 0[2mms[22m[39m
+ [32m✓[39m src/reconcile.test.ts[2m > [22mreconcileTask: the five positions[2m > [22mnever releases a slot from reconciliation alone[32m 0[2mms[22m[39m
+ [32m✓[39m src/reconcile.test.ts[2m > [22mreconcileRun[2m > [22mquarantines any task with no gathered evidence[32m 1[2mms[22m[39m
+ [32m✓[39m src/reconcile.test.ts[2m > [22mreconcileRun[2m > [22mreturns decisions in a stable order so a report is diffable[32m 1[2mms[22m[39m
+ [32m✓[39m src/reconcile.test.ts[2m > [22mreconcileRun[2m > [22mresolves a mixed run per task without letting one decision leak into another[32m 0[2mms[22m[39m
+ [32m✓[39m src/reconcile.test.ts[2m > [22mrecoveryPhase: restart does not re-authorize[2m > [22mD13: resumes paused when the run was never authorized to survive a restart[32m 0[2mms[22m[39m
+ [32m✓[39m src/reconcile.test.ts[2m > [22mrecoveryPhase: restart does not re-authorize[2m > [22mD13: resumes paused when the authorization has expired[32m 0[2mms[22m[39m
+ [32m✓[39m src/reconcile.test.ts[2m > [22mrecoveryPhase: restart does not re-authorize[2m > [22mresumes open only with a live authorization[32m 0[2mms[22m[39m
+ [32m✓[39m src/reconcile.test.ts[2m > [22mrecoveryPhase: restart does not re-authorize[2m > [22mtreats an authorization expiring exactly now as expired[32m 0[2mms[22m[39m
+ [32m✓[39m src/states.test.ts[2m > [22madmission state machine[2m > [22mcovers every declared state in the transition table[32m 2[2mms[22m[39m
+ [32m✓[39m src/states.test.ts[2m > [22madmission state machine[2m > [22mrefuses to leave a terminal state[32m 0[2mms[22m[39m
+ [32m✓[39m src/states.test.ts[2m > [22madmission state machine[2m > [22mthrows a TransitionError carrying the task id[32m 0[2mms[22m[39m
+ [32m✓[39m src/states.test.ts[2m > [22madmission state machine[2m > [22mdoes not let a requested cancel reach a released slot directly[32m 0[2mms[22m[39m
+ [32m✓[39m src/states.test.ts[2m > [22madmission state machine[2m > [22mtreats unknown as slot-holding, never as a free slot[32m 1[2mms[22m[39m
+ [32m✓[39m src/states.test.ts[2m > [22madmission state machine[2m > [22mholds a slot while settling, because the world may still change[32m 0[2mms[22m[39m
+ [32m✓[39m src/states.test.ts[2m > [22madmission state machine[2m > [22mdoes not count a confirmed or cancelled task as holding a slot[32m 0[2mms[22m[39m
+ [32m✓[39m src/states.test.ts[2m > [22mprecise counting[2m > [22mdoes not count an idle child as an active assignment[32m 0[2mms[22m[39m
+ [32m✓[39m src/states.test.ts[2m > [22mprecise counting[2m > [22mcounts a child as active only after observed real work[32m 0[2mms[22m[39m
+ [32m✓[39m src/states.test.ts[2m > [22mprecise counting[2m > [22mreports provider waiting separately from physical execution[32m 0[2mms[22m[39m
+ [32m✓[39m src/states.test.ts[2m > [22mprecise counting[2m > [22mreports tool waiting separately and inside active[32m 0[2mms[22m[39m
+ [32m✓[39m src/states.test.ts[2m > [22mprecise counting[2m > [22mkeeps stopping and unknown holding their slots so N is never pierced[32m 0[2mms[22m[39m
+ [32m✓[39m src/states.test.ts[2m > [22mprecise counting[2m > [22mkeeps a slot reserved by stopping/unknown against a larger target[32m 0[2mms[22m[39m
+ [32m✓[39m src/states.test.ts[2m > [22mprecise counting[2m > [22mnever silently lowers the target when fewer tasks are ready[32m 0[2mms[22m[39m
+ [32m✓[39m src/states.test.ts[2m > [22mprecise counting[2m > [22mnames budget as the deficit reason when the ceiling is reached[32m 0[2mms[22m[39m
+ [32m✓[39m src/states.test.ts[2m > [22mprecise counting[2m > [22madmits up to exactly the ceiling but not past it[32m 0[2mms[22m[39m
+ [32m✓[39m src/states.test.ts[2m > [22mprecise counting[2m > [22mreports budget_blocked and refuses admission from the same predicate[32m 0[2mms[22m[39m
+ [32m✓[39m src/states.test.ts[2m > [22mprecise counting[2m > [22mrefuses admission when the run is paused[32m 0[2mms[22m[39m
+ [32m✓[39m src/states.test.ts[2m > [22mprecise counting[2m > [22mreserves before admitting, so the last credit cannot be double-spent[32m 0[2mms[22m[39m
+ [32m✓[39m src/states.test.ts[2m > [22mprecise counting[2m > [22mcounts confirmed work as done without counting it as a held slot[32m 0[2mms[22m[39m
+ [32m✓[39m src/states.test.ts[2m > [22mprecise counting[2m > [22mreports deficit none when exactly filled[32m 0[2mms[22m[39m
+ [32m✓[39m src/launch-port.test.ts[2m > [22mcontinuable launch port[2m > [22mpasses the reserved childId through so recovery stays reconcilable[32m 2[2mms[22m[39m
+ [32m✓[39m src/launch-port.test.ts[2m > [22mcontinuable launch port[2m > [22msends the prompt as ContentBlock[], not a bare string[32m 1[2mms[22m[39m
+ [32m✓[39m src/launch-port.test.ts[2m > [22mcontinuable launch port[2m > [22mcarries maxDepth so children cannot open unbilled grandchildren[32m 0[2mms[22m[39m
+ [32m✓[39m src/launch-port.test.ts[2m > [22mcontinuable launch port[2m > [22muses the task id as the child creation label[32m 0[2mms[22m[39m
+ [32m✓[39m src/launch-port.test.ts[2m > [22mcontinuable launch port[2m > [22mforwards the abort signal so a cancelled admission can be aborted[32m 0[2mms[22m[39m
+ [32m✓[39m src/launch-port.test.ts[2m > [22mcontinuable launch port[2m > [22mresolves at admission and does not wait for the child to work[32m 0[2mms[22m[39m
+ [32m✓[39m src/launch-port.test.ts[2m > [22mcontinuable launch port[2m > [22mrethrows DUPLICATE_CHILD unchanged so it cannot become a fresh-UUID retry[32m 1[2mms[22m[39m
+ [32m✓[39m src/launch-port.test.ts[2m > [22mcontinuable launch port[2m > [22mrethrows an unknown failure so the caller can quarantine rather than retry[32m 1[2mms[22m[39m
+ [32m✓[39m src/launch-port.test.ts[2m > [22mcontinuable launch port[2m > [22mrefuses to record a child id the provider allocated instead of the reserved one[32m 0[2mms[22m[39m
+ [32m✓[39m src/launch-port.test.ts[2m > [22mcontinuable launch port[2m > [22momits agentOptions entirely when no child route is configured[32m 0[2mms[22m[39m
+ [32m✓[39m src/host.test.ts[2m > [22mwork service: admission and reservation[2m > [22mwrites the reservation and the task in one record[32m 20[2mms[22m[39m
+ [32m✓[39m src/host.test.ts[2m > [22mwork service: admission and reservation[2m > [22mrefuses admission past the budget ceiling[32m 9[2mms[22m[39m
+ [32m✓[39m src/host.test.ts[2m > [22mwork service: admission and reservation[2m > [22mrefuses admission while the run is paused[32m 9[2mms[22m[39m
+ [32m✓[39m src/host.test.ts[2m > [22mwork service: admission and reservation[2m > [22mrefuses to reopen a tombstoned task[32m 15[2mms[22m[39m
+ [32m✓[39m src/host.test.ts[2m > [22mwork service: admission and reservation[2m > [22mreleases the reservation on a confirmed transition but not on a requested cancel[32m 19[2mms[22m[39m
+ [32m✓[39m src/host.test.ts[2m > [22mwork service: admission and reservation[2m > [22mrejects an illegal transition instead of quietly accepting it[32m 7[2mms[22m[39m
+ [32m✓[39m src/host.test.ts[2m > [22mwork service: admission and reservation[2m > [22mdoes not mutate the stored record in place[32m 9[2mms[22m[39m
+ [32m✓[39m src/plugin.test.ts[2m > [22mhost plugin mounting[2m > [22mloads through the real plugin pipeline and provides the service[32m 15[2mms[22m[39m
+ [32m✓[39m src/plugin.test.ts[2m > [22mhost plugin mounting[2m > [22mreleases the domain handle on unload and can be loaded again[32m 5[2mms[22m[39m
+ [32m✓[39m src/plugin.test.ts[2m > [22mhost plugin mounting[2m > [22mkeeps the persisted record across a plugin reload[32m 10[2mms[22m[39m
+ [32m✓[39m src/plugin.test.ts[2m > [22mhost plugin mounting[2m > [22mrefuses a second service registration in the same scope[32m 15[2mms[22m[39m
+ [32m✓[39m src/plugin.test.ts[2m > [22mtool consumer mounting[2m > [22mregisters the work tool exactly once[32m 8[2mms[22m[39m
+ [32m✓[39m src/plugin.test.ts[2m > [22mtool consumer mounting[2m > [22mremoves the tool when the consumer unloads[32m 4[2mms[22m[39m
+ [32m✓[39m src/plugin.test.ts[2m > [22mtool consumer mounting[2m > [22mdoes not register twice when loaded, unloaded and loaded again[32m 6[2mms[22m[39m
+ [32m✓[39m src/plugin.test.ts[2m > [22mtool consumer mounting[2m > [22mexposes one definition whose parameters are stable and typed[32m 5[2mms[22m[39m
+ [32m✓[39m src/plugin.test.ts[2m > [22mtool consumer mounting[2m > [22mpublishes the work tool through the system prompt tool provider[32m 5[2mms[22m[39m
+ [32m✓[39m src/host.test.ts[2m > [22mwork service: rolling top-up[2m > [22mlaunches up to the target and no further[32m 25[2mms[22m[39m
+ [32m✓[39m src/host.test.ts[2m > [22mwork service: rolling top-up[2m > [22mleaves admission as admission: the child is accepted, not executing[32m 13[2mms[22m[39m
+ [32m✓[39m src/host.test.ts[2m > [22mwork service: rolling top-up[2m > [22mreports a deficit instead of inventing work when fewer tasks are ready[32m 24[2mms[22m[39m
+ [32m✓[39m src/host.test.ts[2m > [22mwork service: rolling top-up[2m > [22mtops up a single completion without waiting for the whole wave[32m 49[2mms[22m[39m
+ [32m✓[39m src/host.test.ts[2m > [22mwork service: rolling top-up[2m > [22mcoalesces concurrent drains so a completion storm cannot double-launch[32m 11[2mms[22m[39m
+ [32m✓[39m src/host.test.ts[2m > [22mwork service: rolling top-up[2m > [22mtreats a failed launch as unknown and does not silently retry[32m 11[2mms[22m[39m
+ [32m✓[39m src/host.test.ts[2m > [22mwork service: rolling top-up[2m > [22mdoes not release a slot while a cancel is only requested[32m 14[2mms[22m[39m
+ [32m✓[39m src/host.test.ts[2m > [22mwork service: rolling top-up[2m > [22mstops admitting once the run is paused, even with free slots[32m 8[2mms[22m[39m
+ [32m✓[39m src/host.test.ts[2m > [22mwork service: rolling top-up[2m > [22mresumes a paused run as a new authorization edge[32m 18[2mms[22m[39m
+ [32m✓[39m src/host.test.ts[2m > [22mwork service: rolling top-up[2m > [22mdoes not launch when the caller signal is already aborted[32m 6[2mms[22m[39m
+ [32m✓[39m src/host.test.ts[2m > [22mwork service: rolling top-up[2m > [22mkeeps each run isolated from the others[32m 23[2mms[22m[39m
+ [32m✓[39m src/host.test.ts[2m > [22mwork service: persistence[2m > [22msurvives a reopen of the same domain directory[32m 15[2mms[22m[39m
+ [32m✓[39m src/host.test.ts[2m > [22mwork service: persistence[2m > [22mrejects a second open of the same domain[32m 3[2mms[22m[39m
+ [32m✓[39m src/host.test.ts[2m > [22mwork service: persistence[2m > [22mrefuses writes after close[32m 7[2mms[22m[39m
+ [32m✓[39m src/concurrency.test.ts[2m > [22mmandatory concurrency: N=10 rolling top-up on the production loop[2m > [22madmits exactly ten children through the real startContinuable seam[32m 239[2mms[22m[39m
+ [32m✓[39m src/concurrency.test.ts[2m > [22mmandatory concurrency: N=10 rolling top-up on the production loop[2m > [22mdoes not admit an eleventh child while ten hold their slots[32m 171[2mms[22m[39m
+ [32m✓[39m src/concurrency.test.ts[2m > [22mmandatory concurrency: N=10 rolling top-up on the production loop[2m > [22mtops up one completion immediately without waiting for the wave[33m 567[2mms[22m[39m
+ [32m✓[39m src/concurrency.test.ts[2m > [22mmandatory concurrency: N=10 rolling top-up on the production loop[2m > [22mreports a deficit and invents no work when only three tasks are ready[32m 67[2mms[22m[39m
+ [32m✓[39m src/concurrency.test.ts[2m > [22mmandatory concurrency: N=10 rolling top-up on the production loop[2m > [22mrefuses admission past the real capacity even when the record would allow it[32m 163[2mms[22m[39m
+ [32m✓[39m src/concurrency.test.ts[2m > [22mmandatory concurrency: N=10 rolling top-up on the production loop[2m > [22mkeeps the root separate from the ten children[32m 166[2mms[22m[39m
+ [32m✓[39m src/concurrency.test.ts[2m > [22mmandatory concurrency: N=10 rolling top-up on the production loop[2m > [22mrefuses to launch grandchildren because maxDepth is 1[32m 35[2mms[22m[39m
+ [32m✓[39m src/concurrency.test.ts[2m > [22mmandatory concurrency: N=10 rolling top-up on the production loop[2m > [22mcoalesces concurrent drains so a completion storm cannot double-admit[32m 34[2mms[22m[39m
+ [32m✓[39m src/concurrency.test.ts[2m > [22mmandatory concurrency: N=10 rolling top-up on the production loop[2m > [22mstops admitting once the user pauses, with free slots remaining[32m 56[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m6 passed[39m[22m[90m (6)[39m
+[2m      Tests [22m [1m[32m87 passed[39m[22m[90m (87)[39m
+[2m   Start at [22m 12:02:16
+[2m   Duration [22m 2.31s[2m (transform 864ms, setup 0ms, import 1.54s, tests 1.91s, environment 0ms)[22m
+
+test_exit=0
