@@ -1,0 +1,23 @@
+=== A03: first real tool call on the BUILT artifact ===
+
+The keyless-smoke e2e boots the REAL Loader tree from the shipped headless profile,
+mounts the PRODUCTION AgentLoop, drives it with a keyless mock provider, executes the
+real production shell tool, and asserts the turn is persisted to a zstd JSONL session.
+
+command:
+  pnpm exec vitest run --config vitest.e2e.config.ts apps/cli/tests/profiles/headless/tests/keyless-smoke.e2e.ts
+exit_code: 0
+tests: 1 passed
+duration: 3.9s
+
+assertions observed by the test:
+  - stderr is empty
+  - a tool/call event names the platform shell (pwsh on win32)
+  - the tool/result contains CLI_TOOL_ROUND_TRIP
+  - usage is { inputTokens: 18, outputTokens: 8, cacheReadTokens: 2, reasoningTokens: 1 }
+  - the persisted log is zstd (magic 28b52ffd) with no torn tail
+  - the persisted request/header carries the tool catalog
+
+NOTE on scope: this proves a real tool chain through the real host + real AgentLoop.
+It does NOT prove the built apps/cli/lib/bin.js launcher (this suite drives the
+loader-smoke driver script). The built launcher is exercised separately.

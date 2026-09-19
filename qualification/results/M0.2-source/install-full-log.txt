@@ -1,0 +1,41 @@
++ @types/node 22.20.0
++ @types/spdx-expression-parse 4.0.0
++ @vitest/coverage-v8 4.1.8
++ @yao-pkg/pkg 6.21.0
++ @yarnpkg/cli-dist 4.17.1
++ eslint-plugin-sonarjs 4.1.0
++ execa 10.0.0
++ fast-check 4.8.0
++ istanbul-lib-report 3.0.1
++ js-yaml 4.2.0
++ jscpd 5.0.12
++ jsdom 29.1.1
++ lefthook 2.1.9
++ lightningcss 1.32.0
++ mdast-util-from-markdown 2.0.3
++ mdast-util-gfm 3.1.0
++ mermaid 11.16.0
++ micromark-extension-gfm 3.0.0
++ oxlint 1.76.0
++ oxlint-tsgolint 7.0.2001
++ publint 0.3.21
++ smol-toml 1.7.1
++ spdx-expression-parse 5.0.0
++ tsdown 0.22.2
++ tsx 4.22.4
++ typescript 6.0.3
++ vite-tsconfig-paths 6.1.1
++ vitest 4.1.8
+
+packages/subprocess/subprocess-local postinstall$ node scripts/ensure-spawn-helper.mjs
+packages/subprocess/subprocess-local postinstall: Done
+. postinstall$ node scripts/install-lefthook.mjs
+. postinstall: sync hooks: ✔️(pre-merge-commit, pre-push, pre-commit)
+. postinstall: (node:6300) [DEP0190] DeprecationWarning: Passing args to a child process with shell option true can lead to security vulnerabilities, as the arguments are not escaped, only concatenated.
+. postinstall: (Use `node --trace-deprecation ...` to show where the warning was created)
+. postinstall: Done
+[WARN] Failed to create bin at D:\DSH\src\dsh-src\apps\desktop-host\node_modules\.bin\dsh. ENOENT: no such file or directory, stat 'D:\DSH\src\dsh-src\apps\desktop-host\node_modules\@deepseek-ai\dsh\lib\bin.js.EXE'
+[WARN] Failed to create bin at D:\DSH\src\dsh-src\python\sdk-runtime\node_modules\.bin\dsh. ENOENT: no such file or directory, stat 'D:\DSH\src\dsh-src\python\sdk-runtime\node_modules\@deepseek-ai\dsh\lib\bin.js.EXE'
+[WARN] Failed to create bin at D:\DSH\src\dsh-src\packages\sdk\client\node_modules\.bin\dsh. ENOENT: no such file or directory, stat 'D:\DSH\src\dsh-src\packages\sdk\client\node_modules\@deepseek-ai\dsh\lib\bin.js.EXE'
+Done in 19m 13.9s using pnpm v11.7.0
+INSTALL_EXIT=0

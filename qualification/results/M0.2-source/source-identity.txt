@@ -1,0 +1,20 @@
+=== git identity ===
+ddefc45fbc7f8e46dd73185e68295696d1297887
+ddefc45fbc Merge pull request #4469 from deepseek-harness/worktree/release-dsh-0.1.6-alpha.2
+
+=== describe ===
+dsh-v0.1.6-alpha.2
+
+=== lockfile sha256 ===
+72523ca50bd34e3e21d07c82e1cedfdb91b17e1bcd83006c645e8dc6e0786fe0 *pnpm-lock.yaml
+
+=== package.json sha256 ===
+a9cc164c4d922d74571e09c04be4e0f85a318685d410bb1c56072258a19a6f1d *package.json
+
+=== clone remote ===
+origin	https://github.com/deepseek-ai/deepseek-harness.git (fetch) [blob:none]
+origin	https://github.com/deepseek-ai/deepseek-harness.git (push)
+
+=== shallow? ===
+.git/shallow
+SHALLOW

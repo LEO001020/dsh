@@ -1,0 +1,17 @@
+=== install command ===
+corepack pnpm install --frozen-lockfile --network-concurrency 4 --fetch-retries 5 --fetch-retry-maxtimeout 120000
+exit_code: 0
+duration: 19m 13.9s
+pnpm: 11.7.0 (corepack)
+
+=== attempt 1 (failed) ===
+corepack pnpm install --frozen-lockfile
+exit_code: 1
+error: TypeError: fetch failed (network); 1285/1319 packages downloaded
+classification: BLOCKED_NETWORK then RETRIED_SUCCESSFULLY, not a resolution error
+
+=== warnings ===
+Failed to create bin at apps/desktop-host/node_modules/.bin/dsh (expected: lib/bin.js not built yet)
+Failed to create bin at python/sdk-runtime/node_modules/.bin/dsh (same)
+Failed to create bin at packages/sdk/client/node_modules/.bin/dsh (same)
+These are pre-build warnings; the built artifact is produced by pnpm build.

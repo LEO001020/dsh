@@ -1,0 +1,23 @@
+$ tsx scripts/build.ts
+$ tsx native/system/scripts/build.ts --host-addon-only
+$ pnpm run build:lib:host && pnpm run build:lib:client
+[ERROR] This project is configured to use 11.7.0 of pnpm. Your current pnpm is v11.24.0
+Corepack invoked pnpm with this version, and pnpm does not switch versions when running under corepack.
+Align the "packageManager" field in package.json with "devEngines.packageManager", or invoke pnpm directly (without corepack) so it can switch versions automatically.
+If you want to bypass this version check, you can set the "pmOnFail" configuration to "warn" or "ignore" (e.g. via --pm-on-fail=ignore). If using "devEngines.packageManager", you can set its "onFail" to "warn" or "ignore"
+[ELIFECYCLE] Command failed with exit code 1.
+D:\DSH\src\dsh-src\scripts\build.ts:27
+    throw new Error(`build: ${script} exited with ${String(result.status ?? result.signal)}`)
+          ^
+
+Error: build: build:lib exited with 1
+    at runScript (D:\DSH\src\dsh-src\scripts\build.ts:27:11)
+    at main (D:\DSH\src\dsh-src\scripts\build.ts:45:3)
+    at <anonymous> (D:\DSH\src\dsh-src\scripts\build.ts:53:23)
+    at ModuleJob.run (node:internal/modules/esm/module_job:439:25)
+    at async node:internal/modules/esm/loader:643:26
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+
+Node.js v24.18.0
+[ELIFECYCLE] Command failed with exit code 1.
+BUILD_EXIT=1

@@ -1,0 +1,14 @@
+=== build attempt 1 (FAILED) ===
+command: corepack pnpm build
+exit_code: 1
+root cause: the build script spawns bare 'pnpm' from PATH, which resolved to the
+  GLOBAL pnpm 11.24.0 at C:/Users/hzq00/AppData/Roaming/npm/pnpm, not the corepack-pinned
+  11.7.0. pnpm refused: 'This project is configured to use 11.7.0 of pnpm.'
+  The repo declares BOTH packageManager: pnpm@11.7.0 AND devEngines.packageManager.
+  Corepack does not switch versions once invoked, so the nested call kept 11.24.0.
+classification: ENVIRONMENT_DEFECT_IN_LAUNCH, not a source defect.
+
+=== fix ===
+Created D:/DSH/tools/bin/pnpm{,.cmd} shims that exec the corepack-pinned 11.7.0
+  pnpm.cjs directly, and prepended that directory to PATH for the build.
+  The global pnpm was NOT modified or upgraded.

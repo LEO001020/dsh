@@ -1,0 +1,61 @@
+[WARN] GET https://registry.npmjs.org/simple-icons/-/simple-icons-16.31.0.tgz error (23). Will retry in 10 seconds. 2 retries left.
+[WARN] Tarball download average speed 2 KiB/s (size 4 KiB) is below 50 KiB/s: https://registry.npmjs.org/@docsearch/css/-/css-3.8.2.tgz (GET)
+Progress: resolved 1319, reused 0, downloaded 1273, added 1277
+[WARN] Request took 21380ms: https://registry.npmjs.org/electron
+Progress: resolved 1319, reused 0, downloaded 1273, added 1278
+[WARN] GET https://registry.npmjs.org/react-is error (23). Will retry in 1 minute. 1 retries left.
+[WARN] GET https://registry.npmjs.org/react error (23). Will retry in 1 minute. 1 retries left.
+[WARN] GET https://registry.npmjs.org/@google/genai/-/genai-1.52.0.tgz error (23). Will retry in 1 minute. 1 retries left.
+[WARN] Tarball download average speed 11 KiB/s (size 50 KiB) is below 50 KiB/s: https://registry.npmjs.org/@algolia/client-query-suggestions/-/client-query-suggestions-5.55.2.tgz (GET)
+Progress: resolved 1319, reused 0, downloaded 1274, added 1278
+[WARN] GET https://registry.npmjs.org/playwright error (23). Will retry in 1 minute. 1 retries left.
+Progress: resolved 1319, reused 0, downloaded 1274, added 1279
+[WARN] GET https://registry.npmjs.org/-/npm/v1/attestations/scheduler@0.23.2 error (ECONNRESET). Will retry in 1 minute. 1 retries left.
+[WARN] Tarball download average speed 28 KiB/s (size 1516 KiB) is below 50 KiB/s: https://registry.npmjs.org/@modelcontextprotocol/client/-/client-2.0.0.tgz (GET)
+Progress: resolved 1319, reused 0, downloaded 1275, added 1279
+[WARN] Tarball download average speed 17 KiB/s (size 80 KiB) is below 50 KiB/s: https://registry.npmjs.org/@vue/reactivity/-/reactivity-3.5.39.tgz (GET)
+Progress: resolved 1319, reused 0, downloaded 1276, added 1281
+[WARN] Request took 45697ms: https://registry.npmjs.org/typescript
+[WARN] Tarball download average speed 26 KiB/s (size 742 KiB) is below 50 KiB/s: https://registry.npmjs.org/vite/-/vite-5.4.21.tgz (GET)
+Progress: resolved 1319, reused 0, downloaded 1277, added 1281
+Progress: resolved 1319, reused 0, downloaded 1277, added 1282
+Progress: resolved 1319, reused 0, downloaded 1278, added 1282
+Progress: resolved 1319, reused 0, downloaded 1278, added 1283
+Progress: resolved 1319, reused 0, downloaded 1279, added 1283
+Progress: resolved 1319, reused 0, downloaded 1279, added 1284
+[WARN] Tarball download average speed 35 KiB/s (size 1142 KiB) is below 50 KiB/s: https://registry.npmjs.org/vitepress/-/vitepress-1.6.4.tgz (GET)
+Progress: resolved 1319, reused 0, downloaded 1280, added 1284
+[WARN] GET https://registry.npmjs.org/@anthropic-ai/claude-agent-sdk-win32-x64/-/claude-agent-sdk-win32-x64-0.3.263.tgz error (23). Will retry in 1 minute. 1 retries left.
+[WARN] GET https://registry.npmjs.org/@openai/codex/-/codex-0.153.4-win32-x64.tgz error (23). Will retry in 1 minute. 1 retries left.
+[WARN] GET https://registry.npmjs.org/node-pty/-/node-pty-1.2.0-beta.15.tgz error (23). Will retry in 1 minute. 1 retries left.
+Progress: resolved 1319, reused 0, downloaded 1280, added 1285
+Progress: resolved 1319, reused 0, downloaded 1281, added 1285
+Progress: resolved 1319, reused 0, downloaded 1281, added 1286
+[WARN] GET https://registry.npmjs.org/@esbuild/win32-x64/-/win32-x64-0.21.5.tgz error (23). Will retry in 1 minute. 1 retries left.
+[WARN] GET https://registry.npmjs.org/playwright-core error (23). Will retry in 10 seconds. 2 retries left.
+Progress: resolved 1319, reused 0, downloaded 1282, added 1286
+Progress: resolved 1319, reused 0, downloaded 1282, added 1287
+[WARN] Request took 46878ms: https://registry.npmjs.org/react-dom
+[WARN] GET https://registry.npmjs.org/playwright-core error (UND_ERR_SOCKET). Will retry in 10 seconds. 2 retries left.
+[WARN] GET https://registry.npmjs.org/@mermaid-js/mermaid-mindmap/-/mermaid-mindmap-9.3.0.tgz error (23). Will retry in 1 minute. 1 retries left.
+[WARN] GET https://registry.npmjs.org/react-is error (ECONNRESET). Will retry in 10 seconds. 2 retries left.
+[WARN] GET https://registry.npmjs.org/simple-icons/-/simple-icons-16.31.0.tgz error (23). Will retry in 1 minute. 1 retries left.
+Progress: resolved 1319, reused 0, downloaded 1283, added 1287
+Progress: resolved 1319, reused 0, downloaded 1283, added 1288
+Progress: resolved 1319, reused 0, downloaded 1284, added 1288
+Progress: resolved 1319, reused 0, downloaded 1284, added 1289
+Progress: resolved 1319, reused 0, downloaded 1285, added 1289
+Progress: resolved 1319, reused 0, downloaded 1285, added 1290
+[WARN] Request took 10280ms: https://registry.npmjs.org/playwright
+[WARN] Request took 32307ms: https://registry.npmjs.org/playwright-core
+[WARN] Request took 22455ms: https://registry.npmjs.org/react-is
+[WARN] Request took 12829ms: https://registry.npmjs.org/scheduler
+[WARN] Request took 13918ms: https://registry.npmjs.org/playwright
+✓ Lockfile passes supply-chain policies (1607 entries in 6m 23.8s)
+[ERROR] fetch failed
+
+TypeError: fetch failed
+    at Object.processResponse (file:///E:/zcode-labs/zloop-home/AppData/Local/node/corepack/v1/pnpm/11.7.0/dist/pnpm.mjs:26399:20)
+    at file:///E:/zcode-labs/zloop-home/AppData/Local/node/corepack/v1/pnpm/11.7.0/dist/pnpm.mjs:26780:23
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+INSTALL_EXIT=1

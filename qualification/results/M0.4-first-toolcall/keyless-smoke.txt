@@ -1,0 +1,12 @@
+[33mThe plugin "vite-tsconfig-paths" is detected. Vite now supports tsconfig paths resolution natively via the [1mresolve.tsconfigPaths[22m option. You can remove the plugin and set [1mresolve.tsconfigPaths: true[22m in your Vite config instead.[39m
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.8 [39m[90mD:/DSH/src/dsh-src[39m
+
+ [32m✓[39m apps/cli/tests/profiles/headless/tests/keyless-smoke.e2e.ts[2m > [22mheadless-agent keyless smoke[2m > [22mboots the real Loader tree, runs the production shell tool, and persists the turn[33m 3919[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m   Start at [22m 11:15:00
+[2m   Duration [22m 4.70s[2m (transform 451ms, setup 225ms, import 373ms, tests 3.92s, environment 0ms)[22m
+
+EXIT=0
