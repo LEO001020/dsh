@@ -1,0 +1,259 @@
+{
+  "probe": "verify-t3-shell",
+  "dshHome": "D:/DSH/home/t3-shell",
+  "bootCwd": "C:\\Windows\\Temp",
+  "presetRoots": [
+    {
+      "path": "D:\\DSH\\src\\dsh-src\\packages\\preset\\agent-presets\\presets\\",
+      "trust": "system"
+    },
+    {
+      "path": "D:/DSH/home/t3-shell/profiles/daily/presets/",
+      "trust": "system"
+    },
+    {
+      "path": "D:\\DSH\\home\\t3-shell\\.agent-presets",
+      "trust": "user"
+    }
+  ],
+  "presetDefaultId": "daily-standard",
+  "error": null,
+  "appReadyServicePresent": true,
+  "postAuditRan": true,
+  "presetIds": [
+    "cordis",
+    "daily-standard",
+    "minimal",
+    "ptc",
+    "standard"
+  ],
+  "loaderPresent": true,
+  "entryCount": 177,
+  "inactiveEntriesIncludingProbe": [
+    {
+      "id": "verify-t3-shell",
+      "name": "file:///D:/DSH/work/dsh-native-daily/qualification/runners/verify-t3-shell.mjs",
+      "disabled": false,
+      "fiberState": 1,
+      "missing": []
+    }
+  ],
+  "inactiveEntries": [],
+  "activationWarningCount": 0,
+  "activationWarningsZero": true,
+  "probeRowObservedState": 1,
+  "activeRowCount": 145,
+  "disabledRowCount": 31,
+  "buildIdentity": {
+    "repo": "D:/DSH/work/dsh-native-daily",
+    "libDigests": {
+      "packages/dsh-ipython/lib/ipython-tool.js": "34807582fd6d2481d21277155fd8db870fbfc8d805ccdae9499973229b7cc14f",
+      "packages/dsh-ipython/lib/kernel.js": "ddc1e45283fd4f7a857787796561ea1e445df4075c587c86f60aa583ed65079b",
+      "packages/dsh-ipython/lib/kernel-plugin.js": "e88ebe125020f3d41f24c1afdd2a059dab89a965dba6625206a311860d85a9d8",
+      "packages/dsh-ipython/lib/host-plugin.js": "4ffe32bf3534c7501c74593ea6b2aa925b29b09694dcbca614c6a073c547b8e5",
+      "packages/dsh-daily-work/lib/tools.js": "d024715f9bda05ff91290a3224d44bc661f399b8faf3863af235e4d8ad9073fb",
+      "packages/dsh-daily-work/lib/host-plugin.js": "fb553116e31cde9e8230fe7d1fc97bf00b9c783b201579c9e0758da262b8f888"
+    },
+    "srcLibPairs": [
+      {
+        "src": "packages/dsh-ipython/src/ipython-tool.ts",
+        "lib": "packages/dsh-ipython/lib/ipython-tool.js",
+        "srcMtimeMs": 1789839216469.517,
+        "libMtimeMs": 1789858536386.6648,
+        "libNewerThanSrc": true
+      },
+      {
+        "src": "packages/dsh-ipython/src/kernel.ts",
+        "lib": "packages/dsh-ipython/lib/kernel.js",
+        "srcMtimeMs": 1789850623573.4575,
+        "libMtimeMs": 1789858536374.9304,
+        "libNewerThanSrc": true
+      },
+      {
+        "src": "packages/dsh-ipython/src/kernel-plugin.ts",
+        "lib": "packages/dsh-ipython/lib/kernel-plugin.js",
+        "srcMtimeMs": 1789850767522.0142,
+        "libMtimeMs": 1789858536380.296,
+        "libNewerThanSrc": true
+      },
+      {
+        "src": "packages/dsh-ipython/src/host-plugin.ts",
+        "lib": "packages/dsh-ipython/lib/host-plugin.js",
+        "srcMtimeMs": 1789840492997.6157,
+        "libMtimeMs": 1789858536384.0432,
+        "libNewerThanSrc": true
+      },
+      {
+        "src": "packages/dsh-daily-work/src/tools.ts",
+        "lib": "packages/dsh-daily-work/lib/tools.js",
+        "srcMtimeMs": 1789789066522.0881,
+        "libMtimeMs": 1789858546881.7515,
+        "libNewerThanSrc": true
+      },
+      {
+        "src": "packages/dsh-daily-work/src/host-plugin.ts",
+        "lib": "packages/dsh-daily-work/lib/host-plugin.js",
+        "srcMtimeMs": 1789839561673.9294,
+        "libMtimeMs": 1789858546830.9536,
+        "libNewerThanSrc": true
+      }
+    ]
+  },
+  "rows": {
+    "pwsh-sandbox": {
+      "present": true,
+      "disabled": true,
+      "fiberState": null,
+      "name": "@deepseek-ai/dsh-pwsh-sandbox",
+      "missing": []
+    },
+    "pwsh-local": {
+      "present": true,
+      "disabled": false,
+      "fiberState": 2,
+      "name": "@deepseek-ai/dsh-pwsh-local",
+      "missing": []
+    },
+    "permission": {
+      "present": true,
+      "disabled": true,
+      "fiberState": null,
+      "name": "@deepseek-ai/dsh-permission-presets",
+      "missing": []
+    },
+    "ui-permission": {
+      "present": true,
+      "disabled": true,
+      "fiberState": null,
+      "name": "@deepseek-ai/dsh-client-ui-permission-presets",
+      "missing": []
+    },
+    "approval": {
+      "present": true,
+      "disabled": false,
+      "fiberState": 2,
+      "name": "@deepseek-ai/dsh-user-approval",
+      "missing": []
+    },
+    "sandbox": {
+      "present": true,
+      "disabled": false,
+      "fiberState": 2,
+      "name": "@deepseek-ai/dsh-sandbox-local",
+      "missing": []
+    },
+    "sandbox-policy": {
+      "present": true,
+      "disabled": false,
+      "fiberState": 2,
+      "name": "@deepseek-ai/dsh-sandbox-policy",
+      "missing": []
+    }
+  },
+  "modelShellRow": {
+    "present": true,
+    "disabled": true,
+    "fiberState": null,
+    "name": "@deepseek-ai/dsh-tool-pwsh",
+    "missing": []
+  },
+  "modelShellRowIsPending": false,
+  "modelShellRowDisabledByPreset": true,
+  "pwshAbsenceIsIntentional": true,
+  "permissionPresetsServicePresent": false,
+  "permissionPresetsRowPresent": true,
+  "permissionPresetsAbsent": true,
+  "sessionProjectionsServicePresent": true,
+  "shellPresent": true,
+  "shellWasTraceProxy": true,
+  "shellClassName": "PwshLocalExecutor",
+  "shellPrototypeChain": [
+    "PwshLocalExecutor",
+    "ShellExecutor",
+    "Service"
+  ],
+  "shellSandboxMode": null,
+  "shellSandboxModeIsUndefined": true,
+  "shellIsSandboxSubclass": false,
+  "approvalServicePresent": true,
+  "approvalPolicy": "never",
+  "approvalPolicyIsNever": true,
+  "sessionControllerPresent": true,
+  "sessionCreated": true,
+  "sessionId": "session-2e9cc29e-1bff-49f4-bbdd-be20c8ba1aa1",
+  "agentPresent": true,
+  "toolCount": 27,
+  "tools": [
+    "ask_user_question",
+    "create_goal",
+    "edit",
+    "exit_plan_mode",
+    "get_goal",
+    "glob",
+    "grep",
+    "interrupt_agent",
+    "ipython",
+    "job_kill",
+    "job_list",
+    "job_output",
+    "list_agents",
+    "present",
+    "read",
+    "read_image",
+    "send_message",
+    "skill",
+    "subagent",
+    "subagent_fork",
+    "todo_write",
+    "update_goal",
+    "web_fetch",
+    "web_search",
+    "work",
+    "workflow",
+    "write"
+  ],
+  "ipythonToolPresent": true,
+  "pwshToolPresent": false,
+  "nativeFsToolsPresent": [
+    "read",
+    "write",
+    "edit"
+  ],
+  "nativeFsToolsAllPresent": true,
+  "ipythonReplacesPwsh": true,
+  "pwshParameters": [],
+  "pwshEscalationFields": [],
+  "pwshEscalationFieldsAbsent": true,
+  "preAuditAssertions": {
+    "permissionPresetsAbsent": true,
+    "shellSandboxModeUndefined": true,
+    "ipythonPresent": true,
+    "nativeFsToolsPresent": true,
+    "toolCountNonZero": true,
+    "midApplyActivationWarningsZero": true,
+    "pwshAbsenceIsIntentional": true,
+    "modelShellRowNotPending": true,
+    "ipythonReplacesPwsh": true
+  },
+  "postAuditEntryCount": 177,
+  "postAuditInactiveEntries": [],
+  "postAuditActivationWarningCount": 0,
+  "postAuditActivationWarningsZero": true,
+  "postAuditProbeRowState": 2,
+  "postAuditActiveRowCount": 146,
+  "verdict": {
+    "activationWarningsZero": true,
+    "postAuditCheckpointReached": true,
+    "midApplyActivationWarningsZero": true,
+    "permissionPresetsAbsent": true,
+    "shellSandboxModeUndefined": true,
+    "ipythonPresent": true,
+    "nativeFsToolsPresent": true,
+    "toolCountNonZero": true,
+    "pwshAbsenceIsIntentional": true,
+    "modelShellRowNotPending": true,
+    "ipythonReplacesPwsh": true,
+    "noProbeError": true
+  },
+  "allAssertionsPass": true
+}
