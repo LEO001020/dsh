@@ -1,12 +1,11 @@
-// T0 tests only: pure functions, no DSH host, no I/O.
-// Deliberately does NOT import from 'vitest/config' so the config loads without
-// this package having its own node_modules. The runner is invoked from the
-// pinned DSH checkout, whose vitest owns the real dependency closure.
+// T0 + T1 tests. The T1 file boots a real DSH storage domain, so this config
+// must not stub DSH services.
 export default {
   test: {
     include: ['src/**/*.test.ts'],
     environment: 'node',
     pool: 'forks',
     reporters: ['verbose'],
+    testTimeout: 30_000,
   },
 }

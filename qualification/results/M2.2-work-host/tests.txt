@@ -1,0 +1,52 @@
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.8 [39m[90mD:/DSH/work/dsh-native-daily/packages/dsh-daily-work[39m
+
+ [32m✓[39m src/states.test.ts[2m > [22madmission state machine[2m > [22mcovers every declared state in the transition table[32m 2[2mms[22m[39m
+ [32m✓[39m src/states.test.ts[2m > [22madmission state machine[2m > [22mrefuses to leave a terminal state[32m 0[2mms[22m[39m
+ [32m✓[39m src/states.test.ts[2m > [22madmission state machine[2m > [22mthrows a TransitionError carrying the task id[32m 0[2mms[22m[39m
+ [32m✓[39m src/states.test.ts[2m > [22madmission state machine[2m > [22mdoes not let a requested cancel reach a released slot directly[32m 0[2mms[22m[39m
+ [32m✓[39m src/states.test.ts[2m > [22madmission state machine[2m > [22mtreats unknown as slot-holding, never as a free slot[32m 0[2mms[22m[39m
+ [32m✓[39m src/states.test.ts[2m > [22madmission state machine[2m > [22mholds a slot while settling, because the world may still change[32m 0[2mms[22m[39m
+ [32m✓[39m src/states.test.ts[2m > [22madmission state machine[2m > [22mdoes not count a confirmed or cancelled task as holding a slot[32m 0[2mms[22m[39m
+ [32m✓[39m src/states.test.ts[2m > [22mprecise counting[2m > [22mdoes not count an idle child as an active assignment[32m 0[2mms[22m[39m
+ [32m✓[39m src/states.test.ts[2m > [22mprecise counting[2m > [22mcounts a child as active only after observed real work[32m 0[2mms[22m[39m
+ [32m✓[39m src/states.test.ts[2m > [22mprecise counting[2m > [22mreports provider waiting separately from physical execution[32m 0[2mms[22m[39m
+ [32m✓[39m src/states.test.ts[2m > [22mprecise counting[2m > [22mreports tool waiting separately and inside active[32m 0[2mms[22m[39m
+ [32m✓[39m src/states.test.ts[2m > [22mprecise counting[2m > [22mkeeps stopping and unknown holding their slots so N is never pierced[32m 0[2mms[22m[39m
+ [32m✓[39m src/states.test.ts[2m > [22mprecise counting[2m > [22mkeeps a slot reserved by stopping/unknown against a larger target[32m 0[2mms[22m[39m
+ [32m✓[39m src/states.test.ts[2m > [22mprecise counting[2m > [22mnever silently lowers the target when fewer tasks are ready[32m 0[2mms[22m[39m
+ [32m✓[39m src/states.test.ts[2m > [22mprecise counting[2m > [22mnames budget as the deficit reason when the ceiling is reached[32m 0[2mms[22m[39m
+ [32m✓[39m src/states.test.ts[2m > [22mprecise counting[2m > [22madmits up to exactly the ceiling but not past it[32m 0[2mms[22m[39m
+ [32m✓[39m src/states.test.ts[2m > [22mprecise counting[2m > [22mreports budget_blocked and refuses admission from the same predicate[32m 0[2mms[22m[39m
+ [32m✓[39m src/states.test.ts[2m > [22mprecise counting[2m > [22mrefuses admission when the run is paused[32m 0[2mms[22m[39m
+ [32m✓[39m src/states.test.ts[2m > [22mprecise counting[2m > [22mreserves before admitting, so the last credit cannot be double-spent[32m 0[2mms[22m[39m
+ [32m✓[39m src/states.test.ts[2m > [22mprecise counting[2m > [22mcounts confirmed work as done without counting it as a held slot[32m 0[2mms[22m[39m
+ [32m✓[39m src/states.test.ts[2m > [22mprecise counting[2m > [22mreports deficit none when exactly filled[32m 0[2mms[22m[39m
+ [32m✓[39m src/host.test.ts[2m > [22mwork service: admission and reservation[2m > [22mwrites the reservation and the task in one record[32m 14[2mms[22m[39m
+ [32m✓[39m src/host.test.ts[2m > [22mwork service: admission and reservation[2m > [22mrefuses admission past the budget ceiling[32m 6[2mms[22m[39m
+ [32m✓[39m src/host.test.ts[2m > [22mwork service: admission and reservation[2m > [22mrefuses admission while the run is paused[32m 7[2mms[22m[39m
+ [32m✓[39m src/host.test.ts[2m > [22mwork service: admission and reservation[2m > [22mrefuses to reopen a tombstoned task[32m 14[2mms[22m[39m
+ [32m✓[39m src/host.test.ts[2m > [22mwork service: admission and reservation[2m > [22mreleases the reservation on a confirmed transition but not on a requested cancel[32m 15[2mms[22m[39m
+ [32m✓[39m src/host.test.ts[2m > [22mwork service: admission and reservation[2m > [22mrejects an illegal transition instead of quietly accepting it[32m 7[2mms[22m[39m
+ [32m✓[39m src/host.test.ts[2m > [22mwork service: admission and reservation[2m > [22mdoes not mutate the stored record in place[32m 6[2mms[22m[39m
+ [32m✓[39m src/host.test.ts[2m > [22mwork service: rolling top-up[2m > [22mlaunches up to the target and no further[32m 20[2mms[22m[39m
+ [32m✓[39m src/host.test.ts[2m > [22mwork service: rolling top-up[2m > [22mleaves admission as admission: the child is accepted, not executing[32m 10[2mms[22m[39m
+ [32m✓[39m src/host.test.ts[2m > [22mwork service: rolling top-up[2m > [22mreports a deficit instead of inventing work when fewer tasks are ready[32m 19[2mms[22m[39m
+ [32m✓[39m src/host.test.ts[2m > [22mwork service: rolling top-up[2m > [22mtops up a single completion without waiting for the whole wave[32m 33[2mms[22m[39m
+ [32m✓[39m src/host.test.ts[2m > [22mwork service: rolling top-up[2m > [22mcoalesces concurrent drains so a completion storm cannot double-launch[32m 10[2mms[22m[39m
+ [32m✓[39m src/host.test.ts[2m > [22mwork service: rolling top-up[2m > [22mtreats a failed launch as unknown and does not silently retry[32m 10[2mms[22m[39m
+ [32m✓[39m src/host.test.ts[2m > [22mwork service: rolling top-up[2m > [22mdoes not release a slot while a cancel is only requested[32m 13[2mms[22m[39m
+ [32m✓[39m src/host.test.ts[2m > [22mwork service: rolling top-up[2m > [22mstops admitting once the run is paused, even with free slots[32m 6[2mms[22m[39m
+ [32m✓[39m src/host.test.ts[2m > [22mwork service: rolling top-up[2m > [22mresumes a paused run as a new authorization edge[32m 13[2mms[22m[39m
+ [32m✓[39m src/host.test.ts[2m > [22mwork service: rolling top-up[2m > [22mdoes not launch when the caller signal is already aborted[32m 5[2mms[22m[39m
+ [32m✓[39m src/host.test.ts[2m > [22mwork service: rolling top-up[2m > [22mkeeps each run isolated from the others[32m 17[2mms[22m[39m
+ [32m✓[39m src/host.test.ts[2m > [22mwork service: persistence[2m > [22msurvives a reopen of the same domain directory[32m 11[2mms[22m[39m
+ [32m✓[39m src/host.test.ts[2m > [22mwork service: persistence[2m > [22mrejects a second open of the same domain[32m 2[2mms[22m[39m
+ [32m✓[39m src/host.test.ts[2m > [22mwork service: persistence[2m > [22mrefuses writes after close[32m 7[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m2 passed[39m[22m[90m (2)[39m
+[2m      Tests [22m [1m[32m42 passed[39m[22m[90m (42)[39m
+[2m   Start at [22m 11:37:19
+[2m   Duration [22m 577ms[2m (transform 139ms, setup 0ms, import 267ms, tests 252ms, environment 0ms)[22m
+
+test_exit=0
