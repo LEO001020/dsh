@@ -196,145 +196,72 @@ lists every obsolete PASS.
 
 Read `docs/GAPS.md` for the full list. The ones that matter most:
 
-- **The new architecture is partly built, and the part that is missing is the
-  larger part.** An IPython kernel now exists and reaches the model:
-  `packages/dsh-ipython/` is a real bundle with `package.json` +
-  `dsh.bundle.patch`, a `cordis.patch.yml` mounting the kernel service at host
-  level, a compiled `lib/`, an agent-preset row shipping ONE `ipython` tool with
-  ONE `code` parameter, and a passing test suite. A fresh install following
-  `docs/DELIVERY.md` §2, booted from a foreign cwd with a probe that adds **no**
-  row, reports **28 agent-keyed tools** with `ipython` and `work` present and
-  `error: null` (`qualification/results/R9-delivery/surface-r9-verified-fresh-install.json`).
-  **This paragraph replaces an earlier one that said the package had no
-  `package.json`, no `lib/`, no bundle patch and no test — that was true when it
-  was written and is false now.** What is still missing is everything else the new
-  target requires: there is **no `python_exec` tool name**, the shell has **not**
-  left the daily preset (`pwsh` is still in the catalog beside `ipython`), there is
-  no N control in a UI, and there is no hard host-wide 30. The `M11-ipython/` and
-  `M5-lifecycle/` probes remain kernel-mechanics probes with the stated scope "no
-  DSH, no native tools, no LLM" — they are not evidence for any new gate — and
-  **all 112 new cases are `NOT_RUN`** (verified: every one of the 112 entries in
-  `qualification/specs/acceptance-spec.json` carries `"status": "NOT_RUN"`).
-- **The model's execution surface is `pwsh` AND `ipython`, not `python_exec`.**
-  An earlier version of this README said the catalog was 27 tools including `pwsh`
-  and no `python_exec`, and repeated it twice. The 27 is a stale measurement: it
-  came from `M8.5-c2-real-boot/e2e-tool.json`, taken **before** the `ipython` tool
-  row shipped. The current measured catalog is **28 tools including `pwsh` and
-  `ipython`, still with no tool named `python_exec`**. The run to cite is
-  `R9-delivery/surface-r9-verified-fresh-install.json` — a fresh install following
-  `docs/DELIVERY.md` §2, booted from a foreign cwd, with the probe adding no row and
-  its `presetRoots` confirming the home that was booted. Two earlier 28-tool runs
-  exist (`M12-deliverable-surface/surface.json`, `M11-ipython/e2e-tool.json`) and
-  neither is as strong: the first was contaminated by a shared output path
-  (G-FIX-13) and the second got its row from a verification overlay that INSERTED
-  it. The architecture's requirement is that the shell *leave* the daily preset; it
-  has not, so this remains unproven — but the reason is now "the shell is still
-  there", not "there is no kernel".
-- **The production launch port was missing until `2d4534f`.** At the snapshot where
-  this audit started, `WorkService.setLaunchPort` had **zero production callers**:
-  `host-plugin.ts` constructed the service, opened the domain and never installed a
-  port, so on the composed profile a model `submit` recorded a task, transitioned
-  it to `unknown` with the reason `no launch port installed`, and launched nothing.
-  The N=10 suite could not see this, because it installs its own port — a port seam
-  exists precisely so the top-up logic can be driven by a scripted adapter, so
-  every one of those tests passed while the product could not launch a single
-  child. `createRun` now calls `installDefaultLaunchPort(root)`, the bundle patch
-  names `subagentProvider: spawn`, and `production-port.test.ts` (`b8f1ef2`)
-  installs **nothing** and asserts the drain reaches the real `startContinuable`
-  seam. **This is established at the test tier, not the boot tier**: the N=10
-  evidence predates the change and no gate report has been regenerated. See
-  `docs/DELETE-AUDIT.md` §3.2.2.
-- **The Goal handover was also missing its production caller, and is now wired.**
-  `takeContinuation` — the `goals.disarm` handover that makes managed work the
-  single continuation owner — had zero production callers; only `goal.test.ts` and
-  `isolation.test.ts` called it. Those tests passed because they call it
-  **directly**, so they proved the mechanism while the product still had two
-  continuation owners armed on one root. `982e82b` takes it at `createRun` and
-  **stores** the result on the run record (new optional `continuation` field), so a
-  run whose handover never happened is distinguishable from one recorded as "no
-  goal present". **Established at the code and test tier, not the boot tier** — no
-  gate has been regenerated. One gap remains and is named in the audit: nothing
-  *reads* `.continuation` yet, so the field records the handover rather than
-  checking it. See `docs/DELETE-AUDIT.md` §3.2.1 and §2.5.
-- **Two more mechanisms are proven but not called by the product, and one of them
-  is still open.** `docs/DELETE-AUDIT.md` §3.8 records the class: three mechanisms
-  were implemented, well-tested, and unreachable from any production path. Two are
-  now wired (the launch port, the Goal handover). The third is the run `epoch`
-  guard in `recovery.ts` — **still open**, so the `epoch` field is inert in the
-  product. See the epoch entry below.
-- **No live paid N=10 run.** Gate C01 is `BLOCKED_EXTERNAL`:
-  `live_provider_budget_authorized` is false in the lock. A key being present
-  would not authorize large paid evaluation.
-- **Two gates FAIL, measured rather than hidden.** `E01` (credential isolation):
-  a confined child READ a canary secret outside the workspace root verbatim,
-  exit 0, under both `read-only` and `workspace-write` — **the boundary is a WRITE
-  boundary, not a read or egress boundary**, and the seam has no read lever even
-  in principle. `E06` (network egress): a confined child completed a real HTTP
-  round trip under both modes; `web_fetch`'s SSRF guard filters that tool's URL
-  only and is bypassed by any shell command. Both were previously `NOT_RUN`;
-  measuring them moved them to `FAIL`, which understates less.
-- **Terminal framing is forgeable, and the cost is quantified.** A send result
-  carries an identical field list for success and failure with **no verdict
-  field**, so failure is visible only as text. A forged OSC `133;D;0` marker
-  settles the send in **138–185 ms** versus **3025–3135 ms** for the same command
-  answered honestly, while the cell is still sleeping. Framing is a convenience,
-  not an integrity mechanism.
-- **Signal-based interruption silently does nothing under confinement.** Under
-  `workspace-write`, `terminals.signal(..., 'SIGINT')` returns `{delivered: true}`
-  in ~17 ms and the command **runs to completion** (5/5 trials; a 20 s sleep
-  printed its token at 20.1 s). `SIGTERM` behaves the same. The mechanism is a
-  `\x03` input write reaching the ACL runner's console rather than powershell's
-  foreground process. `terminals.kill()` does stop it — at the cost of the session
-  state the persistent PTY existed to provide.
-- **The record's `epoch` field is inert in the product.** `record.ts` documents it
-  as *"bumped when a run is re-adopted by a new host generation. A callback
-  carrying a stale epoch must be rejected rather than silently accepted."* The
-  guard that would do that is real and tested (`applyWorkerSettlement` in
-  `recovery.ts` compares the settlement's epoch to the record's and refuses the
-  write), **but `recovery.ts` is not reachable from any production path**: it has
-  zero non-test importers, is outside the closure of every `package.json` export,
-  and `applyWorkerSettlement` has zero callers outside its own module and its test.
-  Nothing else reads or writes `epoch` after `initialRunRecord` sets it to 1, so
-  nothing bumps it either. What *is* enforced is object identity
-  (`tool-protocol-guards.ts` compares the calling Agent against the live registry),
-  which covers the in-process resume case; a run re-adopted across a **process**
-  boundary has no enforcement today. `tool-protocol-guards.ts:61-67` says exactly
-  this and was right all along. See `docs/DELETE-AUDIT.md` §3.8.1.
-- **A preset is not self-contained, and two presets sharing one composition file
-  share one ESM module instance.** Registrations are per-Session and the tool
-  catalogs stay separate, but module-scope state does not. That is why
-  `src/tools.ts` holds no cross-session state — a measured constraint, not a
-  style preference.
-- **A second host silently destroys the first host's committed work unless
-  `homeLockPath` is configured — and no shipped profile sets it.** Measured: a
-  real second process opens the same live store with no error, its write lands
-  durably, and then the first host's next publish erases it. The kernel-held lock
-  that fixes this (`src/homelock.ts`) is real and proven *when configured*; the
-  default has no cross-process protection.
-- **`ctx.terminals.spawn()` does not resolve under `read-only` sandbox mode on
-  Windows.** It resolves under `workspace-write` (~0.8–1.2 s) and
-  `danger-full-access` (~740 ms). An earlier version of this README said
-  "confined" generally; that was a measurement error from probing a single mode.
-- **A caller-supplied `maxDepth` lifts the deployment depth cap.** It is an
-  absolute cap, not a ceiling, so a larger value admits deeper delegation, and an
-  **omitted** value behaves the same as `99`. This project's own path is
-  unaffected — it passes deployment config and never the model's value — but the
-  workflow/PTC path calls `subagents.start()` with no `maxDepth` at all.
-- **No real coding or research task has been run** under a frozen configuration,
-  so there is no end-to-end quality claim.
-- **The old gate report's evidence is now fully consistent — an earlier claim here
-  was wrong.** This README previously said "124 match, 3 do not", naming T05, T06
-  and T08 as citing `M9.2-terminal-advanced/FINDINGS.md` at `1f1408e7…` against a
-  file that had moved to `615adaad…`. **Re-hashing all 127 evidence references in
-  `qualification/gates.json` against disk gives 127 match, 0 missing, 0 stale.**
-  T05/T06/T08 record `615adaad87d29e3c…`, which is the file's current digest; the
-  `1f1408e7…` value was the older one and the rows had already been regenerated
-  before the claim was written. The correction is recorded as G-VER-05 in
-  `docs/GAPS.md` rather than quietly dropped, because an unverified negative claim
-  is worth as little as an unverified positive one.
-- **The remaining `NOT_RUN` gates are the honest headline.** Run
-  `python qualification/runners/build-gates.py` for the current count; it is
-  derived from evidence on disk and refuses to invent a PASS.
+- **The architecture is built, and the two things still missing are both the same
+  defect: a mechanism that works with nothing in the product that calls it.**
+  Measured on a fresh install following `docs/DELIVERY.md` §2, booted from a
+  foreign cwd, with a probe that adds **no** row
+  (`qualification/results/M12-deliverable-surface/surface-fresh-install.json`):
+  **27 agent-keyed tools**, `ipython` present with the single parameter `code` and
+  it is **the only execution surface** — `pwsh` and `bash` are both absent — and
+  `work` is present with `error: null`. The hard capacity of 30 is implemented and
+  measured **binding in production**: a genuine `startContinuable` call was refused
+  at 30, naming the deployment constant
+  (`qualification/results/T10-capacity/prod-capacity-report.json`).
+
+  **What is missing is reach, and it is two cases of one shape:**
+  1. **No user action creates a run** (`G-SEAM-31`). `WorkService.createRun` has no
+     production caller, so the model-facing `work` tool throws `this session has no
+     active run` and the **mandatory** N=10 rolling top-up cannot be exercised on
+     the composed profile. Every N=10 measurement came from a test that calls
+     `createRun` directly.
+  2. **The Python cell cannot reach a DSH tool** (`G-SEAM-34`). The native bridge
+     (`bridge.ts`, `native-call.ts`) is outside the transitive closure of every
+     package entry point, and `new BridgeServer` has zero production call sites.
+     The FORBIDDEN seam is correctly absent — `ctx.terminalController` appears in no
+     production file — but the sanctioned one is unwired, so today the model's
+     Python has no tool access through either path. Because `ipython` is the only
+     execution surface, this is not academic.
+
+  **This paragraph replaces an earlier one that said the shell had not left the
+  preset and that the catalog still carried `pwsh` beside `ipython`. That was true
+  when written and is false now** — commit `35c829d` disabled the `tool-pwsh` row
+  unconditionally. The count moved 27 → 28 → 27 for two different reasons, and
+  `docs/DELIVERY.md` §8.2 records the sequence, because a count that moves in both
+  directions must never be cited without its composition.
+- **The spec is 109 cases, not 112, and its verdicts are filed in place.** The
+  authoritative file is `qualification/specs/acceptance-spec.trusted-local-v1.json`
+  (`trusted-local-v1`, 109 cases, 11 families). It is a **ledger**: each case
+  carries its own `status` and `evidence`, filed as the case is established, so
+  read the spec itself rather than any count in prose. The frozen as-authored
+  artifact is kept separately at `qualification/specs/frozen/` because the live
+  file's digest changes as verdicts are filed — the pin names the authored
+  artifact, and `helpers/doctor.py` plus `verify-identity.py` both check that.
+  **No PASS is inherited**: the older 104-case report and its 85 PASSes are valid
+  evidence for the OLD identity only.
+- **The deployment is not confined, and one seam still says otherwise.** The
+  execution plane is unconfined — measured: `PwshLocalExecutor`, `LocalFileSystem`,
+  the permission plane disabled, approval policy `never`. But
+  `sandboxPolicy.defaultMode` is **`workspace-write`**, not `danger-full-access`
+  (`G-SEAM-33`), so the model is told a false statement about its own authority and
+  the PTC path still confines. The now-mounted `daily-no-sandbox-contract` row
+  detects this on every boot: it runs 8 deployment checks and its two failures are
+  exactly this and the PTC mode.
+- **A page cursor is refused across a different revision but not across a
+  different store** (`G-SEAM-41`), and the served bytes can hash differently from
+  the descriptor naming them — `pages()` calls `store.openRange` directly and never
+  routes through `resolveReference`'s content check.
+- **Two of the six observation-gap stages have no producer at all**
+  (`G-SEAM-40`), and a transport loss that IS counted in the ipython plane
+  (`droppedFrames`) is never wired into `acquisition.gaps` — the two planes do not
+  meet.
+- **Concurrent `drain` callers over-admit past the target, and `capacityDeficit`
+  reads 0** (`G-SEAM-45`), so the overshoot is invisible to the reader that exists
+  to catch it. Measured with zero real children.
+- **The epoch guard is unreachable** (`G-SEAM-21`), so the run record's `epoch` is
+  inert; and the KERNEL epoch, which does advance, is a different field with the
+  same name (`G-SEAM-43`).
+- **No live paid run.** `live_provider_budget_authorized` is `false`. A key being
+  present would not authorize large paid evaluation.
 
 ## Promotion decision
 
