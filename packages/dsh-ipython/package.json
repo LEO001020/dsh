@@ -1,0 +1,57 @@
+{
+  "name": "dsh-ipython",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Real IPython execution surface for the DSH native daily system: a trusted broker over jupyter_client, a bounded host<->broker protocol, and ONE model-facing `ipython` tool. NOT an official @deepseek-ai package.",
+  "license": "MIT",
+  "main": "lib/host-plugin.js",
+  "exports": {
+    "./host": {
+      "types": "./lib/host-plugin.d.ts",
+      "default": "./lib/host-plugin.js"
+    },
+    "./tool": {
+      "types": "./lib/ipython-tool.d.ts",
+      "default": "./lib/ipython-tool.js"
+    },
+    "./kernel": {
+      "types": "./lib/kernel.d.ts",
+      "default": "./lib/kernel.js"
+    },
+    "./plugin": {
+      "types": "./lib/kernel-plugin.d.ts",
+      "default": "./lib/kernel-plugin.js"
+    },
+    "./protocol": {
+      "types": "./lib/protocol.d.ts",
+      "default": "./lib/protocol.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "lib/**/*.js",
+    "lib/**/*.d.ts",
+    "src/broker.py",
+    "cordis.patch.yml"
+  ],
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  },
+  "peerDependencies": {
+    "@deepseek-ai/cordis": "*",
+    "@deepseek-ai/dsh-agent": "*",
+    "@deepseek-ai/dsh-subprocess": "*",
+    "@deepseek-ai/dsh-tools": "*"
+  },
+  "devDependencies": {
+    "@deepseek-ai/cordis": "*",
+    "@deepseek-ai/dsh-agent": "*",
+    "@deepseek-ai/dsh-subprocess": "*",
+    "@deepseek-ai/dsh-subprocess-local": "*",
+    "@deepseek-ai/dsh-tools": "*",
+    "typescript": "^6.0.3"
+  }
+}

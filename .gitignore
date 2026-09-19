@@ -1,7 +1,12 @@
 # Development-only symlink farm pointing at the pinned DSH checkout.
 # It is an artifact of this machine's layout, not part of the deliverable.
-packages/dsh-daily-work/node_modules/
-packages/dsh-daily-work/lib/
+# BOTH packages need this: the entry was originally written for dsh-daily-work
+# alone, so `packages/dsh-ipython/` stayed wholly untracked -- sources included
+# -- for the entire build. A deliverable package whose source is not in the
+# repository is not a deliverable, and a reader cannot tell an ignored build
+# directory from a missing one.
+packages/*/node_modules/
+packages/*/lib/
 **/.vite-temp/
 
 # Junction farms created inside an evidence directory are the same

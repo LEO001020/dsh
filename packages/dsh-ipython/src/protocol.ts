@@ -1,0 +1,332 @@
+/**
+ * Bounded framing for the host <-> broker control channel.
+ *
+ * WHY THIS EXISTS AT ALL. The broker runs `jupyter_client` and owns the kernel;
+ * the host must be able to start cells, interrupt them, and read their output
+ * without ever sharing a byte stream with the code under test. The kernel's own
+ * `print` output travels on IOPub, which is a lossy publish stream with no
+ * acknowledgement. If control messages were multiplexed onto the same channel,
+ * a cell that floods stdout would delay or corrupt the host's own commands --
+ * the architecture document calls this out explicitly ("不能与用户stdout共享
+ * 未加保护的NDJSON协议").
+ *
+ * So control rides DSH's inherited subprocess control descriptor
+ * (`SUBPROCESS_CONTROL_FD`, fd 7) as its own duplex byte channel, and this
+ * module is the only place that knows the wire shape.
+ *
+ * WHY A LENGTH PREFIX AND NOT NDJSON. NDJSON needs a newline to be
+ * distinguishable from payload, which means either escaping the payload or
+ * accepting that a cell's code cannot contain the delimiter. A 4-byte
+ * big-endian length prefix is unambiguous for arbitrary UTF-8 and lets the
+ * reader reject an oversized frame BEFORE allocating it -- which is the property
+ * that keeps a hostile or merely careless peer from OOMing the other side.
+ *
+ * The bound is enforced in BOTH directions and at both ends. A frame larger than
+ * {@link MAX_FRAME_BYTES} is a protocol violation, not something to truncate:
+ * silently trimming a control message would turn a corrupt request into a
+ * plausible one.
+ */
+
+/** Bytes of big-endian length prefix in front of every frame. */
+export const FRAME_HEADER_BYTES = 4
+
+/**
+ * Largest frame either side will send or accept.
+ *
+ * Cell source is the only field with real size, and 4 MiB is far more than any
+ * cell a model should be writing. The number matters less than its existence:
+ * without it, a reader that trusts the prefix would `read(n)` for whatever the
+ * peer claimed.
+ */
+export const MAX_FRAME_BYTES = 4 * 1024 * 1024
+
+/** A frame that could not be parsed. Never thrown across an await boundary. */
+export class FrameError extends Error {
+  constructor(message: string) {
+    super(message)
+    this.name = 'FrameError'
+  }
+}
+
+/**
+ * Encode one message as a length-prefixed frame.
+ * @param value - any JSON-serializable value; a value that cannot be serialized throws.
+ * @returns the complete frame bytes.
+ */
+export function encodeFrame(value: unknown): Buffer {
+  const payload = Buffer.from(JSON.stringify(value), 'utf8')
+  if (payload.byteLength > MAX_FRAME_BYTES) {
+    throw new FrameError(
+      `frame of ${payload.byteLength} bytes exceeds the ${MAX_FRAME_BYTES}-byte limit`,
+    )
+  }
+  const frame = Buffer.allocUnsafe(FRAME_HEADER_BYTES + payload.byteLength)
+  frame.writeUInt32BE(payload.byteLength, 0)
+  payload.copy(frame, FRAME_HEADER_BYTES)
+  return frame
+}
+
+/**
+ * Incremental decoder for the framing above.
+ *
+ * A stream reader gets arbitrary chunk boundaries, so a frame routinely arrives
+ * split across several chunks and several frames can arrive in one chunk. The
+ * decoder owns that reassembly so no caller has to reason about it.
+ *
+ * `onFrame` is called synchronously for each complete frame. If it throws, the
+ * decoder stops and reports through `onError`: continuing after a consumer
+ * failure would deliver later frames to a handler that already rejected an
+ * earlier one, which is worse than stopping.
+ */
+export class FrameDecoder {
+  private buffer: Buffer = Buffer.alloc(0)
+  private failure: FrameError | undefined
+  private readonly onFrame: (value: unknown) => void
+  private readonly onError: (error: FrameError) => void
+
+  constructor(
+    onFrame: (value: unknown) => void,
+    onError: (error: FrameError) => void,
+  ) {
+    this.onFrame = onFrame
+    this.onError = onError
+  }
+
+  /** True once the decoder has permanently stopped. */
+  get failed(): boolean {
+    return this.failure !== undefined
+  }
+
+  /** Feed one chunk of stream bytes. */
+  push(chunk: Buffer): void {
+    if (this.failure !== undefined) return
+    this.buffer = this.buffer.byteLength === 0 ? chunk : Buffer.concat([this.buffer, chunk])
+    try {
+      this.drain()
+    } catch (error) {
+      const failure = error instanceof FrameError
+        ? error
+        : new FrameError(`frame consumer failed: ${String(error)}`)
+      this.failure = failure
+      this.buffer = Buffer.alloc(0)
+      this.onError(failure)
+    }
+  }
+
+  private drain(): void {
+    for (;;) {
+      if (this.buffer.byteLength < FRAME_HEADER_BYTES) return
+      const length = this.buffer.readUInt32BE(0)
+      // Checked against the declared length BEFORE waiting for the bytes, so an
+      // implausible claim is rejected immediately instead of after buffering.
+      if (length > MAX_FRAME_BYTES) {
+        throw new FrameError(
+          `declared frame length ${length} exceeds the ${MAX_FRAME_BYTES}-byte limit`,
+        )
+      }
+      const end = FRAME_HEADER_BYTES + length
+      if (this.buffer.byteLength < end) return
+      const payload = this.buffer.subarray(FRAME_HEADER_BYTES, end)
+      this.buffer = this.buffer.subarray(end)
+      let parsed: unknown
+      try {
+        parsed = JSON.parse(payload.toString('utf8'))
+      } catch (error) {
+        throw new FrameError(`frame payload is not valid JSON: ${String(error)}`)
+      }
+      this.onFrame(parsed)
+    }
+  }
+}
+
+/** Operations the host may send. */
+export type BrokerOpName =
+  | 'start'
+  | 'execute'
+  | 'interrupt'
+  | 'restart'
+  | 'shutdown'
+  | 'status'
+  | 'kernel_info'
+
+export interface BrokerRequest {
+  /** Host-minted identity; every reply carries it back and nothing else may. */
+  readonly id: string
+  readonly op: BrokerOpName
+  /** Cell source for `execute`. */
+  readonly code?: string
+  /** Host-side cell label used for late-output attribution. */
+  readonly cellId?: string
+  /** Bounds for this cell only; the broker applies its own floor as well. */
+  readonly outputCapBytes?: number
+  readonly timeoutMs?: number
+  readonly interruptGraceMs?: number
+}
+
+/** Outcome of one cell, as the broker established it. */
+export type CellOutcome =
+  /** execute_reply AND the matching idle were both observed. */
+  | 'ok'
+  | 'error'
+  /** Cancelled before the request was handled; the kernel never ran it. */
+  | 'aborted'
+  /** The host asked to stop and the kernel reported KeyboardInterrupt. */
+  | 'interrupted'
+  /** The kernel process is gone. */
+  | 'kernel_died'
+  /** The cell did not settle and the kernel was reset. Nothing is claimed. */
+  | 'unknown'
+
+/** One captured output stream chunk, already bounded by the broker. */
+export interface CapturedOutput {
+  /** Retained text. The HEAD of the stream, not the tail: a truncated traceback
+   * is useless, but a truncated preamble still shows what the cell was doing. */
+  readonly text: string
+  /** Total bytes the broker observed for this cell, including dropped ones. */
+  readonly totalBytes: number
+  /** True when any output was not delivered in full. */
+  readonly truncated: boolean
+  /** File holding what was spilled, when the cap was crossed and a write succeeded. */
+  readonly spillPath?: string
+  /** Frames libzmq refused because one exceeded the socket's maximum message size. */
+  readonly droppedFrames: number
+}
+
+/** A rich display payload, reduced to text. Binary MIME types are not delivered. */
+export interface DisplayOutput {
+  readonly mime: string
+  readonly text: string
+  readonly truncated: boolean
+}
+
+/** Output that arrived after its cell had already settled. */
+export interface LateOutput {
+  /** The cell whose code wrote it -- identified by the ORIGINATING msg_id. */
+  readonly cellId: string
+  readonly text: string
+}
+
+/** The broker's report for one executed cell. */
+export interface CellResult {
+  readonly outcome: CellOutcome
+  readonly stdout: CapturedOutput
+  readonly stderr: CapturedOutput
+  readonly display: readonly DisplayOutput[]
+  readonly error?: {
+    readonly ename: string
+    readonly evalue: string
+    readonly traceback: readonly string[]
+  }
+  /** Kernel epoch this cell ran in. A reset changes it. */
+  readonly epoch: number
+  /** Shell frames whose parent was not this cell; they must never complete it. */
+  readonly foreignFrames: number
+  /** Set when this cell could not run against the previous epoch's state. */
+  readonly generation?: {
+    readonly previousEpoch: number
+    readonly epoch: number
+    readonly reason: string
+    readonly volatileStateLost: true
+  }
+  /** Set when the outcome is `unknown`: what the host must assume, not what it hopes. */
+  readonly unresolved?: string
+}
+
+export interface KernelStatus {
+  readonly alive: boolean
+  readonly epoch: number
+  /** OS pid of the kernel process, for host-side liveness checks. */
+  readonly pid?: number
+  /** The transport actually achieved, read back from the connection file. */
+  readonly transport: string
+  readonly curveKeysPresent: boolean
+  readonly plaintextWarningSeen: boolean
+  readonly ipythonVersion?: string
+  /** The directory the kernel was started in. Read back, not restated from the request. */
+  readonly kernelCwd?: string
+  /**
+   * Whether `KernelManager.start_kernel` accepted `cwd=`.
+   *
+   * False means the kernel's working directory is NOT the one the host asked for,
+   * so every relative path in a cell resolves elsewhere. That is a silent
+   * correctness failure, which is why it is reported rather than assumed.
+   */
+  readonly kernelCwdEnforced?: boolean
+}
+
+export interface BrokerError {
+  readonly code: string
+  readonly message: string
+}
+
+export type BrokerReply =
+  | { readonly id: string; readonly type: 'reply'; readonly ok: true; readonly result: unknown }
+  | { readonly id: string; readonly type: 'reply'; readonly ok: false; readonly error: BrokerError }
+
+/**
+ * Unsolicited broker messages. Late output is the reason this exists: it is
+ * produced by a cell that has already completed, so it has no request to ride.
+ */
+export type BrokerEvent =
+  | { readonly type: 'event'; readonly event: 'kernel_exited'; readonly epoch: number; readonly detail: string }
+  | { readonly type: 'event'; readonly event: 'late_output'; readonly epoch: number; readonly cellId: string; readonly text: string }
+  | { readonly type: 'event'; readonly event: 'diagnostic'; readonly epoch: number; readonly detail: string }
+
+export type BrokerMessage = BrokerReply | BrokerEvent
+
+/** Narrow a decoded value to a broker message, or explain why it is not one. */
+export function asBrokerMessage(value: unknown): BrokerMessage {
+  if (typeof value !== 'object' || value === null) {
+    throw new FrameError('broker message must be an object')
+  }
+  const record = value as Record<string, unknown>
+  const type = record['type']
+  if (type === 'reply') {
+    const id = record['id']
+    if (typeof id !== 'string' || id === '') throw new FrameError('reply is missing a non-empty id')
+    if (record['ok'] === true) {
+      return { id, type: 'reply', ok: true, result: record['result'] }
+    }
+    if (record['ok'] === false) {
+      const raw = record['error']
+      const error = typeof raw === 'object' && raw !== null ? raw as Record<string, unknown> : {}
+      return {
+        id,
+        type: 'reply',
+        ok: false,
+        error: {
+          code: typeof error['code'] === 'string' ? error['code'] : 'BROKER_ERROR',
+          message: typeof error['message'] === 'string' ? error['message'] : 'broker reported a failure',
+        },
+      }
+    }
+    throw new FrameError('reply must carry a boolean ok')
+  }
+  if (type === 'event') {
+    const event = record['event']
+    if (typeof event !== 'string') throw new FrameError('event is missing its name')
+    const epoch = record['epoch']
+    if (typeof epoch !== 'number' || !Number.isInteger(epoch)) {
+      throw new FrameError('event is missing an integer epoch')
+    }
+    if (event === 'late_output') {
+      return {
+        type: 'event',
+        event,
+        epoch,
+        cellId: typeof record['cellId'] === 'string' ? record['cellId'] : '',
+        text: typeof record['text'] === 'string' ? record['text'] : '',
+      }
+    }
+    if (event === 'kernel_exited' || event === 'diagnostic') {
+      return {
+        type: 'event',
+        event,
+        epoch,
+        detail: typeof record['detail'] === 'string' ? record['detail'] : '',
+      }
+    }
+    throw new FrameError(`unknown event name ${JSON.stringify(event)}`)
+  }
+  throw new FrameError(`unknown broker message type ${JSON.stringify(type)}`)
+}

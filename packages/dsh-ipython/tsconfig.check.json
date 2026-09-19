@@ -1,0 +1,22 @@
+{
+  // Type-check config for the WHOLE source tree, tests included.
+  //
+  // Why this file exists: `tsconfig.json` excludes `src/**/*.test.ts` so the
+  // build never emits test code into `lib/`. That exclusion is correct for the
+  // build, but it makes `tsc -p tsconfig.json --noEmit` exit 0 with or without
+  // a test file present -- a false pass for any gate whose evidence is "the
+  // tests type-check". Vitest does not typecheck, so a wrong import in a test
+  // compiles silently and only fails at runtime, if at all.
+  //
+  // This config keeps the identical strict flags and clears only the exclude,
+  // so the build and the check cannot drift. `noEmit` is set here rather than
+  // passed on the command line so the intent survives a copy-paste.
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "declaration": false,
+    "outDir": "./.tscheck-out"
+  },
+  "include": ["src/**/*.ts"],
+  "exclude": []
+}

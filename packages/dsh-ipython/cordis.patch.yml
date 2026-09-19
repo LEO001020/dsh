@@ -1,0 +1,90 @@
+# The dsh-ipython bundle patch.
+#
+# This file is what makes the package a BUNDLE rather than a plain dependency.
+# Without `dsh.bundle.patch` in package.json, `dsh plugin add` installs the code
+# but activates NO layer, and the profile boots with no kernel service at all.
+# That is the exact defect this project already recorded as G-FIX-04, where two
+# gates passed on evidence that only proved direct mounting while the profile had
+# never loaded the plugin.
+#
+# Everything here is ONE explainable difference from the stock composition.
+
+# ---------------------------------------------------------------------------
+# DIFFERENCE 1 (mandatory): mount the kernel service at HOST level.
+# ---------------------------------------------------------------------------
+#
+# WHY HOST LEVEL, and not the preset. Kernel identity is
+# `Session + executionWorld + environmentDigest + kernelEpoch` (architecture
+# section 10), and the registry that maps a Session to its kernel must be a
+# process singleton: two registries over the same kernels would let two callers
+# each believe they own a Session's namespace. A preset's composition is
+# STANDING and mounted once per preset, so a service published there would come
+# and go with whichever presets happen to be mounted, and a host reader would
+# resolve one preset's instance for every session.
+#
+# The kernel also outlives any one Agent incarnation on purpose: a continuable
+# child's activation can end and release its AgentHandle while its Session stays
+# usable, which is why the registry is keyed by Session rather than by Agent.
+# That lifetime is host-plane by construction.
+#
+# CONFIG VALUES ARE HOST POLICY, NOT MODEL POLICY. The model has an `ipython`
+# tool whose only parameter is `code`; it cannot reach this file, cannot restart
+# or evict a kernel, and cannot widen the output cap or the cell timeout. Those
+# are the user's, set here.
+- insert:
+    - id: ipython-kernel-host
+      name: dsh-ipython/host
+      config:
+        # The interpreter that carries jupyter_client + ipykernel. Named
+        # explicitly rather than taken from PATH: a kernel started against a
+        # different Python would be a different environment, and the identity
+        # digest in `KernelService` is derived from this path.
+        pythonExecutable: 'C:/Users/hzq00/AppData/Local/Programs/Python/Python314/python.exe'
+        # The broker is a file in this package, resolved relative to the
+        # package root so a relocated checkout still finds it.
+        brokerScript: 'D:/DSH/work/dsh-native-daily/packages/dsh-ipython/src/broker.py'
+        # Per-Session kernel working directories: connection files, kernel logs
+        # and output spill files land under here.
+        root: 'D:/DSH/work/dsh-native-daily/.ipython-kernels'
+        # Part of the kernel identity. Changing either value invalidates every
+        # live kernel rather than letting a namespace built under one authority
+        # serve another; `KernelService.entryFor` refuses the mismatch.
+        executionWorld: local
+        # Per-cell output cap. A cell that prints more than this is truncated and
+        # the result says so, naming a spill file. 256 KiB is far more than a
+        # model should read and far less than a runaway cell prints.
+        outputCapBytes: 262144
+        # Per-cell wall clock budget. A cell needing longer should be split.
+        cellTimeoutMs: 120000
+        # How long an interrupt may take to settle the cell before the outcome is
+        # declared `unknown` and the kernel reset. MEASURED: a CPU loop settles
+        # ~1.8 s after interrupt, while an await-suspended cell did NOT settle in
+        # 30 s across two interrupts. This is a real boundary, not a retry budget.
+        interruptGraceMs: 5000
+
+# ---------------------------------------------------------------------------
+# NOT inserted here, on purpose: the `ipython` tool row.
+# ---------------------------------------------------------------------------
+#
+# A tool is AGENT-SCOPED. `dsh-ipython/tool` registers into `ctx.tools`, whose
+# layers are keyed by the Agent object, so mounting it at host level would publish
+# into the root realm where no agent's scope sees it -- the model would get a
+# kernel service and no way to call it. The row therefore belongs in an agent
+# PRESET, alongside the other model-facing rows:
+#
+#     - id: ipython-tool
+#       name: dsh-ipython/tool
+#
+# `qualification/results/M11-ipython/` records the preset-side row and the
+# end-to-end probe that proves the tool reaches a real Session's catalog.
+#
+# ---------------------------------------------------------------------------
+# NOT changed here, on purpose.
+# ---------------------------------------------------------------------------
+#
+# - The stock shell, filesystem, subagent and workflow rows stay as shipped. The
+#   kernel does not replace them and this patch does not disable them.
+#
+# - No transport configuration appears here. `transport_encryption='required'` is
+#   a property of the kernel START PATH inside `broker.py`, not a profile setting,
+#   so it cannot be weakened by editing a profile.
