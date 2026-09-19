@@ -679,7 +679,24 @@ confinement boundary.
     an attribution/cancel/audit key only. Evidence: `M5-lifecycle/PROBE-FACTS.md`
     fact 16.
 
-### 8.2 The measured catalog is 28 tools, not 27 — and the difference is `ipython`
+### 8.2 The catalog is 27 tools, and the count moved for a reason worth reading
+
+> **CORRECTED 2026-09-20. This section previously said "28, not 27" and called the
+> 27 stale. That was right when written and is now wrong, because the composition
+> changed again: commit `35c829d` disabled the `tool-pwsh` row UNCONDITIONALLY
+> (the shipped form was `!!js process.platform !== 'win32'`, which leaves PowerShell
+> ON on Windows), so that IPython is the model's only execution surface. The
+> current count on a fresh install is **27**, with `pwsh` ABSENT — and the absence
+> is the point rather than a regression. The historical table below is kept because
+> the sequence is instructive: the count has moved 27 -> 28 -> 27 for two entirely
+> different reasons, and only the LAST move is a deliberate narrowing.**
+
+**The current measurement** (`qualification/results/M12-deliverable-surface/surface-fresh-install.json`,
+fresh install from §2, booted from `C:/Windows/Temp`): `toolCountAgentKey: 27`,
+`ipython` present with `ipythonParameterNames: ["code"]`, **`pwsh` and `bash` both
+absent**, `work` present, `error: null`. The same home was re-installed and
+re-booted a second time from the documented backslash-`DSH_HOME` form and agreed
+(`surface-docform.json`).
 
 Earlier revisions of this manual and of `README.md` recorded the composed
 `daily-standard` catalog as **"27 tools including `pwsh` and no `python_exec`"**,
@@ -706,14 +723,20 @@ so it is now a stale measurement rather than a current one. The number is 28.
 > row**: it is the one whose `presetRoots[1].path` provably names the home that was
 > booted, and whose root is the shipped `ctx.baseUrl` form.
 
-The last row is the one that matters for a reader of this manual: it is an install
-produced by following §2 above, booted from a directory other than the profile's
-own, with the probe adding **no** tool row. It reports
-`presetsListed: standard, ptc, minimal, cordis, daily-standard`,
-`toolCountAgentKey: 28`, `ipythonToolPresent: true`, `workToolPresent: true`,
-`ipythonParameterNames: ["code"]`, `forbiddenLifecycleTools: []`, and
-`error: null`. The earlier 27 is not withdrawn as a measurement of the tree it was
-taken on — it is withdrawn as a description of the current tree.
+**Why the count went 27 -> 28 -> 27, which is two different stories.** The first
+27 was a catalog measured BEFORE the `ipython` tool row shipped, so the number was
+right and incomplete. The 28 was a catalog that had gained `ipython` and still
+carried `pwsh`. The current 27 is a catalog that has `ipython` and has had `pwsh`
+removed on purpose. **So the number alone tells a reader nothing** — which is why
+every row above records `ipython` AND `pwsh` alongside it, and why the current
+claim is stated as "27 with pwsh absent" rather than as "27". A count that moves in
+both directions for different reasons is exactly the kind of value that should
+never be cited without its composition.
+
+Each row is a true measurement of the tree it was taken on. The `M11` row reached
+28 only through a verification overlay that INSERTED the tool row, which is why it
+proves the tool works when a row is present without proving the product carries
+one — the weaker-oracle mistake recorded as G-FIX-04/G-FIX-05/G-FIX-12.
 
 **Both directions are recorded, which is what makes this a measurement rather than
 an assertion.** The same manual, followed the same way, against the *pre-fix*
@@ -726,9 +749,13 @@ That run is kept at
 who wants to know what a silently-broken preset root looks like should read it: the
 host boots, the services mount, and **only the tool count reveals the failure**.
 
-One caveat a reader must not lose: **28 is not a new-spec PASS.** The 112-case
-spec's `IPY-*` family is still `NOT_RUN`; a tool appearing in a catalog proves the
-row is wired, not that the kernel behaviour behind it satisfies its cases.
+One caveat a reader must not lose: **a tool appearing in a catalog is not a spec
+PASS.** A catalog proves the row is wired, not that the behaviour behind it
+satisfies its cases. The trusted-local spec is
+`qualification/specs/acceptance-spec.trusted-local-v1.json` — **109 cases**, whose
+verdicts are filed in place as they are established. At the time of this
+correction 22 were filed (18 PASS / 4 FAIL) and the rest `NOT_RUN`; read the spec
+itself for the current state rather than this sentence, which is a snapshot.
 
 ## 9. How to read the gate report, and what NOT_READY means
 
