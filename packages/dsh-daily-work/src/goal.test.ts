@@ -60,7 +60,7 @@ async function rig(withGoals: boolean): Promise<Rig> {
   const ctx = new Context()
   await mountAgentLoopTestDependencies(ctx)
   await ctx.plugin(AgentLoop, { agents: [] })
-  if (withGoals) await ctx.plugin(GoalService, {})
+  if (withGoals) await ctx.plugin(GoalService)
   await ctx.plugin(Storage, {} as never)
   await ctx.plugin(storageJsonPlugin as never, { root: storeRoot } as never)
   await ctx.plugin(storageDomainPlugin as never, { backend: 'json' } as never)

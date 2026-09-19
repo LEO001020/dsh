@@ -1,4 +1,4 @@
-{"type":"session","sessionId":"session-074f2f4e-7142-4bc9-b7a2-015e7c36fe6f","cwd":"D:\\DSH\\src\\dsh-src"}
+{"type":"session","sessionId":"session-6906de91-2fd6-4cbf-a4e6-999bf9be0612","cwd":"D:\\DSH\\src\\dsh-src"}
 {"type":"status","phase":"turn_start","turn":1}
 {"type":"status","phase":"step_start","turn":1,"step":1}
 {"type":"tool_call","callId":"m914-call","tool":"pwsh","input":{"command":"Write-Output 'M914_OK'","description":"Prove the one-shot runner drives a real tool call."}}

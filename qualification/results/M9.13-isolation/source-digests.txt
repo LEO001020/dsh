@@ -1,0 +1,42 @@
+# Source digests for M9.13 (C12-C18 isolation gates).
+# Taken at the moment tests.txt was produced. Both DSH sources and this
+# project's own sources are listed, because a claim quoted from either is
+# only checkable against a named revision.
+
+== pinned DSH checkout (D:/DSH/src/dsh-src) ==
+c5c63b89c96932070c27e5b14127818cda6efa0d2d56f9a4e50ad757e217956c  packages/subagent/subagent/src/child-agent.ts
+52fe8c33e3becc3c5925ce4c63cfa097dc67158207e50db4622c7b9c15bc9b6f  packages/subagent/subagent/src/depth.ts
+b9224fd93929a54701b22e500837805091132f8d6a7f30c358ae0c58cd4e12de  packages/subagent/subagent/src/continuation.ts
+b7e407e9f25d3057dacd7b7dcd68e8d2fa246d0765c46bcf5ce3963e09a18a61  packages/subagent/subagent/src/continuation-activation.ts
+168c9c1c3237e6995e2162d86aace6b4c74247a8a210f64e997b98eb0dba744f  packages/subagent/subagent/src/index.ts
+9a1f755aece7d541bd84772a0d2894cba003614a442f8dcc1896f8384fb91bee  packages/subagent/subagent/src/types.ts
+d99f9c3e272d48286cbbd6d0cf3eb0820c6b8ad1397168009f784bad37f23d6b  packages/subagent/subagent/src/out-of-process.ts
+0d2f242770626c0a416bd6b41496014d56d6d7449910c5b9f93d080136edb5f9  packages/subagent/subagent/src/continuation-messages.ts
+b8d039899b81553747929f56063b79247bf12bc5d7bfa0c1b2e91d431772baa5  packages/subagent/subagent-in-process-driver/src/index.ts
+0401c302d49b44a779d1e6ba93f817f43a8fe67974840c432d881792ff14fe66  packages/subagent/subagent-spawn-in-process/src/index.ts
+7e6d4ca3e668541f16b660bf06e1557ae4cb069f47b98ca3b0f66751226abb03  packages/subagent/subagent-fork-in-process/src/index.ts
+a7ae3ecd9ec45fe2b2464114e028f7972e6de129b8932c67acbb187878921bff  packages/subagent/subagent-acp/src/index.ts
+ed3d79d58d0e473e48a430d8854d2ebb45909e126ae500d8c330ef9c6ea15156  packages/subagent/tool-subagent/src/index.ts
+e040cf44c7a4c1b74650cc32f67503b8881cc1d5b1f47f1cb38cf0167a9bb3da  packages/core/tools/src/index.ts
+d0ac3509febb04308eff84bc6c949ff3c736dec9fd9f8d230c5d7fa3455ff204  packages/core/agent/src/runtime-types.ts
+333ebc31489619ee083235c5f5ceeb38ac3c6c844b2a0179458058401a6ebf9a  packages/goal/goal/src/index.ts
+378df43535a4ac40d94e6e8b79df12b5dad2c42d572105652faf1efd0b648959  packages/goal/tool-goal/src/index.ts
+c95bc97b84751a2320d456f5e3455912d14d4731944a0afa06bb63a538d39695  packages/goal/tool-goal/src/authority.ts
+bf0838e695c99c9f57549a9dfb45e5e9e52054344234efa1af3d33418541575f  packages/goal/goal-round-driver/src/index.ts
+60890c93aad38b8eed09978c6e4699cefbac33f599dddec83a33e9fb06137868  packages/workflow/workflow-ptc/src/host.ts
+d04e779d9d7c6aac18cdbc7bb4694ea15b2b8ac6df4595a22108ace90c869581  packages/subprocess/subprocess-local/src/index.ts
+d4ba8aeec4427437cf4b7f23d2ea61c3a25becb43ee3944df190eef537a4679d  packages/subprocess/subprocess-local/src/spawn-runner.ts
+220d210e72df9da21a313a70a400e6f5443b17b4a08188f0131bc09167067f63  packages/subprocess/subprocess-local/src/windows-job.ts
+
+== this project (packages/dsh-daily-work/src) ==
+c2ea21b62276a488a5e7fe9a96505af8ae74d490cee772df9dd8a7b2c1f73d86  host.ts
+a364a03a4ecd9b752794e04f4211625671b85dbdf5f17a0fbc5ce7ad7c9a59ce  counting.ts
+e0d9cd752db667b70ca02335662541352d232fc31aebccd5d2eb97a08df38106  record.ts
+e7207ffd46f4aef395d6ff48a8679edca6107a90545716be179280bb49617aa0  states.ts
+bc5cd7f06a437a07f82682241023b0b50f10043df6928d0ebde2ed92dbc85b70  reconcile.ts
+de70463a211cd47e55ac95928f63a374d8e8c669401c4f3b35aee32ede584fff  launch-port.ts
+d04bb64850331c13f7d215d9ce6e3806037eb16c99b30a7bce82a5fe797227d6  tools.ts
+03db45deea31e0f90ac30f633e49c0068a41055806063a6cf2cc3c262528d258  isolation.test.ts
+
+== DSH revision ==
+ddefc45fbc7f8e46dd73185e68295696d1297887

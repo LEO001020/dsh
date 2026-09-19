@@ -84,7 +84,7 @@ function rootStub(sessionId: string): { session: { header: { id: string } } } {
 async function harness(ceiling = 1000): Promise<Harness> {
   const root = await mkdtemp(join(tmpdir(), 'dsh-daily-cost-'))
   const ctx = new Context()
-  await ctx.plugin(Storage, {})
+  await ctx.plugin(Storage)
   await ctx.plugin(storageJsonPlugin as never, { root } as never)
   await ctx.plugin(storageDomainPlugin as never, { backend: 'json' } as never)
   const service = new WorkService(ctx, {
@@ -773,7 +773,7 @@ describe('C11: actual spend exceeding the reservation', () => {
     await h.service.close()
 
     const ctx2 = new Context()
-    await ctx2.plugin(Storage, {})
+    await ctx2.plugin(Storage)
     await ctx2.plugin(storageJsonPlugin as never, { root: h.root } as never)
     await ctx2.plugin(storageDomainPlugin as never, { backend: 'json' } as never)
     const reopened = new WorkService(ctx2, {

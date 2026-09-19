@@ -1,0 +1,11 @@
+{
+  "toolsServicePresent": true,
+  "forgedOwnerDenied": true,
+  "denialReason": "agent \"session-forged-by-probe\" is not the registered agent instance: the session was replaced by a newer lifecycle, so this call carries a stale owner and cannot write authoritative state",
+  "honestPathAllowed": true,
+  "error": null,
+  "atApplyTime": null,
+  "settledAfterMs": 50,
+  "guardMounted": true,
+  "otherToolUntouched": true
+}

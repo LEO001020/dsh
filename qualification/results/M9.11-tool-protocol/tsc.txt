@@ -1,0 +1,5 @@
+tsc --noEmit -p tsconfig.json  (production sources; test files excluded by the project's own tsconfig)
+tsc_exit=0
+
+tsc --noEmit -p tsconfig.tests.tmp.json  (ALL of src/**, including *.test.ts, so the new test file is type-checked too)
+tsc_exit_all_sources=0

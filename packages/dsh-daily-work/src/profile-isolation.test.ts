@@ -221,7 +221,7 @@ async function bootRoster(roots: readonly PresetRoot[], defaultId: string): Prom
   await ctx.plugin(LlmRuntime)
   await ctx.plugin(SessionStore)
   await ctx.plugin(SessionProjectionRegistry)
-  await ctx.plugin(SystemPrompt, {})
+  await ctx.plugin(SystemPrompt)
   await ctx.plugin(ToolRuntime)
   await ctx.plugin(TokenMeter)
   await ctx.plugin(AgentRegistry)
@@ -710,6 +710,39 @@ describe('A07 preset identity: precedence and resolution', () => {
     const ctx = await bootRoster([{ path: root, trust: 'user' }], 'healthy')
     await expect(sessionOn(ctx, 'sess-broken', 'broken')).rejects.toThrow(/failed to mount/)
     expect(ctx.agents.get(SessionId('sess-broken'))).toBeUndefined()
+  })
+
+  it('refuses to mount a shipped preset when the host plane its rows inject is absent', async () => {
+    // A REAL shipped preset names rows that inject HOST services — `fs`,
+    // `shell`, `subprocess`, `jobs`, `skills`, `subagents`, `web`, `commands`,
+    // `userQuestions`. `bootRoster` mounts only the registries a fixture needs,
+    // so those injections never resolve and every dependent row stays pending.
+    //
+    // `mountPreset` requires every enabled row to reach a usable state and
+    // rejects otherwise, so the mount fails with a per-row diagnostic. This is
+    // the finding worth pinning: a preset is NOT self-contained, and a gate
+    // that mounted a shipped preset against a hand-rolled context would be
+    // measuring that context rather than the preset.
+    //
+    // It also shows why A06 uses authored fixtures for the layering question:
+    // the layering rule is about the ROSTER, and the shipped presets drag the
+    // whole host plane into the measurement.
+    const ctx = await bootRoster([{ path: SHIPPED_PRESET_ROOT, trust: 'system' }], 'minimal')
+
+    const failure = await sessionOn(ctx, 'sess-shipped', 'minimal').then(
+      () => undefined,
+      (error: unknown) => error as { message: string },
+    )
+
+    expect(failure).toBeDefined()
+    expect(failure?.message).toContain('preset "minimal" failed to mount')
+    // The diagnostic names the row and the services it is waiting for, which is
+    // what makes this failure actionable rather than mysterious.
+    expect(failure?.message).toMatch(/did not activate/)
+    expect(failure?.message).toMatch(/waiting for/)
+    // The rollback is complete: no half-composed Session is left behind.
+    expect(ctx.agents.get(SessionId('sess-shipped'))).toBeUndefined()
+    expect(livePresetMounts()).toHaveLength(0)
   })
 })
 

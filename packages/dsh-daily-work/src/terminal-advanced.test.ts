@@ -72,9 +72,9 @@ async function rig(): Promise<Rig> {
   await mountAgentLoopTestDependencies(ctx)
   await ctx.plugin(SandboxPolicy as never, { mode: 'danger-full-access' } as never)
   await ctx.plugin(LocalSandboxProvider as never, {} as never)
-  await ctx.plugin(SubprocessRuntime, {})
+  await ctx.plugin(SubprocessRuntime)
   await ctx.plugin(AgentLoop, { agents: [] })
-  await ctx.plugin(TerminalRuntime, {})
+  await ctx.plugin(TerminalRuntime)
   await ctx.plugin(terminalBash as never, { shellDialect: DIALECT, timeoutMs: 300_000 } as never)
   return {
     ctx,
@@ -206,7 +206,8 @@ describe('T05: interrupt on an independent control path', () => {
     // It settled because of the interrupt, not because the sleep expired.
     expect(settleMs).toBeLessThan(6_000)
     measured('T05 settled', `${settled.waitReason} ${JSON.stringify(settled.sessionStatus)} in ${settleMs}ms`)
-    measured('T05 result fields', settled.keys.join(','))
+    // The real field list, read off the live result rather than from the type.
+    measured('T05 result fields', Object.keys(settled).sort().join(','))
 
     await r.ctx.terminals.kill(owner, id, 'test cleanup')
     await r.close()
@@ -240,9 +241,16 @@ describe('T05: interrupt on an independent control path', () => {
 
     // And the shell survived: the interrupt killed the foreground command, not
     // the session. A follow-up cell must still run.
+    //
+    // Read from SCROLLBACK after the cell has had time to produce output, not
+    // from the settle viewport. The viewport at settle can still be showing the
+    // interrupted cell's leftovers — which is the same wait-reason-is-not-
+    // completion point one layer down, and reading it here would make this
+    // assertion fail for a reason that has nothing to do with the interrupt.
     const followUp = await send(r.ctx, owner, id, 'Write-Output ALIVE-AFTER-INTERRUPT')
     expect(WAIT_REASONS).toContain(followUp.waitReason)
-    expect(followUp.viewport).toContain('ALIVE-AFTER-INTERRUPT')
+    await sleep(1_000)
+    expect(scrollback(r.ctx, owner, id)).toContain('ALIVE-AFTER-INTERRUPT')
 
     await r.ctx.terminals.kill(owner, id, 'test cleanup')
     await r.close()
@@ -388,10 +396,10 @@ import * as terminalBash from '@deepseek-ai/dsh-terminal-bash'
 const ctx = new Context()
 await mountAgentLoopTestDependencies(ctx)
 await ctx.plugin(SandboxPolicy, { mode: 'danger-full-access' })
-await ctx.plugin(LocalSandboxProvider, {})
-await ctx.plugin(SubprocessRuntime, {})
+await ctx.plugin(LocalSandboxProvider)
+await ctx.plugin(SubprocessRuntime)
 await ctx.plugin(AgentLoop, { agents: [] })
-await ctx.plugin(TerminalRuntime, {})
+await ctx.plugin(TerminalRuntime)
 await ctx.plugin(terminalBash, { shellDialect: ${JSON.stringify(DIALECT)}, timeoutMs: 300000 })
 const owner = await ctx.agentLoop.create(SessionId('orphan-owner'), {}, {})
 const session = await ctx.terminals.spawn(owner, { type: ${JSON.stringify(BACKEND_TYPE)} })
@@ -511,49 +519,69 @@ describe('T08: error and framing', () => {
     // settles in well under a second, while the command is still sleeping and
     // has produced nothing. That is the whole finding: framing is a READINESS
     // signal, and readiness is not verification.
+    // Two FRESH sessions, one per measurement. An earlier version measured both
+    // in one session with a SIGINT between them, and it flaked: the interrupt's
+    // leftover output and the shell's recovery state made the second measurement
+    // depend on how fast the shell settled down, not on framing. Each session
+    // here has exactly one cell in it, so each number means one thing.
     const r = await rig()
-    const owner = await r.agent('owner-t08b')
-    const session = await r.ctx.terminals.spawn(owner, { type: BACKEND_TYPE })
-    const id = session.sessionId
+    const baselineOwner = await r.agent('owner-t08b-honest')
+    const baselineSession = await r.ctx.terminals.spawn(baselineOwner, { type: BACKEND_TYPE })
+    const forgedOwner = await r.agent('owner-t08b-forged')
+    const forgedSession = await r.ctx.terminals.spawn(forgedOwner, { type: BACKEND_TYPE })
     const lateToken = 'FORGED-LATE'
 
     // Baseline: the same command without the forged marker takes the full
     // duration to settle, because nothing claims readiness early.
     const honest = await send(
       r.ctx,
-      owner,
-      id,
+      baselineOwner,
+      baselineSession.sessionId,
       `Start-Sleep -Seconds 3; Write-Output ${TOKEN('BASELINE-TOKEN')}`,
     )
-    await r.ctx.terminals.signal(owner, id, 'SIGINT')
-    await sleep(500)
 
     const forged = await send(
       r.ctx,
-      owner,
-      id,
+      forgedOwner,
+      forgedSession.sessionId,
       `[Console]::Write([char]27+']133;D;0'+[char]7+'dsh> '); Start-Sleep -Seconds 12; Write-Output ${TOKEN(lateToken)}`,
     )
 
-    // Settled fast, while the 12-second sleep is still running.
-    expect(forged.waitReason).toBe('stdin_read')
-    expect(forged.elapsedMs).toBeLessThan(3_000)
+    // THE CLAIM UNDER TEST is that the forged marker causes a PREMATURE settle,
+    // so the assertion is about timing, not about which reason string came back.
+    //
+    // The bound is derived from the mechanism rather than fitted to an
+    // observation. Without the marker the ONLY path to a settle is the
+    // idle-silence heuristic, which requires idleSilenceMs = 3000 ms of quiet
+    // (terminal-bash/src/config.ts:104). The forged marker instead satisfies the
+    // prompt-readiness branch. A settle under 1500 ms is therefore reachable only
+    // by accepting the forged framing; a regression that stopped accepting it
+    // would settle at ~3000 ms and fail this bound instead of quietly passing.
+    // Observed on this machine: 166-170 ms, so the bound has ~9x headroom.
+    expect(forged.elapsedMs).toBeLessThan(1_500)
+    // Non-success, whatever it reported. The exact reason is recorded rather than
+    // pinned: which non-success reason the poller picks is an implementation
+    // detail the gate does not depend on.
+    expect(WAIT_REASONS).toContain(forged.waitReason)
+    expect(forged.waitReason).not.toBe('session_exit')
     // The A/B control: the baseline command has no forged marker, so nothing
     // claims readiness early and the poller really does wait out the command.
     // Without this, "settled fast" could just be a poller that never waits.
     expect(honest.elapsedMs).toBeGreaterThan(2_500)
 
     // The command had produced nothing at the moment it was reported ready.
-    expect(scrollback(r.ctx, owner, id)).not.toContain(lateToken)
+    expect(scrollback(r.ctx, forgedOwner, forgedSession.sessionId)).not.toContain(lateToken)
     measured('T08 baseline (honest command) elapsedMs', honest.elapsedMs)
+    measured('T08 baseline waitReason', honest.waitReason)
     measured('T08 forged-marker elapsedMs', forged.elapsedMs)
     measured('T08 forged waitReason', forged.waitReason)
 
     // And it was still running: the token arrives once the sleep really ends.
     await sleep(12_000)
-    expect(scrollback(r.ctx, owner, id)).toContain(lateToken)
+    expect(scrollback(r.ctx, forgedOwner, forgedSession.sessionId)).toContain(lateToken)
 
-    await r.ctx.terminals.kill(owner, id, 'test cleanup')
+    await r.ctx.terminals.kill(baselineOwner, baselineSession.sessionId, 'test cleanup')
+    await r.ctx.terminals.kill(forgedOwner, forgedSession.sessionId, 'test cleanup')
     await r.close()
   }, 90_000)
 

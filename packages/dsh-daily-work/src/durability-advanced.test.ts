@@ -83,7 +83,7 @@ const ROOT = { session: { header: { id: 'session-child' } } }
 
 async function boot() {
   const ctx = new Context()
-  await ctx.plugin(Storage, {})
+  await ctx.plugin(Storage)
   await ctx.plugin(storageJson, { root: storeDir })
   await ctx.plugin(storageDomain, { backend: 'json' })
   const service = new WorkService(ctx, Object.assign(

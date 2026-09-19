@@ -136,7 +136,7 @@ async function rig(options: { maxActiveSubagents?: number; maxDepth?: number; wi
   await mountAgentLoopTestDependencies(ctx)
   const persistence = await ctx.plugin(JsonlSessionPersistence, { root: sessionRoot })
   await ctx.plugin(AgentLoop, { agents: [] })
-  if (options.withGoals === true) await ctx.plugin(GoalService, {})
+  if (options.withGoals === true) await ctx.plugin(GoalService)
   await ctx.plugin(SubagentRuntime, {
     maxActiveSubagents: options.maxActiveSubagents ?? 4,
     maxDepth: options.maxDepth ?? 1,
@@ -1059,24 +1059,29 @@ describe('C15: notifications are bounded and no result ref is lost', () => {
     const byTask = new Map(outcomes.map(o => [o.taskId, o]))
     expect(byTask.get('cheap')?.accepted).toBe(true)
     expect(byTask.get('huge')?.accepted).toBe(false)
-    // HONEST LIMIT, asserted rather than papered over: the refusal reason a
-    // drain reports is the RUN-level deficit reason, not a per-request budget
-    // message. `runDrain` reports `counts.deficitReason`, and `explainDeficit`
-    // computes that from the run's TARGET occupancy — it cannot see that THIS
-    // request was individually too large. So the reason here is the slot reason,
-    // which is unhelpful for this particular refusal even though the refusal
-    // itself is correct.
-    expect(byTask.get('huge')?.reason).toBe('slots_held_by_unconfirmed')
-    // The per-request fact IS available from the budget report, which is where a
-    // caller must look to explain this refusal: the headroom is far smaller than
-    // the request. Asserting both keeps the gap visible instead of hiding it
-    // behind a convenient label.
+    // The reason is the BUDGET arm, named as such. The drain reports
+    // `admissionReason(record, counts, request.reservedCost)`, which makes the
+    // same comparison `mayAdmit` makes — including this request's cost — so a
+    // refusal the gate made for budget is never reported as a slot problem. That
+    // shared predicate is the property asserted here: a system whose reason for
+    // a refusal disagrees with its admission gate would report one thing and do
+    // another.
+    expect(byTask.get('huge')?.reason).toBe('budget_blocked')
+    // The run-level `counts().deficitReason` is REQUEST-AGNOSTIC by design: it
+    // passes an outstanding cost of 0, so it answers "is this run short of
+    // capacity in general", not "would this particular request fit". With 1 of 10
+    // slots held and 10 tasks ready, the honest general answer is the slot reason.
+    // Asserting it here is what pins the two questions apart: the per-request
+    // answer came from the gate's own cost, the general answer did not.
+    expect(r.service.counts('run-partial').deficitReason).toBe('slots_held_by_unconfirmed')
+    // The per-request question is also answerable WITHOUT attempting a write,
+    // through the read-only companion that shares the gate.
+    expect(r.service.admissionCheck('run-partial', 10_000).reason).toBe('budget_blocked')
+    expect(r.service.admissionCheck('run-partial', 1).allowed).toBe(true)
+    // And the budget report shows the arithmetic behind it.
     const report = r.service.budget('run-partial')
     expect(report.childHeadroom).toBeLessThan(10_000)
     expect(report.childCommitted).toBe(1)
-    // And the run-level deficit reason is NOT 'budget_blocked', because the run's
-    // budget is not exhausted — only this one request does not fit.
-    expect(r.service.counts('run-partial').deficitReason).toBe('slots_held_by_unconfirmed')
     // The admitted task's ref is intact; the refused one left no task behind.
     const record = r.service.getRun('run-partial')!
     expect(record.tasks['cheap']?.childId).toBe('c-cheap')
@@ -1084,11 +1089,10 @@ describe('C15: notifications are bounded and no result ref is lost', () => {
   })
 
   it('names budget_blocked when the run-level budget really is exhausted', async () => {
-    // The complement of the limit above: when the RUN cannot admit anything more
-    // (committed has reached the child ceiling), `explainDeficit` does report
-    // `budget_blocked`, and that reason is then both correct and specific. So the
-    // gap in the previous test is a reporting gap for ONE request shape, not a
-    // broken budget gate.
+    // The complement: when the RUN cannot admit anything more (committed has
+    // reached the child ceiling), the reason is still `budget_blocked`. Both the
+    // per-request and the run-level shape of the same refusal report the same
+    // arm, which is what makes the reason checkable rather than decorative.
     const r = await rig()
     await r.service.createRun({ runId: 'run-exhausted', root: r.root, authorizationRef: 'auth', targetChildren: 10 })
     r.service.setReadyTasks('run-exhausted', 10)

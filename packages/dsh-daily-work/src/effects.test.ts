@@ -99,10 +99,16 @@ class FakeAdapter implements EffectAdapter {
   readonly kind: string
   readonly capabilities: { readonly idempotencyKey: boolean; readonly queryable: boolean }
 
+  // Declared as a field rather than a constructor parameter property: the
+  // package compiles with `erasableSyntaxOnly`, where a parameter property is
+  // type-directed emit and is rejected outright.
+  readonly remote: CountingRemote
+
   constructor(
-    private readonly remote: CountingRemote,
+    remote: CountingRemote,
     options: { readonly kind?: string; readonly idempotencyKey?: boolean; readonly queryable?: boolean } = {},
   ) {
+    this.remote = remote
     this.kind = options.kind ?? 'deploy'
     this.capabilities = {
       idempotencyKey: options.idempotencyKey ?? true,
@@ -161,7 +167,7 @@ let ledger: EffectLedger
 async function harness(): Promise<Harness> {
   const root = mkdtempSync(join(tmpdir(), 'dsh-daily-effects-'))
   const ctx = new Context()
-  await ctx.plugin(Storage, {})
+  await ctx.plugin(Storage)
   await ctx.plugin(storageJsonPlugin as never, { root } as never)
   await ctx.plugin(storageDomainPlugin as never, { backend: 'json' } as never)
   const open = async (): Promise<EffectLedger> => {

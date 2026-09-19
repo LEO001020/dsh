@@ -128,7 +128,7 @@ function stageCanary(): { workspace: string; outside: string; secretPath: string
 async function mountSandbox(): Promise<{ ctx: Context; sandbox: LocalSandboxProvider }> {
   const ctx = new Context()
   await ctx.plugin(LocalSubprocessRuntime)
-  await ctx.plugin(LocalSandboxProvider, {})
+  await ctx.plugin(LocalSandboxProvider)
   return { ctx, sandbox: ctx.sandbox as LocalSandboxProvider }
 }
 
@@ -379,7 +379,7 @@ async function mountTerminal(mode: string, workspaceRoot: string, startupTimeout
   await ctx.plugin(SandboxPolicyService, { mode, workspaceRoot } as never)
   await ctx.plugin(TerminalSessionService)
   await ctx.plugin(LocalSubprocessRuntime)
-  await ctx.plugin(LocalSandboxProvider, {})
+  await ctx.plugin(LocalSandboxProvider)
   await ctx.plugin(terminalBash as never, {
     backendType: 'shell',
     // pwsh, not bash: `/bin/bash` from Git Bash is not a Windows executable

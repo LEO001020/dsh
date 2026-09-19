@@ -1,37 +1,38 @@
 
 [1m[30m[46m RUN [49m[39m[22m [36mv4.1.8 [39m[90mD:/DSH/work/dsh-native-daily/packages/dsh-daily-work[39m
 
- [32m✓[39m src/profile-isolation.test.ts[2m > [22mA06 preset layering: two presets in parallel Sessions[2m > [22mgives each Session its own composed tool set[32m 54[2mms[22m[39m
- [32m✓[39m src/profile-isolation.test.ts[2m > [22mA06 preset layering: two presets in parallel Sessions[2m > [22mregisters a host-level service once, not once per preset[32m 19[2mms[22m[39m
- [32m✓[39m src/profile-isolation.test.ts[2m > [22mA06 preset layering: two presets in parallel Sessions[2m > [22mkeeps a value written while serving preset A out of preset B[32m 21[2mms[22m[39m
- [32m✓[39m src/profile-isolation.test.ts[2m > [22mA06 preset layering: two presets in parallel Sessions[2m > [22mshares one module instance between two presets naming the SAME file[32m 22[2mms[22m[39m
- [32m✓[39m src/profile-isolation.test.ts[2m > [22mA06 preset layering: two presets in parallel Sessions[2m > [22mgives each Session its own Jobs registry and compaction engine when the presets isolate them[32m 71[2mms[22m[39m
- [32m✓[39m src/profile-isolation.test.ts[2m > [22mA07 preset identity: precedence and resolution[2m > [22mlets an earlier root shadow a later root with the same id[32m 9[2mms[22m[39m
- [32m✓[39m src/profile-isolation.test.ts[2m > [22mA07 preset identity: precedence and resolution[2m > [22mdiscovers a user preset with a unique id alongside the shipped ones[32m 9[2mms[22m[39m
+ [32m✓[39m src/profile-isolation.test.ts[2m > [22mA06 preset layering: two presets in parallel Sessions[2m > [22mgives each Session its own composed tool set[32m 59[2mms[22m[39m
+ [32m✓[39m src/profile-isolation.test.ts[2m > [22mA06 preset layering: two presets in parallel Sessions[2m > [22mregisters a host-level service once, not once per preset[32m 22[2mms[22m[39m
+ [32m✓[39m src/profile-isolation.test.ts[2m > [22mA06 preset layering: two presets in parallel Sessions[2m > [22mkeeps a value written while serving preset A out of preset B[32m 24[2mms[22m[39m
+ [32m✓[39m src/profile-isolation.test.ts[2m > [22mA06 preset layering: two presets in parallel Sessions[2m > [22mshares one module instance between two presets naming the SAME file[32m 23[2mms[22m[39m
+ [32m✓[39m src/profile-isolation.test.ts[2m > [22mA06 preset layering: two presets in parallel Sessions[2m > [22mgives each Session its own Jobs registry and compaction engine when the presets isolate them[32m 77[2mms[22m[39m
+ [32m✓[39m src/profile-isolation.test.ts[2m > [22mA07 preset identity: precedence and resolution[2m > [22mlets an earlier root shadow a later root with the same id[32m 10[2mms[22m[39m
+ [32m✓[39m src/profile-isolation.test.ts[2m > [22mA07 preset identity: precedence and resolution[2m > [22mdiscovers a user preset with a unique id alongside the shipped ones[32m 10[2mms[22m[39m
  [32m✓[39m src/profile-isolation.test.ts[2m > [22mA07 preset identity: precedence and resolution[2m > [22mrefuses a user directory that tries to claim a shipped preset id through the real roster[32m 18[2mms[22m[39m
- [32m✓[39m src/profile-isolation.test.ts[2m > [22mA07 preset identity: precedence and resolution[2m > [22mthrows on an unknown id instead of falling back to the default[32m 11[2mms[22m[39m
- [32m✓[39m src/profile-isolation.test.ts[2m > [22mA07 preset identity: precedence and resolution[2m > [22mrefuses to compose a Session on an unknown preset rather than composing nothing[32m 13[2mms[22m[39m
+ [32m✓[39m src/profile-isolation.test.ts[2m > [22mA07 preset identity: precedence and resolution[2m > [22mthrows on an unknown id instead of falling back to the default[32m 12[2mms[22m[39m
+ [32m✓[39m src/profile-isolation.test.ts[2m > [22mA07 preset identity: precedence and resolution[2m > [22mrefuses to compose a Session on an unknown preset rather than composing nothing[32m 10[2mms[22m[39m
  [32m✓[39m src/profile-isolation.test.ts[2m > [22mA07 preset identity: precedence and resolution[2m > [22mdoes not treat a same-mtime same-size edit as a new generation[32m 5[2mms[22m[39m
- [32m✓[39m src/profile-isolation.test.ts[2m > [22mA07 preset identity: precedence and resolution[2m > [22mkeeps a Session on the generation it joined while a later Session gets a new one[32m 17[2mms[22m[39m
- [32m✓[39m src/profile-isolation.test.ts[2m > [22mA07 preset identity: precedence and resolution[2m > [22mrefuses a preset whose composition names a plugin that cannot be resolved[32m 12[2mms[22m[39m
- [32m✓[39m src/profile-isolation.test.ts[2m > [22mA11 bad session resume: the real built launcher refuses[2m > [22mis the launcher this project qualified, and it is present[32m 122[2mms[22m[39m
- [32m✓[39m src/profile-isolation.test.ts[2m > [22mA11 bad session resume: the real built launcher refuses[2m > [22mrefuses --session-id for a Session that does not exist[33m 1311[2mms[22m[39m
- [32m✓[39m src/profile-isolation.test.ts[2m > [22mA11 bad session resume: the real built launcher refuses[2m > [22mcreates no Session when the requested id does not exist[33m 1398[2mms[22m[39m
- [32m✓[39m src/profile-isolation.test.ts[2m > [22mA11 bad session resume: the real built launcher refuses[2m > [22mrefuses an unknown profile by name[32m 120[2mms[22m[39m
- [32m✓[39m src/profile-isolation.test.ts[2m > [22mA11 bad session resume: the real built launcher refuses[2m > [22mrefuses an unknown profile BEFORE creating any profile directory[32m 112[2mms[22m[39m
- [32m✓[39m src/profile-isolation.test.ts[2m > [22mA11 bad session resume: the real built launcher refuses[2m > [22mrefuses to resume a Session recorded in a different working directory[33m 2943[2mms[22m[39m
- [32m✓[39m src/profile-isolation.test.ts[2m > [22mA11 bad session resume: the real built launcher refuses[2m > [22mproceeds past the session check to the credential check when the resume is valid[33m 3043[2mms[22m[39m
+ [32m✓[39m src/profile-isolation.test.ts[2m > [22mA07 preset identity: precedence and resolution[2m > [22mkeeps a Session on the generation it joined while a later Session gets a new one[32m 18[2mms[22m[39m
+ [32m✓[39m src/profile-isolation.test.ts[2m > [22mA07 preset identity: precedence and resolution[2m > [22mrefuses a preset whose composition names a plugin that cannot be resolved[32m 13[2mms[22m[39m
+ [32m✓[39m src/profile-isolation.test.ts[2m > [22mA07 preset identity: precedence and resolution[2m > [22mrefuses to mount a shipped preset when the host plane its rows inject is absent[32m 40[2mms[22m[39m
+ [32m✓[39m src/profile-isolation.test.ts[2m > [22mA11 bad session resume: the real built launcher refuses[2m > [22mis the launcher this project qualified, and it is present[32m 129[2mms[22m[39m
+ [32m✓[39m src/profile-isolation.test.ts[2m > [22mA11 bad session resume: the real built launcher refuses[2m > [22mrefuses --session-id for a Session that does not exist[33m 1367[2mms[22m[39m
+ [32m✓[39m src/profile-isolation.test.ts[2m > [22mA11 bad session resume: the real built launcher refuses[2m > [22mcreates no Session when the requested id does not exist[33m 1354[2mms[22m[39m
+ [32m✓[39m src/profile-isolation.test.ts[2m > [22mA11 bad session resume: the real built launcher refuses[2m > [22mrefuses an unknown profile by name[32m 148[2mms[22m[39m
+ [32m✓[39m src/profile-isolation.test.ts[2m > [22mA11 bad session resume: the real built launcher refuses[2m > [22mrefuses an unknown profile BEFORE creating any profile directory[32m 168[2mms[22m[39m
+ [32m✓[39m src/profile-isolation.test.ts[2m > [22mA11 bad session resume: the real built launcher refuses[2m > [22mrefuses to resume a Session recorded in a different working directory[33m 2718[2mms[22m[39m
+ [32m✓[39m src/profile-isolation.test.ts[2m > [22mA11 bad session resume: the real built launcher refuses[2m > [22mproceeds past the session check to the credential check when the resume is valid[33m 2970[2mms[22m[39m
  [32m✓[39m src/profile-isolation.test.ts[2m > [22mthe real launcher composes the preset roster into its profile graph[2m > [22mmounts the agent-presets row in the web profile[32m 154[2mms[22m[39m
- [32m✓[39m src/profile-isolation.test.ts[2m > [22mthe real launcher composes the preset roster into its profile graph[2m > [22momits the user patch layer from --dump-default-config and includes it in --dump-config[33m 407[2mms[22m[39m
- [32m✓[39m src/profile-isolation.test.ts[2m > [22mthe real launcher composes the preset roster into its profile graph[2m > [22mrequires --profile rather than guessing one[32m 128[2mms[22m[39m
+ [32m✓[39m src/profile-isolation.test.ts[2m > [22mthe real launcher composes the preset roster into its profile graph[2m > [22momits the user patch layer from --dump-default-config and includes it in --dump-config[33m 449[2mms[22m[39m
+ [32m✓[39m src/profile-isolation.test.ts[2m > [22mthe real launcher composes the preset roster into its profile graph[2m > [22mrequires --profile rather than guessing one[32m 112[2mms[22m[39m
  [32m✓[39m src/profile-isolation.test.ts[2m > [22mthe shipped roster the launcher actually mounts[2m > [22mholds the four shipped presets and no more[32m 14[2mms[22m[39m
- [32m✓[39m src/profile-isolation.test.ts[2m > [22mthe shipped roster the launcher actually mounts[2m > [22mkeeps every shipped composition a real composition, not a truncated file[32m 11[2mms[22m[39m
- [32m✓[39m src/profile-isolation.test.ts[2m > [22mthe shipped roster the launcher actually mounts[2m > [22mrejects a directory name that could escape the preset root[32m 8[2mms[22m[39m
+ [32m✓[39m src/profile-isolation.test.ts[2m > [22mthe shipped roster the launcher actually mounts[2m > [22mkeeps every shipped composition a real composition, not a truncated file[32m 18[2mms[22m[39m
+ [32m✓[39m src/profile-isolation.test.ts[2m > [22mthe shipped roster the launcher actually mounts[2m > [22mrejects a directory name that could escape the preset root[32m 14[2mms[22m[39m
 
 [2m Test Files [22m [1m[32m1 passed[39m[22m[90m (1)[39m
-[2m      Tests [22m [1m[32m26 passed[39m[22m[90m (26)[39m
-[2m   Start at [22m 19:20:28
-[2m   Duration [22m 10.68s[2m (transform 324ms, setup 0ms, import 464ms, tests 10.05s, environment 0ms)[22m
+[2m      Tests [22m [1m[32m27 passed[39m[22m[90m (27)[39m
+[2m   Start at [22m 19:23:55
+[2m   Duration [22m 10.60s[2m (transform 340ms, setup 0ms, import 474ms, tests 9.96s, environment 0ms)[22m
 
 
 test_exit=0

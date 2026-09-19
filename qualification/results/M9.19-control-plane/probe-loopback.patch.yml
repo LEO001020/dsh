@@ -1,0 +1,3 @@
+- insert:
+    - id: verify-e02-loopback
+      name: 'D:/DSH/work/dsh-native-daily/qualification/results/M9.19-control-plane/probe-loopback.mjs'

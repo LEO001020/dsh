@@ -99,8 +99,15 @@
     "required_for": "daily_ready",
     "stimulus": "两个preset并行开Session并使用Jobs/compaction。",
     "oracle": "无host registry重复，无sibling service不可见，无跨Session闭包状态污染。",
-    "status": "NOT_RUN",
-    "note": "Two presets running parallel Sessions with Jobs and compaction has not been exercised."
+    "status": "PASS",
+    "note": "Two presets, parallel Sessions, with the REAL dsh-jobs-local, dsh-tool-jobs and dsh-compaction-basic behind entry-local realms. Registrations are per-Session: distinct tool catalogs, distinct isolated jobs and compaction instances, NO duplicate host registry, and no leak of a value from preset A into preset B. THE TRAP IS REAL BUT NARROWER THAN NAMED: two presets naming the same composition file get ONE ESM MODULE INSTANCE -- the test asserts this by having preset gamma write a module-scope value that preset delta reads back. The tool catalogs stay separate (scoped registrations shadow); the module does not. That is Cordis/ESM semantics rather than a DSH bug, and it is exactly why src/tools.ts holds no cross-session state. Also pinned: a preset is NOT self-contained -- mounting a real shipped preset against a hand-rolled context fails because its rows inject host services, which is why these assertions use authored fixtures.",
+    "deployment_identity": "0ca14d4ee0ebea5eb85a3f72d66f48d839356f1b336c0e4f11f9a4f8ddf2ab7c",
+    "evidence": [
+      {
+        "path": "qualification/results/M9.7-profile-isolation/FINDINGS.md",
+        "sha256": "afc84571723cd3334645fb6211bc0313c8ff3414ba8c6fb3f791aab0bc685e09"
+      }
+    ]
   },
   {
     "id": "A07",
@@ -110,12 +117,16 @@
     "stimulus": "同名shipped/user preset、已有对话尝试切换、同mtime/size改文件。",
     "oracle": "记录真实优先级和拒绝/版本行为；生产不依赖mtime检测作为哈希保证。",
     "status": "PASS",
-    "note": "Shipped preset precedence and the copy-only authoring rule were read from source, and the shipped roster was confirmed at four presets.",
+    "note": "Re-verified end to end through the REAL roster, not just read from source: a shipped preset shadows a same-id user preset (the winner PATH is checked, not only its trust label); a unique user id is discovered alongside the shipped ones; resolve(unknown) throws agent-preset/not-found naming alternatives. The generation stamp is {mtimeMs, size} and is NOT a content hash -- verified by a same-length, same-stamp, different-content write, so production must not rely on it as a hash guarantee.",
     "deployment_identity": "0ca14d4ee0ebea5eb85a3f72d66f48d839356f1b336c0e4f11f9a4f8ddf2ab7c",
     "evidence": [
       {
         "path": "qualification/results/M0.5-c0-resolved-graph/C0-resolved-graph.md",
         "sha256": "980d4fbe72cfb63d593205948bb2851547901d4916c3808d78782924fa09c36a"
+      },
+      {
+        "path": "qualification/results/M9.7-profile-isolation/FINDINGS.md",
+        "sha256": "afc84571723cd3334645fb6211bc0313c8ff3414ba8c6fb3f791aab0bc685e09"
       }
     ]
   },
@@ -182,12 +193,12 @@
     "stimulus": "不存在ID、child ID、cwd不一致、preset不兼容。",
     "oracle": "按上游契约明确拒绝，未静默创建新Session或换目录。",
     "status": "PASS",
-    "note": "Unknown --session-id rejection was read from source and is asserted by the in-tree headless suite that ran.",
+    "note": "Driven against the REAL built launcher, with exit codes and stderr captured. session-id does not exist -> exit 1 with `session \"...\" does not exist; omit --session-id to start a new Session`. Unknown profile -> exit 1 with `profile \"X\" does not exist`. Missing --profile -> exit 1. A resume from a different cwd -> exit 1 naming both directories. Three things make these REFUSALS rather than just error strings, all asserted: $DSH_HOME/sessions is never created for a bad session-id; no profiles/<name> directory is created for a bad profile (the check precedes initProfile); and a POSITIVE CONTROL runs the same command with a real correctly-placed Session, which gets past identity and stops only at MISSING_CREDENTIAL -- so the refusals are not indiscriminate.",
     "deployment_identity": "0ca14d4ee0ebea5eb85a3f72d66f48d839356f1b336c0e4f11f9a4f8ddf2ab7c",
     "evidence": [
       {
-        "path": "qualification/results/M0.4-first-toolcall/A03-first-toolcall.txt",
-        "sha256": "c25e3c7100835f3731f789a76198a0c5650643d2acec3aa8d7e4c70441fecedd"
+        "path": "qualification/results/M9.7-profile-isolation/FINDINGS.md",
+        "sha256": "afc84571723cd3334645fb6211bc0313c8ff3414ba8c6fb3f791aab0bc685e09"
       }
     ]
   },
@@ -268,12 +279,16 @@
     "stimulus": "同SessionId恢复成新Agent，再让旧callback更新。",
     "oracle": "旧对象/epoch拒绝，不能污染新run。",
     "status": "PASS",
-    "note": "Authority is bound to the exact live Agent plus run epoch; reconciliation refuses a mismatched child identity.",
+    "note": "MEASURED: AgentRegistry.resume publishes a NEW Agent object under the SAME id (registry.get(id) === new is true, === old is false, while String(old.id) === String(new.id)). tools.ts resolved a run by STRING comparison, so a superseded object mapped to the run the new lifecycle owns. src/tool-protocol-guards.ts closes it with OBJECT IDENTITY, mirroring DSH's own TerminalSessionService.isLiveOwner and the jobs-local owner check, registered through ctx.tools.guard (the MONOTONIC slot, where no later listener can restore permission). A paired test proves the guard is load-bearing: without it the stale object drives finish and moves the run to closing. SEPARATELY VERIFIED MOUNTED: a real boot probe (M9.21) shows the composed profile mounts the guard row and that it denies a forged owner while leaving an unrelated tool and an ownerless call untouched. LIMIT, stated: the record epoch field is INERT -- nothing reads or writes it after initialRunRecord sets 1 -- so object identity covers an in-process resume and a cross-PROCESS re-adoption has no enforcement today.",
     "deployment_identity": "0ca14d4ee0ebea5eb85a3f72d66f48d839356f1b336c0e4f11f9a4f8ddf2ab7c",
     "evidence": [
       {
-        "path": "qualification/results/M2.2-work-host/tests.txt",
-        "sha256": "0b33ead1a3558b8ef41fdc7335e7227cc60d8c3f0e4f3a58cd26094fee58707b"
+        "path": "qualification/results/M9.11-tool-protocol/FINDINGS.md",
+        "sha256": "b55e196aa97a3ae1c1dcdd4d6065c35bb0525a09d240629d08c0aebe13f3c195"
+      },
+      {
+        "path": "qualification/results/M9.21-guard-mounted/FINDINGS.md",
+        "sha256": "854fd78d1651595bb5e9958224d0765b02656c5b5b4406a2ba533b4aed3a772d"
       }
     ]
   },
@@ -285,12 +300,16 @@
     "stimulus": "同一preset两个root交错调用work。",
     "oracle": "各run任务/额度/取消完全隔离。",
     "status": "PASS",
-    "note": "Two runs in one host keep separate tasks, budgets and pause state; a pause on one does not affect the other.",
+    "note": "Measured rather than described: one livePresetMounts() entry, standingMountFor(a.ctx) === standingMountFor(b.ctx), and tools.get(work, a) === tools.get(work, b) -- the SAME ToolDefinition object for two Sessions. The isolation test interleaves A and B with different targets, ready counts and a pause on one run; tasks, budget and cancellation stay separate, and a read in the OPPOSITE order from the writes excludes a currentRun-style field. The standing-composition trap is real but NARROWER than the plan named it: registrations are per-Session, and it is the ESM MODULE that is shared between two presets naming the same composition file -- which is exactly why src/tools.ts holds no cross-session state.",
     "deployment_identity": "0ca14d4ee0ebea5eb85a3f72d66f48d839356f1b336c0e4f11f9a4f8ddf2ab7c",
     "evidence": [
       {
-        "path": "qualification/results/M2.2-work-host/tests.txt",
-        "sha256": "0b33ead1a3558b8ef41fdc7335e7227cc60d8c3f0e4f3a58cd26094fee58707b"
+        "path": "qualification/results/M9.11-tool-protocol/FINDINGS.md",
+        "sha256": "b55e196aa97a3ae1c1dcdd4d6065c35bb0525a09d240629d08c0aebe13f3c195"
+      },
+      {
+        "path": "qualification/results/M9.7-profile-isolation/FINDINGS.md",
+        "sha256": "afc84571723cd3334645fb6211bc0313c8ff3414ba8c6fb3f791aab0bc685e09"
       }
     ]
   },
@@ -319,12 +338,12 @@
     "stimulus": "后续pre-execute listener试图把deny改allow。",
     "oracle": "最终guard仍拒绝；未把async Promise当作guard返回值。",
     "status": "PASS",
-    "note": "No guard is registered by this project; the tool surface is asserted to expose no authority-widening parameter.",
+    "note": "The guard slot is now USED (see B04), so this gate is about monotonicity rather than absence. An allowing listener registered AFTER the guard, and another with { prepend: true }, both fail to restore permission. An async guard is NOT awaited: the Promise is not undefined so it denies, and it is not JSON so materialization fails -- with the sync-undefined contrast asserted in the same test. A throwing guard fails closed.",
     "deployment_identity": "0ca14d4ee0ebea5eb85a3f72d66f48d839356f1b336c0e4f11f9a4f8ddf2ab7c",
     "evidence": [
       {
-        "path": "qualification/results/M5.1-security-boundaries/SECURITY-BOUNDARIES.md",
-        "sha256": "15949979928d2b92e88d0426f24fb34854e55507d05e28cb3f92c8cae5ea85c9"
+        "path": "qualification/results/M9.11-tool-protocol/FINDINGS.md",
+        "sha256": "b55e196aa97a3ae1c1dcdd4d6065c35bb0525a09d240629d08c0aebe13f3c195"
       }
     ]
   },
@@ -336,12 +355,12 @@
     "stimulus": "tools/result观察器写盘失败。",
     "oracle": "不宣称执行回滚；关键状态通过独立intent/对账保持明确。",
     "status": "PASS",
-    "note": "The record is the authority for admission, not the tools/result observation; reservations are written before any launch.",
+    "note": "Both a synchronous throw and an async rejection leave the tool outcome intact and un-worded with rollback; the failures are LOGGED, so containment is not silence. The ordering that makes it safe is asserted from INSIDE the observer: a durable read already shows the reservation and the task state, so a lost observation cannot erase what was committed.",
     "deployment_identity": "0ca14d4ee0ebea5eb85a3f72d66f48d839356f1b336c0e4f11f9a4f8ddf2ab7c",
     "evidence": [
       {
-        "path": "qualification/results/M2.2-work-host/tests.txt",
-        "sha256": "0b33ead1a3558b8ef41fdc7335e7227cc60d8c3f0e4f3a58cd26094fee58707b"
+        "path": "qualification/results/M9.11-tool-protocol/FINDINGS.md",
+        "sha256": "b55e196aa97a3ae1c1dcdd4d6065c35bb0525a09d240629d08c0aebe13f3c195"
       }
     ]
   },
@@ -391,8 +410,8 @@
     "stimulus": "root提交至少20项独立真实任务，配置N=10。",
     "oracle": "确认十个不同child承担真实工作；root不计入；live provider gate有授权。",
     "status": "BLOCKED_EXTERNAL",
-    "note": "Ten children ARE admitted through the real startContinuable seam on the production loop with a scripted provider. The LIVE paid N=10 run is blocked: live_provider_budget_authorized is false.",
-    "blocking_reason": "Ten children ARE admitted through the real startContinuable seam on the production loop with a scripted provider. The LIVE paid N=10 run is blocked: live_provider_budget_authorized is false."
+    "note": "T1 MEASURED, T5 BLOCKED. At T1: 20 tasks submitted against target N=10; ten admitted and ten refused; ten DISTINCT children each reach a real model request in their own durable Session, each status running, each delegationDepthOf() === 1 with origin subagent and the root as durable parent. The root is partitioned OUT of the ten, proven by a second case. T5 (a live paid run) stays BLOCKED_EXTERNAL: live_provider_budget_authorized is false, and a key being present would not authorize paid evaluation.",
+    "blocking_reason": "T1 MEASURED, T5 BLOCKED. At T1: 20 tasks submitted against target N=10; ten admitted and ten refused; ten DISTINCT children each reach a real model request in their own durable Session, each status running, each delegationDepthOf() === 1 with origin subagent and the root as durable parent. The root is partitioned OUT of the ten, proven by a second case. T5 (a live paid run) stays BLOCKED_EXTERNAL: live_provider_budget_authorized is false, and a key being present would not authorize paid evaluation."
   },
   {
     "id": "C02",
@@ -402,12 +421,16 @@
     "stimulus": "九项仍运行时一项结束。",
     "oracle": "不等待整波结束；在冻结SLO内启动replacement，保存时间线。",
     "status": "PASS",
-    "note": "One confirmed completion admits exactly one replacement without waiting for the wave.",
+    "note": "Re-measured with a timeline: nine held while one settles, confirming the settled task frees ONE slot, filled by exactly one replacement that reaches its own model request while the original nine are still held. Measured refill latency (confirmation -> replacement admitted) is 19-25 ms across runs; admitted -> first model request is 0 ms. NO numeric SLO is asserted, because none is frozen anywhere in this repository -- asserting one would make the test the author of its own standard.",
     "deployment_identity": "0ca14d4ee0ebea5eb85a3f72d66f48d839356f1b336c0e4f11f9a4f8ddf2ab7c",
     "evidence": [
       {
         "path": "qualification/results/M3.2-N10-concurrency/tests.txt",
         "sha256": "7d5a4cefb5405e53815b34cd329fd04977e3ba71408a3a47f457d5f822284d9b"
+      },
+      {
+        "path": "qualification/results/M9.12-scheduling/FINDINGS.md",
+        "sha256": "9da6c41a21a2e838e16a4832f3a2346d9e1247bf070be47a8e53de9161a8e407"
       }
     ]
   },
@@ -419,12 +442,16 @@
     "stimulus": "多个child在同一个事件循环间隔完成。",
     "oracle": "无重复launch、超发或遗漏补位；coalesced drain可重复触发。",
     "status": "PASS",
-    "note": "Two concurrent drains on one free slot produce exactly one child; the drain is coalesced.",
+    "note": "Three concurrent drains, three slots freed in one interval, three refill drains: exactly three admitted, no duplicate, no overshoot, and the coalesced drain re-triggers successfully afterwards. FINDING that came out of it: listChildren is a DURABLE ENUMERATION, not an occupancy count -- a disposed child still appears with activity inactive and it reported 13 children where only 10 slots were held. Occupancy must come from the live registry or the run record.",
     "deployment_identity": "0ca14d4ee0ebea5eb85a3f72d66f48d839356f1b336c0e4f11f9a4f8ddf2ab7c",
     "evidence": [
       {
         "path": "qualification/results/M3.2-N10-concurrency/tests.txt",
         "sha256": "7d5a4cefb5405e53815b34cd329fd04977e3ba71408a3a47f457d5f822284d9b"
+      },
+      {
+        "path": "qualification/results/M9.12-scheduling/FINDINGS.md",
+        "sha256": "9da6c41a21a2e838e16a4832f3a2346d9e1247bf070be47a8e53de9161a8e407"
       }
     ]
   },
@@ -452,8 +479,15 @@
     "required_for": "daily_ready",
     "stimulus": "child用满自己的provider连接名额。",
     "oracle": "root仍能取得保留credit，完成结果整合与补任务。",
-    "status": "NOT_RUN",
-    "note": "Root credit reservation under child saturation has not been exercised against a real provider quota."
+    "status": "PASS",
+    "note": "CLOSED at the ARITHMETIC level; the provider-quota half stays NOT_RUN (no provider authorized). The invariant added and asserted: for every reachable state, spent + reserved + unknownReserved <= ceiling - rootReserve, so the root always retains at least rootReserve - rootSpent of its own credit however many children were admitted. rootReserve is CARVED OUT of the ceiling at createRun rather than added beside it (default 1/10, capped at 20), and one subtraction in childCeiling is read by BOTH the gate (mayAdmit) and the reported reason, so a refusal and its stated reason cannot drift. Boundary-tested: ceiling 100 / reserve 10, a child asking 91 is refused with a reason naming all four numbers.",
+    "deployment_identity": "0ca14d4ee0ebea5eb85a3f72d66f48d839356f1b336c0e4f11f9a4f8ddf2ab7c",
+    "evidence": [
+      {
+        "path": "qualification/results/M9.6-cost/FINDINGS.md",
+        "sha256": "a94bbfff8aa472e2a3e3fb7270c215ade2e0c2fed04e596e2132dfc03a6ae09c"
+      }
+    ]
   },
   {
     "id": "C06",
@@ -480,7 +514,7 @@
     "stimulus": "SIGTERM/interrupt已发送但child或其进程仍运行。",
     "oracle": "slot仍占用/隔离，未提前补位导致超发。",
     "status": "PASS",
-    "note": "A cancel that is only requested still holds its slot and its credit; asserted both in the counting tests and against the real registry.",
+    "note": "Interrupt sent, child still running: the slot is held, the credit is held, and a premature refill is refused; only a confirmed cancelled frees it. holdsSlot(cancel_requested) and holdsSlot(unknown) are both asserted true against src/states.ts, which is the single source of truth for occupancy.",
     "deployment_identity": "0ca14d4ee0ebea5eb85a3f72d66f48d839356f1b336c0e4f11f9a4f8ddf2ab7c",
     "evidence": [
       {
@@ -490,6 +524,10 @@
       {
         "path": "qualification/results/M8.2-lifecycle-gates/FINDINGS.md",
         "sha256": "18196b0517ec809a9db7b5181b1da6199f18c6129205778bc5719aea1e938431"
+      },
+      {
+        "path": "qualification/results/M9.12-scheduling/FINDINGS.md",
+        "sha256": "9da6c41a21a2e838e16a4832f3a2346d9e1247bf070be47a8e53de9161a8e407"
       }
     ]
   },
@@ -518,12 +556,16 @@
     "stimulus": "429、RPM/TPM不足、网络错误持续出现。",
     "oracle": "有界backoff与真实blocked理由，不将等待包装成执行10，不无限重试。",
     "status": "PASS",
-    "note": "Driven through the real HTTP/SSE mock server: 429, 500 and 401 are all produced on the wire, a 429 keeps the target at 10 and reports a deficit rather than lowering N, and an exhausted script fails loudly instead of silently succeeding.",
+    "note": "A real mock HTTP/SSE server returns 429 with Retry-After; with the real llm-retry mounted, EXACTLY 3 attempts per child and then a stop, with no further attempts after waiting. The target stays 10 and no silent downgrade to 8 occurs. PROPOSED GAP (not yet placed in GAPS.md): under sustained 429, deficitReason reads none and capacityDeficit reads 0 because all ten slots are held -- a reader consulting deficitReason ALONE sees a healthy full wave while nothing executes and DSH holds zero resident children. The block is visible only via activeAssignments 0 plus ten held slots.",
     "deployment_identity": "0ca14d4ee0ebea5eb85a3f72d66f48d839356f1b336c0e4f11f9a4f8ddf2ab7c",
     "evidence": [
       {
         "path": "qualification/results/M8.3-wire-faults/FINDINGS.md",
         "sha256": "b4bc78c516e5019cd5405b88a73fa7a2e21eaaede126969126bcb9ad753cad68"
+      },
+      {
+        "path": "qualification/results/M9.12-scheduling/FINDINGS.md",
+        "sha256": "9da6c41a21a2e838e16a4832f3a2346d9e1247bf070be47a8e53de9161a8e407"
       }
     ]
   },
@@ -551,8 +593,15 @@
     "required_for": "daily_ready",
     "stimulus": "实际usage超过预留或aux请求账单出现。",
     "oracle": "记录实际超支/未知并暂停新增，不删账单保持绿色。",
-    "status": "NOT_RUN",
-    "note": "Actual spend exceeding the reservation has not been observed; no live provider."
+    "status": "PASS",
+    "note": "CLOSED at the arithmetic level; the real-billing half stays NOT_RUN. Reserve 1, actual 3: spent records 3 IN FULL, overage 2 is part of spent rather than beside it, a halt is set, and admission is refused on both admit and drain with budget_overage_halt, DISTINCT from budget_blocked. The halt is sticky -- resume does not clear it, only resolveHalt (a human edge) -- and the bill survives, so nothing is deleted to keep the report green. Unknown-usage path: with a task, the amount MOVES reserved -> unknownReserved (total unchanged, clamped to that task own reservation); without a task it is ADDED, which can only tighten. Nothing is zeroed either way.",
+    "deployment_identity": "0ca14d4ee0ebea5eb85a3f72d66f48d839356f1b336c0e4f11f9a4f8ddf2ab7c",
+    "evidence": [
+      {
+        "path": "qualification/results/M9.6-cost/FINDINGS.md",
+        "sha256": "a94bbfff8aa472e2a3e3fb7270c215ade2e0c2fed04e596e2132dfc03a6ae09c"
+      }
+    ]
   },
   {
     "id": "C12",
@@ -685,12 +734,16 @@
     "stimulus": "intent/credit/outbox写入前后分别crash。",
     "oracle": "不存在task已接纳而credit未预留；不存在虚构跨key事务。",
     "status": "PASS",
-    "note": "Task state, credit reservation and outbox move in one record transform; no cross-key transaction is claimed.",
+    "note": "Task state, credit reservation and outbox move in ONE record transform; no cross-key transaction is claimed. Re-verified with a barrier simulation across the pre- and post-write windows: there is never a task admitted with credit unreserved. The honest scope is stated: KvTable.update() gives PER-RECORD atomicity only, and the window is defined by a claim CONTENT rather than by what survived a kill.",
     "deployment_identity": "0ca14d4ee0ebea5eb85a3f72d66f48d839356f1b336c0e4f11f9a4f8ddf2ab7c",
     "evidence": [
       {
         "path": "qualification/results/M2.2-work-host/tests.txt",
         "sha256": "0b33ead1a3558b8ef41fdc7335e7227cc60d8c3f0e4f3a58cd26094fee58707b"
+      },
+      {
+        "path": "qualification/results/M9.15-durability-records/FINDINGS.md",
+        "sha256": "9685505d88973ef5422256a7fe1230e69c56dbb3abf953a21073d9ac93935cb9"
       }
     ]
   },
@@ -704,7 +757,12 @@
     "status": "PASS",
     "note": "MEASURED, and the measurement is the alarming part: a REAL second Node process opens the same live store with NO error, its write lands durably, and then the first host's next publish ERASES it. Nothing upstream refuses; last-completion-wins exactly as the backend README says. So a second host can destroy committed work while the first never learns it existed. A cheap honest guard was added (homeLockPath config -> lockfile carrying pid/hostname/token, claimed via link() so check-and-claim is one atomic step) and proven with an independent probe: a real second process is refused while the first is live, the store is untouched, and the error names the holder. With homeLockPath unset -- the DEFAULT -- the deployment boundary remains the only protection, and the code says so.",
     "deployment_identity": "0ca14d4ee0ebea5eb85a3f72d66f48d839356f1b336c0e4f11f9a4f8ddf2ab7c",
-    "evidence": []
+    "evidence": [
+      {
+        "path": "qualification/results/M9.4-durability-advanced/FINDINGS.md",
+        "sha256": "9de520b27a1e26dde3afc32f3f5a2ee4286db8811c1942ed4de092bc818f10b4"
+      }
+    ]
   },
   {
     "id": "D03",
@@ -714,7 +772,7 @@
     "stimulus": "durable task+childId已写，startContinuable尚未调用。",
     "oracle": "只启动一次原childId对应assignment。",
     "status": "PASS",
-    "note": "A reservation that provably never launched returns to prepared; the only path back, and it needs positive proof.",
+    "note": "Real SIGKILL on a forked Node child, with the exit SIGNAL asserted rather than the kill() return value. A reservation that provably never launched returns to prepared, and it is the only path back, requiring positive proof. A REAL GAP was found here and fixed in a new file: reconciliation could return a task to prepared but NOTHING could act on it -- drain calls admit, and admit refuses a task that still holds its slot (prepared IS slot-holding), so a reconciled task would have sat forever while the run reported a capacity deficit. The refusal is asserted as a fact and resolved by relaunchPrepared.",
     "deployment_identity": "0ca14d4ee0ebea5eb85a3f72d66f48d839356f1b336c0e4f11f9a4f8ddf2ab7c",
     "evidence": [
       {
@@ -724,6 +782,10 @@
       {
         "path": "qualification/results/M2.2-work-host/tests.txt",
         "sha256": "0b33ead1a3558b8ef41fdc7335e7227cc60d8c3f0e4f3a58cd26094fee58707b"
+      },
+      {
+        "path": "qualification/results/M9.15-durability-records/FINDINGS.md",
+        "sha256": "9685505d88973ef5422256a7fe1230e69c56dbb3abf953a21073d9ac93935cb9"
       }
     ]
   },
@@ -735,7 +797,7 @@
     "stimulus": "child已接纳，parent还未保存返回结果时崩溃。",
     "oracle": "对账同childId；DUPLICATE_CHILD不换ID重复执行。",
     "status": "PASS",
-    "note": "A reserved id with no trace becomes unknown and is explicitly NOT relaunched; DUPLICATE_CHILD is rethrown unchanged.",
+    "note": "Real SIGKILL. A reserved id with no trace becomes unknown and is explicitly NOT relaunched; DUPLICATE_CHILD is rethrown unchanged rather than switching to a fresh id.",
     "deployment_identity": "0ca14d4ee0ebea5eb85a3f72d66f48d839356f1b336c0e4f11f9a4f8ddf2ab7c",
     "evidence": [
       {
@@ -745,6 +807,10 @@
       {
         "path": "qualification/results/M2.2-work-host/tests.txt",
         "sha256": "0b33ead1a3558b8ef41fdc7335e7227cc60d8c3f0e4f3a58cd26094fee58707b"
+      },
+      {
+        "path": "qualification/results/M9.15-durability-records/FINDINGS.md",
+        "sha256": "9685505d88973ef5422256a7fe1230e69c56dbb3abf953a21073d9ac93935cb9"
       }
     ]
   },
@@ -756,12 +822,16 @@
     "stimulus": "在pending inbox有消息时强制杀host。",
     "oracle": "使用原生agent/inbox/spliced恢复，不重复注入。",
     "status": "PASS",
-    "note": "A pending prompt is left to native Inbox recovery; no duplicate delivery is made.",
+    "note": "Real SIGKILL, and the method is load-bearing: a GRACEFUL teardown DESTROYS the fact under test, because Agent.cancel calls inbox.clear() unless keepInbox (agent-loop/src/agent.ts:149-152) and the lifecycle disposer issues exactly that cancel. Only SIGKILL preserves the pending inbox. The restored message comes from DSH own agent/inbox/spliced fold via sessionProjections.stateOf(session, inbox), and the projection THROWS on a duplicate id, so double-injection cannot even be represented.",
     "deployment_identity": "0ca14d4ee0ebea5eb85a3f72d66f48d839356f1b336c0e4f11f9a4f8ddf2ab7c",
     "evidence": [
       {
         "path": "qualification/results/M4.1-process-kill/report-final.json",
         "sha256": "006429518b3ce8f4bf6f28ea7146ae06633fb4f06affc5dab4a951780d24a0c4"
+      },
+      {
+        "path": "qualification/results/M9.15-durability-records/FINDINGS.md",
+        "sha256": "9685505d88973ef5422256a7fe1230e69c56dbb3abf953a21073d9ac93935cb9"
       }
     ]
   },
@@ -773,12 +843,16 @@
     "stimulus": "claim已写而pre-step/request未实际发出。",
     "oracle": "区分已取走与已执行；按源事实恢复或明确unknown，不盲当完成。",
     "status": "PASS",
-    "note": "Claim with no request confirmation resolves to accepted rather than being called done.",
+    "note": "Real SIGKILL. Claim with no request confirmation resolves to accepted rather than being called done, so taken and executed stay distinguishable.",
     "deployment_identity": "0ca14d4ee0ebea5eb85a3f72d66f48d839356f1b336c0e4f11f9a4f8ddf2ab7c",
     "evidence": [
       {
         "path": "qualification/results/M4.1-process-kill/report-final.json",
         "sha256": "006429518b3ce8f4bf6f28ea7146ae06633fb4f06affc5dab4a951780d24a0c4"
+      },
+      {
+        "path": "qualification/results/M9.15-durability-records/FINDINGS.md",
+        "sha256": "9685505d88973ef5422256a7fe1230e69c56dbb3abf953a21073d9ac93935cb9"
       }
     ]
   },
@@ -790,7 +864,7 @@
     "stimulus": "provider已接收但connection lost/host crash。",
     "oracle": "unknown usage/effect，不自动当未收费/未执行。",
     "status": "PASS",
-    "note": "A request with no terminal turn is unknown with the reservation held; an error outcome is also unknown. Driven against a real stream disconnect and a real stalled request, and every fault-shaped evidence record resolves to unknown or a conservative earlier state, never to a released slot.",
+    "note": "Real SIGKILL, plus real wire faults. A request with no terminal turn is unknown with the reservation held; an error outcome is also unknown. Driven against a real stream disconnect and a real stalled request, and every fault-shaped evidence record resolves to unknown or a conservative earlier state, never to a released slot.",
     "deployment_identity": "0ca14d4ee0ebea5eb85a3f72d66f48d839356f1b336c0e4f11f9a4f8ddf2ab7c",
     "evidence": [
       {
@@ -800,6 +874,10 @@
       {
         "path": "qualification/results/M8.3-wire-faults/FINDINGS.md",
         "sha256": "b4bc78c516e5019cd5405b88a73fa7a2e21eaaede126969126bcb9ad753cad68"
+      },
+      {
+        "path": "qualification/results/M9.15-durability-records/FINDINGS.md",
+        "sha256": "9685505d88973ef5422256a7fe1230e69c56dbb3abf953a21073d9ac93935cb9"
       }
     ]
   },
@@ -811,12 +889,16 @@
     "stimulus": "child产物已持久化但parent notice失败。",
     "oracle": "从child Session/产物对账找回，不重复任务。",
     "status": "PASS",
-    "note": "A completed turn goes to settling, never confirmed; a lost parent notice is not treated as a child failure.",
+    "note": "Real SIGKILL. A completed turn goes to settling, never confirmed; a lost parent notice is not treated as a child failure, and recovery finds the work from the child Session rather than repeating the task.",
     "deployment_identity": "0ca14d4ee0ebea5eb85a3f72d66f48d839356f1b336c0e4f11f9a4f8ddf2ab7c",
     "evidence": [
       {
         "path": "qualification/results/M4.1-process-kill/report-final.json",
         "sha256": "006429518b3ce8f4bf6f28ea7146ae06633fb4f06affc5dab4a951780d24a0c4"
+      },
+      {
+        "path": "qualification/results/M9.15-durability-records/FINDINGS.md",
+        "sha256": "9685505d88973ef5422256a7fe1230e69c56dbb3abf953a21073d9ac93935cb9"
       }
     ]
   },
@@ -828,7 +910,7 @@
     "stimulus": "尾部不完整记录/flush错误。",
     "oracle": "采用上游repair契约，明确未知与从未开始；不手工抹掉错误事实。",
     "status": "PASS",
-    "note": "Reconciliation never replays and never releases a slot, asserted over every state; an end event alone also does not release one.",
+    "note": "REAL FILE DAMAGE rather than a simulation: a session log torn with an incomplete trailing record, then resumed, using the upstream repair contract. Reconciliation never replays and never releases a slot, asserted over every state; an end event alone also does not release one. SIGKILL proves SURVIVAL, not fsync ordering -- Windows skips the directory fsync by design, which is stated rather than implied.",
     "deployment_identity": "0ca14d4ee0ebea5eb85a3f72d66f48d839356f1b336c0e4f11f9a4f8ddf2ab7c",
     "evidence": [
       {
@@ -838,6 +920,10 @@
       {
         "path": "qualification/results/M8.2-lifecycle-gates/FINDINGS.md",
         "sha256": "18196b0517ec809a9db7b5181b1da6199f18c6129205778bc5719aea1e938431"
+      },
+      {
+        "path": "qualification/results/M9.15-durability-records/FINDINGS.md",
+        "sha256": "9685505d88973ef5422256a7fe1230e69c56dbb3abf953a21073d9ac93935cb9"
       }
     ]
   },
@@ -849,12 +935,16 @@
     "stimulus": "重启后旧worker仍提交settlement。",
     "oracle": "拒绝权威写入，保留diagnostic evidence。",
     "status": "PASS",
-    "note": "The record carries a run epoch and reconciliation refuses a mismatched child identity.",
+    "note": "CORRECTED EVIDENCE. The previous note said the record carries a run epoch and that reconciliation refuses a mismatched identity -- the epoch half was NOT enforced: nothing read or wrote it after initialRunRecord set 1. The agent caught this, and also caught its OWN first test being tautological (it hand-rolled staleClaim.epoch === record.epoch, asserting its own arithmetic rather than the system). A real guard now refuses a stale-generation settlement, with diagnostic evidence going to a SEPARATE domain (dsh_daily_work_refusals) so a refusal can never be mistaken for authority or take the run record write chain. LIMIT: object identity and this guard cover the in-process case; a cross-process re-adoption still has no epoch enforcement.",
     "deployment_identity": "0ca14d4ee0ebea5eb85a3f72d66f48d839356f1b336c0e4f11f9a4f8ddf2ab7c",
     "evidence": [
       {
         "path": "qualification/results/M2.2-work-host/tests.txt",
         "sha256": "0b33ead1a3558b8ef41fdc7335e7227cc60d8c3f0e4f3a58cd26094fee58707b"
+      },
+      {
+        "path": "qualification/results/M9.15-durability-records/FINDINGS.md",
+        "sha256": "9685505d88973ef5422256a7fe1230e69c56dbb3abf953a21073d9ac93935cb9"
       }
     ]
   },
@@ -866,12 +956,16 @@
     "stimulus": "consumer重复open及unload→reload。",
     "oracle": "共享唯一host handle，close正确，无already-open悬挂。",
     "status": "PASS",
-    "note": "A second open of the same domain is rejected; writes after close are refused.",
+    "note": "Barrier-simulated (the window is defined by a claim content, not by what survived a kill). A second open of the same domain is rejected; writes after close are refused; a single shared host handle is used and unload->reload does not leave an already-open hang.",
     "deployment_identity": "0ca14d4ee0ebea5eb85a3f72d66f48d839356f1b336c0e4f11f9a4f8ddf2ab7c",
     "evidence": [
       {
         "path": "qualification/results/M2.2-work-host/tests.txt",
         "sha256": "0b33ead1a3558b8ef41fdc7335e7227cc60d8c3f0e4f3a58cd26094fee58707b"
+      },
+      {
+        "path": "qualification/results/M9.15-durability-records/FINDINGS.md",
+        "sha256": "9685505d88973ef5422256a7fe1230e69c56dbb3abf953a21073d9ac93935cb9"
       }
     ]
   },
@@ -885,7 +979,12 @@
     "status": "PASS",
     "note": "Proven by writing the bad records and opening the domain: a v2-shaped run record is rejected with DomainError/invalid-record; a malformed record likewise; a foreign unit version gives StorageError/version-mismatch; non-JSON gives malformed-medium. The store file's sha256 is asserted BYTE-IDENTICAL after the refused open, so it refuses rather than silently reading or migrating a backup. A matching record opens normally, which shows the refusal is version-driven and not a blanket failure.",
     "deployment_identity": "0ca14d4ee0ebea5eb85a3f72d66f48d839356f1b336c0e4f11f9a4f8ddf2ab7c",
-    "evidence": []
+    "evidence": [
+      {
+        "path": "qualification/results/M9.4-durability-advanced/FINDINGS.md",
+        "sha256": "9de520b27a1e26dde3afc32f3f5a2ee4286db8811c1942ed4de092bc818f10b4"
+      }
+    ]
   },
   {
     "id": "D13",
@@ -895,7 +994,7 @@
     "stimulus": "host重启时原run已暂停/授权过期。",
     "oracle": "不自动重新消耗预算或产生effects，恢复为明确暂停。",
     "status": "PASS",
-    "note": "A run without restart authorization comes back paused; an expired authorization also comes back paused.",
+    "note": "Real SIGKILL. A run without restart authorization comes back PAUSED, and an expired authorization also comes back paused -- it does not automatically re-consume budget or produce effects.",
     "deployment_identity": "0ca14d4ee0ebea5eb85a3f72d66f48d839356f1b336c0e4f11f9a4f8ddf2ab7c",
     "evidence": [
       {
@@ -905,6 +1004,10 @@
       {
         "path": "qualification/results/M2.2-work-host/tests.txt",
         "sha256": "0b33ead1a3558b8ef41fdc7335e7227cc60d8c3f0e4f3a58cd26094fee58707b"
+      },
+      {
+        "path": "qualification/results/M9.15-durability-records/FINDINGS.md",
+        "sha256": "9685505d88973ef5422256a7fe1230e69c56dbb3abf953a21073d9ac93935cb9"
       }
     ]
   },
@@ -918,7 +1021,12 @@
     "status": "PASS",
     "note": "Measured with real OS processes: a DETACHED grandchild SURVIVES a hard SIGKILL of the host (3/3), while a non-detached one does not (3/3). So 'the parent is dead' is not evidence the process is gone. The recovery oracle is asserted: with no Session and no live Agent the task reconciles to unknown with the slot and its reservation STILL HELD, never to a settled or released state. Cleanup is observed via process.kill(pid,0) before the test passes rather than assumed. A guard covers the trap that process.kill(0,0) succeeds by signalling the caller's own process group, which would make a missing pid read as alive.",
     "deployment_identity": "0ca14d4ee0ebea5eb85a3f72d66f48d839356f1b336c0e4f11f9a4f8ddf2ab7c",
-    "evidence": []
+    "evidence": [
+      {
+        "path": "qualification/results/M9.4-durability-advanced/FINDINGS.md",
+        "sha256": "9de520b27a1e26dde3afc32f3f5a2ee4286db8811c1942ed4de092bc818f10b4"
+      }
+    ]
   },
   {
     "id": "E01",
@@ -1329,7 +1437,7 @@
     "evidence": [
       {
         "path": "qualification/results/M9.2-terminal-advanced/FINDINGS.md",
-        "sha256": "29f68856c507f28b9b2bf433f248105931b9ab5f0c595415a62bd6da30dfe478"
+        "sha256": "1f1408e7f20c6a8639534032de20cb9cadd37a582da42c99e8e1a34583978fe5"
       }
     ]
   },
@@ -1346,7 +1454,7 @@
     "evidence": [
       {
         "path": "qualification/results/M9.2-terminal-advanced/FINDINGS.md",
-        "sha256": "29f68856c507f28b9b2bf433f248105931b9ab5f0c595415a62bd6da30dfe478"
+        "sha256": "1f1408e7f20c6a8639534032de20cb9cadd37a582da42c99e8e1a34583978fe5"
       }
     ]
   },
@@ -1380,7 +1488,7 @@
     "evidence": [
       {
         "path": "qualification/results/M9.2-terminal-advanced/FINDINGS.md",
-        "sha256": "29f68856c507f28b9b2bf433f248105931b9ab5f0c595415a62bd6da30dfe478"
+        "sha256": "1f1408e7f20c6a8639534032de20cb9cadd37a582da42c99e8e1a34583978fe5"
       }
     ]
   },
@@ -1452,8 +1560,15 @@
     "required_for": "daily_ready",
     "stimulus": "PDF正文缺表、redirect/404/截断、搜索摘要替代全文。",
     "oracle": "标读取范围与局限，必要时换真实解析/视觉途径；不补写缺失内容。",
-    "status": "NOT_RUN",
-    "note": "PDF and partial-parse handling has not been exercised; no document pipeline exists yet."
+    "status": "PASS",
+    "note": "Six evidence states in a CLOSED tuple, so `understood` cannot appear by accident. Range and limits live in structured fields the states cannot carry: fetch: not_fetched | failed{code} | responded{statusCode,bytes,truncated,usable}, and parse: {range, complete, limit?}. `parsed` is set ONLY for a complete parse, so states.has(parsed) means fully parsed while parse.range answers the different question of which part was read. The only function permitted to say `the source does not contain X` THROWS unless a complete parse exists -- it never returns an empty string, which would be indistinguishable from a real negative answer. Proven through the real ctx.web seam with a fixture transport, so the WebFetchResult values and WebError codes are DSH own: 404 -> responded/usable false, timeout and redirect-refusal -> failed, unconfigured provider -> failed, never an empty source. NAMED LIMIT: a PDF never reaches even bytes_captured, because web_fetch accepts only html/text bodies (web/src/types.ts:93-95) and classifyContentType returns undefined for application/pdf (policy.ts:78-84), so it throws WEB_UNSUPPORTED_CONTENT_TYPE before any body is read. No document pipeline exists, so the record type and the refusal are qualified but the PDF retrieval route is NOT.",
+    "deployment_identity": "0ca14d4ee0ebea5eb85a3f72d66f48d839356f1b336c0e4f11f9a4f8ddf2ab7c",
+    "evidence": [
+      {
+        "path": "qualification/results/M9.8-research/FINDINGS.md",
+        "sha256": "602717163ce32e76bb926ab631852e480a9af72429c27398ae38a5a3e7662d23"
+      }
+    ]
   },
   {
     "id": "R04",
@@ -1462,8 +1577,15 @@
     "required_for": "daily_ready",
     "stimulus": "原观察在log但已从本次request移除。",
     "oracle": "request manifest不以最大seq假装已见。",
-    "status": "NOT_RUN",
-    "note": "Compaction visibility has not been measured."
+    "status": "PASS",
+    "note": "The counterexample is MEASURED on a real Session rather than asserted in prose: visible seqs are [2,1] -- NOT ascending -- because a replacement lands at a higher seq while occupying an older surface position. So no rule of the form `everything at or below some seq` can express this surface AT ALL; that is the structural reason the shortcut is invalid, not merely one bad example. The test also pins the DIRECTION of the error: the inferred set differs from the real one by exactly the shadowed node, claiming MORE was seen than really was. LIMIT: no real CompactionEngine is used (it needs llm + tokenMeter); the surface transition appended is the one compactSurfaceRegion appends, so visibility semantics are qualified while range selection is not.",
+    "deployment_identity": "0ca14d4ee0ebea5eb85a3f72d66f48d839356f1b336c0e4f11f9a4f8ddf2ab7c",
+    "evidence": [
+      {
+        "path": "qualification/results/M9.8-research/FINDINGS.md",
+        "sha256": "602717163ce32e76bb926ab631852e480a9af72429c27398ae38a5a3e7662d23"
+      }
+    ]
   },
   {
     "id": "R05",
@@ -1482,8 +1604,15 @@
     "required_for": "daily_ready",
     "stimulus": "一次step内部重试、多child、summary/compaction辅助请求。",
     "oracle": "保留原usage语义与全部已知费用；未知项不置零。",
-    "status": "NOT_RUN",
-    "note": "Per-attempt cost accounting has not been exercised; no live provider."
+    "status": "PASS",
+    "note": "CLOSED at the ledger-semantics level; real per-attempt bills stay NOT_RUN. A UsageLedger over USAGE_SOURCES = root|child|retry|compaction|summary|search, with NO ?? 0 on the unknown path; a retry is a separate attemptId; unknownCount, unknownUsageCount and unknownCostCount are reported separately AND per source; a repeated attemptId and a reused requestId are both refused and both counted. Token buckets keep DSH own disjointness (quoted from llm/llm/src/types.ts:162), so reasoning is not re-added to output.",
+    "deployment_identity": "0ca14d4ee0ebea5eb85a3f72d66f48d839356f1b336c0e4f11f9a4f8ddf2ab7c",
+    "evidence": [
+      {
+        "path": "qualification/results/M9.6-cost/FINDINGS.md",
+        "sha256": "a94bbfff8aa472e2a3e3fb7270c215ade2e0c2fed04e596e2132dfc03a6ae09c"
+      }
+    ]
   },
   {
     "id": "R07",
@@ -1502,8 +1631,15 @@
     "required_for": "daily_ready",
     "stimulus": "Python/history查询尝试读取其他会话或完整host DB。",
     "oracle": "只允许授权范围，不为检索便利暴露DSH_HOME。",
-    "status": "NOT_RUN",
-    "note": "Evidence-scoped history access has not been exercised."
+    "status": "PASS",
+    "note": "The allow-list is consulted BEFORE the store, because ctx.sessions.get(id) returns undefined for BOTH `not authorized` and `does not exist`; consulting the store first would collapse a refusal into an apparent absence. read() throws SESSION_QUERY_TOOL_UNAUTHORIZED (DSH own code) for a session the test first PROVES exists, and a genuine not-found stays separately distinguishable. Six independent no-implicit-widening assertions, including that the fields are #private -- a TypeScript `private` is erased and would leave scope.store a real property. LIMITS: the guard is not yet wired into a production tool surface, and DSH own session-query authorization is a DIFFERENT model (workspace/cwd scoped) which was neither replaced nor measured. The `DSH_HOME not mounted` half is addressed only as `the scope object names no filesystem location` -- no mount configuration was audited.",
+    "deployment_identity": "0ca14d4ee0ebea5eb85a3f72d66f48d839356f1b336c0e4f11f9a4f8ddf2ab7c",
+    "evidence": [
+      {
+        "path": "qualification/results/M9.8-research/FINDINGS.md",
+        "sha256": "602717163ce32e76bb926ab631852e480a9af72429c27398ae38a5a3e7662d23"
+      }
+    ]
   },
   {
     "id": "U01",

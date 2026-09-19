@@ -1,0 +1,12 @@
+# tsc -p tsconfig.check.json  (tests INCLUDED; tsconfig.json EXCLUDES them, so using it would be a FALSE PASS)
+# noEmit, strict flags identical to tsconfig.json
+
+## this milestone's files:
+CLEAN: no errors in src/recovery.ts or src/durability-records.test.ts
+
+## whole tree (other agents' files, reported for honesty):
+tsc_exit=2
+total_errors_whole_tree=3
+src/control-plane.test.ts(249,21): error TS2339: Property 'cordisInspectTools' does not exist on type '{ modelToolCatalog: string[]; modelToolCount: number; controlPlaneAsModelTool: Record<string, { exposedAsTool: boolean; authority: string; }>; }'.
+src/tool-protocol.test.ts(741,24): error TS2322: Type 'Promise<unknown>' is not assignable to type 'Promise<{ action: string; }>'.
+src/tool-protocol.test.ts(1010,30): error TS2345: Argument of type '() => Promise<never>' is not assignable to parameter of type '(this: Scoped<ToolRuntime>, exec: Readonly<ToolExecution>, result: Readonly<ToolExecutionResult>) => undefined'.

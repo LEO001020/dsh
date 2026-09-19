@@ -1,6 +1,21 @@
-=== package typecheck: tsc -p tsconfig.json --noEmit (excludes src/**/*.test.ts) ===
+=== 1. package typecheck ===
+$ tsc -p tsconfig.json --noEmit
+# NOTE: tsconfig.json sets "exclude": ["src/**/*.test.ts"], so this does NOT
+# check the test suite. A separate run below covers it.
 package_tsc_exit=0
 
-=== test-file typecheck: the SAME compiler options plus a vitest path mapping ===
-=== (tsconfig.json excludes *.test.ts, so the suite would otherwise go unchecked) ===
+=== 2. test-file typecheck ===
+$ tsc -p <config below>
+# The same compiler options as the package, plus a vitest path mapping and a
+# node typeRoots pointing at this package's node_modules (vitest is not
+# installed locally; it resolves from the pinned DSH checkout).
+# The config is inlined so this evidence is reproducible without a stray file:
+#   {"compilerOptions":{"target":"ES2024","lib":["ES2024"],"module":"NodeNext",
+#    "moduleResolution":"NodeNext","strict":true,"noUncheckedIndexedAccess":true,
+#    "noImplicitOverride":true,"verbatimModuleSyntax":true,
+#    "allowImportingTsExtensions":true,"noEmit":true,"skipLibCheck":true,
+#    "typeRoots":["D:/DSH/work/dsh-native-daily/packages/dsh-daily-work/node_modules/@types"],
+#    "types":["node"],"ignoreDeprecations":"6.0","baseUrl":"D:/DSH/src/dsh-src",
+#    "paths":{"vitest":["node_modules/vitest/dist/index.d.ts"]}},
+#    "files":["D:/DSH/work/dsh-native-daily/packages/dsh-daily-work/src/durability-advanced.test.ts"]}
 test_tsc_exit=0

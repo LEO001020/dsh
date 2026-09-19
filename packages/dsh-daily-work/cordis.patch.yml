@@ -70,6 +70,33 @@
         maxResults: 60
 
 # ---------------------------------------------------------------------------
+# DIFFERENCE 4 (mandatory): mount the exact-owner guard for the `work` tool.
+# ---------------------------------------------------------------------------
+#
+# WHY THIS IS NOT OPTIONAL. `tools.ts` resolves a run for a calling Agent by
+# STRING comparison of the session id. A SessionId is reused across an agent's
+# life: `AgentRegistry.resume` publishes a NEW Agent object under the SAME id,
+# so a callback still holding the PREVIOUS lifecycle's object passes the string
+# test and writes authoritative state into the run the new lifecycle now owns.
+#
+# MEASURED (qualification/results/M9.11-tool-protocol/): after a resume,
+# `ctx.agents.get(id) === oldAgent` is false while
+# `String(oldAgent.id) === String(newAgent.id)` is true. A paired test shows the
+# stale object driving `finish` and moving the run to `closing` when this guard
+# is absent.
+#
+# Mounted at the HOST plane on purpose: a plain-context guard applies globally
+# (packages/core/tools/src/index.ts:1107-1119), which is the deployment-wide
+# intent. A guard registered through an `agent.ctx` would cover one agent only.
+#
+# It registers through `ctx.tools.guard`, the MONOTONIC slot, and not through
+# `tools/pre-execute`, where a later listener could return `allow` and restore
+# permission. Guards have no allow result, so ordering cannot undo a denial.
+- insert:
+    - id: daily-work-tool-protocol-guards
+      name: dsh-daily-work/tool-protocol-guards
+
+# ---------------------------------------------------------------------------
 # NOT changed here, on purpose.
 # ---------------------------------------------------------------------------
 #

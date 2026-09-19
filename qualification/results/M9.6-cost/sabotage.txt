@@ -1,0 +1,31 @@
+# Falsification: do the tests actually fail when the property is broken?
+#
+# A test that cannot fail proves nothing. Each mutation below was applied to the
+# real source, the suite was run, and the source was restored (md5 verified
+# identical afterwards). The control run at the end is the restored source.
+#
+# S1  childCeiling stops subtracting the root reserve  -> 10 of 43 fail
+# S2  overage absorbed (spent clamped to the reservation) and unknown zeroed
+#                                                      ->  9 of 43 fail
+# S3  the admission gate ignores a recorded halt        ->  5 of 43 fail
+# S4  an unreported attempt counted as zero usage, and a
+#     reused request id summed twice                    ->  5 of 43 fail
+# control (restored source)                             -> 43 of 43 pass
+#
+# Raw output:
+#
+=== S1: childCeiling stops subtracting the root reserve ===
+ Test Files  1 failed (1)
+      Tests  10 failed | 33 passed (43)
+=== S2: overage absorbed (spent clamped to the reservation) + unknown zeroed ===
+ Test Files  1 failed (1)
+      Tests  9 failed | 34 passed (43)
+=== S3: halt ignored by the admission gate ===
+ Test Files  1 failed (1)
+      Tests  5 failed | 38 passed (43)
+=== S4: ledger treats an unreported attempt as zero usage + double-counts a reused request id ===
+ Test Files  1 failed (1)
+      Tests  5 failed | 38 passed (43)
+=== RESTORED (control) ===
+ Test Files  1 passed (1)
+      Tests  43 passed (43)

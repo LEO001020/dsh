@@ -1,0 +1,32 @@
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.8 [39m[90mD:/DSH/work/dsh-native-daily/packages/dsh-daily-work[39m
+
+ [32m✓[39m src/tool-protocol.test.ts[2m > [22mB04: the same SessionId resumed as a new Agent must not let the old object write[2m > [22ma resume publishes a DIFFERENT object under the SAME id, which is the whole hazard[32m 76[2mms[22m[39m
+ [32m✓[39m src/tool-protocol.test.ts[2m > [22mB04: the same SessionId resumed as a new Agent must not let the old object write[2m > [22mrefuses a stale owner at the guard, and the live owner still works[32m 57[2mms[22m[39m
+ [32m✓[39m src/tool-protocol.test.ts[2m > [22mB04: the same SessionId resumed as a new Agent must not let the old object write[2m > [22mthe guard is load-bearing: without it the stale object IS accepted[32m 47[2mms[22m[39m
+ [32m✓[39m src/tool-protocol.test.ts[2m > [22mB04: the same SessionId resumed as a new Agent must not let the old object write[2m > [22mthe registry identity test is the discipline the terminal and jobs services use[32m 2[2mms[22m[39m
+ [32m✓[39m src/tool-protocol.test.ts[2m > [22mB04: the same SessionId resumed as a new Agent must not let the old object write[2m > [22mthe run epoch is inert, so identity is the only enforceable check[32m 50[2mms[22m[39m
+ [32m✓[39m src/tool-protocol.test.ts[2m > [22mB05: two roots on the same preset must be fully isolated[2m > [22mthe preset is ONE standing mount, so the tool definition object is shared[32m 131[2mms[22m[39m
+ [32m✓[39m src/tool-protocol.test.ts[2m > [22mB05: two roots on the same preset must be fully isolated[2m > [22minterleaved calls keep tasks, budget and cancellation per run[32m 102[2mms[22m[39m
+ [32m✓[39m src/tool-protocol.test.ts[2m > [22mB05: two roots on the same preset must be fully isolated[2m > [22ma run is found by the calling agent, not by whichever run was touched last[32m 37[2mms[22m[39m
+ [32m✓[39m src/tool-protocol.test.ts[2m > [22mB05: two roots on the same preset must be fully isolated[2m > [22ma session with no run is refused rather than handed another session run[32m 39[2mms[22m[39m
+ [32m✓[39m src/tool-protocol.test.ts[2m > [22mB06: native and PTC must produce the SAME canonical value[2m > [22mboth routes return one identical canonical JSON value for the same call[33m 321[2mms[22m[39m
+ [32m✓[39m src/tool-protocol.test.ts[2m > [22mB06: native and PTC must produce the SAME canonical value[2m > [22mthe model text is a projection of the value, not a second source of truth[32m 275[2mms[22m[39m
+ [32m✓[39m src/tool-protocol.test.ts[2m > [22mB06: native and PTC must produce the SAME canonical value[2m > [22mrejects a value that is not lossless JSON, rather than coercing it[32m 17[2mms[22m[39m
+ [32m✓[39m src/tool-protocol.test.ts[2m > [22mB06: native and PTC must produce the SAME canonical value[2m > [22mrejects an undeclared field, so no unvalidated field can reach a caller[32m 16[2mms[22m[39m
+ [32m✓[39m src/tool-protocol.test.ts[2m > [22mB06: native and PTC must produce the SAME canonical value[2m > [22mdeclares a closed output schema, which is what makes the field list enforceable[32m 14[2mms[22m[39m
+ [32m✓[39m src/tool-protocol.test.ts[2m > [22mB07: a guard cannot be widened by a later listener, and async is not a guard[2m > [22ma later pre-execute listener cannot turn the guard denial into an allow[32m 17[2mms[22m[39m
+ [32m✓[39m src/tool-protocol.test.ts[2m > [22mB07: a guard cannot be widened by a later listener, and async is not a guard[2m > [22man async function is NOT accepted as a guard return value[32m 17[2mms[22m[39m
+ [32m✓[39m src/tool-protocol.test.ts[2m > [22mB07: a guard cannot be widened by a later listener, and async is not a guard[2m > [22ma throwing guard fails the call closed rather than falling through to allow[32m 17[2mms[22m[39m
+ [32m✓[39m src/tool-protocol.test.ts[2m > [22mB07: a guard cannot be widened by a later listener, and async is not a guard[2m > [22mthe tool surface offers no parameter that widens its own authority[32m 17[2mms[22m[39m
+ [32m✓[39m src/tool-protocol.test.ts[2m > [22mB08: a failing tools/result observer must not hide or rewrite the outcome[2m > [22mthe observer failure is contained: the caller still gets the real outcome[32m 60[2mms[22m[39m
+ [32m✓[39m src/tool-protocol.test.ts[2m > [22mB08: a failing tools/result observer must not hide or rewrite the outcome[2m > [22mthe durable intent is written BEFORE the observation, so the record is the authority[32m 34[2mms[22m[39m
+ [32m✓[39m src/tool-protocol.test.ts[2m > [22mB08: a failing tools/result observer must not hide or rewrite the outcome[2m > [22ma run whose outcome is unknown is resolved through the project reconcile path, not a rollback claim[32m 47[2mms[22m[39m
+ [32m✓[39m src/tool-protocol.test.ts[2m > [22mB08: a failing tools/result observer must not hide or rewrite the outcome[2m > [22ma failed observation cannot make a refused admission look accepted[32m 20[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[32m22 passed[39m[22m[90m (22)[39m
+[2m   Start at [22m 19:26:34
+[2m   Duration [22m 2.86s[2m (transform 908ms, setup 0ms, import 1.19s, tests 1.42s, environment 0ms)[22m
+
+VITEST_EXIT=0

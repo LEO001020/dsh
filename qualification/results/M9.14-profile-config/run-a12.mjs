@@ -97,7 +97,16 @@ if (url === undefined) {
   process.exit(1)
 }
 
-say(`url_line: ${url}`)
+/**
+ * The process token is a live credential for as long as the server runs. The
+ * transcript is a repository artifact, so the token is REDACTED rather than
+ * recorded: keeping it would put a working credential in version control, and
+ * the evidence only needs to show that the shape was produced.
+ */
+const redact = (text) => text.replace(/token=[A-Za-z0-9_-]+/g, 'token=<redacted>')
+
+say(`url_line: ${redact(url)}`)
+say(`url_line_shape: http://127.0.0.1:<port>/?token=<redacted>`)
 say(`boot_stdout_has_url: true`)
 const base = url.slice(0, url.indexOf('/?'))
 
@@ -185,9 +194,9 @@ say(`model_turn_run: false`)
 say(`credential_boundary: DEEPSEEK_API_KEY not configured`)
 say('')
 say('--- launcher stdout ---')
-say(stdout.trimEnd())
+say(redact(stdout.trimEnd()))
 say('--- launcher stderr ---')
-say(stderr.trimEnd())
+say(redact(stderr.trimEnd()))
 say('--- shutdown ---')
 // The stop is honest about what it is. Windows has no POSIX signals: Node's
 // `child.kill('SIGTERM')` terminates the process rather than delivering a

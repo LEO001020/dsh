@@ -1,0 +1,28 @@
+# captured 2026-09-19T19:50:35+08:00
+#
+# tsc -p tsconfig.json --noEmit   (the BUILD config: production sources only)
+tsc_build_exit=0
+
+# tsc -p tsconfig.check.json --noEmit   (production sources AND tests)
+#
+# This config type-checks EVERY test file in a workspace several agents are
+# editing at once, so its aggregate exit code moves for reasons unrelated to
+# this slice. The errors below are all in OTHER agents' files. This slice's
+# own file contributes none, which is the claim that matters and is shown
+# directly, in a form whose exit code is not confounded:
+
+$ tsc -p tsconfig.check.json --noEmit 2>&1 | grep -c research-chain
+matching_lines=0
+
+# For the record, the full error list at capture time:
+#   src/__probe5.test.ts(38,41): error TS2554: Expected 2 arguments, but got 1.
+#   src/__probe5.test.ts(40,51): error TS2554: Expected 2 arguments, but got 1.
+#   src/__probe5.test.ts(42,35): error TS2554: Expected 2 arguments, but got 1.
+#   src/__probe5.test.ts(44,43): error TS2554: Expected 2 arguments, but got 1.
+#   src/control-plane.test.ts(249,21): error TS2339: Property 'cordisInspectTools' does not exist on type '{ modelToolCatalog: string[]; modelToolCount: number; controlPlaneAsModelTool: Record<string, { exposedAsTool: boolean; authority: string; }>; }'.
+#   src/tool-protocol.test.ts(741,24): error TS2322: Type 'Promise<unknown>' is not assignable to type 'Promise<{ action: string; }>'.
+#     Type 'unknown' is not assignable to type '{ action: string; }'.
+#   src/tool-protocol.test.ts(1010,30): error TS2345: Argument of type '() => Promise<never>' is not assignable to parameter of type '(this: Scoped<ToolRuntime>, exec: Readonly<ToolExecution>, result: Readonly<ToolExecutionResult>) => undefined'.
+#     Type 'Promise<never>' is not assignable to type 'undefined'.
+#   src/u04-paired-comparison.test.ts(198,3): error TS2322: Type 'URL' is not assignable to type 'string'.
+#   src/u04-paired-comparison.test.ts(233,37): error TS2551: Property 'sections' does not exist on type 'SystemPrompt'. Did you mean 'section'?

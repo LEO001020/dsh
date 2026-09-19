@@ -1,0 +1,47 @@
+
+ RUN  v4.1.8 D:/DSH/work/dsh-native-daily/packages/dsh-daily-work
+
+ ✓ src/isolation.test.ts > C12: every nesting path is either accounted for or explicitly refused > refuses a grandchild through the continuable path, and names the depth that refused it 73ms
+ ✓ src/isolation.test.ts > C12: every nesting path is either accounted for or explicitly refused > refuses the grandchild even when the CALLER supplies a larger maxDepth 48ms
+ ✓ src/isolation.test.ts > C12: every nesting path is either accounted for or explicitly refused > omitting maxDepth does NOT lift the deployment cap, because our port never omits it 47ms
+ ✓ src/isolation.test.ts > C12: every nesting path is either accounted for or explicitly refused > records the deployment depth on the run, so the record itself carries the cap 35ms
+ ✓ src/isolation.test.ts > C12: every nesting path is either accounted for or explicitly refused > refuses a grandchild through the ONE-SHOT path too, so the fork/spawn providers are covered 35ms
+ ✓ src/isolation.test.ts > C12: every nesting path is either accounted for or explicitly refused > a provider that cannot enforce depth is REFUSED the request rather than accepting and ignoring it 183ms
+ ✓ src/isolation.test.ts > C12: every nesting path is either accounted for or explicitly refused > the model-facing delegation tool exposes no parameter that can lift a limit 35ms
+ ✓ src/isolation.test.ts > C12: every nesting path is either accounted for or explicitly refused > a model-supplied toolFilter cannot lift the deployment tool restriction on the child 45ms
+ ✓ src/isolation.test.ts > C12: every nesting path is either accounted for or explicitly refused > a toolFilter naming an unknown tool fails loudly rather than silently admitting everything 18ms
+ ✓ src/isolation.test.ts > C12: every nesting path is either accounted for or explicitly refused > accounts for the workflow/PTC path: it delegates through the SAME service, so it is depth-capped too 42ms
+ ✓ src/isolation.test.ts > C13: depth, per-run limits and the family pool are three separate scopes > gives a second root its own pool, so one family filling up does not block another 76ms
+ ✓ src/isolation.test.ts > C13: depth, per-run limits and the family pool are three separate scopes > keeps two runs in one host separate in tasks, budget and pause state 130ms
+ ✓ src/isolation.test.ts > C13: depth, per-run limits and the family pool are three separate scopes > carries the deployment maxDepth on the run AND on every launch, so neither can be omitted 45ms
+ ✓ src/isolation.test.ts > C13: depth, per-run limits and the family pool are three separate scopes > does not mistake the family pool for a global pool when a child holds the slot 65ms
+ ✓ src/isolation.test.ts > C13: depth, per-run limits and the family pool are three separate scopes > the work service counts each run from its own record, never from a shared counter 100ms
+ ✓ src/isolation.test.ts > C14: an active Goal and a managed run cannot both drive one root > disarms only this run, leaving the objective, revision and phase intact 22ms
+ ✓ src/isolation.test.ts > C14: an active Goal and a managed run cannot both drive one root > produces no double-continuation loop: the disarmed driver stops queueing rounds 1057ms
+ ✓ src/isolation.test.ts > C14: an active Goal and a managed run cannot both drive one root > leaves another Session with an active Goal completely alone 59ms
+ ✓ src/isolation.test.ts > C14: an active Goal and a managed run cannot both drive one root > rejects a model resume built on a STALE revision, and accepts one built on the current revision 45ms
+ ✓ src/isolation.test.ts > C14: an active Goal and a managed run cannot both drive one root > a later human-authorized resume is still possible, so the handover is not deletion 45ms
+ ✓ src/isolation.test.ts > C14: an active Goal and a managed run cannot both drive one root > is a complete, honest no-op when the profile mounts no Goal service 26ms
+ ✓ src/isolation.test.ts > C15: notifications are bounded and no result ref is lost > coalesces concurrent drains for one run so a storm cannot double-admit 85ms
+ ✓ src/isolation.test.ts > C15: notifications are bounded and no result ref is lost > does not lose a result ref when many tasks are admitted in one drain 524ms
+ ✓ src/isolation.test.ts > C15: notifications are bounded and no result ref is lost > a refused launch in a batch does not cost the batch its other results 142ms
+ ✓ src/isolation.test.ts > C15: notifications are bounded and no result ref is lost > names budget_blocked when the run-level budget really is exhausted 58ms
+ ✓ src/isolation.test.ts > C15: notifications are bounded and no result ref is lost > does not wake the root on a timer: an idle run issues no model calls of its own 650ms
+ ✓ src/isolation.test.ts > C16: an idle root is not a finished task > proves whenIdle() reports driver quiescence, not task success 184ms
+ ✓ src/isolation.test.ts > C16: an idle root is not a finished task > does not terminate the host or the run when the root goes idle with children running 305ms
+ ✓ src/isolation.test.ts > C16: an idle root is not a finished task > makes a later result observable in a NATIVE model step of the root 768ms
+ ✓ src/isolation.test.ts > C16: an idle root is not a finished task > never counts an admitted-but-unobserved child as an active worker 416ms
+ ✓ src/isolation.test.ts > C17: a failed acceptance can continue, and the family is NOT yet drained > beginClosing stops new admissions while leaving the family open 82ms
+ ✓ src/isolation.test.ts > C17: a failed acceptance can continue, and the family is NOT yet drained > has NOT called the permanent family drain, so a correction child can still settle 572ms
+ ✓ src/isolation.test.ts > C17: a failed acceptance can continue, and the family is NOT yet drained > a resume after closing is refused, and a resume after a pause is a real authorization edge 107ms
+ ✓ src/isolation.test.ts > C17: a failed acceptance can continue, and the family is NOT yet drained > keeps the reservation held when a launch fails, so a correction cannot double-spend the slot 48ms
+ ✓ src/isolation.test.ts > C18: after a definite completion, the drain is final and explicit > refuses a new child on the exact drained parent, with a named reason 26ms
+ ✓ src/isolation.test.ts > C18: after a definite completion, the drain is final and explicit > does not revive the parent by flipping a private flag: the refusal is stable across attempts 27ms
+ ✓ src/isolation.test.ts > C18: after a definite completion, the drain is final and explicit > leaves an unrelated parent fully admitted, so the close is scoped and not global 62ms
+ ✓ src/isolation.test.ts > C18: after a definite completion, the drain is final and explicit > routes subsequent work through a NEW run lifecycle rather than reviving the closed one 155ms
+
+ Test Files  1 passed (1)
+      Tests  38 passed (38)
+   Start at  19:37:58
+   Duration  7.58s (transform 832ms, setup 0ms, import 937ms, tests 6.44s, environment 0ms)
+

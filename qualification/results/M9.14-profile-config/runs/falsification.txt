@@ -1,0 +1,698 @@
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.8 [39m[90mD:/DSH/work/dsh-native-daily/packages/dsh-daily-work[39m
+
+ [31m×[39m src/.m914-falsify.test.ts[2m > [22mA04: a profile patch replaces the row config, it does not merge into it[2m > [22mdrops the unmentioned key instead of merging it, and the dump proves which happened[32m 286[2mms[22m[39m
+[31m   → expected [ 'openAt' ] to include 'path'[39m
+ [32m✓[39m src/.m914-falsify.test.ts[2m > [22mA04: a profile patch replaces the row config, it does not merge into it[2m > [22mreports the replacement as an INVALID row at mount, which is the loud failure a silent merge would have hidden[33m 2762[2mms[22m[39m
+ [32m✓[39m src/.m914-falsify.test.ts[2m > [22mA04: a profile patch replaces the row config, it does not merge into it[2m > [22mapplies a whole-value replacement from the HOME layer too, with the home layer ranked above the profile layer[32m 159[2mms[22m[39m
+ [32m✓[39m src/.m914-falsify.test.ts[2m > [22mA04: a profile patch replaces the row config, it does not merge into it[2m > [22mnever silently accepts a patch that names no existing row[32m 145[2mms[22m[39m
+ [32m✓[39m src/.m914-falsify.test.ts[2m > [22mA05: a home overlay that changes model/preset is visible, and the baseline home is clean[2m > [22mshows the override in the graph, attributes the row to the home layer, and differs from the clean home[33m 307[2mms[22m[39m
+ [31m×[39m src/.m914-falsify.test.ts[2m > [22mA05: a home overlay that changes model/preset is visible, and the baseline home is clean[2m > [22momits the home layer entirely under --dump-default-config, which is why that flag is the stock baseline[33m 303[2mms[22m[39m
+[31m   → expected '# == @deepseek-ai/dsh-base\n- id: too…' to contain 'polluted-provider'[39m
+ [32m✓[39m src/.m914-falsify.test.ts[2m > [22mA05: a home overlay that changes model/preset is visible, and the baseline home is clean[2m > [22mrefuses to combine --dump-default-config with --patch, so the baseline cannot be quietly overlayed[32m 132[2mms[22m[39m
+ [31m×[39m src/.m914-falsify.test.ts[2m > [22mA08: the C2 difference from C0 is exactly the two documented changes[2m > [22mchanges exactly two rows and deletes none[32m 295[2mms[22m[39m
+[31m   → expected [ 'subagent' ] to deeply equal [ 'subagent', 'agent-presets' ][39m
+ [32m✓[39m src/.m914-falsify.test.ts[2m > [22mA08: the C2 difference from C0 is exactly the two documented changes[2m > [22mnever deletes a stock component while still calling the result stock[32m 293[2mms[22m[39m
+ [32m✓[39m src/.m914-falsify.test.ts[2m > [22mA08: the C2 difference from C0 is exactly the two documented changes[2m > [22mcompares the Goal, fork and compaction rows and finds them identical between C0 and C2[32m 291[2mms[22m[39m
+ [32m✓[39m src/.m914-falsify.test.ts[2m > [22mA08: the C2 difference from C0 is exactly the two documented changes[2m > [22mrecords the measured C0 capability gap the C2 change exists to close[32m 155[2mms[22m[39m
+ [32m✓[39m src/.m914-falsify.test.ts[2m > [22mA09: model route and search provider are separate capabilities with separate status[2m > [22mverifies the machine is really in the state the gate describes: model key usable, search key absent[32m 2[2mms[22m[39m
+ [32m✓[39m src/.m914-falsify.test.ts[2m > [22mA09: model route and search provider are separate capabilities with separate status[2m > [22mturns an unusable search provider into WEB_PROVIDER_CONFIGURED_UNAVAILABLE, never into an empty result[32m 226[2mms[22m[39m
+ [32m✓[39m src/.m914-falsify.test.ts[2m > [22mA09: model route and search provider are separate capabilities with separate status[2m > [22mnever renders a failed search as `No results found.` — the tool text that would fabricate a negative finding[32m 204[2mms[22m[39m
+ [32m✓[39m src/.m914-falsify.test.ts[2m > [22mA09: model route and search provider are separate capabilities with separate status[2m > [22mreports presence, not entitlement, from the ported provider — and never probes from available()[32m 13[2mms[22m[39m
+ [32m✓[39m src/.m914-falsify.test.ts[2m > [22mA09: model route and search provider are separate capabilities with separate status[2m > [22mdrives the SHIPPED DeepSeek search provider to the credential boundary — the provider the daily profile actually mounts[32m 37[2mms[22m[39m
+ [32m✓[39m src/.m914-falsify.test.ts[2m > [22mA10: the headless CLI stream is interaction; the persisted Session is evidence[2m > [22mbaseline: a normally-completing turn exits 0 and the CLI stream and the Session agree[33m 2017[2mms[22m[39m
+ [31m×[39m src/.m914-falsify.test.ts[2m > [22mA10: the headless CLI stream is interaction; the persisted Session is evidence[2m > [22mlarge output: the CLI stream is BOUNDED and flags it, while the Session keeps the full result[33m 1995[2mms[22m[39m
+[31m   → expected 8192 to be 1048576 // Object.is equality[39m
+ [32m✓[39m src/.m914-falsify.test.ts[2m > [22mA10: the headless CLI stream is interaction; the persisted Session is evidence[2m > [22mbusiness failure inside a normally-completing turn: exit 0 is NOT business success[33m 1849[2mms[22m[39m
+ [31m×[39m src/.m914-falsify.test.ts[2m > [22mA10: the headless CLI stream is interaction; the persisted Session is evidence[2m > [22mreports a genuine turn-level failure as a non-zero exit, so the two failure kinds are distinguishable[33m 1264[2mms[22m[39m
+[31m   → FALSIFY: claiming a turn error exits 0: expected 1 to be +0 // Object.is equality[39m
+ [32m✓[39m src/.m914-falsify.test.ts[2m > [22mA12: the real daily Web host starts, serves, and owns a Session lifecycle[2m > [22mrecorded the real Web host transcript, and it shows a bind, a trust fence and a Session[32m 1[2mms[22m[39m
+ [32m✓[39m src/.m914-falsify.test.ts[2m > [22mA12: the real daily Web host starts, serves, and owns a Session lifecycle[2m > [22mproves the boundary is a CREDENTIAL boundary, not a composition failure[32m 1[2mms[22m[39m
+ [32m✓[39m src/.m914-falsify.test.ts[2m > [22mA12: the real daily Web host starts, serves, and owns a Session lifecycle[2m > [22mis not substituted by a headless or testkit run — the host evidence names the Web profile[32m 0[2mms[22m[39m
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 5 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m src/.m914-falsify.test.ts[2m > [22mA04: a profile patch replaces the row config, it does not merge into it[2m > [22mdrops the unmentioned key instead of merging it, and the dump proves which happened
+[31m[1mAssertionError[22m: expected [ 'openAt' ] to include 'path'[39m
+[36m [2m❯[22m src/.m914-falsify.test.ts:[2m286:39[22m[39m
+    [90m284|[39m     // The deep-merge reading is explicitly refuted, not merely unobse…
+    [90m285|[39m     // is the assertion that fails loudly if someone assumes merge sem…
+    [90m286|[39m     [34mexpect[39m([34mconfigKeys[39m(row [35mas[39m string))[33m.[39m[34mtoContain[39m([32m'path'[39m)
+    [90m   |[39m                                       [31m^[39m
+    [90m287|[39m     [34mexpect[39m(row [35mas[39m string)[33m.[39mnot[33m.[39m[34mtoContain[39m([32m':memory:'[39m)
+    [90m288|[39m   })
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/5]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/.m914-falsify.test.ts[2m > [22mA05: a home overlay that changes model/preset is visible, and the baseline home is clean[2m > [22momits the home layer entirely under --dump-default-config, which is why that flag is the stock baseline
+[31m[1mAssertionError[22m: expected '# == @deepseek-ai/dsh-base\n- id: too…' to contain 'polluted-provider'[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- polluted-provider[39m
+[31m+ # == @deepseek-ai/dsh-base[39m
+[31m+ - id: tool-plugin-manager[39m
+[31m+   name: '@deepseek-ai/dsh-plugin-manager/tools'[39m
+[31m+   disabled: true[39m
+[31m+ - id: plugin-manager[39m
+[31m+   name: '@deepseek-ai/dsh-plugin-manager'[39m
+[31m+   disabled: !!js '!ctx.get(''profileContext'')'[39m
+[31m+ - id: timer[39m
+[31m+   name: '@deepseek-ai/cordis-plugin-timer'[39m
+[31m+ - id: hmr[39m
+[31m+   name: '@deepseek-ai/dsh-hmr'[39m
+[31m+   disabled: !!js '!ctx.get(''profileContext'')'[39m
+[31m+   config:[39m
+[31m+     root: [][39m
+[31m+ - id: llm[39m
+[31m+   name: '@deepseek-ai/dsh-llm'[39m
+[31m+ - id: deepseek-llm-api-extensions[39m
+[31m+   name: '@deepseek-ai/dsh-deepseek-llm-api-extensions'[39m
+[31m+ - id: session[39m
+[31m+   name: '@deepseek-ai/dsh-session'[39m
+[31m+ - id: session-log-deepseek[39m
+[31m+   name: '@deepseek-ai/dsh-session-log-deepseek'[39m
+[31m+ - id: typert[39m
+[31m+   name: '@deepseek-ai/dsh-typert-registry'[39m
+[31m+ - id: typert-loader[39m
+[31m+   name: '@deepseek-ai/dsh-typert-loader'[39m
+[31m+ - id: typert-gateway[39m
+[31m+   name: '@deepseek-ai/dsh-api-gateway'[39m
+[31m+ - id: session-title[39m
+[31m+   name: '@deepseek-ai/dsh-session-title'[39m
+[31m+   config:[39m
+[31m+     fallbackMaxWords: 5[39m
+[31m+     fallbackMaxBytes: 40[39m
+[31m+     maxTitleBytes: 80[39m
+[31m+ - id: session-title-llm[39m
+[31m+   name: '@deepseek-ai/dsh-session-title-first-prompt-llm'[39m
+[31m+   config:[39m
+[31m+     targetWords: 5[39m
+[31m+     targetCjkCharacters: 10[39m
+[31m+     maxInputBytes: 4096[39m
+[31m+     maxOutputTokens: 64[39m
+[31m+     timeoutMs: 60000[39m
+[31m+ - id: user-questions[39m
+[31m+   name: '@deepseek-ai/dsh-user-questions'[39m
+[31m+ - id: agent[39m
+[31m+   name: '@deepseek-ai/dsh-agent'[39m
+[31m+ - id: plugin-package-inventory-deepseek[39m
+[31m+   name: '@deepseek-ai/dsh-plugin-package-inventory-deepseek'[39m
+[31m+ - id: agent-default-model[39m
+[31m+   name: '@deepseek-ai/dsh-agent-default-model'[39m
+[31m+   config:[39m
+[31m+     provider: deepseek-official[39m
+[31m+     model: deepseek-flash[39m
+[31m+ - id: jobs[39m
+[31m+   name: '@deepseek-ai/dsh-jobs-local'[39m
+[31m+ - id: llm-retry[39m
+[31m+   name: '@deepseek-ai/dsh-llm-retry'[39m
+[31m+ - id: settings[39m
+[31m+   name: '@deepseek-ai/dsh-settings-file'[39m
+[31m+ - id: credentials[39m
+[31m+   name: '@deepseek-ai/dsh-credentials-local'[39m
+[31m+ - id: llm-pi-ai[39m
+[31m+   name: '@deepseek-ai/dsh-llm-pi-ai'[39m
+[31m+ - id: session-persistence-jsonl[39m
+[31m+   name: '@deepseek-ai/dsh-session-persistence-jsonl'[39m
+[31m+   config:[39m
+[31m+     root: !!js dshHomePath('sessions')[39m
+[31m+ - id: attachment-local[39m
+[31m+   name: '@deepseek-ai/dsh-attachment-local'[39m
+[31m+ - id: session-query-sqlite[39m
+[31m+   name: '@deepseek-ai/dsh-session-query-sqlite'[39m
+[31m+   config:[39m
+[31m+     path: ':memory:'[39m
+[31m+     openAt: never[39m
+[31m+ - id: session-projection[39m
+[31m+   name: '@deepseek-ai/dsh-session-projection'[39m
+[31m+ - id: storage[39m
+[31m+   name: '@deepseek-ai/dsh-storage'[39m
+[31m+ - id: storage-json[39m
+[31m+   name: '@deepseek-ai/dsh-storage-json'[39m
+[31m+   config:[39m
+[31m+     root: !!js dshHomePath('storages')[39m
+[31m+ - id: storage-domain[39m
+[31m+   name: '@deepseek-ai/dsh-storage-domain'[39m
+[31m+   config:[39m
+[31m+     backend: json[39m
+[31m+ - id: session-projection-cache[39m
+[31m+   name: '@deepseek-ai/dsh-session-projection-cache'[39m
+[31m+   config:[39m
+[31m+     writeEveryEvents: 200[39m
+[31m+     writeIntervalMs: 5000[39m
+[31m+ - id: session-telemetry-otel[39m
+[31m+   name: '@deepseek-ai/dsh-session-telemetry-otel'[39m
+[31m+   config:[39m
+[31m+     mode: !!js process.env.DSH_TELEMETRY_MODE || 'FEEDBACK_ONLY'[39m
+[31m+     shutdownTimeoutMillis: 3000[39m
+[31m+     exporter:[39m
+[31m+       url: !!js >-[39m
+[31m+         process.env.DSH_TELEMETRY_OTLP_URL ??[39m
+[31m+         'https://harness-telemetry.deepseeksvc.com/v1/logs'[39m
+[31m+       compression: gzip[39m
+[31m+       timeoutMillis: 1000[39m
+[31m+     processor:[39m
+[31m+       scheduledDelayMillis: 10000[39m
+[31m+       maxQueueSize: 2048[39m
+[31m+       maxExportBatchSize: 2048[39m
+[31m+       exportTimeoutMillis: 1500[39m
+[31m+ - id: subprocess[39m
+[31m+   name: '@deepseek-ai/dsh-subprocess-local'[39m
+[31m+ - id: sandbox[39m
+[31m+   name: '@deepseek-ai/dsh-sandbox-local'[39m
+[31m+ - id: sandbox-policy[39m
+[31m+   name: '@deepseek-ai/dsh-sandbox-policy'[39m
+[31m+   config:[39m
+[31m+     mode: !!js process.env.DSH_PERMISSION_MODE ?? 'workspace-write'[39m
+[31m+     workspaceRoot: !!js process.cwd()[39m
+[31m+ - id: bash-sandbox[39m
+[31m+   name: '@deepseek-ai/dsh-bash-sandbox'[39m
+[31m+   disabled: !!js process.platform === 'win32'[39m
+[31m+   config:[39m
+[31m+     timeoutMs: 60000[39m
+[31m+ - id: pwsh-sandbox[39m
+[31m+   name: '@deepseek-ai/dsh-pwsh-sandbox'[39m
+[31m+   disabled: !!js process.platform !== 'win32'[39m
+[31m+ - id: approval[39m
+[31m+   name: '@deepseek-ai/dsh-user-approval'[39m
+[31m+   config:[39m
+[31m+     policy: !!js >-[39m
+[31m+       (process.env.DSH_PERMISSION_MODE ?? 'workspace-write') ===[39m
+[31m+       'danger-full-access' ? 'never' : 'ask'[39m
+[31m+ - id: permission[39m
+[31m+   name: '@deepseek-ai/dsh-permission-presets'[39m
+[31m+   config:[39m
+[31m+     presets:[39m
+[31m+       read-only:[39m
+[31m+         sandbox: read-only[39m
+[31m+         approval: ask[39m
+[31m+       workspace-write:[39m
+[31m+         sandbox: workspace-write[39m
+[31m+         approval: ask[39m
+[31m+       danger-full-access:[39m
+[31m+         sandbox: danger-full-access[39m
+[31m+         approval: never[39m
+[31m+ - id: shell-env[39m
+[31m+   name: '@deepseek-ai/dsh-shell-env'[39m
+[31m+ # == @deepseek-ai/dsh-base, patched by @deepseek-ai/dsh-web-app[39m
+[31m+ - id: tool-bash[39m
+[31m+   name: '@deepseek-ai/dsh-tool-bash'[39m
+[31m+   disabled: true[39m
+[31m+ - id: tool-pwsh[39m
+[31m+   name: '@deepseek-ai/dsh-tool-pwsh'[39m
+[31m+   disabled: true[39m
+[31m+ - id: tool-jobs[39m
+[31m+   name: '@deepseek-ai/dsh-tool-jobs'[39m
+[31m+   disabled: true[39m
+[31m+ # == @deepseek-ai/dsh-base[39m
+[31m+ - id: fs-observation-policy[39m
+[31m+   name: '@deepseek-ai/dsh-fs-observation-policy'[39m
+[31m+ # == @deepseek-ai/dsh-base, patched by @deepseek-ai/dsh-web-app[39m
+[31m+ - id: tool-fs[39m
+[31m+   name: '@deepseek-ai/dsh-tool-fs'[39m
+[31m+   disabled: true[39m
+[31m+ - id: tool-fs-search[39m
+[31m+   name: '@deepseek-ai/dsh-tool-fs-search'[39m
+[31m+   config:[39m
+[31m+     sampleOverCapGlobResults: false[39m
+[31m+   disabled: true[39m
+[31m+ - id: agent-instructions[39m
+[31m+   name: '@deepseek-ai/dsh-agent-instructions'[39m
+[31m+   config:[39m
+[31m+     maxBytes: 65536[39m
+[31m+   disabled: true[39m
+[31m+ # == @deepseek-ai/dsh-base[39m
+[31m+ - id: skill[39m
+[31m+   name: '@deepseek-ai/dsh-skill'[39m
+[31m+ # == @deepseek-ai/dsh-base, patched by @deepseek-ai/dsh-web-app[39m
+[31m+ - id: skill-filesystem[39m
+[31m+   name: '@deepseek-ai/dsh-skill-filesystem'[39m
+[31m+   disabled: true[39m
+[31m+ # == @deepseek-ai/dsh-base[39m
+[31m+ - id: skill-badge[39m
+[31m+   name: '@deepseek-ai/dsh-skill-badge'[39m
+[31m+   disabled: true[39m
+[31m+ # == @deepseek-ai/dsh-base, patched by @deepseek-ai/dsh-web-app[39m
+[31m+ - id: tool-skill[39m
+[31m+   name: '@deepseek-ai/dsh-tool-skill'[39m
+[31m+   disabled: true[39m
+[31m+ # == @deepseek-ai/dsh-base[39m
+[31m+ - id: commands[39m
+[31m+   name: '@deepseek-ai/dsh-commands'[39m
+[31m+ - id: command-feedback[39m
+[31m+   name: '@deepseek-ai/dsh-command-feedback'[39m
+[31m+ - id: goal[39m
+[31m+   name: '@deepseek-ai/dsh-goal'[39m
+[31m+ - id: goal-round-driver[39m
+[31m+   name: '@deepseek-ai/dsh-goal-round-driver'[39m
+[31m+ # == @deepseek-ai/dsh-base, patched by @deepseek-ai/dsh-web-app[39m
+[31m+ - id: command-goal[39m
+[31m+   name: '@deepseek-ai/dsh-command-goal'[39m
+[31m+   disabled: true[39m
+[31m+ - id: plan-mode[39m
+[31m+   name: '@deepseek-ai/dsh-plan-mode'[39m
+[31m+   config:[39m
+[31m+     section: >[39m
+[31m+       You are in plan mode. Stay in plan mode until exit_plan_mode succeeds or[39m
+[31m+       the user switches the session mode. Imperative language to implement[39m
+[31m+       changes means plan the implementation, not execute it. A user's[39m
+[31m+       conversational agreement — including an answer confirming something you[39m
+[31m+       asked — approves nothing and does not end plan mode; fold the confirmed[39m
+[31m+       decision into the plan and submit it through exit_plan_mode.[39m
+[31m+[39m
+[31m+[39m
+[31m+       Explore first. Use non-mutating reads, searches, static analysis, and[39m
+[31m+       checks to ground the plan in the actual repository. Do not edit or write[39m
+[31m+       files, change configuration, run formatters or code generation that[39m
+[31m+       rewrites tracked files, commit, or otherwise carry out the plan. Prefer[39m
+[31m+       existing functions and patterns over new machinery.[39m
+[31m+[39m
+[31m+[39m
+[31m+       The tool catalog stays the same across modes for request-cache stability.[39m
+[31m+       These plan-mode rules override any later tool description or guidance that[39m
+[31m+       suggests using mutation tools; those tools remain listed only to keep the[39m
+[31m+       request shape stable. Do not use todo_write to track this planning phase:[39m
+[31m+       it tracks implementation after an approved plan, while the plan itself[39m
+[31m+       belongs in exit_plan_mode.[39m
+[31m+[39m
+[31m+[39m
+[31m+       Resolve discoverable facts by inspection. Use ask_user_question only for[39m
+[31m+       user-owned choices or material ambiguity that inspection cannot answer. Do[39m
+[31m+       not ask the user where code lives or how current behavior works when you[39m
+[31m+       can find out.[39m
+[31m+[39m
+[31m+[39m
+[31m+       Make the plan decision-complete: state the goal and success criteria;[39m
+[31m+       group implementation changes by subsystem; identify public API, schema,[39m
+[31m+       and data-flow changes; cover edge cases, failure modes, tests, acceptance[39m
+[31m+       criteria, and explicit assumptions. Keep it concise enough to review but[39m
+[31m+       detailed enough that another engineer can implement it without making[39m
+[31m+       design decisions.[39m
+[31m+[39m
+[31m+[39m
+[31m+       When ready, call exit_plan_mode with the complete plan markdown, starting[39m
+[31m+       with a # title. Make exit_plan_mode the only and final tool call in that[39m
+[31m+       assistant response: it presents the plan for approval, and implementation[39m
+[31m+       begins only in a later step after approval. Do not paste the final plan as[39m
+[31m+       a plain reply or ask "should I proceed?" through prose or[39m
+[31m+       ask_user_question. If review rejects it, incorporate the feedback and[39m
+[31m+       present again. If the review channel is unavailable or aborted, stay in[39m
+[31m+       plan mode and ask the user to switch modes manually; do not proceed with[39m
+[31m+       implementation.[39m
+[31m+   disabled: true[39m
+[31m+ # == @deepseek-ai/dsh-base[39m
+[31m+ - id: token-meter[39m
+[31m+   name: '@deepseek-ai/dsh-token-meter'[39m
+[31m+ # == @deepseek-ai/dsh-base, patched by @deepseek-ai/dsh-web-app[39m
+[31m+ - id: compaction-basic[39m
+[31m+   name: '@deepseek-ai/dsh-compaction-basic'[39m
+[31m+   disabled: true[39m
+[31m+ - id: command-compact[39m
+[31m+   name: '@deepseek-ai/dsh-command-compact'[39m
+[31m+   disabled: true[39m
+[31m+ # == @deepseek-ai/dsh-base[39m
+[31m+ - id: subagent[39m
+[31m+   name: '@deepseek-ai/dsh-subagent'[39m
+[31m+ - id: subagent-spawn-in-process[39m
+[31m+   name: '@deepseek-ai/dsh-subagent-spawn-in-process'[39m
+[31m+   config:[39m
+[31m+     providerName: spawn[39m
+[31m+ - id: subagent-fork-in-process[39m
+[31m+   name: '@deepseek-ai/dsh-subagent-fork-in-process'[39m
+[31m+   config:[39m
+[31m+     providerName: fork[39m
+[31m+ # == @deepseek-ai/dsh-base, patched by @deepseek-ai/dsh-web-app[39m
+[31m+ - id: tool-subagent-control[39m
+[31m+   name: '@deepseek-ai/dsh-tool-subagent-control'[39m
+[31m+   disabled: true[39m
+[31m+ - id: tool-subagent-list-agents[39m
+[31m+   name: '@deepseek-ai/dsh-tool-subagent-control/list-agents'[39m
+[31m+   disabled: true[39m
+[31m+ - id: tool-subagent[39m
+[31m+   name: '@deepseek-ai/dsh-tool-subagent'[39m
+[31m+   config:[39m
+[31m+     provider: spawn[39m
+[31m+     toolName: subagent[39m
+[31m+     backgroundMode: continuable[39m
+[31m+   disabled: true[39m
+[31m+ - id: tool-subagent-fork[39m
+[31m+   name: '@deepseek-ai/dsh-tool-subagent'[39m
+[31m+   config:[39m
+[31m+     provider: fork[39m
+[31m+     toolName: subagent_fork[39m
+[31m+     backgroundMode: one-shot[39m
+[31m+   disabled: true[39m
+[31m+ # == @deepseek-ai/dsh-base[39m
+[31m+ - id: ptc-runtime[39m
+[31m+   name: '@deepseek-ai/dsh-ptc-runtime-node'[39m
+[31m+ # == @deepseek-ai/dsh-base, patched by @deepseek-ai/dsh-web-app[39m
+[31m+ - id: workflow-ptc[39m
+[31m+   name: '@deepseek-ai/dsh-workflow-ptc'[39m
+[31m+   config:[39m
+[31m+     provider: spawn[39m
+[31m+   disabled: true[39m
+[31m+ - id: tool-workflow[39m
+[31m+   name: '@deepseek-ai/dsh-tool-workflow'[39m
+[31m+   disabled: true[39m
+[31m+ # == @deepseek-ai/dsh-base[39m
+[31m+ - id: timeout-policy[39m
+[31m+   name: '@deepseek-ai/dsh-tool-call-timeout-policy'[39m
+[31m+ - id: spill-local[39m
+[31m+   name: '@deepseek-ai/dsh-spill-local'[39m
+[31m+ - id: spill-policy[39m
+[31m+   name: '@deepseek-ai/dsh-spill-policy'[39m
+[31m+   config:[39m
+[31m+     maxInlineBytes: 50000[39m
+[31m+ - id: session-checkpoint-policy[39m
+[31m+   name: '@deepseek-ai/dsh-session-checkpoint-policy'[39m
+[31m+ # == @deepseek-ai/dsh-base, patched by @deepseek-ai/dsh-web-app[39m
+[31m+ - id: tool-result-pruner[39m
+[31m+   name: '@deepseek-ai/dsh-compaction-tool-result-pruner'[39m
+[31m+   config:[39m
+[31m+     thresholdChars: 8192[39m
+[31m+     headChars: 4096[39m
+[31m+     tailChars: 1024[39m
+[31m+   disabled: true[39m
+[31m+ # == @deepseek-ai/dsh-base[39m
+[31m+ - id: image-offload[39m
+[31m+   name: '@deepseek-ai/dsh-compaction-image-offload'[39m
+[31m+ # == @deepseek-ai/dsh-base, patched by @deepseek-ai/dsh-web-app[39m
+[31m+ - id: tool-todo[39m
+[31m+   name: '@deepseek-ai/dsh-tool-todo'[39m
+[31m+   config:[39m
+[31m+     allowParallelInProgress: true[39m
+[31m+   disabled: true[39m
+[31m+ - id: tool-goal[39m
+[31m+   name: '@deepseek-ai/dsh-tool-goal'[39m
+[31m+   disabled: true[39m
+[31m+ # == @deepseek-ai/dsh-base[39m
+[31m+ - id: tool-ralph[39m
+[31m+   name: '@deepseek-ai/dsh-tool-ralph'[39m
+[31m+   disabled: true[39m
+[31m+   config:[39m
+[31m+     subagentProvider: spawn[39m
+[31m+     maxRounds: 64[39m
+[31m+ - id: repeat-tool-reminder[39m
+[31m+   name: '@deepseek-ai/dsh-repeat-tool-reminder'[39m
+[31m+   config:[39m
+[31m+     thresholds:[39m
+[31m+       - 3[39m
+[31m+       - 5[39m
+[31m+       - 8[39m
+[31m+     argumentsPreviewChars: 500[39m
+[31m+ - id: web[39m
+[31m+   name: '@deepseek-ai/dsh-web'[39m
+[31m+   config:[39m
+[31m+     searchProvider: deepseek-official[39m
+[31m+     fetchProvider: http[39m
+[31m+ - id: web-search-deepseek[39m
+[31m+   name: '@deepseek-ai/dsh-web-search-deepseek'[39m
+[31m+   config:[39m
+[31m+     apiKeyEnv: DEEPSEEK_API_KEY[39m
+[31m+ - id: web-fetch-http[39m
+[31m+   name: '@deepseek-ai/dsh-web-fetch-http'[39m
+[31m+ # == @deepseek-ai/dsh-base, patched by @deepseek-ai/dsh-web-app[39m
+[31m+ - id: tool-web[39m
+[31m+   name: '@deepseek-ai/dsh-tool-web'[39m
+[31m+   config:[39m
+[31m+     fetch: true[39m
+[31m+     searchTimeoutMs: 60000[39m
+[31m+   disabled: true[39m
+[31m+ # == @deepseek-ai/dsh-base[39m
+[31m+ - id: mcp-resources[39m
+[31m+   name: '@deepseek-ai/dsh-mcp-resources'[39m
+[31m+ # == @deepseek-ai/dsh-base, patched by @deepseek-ai/dsh-web-app[39m
+[31m+ - id: tools[39m
+[31m+   name: '@deepseek-ai/dsh-tools'[39m
+[31m+   config:[39m
+[31m+     mode: !!js process.env.DSH_TOOLS_MODE[39m
+[31m+ - id: system-prompt[39m
+[31m+   name: '@deepseek-ai/dsh-system-prompt'[39m
+[31m+   config:[39m
+[31m+     personaSuffix: Your working directory is {{cwd}}.[39m
+[31m+     personaPrefix: You are a coding agent powered by the {{model}} model.[39m
+[31m+ # == @deepseek-ai/dsh-base[39m
+[31m+ - id: agent-loop[39m
+[31m+   name: '@deepseek-ai/dsh-agent-loop'[39m
+[31m+   config:[39m
+[31m+     agents: [][39m
+[31m+ - id: fs-sandbox[39m
+[31m+   name: '@deepseek-ai/dsh-fs-sandbox'[39m
+[31m+ - id: llm-deepseek[39m
+[31m+   name: '@deepseek-ai/dsh-llm-deepseek'[39m
+[31m+ # == @deepseek-ai/dsh-web-app[39m
+[31m+ - id: subagent-model-selection-settings[39m
+[31m+   name: '@deepseek-ai/dsh-tool-subagent/model-selection-settings'[39m
+[31m+ - id: message-feedback[39m
+[31m+   name: '@deepseek-ai/dsh-message-feedback'[39m
+[31m+   config:[39m
+[31m+     maxNoteBytes: 8192[39m
+[31m+ - id: session-log-download[39m
+[31m+   name: '@deepseek-ai/dsh-session-log-export'[39m
+[31m+ - id: open-in-app[39m
+[31m+   name: '@deepseek-ai/dsh-host-open-in-app'[39m
+[31m+   config:[39m
+[31m+     probeTimeoutMs: 10000[39m
+[31m+     iconTimeoutMs: 10000[39m
+[31m+     launchWatchMs: 1000[39m
+[31m+ - id: ui-open-in-app[39m
+[31m+   name: '@deepseek-ai/dsh-client-ui-open-in-app'[39m
+[31m+ - id: workspace[39m
+[31m+   name: '@deepseek-ai/dsh-workspace'[39m
+[31m+ - id: session-reference[39m
+[31m+   name: '@deepseek-ai/dsh-session-reference'[39m
+[31m+ - id: file-reference-local[39m
+[31m+   name: '@deepseek-ai/dsh-file-reference-local'[39m
+[31m+ - id: session-stats[39m
+[31m+   name: '@deepseek-ai/dsh-session-stats'[39m
+[31m+ - id: session-turn-outline[39m
+[31m+   name: '@deepseek-ai/dsh-session-turn-outline'[39m
+[31m+ - id: directory-picker[39m
+[31m+   name: '@deepseek-ai/dsh-host-directory-picker-auto'[39m
+[31m+ - id: plugin-inventory[39m
+[31m+   name: '@deepseek-ai/dsh-host-plugin-inventory'[39m
+[31m+ - id: session-controller[39m
+[31m+   name: '@deepseek-ai/dsh-api-session-controller'[39m
+[31m+ - id: terminal-controller[39m
+[31m+   name: '@deepseek-ai/dsh-api-terminal-controller'[39m
+[31m+ - id: workspace-files[39m
+[31m+   name: '@deepseek-ai/dsh-api-workspace-files'[39m
+[31m+ - id: settings-controller[39m
+[31m+   name: '@deepseek-ai/dsh-api-settings-controller'[39m
+[31m+ - id: workspace-controller[39m
+[31m+   name: '@deepseek-ai/dsh-api-workspace-controller'[39m
+[31m+ - id: cordis-host-runner[39m
+[31m+   name: '@deepseek-ai/dsh-cordis-host-runner'[39m
+[31m+ - id: web-startup[39m
+[31m+   name: '@deepseek-ai/dsh-web-app/startup'[39m
+[31m+ - id: webserver[39m
+[31m+   name: '@deepseek-ai/dsh-host-webserver'[39m
+[31m+   inject:[39m
+[31m+     - webStartup[39m
+[31m+   config:[39m
+[31m+     host: !!js ctx.webStartup.host ?? '127.0.0.1'[39m
+[31m+     port: !!js ctx.webStartup.port ?? 3080[39m
+[31m+     compression: gzip[39m
+[31m+     compressionLevel: 1[39m
+[31m+     compressionThresholdBytes: 1024[39m
+[31m+ - id: web-runtime[39m
+[31m+   name: '@deepseek-ai/dsh-web-app'[39m
+[31m+   inject:[39m
+[31m+     - webStartup[39m
+[31m+   config:[39m
+[31m+     openBrowser: !!js ctx.webStartup.openBrowser[39m
+[31m+     printUrl: true[39m
+[31m+     surfaceContext: true[39m
+[31m+     trustedHosts: !!js ctx.webStartup.trustedHosts[39m
+[31m+ - id: client-hmr[39m
+[31m+   name: '@deepseek-ai/dsh-client-hmr'[39m
+[31m+ - id: modules[39m
+[31m+   name: '@deepseek-ai/dsh-client-modules'[39m
+[31m+ - id: connection[39m
+[31m+   name: '@deepseek-ai/dsh-client-connection'[39m
+[31m+   inject:[39m
+[31m+     - webRuntime[39m
+[31m+   config:[39m
+[31m+     trustedHosts: !!js ctx.webRuntime.trustedHosts[39m
+[31m+ - id: file-upload[39m
+[31m+   name: '@deepseek-ai/dsh-client-file-upload'[39m
+[31m+ - id: api-remotes[39m
+[31m+   name: '@deepseek-ai/dsh-api-remotes'[39m
+[31m+ - id: cordis-client-runner[39m
+[31m+   name: '@deepseek-ai/dsh-cordis-client-runner'[39m
+[31m+ - id: ui-theme[39m
+[31m+   name: '@deepseek-ai/dsh-client-ui-theme'[39m
+[31m+ - id: locale[39m
+[31m+   name: '@deepseek-ai/dsh-client-locale'[39m
+[31m+ - id: ui-layout[39m
+[31m+   name: '@deepseek-ai/dsh-client-ui-layout'[39m
+[31m+ - id: ui-renderer[39m
+[31m+   name: '@deepseek-ai/dsh-client-ui-renderer'[39m
+[31m+ - id: ui-session[39m
+[31m+   name: '@deepseek-ai/dsh-client-ui-session'[39m
+[31m+ - id: resources[39m
+[31m+   name: '@deepseek-ai/dsh-client-resources'[39m
+[31m+ - id: ui-sidebar[39m
+[31m+   name: '@deepseek-ai/dsh-client-ui-sidebar'[39m
+[31m+ - id: ui-sidebar-right[39m
+[31m+   name: '@deepseek-ai/dsh-client-ui-sidebar-right'[39m
+[31m+ - id: office-to-pdf[39m
+[31m+   name: '@deepseek-ai/dsh-office-to-pdf'[39m
+[31m+ - id: ui-sidebar-documentpreview[39m
+[31m+   name: '@deepseek-ai/dsh-client-ui-sidebar-documentpreview'[39m
+[31m+ - id: ui-sidebar-browser[39m
+[31m+   name: '@deepseek-ai/dsh-client-ui-sidebar-browser'[39m
+[31m+ - id: ui-sidebar-terminal[39m
+[31m+   name: '@deepseek-ai/dsh-client-ui-sidebar-terminal'[39m
+[31m+ - id: ui-sidebar-files[39m
+[31m+   name: '@deepseek-ai/dsh-client-ui-sidebar-files'[39m
+[31m+ - id: ui-settings[39m
+[31m+   name: '@deepseek-ai/dsh-client-ui-settings'[39m
+[31m+ - id: ui-settings-general[39m
+[31m+   name: '@deepseek-ai/dsh-client-ui-settings-general'[39m
+[31m+ - id: ui-settings-models[39m
+[31m+   name: '@deepseek-ai/dsh-client-ui-settings-models'[39m
+[31m+ - id: ui-plugin-manager[39m
+[31m+   name: '@deepseek-ai/dsh-client-ui-plugin-manager'[39m
+[31m+ - id: ui-settings-plugin-inventory[39m
+[31m+   name: '@deepseek-ai/dsh-client-ui-settings-plugin-inventory'[39m
+[31m+ - id: ui-settings-unarchive-sessions[39m
+[31m+   name: '@deepseek-ai/dsh-client-ui-settings-unarchive-sessions'[39m
+[31m+ - id: ui-conversation[39m
+[31m+   name: '@deepseek-ai/dsh-client-ui-conversation'[39m
+[31m+ - id: ui-approval[39m
+[31m+   name: '@deepseek-ai/dsh-client-ui-approval'[39m
+[31m+ - id: ui-chat[39m
+[31m+   name: '@deepseek-ai/dsh-client-ui-chat'[39m
+[31m+ - id: ui-brand-official[39m
+[31m+   name: '@deepseek-ai/dsh-client-ui-brand-official'[39m
+[31m+ - id: ui-attachment[39m
+[31m+   name: '@deepseek-ai/dsh-client-ui-attachment'[39m
+[31m+ - id: ui-tool[39m
+[31m+   name: '@deepseek-ai/dsh-client-ui-tool'[39m
+[31m+ - id: ui-cordis[39m
+[31m+   name: '@deepseek-ai/dsh-client-ui-cordis'[39m
+[31m+ - id: ui-deliverables[39m
+[31m+   name: '@deepseek-ai/dsh-client-ui-deliverables'[39m
+[31m+ - id: workspace-changes[39m
+[31m+   name: '@deepseek-ai/dsh-workspace-changes'[39m
+[31m+ - id: ui-workspace[39m
+[31m+   name: '@deepseek-ai/dsh-client-ui-workspace'[39m
+[31m+ - id: ui-workflow-run[39m
+[31m+   name: '@deepseek-ai/dsh-client-ui-workflow-run'[39m
+[31m+ - id: ui-input-trigger[39m
+[31m+   name: '@deepseek-ai/dsh-client-ui-input-trigger'[39m
+[31m+ - id: ui-commands[39m
+[31m+   name: '@deepseek-ai/dsh-client-ui-commands'[39m
+[31m+ - id: ui-skill[39m
+[31m+   name: '@deepseek-ai/dsh-client-ui-skill'[39m
+[31m+ - id: ui-subagent[39m
+[31m+   name: '@deepseek-ai/dsh-client-ui-subagent'[39m
+[31m+ - id: ui-reference[39m
+[31m+   name: '@deepseek-ai/dsh-client-ui-reference'[39m
+[31m+ - id: ui-schedule[39m
+[31m+   name: '@deepseek-ai/dsh-client-ui-schedule'[39m
+[31m+   disabled: true[39m
+[31m+ - id: ui-jobs[39m
+[31m+   name: '@deepseek-ai/dsh-client-ui-jobs'[39m
+[31m+ - id: ui-goal[39m
+[31m+   name: '@deepseek-ai/dsh-client-ui-goal'[39m
+[31m+ - id: ui-message-feedback[39m
+[31m+   name: '@deepseek-ai/dsh-client-ui-message-feedback'[39m
+[31m+ - id: ui-model-selection[39m
+[31m+   name: '@deepseek-ai/dsh-client-ui-model-selection'[39m
+[31m+ - id: ui-permission[39m
+[31m+   name: '@deepseek-ai/dsh-client-ui-permission-presets'[39m
+[31m+ - id: ui-agent-preset[39m
+[31m+   name: '@deepseek-ai/dsh-client-ui-agent-preset'[39m
+[31m+ - id: ui-settings-plugins[39m
+[31m+   name: '@deepseek-ai/dsh-client-ui-settings-plugins'[39m
+[31m+ - id: ui-plan[39m
+[31m+   name: '@deepseek-ai/dsh-client-ui-plan'[39m
+[31m+ - id: ui-user-questions[39m
+[31m+   name: '@deepseek-ai/dsh-client-ui-user-questions'[39m
+[31m+ - id: ui-trajectory[39m
+[31m+   name: '@deepseek-ai/dsh-client-ui-trajectory'[39m
+[31m+ - id: agent-presets[39m
+[31m+   name: '@deepseek-ai/dsh-agent-presets'[39m
+[31m+   config:[39m
+[31m+     default: standard[39m
+[31m+[39m
+
+[36m [2m❯[22m src/.m914-falsify.test.ts:[2m484:32[22m[39m
+    [90m482|[39m     expect(firstConfigLine(withHome.stdout, 'agent-default-model')).to…
+    [90m483|[39m     expect(firstConfigLine(withoutHome.stdout, 'agent-default-model'))…
+    [90m484|[39m     [34mexpect[39m(withoutHome[33m.[39mstdout)[33m.[39m[34mtoContain[39m([32m'polluted-provider'[39m)
+    [90m   |[39m                                [31m^[39m
+    [90m485|[39m   })
+    [90m486|[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/5]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/.m914-falsify.test.ts[2m > [22mA08: the C2 difference from C0 is exactly the two documented changes[2m > [22mchanges exactly two rows and deletes none
+[31m[1mAssertionError[22m: expected [ 'subagent' ] to deeply equal [ 'subagent', 'agent-presets' ][39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[2m  [[22m
+[2m    "subagent",[22m
+[32m-   "agent-presets",[39m
+[2m  ][22m
+
+[36m [2m❯[22m src/.m914-falsify.test.ts:[2m551:21[22m[39m
+    [90m549|[39m     [34mexpect[39m(added)[33m.[39m[34mtoEqual[39m([[32m'daily-work-host'[39m])
+    [90m550|[39m     [34mexpect[39m(removed)[33m.[39m[34mtoEqual[39m([])
+    [90m551|[39m     [34mexpect[39m(changed)[33m.[39m[34mtoEqual[39m([[32m'subagent'[39m[33m,[39m [32m'agent-presets'[39m])
+    [90m   |[39m                     [31m^[39m
+    [90m552|[39m
+    [90m553|[39m     // The `subagent` change is the documented one and carries BOTH ke…
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/5]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/.m914-falsify.test.ts[2m > [22mA10: the headless CLI stream is interaction; the persisted Session is evidence[2m > [22mlarge output: the CLI stream is BOUNDED and flags it, while the Session keeps the full result
+[31m[1mAssertionError[22m: expected 8192 to be 1048576 // Object.is equality[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- 1048576[39m
+[31m+ 8192[39m
+
+[36m [2m❯[22m src/.m914-falsify.test.ts:[2m1181:30[22m[39m
+    [90m1179|[39m     // BOUNDED: the projected text is capped at the documented per-str…
+    [90m1180|[39m     [90m// not at the ~1 MiB the tool actually produced.[39m
+    [90m1181|[39m     [34mexpect[39m(projected[33m.[39mlength)[33m.[39m[34mtoBe[39m([34m1024[39m [33m*[39m [34m1024[39m)
+    [90m   |[39m                              [31m^[39m
+    [90m1182|[39m     [90m// FLAGGED: the payload says it was cut, so a reader is warned.[39m
+    [90m1183|[39m     [34mexpect[39m(result[33m?.[39m[[32m'truncated'[39m])[33m.[39m[34mtoBe[39m([35mtrue[39m)
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/5]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/.m914-falsify.test.ts[2m > [22mA10: the headless CLI stream is interaction; the persisted Session is evidence[2m > [22mreports a genuine turn-level failure as a non-zero exit, so the two failure kinds are distinguishable
+[31m[1mAssertionError[22m: FALSIFY: claiming a turn error exits 0: expected 1 to be +0 // Object.is equality[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- 0[39m
+[31m+ 1[39m
+
+[36m [2m❯[22m src/.m914-falsify.test.ts:[2m1265:69[22m[39m
+    [90m1263|[39m       maxBuffer[33m:[39m [34m16[39m [33m*[39m [34m1024[39m [33m*[39m [34m1024[39m[33m,[39m
+    [90m1264|[39m     })
+    [90m1265|[39m     expect(result.status, 'FALSIFY: claiming a turn error exits 0').to…
+    [90m   |[39m                                                                     [31m^[39m
+    [90m1266|[39m     const events = (result.stdout ?? '').trimEnd().split('\n').filter(…
+    [90m1267|[39m       [33m.[39m[34mmap[39m(line [33m=>[39m [33mJSON[39m[33m.[39m[34mparse[39m(line) [35mas[39m [33mRecord[39m[33m<[39mstring[33m,[39m unknown[33m>[39m)
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/5]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m5 failed[39m[22m[2m | [22m[1m[32m18 passed[39m[22m[90m (23)[39m
+[2m   Start at [22m 19:30:18
+[2m   Duration [22m 13.10s[2m (transform 388ms, setup 0ms, import 74ms, tests 12.82s, environment 0ms)[22m
+

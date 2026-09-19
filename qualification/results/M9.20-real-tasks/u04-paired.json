@@ -1,0 +1,116 @@
+{
+  "gate": "U04",
+  "kind": "CONTROLLED_FIXTURE_COMPARISON_NOT_A_BENCHMARK",
+  "controlledVariables": {
+    "model": "scripted adapter, one instance shared by all three groups",
+    "task": "a single scripted turn: one text answer, no tool call",
+    "budget": "identical composition-level budget; no provider is billed"
+  },
+  "axes": {
+    "completionQuality": [
+      {
+        "group": "C0",
+        "value": "scripted: one text answer, no tool call"
+      },
+      {
+        "group": "C1",
+        "value": "scripted: one text answer, no tool call"
+      },
+      {
+        "group": "C2",
+        "value": "scripted: one text answer, no tool call"
+      }
+    ],
+    "cost": [
+      {
+        "group": "C0",
+        "modelCalls": 0,
+        "outputTokens": 0
+      },
+      {
+        "group": "C1",
+        "modelCalls": 0,
+        "outputTokens": 0
+      },
+      {
+        "group": "C2",
+        "modelCalls": 0,
+        "outputTokens": 0
+      }
+    ],
+    "wallTime": [
+      {
+        "group": "C0",
+        "mountAndCreateMs": 72
+      },
+      {
+        "group": "C1",
+        "mountAndCreateMs": 40
+      },
+      {
+        "group": "C2",
+        "mountAndCreateMs": 42
+      }
+    ]
+  },
+  "structure": [
+    {
+      "group": "C0",
+      "toolCount": 1,
+      "toolNames": [
+        "base_read"
+      ],
+      "hasWorkTool": false,
+      "promptSectionCount": 0
+    },
+    {
+      "group": "C1",
+      "toolCount": 2,
+      "toolNames": [
+        "base_read",
+        "repo_instructions"
+      ],
+      "hasWorkTool": false,
+      "promptSectionCount": 0
+    },
+    {
+      "group": "C2",
+      "toolCount": 3,
+      "toolNames": [
+        "base_read",
+        "repo_instructions",
+        "work"
+      ],
+      "hasWorkTool": true,
+      "promptSectionCount": 0
+    }
+  ],
+  "statistics": {
+    "observationsPerGroup": 1,
+    "callStats": {
+      "n": 3,
+      "min": 0,
+      "max": 0,
+      "mean": 0
+    },
+    "tokenStats": {
+      "n": 3,
+      "min": 0,
+      "max": 0,
+      "mean": 0
+    },
+    "wallStats": {
+      "n": 3,
+      "min": 40,
+      "max": 72,
+      "mean": 51.333333333333336
+    },
+    "winnerDeclared": false,
+    "reason": "one observation per group gives no variance estimate, so no difference on any axis can be distinguished from noise. The gate forbids declaring a winner without a statistical basis and this run does not have one."
+  },
+  "notClaimed": [
+    "that any control group produces better work: the model is scripted, so quality is a constant",
+    "that these wall times generalize: a mount in a test process is not a work duration",
+    "that these costs are provider costs: no provider is billed and no live call was made"
+  ]
+}

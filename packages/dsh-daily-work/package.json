@@ -11,15 +11,19 @@
       "types": "./lib/host-plugin.d.ts",
       "default": "./lib/host-plugin.js"
     },
+    "./package.json": "./package.json",
     "./service": {
       "types": "./lib/host.d.ts",
       "default": "./lib/host.js"
+    },
+    "./tool-protocol-guards": {
+      "types": "./lib/tool-protocol-guards.d.ts",
+      "default": "./lib/tool-protocol-guards.js"
     },
     "./tools": {
       "types": "./lib/tools.d.ts",
       "default": "./lib/tools.js"
     },
-    "./package.json": "./package.json",
     "./web-search": {
       "types": "./lib/web-search-plugin.d.ts",
       "default": "./lib/web-search-plugin.js"
@@ -33,6 +37,7 @@
   "peerDependencies": {
     "@deepseek-ai/cordis": "*",
     "@deepseek-ai/dsh-agent": "*",
+    "@deepseek-ai/dsh-credentials": "*",
     "@deepseek-ai/dsh-storage-domain": "*",
     "@deepseek-ai/dsh-subagent": "*",
     "@deepseek-ai/dsh-tools": "*",
@@ -41,11 +46,12 @@
   "devDependencies": {
     "@deepseek-ai/cordis": "*",
     "@deepseek-ai/dsh-agent": "*",
+    "@deepseek-ai/dsh-credentials": "*",
     "@deepseek-ai/dsh-storage-domain": "*",
     "@deepseek-ai/dsh-subagent": "*",
     "@deepseek-ai/dsh-tools": "*",
-    "typescript": "^6.0.3",
-    "@deepseek-ai/dsh-web": "*"
+    "@deepseek-ai/dsh-web": "*",
+    "typescript": "^6.0.3"
   },
   "dsh": {
     "bundle": {

@@ -1,0 +1,57 @@
+# Typecheck evidence for M9.6 (cost/accounting: C05, C11, R06).
+#
+# TWO runs, because they answer two different questions.
+#
+# ---------------------------------------------------------------------------
+# RUN 1 -- the PRODUCTION sources only (the build's own config).
+#
+# COMMAND: cd packages/dsh-daily-work && tsc -p tsconfig.json --noEmit
+#
+#   tsc_prod_exit=0
+#
+# WHAT THIS DOES NOT PROVE, and it is a real gap that was nearly recorded as a
+# pass: `tsconfig.json` EXCLUDES `src/**/*.test.ts`, so this command exits 0
+# with or without a test file present. It is a FALSE PASS for any claim of the
+# form "the tests type-check". It is recorded here only as "the production
+# sources compile against the real DSH declarations", which is all it means.
+#
+# ---------------------------------------------------------------------------
+# RUN 2 -- ALL of src/** including tests (tsconfig.check.json).
+#
+# COMMAND: cd packages/dsh-daily-work && tsc -p tsconfig.check.json
+#
+#   tsc_all_exit=2
+#
+# This config was added by the coordinating agent; it extends tsconfig.json,
+# keeps the identical strict flags, and clears only the `exclude`. Vitest does
+# NOT typecheck, so without this run a wrong import or a wrong generic in a test
+# file compiles silently and only surfaces at runtime, if at all.
+#
+# COST.TEST.TS ITSELF: 0 errors. The four errors below are in OTHER agents'
+# files, which this case does not own and must not edit. They are reported
+# verbatim rather than omitted, because a typecheck result that hides other
+# files' errors would misrepresent the tree it was taken over.
+#
+# The four, by file:
+#   src/control-plane.test.ts  1 error   (property not on an inferred type)
+#   src/probe.test.ts          1 error   (syntax not allowed under erasableSyntaxOnly)
+#   src/tool-protocol.test.ts  2 errors  (a Promise<unknown> assigned to a typed
+#                                         Promise, and a Promise<never> passed
+#                                         where a synchronous undefined is required)
+#
+# Raw output of RUN 2 follows. A clean exit for THIS case is not claimed; the
+# claim is narrower and checkable: cost.test.ts contributes no error.
+#
+tsc_prod_exit=0
+tsc_all_exit=2
+errors_in_cost_test_ts=0
+errors_elsewhere=4
+#
+# --- raw: tsc -p tsconfig.check.json ---
+#
+src/control-plane.test.ts(234,21): error TS2339: Property 'cordisInspectTools' does not exist on type '{ modelToolCatalog: string[]; modelToolCount: number; controlPlaneAsModelTool: Record<string, { exposedAsTool: boolean; authority: string; }>; }'.
+src/probe.test.ts(11,15): error TS1294: This syntax is not allowed when 'erasableSyntaxOnly' is enabled.
+src/tool-protocol.test.ts(741,24): error TS2322: Type 'Promise<unknown>' is not assignable to type 'Promise<{ action: string; }>'.
+  Type 'unknown' is not assignable to type '{ action: string; }'.
+src/tool-protocol.test.ts(1010,30): error TS2345: Argument of type '() => Promise<never>' is not assignable to parameter of type '(this: Scoped<ToolRuntime>, exec: Readonly<ToolExecution>, result: Readonly<ToolExecutionResult>) => undefined'.
+  Type 'Promise<never>' is not assignable to type 'undefined'.

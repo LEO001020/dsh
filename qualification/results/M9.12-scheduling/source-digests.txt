@@ -1,0 +1,31 @@
+# Sources that produced this result. sha256sum, sorted by path.
+# Repo sources (this package):
+4bb4824203d6dcca9a2b879ab97f2d4ee571a7a3dfed182d94a6d21d577e6dbe *packages/dsh-daily-work/src/scheduling.test.ts
+c2ea21b62276a488a5e7fe9a96505af8ae74d490cee772df9dd8a7b2c1f73d86 *packages/dsh-daily-work/src/host.ts
+a364a03a4ecd9b752794e04f4211625671b85dbdf5f17a0fbc5ce7ad7c9a59ce *packages/dsh-daily-work/src/counting.ts
+e7207ffd46f4aef395d6ff48a8679edca6107a90545716be179280bb49617aa0 *packages/dsh-daily-work/src/states.ts
+e0d9cd752db667b70ca02335662541352d232fc31aebccd5d2eb97a08df38106 *packages/dsh-daily-work/src/record.ts
+de70463a211cd47e55ac95928f63a374d8e8c669401c4f3b35aee32ede584fff *packages/dsh-daily-work/src/launch-port.ts
+bc5cd7f06a437a07f82682241023b0b50f10043df6928d0ebde2ed92dbc85b70 *packages/dsh-daily-work/src/reconcile.ts
+9e5a3524e3f0bad64c619b86cdba7d0995485b5a0529c166e9ea6e665df1666b *packages/dsh-daily-work/vitest.config.ts
+31ecf4bb21ba1e97ee481cf3ea2fa45c5ef30cc5675a75424e2abf8398c8cf30 *packages/dsh-daily-work/tsconfig.json
+b755148eaa0076c353cf6f38694f7864b3545af961d64f86eae207d44421c338 *packages/dsh-daily-work/tsconfig.check.json
+
+# Pinned DSH sources the assertions are grounded in (read-only, at the pinned commit):
+168c9c1c3237e6995e2162d86aace6b4c74247a8a210f64e997b98eb0dba744f *packages/subagent/subagent/src/index.ts
+b7e407e9f25d3057dacd7b7dcd68e8d2fa246d0765c46bcf5ce3963e09a18a61 *packages/subagent/subagent/src/continuation-activation.ts
+bdd0c67a1ead461b15e99f34550203fb5d6cce42c84641d03bb8bc6db8d4f887 *packages/subagent/subagent/src/lifecycle.ts
+ac1222aee57599988f64c0b60c0c5fdbce684a091d9bc7743f80dd9ca3469640 *packages/subagent/subagent/src/list-children.ts
+9a1f755aece7d541bd84772a0d2894cba003614a442f8dcc1896f8384fb91bee *packages/subagent/subagent/src/types.ts
+52fe8c33e3becc3c5925ce4c63cfa097dc67158207e50db4622c7b9c15bc9b6f *packages/subagent/subagent/src/depth.ts
+2b238998e1b63ac7ceffa20190caaaa4806a9ae275112807424d176244dfd014 *packages/core/agent-loop/src/agent.ts
+312580d4e2ab568eeec466dbbcff5117cff84a932aeee5d10214bc6a087812eb *packages/core/session/src/types.ts
+c6ded93fde2c64e87a313f27877bbf37390e280ff90c3012ef575181e553e1fe *packages/core/session/src/index.ts
+eee2423a0152096026446dd651f29678e0c504f0349a91758720f01f74efa871 *packages/llm/llm/src/retry-policy.ts
+6e8bb15cef604210f678ea962a125d0e3b4b5872a947252ee5a66fbc7a06dbd9 *packages/llm/llm/src/error.ts
+2260ce28e29fddeaa0b78a273292b6f5c7194adf6226f38ff9e59a50b808cf09 *packages/llm/llm/src/index.ts
+e8f706094c886cc95dc7592bc35747060e55d657a70dda03f44d841ba79905b5 *packages/llm/llm-deepseek/src/protocols/chat-completions/adapter.ts
+d33553781ed2118aab3b249c159fae550d359627565e4714c9ea599e474b8093 *packages/llm/llm-retry/src/index.ts
+9c377ed575053427da1f0cef97c056aee0f6c4a80d413dea0f70086bbd05fb0b *packages/llm/llm-retry/src/types.ts
+bb1b9fc490ca983ff3c7df9cf9de7bbfbc0c9847eb0c5236ee90af22149291ec *packages/test-support/llm-mock-server/src/index.ts
+e9801b98454e45c530ea90293e6aaf3cba2d532ddf751a7e869fbe2524b12958 *packages/storage/storage-domain/src/domain.ts

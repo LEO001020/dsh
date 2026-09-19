@@ -88,7 +88,7 @@ async function harness(): Promise<Harness> {
   const ctx = new Context()
   // Mount the REAL storage hub, JSON backend and domain facility. These are the
   // same services the production host mounts; only the directory is a temp one.
-  await ctx.plugin(Storage, {})
+  await ctx.plugin(Storage)
   await ctx.plugin(storageJsonPlugin as never, { root } as never)
   await ctx.plugin(storageDomainPlugin as never, { backend: 'json' } as never)
 
@@ -405,7 +405,7 @@ describe('work service: persistence', () => {
     // directory. Registering a second service of the same name on one context
     // is a caller bug (and Cordis rejects it), so the reopen must not try.
     const ctx2 = new Context()
-    await ctx2.plugin(Storage, {})
+    await ctx2.plugin(Storage)
     await ctx2.plugin(storageJsonPlugin as never, { root: h.root } as never)
     await ctx2.plugin(storageDomainPlugin as never, { backend: 'json' } as never)
     const reopened = new WorkService(ctx2, {

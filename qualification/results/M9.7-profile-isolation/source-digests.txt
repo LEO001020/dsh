@@ -1,7 +1,7 @@
 # Files this gate's assertions are bound to, sha256.
 # Section 1: the deliverable this evidence is about.
 
-08f4970fb8e5b74dccdcd51408f7f2b329d7c2fb6b35c33c9163fe91649743df *src/profile-isolation.test.ts
+1d3ddc9805d663fc5f957ca2e407f2963b45d58d39a9e376bd07c9c75a1ff80c *src/profile-isolation.test.ts
 
 # Section 2: the DSH sources each assertion reads its rule from. These are
 # pinned so a reader can tell whether a later upstream edit invalidates a

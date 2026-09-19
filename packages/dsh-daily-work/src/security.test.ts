@@ -34,8 +34,8 @@ describe('the tool surface this project adds', () => {
     // E02: the cheapest way to escalate would be to add a tool that reaches a
     // higher-privilege service. Assert the surface is exactly what was intended.
     const ctx = new Context()
-    await ctx.plugin(SystemPrompt, {})
-    await ctx.plugin(ToolRuntime, {})
+    await ctx.plugin(SystemPrompt)
+    await ctx.plugin(ToolRuntime)
     await ctx.plugin(toolsPlugin as never, {} as never)
     const names = ctx.get('tools')!.schemas().map(s => s.name)
     for (const forbidden of [
@@ -55,8 +55,8 @@ describe('the tool surface this project adds', () => {
     // `run_code` is reserved by the tool runtime for PTC mode. A tool claiming it
     // would be a transport-level conflict, not a naming preference.
     const ctx = new Context()
-    await ctx.plugin(SystemPrompt, {})
-    await ctx.plugin(ToolRuntime, {})
+    await ctx.plugin(SystemPrompt)
+    await ctx.plugin(ToolRuntime)
     await expect(ctx.plugin(toolsPlugin as never, {} as never)).resolves.toBeDefined()
     const names = ctx.get('tools')!.schemas().map(s => s.name)
     expect(names).not.toContain('run_code')
@@ -69,8 +69,8 @@ describe('the work tool cannot widen its own authority', () => {
     // The model has a tool. That tool must not be a configuration editor: a tool
     // that could raise its own ceiling would not be a ceiling.
     const ctx = new Context()
-    await ctx.plugin(SystemPrompt, {})
-    await ctx.plugin(ToolRuntime, {})
+    await ctx.plugin(SystemPrompt)
+    await ctx.plugin(ToolRuntime)
     await ctx.plugin(toolsPlugin as never, {} as never)
     const schema = ctx.get('tools')!.schemas().find(s => s.name === 'work')!
     const properties = Object.keys(
@@ -97,8 +97,8 @@ describe('the work tool cannot widen its own authority', () => {
     // `allowedCapabilities` is set by the drain from host policy, not from tool
     // arguments. This pins that the tool has no way to pass one in.
     const ctx = new Context()
-    await ctx.plugin(SystemPrompt, {})
-    await ctx.plugin(ToolRuntime, {})
+    await ctx.plugin(SystemPrompt)
+    await ctx.plugin(ToolRuntime)
     await ctx.plugin(toolsPlugin as never, {} as never)
     const schema = ctx.get('tools')!.schemas().find(s => s.name === 'work')!
     const properties = (schema.parameters as { properties?: Record<string, unknown> }).properties ?? {}
@@ -124,7 +124,7 @@ describe('the search provider cannot claim an entitlement it did not observe', (
     // A missing search credential must not take down the host. It degrades to
     // "search unavailable", which is a reportable state.
     const ctx = new Context()
-    await ctx.plugin(SystemPrompt, {})
+    await ctx.plugin(SystemPrompt)
     const scope = ctx.isolate('web-search-no-credentials')
     await expect(
       scope.plugin(webSearchPlugin as never, {

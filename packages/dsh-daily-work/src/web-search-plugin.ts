@@ -18,6 +18,7 @@
  * explicitly NOT a tested entitlement and NOT a successful search.
  */
 import type { Context } from '@deepseek-ai/cordis'
+import { credentialRef } from '@deepseek-ai/dsh-credentials'
 import { createDualLaneSearchProvider, type DualLaneSearchConfig } from './web-search.ts'
 
 export const name = 'dsh-daily-web-search'
@@ -47,12 +48,17 @@ export function apply(ctx: Context, config: Config): void {
     const credentials = ctx.get('credentials')
     if (credentials === undefined) return
     try {
-      const info = await credentials.describe(config.apiKeyEnv)
+      // `credentialRef` is the sanctioned brand constructor and it VALIDATES the
+      // name. Passing the raw config string would skip that check at the type
+      // level and let a malformed reference reach the credential store, which
+      // would then answer "not configured" for a name that was never valid --
+      // an absence that looks like a missing credential rather than a typo.
+      const info = await credentials.describe(credentialRef(config.apiKeyEnv))
       presenceCache.set(config.apiKeyEnv, info.configured)
     } catch {
-      // A credential store that cannot be read is not a configured credential.
-      // Reporting "configured" on an error would claim an entitlement we did not
-      // observe.
+      // A credential store that cannot be read, or a reference the store
+      // rejects, is not a configured credential. Reporting "configured" on an
+      // error would claim an entitlement we did not observe.
       presenceCache.set(config.apiKeyEnv, false)
     }
   }

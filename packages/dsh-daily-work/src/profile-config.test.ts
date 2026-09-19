@@ -218,6 +218,13 @@ function configKeys(row: string): string[] {
   })
 }
 
+/** The first line of a named row's `config:` in a dump, or `'<absent>'` when the row or its config is missing. */
+function firstConfigLine(dump: string, id: string): string {
+  const row = parseRows(dump).get(id)
+  if (row === undefined) return '<no such row>'
+  return configLines(row)?.[0] ?? '<no config>'
+}
+
 // ---------------------------------------------------------------------------
 // A04 — a patch replaces the targeted row's WHOLE `config` object.
 // ---------------------------------------------------------------------------
@@ -470,8 +477,10 @@ describe('A05: a home overlay that changes model/preset is visible, and the base
     expect(withHome.status, withHome.stderr).toBe(0)
     expect(withoutHome.status, withoutHome.stderr).toBe(0)
 
-    expect(configLines(parseRows(withHome.stdout).get('agent-default-model') as string)[0]).toBe('provider: polluted-provider')
-    expect(configLines(parseRows(withoutHome.stdout).get('agent-default-model') as string)[0]).toBe('provider: deepseek-official')
+    // `configLines` is `string[] | undefined` under `noUncheckedIndexedAccess`,
+    // so the first line is read through a helper rather than by index.
+    expect(firstConfigLine(withHome.stdout, 'agent-default-model')).toBe('provider: polluted-provider')
+    expect(firstConfigLine(withoutHome.stdout, 'agent-default-model')).toBe('provider: deepseek-official')
     expect(withoutHome.stdout).not.toContain('polluted-provider')
   })
 
@@ -649,28 +658,63 @@ describe('A08: the C2 difference from C0 is exactly the two documented changes',
 // ---------------------------------------------------------------------------
 
 describe('A09: model route and search provider are separate capabilities with separate status', () => {
-  it('reports the root model route as available while the search provider key is absent — the real current state', () => {
-    // The gate's premise is a claim about THIS machine, so it is verified here
-    // rather than asserted. The root model key is available because the shipped
-    // DeepSeek adapter registers its route unconditionally and resolves the key
-    // per request; the search key is absent because no credential source on this
-    // machine supplies `DEEPSEEK_API_KEY` (checked below), which is exactly the
-    // state the gate describes.
-    const rootModelKeyAvailable = true
+  it('verifies the machine is really in the state the gate describes: model key usable, search key absent', () => {
+    // The gate's premise is a claim about THIS machine, so it is verified rather
+    // than asserted as a literal. Both halves are read from the sources the
+    // credentials provider actually layers
+    // (packages/credentials/credentials-local/src/index.ts):
+    //
+    //   inherited process environment  (read-only, wins)
+    //   > $DSH_HOME/.credentials.yaml  (provider-managed, writable)
+    //   > <invocation cwd>/.env
+    //   > $DSH_HOME/.env
+    //
+    // ROOT MODEL KEY: "available" here means the ROUTE is registered and a key
+    // CAN be resolved. The shipped `deepseek-official` route is registered
+    // unconditionally by `llm-deepseek`, and the adapter resolves the key per
+    // request — which is exactly why the failure in the A12 evidence is named
+    // MISSING_CREDENTIAL at request time rather than "no such provider".
+    const dshHome = process.env['DSH_HOME']
+    const homes = [
+      dshHome === undefined ? undefined : dshHome,
+      'D:/DSH/home/m914',
+      join(process.env['USERPROFILE'] ?? '', '.dsh'),
+    ].filter((value): value is string => value !== undefined && value.length > 0)
 
-    // The search side: the shipped provider's own `available()` requires a key.
-    //   packages/web/web-search-deepseek/src/provider.ts:191-197
-    //     available() { return ((options.apiKey?.length ?? 0) > 0 || options.resolveApiKey !== undefined) && ... }
-    // The plugin ALWAYS supplies `resolveApiKey`, so the boolean below is the
-    // presence of a value, not the presence of a resolver. `resolveApiKey`
-    // returns undefined when no source supplies the credential, which is the
-    // state under test.
-    const searchProviderKeyPresent = false
+    // SEARCH KEY: the shipped search provider reads `DEEPSEEK_API_KEY` and the
+    // same reference backs the chat adapter, so "search key absent" is exactly
+    // "no source supplies DEEPSEEK_API_KEY".
+    const sourcesWithKey: string[] = []
+    if (process.env['DEEPSEEK_API_KEY'] !== undefined) sourcesWithKey.push('process environment')
+    for (const home of homes) {
+      const credentials = join(home, '.credentials.yaml')
+      if (existsSync(credentials) && readFileSync(credentials, 'utf8').includes('DEEPSEEK_API_KEY')) {
+        sourcesWithKey.push(credentials)
+      }
+      const envFile = join(home, '.env')
+      if (existsSync(envFile) && readFileSync(envFile, 'utf8').includes('DEEPSEEK_API_KEY')) {
+        sourcesWithKey.push(envFile)
+      }
+    }
 
-    expect(rootModelKeyAvailable).toBe(true)
-    expect(searchProviderKeyPresent).toBe(false)
-    // SEPARATE: two different facts, neither derived from the other.
-    expect(rootModelKeyAvailable).not.toBe(searchProviderKeyPresent)
+    // The route is registered: the A12 transcript records the real catalog with
+    // `deepseek-official` routable, which is the model side of the two
+    // capabilities. Reading it from the recorded evidence keeps this test from
+    // re-asserting a constant.
+    const catalogTranscript = readFileSync(
+      join(REPO, 'qualification', 'results', 'M9.14-profile-config', 'runs', 'a12-web-host.txt'),
+      'utf8',
+    )
+    const routeRegistered = /model_catalog_routable_providers: \["deepseek-official"\]/.test(catalogTranscript)
+
+    expect(routeRegistered, 'the model route must be registered for the gate to be about routing').toBe(true)
+    expect(sourcesWithKey, `DEEPSEEK_API_KEY found in: ${sourcesWithKey.join(', ')}`).toEqual([])
+
+    // SEPARATE: two different facts, neither derived from the other. One is
+    // about a registered route, the other about a stored secret; the gate is
+    // that the system reports them separately instead of collapsing them.
+    expect(routeRegistered).toBe(true)
+    expect(sourcesWithKey).toHaveLength(0)
   })
 
   it('turns an unusable search provider into WEB_PROVIDER_CONFIGURED_UNAVAILABLE, never into an empty result', async () => {
@@ -780,6 +824,53 @@ describe('A09: model route and search provider are separate capabilities with se
     // Presence was read, but nothing was dispatched. A network probe here would
     // make `available()` an entitlement claim.
     expect(probes).toBeGreaterThan(0)
+  })
+
+  it('drives the SHIPPED DeepSeek search provider to the credential boundary — the provider the daily profile actually mounts', async () => {
+    // Important scope correction to the previous test: the daily profile does
+    // NOT mount this repo's ported provider. `profiles/daily-candidate/cordis.patch.yml`
+    // changes only `subagent` and inserts `daily-work-host`, so the mounted
+    // search provider is the SHIPPED `@deepseek-ai/dsh-web-search-deepseek` from
+    // the base bundle. The gate is about the capability the daily system
+    // actually has, so the shipped provider is the one that must be driven.
+    //
+    // Its `available()` is presence-based:
+    //   packages/web/web-search-deepseek/src/provider.ts:191-197
+    // and the plugin always supplies `resolveApiKey`, so an ABSENT key makes
+    // `available()` return... TRUE, because the resolver exists. That is a real
+    // and important distinction: `available()` answers "could this route be
+    // used", while the failure is only discovered at the request. The test
+    // asserts both, because conflating them is precisely the mistake the gate
+    // warns about.
+    const { DeepSeekSearchProvider, DEEPSEEK_PROVIDER_ID } = await import('@deepseek-ai/dsh-web-search-deepseek')
+
+    let requests = 0
+    const provider = new DeepSeekSearchProvider(() => ({
+      // A resolver IS present, exactly as the plugin supplies it, and it
+      // resolves to undefined because no source stores the key.
+      resolveApiKey: () => Promise.resolve(undefined),
+      apiKeyEnv: 'DEEPSEEK_API_KEY' as never,
+      baseURL: 'https://api.deepseek.com/anthropic',
+      model: 'deepseek-v4-flash',
+      apiVersion: '2023-06-01',
+      maxTokens: 4096,
+      maxUses: 5,
+      recordRequest: () => { requests += 1 },
+    }))
+
+    expect(provider.id).toBe(DEEPSEEK_PROVIDER_ID)
+    // Presence-of-a-resolver is what `available()` tests, and it is true here.
+    expect(provider.available()).toBe(true)
+
+    // The request is where the truth appears, and it is an ERROR with a code —
+    // never a resolved empty result.
+    await expect(provider.search({ query: 'x' })).rejects.toMatchObject({
+      code: 'WEB_PROVIDER_CREDENTIAL_MISSING',
+    })
+    // Nothing was dispatched, so no request record was written: the failure
+    // happened before the wire, which is why it is a credential boundary and
+    // not a network failure.
+    expect(requests).toBe(0)
   })
 })
 
@@ -1267,5 +1358,61 @@ describe('A12: the real daily Web host starts, serves, and owns a Session lifecy
     expect(text).toMatch(/profile: m914-daily/)
     expect(text).toMatch(/bundles: .*dsh-web-app/)
     expect(text).toMatch(/work_extension_mounted: true/)
+  })
+
+  it('booted the DAILY composition, not a bare web profile — the resolved graph carries both C2 changes', () => {
+    // The sharpest form of "not substituted": the profile the host actually
+    // booted must resolve the SAME two differences A08 verified for C2. A Web
+    // profile without the work extension would still bind a port and serve a
+    // Session, so the bind alone would not distinguish them — the graph does.
+    const graph = readFileSync(join(EVIDENCE, 'dumps', 'a12-daily-profile.yml'), 'utf8')
+    const rows = parseRows(graph)
+
+    // Difference 1: the raised child capacity.
+    expect(configLines(rows.get('subagent') as string)).toEqual(['maxActiveSubagents: 10', 'maxDepth: 1'])
+    // Difference 2: the work extension host service.
+    const host = rows.get('daily-work-host')
+    expect(host, 'the host the transcript came from must mount the work extension').toBeDefined()
+    expect(host).toContain("name: dsh-daily-work/host")
+    expect(host).toContain('targetChildren: 10')
+    expect(host).toContain('budgetCeiling: 200')
+
+    // And it is a Web composition, so the boot could not have been the headless
+    // runner: the web transport rows are present and the headless runner row is
+    // not.
+    expect(rows.has('webserver')).toBe(true)
+    expect(rows.has('connection')).toBe(true)
+    expect(rows.has('headless-runner')).toBe(false)
+  })
+
+  it('regenerated dumps are consistent with the live resolution, so the recorded evidence is not stale', () => {
+    // The recorded dumps are produced by `make-dumps.mjs`, which drives the same
+    // launcher this file drives. If the resolver's behaviour changed, the
+    // recorded artifacts would describe a graph the launcher no longer produces
+    // and every claim above would be about history. This test pins the one value
+    // that would move first — the replacement result for the A04 row — against a
+    // live run of the same stimulus.
+    const recorded = readFileSync(join(EVIDENCE, 'dumps', 'a04-one-field.yml'), 'utf8')
+    expect(configKeys(parseRows(recorded).get('session-query-sqlite') as string)).toEqual(['openAt'])
+
+    const home = tempHome()
+    writeProfile(home, 'a12-stale', ['@deepseek-ai/dsh-base', '@deepseek-ai/dsh-headless'])
+    const patchPath = join(home.dir, 'one-field.patch.yml')
+    writeFileSync(patchPath, [
+      '# A04: change exactly ONE field of ONE row.',
+      '- id: session-query-sqlite',
+      '  config:',
+      '    openAt: first-search',
+      '',
+    ].join('\n'))
+    const live = runLauncher(home, ['--profile', 'a12-stale', '--dump-config', '--patch', patchPath])
+    expect(live.status, live.stderr).toBe(0)
+
+    // Compare only the row under test: the dumps differ by their absolute
+    // profile path in the attribution comments, which is a machine-location
+    // difference and not a resolver difference.
+    expect(parseRows(live.stdout).get('session-query-sqlite')).toBe(
+      parseRows(recorded).get('session-query-sqlite'),
+    )
   })
 })

@@ -1,0 +1,29 @@
+# sha256 of every source this case touches, taken after the final test run.
+# Verify before trusting the results above: a later edit to any of these
+# invalidates the evidence in this directory.
+
+a242d08840e72de05a362693a38c8440f9ee807cf2aca24a0047087a256a578b *packages/dsh-daily-work/src/cost.test.ts
+e0d9cd752db667b70ca02335662541352d232fc31aebccd5d2eb97a08df38106 *packages/dsh-daily-work/src/record.ts
+c2ea21b62276a488a5e7fe9a96505af8ae74d490cee772df9dd8a7b2c1f73d86 *packages/dsh-daily-work/src/host.ts
+a364a03a4ecd9b752794e04f4211625671b85dbdf5f17a0fbc5ce7ad7c9a59ce *packages/dsh-daily-work/src/counting.ts
+
+# Files CREATED by this case (nothing else was touched):
+#   packages/dsh-daily-work/src/cost.test.ts
+#   qualification/results/M9.6-cost/FINDINGS.md
+#   qualification/results/M9.6-cost/tests.txt
+#   qualification/results/M9.6-cost/tsc.txt
+#   qualification/results/M9.6-cost/source-digests.txt
+#   qualification/results/M9.6-cost/sabotage.txt
+# Files MODIFIED by this case (the minimum the gates need):
+#   packages/dsh-daily-work/src/record.ts   (root reserve, overage, halt, UsageLedger)
+#   packages/dsh-daily-work/src/host.ts     (child ceiling, spendRoot, recordSpend, retainUnknown, resolveHalt)
+#   packages/dsh-daily-work/src/counting.ts (child ceiling in mayAdmit; admissionReason)
+
+# NOTE on a post-creation edit to cost.test.ts, recorded so the diff is
+# explainable rather than surprising. The coordinating agent changed two lines:
+#     await ctx.plugin(Storage, {})   ->   await ctx.plugin(Storage)
+# in the harness and the reopen case. Reason given: those plugins' Config type
+# is `undefined`, so passing `{}` is a type error, and DSH's own tests call
+# `ctx.plugin(Storage)` with no config. The digest above is the POST-edit state,
+# and the 43/43 result in tests.txt was re-run after the edit. No assertion or
+# gate logic was touched by it.

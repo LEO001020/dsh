@@ -1,0 +1,17 @@
+command: tsc -p tsconfig.check.json
+# tsconfig.check.json is the WHOLE-TREE typecheck (tests included).
+# tsconfig.json EXCLUDES src/**/*.test.ts, so it exits 0 with or without
+# a test file -- a FALSE PASS for any 'tests type-check' claim.
+exit_code: 2
+# exit 2 is NOT a clean pass. Every error below is in a file this agent
+# does not own (control-plane, research-chain, tool-protocol).
+# ZERO errors are reported for src/scheduling.test.ts.
+
+src/control-plane.test.ts(249,21): error TS2339: Property 'cordisInspectTools' does not exist on type '{ modelToolCatalog: string[]; modelToolCount: number; controlPlaneAsModelTool: Record<string, { exposedAsTool: boolean; authority: string; }>; }'.
+src/recovery.ts(359,15): error TS1294: This syntax is not allowed when 'erasableSyntaxOnly' is enabled.
+src/research-chain.test.ts(731,15): error TS1294: This syntax is not allowed when 'erasableSyntaxOnly' is enabled.
+src/research-chain.test.ts(1208,66): error TS2367: This comparison appears to be unintentional because the types '"user/message" | "system/message" | "assistant/message" | "tool/result"' and '"session/title"' have no overlap.
+src/tool-protocol.test.ts(741,24): error TS2322: Type 'Promise<unknown>' is not assignable to type 'Promise<{ action: string; }>'.
+  Type 'unknown' is not assignable to type '{ action: string; }'.
+src/tool-protocol.test.ts(1010,30): error TS2345: Argument of type '() => Promise<never>' is not assignable to parameter of type '(this: Scoped<ToolRuntime>, exec: Readonly<ToolExecution>, result: Readonly<ToolExecutionResult>) => undefined'.
+  Type 'Promise<never>' is not assignable to type 'undefined'.

@@ -97,9 +97,9 @@ async function rig(): Promise<Rig> {
   // recorded as an open finding rather than silently avoided.
   await ctx.plugin(SandboxPolicy as never, { mode: 'danger-full-access' } as never)
   await ctx.plugin(LocalSandboxProvider as never, {} as never)
-  await ctx.plugin(SubprocessRuntime, {})
+  await ctx.plugin(SubprocessRuntime)
   await ctx.plugin(AgentLoop, { agents: [] })
-  await ctx.plugin(TerminalRuntime, {})
+  await ctx.plugin(TerminalRuntime)
   await ctx.plugin(terminalBash as never, { shellDialect: DIALECT, timeoutMs: 300_000 } as never)
   return {
     ctx,

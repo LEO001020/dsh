@@ -1,0 +1,83 @@
+{
+  "gate": "U03",
+  "target": 4,
+  "cycles": 6,
+  "series": [
+    {
+      "cycle": 0,
+      "resources": 6,
+      "listeners": 14,
+      "heapMb": 68.7,
+      "admitted": 4,
+      "spent": 4
+    },
+    {
+      "cycle": 1,
+      "resources": 6,
+      "listeners": 14,
+      "heapMb": 55.3,
+      "admitted": 4,
+      "spent": 8
+    },
+    {
+      "cycle": 2,
+      "resources": 6,
+      "listeners": 14,
+      "heapMb": 67.2,
+      "admitted": 4,
+      "spent": 12
+    },
+    {
+      "cycle": 3,
+      "resources": 6,
+      "listeners": 14,
+      "heapMb": 53.7,
+      "admitted": 4,
+      "spent": 16
+    },
+    {
+      "cycle": 4,
+      "resources": 6,
+      "listeners": 14,
+      "heapMb": 65.5,
+      "admitted": 4,
+      "spent": 20
+    },
+    {
+      "cycle": 5,
+      "resources": 6,
+      "listeners": 14,
+      "heapMb": 51.9,
+      "admitted": 4,
+      "spent": 24
+    }
+  ],
+  "resourceTrend": {
+    "first": 6,
+    "last": 6,
+    "min": 6,
+    "max": 6,
+    "largestStep": 0,
+    "drift": 0
+  },
+  "listenerTrend": {
+    "first": 14,
+    "last": 14,
+    "min": 14,
+    "max": 14,
+    "largestStep": 0,
+    "drift": 0
+  },
+  "modelRequests": 48,
+  "exercised": [
+    "rolling top-up across six waves through the real startContinuable seam",
+    "the full admission state machine per task (executing -> settling -> confirmed)",
+    "pause refusing admission and resume restoring it, alternating by cycle",
+    "two runs in one process, separately keyed"
+  ],
+  "notExercised": [
+    "no live provider: cost is this project's reservation arithmetic, not a provider invoice",
+    "no Web host: host-level sockets and watchers are not covered",
+    "a modest load: a small series bounds a leak over the range run, it does not exclude a slow one"
+  ]
+}

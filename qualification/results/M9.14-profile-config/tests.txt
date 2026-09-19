@@ -1,0 +1,43 @@
+=== M9.14 profile/config/boundary tests (gates A04 A05 A08 A09 A10 A12) ===
+command: vitest run --pool=forks --maxWorkers=1 src/profile-config.test.ts
+cwd:     /d/DSH/work/dsh-native-daily/packages/dsh-daily-work
+date:    2026-09-19T11:35:05Z
+note:    --maxWorkers=1 is the mandated CPU discipline; the A10 suite spawns
+         four real launcher subprocesses and they are serialized.
+
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.8 [39m[90mD:/DSH/work/dsh-native-daily/packages/dsh-daily-work[39m
+
+ [32m✓[39m src/profile-config.test.ts[2m > [22mA04: a profile patch replaces the row config, it does not merge into it[2m > [22mdrops the unmentioned key instead of merging it, and the dump proves which happened[32m 240[2mms[22m[39m
+ [32m✓[39m src/profile-config.test.ts[2m > [22mA04: a profile patch replaces the row config, it does not merge into it[2m > [22mreports the replacement as an INVALID row at mount, which is the loud failure a silent merge would have hidden[33m 2392[2mms[22m[39m
+ [32m✓[39m src/profile-config.test.ts[2m > [22mA04: a profile patch replaces the row config, it does not merge into it[2m > [22mapplies a whole-value replacement from the HOME layer too, with the home layer ranked above the profile layer[32m 117[2mms[22m[39m
+ [32m✓[39m src/profile-config.test.ts[2m > [22mA04: a profile patch replaces the row config, it does not merge into it[2m > [22mnever silently accepts a patch that names no existing row[32m 113[2mms[22m[39m
+ [32m✓[39m src/profile-config.test.ts[2m > [22mA05: a home overlay that changes model/preset is visible, and the baseline home is clean[2m > [22mshows the override in the graph, attributes the row to the home layer, and differs from the clean home[32m 253[2mms[22m[39m
+ [32m✓[39m src/profile-config.test.ts[2m > [22mA05: a home overlay that changes model/preset is visible, and the baseline home is clean[2m > [22momits the home layer entirely under --dump-default-config, which is why that flag is the stock baseline[32m 290[2mms[22m[39m
+ [32m✓[39m src/profile-config.test.ts[2m > [22mA05: a home overlay that changes model/preset is visible, and the baseline home is clean[2m > [22mrefuses to combine --dump-default-config with --patch, so the baseline cannot be quietly overlayed[32m 130[2mms[22m[39m
+ [32m✓[39m src/profile-config.test.ts[2m > [22mA08: the C2 difference from C0 is exactly the two documented changes[2m > [22mchanges exactly two rows and deletes none[32m 275[2mms[22m[39m
+ [32m✓[39m src/profile-config.test.ts[2m > [22mA08: the C2 difference from C0 is exactly the two documented changes[2m > [22mnever deletes a stock component while still calling the result stock[32m 288[2mms[22m[39m
+ [32m✓[39m src/profile-config.test.ts[2m > [22mA08: the C2 difference from C0 is exactly the two documented changes[2m > [22mcompares the Goal, fork and compaction rows and finds them identical between C0 and C2[32m 276[2mms[22m[39m
+ [32m✓[39m src/profile-config.test.ts[2m > [22mA08: the C2 difference from C0 is exactly the two documented changes[2m > [22mrecords the measured C0 capability gap the C2 change exists to close[32m 121[2mms[22m[39m
+ [32m✓[39m src/profile-config.test.ts[2m > [22mA09: model route and search provider are separate capabilities with separate status[2m > [22mverifies the machine is really in the state the gate describes: model key usable, search key absent[32m 2[2mms[22m[39m
+ [32m✓[39m src/profile-config.test.ts[2m > [22mA09: model route and search provider are separate capabilities with separate status[2m > [22mturns an unusable search provider into WEB_PROVIDER_CONFIGURED_UNAVAILABLE, never into an empty result[32m 279[2mms[22m[39m
+ [32m✓[39m src/profile-config.test.ts[2m > [22mA09: model route and search provider are separate capabilities with separate status[2m > [22mnever renders a failed search as `No results found.` — the tool text that would fabricate a negative finding[32m 264[2mms[22m[39m
+ [32m✓[39m src/profile-config.test.ts[2m > [22mA09: model route and search provider are separate capabilities with separate status[2m > [22mreports presence, not entitlement, from the ported provider — and never probes from available()[32m 14[2mms[22m[39m
+ [32m✓[39m src/profile-config.test.ts[2m > [22mA09: model route and search provider are separate capabilities with separate status[2m > [22mdrives the SHIPPED DeepSeek search provider to the credential boundary — the provider the daily profile actually mounts[32m 48[2mms[22m[39m
+ [32m✓[39m src/profile-config.test.ts[2m > [22mA10: the headless CLI stream is interaction; the persisted Session is evidence[2m > [22mbaseline: a normally-completing turn exits 0 and the CLI stream and the Session agree[33m 1743[2mms[22m[39m
+ [32m✓[39m src/profile-config.test.ts[2m > [22mA10: the headless CLI stream is interaction; the persisted Session is evidence[2m > [22mlarge output: the CLI stream is BOUNDED and flags it, while the Session keeps the full result[33m 1866[2mms[22m[39m
+ [32m✓[39m src/profile-config.test.ts[2m > [22mA10: the headless CLI stream is interaction; the persisted Session is evidence[2m > [22mbusiness failure inside a normally-completing turn: exit 0 is NOT business success[33m 1868[2mms[22m[39m
+ [32m✓[39m src/profile-config.test.ts[2m > [22mA10: the headless CLI stream is interaction; the persisted Session is evidence[2m > [22mreports a genuine turn-level failure as a non-zero exit, so the two failure kinds are distinguishable[33m 1241[2mms[22m[39m
+ [32m✓[39m src/profile-config.test.ts[2m > [22mA12: the real daily Web host starts, serves, and owns a Session lifecycle[2m > [22mrecorded the real Web host transcript, and it shows a bind, a trust fence and a Session[32m 0[2mms[22m[39m
+ [32m✓[39m src/profile-config.test.ts[2m > [22mA12: the real daily Web host starts, serves, and owns a Session lifecycle[2m > [22mproves the boundary is a CREDENTIAL boundary, not a composition failure[32m 0[2mms[22m[39m
+ [32m✓[39m src/profile-config.test.ts[2m > [22mA12: the real daily Web host starts, serves, and owns a Session lifecycle[2m > [22mis not substituted by a headless or testkit run — the host evidence names the Web profile[32m 0[2mms[22m[39m
+ [32m✓[39m src/profile-config.test.ts[2m > [22mA12: the real daily Web host starts, serves, and owns a Session lifecycle[2m > [22mbooted the DAILY composition, not a bare web profile — the resolved graph carries both C2 changes[32m 2[2mms[22m[39m
+ [32m✓[39m src/profile-config.test.ts[2m > [22mA12: the real daily Web host starts, serves, and owns a Session lifecycle[2m > [22mregenerated dumps are consistent with the live resolution, so the recorded evidence is not stale[32m 166[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[32m25 passed[39m[22m[90m (25)[39m
+[2m   Start at [22m 19:35:06
+[2m   Duration [22m 12.33s[2m (transform 491ms, setup 0ms, import 67ms, tests 12.09s, environment 0ms)[22m
+
+
+vitest_exit=0

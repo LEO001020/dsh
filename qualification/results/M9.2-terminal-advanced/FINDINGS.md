@@ -1,9 +1,16 @@
 # M9.2 — terminal gates T05, T06, T08
 
 Runner: `packages/dsh-daily-work/src/terminal-advanced.test.ts`
-sha256: `b202350f3e09e6cfb292a92fb8febd3376df6b04a419aa627f055b336fa5888e`
+sha256: `050f91d4005e8f3a16d14dfaab304f4545775d89bce5e44db114ee9f361cc350`
 Result: **10 passed / 10**, `vitest run` exit 0. `tsc -p tsconfig.json --noEmit` exit 0.
-All three gates closed on this machine.
+Stability: 5 consecutive full-file runs, 10/10 each.
+
+Every number quoted below is emitted by the run as a `[measured]` line in
+`tests.txt`, so it can be traced to a run rather than to a recollection of one.
+The assertions are bounds; the `[measured]` lines are the actual values. Values
+vary a little between runs (signal round trip 7–23 ms; forged-marker settle
+138–185 ms), so the bounds are what the test enforces and the measured lines are
+what the finding reports.
 
 Rig: the one `terminal.test.ts` established — real Agents (the service rejects a
 forged owner), real `ctx.terminals`, real ConPTY, mount order as M6 documented.
@@ -45,9 +52,9 @@ moment in the same session:
     signal() during the cell          ->  resolves
 
 Measured: the cell had ~9.5 s of its 12 s sleep left when the signal was sent.
-The signal resolved in **8–9 ms**. A control path that waited on the execution
-path would have taken seconds. That is the separation, measured rather than
-asserted.
+The signal resolved in **7–23 ms** across runs (the run captured in `tests.txt`:
+7 ms). A control path that waited on the execution path would have taken
+seconds. That is the separation, measured rather than asserted.
 
 **2. The signal really stops the command, not merely the wait.**
 
@@ -173,16 +180,24 @@ caller must interpret. There is no exit code to read, and that is the finding.
 verification.**
 
 The backend treats the shell's own OSC `133;D;` marker plus the printable prompt
-as readiness evidence. A program can print that sequence itself. Measured A/B in
-one session:
+as readiness evidence. A program can print that sequence itself. Measured A/B,
+each in its own fresh session:
 
-    baseline  `Start-Sleep 12; Write-Output <token>`                  3031 ms  inferred_idle
-    forged    `<print OSC 133;D;0 + 'dsh> '>; Start-Sleep 12; ...`     129 ms  stdin_read
+    baseline  `Start-Sleep 12; Write-Output <token>`                  3025-3135 ms  inferred_idle
+    forged    `<print OSC 133;D;0 + 'dsh> '>; Start-Sleep 12; ...`    138-185 ms   stdin_read
 
-The forged command settles **129 ms** after it starts, reporting `stdin_read`,
-while the command is still sleeping and has produced nothing. The token appears
-only once the real 12 seconds elapse. The baseline control rules out the trivial
-explanation that the poller simply never waits.
+The forged command settles in **~170 ms** (185 ms in the captured run), reporting
+`stdin_read`, while the command is still sleeping and has produced nothing. The
+token appears only once the real 12 seconds elapse. The baseline control rules
+out the trivial explanation that the poller simply never waits.
+
+The bound is derived from the mechanism rather than fitted to the observation:
+without the marker the only path to a settle is the idle-silence heuristic, which
+needs `idleSilenceMs = 3000 ms` of quiet (`terminal-bash/src/config.ts:104`),
+while the forged marker satisfies the prompt-readiness branch instead. The test
+asserts `< 1500 ms`, which is reachable only by accepting the forged framing, so
+a regression that stopped accepting it would settle at ~3000 ms and FAIL rather
+than quietly pass. That bound has ~8x headroom over the observed value.
 
 So: framing is a **readiness** signal, and readiness is not completion. A
 verification that trusted this framing could be defeated by any program that
@@ -219,7 +234,7 @@ and honestly reports itself exited, and a further send is refused
 
 ---
 
-## TWO REAL DEFECTS FOUND WHILE BUILDING THIS (both in the test, both fixed)
+## FOUR REAL DEFECTS FOUND WHILE BUILDING THIS (all in the test, all fixed)
 
 Recorded because they are traps the next person will meet, and because a green
 run that hid them would be worth less than this paragraph.
@@ -228,9 +243,7 @@ run that hid them would be worth less than this paragraph.
    returns `this.expectOwned(...).session.signal(...)` directly
    (`terminal/src/index.ts:274-276`), so the authorization check runs before any
    promise exists. `await expect(...).rejects.toThrow()` fails on it — the throw
-   escapes before `expect` is reached. The test now catches both shapes.
-
-2. **Nested escaping in a generated child source fails invisibly.** An earlier
+   escapes before `expect` is reached. The test now catches both shapes.2. **Nested escaping in a generated child source fails invisibly.** An earlier
    version of the T06 process-boundary test assembled the shell command inside the
    template literal; `\\` collapsed to `\`, the child's own string literal read it
    as an escape, and the child died in 292 ms with a `SyntaxError` in source the
@@ -238,16 +251,32 @@ run that hid them would be worth less than this paragraph.
    interpolated as one `JSON.stringify`, and the child's boot is an assertion
    (`READY`, no `SyntaxError`) rather than a precondition to hope for.
 
+3. **The settle viewport is not a reliable read of the current cell.** One
+   version of T05(2) asserted the follow-up cell's output from
+   `send().viewport` and failed intermittently, returning the PREVIOUS cell's
+   text. That is T08's own finding appearing inside T05: a settle reports a wait
+   ending, and the viewport at that moment can still be the leftovers of what ran
+   before. The assertion now reads scrollback after the cell has had time to
+   produce output. Recorded because it is a live trap for any consumer, not just
+   for this test.
+
+4. **Measuring two things in one session couples them.** The T08 A/B originally
+   ran both the baseline and the forged command in one session with a SIGINT
+   between them, and it flaked under load: the second measurement depended on how
+   fast the shell recovered from the interrupt rather than on framing. Each
+   measurement now gets its own fresh session. The flake was real, and it was
+   hiding a dependency the test did not intend to assert.
+
 ---
 
 ## WHAT IS PROVEN, AND WHAT IS NOT
 
 **Proven on this machine, unconfined, with the runner above:**
-T05 (independent control path, 8–9 ms against a running cell; the command really
+T05 (independent control path, 7–23 ms against a running cell; the command really
 stops; honest post-state; authorized signalling). T06 (fresh context empty;
 historical id refused while the id is genuinely reused; a running cell dies with
 its host, with a positive control; no replay call site in this package). T08 (no
-verdict field on a send result; a forged marker settles in 129 ms, so framing is
+verdict field on a send result; a forged marker settles in ~170 ms, so framing is
 not verification; a blocking read settles as a non-success reason and consumes
 the next cell; the only exit code is the shell's).
 

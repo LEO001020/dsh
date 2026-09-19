@@ -1,0 +1,11 @@
+=== tsc: the package (production sources) ===
+command: tsc -p tsconfig.json --noEmit
+date:    2026-09-19T11:32:51Z
+
+tsc_exit=0
+
+=== tsc: the new test file, with the package's compiler options ===
+note: tsconfig.json excludes src/**/*.test.ts, so the test file is checked
+      separately against the same option set.
+
+tsc_test_exit=0

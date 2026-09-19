@@ -1,0 +1,26 @@
+# sha256 of the artifacts this milestone's evidence rests on
+
+## project sources (relative to packages/dsh-daily-work/)
+47ab17ab46a5b5e1f77db5b6377a4f63e61275ee657d0ad2f92205a383a89b6a *src/durability-records.test.ts
+5edde8a5d8d79b0a138f06818a9deb3a04ccc6c22dd7bfe1ae338c967a45f440 *src/recovery.ts
+
+## DSH source files quoted in the test comments
+## (relative to D:/DSH/src/dsh-src/)
+e9801b98454e45c530ea90293e6aaf3cba2d532ddf751a7e869fbe2524b12958 *packages/storage/storage-domain/src/domain.ts
+f08d0e7932b1bba40546d63f780359c12a81ebcba080d8b439a6eb960cf355cd *packages/storage/storage-domain/src/spec.ts
+661c0b7daa38e994443782a47362e9c3077c62df5da2c7db4892816ea5e8d32f *packages/storage/storage-domain/src/index.ts
+3c239eca0157166ce7ae8b417215e1e5366e5c6f36e375f3680f4bacfaf1da1c *packages/storage/storage-domain/src/events.ts
+063881a34d9a375f2c38fa76b8192690b6dd7e62d37b68e18c055632007625ac *packages/storage/storage/src/backend.ts
+ccb2372d1b78fb7c5b00f688435519ea7a44a700e2a206c4df3fb58c1ac54d72 *packages/storage/storage-json/src/atomic.ts
+1ea78487371e0c64719bce27615e16be7efb729d5a45bb514c318d74546b0b0a *packages/core/agent/src/types.ts
+d0ac3509febb04308eff84bc6c949ff3c736dec9fd9f8d230c5d7fa3455ff204 *packages/core/agent/src/runtime-types.ts
+2b238998e1b63ac7ceffa20190caaaa4806a9ae275112807424d176244dfd014 *packages/core/agent-loop/src/agent.ts
+70c07ea75ebcf18df353bbccf7c2aa3ecf6cb0d687b96e3520b675680c29f662 *packages/core/agent-loop/src/inbox.ts
+c112ecabe3711092821cefd76f285a185fcf7bcf6be7b5599ff8b86bf28e1b4a *packages/core/agent-loop/src/index.ts
+c6ded93fde2c64e87a313f27877bbf37390e280ff90c3012ef575181e553e1fe *packages/core/session/src/index.ts
+985740ced27041c1964ca721caea9099703af8b32fa6b610b537909c86f7a76a *packages/core/session/src/repair.ts
+88d96d49e38c32e86597fbf1e10d3399b2f9a4ead28a5e0bfde9c883e0507cd2 *packages/session/session-persistence/src/index.ts
+2fd8b5c5188ffdf5adee78a260b3dd0a9be97e5eb9fcdb5aafae5a8ed5471a31 *packages/session/session-persistence/src/handle.ts
+41d6e4af01d3f613eb9d4e89e3d8ddded5070b4e73c7b3f858a61cbbd3b43b33 *packages/session/session-persistence-jsonl/src/storage.ts
+b9224fd93929a54701b22e500837805091132f8d6a7f30c358ae0c58cd4e12de *packages/subagent/subagent/src/continuation.ts
+bdd0c67a1ead461b15e99f34550203fb5d6cce42c84641d03bb8bc6db8d4f887 *packages/subagent/subagent/src/lifecycle.ts

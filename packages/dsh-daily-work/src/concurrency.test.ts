@@ -142,7 +142,7 @@ async function rig(): Promise<Rig> {
   })
 
   // The real storage domain, in a temp directory.
-  await ctx.plugin(Storage, {})
+  await ctx.plugin(Storage)
   await ctx.plugin(storageJsonPlugin as never, { root: storeRoot } as never)
   await ctx.plugin(storageDomainPlugin as never, { backend: 'json' } as never)
 

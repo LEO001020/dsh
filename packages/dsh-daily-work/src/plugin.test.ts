@@ -41,14 +41,14 @@ interface Rig {
 async function rig(): Promise<Rig> {
   const root = await mkdtemp(join(tmpdir(), 'dsh-daily-work-plugin-'))
   const ctx = new Context()
-  await ctx.plugin(Storage, {})
+  await ctx.plugin(Storage)
   await ctx.plugin(storageJsonPlugin as never, { root } as never)
   await ctx.plugin(storageDomainPlugin as never, { backend: 'json' } as never)
   // ToolRuntime injects 'systemPrompt', so the real prompt service must be
   // mounted first. Using the real one (not a stub) is deliberate: the tool
   // registration path touches it.
-  await ctx.plugin(SystemPrompt, {})
-  await ctx.plugin(ToolRuntime, {})
+  await ctx.plugin(SystemPrompt)
+  await ctx.plugin(ToolRuntime)
   return {
     ctx,
     root,

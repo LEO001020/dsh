@@ -1,405 +1,313 @@
 {
+  "gate": "E02",
   "profile": "daily",
-  "dshSrc": "D:/DSH/src/dsh-src",
-  "serviceNamesInSource": [
-    "agentDefaultModel",
-    "agentLoop",
-    "agentPresets",
-    "agentTeams",
-    "agents",
-    "approval",
-    "attachments",
-    "authorization",
-    "browserUse",
-    "clientModules",
-    "commandUi",
-    "commands",
-    "compaction",
-    "computerUse",
-    "connection",
-    "conversation",
-    "cordisInspect",
-    "credentials",
-    "credentialsController",
-    "deepseekLlmApiExtensions",
-    "directoryPicker",
-    "directoryPickerController",
-    "dynamicCordisRunner",
-    "fileReferences",
-    "fileUpload",
-    "fileUploads",
-    "fs",
-    "goals",
-    "hmr",
-    "inputTriggers",
-    "invariants",
-    "jobs",
-    "llm",
-    "lsp",
-    "mcpResources",
-    "messageFeedback",
-    "modelDirectories",
-    "officeToPdf",
-    "permissionPresets",
-    "planMode",
-    "pluginInventory",
-    "pluginManager",
-    "pluginPackages",
-    "ptcRuntime",
-    "remote",
-    "sandbox",
-    "sandboxPolicy",
-    "sessionController",
-    "sessionFeedback",
-    "sessionFileReferences",
-    "sessionPersistence",
-    "sessionProjectionCache",
-    "sessionProjections",
-    "sessionQuery",
-    "sessionReferenceResolver",
-    "sessionSkillCatalog",
-    "sessionTelemetry",
-    "sessionTitle",
-    "sessions",
-    "settings",
-    "settingsController",
-    "settingsSchema",
-    "settingsScope",
-    "shell",
-    "shellEnv",
-    "skills",
-    "slots",
-    "spillStore",
-    "ssh",
-    "storage",
-    "subagentModelSelection",
-    "subagents",
-    "subprocess",
-    "systemPrompt",
-    "terminalController",
-    "terminals",
-    "timer",
-    "tokenMeter",
-    "toolResultPruner",
-    "tools",
-    "typert",
-    "typertGateway",
-    "uiConversation",
-    "uiSession",
-    "uiWorkspace",
-    "userQuestions",
-    "web",
-    "webServer",
-    "webTerminals",
-    "webhookRuntime",
-    "workflowEngine",
-    "workspaceController",
-    "workspaceFiles",
-    "workspaceRegistry",
-    "workspaces"
+  "dshHome": "D:\\DSH\\home\\zq-e02-probe",
+  "readiness": {
+    "waitedMs": 30016,
+    "stillMissing": [
+      "authorization",
+      "remote",
+      "webTerminals",
+      "webhookRuntime"
+    ]
+  },
+  "modelToolCatalog": [
+    "ask_user_question",
+    "create_goal",
+    "edit",
+    "exit_plan_mode",
+    "get_goal",
+    "glob",
+    "grep",
+    "interrupt_agent",
+    "job_kill",
+    "job_list",
+    "job_output",
+    "list_agents",
+    "present",
+    "pwsh",
+    "read",
+    "read_image",
+    "send_message",
+    "skill",
+    "subagent",
+    "subagent_fork",
+    "todo_write",
+    "update_goal",
+    "web_fetch",
+    "web_search",
+    "work",
+    "workflow",
+    "write"
   ],
-  "hostScopeReachable": {
-    "agentDefaultModel": true,
-    "agentLoop": true,
-    "agentPresets": true,
-    "agentTeams": false,
-    "agents": true,
-    "approval": true,
-    "attachments": true,
-    "authorization": false,
-    "browserUse": false,
-    "clientModules": true,
-    "commandUi": false,
-    "commands": true,
-    "compaction": false,
-    "computerUse": false,
-    "connection": false,
-    "conversation": false,
-    "cordisInspect": true,
-    "credentials": false,
-    "credentialsController": true,
-    "deepseekLlmApiExtensions": true,
-    "directoryPicker": false,
-    "directoryPickerController": false,
-    "dynamicCordisRunner": true,
-    "fileReferences": true,
-    "fileUpload": false,
-    "fileUploads": false,
-    "fs": false,
-    "goals": true,
-    "hmr": false,
-    "inputTriggers": false,
-    "invariants": false,
-    "jobs": true,
-    "llm": true,
-    "lsp": false,
-    "mcpResources": true,
-    "messageFeedback": true,
-    "modelDirectories": false,
-    "officeToPdf": true,
-    "permissionPresets": false,
-    "planMode": false,
-    "pluginInventory": true,
-    "pluginManager": false,
-    "pluginPackages": true,
-    "ptcRuntime": false,
-    "remote": false,
-    "sandbox": true,
-    "sandboxPolicy": true,
-    "sessionController": false,
-    "sessionFeedback": true,
-    "sessionFileReferences": false,
-    "sessionPersistence": true,
-    "sessionProjectionCache": false,
-    "sessionProjections": true,
-    "sessionQuery": false,
-    "sessionReferenceResolver": false,
-    "sessionSkillCatalog": false,
-    "sessionTelemetry": true,
-    "sessionTitle": true,
-    "sessions": true,
-    "settings": false,
-    "settingsController": true,
-    "settingsSchema": false,
-    "settingsScope": false,
-    "shell": false,
-    "shellEnv": true,
-    "skills": true,
-    "slots": false,
-    "spillStore": true,
-    "ssh": false,
-    "storage": true,
-    "subagentModelSelection": true,
-    "subagents": true,
-    "subprocess": true,
-    "systemPrompt": true,
-    "terminalController": false,
-    "terminals": false,
-    "timer": true,
-    "tokenMeter": true,
-    "toolResultPruner": false,
-    "tools": true,
-    "typert": true,
-    "typertGateway": false,
-    "uiConversation": false,
-    "uiSession": false,
-    "uiWorkspace": false,
-    "userQuestions": true,
-    "web": true,
-    "webServer": false,
+  "modelToolCount": 27,
+  "controlPlaneAsModelTool": {
+    "terminalController": {
+      "exposedAsTool": false,
+      "authority": "allocates a system-user PTY outside the agent sandbox and approval flow (E02/SECURITY.md INV-S1)"
+    },
+    "webTerminals": {
+      "exposedAsTool": false,
+      "authority": "the Web-side terminal registry that fronts terminalController"
+    },
+    "pluginManager": {
+      "exposedAsTool": false,
+      "authority": "installs, enables and disables plugin code in the running profile"
+    },
+    "pluginInventory": {
+      "exposedAsTool": false,
+      "authority": "enumerates the profile plugin set for management surfaces"
+    },
+    "pluginPackages": {
+      "exposedAsTool": false,
+      "authority": "reads and writes the profile package manifest and lockfile"
+    },
+    "dynamicCordisRunner": {
+      "exposedAsTool": false,
+      "authority": "loads and runs model-authored Cordis plugin code in the host runtime"
+    },
+    "webServer": {
+      "exposedAsTool": false,
+      "authority": "owns the listening socket that serves the API and the frontend"
+    },
+    "connection": {
+      "exposedAsTool": false,
+      "authority": "holds the process launch token and mints browser session cookies"
+    },
+    "remote": {
+      "exposedAsTool": false,
+      "authority": "the typed Remote namespace that carries control-plane calls"
+    },
+    "typertGateway": {
+      "exposedAsTool": false,
+      "authority": "dispatches Remote calls into host services"
+    },
+    "credentials": {
+      "exposedAsTool": false,
+      "authority": "reads and writes the credential store ($DSH_HOME/.credentials.yaml)"
+    },
+    "credentialsController": {
+      "exposedAsTool": false,
+      "authority": "the Web-facing credential management surface"
+    },
+    "sessionController": {
+      "exposedAsTool": false,
+      "authority": "creates, resumes and deletes Sessions outside the model loop"
+    },
+    "settingsController": {
+      "exposedAsTool": false,
+      "authority": "writes host settings"
+    },
+    "workspaceController": {
+      "exposedAsTool": false,
+      "authority": "registers and switches workspaces"
+    },
+    "workspaceFiles": {
+      "exposedAsTool": false,
+      "authority": "reads and writes files through the host fs policy rather than the agent tools"
+    },
+    "authorization": {
+      "exposedAsTool": false,
+      "authority": "grants and revokes authorization scopes"
+    },
+    "hmr": {
+      "exposedAsTool": false,
+      "authority": "reloads plugins into the running host"
+    },
+    "cordisInspect": {
+      "exposedAsTool": false,
+      "authority": "read-only runtime introspection of every host service and event"
+    },
+    "commands": {
+      "exposedAsTool": false,
+      "authority": "registers and runs host command entries"
+    },
+    "directoryPicker": {
+      "exposedAsTool": false,
+      "authority": "opens a native directory dialog on the user machine"
+    },
+    "directoryPickerController": {
+      "exposedAsTool": false,
+      "authority": "the Web-facing directory dialog surface"
+    },
+    "webhookRuntime": {
+      "exposedAsTool": false,
+      "authority": "receives external HTTP callbacks into the host"
+    }
+  },
+  "cordisInspectTools": [],
+  "controlPlaneInHostScope": {
+    "terminalController": {
+      "present": true,
+      "ctor": "TerminalController"
+    },
     "webTerminals": false,
-    "webhookRuntime": false,
-    "workflowEngine": false,
-    "workspaceController": false,
-    "workspaceFiles": false,
-    "workspaceRegistry": false,
-    "workspaces": false
+    "pluginManager": {
+      "present": true,
+      "ctor": "PluginManager"
+    },
+    "pluginInventory": {
+      "present": true,
+      "ctor": "PluginInventoryGateway"
+    },
+    "pluginPackages": {
+      "present": true,
+      "ctor": "PluginPackages"
+    },
+    "dynamicCordisRunner": {
+      "present": true,
+      "ctor": "DynamicCordisRunnerService"
+    },
+    "webServer": {
+      "present": true,
+      "ctor": "WebServer"
+    },
+    "connection": {
+      "present": true,
+      "ctor": "HostConnectionService"
+    },
+    "remote": false,
+    "typertGateway": {
+      "present": true,
+      "ctor": "TypertGatewayService"
+    },
+    "credentials": {
+      "present": true,
+      "ctor": "LocalCredentialProvider"
+    },
+    "credentialsController": {
+      "present": true,
+      "ctor": "CredentialsController"
+    },
+    "sessionController": {
+      "present": true,
+      "ctor": "SessionController"
+    },
+    "settingsController": {
+      "present": true,
+      "ctor": "SettingsController"
+    },
+    "workspaceController": {
+      "present": true,
+      "ctor": "WorkspaceController"
+    },
+    "workspaceFiles": {
+      "present": true,
+      "ctor": "WorkspaceFiles"
+    },
+    "authorization": false,
+    "hmr": {
+      "present": true,
+      "ctor": "Hmr"
+    },
+    "cordisInspect": {
+      "present": true,
+      "ctor": "CordisInspectRegistryService"
+    },
+    "commands": {
+      "present": true,
+      "ctor": "CommandRuntime"
+    },
+    "directoryPicker": {
+      "present": true,
+      "ctor": "NativeDirectoryPicker"
+    },
+    "directoryPickerController": {
+      "present": true,
+      "ctor": "DirectoryPickerController"
+    },
+    "webhookRuntime": false
   },
-  "agentScopeReachable": {
-    "agentDefaultModel": true,
-    "agentLoop": true,
-    "agentPresets": true,
-    "agents": true,
-    "approval": true,
-    "attachments": true,
-    "clientModules": true,
-    "commands": true,
-    "connection": true,
-    "cordisInspect": true,
-    "credentials": true,
-    "credentialsController": true,
-    "deepseekLlmApiExtensions": true,
-    "directoryPicker": true,
-    "directoryPickerController": true,
-    "dynamicCordisRunner": true,
-    "fileReferences": true,
-    "fileUploads": true,
-    "fs": true,
-    "goals": true,
-    "hmr": true,
-    "jobs": true,
-    "llm": true,
-    "mcpResources": true,
-    "messageFeedback": true,
-    "officeToPdf": true,
-    "permissionPresets": true,
-    "pluginInventory": true,
-    "pluginManager": true,
-    "pluginPackages": true,
-    "ptcRuntime": true,
-    "sandbox": true,
-    "sandboxPolicy": true,
-    "sessionController": true,
-    "sessionFeedback": true,
-    "sessionFileReferences": true,
-    "sessionPersistence": true,
-    "sessionProjectionCache": true,
-    "sessionProjections": true,
-    "sessionQuery": true,
-    "sessionReferenceResolver": true,
-    "sessionSkillCatalog": true,
-    "sessionTelemetry": true,
-    "sessionTitle": true,
-    "sessions": true,
-    "settings": true,
-    "settingsController": true,
-    "shell": true,
-    "shellEnv": true,
-    "skills": true,
-    "spillStore": true,
-    "storage": true,
-    "subagentModelSelection": true,
-    "subagents": true,
-    "subprocess": true,
-    "systemPrompt": true,
-    "terminalController": true,
-    "timer": true,
-    "tokenMeter": true,
-    "tools": true,
-    "typert": true,
-    "typertGateway": true,
-    "userQuestions": true,
-    "web": true,
-    "webServer": true,
-    "workspaceController": true,
-    "workspaceFiles": true,
-    "workspaceRegistry": true
-  },
-  "agentScopeUniverse": [
-    "agentDefaultModel",
-    "agentLoop",
-    "agentPresets",
-    "agents",
-    "approval",
-    "attachments",
-    "clientModules",
-    "commands",
-    "connection",
-    "cordisInspect",
-    "credentials",
-    "credentialsController",
-    "deepseekLlmApiExtensions",
-    "directoryPicker",
-    "directoryPickerController",
-    "dynamicCordisRunner",
-    "fileReferences",
-    "fileUploads",
-    "fs",
-    "goals",
-    "hmr",
-    "jobs",
-    "llm",
-    "mcpResources",
-    "messageFeedback",
-    "officeToPdf",
-    "permissionPresets",
-    "pluginInventory",
-    "pluginManager",
-    "pluginPackages",
-    "ptcRuntime",
-    "sandbox",
-    "sandboxPolicy",
-    "sessionController",
-    "sessionFeedback",
-    "sessionFileReferences",
-    "sessionPersistence",
-    "sessionProjectionCache",
-    "sessionProjections",
-    "sessionQuery",
-    "sessionReferenceResolver",
-    "sessionSkillCatalog",
-    "sessionTelemetry",
-    "sessionTitle",
-    "sessions",
-    "settings",
-    "settingsController",
-    "shell",
-    "shellEnv",
-    "skills",
-    "spillStore",
-    "storage",
-    "subagentModelSelection",
-    "subagents",
-    "subprocess",
-    "systemPrompt",
-    "terminalController",
-    "timer",
-    "tokenMeter",
-    "tools",
-    "typert",
-    "typertGateway",
-    "userQuestions",
-    "web",
-    "webServer",
-    "workspaceController",
-    "workspaceFiles",
-    "workspaceRegistry"
-  ],
-  "controlPlaneReachableFromAgent": [
-    "approval",
-    "commands",
-    "connection",
-    "cordisInspect",
-    "credentials",
-    "credentialsController",
-    "directoryPicker",
-    "directoryPickerController",
-    "dynamicCordisRunner",
-    "hmr",
-    "pluginInventory",
-    "pluginManager",
-    "pluginPackages",
-    "sessionController",
-    "settingsController",
-    "terminalController",
-    "typertGateway",
-    "webServer",
-    "workspaceController",
-    "workspaceFiles"
-  ],
-  "controlPlaneReachableFromHost": [
-    "approval",
-    "commands",
-    "cordisInspect",
-    "credentialsController",
-    "dynamicCordisRunner",
-    "pluginInventory",
-    "pluginPackages",
-    "settingsController"
-  ],
-  "controlPlaneNamesAbsentEverywhere": [
+  "controlPlaneAbsentFromHostScope": [
     "authorization",
-    "commandUi",
-    "connection",
-    "credentials",
-    "directoryPicker",
-    "directoryPickerController",
-    "hmr",
-    "pluginManager",
     "remote",
-    "sessionController",
-    "terminalController",
-    "typertGateway",
-    "webServer",
     "webTerminals",
-    "webhookRuntime",
-    "workspaceController",
-    "workspaceFiles"
+    "webhookRuntime"
   ],
-  "sessionCreated": true,
-  "sessionId": "session-cd200c51-d946-4fc6-9417-58076f696479",
-  "agentToolCount": 27,
-  "terminalController": {
-    "reachableFromHost": false,
-    "reachableFromAgent": true
+  "agentScopeResolves": {
+    "terminalController": {
+      "present": true,
+      "ctor": "TerminalController"
+    },
+    "webTerminals": false,
+    "pluginManager": {
+      "present": true,
+      "ctor": "PluginManager"
+    },
+    "pluginInventory": {
+      "present": true,
+      "ctor": "PluginInventoryGateway"
+    },
+    "pluginPackages": {
+      "present": true,
+      "ctor": "PluginPackages"
+    },
+    "dynamicCordisRunner": {
+      "present": true,
+      "ctor": "DynamicCordisRunnerService"
+    },
+    "webServer": {
+      "present": true,
+      "ctor": "WebServer"
+    },
+    "connection": {
+      "present": true,
+      "ctor": "HostConnectionService"
+    },
+    "remote": false,
+    "typertGateway": {
+      "present": true,
+      "ctor": "TypertGatewayService"
+    },
+    "credentials": {
+      "present": true,
+      "ctor": "LocalCredentialProvider"
+    },
+    "credentialsController": {
+      "present": true,
+      "ctor": "CredentialsController"
+    },
+    "sessionController": {
+      "present": true,
+      "ctor": "SessionController"
+    },
+    "settingsController": {
+      "present": true,
+      "ctor": "SettingsController"
+    },
+    "workspaceController": {
+      "present": true,
+      "ctor": "WorkspaceController"
+    },
+    "workspaceFiles": {
+      "present": true,
+      "ctor": "WorkspaceFiles"
+    },
+    "authorization": false,
+    "hmr": {
+      "present": true,
+      "ctor": "Hmr"
+    },
+    "cordisInspect": {
+      "present": true,
+      "ctor": "CordisInspectRegistryService"
+    },
+    "commands": {
+      "present": true,
+      "ctor": "CommandRuntime"
+    },
+    "directoryPicker": {
+      "present": true,
+      "ctor": "NativeDirectoryPicker"
+    },
+    "directoryPickerController": {
+      "present": true,
+      "ctor": "DirectoryPickerController"
+    },
+    "webhookRuntime": false
   },
+  "scopeSemanticsNote": "ctx.get(name) resolves against the SHARED process store (cordis ReflectService.store), not against the calling scope, so a true value here means the service EXISTS in this process, not that the preset realm grants access to it. The capability boundary is modelToolCatalog. Measured in probe-scope.mjs.",
   "errors": [],
-  "presetIds": [
-    "cordis",
-    "daily-standard",
-    "minimal",
-    "ptc",
-    "standard"
-  ],
+  "sessionId": "session-cfd0c698-3a72-4bd8-9a77-c17c59fec032",
   "agentPresetId": "daily-standard"
 }

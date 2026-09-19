@@ -1,0 +1,3 @@
+- insert:
+    - id: verify-guard
+      name: 'D:/DSH/work/dsh-native-daily/qualification/runners/verify-guard.mjs'

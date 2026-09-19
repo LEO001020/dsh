@@ -1,0 +1,67 @@
+{
+  "gate": "E02",
+  "probe": "loopback-entry-point",
+  "server": {
+    "host": "127.0.0.1",
+    "port": 3080,
+    "boundTo": "127.0.0.1:3080"
+  },
+  "shellEnvUrl": {
+    "declaredKeys": [
+      "DSH_WEB_URL"
+    ],
+    "urlDeclared": true,
+    "urlContributor": "web-runtime",
+    "collected": {
+      "DSH_HOME": "D:\\DSH\\home\\zq-e02-probe",
+      "DSH_SHELL": "1",
+      "DSH_WEB_URL": "http://127.0.0.1:3080"
+    }
+  },
+  "requests": {
+    "indexUnauthenticated": {
+      "status": 401,
+      "location": null,
+      "bodyHead": "dsh web authentication required; reopen the URL printed by dsh web.\n",
+      "bodyBytes": 68
+    },
+    "apiUnauthenticated": {
+      "status": 401,
+      "location": null,
+      "bodyHead": "unauthorized",
+      "bodyBytes": 12
+    },
+    "apiUntrustedHost": {
+      "status": 403,
+      "location": null,
+      "bodyHead": "forbidden",
+      "bodyBytes": 9
+    },
+    "indexUntrustedHost": {
+      "status": 401,
+      "location": null,
+      "bodyHead": "dsh web authentication required; reopen the URL printed by dsh web.\n",
+      "bodyBytes": 68
+    },
+    "indexGuessedToken": {
+      "status": 401,
+      "location": null,
+      "bodyHead": "dsh web authentication required; reopen the URL printed by dsh web.\n",
+      "bodyBytes": 68
+    }
+  },
+  "tokenExposure": {
+    "shellEnvKeys": [
+      "DSH_HOME",
+      "DSH_SHELL",
+      "DSH_WEB_URL"
+    ],
+    "tokenShapedValues": [],
+    "launchTokenIsInShellEnv": false
+  },
+  "errors": [],
+  "readiness": {
+    "waitedMs": 102,
+    "urlDeclared": true
+  }
+}

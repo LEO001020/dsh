@@ -1,0 +1,6 @@
+# Typecheck of ONLY the file this agent owns.
+# The same strict flags as tsconfig.json (via tsconfig.check.json, which
+# clears the test exclusion), restricted to one file so the result is
+# attributable rather than mixed with other agents' in-flight files.
+command: tsc -p tsconfig.check.json   (filtered to src/scheduling.test.ts)
+errors_reported_for_scheduling_test_ts: 0

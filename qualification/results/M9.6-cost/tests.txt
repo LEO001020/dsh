@@ -1,0 +1,68 @@
+# C05 / C11 / R06 - cost and accounting gates
+#
+# COMMAND: cd packages/dsh-daily-work && vitest run src/cost.test.ts
+#
+# CONTROLLED-INPUT TESTS ONLY. No provider is authorized and no live-provider
+# result is claimed. Every number below is an input chosen by the test, not an
+# observation of a real bill. What is proven is the RECORD's behaviour: that an
+# overage is recorded in full, that a halt stops admission, and that a usage
+# report which never arrived stays unknown rather than becoming zero.
+#
+# The rule applied to every budget case (plan): "429 / budget insufficient /
+# authorization missing keeps the target fact unchanged, shows blocked/deficit,
+# does not secretly drop to 8". The target is asserted to be unchanged.
+#
+
+ RUN  v4.1.8 D:/DSH/work/dsh-native-daily/packages/dsh-daily-work
+
+ ✓ src/cost.test.ts > C05: the root keeps its own reserved credit > carves the reserve out of the ceiling at run creation, not out of thin air 29ms
+ ✓ src/cost.test.ts > C05: the root keeps its own reserved credit > refuses a reserve that exceeds the ceiling rather than silently clamping it 7ms
+ ✓ src/cost.test.ts > C05: the root keeps its own reserved credit > THE INVARIANT: children may commit the whole child ceiling and not one unit more 6ms
+ ✓ src/cost.test.ts > C05: the root keeps its own reserved credit > still admits a child with the ceiling fully committed by other children, and refuses one unit more 21ms
+ ✓ src/cost.test.ts > C05: the root keeps its own reserved credit > REFUSES the child admission that would eat into the root reserve 23ms
+ ✓ src/cost.test.ts > C05: the root keeps its own reserved credit > keeps the root reserve available while ten children saturate the child ceiling 146ms
+ ✓ src/cost.test.ts > C05: the root keeps its own reserved credit > does not let a root spend consume child headroom, or a child consume the reserve 37ms
+ ✓ src/cost.test.ts > C05: the root keeps its own reserved credit > records a root spend that outruns the reserve in full and halts, rather than trimming it 20ms
+ ✓ src/cost.test.ts > C05: the root keeps its own reserved credit > derives a default reserve when none is given, so a run is never born without one 12ms
+ ✓ src/cost.test.ts > C05: the root keeps its own reserved credit > leaves the target fact unchanged when the budget blocks admission 22ms
+ ✓ src/cost.test.ts > C05: the root keeps its own reserved credit > agrees with the pure counting predicate, so the gate and its reason cannot drift 6ms
+ ✓ src/cost.test.ts > C11: actual spend exceeding the reservation > records the overage in full, pauses admission, and hides nothing 37ms
+ ✓ src/cost.test.ts > C11: actual spend exceeding the reservation > refuses the direct admit path while halted, not only the drain path 16ms
+ ✓ src/cost.test.ts > C11: actual spend exceeding the reservation > stays halted even after a later in-budget spend, because a halt is not an arithmetic state 20ms
+ ✓ src/cost.test.ts > C11: actual spend exceeding the reservation > clears the halt only through an explicit human authorization, and keeps the bill 24ms
+ ✓ src/cost.test.ts > C11: actual spend exceeding the reservation > accumulates overage across several overspends instead of keeping only the last 20ms
+ ✓ src/cost.test.ts > C11: actual spend exceeding the reservation > does not count a spend that came in UNDER its reservation as an overage 17ms
+ ✓ src/cost.test.ts > C11: actual spend exceeding the reservation > measures the overage against the TASK STORED reservation, not a caller-supplied one 22ms
+ ✓ src/cost.test.ts > C11: actual spend exceeding the reservation > THE UNKNOWN PATH: a request whose usage never arrived keeps a conservative reservation 21ms
+ ✓ src/cost.test.ts > C11: actual spend exceeding the reservation > holds an auxiliary request that was never reserved as an unknown, which can only tighten admission 18ms
+ ✓ src/cost.test.ts > C11: actual spend exceeding the reservation > clamps an unknown retention to the task reservation, so one task cannot eat a sibling reservation 24ms
+ ✓ src/cost.test.ts > C11: actual spend exceeding the reservation > survives a domain reopen with the overage, the halt and the reserve intact 23ms
+ ✓ src/cost.test.ts > C11: actual spend exceeding the reservation > applies the overage rule as a pure function, so the boundary is checkable by hand 5ms
+ ✓ src/cost.test.ts > C11: actual spend exceeding the reservation > does not release a reservation when a spend is only REPORTED, and still records the cost 43ms
+ ✓ src/cost.test.ts > C11: actual spend exceeding the reservation > refuses to release a reservation that has no task to retire 12ms
+ ✓ src/cost.test.ts > C11: actual spend exceeding the reservation > refuses a negative cost rather than accepting it as a credit 12ms
+ ✓ src/cost.test.ts > C11: actual spend exceeding the reservation > reports an overage halt as the deficit reason, not as a plain budget block 5ms
+ ✓ src/cost.test.ts > C11: actual spend exceeding the reservation > keeps unknownReserved from being zeroed by the pure retention helper 7ms
+ ✓ src/cost.test.ts > R06: every attempt is accounted for > keeps an attempt with no usage reported UNKNOWN, not zero 8ms
+ ✓ src/cost.test.ts > R06: every attempt is accounted for > counts a retry as a SEPARATE attempt rather than folding it into the first 8ms
+ ✓ src/cost.test.ts > R06: every attempt is accounted for > reports a separate unknownCount so a reader can see the gap 7ms
+ ✓ src/cost.test.ts > R06: every attempt is accounted for > never double-counts: a retry that reuses a request id is not summed twice 6ms
+ ✓ src/cost.test.ts > R06: every attempt is accounted for > refuses a repeated attempt id, and counts the refusal 6ms
+ ✓ src/cost.test.ts > R06: every attempt is accounted for > lets a later report RESOLVE an unknown without counting the request twice 7ms
+ ✓ src/cost.test.ts > R06: every attempt is accounted for > covers root, descendants, retries, compaction, summary and search as distinct sources 7ms
+ ✓ src/cost.test.ts > R06: every attempt is accounted for > keeps DSH token buckets disjoint rather than collapsing them into one number 5ms
+ ✓ src/cost.test.ts > R06: every attempt is accounted for > defaults absent optional cache fields to zero WITHOUT treating a missing report as zero 6ms
+ ✓ src/cost.test.ts > R06: every attempt is accounted for > does not treat a cost-only attempt as a token unknown that blocks completeness 7ms
+ ✓ src/cost.test.ts > R06: every attempt is accounted for > sums buckets across attempts without dropping the cache split 9ms
+ ✓ src/cost.test.ts > R06: every attempt is accounted for > exposes every row, so a reader can check the total rather than trust it 7ms
+ ✓ src/cost.test.ts > R06: every attempt is accounted for > reports an empty ledger as complete with no attempts, rather than as a pass 6ms
+ ✓ src/cost.test.ts > cost accounting: the budget report a reader sees > reports every quantity separately, with the overage inside spent rather than beside it 5ms
+ ✓ src/cost.test.ts > cost accounting: the budget report a reader sees > defaults the reserve fields to zero on a record written before the reserve existed 6ms
+
+ Test Files  1 passed (1)
+      Tests  43 passed (43)
+   Start at  19:25:45
+   Duration  1.52s (transform 268ms, setup 0ms, import 419ms, tests 758ms, environment 0ms)
+
+
+test_exit=0

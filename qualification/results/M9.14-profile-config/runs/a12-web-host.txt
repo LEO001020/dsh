@@ -8,7 +8,8 @@ work_extension_mounted: true
 home: D:/DSH/home/m914
 port: 18401
 
-url_line: http://127.0.0.1:18401/?token=Vfip4llI5DFCfiMxx8Zpxn5yRKYGK_YSOGNnwLWC97I
+url_line: http://127.0.0.1:18401/?token=<redacted>
+url_line_shape: http://127.0.0.1:<port>/?token=<redacted>
 boot_stdout_has_url: true
 unauthenticated_api_status: 401
 unauthenticated_api_body: "unauthorized"
@@ -20,7 +21,7 @@ model_catalog_ok: true
 model_catalog_default: {"provider":"deepseek-official","model":"deepseek-flash"}
 model_catalog_routable_providers: ["deepseek-official"]
 session_create_ok: true
-session_created_id: session-e1f4d5cd-86e1-4cde-adc6-a6ba6f0c9e47
+session_created_id: session-ee45dd69-75b0-438e-a706-66ec8dd7e27e
 session_created_preset: standard
 session_list_ok: true
 session_list_found_created: true
@@ -31,15 +32,21 @@ session_list_item_permissions: workspace-write
 session_list_item_model_next: null
 credentials_file_exists: true
 credentials_file_record_keys: ["client-connection/browser-session","kind","payload","version","secret"]
+credentials_file_has_refs_section: false
+cwd_env_exists: false
+home_env_exists: false
 deepseek_api_key_in_process_env: false
 model_turn_run: false
 credential_boundary: DEEPSEEK_API_KEY not configured
 
 --- launcher stdout ---
-dsh web: http://127.0.0.1:18401/?token=Vfip4llI5DFCfiMxx8Zpxn5yRKYGK_YSOGNnwLWC97I
+dsh web: http://127.0.0.1:18401/?token=<redacted>
 --- launcher stderr ---
 
 --- shutdown ---
-stopped_by: SIGTERM (a supervisor stop request; the launcher exits 0 for SIGTERM)
+stop_requested: SIGTERM via child.kill()
+note: on win32 child.kill() terminates rather than delivering a catchable signal,
+      so the launcher SIGTERM handler did not run and no exit code was observed.
+      A clean-shutdown claim would need a different driver and is NOT made here.
 exit_code: null
 exit_signal: SIGTERM

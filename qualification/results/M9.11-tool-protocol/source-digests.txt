@@ -1,0 +1,37 @@
+# source-digests.txt - M9.11 tool-protocol gates (B04-B08)
+# sha256 of every file this evidence depends on, at the moment tests.txt was produced.
+#
+# --- local project files (relative to packages/dsh-daily-work/) ---
+51a028a5025dd4eb29c0da7b2f2e78d0e65b0d47da1793f06e0fb6972538d572 *src/tool-protocol.test.ts
+dce5298e4a1f0acba3a8afa5f0a9f2b966d5da32c4bb16f84d9f64dbe39cb4a2 *src/tool-protocol-guards.ts
+d04bb64850331c13f7d215d9ce6e3806037eb16c99b30a7bce82a5fe797227d6 *src/tools.ts
+c2ea21b62276a488a5e7fe9a96505af8ae74d490cee772df9dd8a7b2c1f73d86 *src/host.ts
+e0d9cd752db667b70ca02335662541352d232fc31aebccd5d2eb97a08df38106 *src/record.ts
+a364a03a4ecd9b752794e04f4211625671b85dbdf5f17a0fbc5ce7ad7c9a59ce *src/counting.ts
+e7207ffd46f4aef395d6ff48a8679edca6107a90545716be179280bb49617aa0 *src/states.ts
+bc5cd7f06a437a07f82682241023b0b50f10043df6928d0ebde2ed92dbc85b70 *src/reconcile.ts
+#
+# --- DSH source files quoted as the contract (relative to D:/DSH/src/dsh-src/) ---
+e040cf44c7a4c1b74650cc32f67503b8881cc1d5b1f47f1cb38cf0167a9bb3da *packages/core/tools/src/index.ts
+be6e4b3fa18fe633c6c83ed4f9072da5a2a203f64bf0b70c9066fd58b0e2c897 *packages/core/tools/src/schema.ts
+2b2bfa5da56f7ebb67236a33329fff47064bcc8d2658ce24a4cdedc7668e6fe9 *packages/core/tools/src/types.ts
+7a7c19cfdabce7bad053291614b1d727205e94601771a7b239790b3b0f0a7eab *packages/core/tools/src/ptc.ts
+adc3f85968efc1bf6a97f66aec26d69b6c51e9c139ae0b508d94dcc9535fb8fd *packages/core/agent/src/index.ts
+d0ac3509febb04308eff84bc6c949ff3c736dec9fd9f8d230c5d7fa3455ff204 *packages/core/agent/src/runtime-types.ts
+074b8f0c3fa2e240effd0a7e65c54be7c14debc1e53bb712334ce20d15affe4a *packages/core/scope/src/index.ts
+0264b62850764a5e32f1e2da93540cdcbe6e0e6442314f72b25a8ee2da6d2995 *packages/terminal/terminal/src/index.ts
+007745a94c054119fbbb113a6985308fd6210017d49e4e586ffae1a139a38d36 *packages/terminal/terminal-bash/src/index.ts
+c1f0cc7de70a11989f6f0f1bf8df8c275858b462603fde19bc8df5b7517bf479 *packages/jobs/jobs-local/src/index.ts
+7cf0bdeb76eb02b341ebd631cc56c5271f3b06ac7fb6c3332239c9e7269ac6b2 *packages/preset/agent-presets/src/index.ts
+7f0b3245de4a22501d39072bc239e4230f498d92a757f1ff56ea710bcfaf1eb8 *packages/preset/agent-presets/src/mount.ts
+37679b9300da8428e912c1283e8846622f54f5c76acb38b887ce98e65a290d6c *packages/preset/agent-presets/src/specifier.ts
+880e2868e554160e7ae69d250435b821e951827f193c1971d9d81c1c0ee2a922 *packages/ptc-runtime/ptc-runtime/src/index.ts
+3b5dba23947071bfda759995fc9a98c2b1072a589a0c3f437ed17326afe1c49c *packages/ptc-runtime/ptc-runtime-node/src/launch.ts
+#
+# DSH source revision the contract quotes are taken from:
+#   repo: D:/DSH/src/dsh-src
+#   commit: ddefc45fbc7f8e46dd73185e68295696d1297887
+#   date:   2026-09-17 21:19:19 +0800
+#
+# Toolchain: Node v24.18.0, vitest 4.1.8 (D:/DSH/src/dsh-src/node_modules/.pnpm)
+# Command:   vitest run src/tool-protocol.test.ts --maxWorkers=1
