@@ -223,6 +223,29 @@ export class WorkService extends Service {
     perRun.set(liveness.taskId, liveness)
   }
 
+  /** Every run id this host knows about. Used to map a live session to its run. */
+  listRunIds(): string[] {
+    this.assertOpen()
+    return [...this.runs().keys()]
+  }
+
+  /**
+   * Request that a run move to closing.
+   *
+   * This backs the model's `finish` action, and it is deliberately NOT a
+   * confirmation. It stops new admissions and leaves the acceptance decision to
+   * the runner. Letting the model's own finish call mark work verified would
+   * make the model the oracle for its own output, which the verification gate
+   * exists to prevent.
+   */
+  async beginClosing(runId: string, now = new Date().toISOString()): Promise<RunRecord> {
+    return this.mutate(runId, record => ({
+      ...record,
+      phase: record.phase === 'open' ? 'closing' : record.phase,
+      updatedAt: now,
+    }))
+  }
+
   /**
    * Pause the run.
    *

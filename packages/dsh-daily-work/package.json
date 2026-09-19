@@ -5,9 +5,13 @@
   "type": "module",
   "description": "Mandatory rolling child-assignment top-up for the DSH native daily system. NOT an official @deepseek-ai package.",
   "license": "MIT",
-  "main": "lib/host.js",
+  "main": "lib/host-plugin.js",
   "exports": {
     "./host": {
+      "types": "./lib/host-plugin.d.ts",
+      "default": "./lib/host-plugin.js"
+    },
+    "./service": {
       "types": "./lib/host.d.ts",
       "default": "./lib/host.js"
     },
