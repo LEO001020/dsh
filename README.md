@@ -70,8 +70,10 @@ python <delivery>/helpers/check_plan.py \
 
 ## What is actually proven
 
-**53 of 104 gates PASS**, with the delivery package's checker reporting **zero
-structural errors** on the report. The load-bearing results:
+**59 of 104 gates PASS**, with the delivery package's checker reporting **zero
+structural errors** on the report. Every PASS carries at least one evidence file
+whose sha256 is recorded, and the generator refuses to emit a PASS with no
+evidence on disk. The load-bearing results:
 
 - **Ten children are admitted through the real `ctx.subagents.startContinuable`
   seam on the production AgentLoop**, with a real Session each, and the ceiling
@@ -106,7 +108,7 @@ Read `docs/GAPS.md` for the full list. The ones that matter most:
   control for shells at all.
 - **No real coding or research task has been run** under a frozen configuration,
   so there is no end-to-end quality claim.
-- **45 required gates are `NOT_RUN`.** That number is the honest headline.
+- **39 required gates are `NOT_RUN`.** That number is the honest headline.
 
 ## Promotion decision
 
