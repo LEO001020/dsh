@@ -1,0 +1,88 @@
+# C2 — the daily candidate: C1 plus the mandatory work extension.
+#
+# Each block below is ONE explainable difference from C0. Nothing else changes.
+# C0's resolved graph is captured and hashed in
+# qualification/results/M0.5-c0-resolved-graph/, so the diff is auditable rather
+# than asserted.
+#
+# ---------------------------------------------------------------------------
+# DIFFERENCE 1 (mandatory): raise the continuable-child capacity to the user's N.
+# ---------------------------------------------------------------------------
+#
+# MEASURED GAP, not an assumption. `--dump-default-config` for every shipped
+# profile shows:
+#
+#     - id: subagent
+#       name: '@deepseek-ai/dsh-subagent'
+#
+# with NO config block, so `maxActiveSubagents` falls back to the Schemastery
+# default 8 and `maxDepth` to 1
+# (packages/subagent/subagent/src/index.ts:200-201).
+#
+# N=10 is therefore NOT satisfiable by any stock profile. This row is the
+# override that makes it possible. Evidence:
+# qualification/results/M0.5-c0-resolved-graph/C0-resolved-graph.md
+#
+# IMPORTANT, and the reason this row restates both keys: a patch replaces the
+# target row's WHOLE `config` object; it is not a deep merge
+# (vendor/include/src/index.ts:120-123). Omitting `maxDepth` here would silently
+# reset it to the schema default, and a later upstream default change would not
+# be reflected. Both keys are therefore stated explicitly.
+#
+# `maxDepth: 1` is deliberate and load-bearing: it allows the ten direct children
+# and forbids them from opening unbilled grandchildren.
+- id: subagent
+  config:
+    # The user's chosen N. Root is NOT counted in this number.
+    maxActiveSubagents: 10
+    # 1 = direct children only. Grandchildren would escape the same metering.
+    maxDepth: 1
+
+# ---------------------------------------------------------------------------
+# DIFFERENCE 2 (mandatory): mount the work extension's host service.
+# ---------------------------------------------------------------------------
+#
+# The host service owns the run record, the credit reservation and the admission
+# decisions. It is mounted ONCE here, in the host profile, because the record is
+# a host-scoped resource: a second handle would duplicate the single-writer
+# assumption the storage domain explicitly does not enforce.
+#
+# The `name` points at the package's /host export. The package is resolved from
+# the profile's own node_modules, so it must be installed there (see
+# docs/OPERATIONS.md); this template does not assume a global install.
+#
+# The config values are USER-AUTHORIZED defaults. They are not writable by the
+# model: the model has a `work` tool, but that tool cannot reach these fields.
+- insert:
+    - id: daily-work-host
+      name: dsh-daily-work/host
+      config:
+        # Default target N for a new run. Root is not part of it.
+        targetChildren: 10
+        # Direct children only.
+        maxDepth: 1
+        # Hard budget ceiling. Top-up stops at this line and reports `blocked`;
+        # it never silently degrades the target.
+        budgetCeiling: 200
+        currency: USD
+        priceVersion: unversioned-2026-09-19
+
+# ---------------------------------------------------------------------------
+# NOT changed here, on purpose.
+# ---------------------------------------------------------------------------
+#
+# - The Goal service stays mounted. Managed-work mode disarms continuation for a
+#   single root through the public ctx.goals.disarm(root) at run creation; the
+#   durable objective is not cleared and completion is not faked. Removing the
+#   Goal row here would be deleting a stock component and then calling the result
+#   stock, which the plan forbids.
+#
+# - Planning tools, workflow, sub-agents and the browser roster stay as shipped.
+#
+# - session-query-sqlite stays at `:memory:` / `openAt: never`, the shipped
+#   value. Full-text session search is a separate decision with its own evidence
+#   requirement; it is not needed to satisfy the concurrency requirement.
+#
+# - The storage backend stays `json`. The plan forbids switching to SQLite
+#   because the substrate "should" be a database. If measurement later shows a
+#   volume or concurrency need, that is a separate, evidenced change.

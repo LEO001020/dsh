@@ -74,4 +74,41 @@ Append one entry per completed slice. Newest last.
 | Date | Slice | Result | Evidence |
 |---|---|---|---|
 | 2026-09-19 | M0.1 environment probe | DONE | `qualification/results/M0.1-environment/` |
-| 2026-09-19 | M0.2 source fetch at pinned SHA | DONE | `qualification/results/M0.2-source/` |
+| 2026-09-19 | M0.2 source fetch + install + build at pinned SHA | DONE | `qualification/results/M0.2-source/` |
+| 2026-09-19 | M0.4 first real tool chain | DONE | `qualification/results/M0.4-first-toolcall/` |
+| 2026-09-19 | M0.5 C0 resolved graph (the capability gap, measured) | DONE | `qualification/results/M0.5-c0-resolved-graph/` |
+| 2026-09-19 | M0.6 launcher identity: built vs source (A03) | DONE — finding | `qualification/results/M0.6-launcher-identity/` |
+| 2026-09-19 | M2.1 work core: state machine + precise counting | DONE | `qualification/results/M2.1-work-core/` |
+| 2026-09-19 | M2.2 work host service vs real storage domain | DONE | `qualification/results/M2.2-work-host/` |
+| 2026-09-19 | M2.3 tool consumer + plugin lifecycle | DONE | `qualification/results/M2.3-plugin-lifecycle/` |
+
+## Where we actually are
+
+**M0 is complete.** Auditable install, real first tool chain, hashed C0 graph.
+
+**M1 is complete for C0** (the stock control group). C1/C2 are next: C2 needs the
+work extension wired into a real profile, which is the immediate next slice.
+
+**M2 is complete.** The extension compiles against real DSH declarations, mounts
+through the real Cordis pipeline, registers its tool once, releases its domain
+handle on unload, and survives load → unload → load.
+
+**M3 is partially done.** The rolling top-up logic, the coalesced drain, the
+precise counting and the budget reservation are implemented and tested against a
+real storage domain. What is NOT done, and is the mandatory part:
+
+- wiring the `LaunchPort` to the real `ctx.subagents.startContinuable`
+- the profile/preset edits that mount the extension
+- a real N=10 run
+
+The first two need no live authorization and are next. The third is blocked on
+`G-EXT-02` (no authorized live-provider budget).
+
+## Immediate next slice
+
+**M3.1 — wire the real launch port.** Implement `LaunchPort` over
+`ctx.subagents.startContinuable`, mount the extension in `daily-candidate`,
+override `maxActiveSubagents` to 10 in the profile patch (C0's measured gap),
+and prove with a controlled provider that ten children are admitted and topped
+up. This closes gates C01–C05, C07, C10, C12–C18 at the T1/T2 layer.
+
