@@ -11,7 +11,7 @@ composition_repo_sha256:      5b8b2a8e5d9ae13d35c1d86833f8b96eeb84078a13027a08ef
 composition_is_current: true
 
 boot_cwd: D:/DSH/src/dsh-src (deliberately foreign to the profile directory)
-port: 11682 (bound by the harness, not assumed)
+port: 3356 (bound by the harness, not assumed)
 timed_out: false
 exit_code: null
 port_released_after_kill: true

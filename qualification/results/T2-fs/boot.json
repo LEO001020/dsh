@@ -70,7 +70,7 @@
   "settleSamples": [
     []
   ],
-  "settledWithinMs": 252,
+  "settledWithinMs": 263,
   "nonActiveEntries": [
     {
       "id": "verify-t2-fs",
@@ -89,7 +89,7 @@
   "sandboxPolicyResolved": "workspace-write",
   "sessionControllerPresent": true,
   "sessionCreated": true,
-  "sessionId": "session-1ef81692-a083-4c41-a06f-6b203ea21cab",
+  "sessionId": "session-b72ef8a7-aad7-419b-be14-2917a658c7f9",
   "sessionCwd": "D:/DSH/work/dsh-native-daily/qualification/results/T2-fs/workspace",
   "agentPresent": true,
   "toolCount": 27,

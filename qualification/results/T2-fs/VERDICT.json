@@ -80,7 +80,7 @@
   "selfRowFiberState": 1,
   "loaderInternalPresent": true,
   "boot": {
-    "port": 11682,
+    "port": 3356,
     "timedOut": false,
     "exitCode": null,
     "portReleased": true

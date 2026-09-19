@@ -130,7 +130,7 @@ refused`. Same construction the W02 case already uses.
 ## 2. The contract guard (the deliverable)
 
 **`src/no-sandbox-contract.ts`** (compiled) + **`src/no-sandbox-contract.test.ts`**
-(`[measured]` **22 passed / 1 expected fail / 23 total**).
+(`[measured]` **25 passed / 1 expected fail / 26 total**).
 
 The guard exists because the no-sandbox decision is only real if a **reversion is
 loud**. Both reversion directions look healthy from outside:
@@ -168,7 +168,7 @@ bundles still **originate** every row the profile patches — if an upstream ren
 removes a row, `applyEntryPatches` skips it silently and the deployment reverts
 **without the profile file changing at all**.
 
-### The guard was verified to FAIL on a real reversion (3 drills)
+### The guard was verified to FAIL on a real reversion (4 drills)
 
 Each drill edited a real composition file, ran the guard, and restored:
 
@@ -177,9 +177,11 @@ Each drill edited a real composition file, ran the guard, and restored:
 | 1 | `fs-sandbox` → `disabled: false` | `[measured]` 1 failed |
 | 2 | preset `tool-pwsh` → `disabled: false` | `[measured]` 1 failed |
 | 3 | **`fs-sandbox` row DELETED** (the silent case) | `[measured]` 1 failed |
+| 4 | bundle guard row **DELETED** (the wiring case, §4 Gap 1) | `[measured]` 2 failed |
 
-Both files were then restored and `[measured]` `git status` on
-`profiles/daily-candidate/` is **clean** — byte-identical, no drill residue.
+Every file was then restored and `[measured]` `git status` on
+`profiles/daily-candidate/` and `packages/dsh-daily-work/cordis.patch.yml` is
+**clean** — byte-identical, no drill residue.
 
 ---
 
@@ -228,13 +230,43 @@ an unexpectedly passing body.
 
 ## 4. Gaps — stated, not papered over
 
-**Gap 1 — the guard is compiled but NOT reachable from a profile.** It has no
-`package.json` `exports` entry and no `cordis.patch.yml` row, so nothing boots it.
-This is the *same defect class* the project has recorded four times (a module with
-no production caller). It is **not** fixed here because both files are outside this
-task's ownership and a concurrent agent's `package.json` diff is in flight. Until
-it is wired, the guard's detection power is proven **by test**, not **in
-production**.
+**Gap 1 — CLOSED (was: the guard was compiled but NOT reachable from a profile).**
+Originally it had no `package.json` `exports` entry and no `cordis.patch.yml` row,
+so nothing would boot it — the *same defect class* the project has recorded four
+times (a module with no production caller). It was reported rather than fixed
+because both files were outside this task's ownership.
+
+**The coordinator wired it** (`59ad50b`): `exports["./no-sandbox-contract"]` →
+`lib/no-sandbox-contract.{d.ts,js}`, and bundle row
+`- id: daily-no-sandbox-contract`. `[measured]` by the coordinator on a real boot
+of the composed profile from a foreign cwd
+(`qualification/results/ROOT-verification/contract-mounted.json`):
+`servicePresent true`, `reportOk true`, `checkCount 8`,
+`failedChecks ['sandboxPolicy.defaultMode', 'ptcRuntime.sandboxMode']`,
+`rowPresent true`.
+
+**The guard independently detects G-SEAM-33 in production.** Those two failing
+checks are exactly the sandbox-policy mode and the PTC confinement from §3 — so
+the mismatch between the stated trust model and the composed profile is now
+detected by a booted production component, not only by an agent's report. That is
+a direct consequence of writing the checks at full strength instead of describing
+the current state.
+
+**And the closure is now permanent, not a one-off edit.** Three cases were added
+so the wiring cannot silently regress: the export must exist AND point at files
+that exist; the bundle row must be present and ACTIVE (a `disabled: true` row
+would be inert while every other assertion still passed); and the guard must
+declare no hard `inject` (the property that made wiring it zero-risk — a pending
+row is what produced the measured `toolCount: 0` failure).
+
+`[measured]` reversion drill 4 — deleting the bundle row — makes 2 of those cases
+FAIL. The file was restored and `[measured]` `git status` on it is clean.
+
+**The loader id differs from the file id, and that is pinned rather than
+rediscovered:** the file says `daily-no-sandbox-contract`, the LOADER says
+`include:daily-no-sandbox-contract` (it prefixes inserted rows), and the loaded
+row's `name` field is `null`. A probe filtering on the bare id or on `name`
+reports a false absence — which is why the test asserts both spellings.
 
 **Gap 2 — `defaultMode` provenance is unobservable.** Config's schema default is
 `'read-only'`, and `defaultMode` is a plain `SandboxMode` with no provenance, so
@@ -267,7 +299,7 @@ parameters only, and makes no claim about runtime behaviour.
 
 **Measured:** `tsc` exit 0 (build at 07:00:32, and the typecheck at exit 0);
 `lib/no-sandbox-contract.js` + `.d.ts` exist; `upg-gates` 50/50; the naming case
-passes; VER-09 3/3 passes with a real 3.6 s vitest run; guard 22 pass + 1 expected
+passes; VER-09 3/3 passes with a real 3.6 s vitest run; guard 25 pass + 1 expected
 fail; the 3 reversion drills each FAIL; `git apply --check <empty>` exits 128;
 `defaultMode: "workspace-write"` on real boots; the FS-06b refusal reason.
 

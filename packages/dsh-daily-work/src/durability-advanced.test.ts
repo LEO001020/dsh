@@ -2008,11 +2008,67 @@ describe('T9-C: FILESYSTEM gates FS-01..FS-06', () => {
       await fs.editText(lfTarget, { oldString: 'b', newString: 'B', replaceAll: false })
       expect(readFileSync(lfPath, 'utf8')).toBe('a\nB\n')
 
-      // A full-file overwrite preserves the target's EXISTING style rather than
-      // imposing one, which is what keeps a one-line write from rewriting a file.
+      // ── THE OVERWRITE PATH IS A DIFFERENT CONTRACT, and this case measured it
+      // wrongly at first. The assertion that used to sit here was
+      //
+      //   expect(readFileSync(crlfPath,'utf8'), 'a write normalizes content to
+      //     the file\'s own style').toBe('x\r\ny\r\nz\r\n')
+      //
+      // and it was FALSE, in a way worth recording because the two paths are easy
+      // to conflate. `editText` restores the target's style because it makes a
+      // PARTIAL change: it captures `original.lineEndings` and calls
+      // `restoreLineEndings(edited.content, original.lineEndings)` before the
+      // atomic write, precisely so a one-line edit is not a whole-file rewrite
+      // (`packages/fs/fs-local/src/index.ts:253-255`, with the comment
+      // "line-ending restoration is a storage detail the diff ignores").
+      // `writeText` does NOT do this and is not supposed to: it is a FULL
+      // replacement in which the caller has stated the complete content, so the
+      // bytes written are the bytes given, and `normalizeLineEndings` is applied
+      // only to the returned `after` diff basis (`:224-227`). Restoring a style
+      // the caller did not ask for would make `write` unable to produce an LF
+      // file from a CRLF one at all.
+      //
+      // MEASURED, both directions, against the real backend (probe:
+      // `.probe-t2/crlf-probe.mjs`, recorded in
+      // `qualification/results/T2-fs/FINDINGS.md`): LF content onto a CRLF file
+      // leaves LF on disk; CRLF content onto a CRLF file leaves CRLF on disk.
+      // The contract is content-faithful, and the style-preserving behaviour
+      // belongs to `edit` alone.
+      //
+      // The original fear behind the wrong assertion is real and is kept: a
+      // whole-file rewrite of a CRLF file IS what you get from `write`, which is
+      // why the tool layer must use `edit` for a surgical change. The assertion
+      // below pins that split rather than denying it.
       const overwritten = await fs.writeText(crlfTarget, 'x\ny\nz\n')
       expect(overwritten.after, 'the diff basis is LF-normalized').toBe('x\ny\nz\n')
-      expect(readFileSync(crlfPath, 'utf8'), 'a write normalizes content to the file\'s own style').toBe('x\r\ny\r\nz\r\n')
+      expect(
+        readFileSync(crlfPath, 'utf8'),
+        'write is a FULL replacement: it writes the content it was given, and does not restore the target\'s style',
+      ).toBe('x\ny\nz\n')
+
+      // The control that makes the line above a contract rather than a quirk:
+      // CRLF content given to `write` lands as CRLF. So the write path is
+      // content-faithful in BOTH directions, and the earlier LF result was the
+      // caller's content and not a hidden normalizer.
+      const crlfAgain = await fs.writeText(crlfTarget, 'p\r\nq\r\n')
+      expect(
+        readFileSync(crlfPath, 'utf8'),
+        'CRLF content written by `write` lands as CRLF: the path is content-faithful, not LF-only',
+      ).toBe('p\r\nq\r\n')
+      // And `after` is still LF-normalized even when the bytes on disk are CRLF,
+      // so a hunk consumer sees only the genuinely changed lines.
+      expect(crlfAgain.after, 'the diff basis is LF-normalized regardless of the bytes written').toBe('p\nq\n')
+
+      // The two paths, side by side on the SAME file, so the difference is the
+      // measurement rather than an inference: `write` imposes the caller's
+      // content, then `edit` preserves what is on disk.
+      const restyled = await fs.writeText(crlfTarget, 'm\r\nn\r\n')
+      expect(restyled.operation).toBe('update')
+      await fs.editText(crlfTarget, { oldString: 'n', newString: 'N', replaceAll: false })
+      expect(
+        readFileSync(crlfPath, 'utf8'),
+        'an edit after a CRLF write preserves CRLF, because edit restores the style it read',
+      ).toBe('m\r\nN\r\n')
     } finally {
       await ctx.fiber.dispose()
     }
@@ -2057,14 +2113,31 @@ describe('T9-C: FILESYSTEM gates FS-01..FS-06', () => {
 
       // (2) A mutation through RAW PYTHON, bypassing the tool entirely. This is
       // the architecture's normal case, and it produces NO DSH outcome at all.
+      //
+      // `newline=''` IS PART OF THE FIXTURE, and its absence was a real defect in
+      // this case rather than a detail. `Path.write_text` opens in TEXT mode, so
+      // CPython translates every `\n` to the platform line separator: on this
+      // Windows host a script that writes `"...tool\n"` produces the bytes
+      // `...tool\r\n` (MEASURED: `write_text('x\n')` yields `b'x\r\n'` with the
+      // default, `b'x\n'` with `newline=''`). The assertions below compare the
+      // file to the exact LF string, so without this the case was measuring the
+      // HOST'S TEXT-MODE TRANSLATION rather than whether the mutation is visible —
+      // and it failed for that reason, not because anything was invisible.
+      //
+      // `newline=''` makes the fixture's bytes the ones the script states. It does
+      // NOT weaken the gate: the mutation still bypasses DSH entirely, still
+      // produces no fs receipt, and is still asserted to be visible from the
+      // world. It removes an accidental platform coupling, which is the honest
+      // fix — the alternative, normalizing the comparison, would have left the
+      // fixture's bytes unknown and the assertion unable to say what it read.
       const python = 'C:/Users/hzq00/AppData/Local/Programs/Python/Python314/python.exe'
       const script = [
         "import os, pathlib",
         `root = pathlib.Path(${JSON.stringify(root.replace(/\\/g, '/'))})`,
         // A direct overwrite of a tracked file...
-        "(root / 'tracked.txt').write_text('mutated by raw python, no dsh tool\\n', encoding='utf-8')",
+        "(root / 'tracked.txt').write_text('mutated by raw python, no dsh tool\\n', encoding='utf-8', newline='')",
         // ...and a brand-new file the tool never heard of.
-        "(root / 'raw-only.txt').write_text('created by raw python\\n', encoding='utf-8')",
+        "(root / 'raw-only.txt').write_text('created by raw python\\n', encoding='utf-8', newline='')",
         // ...and a rename, which is the mutation class a write-only tool cannot see.
         "os.rename(root / 'raw-only.txt', root / 'raw-renamed.txt')",
         "print('PYTHON-MUTATED')",

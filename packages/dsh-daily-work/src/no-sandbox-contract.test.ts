@@ -45,7 +45,7 @@
  * and marked as an explicit expected failure naming the defect. See
  * `qualification/results/T5-contract/FINDINGS.md`.
  */
-import { readFileSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { Context } from '@deepseek-ai/cordis'
@@ -71,6 +71,10 @@ function readText(path: string): string {
 /** The daily candidate profile and the preset that carries its tool rows. */
 const PROFILE_PATCH = join(REPO_ROOT, 'profiles', 'daily-candidate', 'cordis.patch.yml')
 const DAILY_PRESET = join(REPO_ROOT, 'profiles', 'daily-candidate', 'presets', 'daily-standard', 'agent.cordis.yml')
+/** This package's own bundle patch, which is what travels WITH the code. */
+const OWN_BUNDLE_PATCH = join(REPO_ROOT, 'packages', 'dsh-daily-work', 'cordis.patch.yml')
+/** This package's manifest, where the export the row resolves through is declared. */
+const OWN_MANIFEST = join(REPO_ROOT, 'packages', 'dsh-daily-work', 'package.json')
 /** The shipped bundle the profile patches; the sandbox rows originate here. */
 const BASE_BUNDLE = join('D:', 'DSH', 'src', 'dsh-src', 'packages', 'bundle', 'base', 'cordis.patch.yml')
 /** `ui-permission` is a web-app row, NOT a base row — see the composition case. */
@@ -423,6 +427,77 @@ describe('the composed profile still declares the no-sandbox decision', () => {
         expect(rowBlock(bundle, id), `${id} must still exist in ${path} for the profile to patch`).toBeDefined()
       }
     }
+  })
+})
+
+// ---------------------------------------------------------------------------
+// The guard must be REACHABLE, not merely correct — Gap 1 closed permanently
+// ---------------------------------------------------------------------------
+
+describe('the guard has a production entry point, so a profile can actually mount it', () => {
+  it('the package EXPORTS the guard, and the export points at built output', () => {
+    // WHY THIS CASE EXISTS, and it was the guard's own most serious gap. The
+    // module was correct and compiled, but nothing could reach it: no `exports`
+    // entry and no patch row, so no profile would ever load it. That is the same
+    // defect class this project has retracted four times (a launch port with no
+    // production caller, a continuation taker with none, a package with no
+    // `dsh.bundle`, and `worktree-isolation.ts` before its plugin existed).
+    // A guard that only a test can reach is not a guard.
+    //
+    // A test that mounts the module DIRECTLY proves the module works and proves
+    // nothing about whether a profile uses it — so this case asserts the three
+    // links in order instead: the export, the file it names, and the row that
+    // resolves through it.
+    const manifest = JSON.parse(readFileSync(OWN_MANIFEST, 'utf8')) as {
+      exports: Record<string, { types: string; default: string }>
+    }
+    const entry = manifest.exports['./no-sandbox-contract']
+    expect(entry, 'the guard must be an exported subpath').toBeDefined()
+    // Built output, not `src`: a `src` target would ship TypeScript where a
+    // consumer expects a module, and would bind the public surface to the layout.
+    expect(entry!.default).toBe('./lib/no-sandbox-contract.js')
+    expect(entry!.types).toBe('./lib/no-sandbox-contract.d.ts')
+    // And the files must EXIST, because an export naming a missing file fails at
+    // import — the defect this project records as G-FIX-04.
+    for (const target of [entry!.default, entry!.types]) {
+      expect(existsSync(join(REPO_ROOT, 'packages', 'dsh-daily-work', target)), `${target} must exist`).toBe(true)
+    }
+  })
+
+  it('the bundle patch inserts the row, and it is ACTIVE rather than disabled', () => {
+    // The row is what a profile resolver actually loads, so it is the link that
+    // turns "the module is correct" into "the deployment runs it".
+    //
+    // THE ID IS `daily-no-sandbox-contract` IN THE FILE AND
+    // `include:daily-no-sandbox-contract` IN THE LOADER, and the difference is
+    // load-bearing rather than cosmetic. The loader PREFIXES inserted rows with
+    // `include:` (`packages/boot/plugin-manager`, and measured on a real boot in
+    // `qualification/results/ROOT-verification/contract-mounted.json`, whose
+    // `rowsMatchingNoSandbox[0].id` is `include:daily-no-sandbox-contract`). A
+    // probe filtering on the bare id, or on the `name` field — which is `null` on
+    // the loaded row — reports a false absence. Both spellings are therefore
+    // asserted here, so the naming is pinned rather than rediscovered.
+    const bundle = readText(OWN_BUNDLE_PATCH)
+    const row = rowBlock(bundle, 'daily-no-sandbox-contract')
+    expect(row, 'the bundle must insert the guard row').toBeDefined()
+    expect(row).toContain('dsh-daily-work/no-sandbox-contract')
+    // ACTIVE: a `disabled: true` row would be inert, and the guard would be back
+    // to being unreachable while every other assertion here still passed.
+    expect(row).not.toContain('disabled: true')
+  })
+
+  it('the guard is mounted WITHOUT a hard inject, which is what made it safe to add', () => {
+    // A row that hard-injected a service the composed graph cannot satisfy would
+    // stay `pending` forever, and a pending row is what produced this project's
+    // measured `toolCount: 0` failure. The guard reads every service through
+    // `ctx.get`, so it cannot introduce a pending fiber — and this is the
+    // property that made wiring it a zero-risk change. Asserted rather than
+    // trusted, since a later edit adding an inject would be a silent regression
+    // of exactly that property.
+    expect(inject).toEqual([])
+    // And the row must not add an inject of its own, which would have the same
+    // effect from the composition side.
+    expect(rowBlock(readText(OWN_BUNDLE_PATCH), 'daily-no-sandbox-contract')).not.toContain('inject')
   })
 })
 

@@ -2860,10 +2860,31 @@ describe('FS-06: raw Python mutation must be visible to the verifier', () => {
   it('the raw-Python write is caught by the candidate/HEAD comparison the root actually makes', async () => {
     // The integration half. A writer's raw-Python edit is not in any commit, so
     // `headRevision` does not describe it and `git diff base head` does not
-    // contain it. The root must therefore compare the COMMIT against the
-    // WORKING TREE, or it would integrate a revision that does not match what was
-    // verified. This case measures the gap rather than describing it.
-    const { root, base } = makeRepo('fs06b')
+    // contain it. This case measures BOTH halves of that: the gap that remains
+    // when the receipt's tree digest is taken on trust, and the closure that
+    // exists when the definition is supplied and the digest is recomputed.
+    //
+    // WHY THE FIXTURE NOW SUPPLIES A REAL RECEIPT. The first version of this case
+    // called `assessIntegration` with NO receipt at all and asserted
+    // `accept_for_publication`. It got `refuse` — and the reason was not the
+    // raw-Python edit. MEASURED, by reproducing the scenario and printing the
+    // assessment's own `reasons` (probe `.probe-t2/fs06b-probe.mts`, recorded in
+    // `qualification/results/T2-fs/FINDINGS.md`):
+    //
+    //   "there is no acceptance receipt, so there is no evidence that any test ran"
+    //   "no acceptance receipt was supplied, so nothing about the candidate has been verified"
+    //
+    // So the refusal came from the missing receipt and said nothing about the raw
+    // edit. A case that fails for an unrelated reason cannot measure the property
+    // it names, and one that PASSED on the missing receipt would have been worse:
+    // it would have claimed the root catches raw-Python edits when the decision was
+    // driven by something else entirely. Supplying a receipt produced by a real
+    // run makes the raw-Python edit the only remaining variable.
+    //
+    // The base carries the vitest scaffolding so the receipt's inputs
+    // (`src`, `package.json`, `vitest.config.ts`) exist in the worktree and the
+    // candidate's own diff is not polluted by fixture setup.
+    const { root, base } = makeVitestRepo('fs06b')
     const workspace = await acquireWriterWorkspace({
       root,
       writerId: 'rawpy',
@@ -2878,10 +2899,36 @@ describe('FS-06: raw Python mutation must be visible to the verifier', () => {
     git(workspace.path, 'commit', '-q', '-am', 'committed change')
     const head = git(workspace.path, 'rev-parse', 'HEAD')
 
+    // A REAL receipt for the committed tree, produced by a REAL vitest run in the
+    // workspace. Hand-writing the counts would make `testsAreReal` a test of this
+    // fixture rather than of the runner's output shape.
+    const receiptDefinition: AcceptanceDefinition = {
+      id: 'fs06b-receipt',
+      command: [process.execPath, VITEST_ENTRY, 'run', 'src/smoke.test.ts'],
+      cwd: workspace.path,
+      inputs: ['src', 'package.json', 'vitest.config.ts'],
+      testReporter: 'vitest',
+      expectTests: { passed: 1 },
+      timeoutMs: 60_000,
+    }
+    const receipt = await runAcceptance(receiptDefinition)
+    expect(receipt.outcome, 'the fixture must produce a real PASSING receipt, or the decision below is dominated by the fixture').toBe('pass')
+    expect(receipt.observedTests?.passed, 'the receipt must record a real passing test').toBe(1)
+    const recordedBinding = observedBasis({ definition: receiptDefinition, oracleFiles: {} })
+    // The receipt was taken BEFORE the raw-Python write, so the tree it binds is
+    // the committed one. That is the realistic ordering: the writer is verified,
+    // and only then does something mutate the tree out of band.
+    expect(recordedBinding.candidateTreeDigest).toBe(receipt.candidateTreeDigest)
+
     const python = pythonPath()
+    // `newline=''` keeps the fixture's bytes the ones the script states. Without
+    // it CPython's text mode translates `\n` to `\r\n` on this host, so the
+    // assertion below would be measuring the platform's line separator rather
+    // than whether the mutation is visible. MEASURED: `write_text('x\n')` yields
+    // `b'x\r\n'` by default and `b'x\n'` with `newline=''`.
     const script = [
       'import pathlib',
-      `pathlib.Path(r"${join(workspace.path, 'src', 'app.txt').replace(/\\/g, '\\\\')}").write_text("raw python change\\n", encoding="utf-8")`,
+      `pathlib.Path(r"${join(workspace.path, 'src', 'app.txt').replace(/\\/g, '\\\\')}").write_text("raw python change\\n", encoding="utf-8", newline='')`,
     ].join('\n')
     const wrote = spawnSync(python, ['-c', script], { encoding: 'utf8' })
     expect(wrote.status, `python failed: ${wrote.stderr}`).toBe(0)
@@ -2904,6 +2951,11 @@ describe('FS-06: raw Python mutation must be visible to the verifier', () => {
       candidate: { cwd: workspace.path, baseRevision: base, headRevision: head },
       expectedBase: base,
       allowedPaths: ['src'],
+      receipt,
+      recordedBinding,
+      // NO `definition` here, deliberately: without it the tree digest is taken
+      // from the recorded binding rather than recomputed from disk, which is the
+      // weaker of the two shapes the function offers.
       patchDir: makeRoot('fs06b-patch'),
     })
     // The patch is the COMMITTED delta and says nothing about the raw edit.
@@ -2914,12 +2966,43 @@ describe('FS-06: raw Python mutation must be visible to the verifier', () => {
     const committedDiff = git(workspace.path, 'diff', base, head)
     expect(committedDiff).toContain('committed change')
     expect(committedDiff).not.toContain('raw python change')
-    // HONEST STATEMENT OF THE GAP: `assessIntegration` does not itself check for a
-    // dirty working tree, so a raw-Python edit made AFTER the commit is not part
-    // of the patch it evaluates. The verifier closes this by recomputing the tree
-    // digest from disk (the FS-06 case above), not by trusting the commit.
+    // THE GAP, now measured with everything else in order. With a real receipt and
+    // no definition, the assessment ACCEPTS: the patch is the committed delta, and
+    // the tree digest is the one the receipt recorded, so the raw-Python edit in
+    // the working tree is not visible to it. This is the honest statement of what
+    // `assessIntegration` does NOT check on its own — it does not stat the working
+    // tree, so a mutation made after the receipt was taken is not caught by this
+    // call.
+    expect(assessment.testsAreReal, 'the receipt is real, so the acceptance is not vacuous').toBe(true)
+    expect(assessment.receiptBinding?.applicable, 'and the binding applies, so the acceptance is not a binding failure').toBe(true)
+    expect(assessment.reasons).toEqual([])
     expect(assessment.decision).toBe('accept_for_publication')
-  }, 180_000)
+
+    // THE CLOSURE, and the reason this case is worth keeping: pass the DEFINITION
+    // and the same call recomputes the tree digest FROM DISK
+    // (`observedBasis`, worktree-isolation.ts) instead of trusting the recorded
+    // one. The raw-Python edit moves that digest, the receipt no longer binds the
+    // tree that exists now, and the candidate is refused. So the gap above is
+    // closable by the caller, and the closing is mechanical rather than a promise.
+    const caught = await assessIntegration({
+      ctx,
+      root,
+      candidate: { cwd: workspace.path, baseRevision: base, headRevision: head },
+      expectedBase: base,
+      allowedPaths: ['src'],
+      receipt,
+      recordedBinding,
+      definition: receiptDefinition,
+      patchDir: makeRoot('fs06b-patch2'),
+    })
+    expect(caught.decision, 'the recomputed tree digest catches the uncommitted raw-Python edit').toBe('refuse')
+    expect(caught.receiptBinding?.applicable).toBe(false)
+    expect(
+      caught.receiptBinding?.mismatches.join(' '),
+      'and the mismatch names the TREE digest, which is the thing the raw edit moved',
+    ).toContain('candidateTreeDigest')
+    expect(caught.receiptBinding?.mismatches.join(' ')).not.toContain('oracleDigest')
+  }, 240_000)
 })
 
 // ---------------------------------------------------------------------------
