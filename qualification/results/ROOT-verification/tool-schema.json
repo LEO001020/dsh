@@ -1,0 +1,47 @@
+{
+  "tools": [
+    "ask_user_question",
+    "create_goal",
+    "edit",
+    "exit_plan_mode",
+    "get_goal",
+    "glob",
+    "grep",
+    "interrupt_agent",
+    "ipython",
+    "job_kill",
+    "job_list",
+    "job_output",
+    "list_agents",
+    "present",
+    "pwsh",
+    "read",
+    "read_image",
+    "send_message",
+    "skill",
+    "subagent",
+    "subagent_fork",
+    "todo_write",
+    "update_goal",
+    "web_fetch",
+    "web_search",
+    "work",
+    "workflow",
+    "write"
+  ],
+  "sandboxParams": {
+    "pwsh": [
+      "sandbox_permissions",
+      "justification"
+    ],
+    "write": [
+      "sandbox_permissions",
+      "justification"
+    ],
+    "edit": [
+      "sandbox_permissions",
+      "justification"
+    ]
+  },
+  "error": null
+}
