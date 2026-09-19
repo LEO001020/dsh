@@ -1,22 +1,19 @@
 # OPERATIONS — install, run, stop, recover, upgrade, roll back
 
-> **Status: NOT YET VERIFIED ON THIS MACHINE.**
-> Every command below is a *plan* until it appears in `qualification/results/`
-> with a real exit code. Do not treat this file as evidence.
+> **Status: only the commands marked VERIFIED have been run on this machine.**
+> Everything else is a plan. The evidence for each verified command is under
+> `qualification/results/`.
 
-## Paths (frozen)
+## Paths in use
 
 | Role | Path |
 |---|---|
 | DSH source checkout (pinned, disposable) | `D:\DSH\src\dsh-src` |
 | This implementation repo | `D:\DSH\work\dsh-native-daily` |
-| Canary `DSH_HOME` (C0/C1/C2 experiments) | `D:\DSH\home\canary` |
-| Daily `DSH_HOME` (production) | `D:\DSH\home\daily` |
-| Task workspaces (writable by model) | `D:\DSH\work\<task>` |
-| Control files (NOT writable by model) | `D:\DSH\work\dsh-native-daily\{qualification,profiles,packages,compatibility.lock.json}` |
-
-Canary and daily use **different** `DSH_HOME`, and separate writable workspaces,
-outputs and model state. A second host must not open a live home.
+| Pinned pnpm shim (see the trap below) | `D:\DSH\tools\bin\pnpm` |
+| Canary `DSH_HOME` (C0/C2 experiments) | `D:\DSH\home\canary`, `D:\DSH\home\canary3` |
+| Daily `DSH_HOME` (production) | not created — nothing is promoted yet |
+| Task workspaces | `D:\DSH\work\<task>` |
 
 ## Pinned identity
 
@@ -25,90 +22,164 @@ upstream  deepseek-ai/deepseek-harness
 commit    ddefc45fbc7f8e46dd73185e68295696d1297887
 tag       dsh-v0.1.6-alpha.2
 version   0.1.6-alpha.2
-pnpm      11.7.0   (via corepack, NOT the global pnpm)
-node      ^22.19.0 || >=24.0.0
+pnpm      11.7.0   (via corepack)
+node      ^22.19.0 || >=24.0.0   (this machine: v24.18.0)
+artifact  apps/cli/lib/bin.js  sha256 69c49c871735dc7ee81ec51f266bbec129f075fd5066e046374f4b13ab02a705
 ```
 
-Two launchers, two identities — they are not interchangeable:
+Two launchers, two identities, **not interchangeable**:
 
-- built artifact: `apps/cli/lib/bin.js` (built by `pnpm build`)
-- source launcher: root script `dsh` = `node --import tsx/esm apps/cli/src/bin.ts`
+- built: `node apps/cli/lib/bin.js` — **this is the qualified one.**
+- source: `pnpm dsh` = `node --import tsx/esm apps/cli/src/bin.ts`
 
-The built artifact is the one qualified for daily use. The source launcher, if
-used for development, is qualified separately.
+VERIFIED: with an overlay that inserts a plugin by path, the built launcher
+completes the tool round trip while the source launcher dies with
+`Cannot read properties of undefined (reading 'prepare')`. Reproduced 3/3.
+Evidence: `qualification/results/M0.6-launcher-identity/`.
 
-## Install (canary)
+## Install (VERIFIED)
 
 ```sh
 cd /d/DSH/src/dsh-src
 corepack prepare pnpm@11.7.0 --activate
-corepack pnpm install --frozen-lockfile
-corepack pnpm build
+corepack pnpm install --frozen-lockfile --network-concurrency 4 \
+  --fetch-retries 5 --fetch-retry-maxtimeout 120000
 ```
 
-Read the pinned `postinstall` and package scripts before running. Node must
-really satisfy `engines`; 22.16 and 23.x do not.
+**TRAP 1 — the network.** The first attempt failed with `TypeError: fetch failed`
+after 1285 of 1319 packages. Registry throughput here is 2–35 KiB/s. Reducing
+network concurrency and raising the retry budget succeeded in 19m13s. This is a
+slow-network problem, not a resolution problem; do not "fix" it by relaxing the
+lockfile.
 
-## Start
+## Build (VERIFIED)
 
 ```sh
-# canary, isolated home
-DSH_HOME=D:\DSH\home\canary <launcher> ...
+export PATH="/d/DSH/tools/bin:$PATH"   # the pinned pnpm shim
+cd /d/DSH/src/dsh-src
+pnpm build
 ```
 
-Exact flags must be read from the pinned CLI's own `--help`. Do not invent
-`--preset`, `--config` or `--resume`.
+**TRAP 2 — the nested pnpm.** The build script spawns a bare `pnpm` from PATH.
+That resolved to the GLOBAL pnpm 11.24.0, which refused because the repo declares
+`packageManager: pnpm@11.7.0`. Corepack does not switch versions once invoked, so
+the nested call stayed on 11.24.0 and the build failed with
+`This project is configured to use 11.7.0 of pnpm`.
+
+The fix is a shim directory prepended to PATH (`D:\DSH\tools\bin\pnpm` and
+`pnpm.cmd`) that execs the corepack-pinned 11.7.0 directly. **The global pnpm was
+not modified or upgraded.** Build then exits 0.
+
+## Start (VERIFIED for headless)
+
+```sh
+export PATH="/d/DSH/tools/bin:$PATH"
+export DSH_HOME='D:\DSH\home\canary'
+cd /d/DSH/src/dsh-src
+node apps/cli/lib/bin.js --profile headless --patch <overlay.patch.yml> "task text"
+```
+
+VERIFIED: a keyless overlay driven by the in-tree mock adapter produces
+`CLI tool round trip complete: CLI_TOOL_ROUND_TRIP` on stdout, reasoning on
+stderr, and a persisted zstd JSONL Session with no torn tail.
+
+A daily driver is intended to be a long-lived Web host, because headless exits
+after one task and must not be wrapped in a shell loop to fake a second model
+loop. **That host has not been qualified on this machine** (gate A12 is
+`NOT_RUN`).
+
+## Inspect the resolved configuration (VERIFIED)
+
+```sh
+node apps/cli/lib/bin.js --profile <name> --dump-default-config   # bundles only
+node apps/cli/lib/bin.js --profile <name> --dump-config           # + profile + home + patches
+```
+
+`--dump-default-config` deliberately omits the profile's own patch layer, which is
+why it is the right tool for measuring the STOCK baseline. Use `--dump-config` to
+see your own patch take effect.
+
+**TRAP 3 — a malformed patch is rejected, not ignored.** A stray literal `[]`
+after comment blocks produced
+`failed to parse overlay ...: YAMLException: end of the stream or a document
+separator is expected`. The loader fails loudly, which is the behaviour you want.
+
+**TRAP 4 — a patch replaces the whole `config` object.** It is not a deep merge.
+Restate every key you need, or the others silently revert to schema defaults.
+
+## Run this package's tests (VERIFIED)
+
+```sh
+cd /d/DSH/work/dsh-native-daily/packages/dsh-daily-work
+cmd /c link-dsh.cmd                    # Windows: junction the pinned DSH packages
+export PATH="/d/DSH/tools/bin:/d/DSH/src/dsh-src/node_modules/.bin:$PATH"
+vitest run                             # 126 tests, 9 files
+tsc -p tsconfig.json --noEmit          # exit 0
+```
+
+`link-dsh.cmd` creates junctions into the pinned checkout so the package compiles
+against REAL DSH type declarations. It is a development convenience for this
+machine's layout, not part of the deliverable; a real deployment resolves these
+through the profile's own dependency installation.
+
+## Durability runner (VERIFIED)
+
+```sh
+node --import tsx src/durability-runner.ts parent <storeDir> <reportPath>
+```
+
+Forks a real Node process, has it admit work into a real storage domain, kills it
+with SIGKILL, then reopens the same directory from a fresh process. VERIFIED PASS
+on 4 consecutive runs with `childExitSignal: SIGKILL` and all six checks true.
 
 ## Stop
 
-Stop is a first-class operation. A user Stop outranks top-up (INV-G4). Stopping
-means: refuse new admissions, abort current admission, wait for owned resources,
-then close storage and unregister. It does **not** mean calling the permanent
-family drain — see `docs/RECOVERY.md`.
+Stop means: refuse new admissions, then stop owned work, then release storage,
+then unwind the context. **This order was measured, and the naive order deadlocks**
+— a child parked in a model call cannot be torn down while context disposal waits
+for its driver to exit. See `docs/RECOVERY.md`.
+
+A user Stop outranks top-up. Nothing in this project revives a stopped run.
 
 ## Diagnose
 
 ```sh
-python helpers/doctor.py --source D:\DSH\src\dsh-src   # read-only, non-DSH
+python <delivery>/helpers/doctor.py --source /d/DSH/src/dsh-src
+python qualification/runners/build-gates.py
 ```
 
-The doctor does not start DSH, does not run package scripts, does not read
-credentials, does not go online. Exit 0 proves only that a limited metadata check
-succeeded.
+The doctor is a read-only metadata check, not a DSH qualification. The gate
+generator refuses to emit a PASS with no evidence file on disk.
 
 ## Upgrade
 
-1. Diff API / exports / tests between the pinned commit and the candidate.
+1. Diff API, exports and tests between the pinned commit and the candidate.
 2. Test in an **independent canary home** using a state copy.
-3. Cold backup, or the official consistency export. Never copy a live DB and
-   call it a consistent snapshot.
-4. Immutable version directory, new process. HMR/metadata-watch is not a restart
-   qualification.
+3. Cold backup, or the official consistency export. Never copy a live DB and call
+   it a consistent snapshot.
+4. Immutable version directory, new process. HMR is not a restart qualification.
 
-Any change to API URL / model alias / provider protocol / Node or native binary /
-plugin graph / preset / sandbox **re-triggers the corresponding gates**. "Source
-tests passed" does not mean "another launcher passed".
+Any change to the artifact, lockfile, profile patch, preset, resolved graph or
+acceptance spec **changes the deployment identity**, which invalidates every PASS
+recorded against the old one. That is the intended behaviour.
 
 ## Roll back
 
-Restore the old artifact **and** the old state snapshot that the new version has
-not migrated. Reconcile external effects the new version already produced —
-rolling back software does not withdraw a remote action. A schema that cannot be
-migrated safely refuses to start rather than silently reading a backup.
+Restore the old artifact **and** the old state snapshot the new version has not
+migrated. Reconcile external effects the new version already produced — rolling
+back software does not withdraw a remote action. A schema that cannot be migrated
+safely refuses to start rather than silently reading a backup.
 
 ## Evidence layout
 
 ```
-qualification/results/<case-id>/
-  case.json          frozen deployment identity + case parameters
-  command.txt        exact command line
-  stdout.txt         bounded stdout
-  stderr.txt         bounded stderr
-  exit.txt           exit code / signal / timeout
-  timeline.jsonl     event timeline where relevant
-  assertions.json    oracle and observed result
-  cleanup.json       what was torn down
+qualification/results/<slice>/
+  <slice>-notes.md / FINDINGS.md   what was measured, and what was not
+  tests.txt                        real runner output
+  tsc.txt                          real type-check output
+  source-digests.txt               sha256 of the sources that produced the result
+  report*.json                     machine-checkable results where applicable
 ```
 
-Sensitive full logs stay in a protected location; redacted summaries are what
+Sensitive full logs stay in a protected location; the redacted summaries are what
 gets shared.

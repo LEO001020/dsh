@@ -83,6 +83,11 @@ Append one entry per completed slice. Newest last.
 | 2026-09-19 | M2.3 tool consumer + plugin lifecycle | DONE | `qualification/results/M2.3-plugin-lifecycle/` |
 | 2026-09-19 | M3.1 launch port + C2 profile (N=10 override) | DONE | `qualification/results/M3.1-c2-profile/` |
 | 2026-09-19 | M3.2 N=10 rolling top-up on the production loop | DONE (T1/T2) | `qualification/results/M3.2-N10-concurrency/` |
+| 2026-09-19 | M4.1 reconciliation + real SIGKILL durability | DONE | `qualification/results/M4.1-process-kill/` |
+| 2026-09-19 | M5.1 security boundaries | DONE (partial, stated) | `qualification/results/M5.1-security-boundaries/` |
+| 2026-09-19 | M6.1 native terminal qualification | DONE, with a limitation | `qualification/results/M6.1-terminal-qualification/` |
+| 2026-09-19 | M7.1 zloop web-search ported to DSH | DONE | `qualification/results/M7.1-web-search-port/` |
+| 2026-09-19 | M8.1 qualification gate report | DONE | `qualification/results/M8.1-gate-report/` |
 
 ## Where we actually are
 
@@ -110,6 +115,31 @@ What remains in M3 is exactly one thing, and it is externally blocked:
   user authorizes a budget.
 
 ## Immediate next slice
+
+The remaining work splits into two buckets, and only one of them is blocked.
+
+**Bucket A — doable now, no live provider needed.** In priority order:
+
+1. **C08 disposal failure** — inject a subagent teardown failure and assert that
+   `subagent/end` alone does not release a slot. Needs a fault-injection fixture.
+2. **C09 / D07 wire-level faults** — drive HTTP 429 and a lost reply through the
+   in-tree `llm-mock-server`, which is a real HTTP/SSE server and needs no key.
+3. **C14 Goal disarm** — wire `ctx.goals.disarm(root)` into run creation and test
+   that there is exactly one continuation owner.
+4. **C17/C18 completion and drain** — build the acceptance runner, then test
+   bounded recovery after a failed acceptance and the final-drain semantics.
+5. **E01/E06 denial fixtures** — a canary secret and a network probe, to turn the
+   two `NOT_RUN` security gates into real results.
+6. **M6 confinement follow-up** — reproduce the `terminals.spawn` hang under
+   confinement with a minimal fixture and report it upstream.
+
+**Bucket B — blocked.** The live paid N=10 run (C01/T5) and the real-task gates
+(U01-U06) need an authorized provider budget. Until then they stay
+`BLOCKED_EXTERNAL`, which is not a PASS.
+
+## Superseded note (kept for the record)
+
+The paragraph below described M4 as the next slice before it was done.
 
 **M4 — durability and reconciliation.** The five positions (intent admitted /
 Inbox accepted / Inbox claimed / entered a request / effect confirmed) are
