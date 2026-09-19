@@ -1,0 +1,137 @@
+{
+  "control": {
+    "label": "empty-control",
+    "before": {
+      "total": 10,
+      "kinds": {
+        "FSReqPromise": 6,
+        "FSReqCallback": 1,
+        "PipeWrap": 2,
+        "TCPServerWrap": 1
+      },
+      "listeners": 10
+    },
+    "cycles": [
+      {
+        "n": 1,
+        "after": {
+          "total": 12,
+          "kinds": {
+            "PipeWrap": 2,
+            "TCPServerWrap": 1,
+            "FSEventWrap": 9
+          },
+          "listeners": 10
+        }
+      },
+      {
+        "n": 2,
+        "after": {
+          "total": 12,
+          "kinds": {
+            "PipeWrap": 2,
+            "TCPServerWrap": 1,
+            "FSEventWrap": 9
+          },
+          "listeners": 10
+        }
+      },
+      {
+        "n": 3,
+        "after": {
+          "total": 12,
+          "kinds": {
+            "PipeWrap": 2,
+            "TCPServerWrap": 1,
+            "FSEventWrap": 9
+          },
+          "listeners": 10
+        }
+      }
+    ]
+  },
+  "arm": {
+    "label": "timer-owning-body",
+    "before": {
+      "total": 12,
+      "kinds": {
+        "PipeWrap": 2,
+        "TCPServerWrap": 1,
+        "FSEventWrap": 9
+      },
+      "listeners": 10
+    },
+    "cycles": [
+      {
+        "n": 1,
+        "after": {
+          "total": 12,
+          "kinds": {
+            "PipeWrap": 2,
+            "TCPServerWrap": 1,
+            "FSEventWrap": 9
+          },
+          "listeners": 10
+        }
+      },
+      {
+        "n": 2,
+        "after": {
+          "total": 12,
+          "kinds": {
+            "PipeWrap": 2,
+            "TCPServerWrap": 1,
+            "FSEventWrap": 9
+          },
+          "listeners": 10
+        }
+      },
+      {
+        "n": 3,
+        "after": {
+          "total": 12,
+          "kinds": {
+            "PipeWrap": 2,
+            "TCPServerWrap": 1,
+            "FSEventWrap": 9
+          },
+          "listeners": 10
+        }
+      }
+    ]
+  },
+  "error": null,
+  "controlTotalSeries": [
+    10,
+    12,
+    12,
+    12
+  ],
+  "armTotalSeries": [
+    12,
+    12,
+    12,
+    12
+  ],
+  "controlPerCycleDelta": [
+    2,
+    0,
+    0
+  ],
+  "armPerCycleDelta": [
+    0,
+    0,
+    0
+  ],
+  "armFinalCycleGrowth": 0,
+  "controlFinalCycleGrowth": 0,
+  "armTimeoutSeries": [
+    0,
+    0,
+    0,
+    0
+  ],
+  "armTimerLeak": 0,
+  "domainUsableAfterCycles": true,
+  "runIdsAfterCycles": []
+}

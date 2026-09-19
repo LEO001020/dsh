@@ -209,7 +209,7 @@
     "stimulus": "删除/改名一个拟用export。",
     "oracle": "编译probe失败；未以any/deep import/.d.ts补丁掩盖。",
     "status": "PASS",
-    "note": "The package compiles against real DSH declarations with tsc --noEmit; no any, no .d.ts edits, no deep imports.",
+    "note": "The package compiles against real DSH declarations with tsc --noEmit; no any, no .d.ts edits, no deep imports. The compiled lib/ output was additionally import-verified in plain Node, which is what the profile resolver actually loads.",
     "deployment_identity": "0ca14d4ee0ebea5eb85a3f72d66f48d839356f1b336c0e4f11f9a4f8ddf2ab7c",
     "evidence": [
       {
@@ -226,12 +226,16 @@
     "stimulus": "从最终profile resolver加载plugin，检查依赖realpath。",
     "oracle": "Cordis及关键DSH服务单实例，built不混src。",
     "status": "PASS",
-    "note": "Single-instance load asserted: a second registration in the same scope is rejected by Cordis.",
+    "note": "Re-verified against the REAL profile resolver. Every peer resolves to exactly one realpath across three resolution roots (extension, profile, checkout); all resolve to built lib/*.js with zero source-resolved copies; all six injected services are live. Prior evidence (direct ctx.plugin mounting) was an over-claim and is retracted in the FINDINGS.",
     "deployment_identity": "0ca14d4ee0ebea5eb85a3f72d66f48d839356f1b336c0e4f11f9a4f8ddf2ab7c",
     "evidence": [
       {
-        "path": "qualification/results/M2.2-work-host/tests.txt",
-        "sha256": "0b33ead1a3558b8ef41fdc7335e7227cc60d8c3f0e4f3a58cd26094fee58707b"
+        "path": "qualification/results/M9.17-b02-resolver/FINDINGS.md",
+        "sha256": "827207b0ec68b3f8246a424c6299a0c2d3e6e610a1f40e4b8b131d48b4ed82c4"
+      },
+      {
+        "path": "qualification/results/M9.17-b02-resolver/b02.json",
+        "sha256": "d122d353859b5df8022344f1d2cef68c8b47f439c45079d7139ab4c3c5a45d83"
       }
     ]
   },
@@ -243,12 +247,16 @@
     "stimulus": "load→执行→unload→load三次，含await中的工作。",
     "oracle": "新接纳关闭、已拥有资源清理、无孤儿timer/listener/domain句柄。",
     "status": "PASS",
-    "note": "load, unload, load tested: domain handle released, service absent after unload, tool registered exactly once per generation.",
+    "note": "Re-verified inside a real profile boot: three load/unload cycles with a pending await. Zero timer leak (Timeout count returns to pre-mount), zero per-cycle handle growth in steady state, flat resource series, and the shared domain stays usable. A control arm runs first so one-time host init is not misattributed. Two measurement errors in the first probe (wrong baseline, and _getActiveHandles being blind to timers) are recorded in the FINDINGS.",
     "deployment_identity": "0ca14d4ee0ebea5eb85a3f72d66f48d839356f1b336c0e4f11f9a4f8ddf2ab7c",
     "evidence": [
       {
-        "path": "qualification/results/M2.2-work-host/tests.txt",
-        "sha256": "0b33ead1a3558b8ef41fdc7335e7227cc60d8c3f0e4f3a58cd26094fee58707b"
+        "path": "qualification/results/M9.18-b03-lifecycle/FINDINGS.md",
+        "sha256": "ed8aa799bc064d80e6e5cd95a138f7a6344c49457e207ad4ca4dfa21f93867b7"
+      },
+      {
+        "path": "qualification/results/M9.18-b03-lifecycle/b03.json",
+        "sha256": "7deb00ed9ba61301919c33427f1cfc0c27eb66b19df8be61635ac684d36f324a"
       }
     ]
   },

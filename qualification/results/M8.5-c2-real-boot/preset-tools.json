@@ -1,0 +1,21 @@
+{
+  "presetId": "daily-standard",
+  "rosterContainsPreset": true,
+  "rosterIds": [
+    "cordis",
+    "daily-standard",
+    "minimal",
+    "ptc",
+    "standard"
+  ],
+  "presetCompositionDeclaresConsumer": false,
+  "error": null,
+  "resolvedKeys": [
+    "description",
+    "id",
+    "name",
+    "order",
+    "path",
+    "trust"
+  ]
+}

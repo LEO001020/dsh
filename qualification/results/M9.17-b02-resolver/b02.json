@@ -1,0 +1,53 @@
+{
+  "resolvedPeers": {
+    "@deepseek-ai/cordis": "D:\\DSH\\src\\dsh-src\\vendor\\cordis\\lib\\index.js",
+    "@deepseek-ai/dsh-tools": "D:\\DSH\\src\\dsh-src\\packages\\core\\tools\\lib\\index.js",
+    "@deepseek-ai/dsh-storage-domain": "D:\\DSH\\src\\dsh-src\\packages\\storage\\storage-domain\\lib\\index.js",
+    "@deepseek-ai/dsh-agent": "D:\\DSH\\src\\dsh-src\\packages\\core\\agent\\lib\\index.js",
+    "@deepseek-ai/dsh-subagent": "D:\\DSH\\src\\dsh-src\\packages\\subagent\\subagent\\lib\\index.js",
+    "@deepseek-ai/dsh-web": "D:\\DSH\\src\\dsh-src\\packages\\web\\web\\lib\\index.js",
+    "@deepseek-ai/dsh-scope": "D:\\DSH\\src\\dsh-src\\packages\\core\\scope\\lib\\index.js"
+  },
+  "sourceResolved": [],
+  "builtCopies": [
+    "@deepseek-ai/cordis",
+    "@deepseek-ai/dsh-tools",
+    "@deepseek-ai/dsh-storage-domain",
+    "@deepseek-ai/dsh-agent",
+    "@deepseek-ai/dsh-subagent",
+    "@deepseek-ai/dsh-web",
+    "@deepseek-ai/dsh-scope"
+  ],
+  "distinctCopies": {
+    "@deepseek-ai/cordis": [
+      "D:\\DSH\\src\\dsh-src\\vendor\\cordis\\lib\\index.js"
+    ],
+    "@deepseek-ai/dsh-tools": [
+      "D:\\DSH\\src\\dsh-src\\packages\\core\\tools\\lib\\index.js"
+    ],
+    "@deepseek-ai/dsh-storage-domain": [
+      "D:\\DSH\\src\\dsh-src\\packages\\storage\\storage-domain\\lib\\index.js"
+    ],
+    "@deepseek-ai/dsh-agent": [
+      "D:\\DSH\\src\\dsh-src\\packages\\core\\agent\\lib\\index.js"
+    ],
+    "@deepseek-ai/dsh-subagent": [
+      "D:\\DSH\\src\\dsh-src\\packages\\subagent\\subagent\\lib\\index.js"
+    ],
+    "@deepseek-ai/dsh-web": [
+      "D:\\DSH\\src\\dsh-src\\packages\\web\\web\\lib\\index.js"
+    ],
+    "@deepseek-ai/dsh-scope": [
+      "D:\\DSH\\src\\dsh-src\\packages\\core\\scope\\lib\\index.js"
+    ]
+  },
+  "serviceIdentities": {
+    "tools": true,
+    "storageDomain": true,
+    "agents": true,
+    "dailyWork": true,
+    "agentPresets": true,
+    "web": true
+  },
+  "error": null
+}

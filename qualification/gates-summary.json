@@ -7,6 +7,7 @@
     "total": 104,
     "PASS": 59,
     "FAIL": 0,
+    "RUNNING": 0,
     "BLOCKED_EXTERNAL": 1,
     "NOT_RUN": 38,
     "NOT_APPLICABLE": 6
@@ -15,12 +16,5 @@
   "promotion_reason": "Mandatory gates remain NOT_RUN or BLOCKED_EXTERNAL. No daily promotion is claimed.",
   "generator": "qualification/runners/build-gates.py",
   "generator_problems": [],
-  "note": "qualification/gates.json is a bare array because the delivery package's checker requires that shape. This companion file carries the counts and the promotion decision.",
-  "final_verification": {
-    "date": "2026-09-19",
-    "tests": "148 passed across 12 files",
-    "typecheck": "tsc --noEmit exit 0",
-    "durability_runner": "PASS, childExitSignal SIGKILL, all six checks true",
-    "checker": "delivery package helpers/check_plan.py reports zero structural errors"
-  }
+  "note": "qualification/gates.json is a bare array because the delivery package's checker requires that shape. This companion file carries the counts and the promotion decision."
 }

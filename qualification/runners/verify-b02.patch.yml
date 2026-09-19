@@ -1,0 +1,3 @@
+- insert:
+    - id: verify-b02
+      name: 'D:/DSH/work/dsh-native-daily/qualification/runners/verify-b02.mjs'

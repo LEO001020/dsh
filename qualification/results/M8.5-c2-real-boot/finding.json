@@ -1,0 +1,9 @@
+{
+  "servicePresent": true,
+  "hasCreateRun": true,
+  "hasDrain": true,
+  "hasCounts": true,
+  "hasTakeContinuation": true,
+  "hasListRunIds": true,
+  "profileName": "unknown"
+}

@@ -1,0 +1,87 @@
+# The dsh-daily-work bundle patch.
+#
+# This file is what makes the package a BUNDLE rather than a plain dependency.
+# Without `dsh.bundle.patch` in package.json, `dsh plugin add` installs the code
+# but activates NO layer, and the profile silently boots without it. That is
+# exactly what happened before this file existed: the host started, printed
+# "1 entry did not activate", and ran with no work service at all.
+#
+# Everything here is ONE explainable difference from the stock composition.
+
+# ---------------------------------------------------------------------------
+# DIFFERENCE 1 (mandatory): raise continuable-child capacity to the user's N.
+# ---------------------------------------------------------------------------
+#
+# MEASURED GAP, not an assumption. `--dump-default-config` for every shipped
+# profile shows `id: subagent` with NO config block, so `maxActiveSubagents`
+# falls back to the Schemastery default 8
+# (packages/subagent/subagent/src/index.ts:200-201). N=10 is therefore NOT
+# satisfiable by any stock profile. Evidence:
+# qualification/results/M0.5-c0-resolved-graph/C0-resolved-graph.md
+#
+# BOTH keys are restated because a patch replaces the target row's WHOLE
+# `config` object; it is not a deep merge (vendor/include/src/index.ts:120-123).
+# Omitting `maxDepth` would silently reset it to the schema default.
+#
+# `maxDepth: 1` is load-bearing: it allows the ten direct children and forbids
+# them from opening unbilled grandchildren.
+- id: subagent
+  config:
+    # The user's chosen N. Root is NOT counted in this number.
+    maxActiveSubagents: 10
+    # 1 = direct children only. Grandchildren would escape the same metering.
+    maxDepth: 1
+
+# ---------------------------------------------------------------------------
+# DIFFERENCE 2 (mandatory): mount the work host service.
+# ---------------------------------------------------------------------------
+#
+# Mounted ONCE, at host level, because the run record is a host-scoped resource:
+# a second handle would duplicate the single-writer assumption the storage
+# domain explicitly does not enforce.
+#
+# The config values are USER-AUTHORIZED defaults. They are not writable by the
+# model: the model has a `work` tool, but that tool cannot reach these fields.
+- insert:
+    - id: daily-work-host
+      name: dsh-daily-work/host
+      config:
+        targetChildren: 10
+        maxDepth: 1
+        budgetCeiling: 200
+        currency: USD
+        priceVersion: unversioned-2026-09-19
+
+# ---------------------------------------------------------------------------
+# DIFFERENCE 3: the ported web-search provider, registered through ctx.web.
+# ---------------------------------------------------------------------------
+#
+# Optional by construction: if the credential reference is not configured, the
+# provider reports `available() === false` and the host degrades to "search
+# unavailable" rather than failing to boot. The reference is NAMED here; no
+# credential value is ever placed in configuration.
+- insert:
+    - id: daily-web-search
+      name: dsh-daily-work/web-search
+      config:
+        id: daily-search
+        endpoint: https://api.exa.ai/search
+        apiKeyEnv: EXA_API_KEY
+        maxResults: 60
+
+# ---------------------------------------------------------------------------
+# NOT changed here, on purpose.
+# ---------------------------------------------------------------------------
+#
+# - The Goal service stays mounted. Managed-work mode takes continuation for a
+#   single root through the public ctx.goals.disarm at run creation; the durable
+#   objective is not cleared and completion is not faked. Removing the Goal row
+#   would be deleting a stock component and then calling the result stock.
+#
+# - Planning tools, workflow, sub-agents and the browser roster stay as shipped.
+#
+# - session-query-sqlite stays at ':memory:' / openAt: never, the shipped value.
+#   Full-text session search is a separate decision with its own evidence need.
+#
+# - The storage backend stays `json`. Switching to SQLite because the substrate
+#   "should" be a database is exactly what the plan forbids.
