@@ -15,14 +15,14 @@
   },
   "deployment": {
     "status": "UNQUALIFIED_OFFLINE",
-    "identity": "0ca14d4ee0ebea5eb85a3f72d66f48d839356f1b336c0e4f11f9a4f8ddf2ab7c",
+    "identity": "73da4c62f93bc4f34544f46838f6eb9dbecd93d3f2043f0fd589ae9831c2b633",
     "identity_algorithm": "sha256(UTF8(json.dumps(inputs, sort_keys=True, separators=(',', ':'), ensure_ascii=True)))",
     "inputs": {
       "upstream_repository": "deepseek-ai/deepseek-harness",
       "upstream_commit": "ddefc45fbc7f8e46dd73185e68295696d1297887",
       "upstream_patchset_sha256": "none-no-upstream-patches",
       "artifact_sha256": "69c49c871735dc7ee81ec51f266bbec129f075fd5066e046374f4b13ab02a705",
-      "launcher_realpath": "D:\\DSH\\src\\dsh-src\u0007pps\\cli\\lib\bin.js",
+      "launcher_realpath": "D:\\DSH\\src\\dsh-src\\apps\\cli\\lib\\bin.js",
       "launcher_args_redacted": "--profile daily-candidate",
       "node_version": "v24.18.0",
       "package_manager_version": "11.7.0",
@@ -36,12 +36,12 @@
       "resolved_plugin_graph_digest": "23f763d1bf2af8ba3210473d6743bc39ac0185bdefd661861935414a01e5af6b",
       "model_and_provider_capabilities_digest": "no-live-provider-authorized",
       "request_accounting_policy_digest": "reserve-before-launch-unknown-holds",
-      "acceptance_spec_sha256": "b6e68075e097b5d790a406cb92820465381b6a716a84b53b0a8b8d99d584ad47",
+      "acceptance_spec_sha256": "2fe95835425eb98eb3bac9eead17985df5bf951669460c8d7a87b8887afb1e0b",
       "enabled_conditional_gate_ids": [],
       "authority_policy_digest": "user-authorizes-n-model-cannot-widen",
       "data_schema_version": "dsh_daily_work-v1"
     },
-    "identity_note": "Every input below is resolved from a real artifact or file on this machine. The identity is a digest of those inputs, so any change to the artifact, the lockfile, the profile patch, the preset, the resolved graph or the acceptance spec changes the identity and invalidates every PASS recorded against it."
+    "identity_note": "Every input below is resolved from a real artifact or file on this machine. The identity is a digest of those inputs, so any change to the artifact, the lockfile, the profile patch, the preset, the resolved graph or the acceptance spec changes the identity and invalidates every PASS recorded against it. RE-DERIVED 2026-09-19T18:26:08.151Z: the identity this file previously recorded (0ca14d4ee0ebea5eb85a3f72d66f48d839356f1b336c0e4f11f9a4f8ddf2ab7c) no longer described this tree. Two inputs had moved: acceptance_spec_sha256 (the 112-case spec was installed, so the digest changed) and launcher_realpath, which had been written with Python escape sequences applied -- \"apps\\\" became BEL (0x07) and \"\bin.js\" became backspace (0x08), so the field read \"dsh-src\u0007ppsclilib\bin.js\". The mangled value is what the OLD identity was computed over, so that hash described a path that does not exist. Both are corrected here and the identity is recomputed over the corrected inputs. Any PASS recorded against 0ca14d4ee0ebea5eb85a3f72d66f48d839356f1b336c0e4f11f9a4f8ddf2ab7c is invalidated by this change; that is the intended behaviour, not a regression."
   },
   "concurrency_requirement": {
     "status": "MANDATORY_NOT_OPTIONAL",
@@ -71,6 +71,6 @@
     "decision": "NOT_READY",
     "gates_path": "qualification/gates.json",
     "spec_path": "qualification/specs/gate-spec.json",
-    "gate_spec_sha256": "b6e68075e097b5d790a406cb92820465381b6a716a84b53b0a8b8d99d584ad47"
+    "gate_spec_sha256": "2fe95835425eb98eb3bac9eead17985df5bf951669460c8d7a87b8887afb1e0b"
   }
 }
