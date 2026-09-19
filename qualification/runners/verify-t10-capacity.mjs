@@ -88,6 +88,12 @@ export async function apply(ctx) {
     ledgerAfterRefusal: null,
     ledgerAfterRelease: null,
 
+    // (5) G-SEAM-19: is the upstream one-shot hole still open IN THIS PRODUCT?
+    oneShotStarted: null,
+    oneShotError: null,
+    ledgerAfterOneShot: null,
+    oneShotTookHostSlot: null,
+
     // The preset the Session actually mounted, so the tool face measured below
     // is provably this preset's.
     agentPreset: null,

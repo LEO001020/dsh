@@ -134,6 +134,15 @@ check('the probe leaked no slot: only its own child remains after the release',
   json.ledgerAfterRelease?.occupied === 1 && json.ledgerAfterRelease?.liveChildren === 1,
   JSON.stringify(json.ledgerAfterRelease))
 
+// ---- (5) G-SEAM-19: is the one-shot hole still open IN THIS PRODUCT? -------
+// Upstream, the one-shot path has no capacity pool. The project's guard is on
+// `agent/created`, which EVERY in-process path funnels through, so the gap
+// should be closed in the product. This is the measurement of that.
+check('G-SEAM-19 CLOSED IN PRODUCT: a one-shot child TAKES a host slot',
+  json.oneShotStarted === true && json.oneShotTookHostSlot === true,
+  `started=${JSON.stringify(json.oneShotStarted)} error=${JSON.stringify(json.oneShotError)} `
+  + `liveChildren=${JSON.stringify(json.ledgerAfterOneShot?.liveChildren)}`)
+
 // ---- Report ---------------------------------------------------------------
 const passed = checks.filter(c => c.ok).length
 console.log(`\n=== CHECKS: ${String(passed)}/${String(checks.length)} passed ===`)

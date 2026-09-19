@@ -1,8 +1,8 @@
 {
   "probe": "T10-capacity production reachability",
-  "ranAt": "2026-09-19T22:51:45.101Z",
+  "ranAt": "2026-09-19T22:52:13.470Z",
   "boot": {
-    "port": 11894,
+    "port": 12034,
     "portReleased": true,
     "timedOut": false,
     "exitCode": null
@@ -21,7 +21,7 @@
     {
       "label": "a real Session was created",
       "ok": true,
-      "detail": "\"session-e9805479-b76e-4547-bfe8-ee6be90c134b\""
+      "detail": "\"session-cf449d69-070d-4a83-9b9e-fb59d0843727\""
     },
     {
       "label": "the ledger limit is the deployment constant 30",
@@ -36,7 +36,7 @@
     {
       "label": "a real child was created through the model-facing seam",
       "ok": true,
-      "detail": "childId=\"5ee9d0ea-40e8-4fd2-ac11-68b19b930885\" error=null"
+      "detail": "childId=\"e9e2931f-090d-4d1d-984f-6e2c89cca036\" error=null"
     },
     {
       "label": "THE GUARD IS LIVE: the ledger recorded the child (delta 0 -> 1)",
@@ -87,10 +87,15 @@
       "label": "the probe leaked no slot: only its own child remains after the release",
       "ok": true,
       "detail": "{\"capacity\":30,\"liveChildren\":1,\"unbackedReservations\":0,\"unknownQuarantined\":0,\"occupied\":1,\"highWater\":30,\"refusals\":{\"HOST_CAPACITY_REACHED\":1,\"DEPTH_CEILING_EXCEEDED\":0}}"
+    },
+    {
+      "label": "G-SEAM-19 CLOSED IN PRODUCT: a one-shot child TAKES a host slot",
+      "ok": true,
+      "detail": "started=true error=null liveChildren=2"
     }
   ],
-  "passed": 16,
-  "total": 16,
+  "passed": 17,
+  "total": 17,
   "verdict": "PASS",
   "failures": [],
   "artifact": "D:/DSH/work/dsh-native-daily/qualification/results/T10-capacity/prod-capacity.json"

@@ -26,7 +26,7 @@ import { Context } from '@deepseek-ai/cordis'
 import type { Agent } from '@deepseek-ai/dsh-agent'
 import AgentLoop from '@deepseek-ai/dsh-agent-loop'
 import { mountAgentLoopTestDependencies } from '@deepseek-ai/dsh-agent-loop-testkit'
-import { LlmAdapter, type GenerateOptions, type StreamChunk } from '@deepseek-ai/dsh-llm'
+import { LlmAdapter, createUserMessage, type GenerateOptions, type StreamChunk } from '@deepseek-ai/dsh-llm'
 import { SessionId, SessionLogOffset } from '@deepseek-ai/dsh-session'
 import JsonlSessionPersistence from '@deepseek-ai/dsh-session-persistence-jsonl'
 import SessionQueryEngine from '@deepseek-ai/dsh-session-query'
@@ -44,6 +44,7 @@ import {
   ChildCapacityError,
   HARD_CHILD_CAPACITY,
   OCCUPANCY_BUCKETS,
+  isSessionBackedChild,
   mountChildAdmissionGuard,
 } from './capacity.ts'
 import { WorkService, type LaunchRequest } from './host.ts'
@@ -350,6 +351,26 @@ describe('CAP-01: the hard capacity is a deployment constant of 30', () => {
     // Counting both would report one child as two and halve the effective
     // capacity, which is the opposite failure from oversubscribing and just as
     // wrong.
+    //
+    // THE LAST ASSERTION IN THIS CASE WAS WRONG, AND IS CORRECTED HERE RATHER
+    // THAN DELETED. It read
+    //   expect(() => gate.reserveChild('c-new')).toThrow(ChildCapacityError)
+    // with the justification "the live child is occupying the single remaining
+    // slot". That justification is false arithmetic: this gate's capacity is 2
+    // and the fold leaves exactly ONE executor, so there is exactly ONE free
+    // slot and `c-new` is admitted. The line was written for the PREVIOUS,
+    // incorrect count (occupied = 2 here, when t2 was wrongly treated as an
+    // addition); the count above was corrected and this line was left behind
+    // still asserting the old total. Measured on the unfixed revision, with a
+    // direct probe over this same class: occupied = 1, capacity = 2,
+    // `reserveChild('c-new')` ADMITTED, occupied became 2, no throw.
+    //
+    // SO: THE GUARD IS RIGHT AND THE EXPECTATION WAS WRONG. The property this
+    // case exists for — a task slot folds into its live child instead of being
+    // counted twice — holds and is asserted below: `occupied` stays 1 across the
+    // reservation, the materialization AND the quarantined re-reservation, so
+    // the host reports one executor while one child is live. Nothing in
+    // `capacity.ts` was changed to make this case pass.
     const gate = new ChildAdmissionGate(2)
     gate.reserveTask('t1', 'starting', 'c1')
     expect(gate.occupied).toBe(1)
@@ -365,11 +386,28 @@ describe('CAP-01: the hard capacity is a deployment constant of 30', () => {
     gate.reserveTask('t2', 'unknown_quarantined', 'c1')
     expect(gate.occupied).toBe(1)
     // It is still VISIBLE as quarantined, which is the diagnostic the plan asks
-    // for, and it still occupies: the same gate now refuses a genuinely new
-    // child, because the live child is occupying the single remaining slot.
+    // for, and the fold is NOT a bypass: the free slot is a REAL free slot, so
+    // one genuinely new child fits and the gate is then full.
     expect(gate.snapshot().unknownQuarantined).toBe(1)
     expect(gate.snapshot().liveChildren).toBe(1)
-    expect(() => gate.reserveChild('c-new')).toThrow(ChildCapacityError)
+    gate.reserveChild('c-new')
+    expect(gate.occupied, 'one folded executor + one new child = 2 of 2').toBe(2)
+    expect(() => gate.reserveChild('c-third')).toThrow(ChildCapacityError)
+    expect(gate.snapshot().highWater).toBe(2)
+    // The quarantined executor was never released by the admissions above.
+    expect(gate.snapshot().unknownQuarantined).toBe(1)
+
+    // THE TIGHTEST WITNESS that a folded, quarantined executor still HOLDS its
+    // slot — the intent the removed line was reaching for, stated at the
+    // capacity where it is actually true. At capacity 1, with the one executor
+    // live and quarantined, the single slot is held and a new child is refused.
+    const tight = new ChildAdmissionGate(1)
+    tight.reserveTask('t', 'unknown_quarantined', 'only')
+    tight.reserveChild('only')
+    expect(tight.occupied, 'one executor, folded, at capacity 1').toBe(1)
+    expect(tight.snapshot().unknownQuarantined).toBe(1)
+    expect(() => tight.reserveChild('extra')).toThrow(ChildCapacityError)
+    expect(tight.snapshot().refusals.HOST_CAPACITY_REACHED).toBe(1)
   })
 
   it('a QUARANTINED executor with NO live child still occupies, and is never released early', () => {
@@ -1661,4 +1699,443 @@ describe('CAP-09/CAP-10/CAP-11: deficit, a lower that cancels nothing, root head
     expect(r.service.budget(runId).rootAvailable).toBe(100)
     expect(r.gate.occupied, 'a refused admission leaves no slot behind').toBe(0)
   })
+})
+
+// ---------------------------------------------------------------------------
+// T10 — THE MANDATORY N=10 ARM, and the arithmetic at the deployment's OWN
+// numbers (target 10, hard cap 30, root excluded).
+//
+// WHAT IS DIFFERENT HERE FROM EVERY CASE ABOVE. The cases above run at N=3 or
+// N=30-SYNTHETIC because the property under test was the gate's logic. This
+// block runs at the numbers the DEPLOYMENT actually ships
+// (`cordis.patch.yml`: `targetChildren: 10`, `maxActiveSubagents: 10`,
+// `HARD_CHILD_CAPACITY = 30`), because the mandatory requirement is stated in
+// those numbers: "N=10 real rolling child top-up is MANDATORY", "the root is NOT
+// counted in the 10", "the hard capacity is a deployment constant of 30".
+//
+// COST, stated rather than hidden. Ten real children ARE spawned here — the
+// requirement names a real count and an arithmetic-only substitute would be a
+// weaker oracle for it. They are not 30, and the cap arm is measured
+// arithmetically on the same ledger rather than by spawning 30, which is the
+// user's own instruction. The provider is the scripted local route (no paid
+// budget is authorized), so this proves the MECHANICAL admission/refill at N=10
+// and does not claim a live-provider result.
+//
+// G-SEAM-31, WHICH BOUNDS WHAT THIS PROVES. The run these cases measure is
+// created by calling `service.createRun(...)` DIRECTLY. That is a
+// TEST-INSTALLED ENTRY POINT: `createRun` has no production caller, so no user
+// action on the composed profile can reach any of it (docs/GAPS.md G-SEAM-31,
+// re-verified in qualification/results/T10-capacity/create-run-callers.txt).
+// The arithmetic and the refill below are therefore claims about the MECHANISM,
+// not about the product. The composed-profile claim is measured separately and
+// reported as FAIL/BLOCKED, never as PASS on the strength of these cases.
+// ---------------------------------------------------------------------------
+
+describe('T10: the mandatory N=10 arm at the deployment numbers', () => {
+  const N10 = 10
+
+  interface N10Rig {
+    readonly ctx: Context
+    readonly root: Agent
+    readonly service: WorkService
+    readonly adapter: PerChildGateAdapter
+    readonly gate: ChildAdmissionGate
+  }
+
+  /**
+   * Boot the real continuable stack at the SHIPPED deployment numbers.
+   *
+   * `maxActiveSubagents: 10` is the composed profile's own value
+   * (`cordis.patch.yml`), NOT raised above the host cap. That is deliberate and
+   * it is the difference from the `refillRig` above: here the per-root pool and
+   * the host ledger are set to the same number, so a refusal at 11 is
+   * over-determined and this rig cannot tell them apart. The HOST cap of 30 is
+   * therefore measured arithmetically on this ledger, and the "which ceiling
+   * refused" question is answered by the two-roots case in CAP-07, which raises
+   * the pool above the ledger on purpose.
+   */
+  async function n10Rig(): Promise<N10Rig> {
+    const sessionRoot = mkdtempSync(join(tmpdir(), 'dsh-t10-n10-sessions-'))
+    const storeRoot = mkdtempSync(join(tmpdir(), 'dsh-t10-n10-store-'))
+    const ctx = new Context()
+    await mountAgentLoopTestDependencies(ctx)
+    const persistence = await ctx.plugin(JsonlSessionPersistence, { root: sessionRoot })
+    await ctx.plugin(AgentLoop, { agents: [] })
+    await ctx.plugin(SubagentRuntime, { maxActiveSubagents: N10, maxDepth: 1 })
+    await ctx.plugin(SubagentSpawn, { providerName: 'spawn' })
+    await ctx.plugin(class extends SessionQueryEngine {
+      override searchSessions(): Promise<never> {
+        return Promise.reject(new Error('session search is not configured in this test'))
+      }
+
+      override searchEvents(): Promise<never> {
+        return Promise.reject(new Error('event search is not configured in this test'))
+      }
+    })
+    await ctx.plugin(Storage, {} as never)
+    await ctx.plugin(storageJsonPlugin as never, { root: storeRoot } as never)
+    await ctx.plugin(storageDomainPlugin as never, { backend: 'json' } as never)
+    const adapter = new PerChildGateAdapter()
+    ctx.llm.registerAdapter(['mock'], adapter)
+    const root = await ctx.agentLoop.create(SessionId('t10-n10-root'), { provider: 'mock', model: 'mock' })
+    const service = new WorkService(ctx, {
+      targetChildren: N10,
+      maxDepth: 1,
+      budgetCeiling: 10_000,
+      currency: 'USD',
+      priceVersion: 't10-n10',
+      subagentProvider: 'spawn',
+    })
+    await service.open()
+    cleanups.push(async () => {
+      adapter.openAll()
+      await service.close()
+      await ctx.subagents.drainContinuableDescendants([root])
+      await persistence.dispose()
+      await ctx.fiber.dispose()
+      rmSync(sessionRoot, { recursive: true, force: true, maxRetries: 10, retryDelay: 100 })
+      rmSync(storeRoot, { recursive: true, force: true, maxRetries: 10, retryDelay: 100 })
+    })
+    return { ctx, root, service, adapter, gate: service.capacityGate }
+  }
+
+  /** Live children of a root, read from the REAL agent registry. */
+  const liveChildrenOf = (ctx: Context, root: Agent): string[] =>
+    ctx.agents.list()
+      .filter(agent => agent.session.header.parentSession === root.id)
+      .map(agent => String(agent.id))
+
+  /** Wait for a background driver to reach a condition, reporting state on timeout. */
+  async function waitForN10(
+    condition: () => boolean,
+    what: string,
+    diagnostic: () => string,
+    timeoutMs = 30_000,
+  ): Promise<void> {
+    const deadline = Date.now() + timeoutMs
+    while (Date.now() < deadline) {
+      if (condition()) return
+      await new Promise(resolve => setTimeout(resolve, 10))
+    }
+    throw new Error(`timed out after ${timeoutMs}ms waiting for ${what}. State: ${diagnostic()}`)
+  }
+
+  const requestN = (n: number): LaunchRequest => ({
+    taskId: `task-${n}`, childId: `child-${n}`, prompt: `work ${n}`, reservedCost: 1,
+  })
+
+  it('the ADMIT/REFUSE BOUNDARY at target 10 and hard cap 30, with the root excluded', () => {
+    // THE ARITHMETIC, measured on the deployment's own ledger rather than
+    // described. The root is excluded BY CONSTRUCTION: `isSessionBackedChild`
+    // reads the child's own durable header, and a root carries neither
+    // `origin: 'subagent'` nor a delegation depth, so `mountChildAdmissionGuard`
+    // returns before touching the ledger. That is asserted live in the case
+    // below; here the ledger's own boundary is what is measured.
+    const gate = new ChildAdmissionGate()
+    expect(gate.limit, 'the deployment constant is 30, not a setting').toBe(30)
+    expect(HARD_CHILD_CAPACITY).toBe(30)
+
+    // --- The TARGET band: 10 occupied is what a healthy deployment holds. ---
+    const held = Array.from({ length: N10 }, (_, i) => gate.reserveChild(`n10-${i}`))
+    expect(gate.occupied).toBe(10)
+    expect(gate.occupied, 'the target of 10 is NOT the cap').toBeLessThan(gate.limit)
+
+    // --- The HARD band: the cap binds at 30, and 30 is where a refusal starts.
+    for (let i = N10; i < 30; i += 1) gate.reserveChild(`n10-${i}`)
+    expect(gate.occupied).toBe(30)
+    expect(gate.snapshot().highWater).toBe(30)
+    expect(() => gate.reserveChild('n10-30'), 'the 31st is refused').toThrow(ChildCapacityError)
+    expect(() => gate.reserveChild('n10-31'), 'the 32nd is refused').toThrow(/hard capacity is 30/)
+    expect(gate.occupied, 'a refusal never raises occupancy').toBe(30)
+    expect(gate.snapshot().highWater, 'never exceeded 30 at any instant').toBe(30)
+    expect(gate.snapshot().refusals.HOST_CAPACITY_REACHED).toBe(2)
+
+    // The refusal carries the numbers, so a report can state them without
+    // re-deriving anything.
+    let refusal: ChildCapacityError | undefined
+    try {
+      gate.reserveChild('n10-32')
+    } catch (error) {
+      refusal = error as ChildCapacityError
+    }
+    expect(refusal?.code).toBe('HOST_CAPACITY_REACHED')
+    expect(refusal?.occupied).toBe(30)
+    expect(refusal?.capacity).toBe(30)
+
+    // --- The 30-band is 3x the 10-band: 20 more children fit above the target.
+    held[0]!.release()
+    expect(gate.occupied).toBe(29)
+    gate.reserveChild('n10-refill')
+    expect(gate.occupied).toBe(30)
+    expect(() => gate.reserveChild('n10-33')).toThrow(ChildCapacityError)
+    expect(gate.snapshot().highWater).toBe(30)
+
+    // THE ARITHMETIC, stated as the numbers it is: at target 10 the host holds
+    // 10 executors and has 20 slots of headroom below the cap of 30; the 31st
+    // child is the first refusal; the target of 10 is a SUSTAINED figure that
+    // never binds the cap.
+    expect(gate.limit - N10, 'headroom above the target').toBe(20)
+    expect(gate.limit - gate.occupied, 'headroom at the cap').toBe(0)
+  })
+
+  it('the root EXCLUSION is the classifier, not the mount order', async () => {
+    // WHY THIS CASE EXISTS. The case above asserts "the root holds no slot", but
+    // in that rig the root is created BEFORE the service opens, so its
+    // `agent/created` event fired before the guard was ever mounted. The
+    // assertion would therefore hold even if `isSessionBackedChild` returned
+    // true for everything — a weaker oracle than the scenario, which is the
+    // defect class this project keeps recording. This case removes the
+    // confound: the gate is mounted FIRST, then a root and a child are created
+    // AFTER it, and the classifier's answer is read directly in both
+    // directions.
+    const r = await n10Rig()
+
+    // A SECOND root, created after the guard is live. Its creation must not
+    // consume a child slot.
+    const laterRoot = await r.ctx.agentLoop.create(
+      SessionId('t10-later-root'), { provider: 'mock', model: 'mock' },
+    )
+    expect(r.gate.hasChild('t10-later-root'), 'a root created AFTER the mount takes no slot').toBe(false)
+    expect(r.gate.occupied, 'and the ledger is still empty').toBe(0)
+
+    // THE CLASSIFIER ITSELF, both directions. This is the load-bearing half:
+    // a root is not a session-backed child, and a child is.
+    expect(isSessionBackedChild(laterRoot), 'a root is NOT a session-backed child').toBe(false)
+    expect(isSessionBackedChild(r.root), 'nor is the first root').toBe(false)
+
+    // Now a REAL child through the same live guard: it IS classified as a child
+    // and it DOES take a slot. Without this half, a classifier that returned
+    // false for everything would pass the two assertions above.
+    await r.ctx.subagents.startContinuable({
+      provider: 'spawn',
+      label: 'discriminator-child',
+      childId: SessionId('discriminator-child'),
+      request: { parent: laterRoot, prompt: [{ type: 'text', text: 'work' }], maxDepth: 1 },
+      signal: new AbortController().signal,
+    })
+    const child = r.ctx.agents.get(SessionId('discriminator-child'))
+    expect(child, 'the child is live').toBeDefined()
+    expect(isSessionBackedChild(child!), 'a child IS a session-backed child').toBe(true)
+    expect(r.gate.hasChild('discriminator-child'), 'and it took a slot').toBe(true)
+    expect(r.gate.snapshot().liveChildren, 'exactly one executor: the child, not the two roots').toBe(1)
+    expect(r.gate.occupied, 'the two roots are not executors').toBe(1)
+  }, 60_000)
+
+  it('REAL N=10: ten children in flight, the 11th refused, and the root holds no slot', async () => {
+    const r = await n10Rig()
+    const runId = 'run-n10'
+    await r.service.createRun({ runId, root: r.root, authorizationRef: 'auth', targetChildren: N10 })
+    r.service.setReadyTasks(runId, 20)
+    r.service.setLaunchPort(createContinuableLaunchPort({
+      subagents: r.ctx.subagents, parent: r.root, provider: 'spawn', maxDepth: 1,
+    }))
+
+    // --- TEN REAL CHILDREN, admitted through the real continuable seam. ------
+    const outcomes = await r.service.drain(
+      runId,
+      Array.from({ length: N10 }, (_, i) => requestN(i)),
+      new AbortController().signal,
+    )
+    expect(outcomes.filter(o => o.accepted), 'all ten admitted').toHaveLength(N10)
+
+    // Every one reaches its OWN model request and is parked there, so "ten in
+    // flight" is a fact about live provider calls rather than a race.
+    await waitForN10(
+      () => r.adapter.distinctSessions.filter(id => id !== String(r.root.id)).length === N10,
+      'all ten children to reach their own model request',
+      () => `${String(r.adapter.distinctSessions.length)} sessions seen`,
+    )
+    expect(r.adapter.distinctSessions.filter(id => id !== String(r.root.id)), 'ten DISTINCT children')
+      .toHaveLength(N10)
+
+    // The real registry agrees, and the HOST ledger agrees.
+    const listed = await r.ctx.subagents.listChildren(r.root.id)
+    expect(listed, 'the real subagent registry lists ten').toHaveLength(N10)
+    expect(r.gate.snapshot().liveChildren, 'the host ledger holds ten').toBe(N10)
+    expect(r.gate.occupied).toBe(N10)
+
+    // --- THE ROOT IS NOT ONE OF THE TEN, AND HOLDS NO SLOT. ------------------
+    expect(listed.map(c => String(c.id)), 'the root is not among the children')
+      .not.toContain(String(r.root.id))
+    expect(r.gate.hasChild(String(r.root.id)), 'the root took no child slot').toBe(false)
+    expect(r.gate.snapshot().liveChildren, 'ten children means ten, not eleven').toBe(N10)
+
+    // --- THE 11TH IS REFUSED at the target, and the ledger never rose above 10.
+    const over = await r.service.drain(runId, [requestN(99)], new AbortController().signal)
+    expect(over[0]?.accepted, 'the 11th is refused while ten hold their slots').toBe(false)
+    expect(r.gate.occupied).toBe(N10)
+    expect(r.gate.snapshot().highWater).toBe(N10)
+    expect(liveChildrenOf(r.ctx, r.root)).toHaveLength(N10)
+    // The refused task did not leak a slot or a child.
+    expect(r.service.getRun(runId)?.tasks['task-99']).toBeUndefined()
+    expect(r.ctx.agents.get(SessionId('child-99'))).toBeUndefined()
+
+    // The run reports the target it was given, un-reduced.
+    expect(r.service.counts(runId).desiredTarget).toBe(N10)
+    expect(r.service.counts(runId).capacityDeficit, 'no deficit at a full target').toBe(0)
+  }, 90_000)
+
+  it('REAL N=10 ROLLING REFILL: one completion admits exactly one more, back to ten', async () => {
+    // THE MANDATORY PROPERTY, measured at N=10. "Rolling" is not "a batch of
+    // ten": the discriminating observation is that a replacement is admitted
+    // while the OTHER NINE are still provably active. A wave scheduler cannot
+    // produce that, because those nine never finish in this rig.
+    const r = await n10Rig()
+    const runId = 'run-n10-rolling'
+    await r.service.createRun({ runId, root: r.root, authorizationRef: 'auth', targetChildren: N10 })
+    r.service.setReadyTasks(runId, 40)
+    r.service.setLaunchPort(createContinuableLaunchPort({
+      subagents: r.ctx.subagents, parent: r.root, provider: 'spawn', maxDepth: 1,
+    }))
+
+    await r.service.drain(
+      runId,
+      Array.from({ length: N10 }, (_, i) => requestN(i)),
+      new AbortController().signal,
+    )
+    await waitForN10(
+      () => r.gate.snapshot().liveChildren === N10,
+      'the full ten to be resident',
+      () => `liveChildren=${String(r.gate.snapshot().liveChildren)}`,
+    )
+
+    // --- THREE ROUNDS. A "refill once then latch" bug fails on round 1. ------
+    for (let round = 0; round < 3; round += 1) {
+      const before = liveChildrenOf(r.ctx, r.root)
+      expect(before, `round ${String(round)}: ten active before the completion`).toHaveLength(N10)
+
+      // Complete EXACTLY ONE child. The other nine stay parked in their own
+      // model calls — this is the precondition that makes the refill assertion
+      // mean something.
+      const victim = before[0]!
+      const victimTask = `task-${victim.slice('child-'.length)}`
+      r.adapter.release(victim)
+      await waitForN10(
+        () => r.ctx.agents.get(SessionId(victim)) === undefined,
+        `round ${String(round)}: ${victim} to leave the registry`,
+        () => `${String(liveChildrenOf(r.ctx, r.root).length)} live`,
+      )
+
+      // NINE still active, and all nine still HOLD their slots. Without this
+      // the round would prove nothing about rolling behaviour.
+      const stillLive = liveChildrenOf(r.ctx, r.root)
+      expect(stillLive, `round ${String(round)}: nine siblings must still be active`).toHaveLength(N10 - 1)
+      expect(stillLive).not.toContain(victim)
+      expect(
+        stillLive.filter(id => r.gate.hasChild(id)),
+        `round ${String(round)}: an unfinished child is not a free slot`,
+      ).toHaveLength(N10 - 1)
+
+      // The completion frees the slot only at its CONFIRMED transition.
+      await r.service.transition({ runId, taskId: victimTask, to: 'settling' })
+      await r.service.transition({ runId, taskId: victimTask, to: 'confirmed', spentCost: 0 })
+      expect(r.service.counts(runId).capacityDeficit, `round ${String(round)}: one slot freed`).toBe(1)
+
+      // --- THE REFILL, with nine siblings still active. ---------------------
+      const replacementN = 100 + round
+      const replacement = await r.service.drain(runId, [requestN(replacementN)], new AbortController().signal)
+      expect(replacement[0]?.accepted, `round ${String(round)}: exactly one replacement is admitted`).toBe(true)
+      await waitForN10(
+        () => r.adapter.distinctSessions.includes(`child-${String(replacementN)}`),
+        `round ${String(round)}: the replacement to reach its own model request`,
+        () => `${String(liveChildrenOf(r.ctx, r.root).length)} live`,
+      )
+
+      // Back at EXACTLY ten, never eleven, with the originals still running.
+      const now = liveChildrenOf(r.ctx, r.root)
+      expect(now, `round ${String(round)}: the count returns to ten`).toHaveLength(N10)
+      expect(now).toContain(`child-${String(replacementN)}`)
+      expect(now).not.toContain(victim)
+      expect(r.gate.occupied, `round ${String(round)}: the ledger is back to ten`).toBe(N10)
+      expect(r.gate.snapshot().highWater, `round ${String(round)}: never above ten`).toBe(N10)
+      expect(r.service.counts(runId).capacityDeficit, `round ${String(round)}: deficit cleared`).toBe(0)
+
+      // ONE completion admitted EXACTLY one, not two: the round's arithmetic.
+      expect(now).toHaveLength(before.length)
+    }
+
+    // TEN PLUS THREE DISTINCT CHILDREN have now run while the host never held
+    // more than ten. That is the difference between "10 concurrent" and "10
+    // total", and it is the property the requirement names.
+    const all = r.adapter.distinctSessions.filter(id => id !== String(r.root.id))
+    expect(all, 'ten originals plus three replacements').toHaveLength(N10 + 3)
+    expect(new Set(all).size, 'every one a distinct child').toBe(N10 + 3)
+    expect(r.gate.snapshot().highWater, 'the peak was never above the target').toBe(N10)
+    expect(r.gate.snapshot().refusals.HOST_CAPACITY_REACHED, 'no capacity refusal at a full target').toBe(0)
+  }, 120_000)
+
+  it('the ROOT keeps its own inference budget while ten children are in flight', async () => {
+    // THE SECOND MANDATORY HALF: "the root is NOT counted in the 10, and must
+    // retain its own separate inference budget". Two facts, both measured:
+    //   1. the root can still make its OWN model calls while ten children are
+    //      parked in theirs — a live provider request from the root's session;
+    //   2. that request is not counted against the 10 and does not consume a
+    //      child slot, and the root's credit is intact.
+    const r = await n10Rig()
+    const runId = 'run-root-budget'
+    // A ceiling with an explicit reserve, so "the root keeps credit" is a
+    // number rather than an adjective.
+    await r.service.createRun({
+      runId, root: r.root, authorizationRef: 'auth', targetChildren: N10, rootReserve: 500,
+    })
+    r.service.setReadyTasks(runId, 20)
+    r.service.setLaunchPort(createContinuableLaunchPort({
+      subagents: r.ctx.subagents, parent: r.root, provider: 'spawn', maxDepth: 1,
+    }))
+    await r.service.drain(
+      runId,
+      Array.from({ length: N10 }, (_, i) => requestN(i)),
+      new AbortController().signal,
+    )
+    await waitForN10(
+      () => r.gate.snapshot().liveChildren === N10,
+      'ten children in flight',
+      () => `liveChildren=${String(r.gate.snapshot().liveChildren)}`,
+    )
+
+    // --- FACT 1: the ROOT takes a turn of its own, NOW, while ten are parked.
+    const before = r.adapter.requests.filter(entry => entry.sessionId === String(r.root.id)).length
+    r.root.followup(createUserMessage({
+      content: [{ type: 'text', text: 'root integrates while children work' }],
+      source: { kind: 'plugin', plugin: 't10-capacity' },
+    }))
+    await waitForN10(
+      () => r.adapter.requests.filter(entry => entry.sessionId === String(r.root.id)).length > before,
+      'the ROOT to reach its OWN provider call while ten children are in flight',
+      () => `root requests=${String(r.adapter.requests.filter(e => e.sessionId === String(r.root.id)).length)}, `
+        + `children live=${String(r.gate.snapshot().liveChildren)}`,
+    )
+    // The root's request is a REAL model call, and it is the ROOT's session.
+    const rootRequests = r.adapter.requests.filter(entry => entry.sessionId === String(r.root.id))
+    expect(rootRequests.length, 'the root made its own provider call').toBeGreaterThan(before)
+    expect(rootRequests.every(entry => entry.sessionId === String(r.root.id)), 'addressed to the root session').toBe(true)
+
+    // --- FACT 2: it was NOT counted in the 10, and cost no child slot. -------
+    expect(r.gate.snapshot().liveChildren, 'still exactly ten children').toBe(N10)
+    expect(r.gate.hasChild(String(r.root.id)), 'the root holds no child slot').toBe(false)
+    expect(r.gate.occupied, 'the root is not an executor in the ledger').toBe(N10)
+    // The root's session is not among the ten children the registry lists.
+    const listed = await r.ctx.subagents.listChildren(r.root.id)
+    expect(listed.map(c => String(c.id))).not.toContain(String(r.root.id))
+    expect(listed).toHaveLength(N10)
+
+    // --- FACT 2b: the root's CREDIT is intact, and a greedy child cannot eat it.
+    const report = r.service.budget(runId)
+    expect(report.rootReserve).toBe(500)
+    expect(report.rootAvailable, 'the root retains its whole reserve').toBe(500)
+    expect(report.childCeiling, 'the children are bounded by ceiling - rootReserve').toBe(10_000 - 500)
+    await expect(
+      r.service.admit({
+        runId,
+        taskId: 'greedy',
+        childId: 'child-greedy',
+        assignmentDigest: 'd',
+        reservedCost: 9_501,
+        allowedCapabilities: ['reader'],
+      }),
+    ).rejects.toThrow(/no budget headroom/)
+    expect(r.service.budget(runId).rootAvailable, 'the refusal did not touch the reserve').toBe(500)
+    expect(r.gate.occupied, 'and it leaked no slot').toBe(N10)
+    expect(r.gate.snapshot().refusals.HOST_CAPACITY_REACHED, 'a budget refusal is not a capacity refusal').toBe(0)
+  }, 90_000)
 })

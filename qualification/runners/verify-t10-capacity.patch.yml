@@ -1,0 +1,13 @@
+# T10 verification overlay: boot the real daily profile with the capacity probe.
+#
+# WHY THERE IS NO `webserver` ROW HERE. `boot-harness.mjs` already appends a
+# `webserver` port patch as the LAST `--patch`, and a later patch wins. Adding
+# one here would either be overridden or would override the harness's free-port
+# bind, which is how two probes collide on 3080.
+#
+# THE PROBE ADDS NO PRODUCT ROW. It measures what the profile's OWN composition
+# mounts; a probe that inserted a row would prove the row works, not that the
+# product carries one (G-FIX-04/05/12).
+- insert:
+    - id: verify-t10-capacity
+      name: 'D:/DSH/work/dsh-native-daily/qualification/runners/verify-t10-capacity.mjs'

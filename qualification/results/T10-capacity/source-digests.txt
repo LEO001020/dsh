@@ -1,0 +1,13 @@
+# T10 source digests (the files this task owns and the modules its gates depend on)
+# Command: sha256sum <file>
+
+a4b9600d3287c81d6006c41f9b370a1e70d1f95121eb89d1549e75b80a788156  packages/dsh-daily-work/src/capacity.ts
+7027d3db2b65d0a9e5a29010f987161461b584cbfa65568942749f217362e34d  packages/dsh-daily-work/src/capacity.test.ts
+17c78677a23fe809e7f8613785e97c375b473965874a10fd561a381d8de40bd6  packages/dsh-daily-work/src/host.ts
+c0af7d516689b3037dc79805a4bf8a59332264443a17029a2ec9fff8104cc5c6  packages/dsh-daily-work/src/host-plugin.ts
+de70463a211cd47e55ac95928f63a374d8e8c669401c4f3b35aee32ede584fff  packages/dsh-daily-work/src/launch-port.ts
+d04bb64850331c13f7d215d9ce6e3806037eb16c99b30a7bce82a5fe797227d6  packages/dsh-daily-work/src/tools.ts
+c424b86aed5079392f9d3c01d74de91cb17711520bdcff2d38dc6c0f25c9abd1  packages/dsh-daily-work/cordis.patch.yml
+16bc20e559d0c05b810876522fd468952b421a69ed2b5276a3ddd06c01053bce  profiles/daily-candidate/presets/daily-standard/agent.cordis.yml
+e618a7f3c244dffdfa4eb016b91a27d725105875dba82f2398f199a128c29272  qualification/runners/verify-t10-capacity.mjs
+7a40011963c0c9fb022f5077b6d415540e0c41377b77e62843cf018e8ec94096  qualification/results/T10-capacity/run-prod-capacity.mjs
