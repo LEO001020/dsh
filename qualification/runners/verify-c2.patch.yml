@@ -1,0 +1,8 @@
+# Verification overlay: probe whether the daily-work service is actually live in
+# the resolved host, then let the host continue normally.
+#
+# This runs inside the REAL profile tree, so it proves the extension mounts
+# through the profile resolver rather than through a test harness.
+- insert:
+    - id: c2-verify
+      name: 'D:/DSH/work/dsh-native-daily/qualification/runners/verify-c2-service.mjs'

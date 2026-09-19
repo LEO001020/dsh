@@ -1,0 +1,16 @@
+=== staleness: a receipt describes a TREE, not a moment (real runs) ===
+
+--- 1. run the acceptance and keep the receipt ---
+acceptance: M9.1-staleness-demo -> pass (PASS)
+   run exit = 0
+
+--- 2. immediately afterwards the receipt still describes the tree ---
+  "fresh": true,
+  "reason": "the receipt still matches the candidate tree and the definition",
+   check exit = 0
+
+--- 3. change one byte of a candidate input ---
+  "fresh": false,
+  "reason": "the candidate tree changed since the receipt was written (receipt dcc90007c5d2003390e609957e6d039d0958d81c8e47b9aeecd624b7e0e8c8e1, now 974eeb18e7e5354d6010c029303fc858f3abcf68443f47e2156bc57132d97777)",
+acceptance: the stored receipt does not describe the current tree; re-verify
+   check exit = 1

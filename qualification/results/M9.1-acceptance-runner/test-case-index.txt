@@ -1,0 +1,30 @@
+✓ | F01: only a real runner is an oracle > a real command that passes yields PASS with the real exit code recorded 737ms
+✓ | F01: only a real runner is an oracle > a real command that fails yields FAIL, and the failure is visible in the receipt 702ms
+✓ | F01: only a real runner is an oracle > a command that does not exist is NOT a pass 38ms
+✓ | F01: only a real runner is an oracle > a command that times out is NOT a pass and is classified as a timeout 1534ms
+✓ | F01: only a real runner is an oracle > an external stop is reported as interrupted, never as a pass 1247ms
+✓ | F02: no tests, skipped tests and a runner that never ran are all non-PASS > a suite that is entirely skipped is NOT a pass, despite exit code 0 707ms
+✓ | F02: no tests, skipped tests and a runner that never ran are all non-PASS > a runner that executed zero tests is NOT a pass, despite exit code 0 720ms
+✓ | F02: no tests, skipped tests and a runner that never ran are all non-PASS > a runner that never reports a summary is NOT a pass, despite exit code 0 197ms
+✓ | F02: no tests, skipped tests and a runner that never ran are all non-PASS > a declared count that does not match the observed count is NOT a pass 720ms
+✓ | F02: no tests, skipped tests and a runner that never ran are all non-PASS > a definition with an empty command is refused rather than run 0ms
+✓ | F03/F04: the receipt is bound to a snapshot of the inputs > the receipt digest changes when the input tree changes 378ms
+✓ | F03/F04: the receipt is bound to a snapshot of the inputs > the acceptance-definition digest changes when a threshold is weakened 0ms
+✓ | F03/F04: the receipt is bound to a snapshot of the inputs > an unauthorized change to the acceptance definition refuses the run 199ms
+✓ | F03/F04: the receipt is bound to a snapshot of the inputs > an A->B->A mutation during verification cannot fool the runner 4942ms
+✓ | F03/F04: the receipt is bound to a snapshot of the inputs > a snapshot that moves under the run yields unknown, not pass 1202ms
+✓ | F03/F04: the receipt is bound to a snapshot of the inputs > verifying in place is allowed but the receipt says it is limited 166ms
+✓ | F03/F04: the receipt is bound to a snapshot of the inputs > the snapshot is removed afterwards unless the caller asks to keep it 170ms
+✓ | the untrusted child does not inherit host privilege > a credential-shaped variable in the runner is not visible to the acceptance command 184ms
+✓ | F07: the retry budget is bounded and ends blocked > a candidate defect is not retried at all 169ms
+✓ | F07: the retry budget is bounded and ends blocked > an environment-shaped failure stops as blocked once the budget is spent 2085ms
+✓ | F08: the integration ref is accepted only by exact expected-ref CAS > a moved ref refuses the publication, and an unchanged ref accepts it 789ms
+✓ | the receipt is machine-readable and self-describing > serializes to JSON that records every required binding 189ms
+✓ | the receipt is machine-readable and self-describing > bounds the output it retains while recording how much there was 196ms
+✓ | the receipt is machine-readable and self-describing > refuses an input that escapes cwd instead of silently covering less 2ms
+✓ | summary parsing matches what the real runners print > reads vitest counts through its ANSI colouring 0ms
+✓ | summary parsing matches what the real runners print > reads a mixed vitest summary 0ms
+✓ | summary parsing matches what the real runners print > reads vitest "no tests" as a real zero rather than as unparsed 0ms
+✓ | summary parsing matches what the real runners print > reports no counts when there is no summary line at all 0ms
+✓ | summary parsing matches what the real runners print > reads the node:test spec summary 1ms
+✓ | summary parsing matches what the real runners print > reads a node:test run in which every case was skipped 0ms

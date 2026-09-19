@@ -51,6 +51,10 @@ E = {
     "e2etool": evidence("M8.5-c2-real-boot/e2e-tool.json"),
     "secd": evidence("M9.3-security-denial/FINDINGS.md"),
     "effects": evidence("M9.5-effects/FINDINGS.md"),
+    "runner": evidence("M9.1-acceptance-runner/FINDINGS.md"),
+    "runnercli": evidence("M9.1-acceptance-runner/cli-transcript.txt"),
+    "runnerstale": evidence("M9.1-acceptance-runner/staleness.txt"),
+    "runnerskip": evidence("M9.1-acceptance-runner/receipt-all-skipped.json"),
 }
 
 # gate id -> (status, evidence keys, note)
@@ -138,14 +142,14 @@ G: dict[str, tuple[str, list[str], str]] = {
     "E11": ("PASS", ["effects"], "CancellationReport.reverted is a literal false in the type, so no code path can report an undo. Five branches are asserted, none matching /rolled back|undone|reverted|reversed/. A cancellation after a send reports 'may have happened' and reconciles by query."),
     "E12": ("NOT_RUN", [], "Verification-code isolation has not been exercised; the verifier is not built."),
     # F - M5 verification
-    "F01": ("PASS", ["n10", "t0t1"], "No completion claim is an oracle here: the record reaches confirmed only through an explicit transition, and settling is the furthest reconciliation can reach."),
-    "F02": ("PASS", ["n10"], "Absent evidence is unknown, never PASS: reconciliation quarantines unprobed tasks and the durability runner reports FAIL on any false check."),
-    "F03": ("PASS", ["durability"], "Every evidence directory stores source digests alongside results, so a stale receipt is detectable."),
-    "F04": ("NOT_RUN", [], "ABA during verification has not been exercised; there is no verifier yet."),
-    "F05": ("PASS", ["c2"], "The acceptance spec is copied into the repo and its sha256 verified against the lock; it is not editable by the model."),
+    "F01": ("PASS", ["runner", "runnercli"], "Re-verified with the built acceptance runner: a REAL child exit code is recorded, and command_not_found leaves exit.code as null rather than a convenient 0. No model claim is an input anywhere in the classification. The earlier evidence (state-machine transitions) proved the record could not self-confirm, which is a weaker claim than an independent runner observing a real process."),
+    "F02": ("PASS", ["runner", "runnerskip"], "Re-verified, and this is the sharpest result in the runner: TWO cases carry a REAL exit code of 0 and are still non-PASS -- an all-skipped suite (receipt-all-skipped.json: total=1 passed=0 skipped=1) and vitest's --passWithNoTests zero-test shape. An exit-code-only verifier calls both green. Classification covers command-not-found, all-skipped, runner-never-ran, timeout, interrupted, zero-tests and unknown; a PASS needs a real exit 0 AND a matching declared test count."),
+    "F03": ("PASS", ["runner", "runnerstale"], "Re-verified end to end: fresh -> fresh:true exit 0 -> change one byte -> fresh:false exit 1. The receipt carries a candidate tree digest, an acceptance-definition digest and an environment identity, so a stale receipt is machine-detectable rather than a matter of noticing."),
+    "F04": ("PASS", ["runner"], "Exercised with a two-arm contrast, and the SECOND arm is what makes the first meaningful. Snapshot arm: the child sees A, passes. In-place arm: the SAME A->B->A mutation, the child sees B and exits 9 with SAW_THE_TAMPERED_TREE, while the live before/after digests report NO DRIFT AT ALL. Endpoint hashing alone would have certified the tampered run. The mutation runs concurrently with the acceptance on a schedule written out in the test (A->B at t=700ms, child reads at t=1200ms, tree back to A at t=1900ms, child exits t=2800ms), so the window is real rather than assumed. A second case covers a command that rewrites its own declared input inside the snapshot, which yields unknown and holds the reservation rather than passing."),
+    "F05": ("PASS", ["c2", "runner"], "Strengthened: a digest mismatch now REFUSES the run with acceptance_definition_changed, and --print-digest is a separate step so a definition cannot authorize itself. The frozen spec is additionally verified against the lock: sha256 b6e68075e097b5d790a406cb92820465381b6a716a84b53b0a8b8d99d584ad47, unchanged from the delivery package."),
     "F06": ("NOT_RUN", [], "No turn-stopping hook is registered by this project."),
-    "F07": ("NOT_RUN", [], "Bounded retry on an unrepairable environment error has not been exercised."),
-    "F08": ("NOT_RUN", [], "No Git integration CAS exists yet; this project does not merge."),
+    "F07": ("PASS", ["runner"], "Candidate defects are not retried at all; environment-shaped failures stop as blocked once the budget is spent. So a persistent unrepairable environment error terminates as blocked rather than looping until something turns green."),
+    "F08": ("PASS", ["runner"], "refCas has NO write path -- no force, no reset, no update -- so a stale expected-ref cannot be overwritten. Tested against a real temporary git repository, including the unreadable-ref case. This project does not merge, so the CAS is a refusal surface rather than a publish path."),
     # T - M6 terminal
     "T01": ("PASS", ["terminal"], "The registry and the shell backend are asserted mounted, not inferred from a source directory."),
     "T02": ("PASS", ["terminal"], "spawn is exercised with type, name and cwd only; no command field exists."),

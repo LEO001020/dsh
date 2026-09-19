@@ -1,0 +1,43 @@
+=== acceptance.mjs CLI transcript (real runs, 2026-09-19T11:12:02Z) ===
+
+--- 1. PASS: a real command, declared counts match ---
+acceptance: M9.1-package-suite -> pass (PASS)
+  - exit code 0 matched the expected 0
+  - runner reported total=30 passed=30 failed=0 skipped=0 todo=0
+  - observed counts matched the declared ones
+
+--- 2. NOT PASS: the command does not exist ---
+  "outcome": "command_not_found",
+  "passed": false,
+acceptance: M9.1-missing-command -> command_not_found (NOT PASS)
+  - the executable "dsh-definitely-not-a-real-command-xyz" was not found, so nothing ran: subprocess-local: command "dsh-definitely-not-a-real-command-xyz" was not found on PATH
+
+--- 3. NOT PASS: every test skipped, real exit code is 0 ---
+  "outcome": "all_skipped",
+  "passed": false,
+    "passed": 0,
+    "passed": 1
+acceptance: M9.1-all-skipped -> all_skipped (NOT PASS)
+  - exit code 0 matched the expected 0
+  - runner reported total=1 passed=0 failed=0 skipped=1 todo=0
+  - no test passed or failed: 1 skipped, 0 todo
+
+--- 4. NOT PASS: timeout (note the real exit code is 1, not a signal) ---
+  "outcome": "timeout",
+  "passed": false,
+    "code": 1,
+    "timedOut": true,
+acceptance: M9.1-timeout -> timeout (NOT PASS)
+  - the deadline fired; a timeout is unknown, not a pass, and its resources are not released
+
+--- 5. exit codes are part of the contract ---
+pass            exit = 0
+not-found       exit = 1
+bad-definition  exit = 2
+
+--- 6. a stored receipt is checked against the tree on disk, not trusted ---
+{
+  "fresh": false,
+  "reason": "the candidate tree changed since the receipt was written (receipt e73bc0fc086d71f2d3b61895794cb4c7cfb652fe5e5bb39448ab6cc109774e5f, now cbb850b5b42e8c1c7f6c7fbcf52bb50a80c38a3d5205b4fb7bbb7be69cf918b3)",
+  "currentDigest": "cbb850b5b42e8c1c7f6c7fbcf52bb50a80c38a3d5205b4fb7bbb7be69cf918b3"
+}

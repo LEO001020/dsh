@@ -1,0 +1,84 @@
+{
+  "schema": "dsh-daily-work/acceptance-receipt@1",
+  "definitionId": "M9.1-package-suite",
+  "outcome": "pass",
+  "passed": true,
+  "reasons": [
+    "exit code 0 matched the expected 0",
+    "runner reported total=30 passed=30 failed=0 skipped=0 todo=0",
+    "observed counts matched the declared ones"
+  ],
+  "command": [
+    "node",
+    "D:/DSH/src/dsh-src/node_modules/vitest/vitest.mjs",
+    "run",
+    "src/verify.test.ts"
+  ],
+  "spawnedArgv": [
+    "C:\\Program Files\\nodejs\\node.EXE",
+    "D:/DSH/src/dsh-src/node_modules/vitest/vitest.mjs",
+    "run",
+    "src/verify.test.ts"
+  ],
+  "commandText": "C:\\Program Files\\nodejs\\node.EXE D:/DSH/src/dsh-src/node_modules/vitest/vitest.mjs run src/verify.test.ts",
+  "ranIn": "C:\\Users\\hzq00\\AppData\\Local\\Temp\\dsh-acceptance-M9.1-package-suite-ja3gOb",
+  "requestedCwd": "D:\\DSH\\work\\dsh-native-daily\\packages\\dsh-daily-work",
+  "candidateTreeDigest": "e73bc0fc086d71f2d3b61895794cb4c7cfb652fe5e5bb39448ab6cc109774e5f",
+  "candidateTreeDigestScope": "snapshot",
+  "acceptanceDefinitionDigest": "ac109c8d0d16dffc6822278ba6454cc286d8426f789910fdb3b64b1b052fb3eb",
+  "environment": {
+    "node": "v24.18.0",
+    "platform": "win32",
+    "arch": "x64",
+    "runnerPid": 30908,
+    "providerPlatform": "windows"
+  },
+  "exit": {
+    "code": 0,
+    "signal": null,
+    "timedOut": false,
+    "interrupted": false,
+    "expectedCode": 0
+  },
+  "output": {
+    "stdout": {
+      "text": "\n\u001b[1m\u001b[30m\u001b[46m RUN \u001b[49m\u001b[39m\u001b[22m \u001b[36mv4.1.8 \u001b[39m\u001b[90mC:/Users/hzq00/AppData/Local/Temp/dsh-acceptance-M9.1-package-suite-ja3gOb\u001b[39m\n\n \u001b[32m✓\u001b[39m src/verify.test.ts\u001b[2m > \u001b[22mF01: only a real runner is an oracle\u001b[2m > \u001b[22ma real command that passes yields PASS with the real exit code recorded\u001b[33m 736\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m src/verify.test.ts\u001b[2m > \u001b[22mF01: only a real runner is an oracle\u001b[2m > \u001b[22ma real command that fails yields FAIL, and the failure is visible in the receipt\u001b[33m 730\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m src/verify.test.ts\u001b[2m > \u001b[22mF01: only a real runner is an oracle\u001b[2m > \u001b[22ma command that does not exist is NOT a pass\u001b[32m 34\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m src/verify.test.ts\u001b[2m > \u001b[22mF01: only a real runner is an oracle\u001b[2m > \u001b[22ma command that times out is NOT a pass and is classified as a timeout\u001b[33m 1551\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m src/verify.test.ts\u001b[2m > \u001b[22mF01: only a real runner is an oracle\u001b[2m > \u001b[22man external stop is reported as interrupted, never as a pass\u001b[33m 1229\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m src/verify.test.ts\u001b[2m > \u001b[22mF02: no tests, skipped tests and a runner that never ran are all non-PASS\u001b[2m > \u001b[22ma suite that is entirely skipped is NOT a pass, despite exit code 0\u001b[33m 693\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m src/verify.test.ts\u001b[2m > \u001b[22mF02: no tests, skipped tests and a runner that never ran are all non-PASS\u001b[2m > \u001b[22ma runner that executed zero tests is NOT a pass, despite exit code 0\u001b[33m 736\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m src/verify.test.ts\u001b[2m > \u001b[22mF02: no tests, skipped tests and a runner that never ran are all non-PASS\u001b[2m > \u001b[22ma runner that never reports a summary is NOT a pass, despite exit code 0\u001b[32m 182\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m src/verify.test.ts\u001b[2m > \u001b[22mF02: no tests, skipped tests and a runner that never ran are all non-PASS\u001b[2m > \u001b[22ma declared count that does not match the observed count is NOT a pass\u001b[33m 693\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m src/verify.test.ts\u001b[2m > \u001b[22mF02: no tests, skipped tests and a runner that never ran are all non-PASS\u001b[2m > \u001b[22ma definition with an empty command is refused rather than run\u001b[32m 0\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m src/verify.test.ts\u001b[2m > \u001b[22mF03/F04: the receipt is bound to a snapshot of the inputs\u001b[2m > \u001b[22mthe receipt digest changes when the input tree changes\u001b[33m 351\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m src/verify.test.ts\u001b[2m > \u001b[22mF03/F04: the receipt is bound to a snapshot of the inputs\u001b[2m > \u001b[22mthe acceptance-definition digest changes when a threshold is weakened\u001b[32m 0\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m src/verify.test.ts\u001b[2m > \u001b[22mF03/F04: the receipt is bound to a snapshot of the inputs\u001b[2m > \u001b[22man unauthorized change to the acceptance definition refuses the run\u001b[32m 169\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m src/verify.test.ts\u001b[2m > \u001b[22mF03/F04: the receipt is bound to a snapshot of the inputs\u001b[2m > \u001b[22man A->B->A mutation during verification cannot fool the runner\u001b[33m 4922\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m src/verify.test.ts\u001b[2m > \u001b[22mF03/F04: the receipt is bound to a snapshot of the inputs\u001b[2m > \u001b[22ma snapshot that moves under the run yields unknown, not pass\u001b[33m 1192\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m src/verify.test.ts\u001b[2m > \u001b[22mF03/F04: the receipt is bound to a snapshot of the inputs\u001b[2m > \u001b[22mverifying in place is allowed but the receipt says it is limited\u001b[32m 165\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m src/verify.test.ts\u001b[2m > \u001b[22mF03/F04: the receipt is bound to a snapshot of the inputs\u001b[2m > \u001b[22mthe snapshot is removed afterwards unless the caller asks to keep it\u001b[32m 185\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m src/verify.test.ts\u001b[2m > \u001b[22mthe untrusted child does not inherit host privilege\u001b[2m > \u001b[22ma credential-shaped variable in the runner is not visible to the acceptance command\u001b[32m 170\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m src/verify.test.ts\u001b[2m > \u001b[22mF07: the retry budget is bounded and ends blocked\u001b[2m > \u001b[22ma candidate defect is not retried at all\u001b[32m 169\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m src/verify.test.ts\u001b[2m > \u001b[22mF07: the retry budget is bounded and ends blocked\u001b[2m > \u001b[22man environment-shaped failure stops as blocked once the budget is spent\u001b[33m 2072\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m src/verify.test.ts\u001b[2m > \u001b[22mF08: the integration ref is accepted only by exact expected-ref CAS\u001b[2m > \u001b[22ma moved ref refuses the publication, and an unchanged ref accepts it\u001b[33m 770\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m src/verify.test.ts\u001b[2m > \u001b[22mthe receipt is machine-readable and self-describing\u001b[2m > \u001b[22mserializes to JSON that records every required binding\u001b[32m 178\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m src/verify.test.ts\u001b[2m > \u001b[22mthe receipt is machine-readable and self-describing\u001b[2m > \u001b[22mbounds the output it retains while recording how much there was\u001b[32m 170\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m src/verify.test.ts\u001b[2m > \u001b[22mthe receipt is machine-readable and self-describing\u001b[2m > \u001b[22mrefuses an input that escapes cwd instead of silently covering less\u001b[32m 1\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m src/verify.test.ts\u001b[2m > \u001b[22msummary parsing matches what the real runners print\u001b[2m > \u001b[22mreads vitest counts through its ANSI colouring\u001b[32m 0\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m src/verify.test.ts\u001b[2m > \u001b[22msummary parsing matches what the real runners print\u001b[2m > \u001b[22mreads a mixed vitest summary\u001b[32m 0\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m src/verify.test.ts\u001b[2m > \u001b[22msummary parsing matches what the real runners print\u001b[2m > \u001b[22mreads vitest \"no tests\" as a real zero rather than as unparsed\u001b[32m 0\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m src/verify.test.ts\u001b[2m > \u001b[22msummary parsing matches what the real runners print\u001b[2m > \u001b[22mreports no counts when there is no summary line at all\u001b[32m 0\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m src/verify.test.ts\u001b[2m > \u001b[22msummary parsing matches what the real runners print\u001b[2m > \u001b[22mreads the node:test spec summary\u001b[32m 0\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m src/verify.test.ts\u001b[2m > \u001b[22msummary parsing matches what the real runners print\u001b[2m > \u001b[22mreads a node:test run in which every case was skipped\u001b[32m 0\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m30 passed\u001b[39m\u001b[22m\u001b[90m (30)\u001b[39m\n\u001b[2m   Start at \u001b[22m 19:10:19\n\u001b[2m   Duration \u001b[22m 17.51s\u001b[2m (transform 154ms, setup 0ms, import 198ms, tests 17.14s, environment 0ms)\u001b[22m\n\n",
+      "truncated": false,
+      "totalBytes": 6334
+    },
+    "stderr": {
+      "text": "warning: in the working copy of 'file.txt', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'file.txt', LF will be replaced by CRLF the next time Git touches it\n",
+      "truncated": false,
+      "totalBytes": 202
+    }
+  },
+  "observedTests": {
+    "total": 30,
+    "passed": 30,
+    "failed": 0,
+    "skipped": 0,
+    "todo": 0
+  },
+  "expectedTests": {
+    "passed": 30
+  },
+  "testSummarySource": "vitest",
+  "managedRangeEmpty": true,
+  "holdReservation": false,
+  "limitations": [],
+  "startedAt": "2026-09-19T11:10:18.575Z",
+  "finishedAt": "2026-09-19T11:10:36.560Z",
+  "durationMs": 17986,
+  "snapshot": {
+    "dir": "C:\\Users\\hzq00\\AppData\\Local\\Temp\\dsh-acceptance-M9.1-package-suite-ja3gOb",
+    "digest": "e73bc0fc086d71f2d3b61895794cb4c7cfb652fe5e5bb39448ab6cc109774e5f",
+    "stableDuringRun": true,
+    "liveDigestAtStart": "e73bc0fc086d71f2d3b61895794cb4c7cfb652fe5e5bb39448ab6cc109774e5f",
+    "liveDigestAtEnd": "e73bc0fc086d71f2d3b61895794cb4c7cfb652fe5e5bb39448ab6cc109774e5f",
+    "liveDriftDetected": false,
+    "extraPathsCreated": 0,
+    "toolchainLinked": true,
+    "coverage": "the digest covers the declared inputs only; node_modules is a junction to the live tree and is NOT covered",
+    "retained": false
+  }
+}

@@ -1,0 +1,11 @@
+# A04: change exactly ONE field of ONE row.
+#
+# The stock `session-query-sqlite` row carries TWO config keys:
+#   { path: ':memory:', openAt: never }
+# This patch names only `openAt`. Under deep-merge semantics the resolved row
+# would keep `path`. Under the real (whole-value replacement) semantics the row
+# loses `path` entirely -- which is a REQUIRED field of the row's Schemastery
+# schema (packages/session-query/session-query-sqlite/src/index.ts:206).
+- id: session-query-sqlite
+  config:
+    openAt: first-search

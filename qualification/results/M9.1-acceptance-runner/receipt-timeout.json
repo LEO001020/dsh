@@ -1,0 +1,69 @@
+{
+  "schema": "dsh-daily-work/acceptance-receipt@1",
+  "definitionId": "M9.1-timeout",
+  "outcome": "timeout",
+  "passed": false,
+  "reasons": [
+    "the deadline fired; a timeout is unknown, not a pass, and its resources are not released"
+  ],
+  "command": [
+    "node",
+    "-e",
+    "setInterval(() => {}, 1000)"
+  ],
+  "spawnedArgv": [
+    "C:\\Program Files\\nodejs\\node.EXE",
+    "-e",
+    "setInterval(() => {}, 1000)"
+  ],
+  "commandText": "C:\\Program Files\\nodejs\\node.EXE -e setInterval(() => {}, 1000)",
+  "ranIn": "C:\\Users\\hzq00\\AppData\\Local\\Temp\\dsh-acceptance-M9.1-timeout-Au4nWj",
+  "requestedCwd": "D:\\DSH\\work\\dsh-native-daily",
+  "candidateTreeDigest": "22680f745732e8497e799f23e42cbd38b5c63dee5f07eafb43facfabdbab396f",
+  "candidateTreeDigestScope": "snapshot",
+  "acceptanceDefinitionDigest": "c69afb216b7284dcff0979377a098f3b7f47dd34981537b63580e00ce0213e8b",
+  "environment": {
+    "node": "v24.18.0",
+    "platform": "win32",
+    "arch": "x64",
+    "runnerPid": 34716,
+    "providerPlatform": "windows"
+  },
+  "exit": {
+    "code": 1,
+    "signal": null,
+    "timedOut": true,
+    "interrupted": false,
+    "expectedCode": 0
+  },
+  "output": {
+    "stdout": {
+      "text": "",
+      "truncated": false,
+      "totalBytes": 0
+    },
+    "stderr": {
+      "text": "",
+      "truncated": false,
+      "totalBytes": 0
+    }
+  },
+  "managedRangeEmpty": true,
+  "holdReservation": true,
+  "limitations": [],
+  "startedAt": "2026-09-19T11:10:49.144Z",
+  "finishedAt": "2026-09-19T11:10:50.706Z",
+  "durationMs": 1562,
+  "snapshot": {
+    "dir": "C:\\Users\\hzq00\\AppData\\Local\\Temp\\dsh-acceptance-M9.1-timeout-Au4nWj",
+    "digest": "22680f745732e8497e799f23e42cbd38b5c63dee5f07eafb43facfabdbab396f",
+    "stableDuringRun": true,
+    "liveDigestAtStart": "22680f745732e8497e799f23e42cbd38b5c63dee5f07eafb43facfabdbab396f",
+    "liveDigestAtEnd": "22680f745732e8497e799f23e42cbd38b5c63dee5f07eafb43facfabdbab396f",
+    "liveDriftDetected": false,
+    "extraPathsCreated": 0,
+    "toolchainLinked": false,
+    "coverage": "the digest covers the declared inputs only; nothing else was present in the snapshot",
+    "retained": false
+  }
+}

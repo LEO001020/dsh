@@ -1,0 +1,1 @@
+{"version":3,"file":"projection.d.ts","sourceRoot":"","sources":["../../src/projection.ts"],"names":[],"mappings":"AAAA,OAAO,KAAK,EAAE,sBAAsB,EAAE,MAAM,YAAY,CAAA;AAGxD,OAAO,QAAQ,2CAA2C,CAAC;IACzD,UAAU,yBAAyB;QACjC,gFAAgF;QAChF,YAAY,EAAE,sBAAsB,CAAA;KACrC;CACF;AAED,OAAO,EAAE,CAAA"}

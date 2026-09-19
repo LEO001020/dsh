@@ -1,0 +1,3 @@
+- insert:
+    - id: verify-preset-tools
+      name: 'D:/DSH/work/dsh-native-daily/qualification/runners/verify-preset-tools.mjs'

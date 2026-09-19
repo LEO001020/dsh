@@ -1,0 +1,43 @@
+# A10 harness overlay: the REAL shipped headless profile, with the model route
+# pointed at an in-tree keyless mock adapter so the one-shot runner itself is
+# exercised without a provider credential.
+#
+# Everything the runner owns stays mounted: `headless-startup` parses the real
+# command line and `headless-runner` drives the real one-shot interval. Only the
+# ROUTE changes, because the gate is about the CLI boundary, not the provider.
+#
+# `llm-deepseek` is disabled so a missing DEEPSEEK_API_KEY cannot be mistaken for
+# a boundary result.
+- id: llm-deepseek
+  disabled: true
+
+# The headless runner takes its provider/model from `agentDefaultModel`
+# (packages/bundle/headless/src/index.ts: "const selection = defaultModel.currentSelection()"),
+# NOT from the agent-loop row, so this is the row that must move.
+- id: agent-default-model
+  config:
+    provider: cli-mock
+    model: cli-mock
+
+# The session log is the EVIDENCE for this gate, so it goes to a path the gate
+# owns rather than the process cwd.
+- id: session-persistence-jsonl
+  config:
+    root: !!js process.env.M914_SESSION_ROOT
+    compression: none
+
+# Repo instruction discovery would read whatever cwd this runs in; disabling it
+# keeps the run's request shape a function of the composition alone.
+- id: agent-instructions
+  disabled: true
+
+# `name` is an ENTRY OPTION, not row config, so a `!!js` expression there is
+# never interpolated (the Loader interpolates nested row config only). Measured:
+# `name: !!js process.env.X` fails with `cli-mock-llm ([object Object]): failed
+# to import`. A path relative to THIS patch file is the form the include's
+# `anchorInsertedPluginNames` converts to a file URL, which is what the shipped
+# keyless fixture (apps/cli/tests/profiles/headless/tests/fixtures/cli.patch.yml)
+# also does.
+- insert:
+    - id: cli-mock-llm
+      name: './m914-mock-llm.ts'

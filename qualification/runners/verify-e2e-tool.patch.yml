@@ -1,0 +1,3 @@
+- insert:
+    - id: verify-e2e-tool
+      name: 'D:/DSH/work/dsh-native-daily/qualification/runners/verify-e2e-tool.mjs'

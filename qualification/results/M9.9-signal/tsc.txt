@@ -1,0 +1,38 @@
+=== command 1: production sources (the command docs/OPERATIONS.md specifies) ===
+$ tsc -p tsconfig.json --noEmit
+tsc_exit=0
+
+=== command 2: the new test file itself ===
+tsconfig.json EXCLUDES src/**/*.test.ts, and 'vitest' is not resolvable from
+this package (it is installed in the pinned checkout, not here). So the test
+file is checked with a throwaway config that adds only the vitest path map.
+Reproduce with the config printed below, written anywhere outside the repo.
+
+--- tsconfig.signal.json ---
+{
+  "compilerOptions": {
+    "target": "ES2024",
+    "lib": ["ES2024"],
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "noImplicitOverride": true,
+    "verbatimModuleSyntax": true,
+    "erasableSyntaxOnly": true,
+    "allowImportingTsExtensions": true,
+    "rewriteRelativeImportExtensions": true,
+    "noEmit": true,
+    "skipLibCheck": true,
+    "types": ["node"],
+    "typeRoots": ["D:/DSH/work/dsh-native-daily/packages/dsh-daily-work/node_modules/@types"],
+    "paths": {
+      "vitest": ["D:/DSH/src/dsh-src/node_modules/vitest/dist/index.d.ts"]
+    }
+  },
+  "files": ["D:/DSH/work/dsh-native-daily/packages/dsh-daily-work/src/launch-port.test.ts"]
+}
+--- end config ---
+
+$ tsc -p <that file>
+test_tsc_exit=0

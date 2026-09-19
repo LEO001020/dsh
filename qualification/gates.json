@@ -1091,16 +1091,16 @@
     "stimulus": "Agent自报完成或提供伪exitCode=0。",
     "oracle": "只使用实际runner和对应环境产物，声明不成为PASS。",
     "status": "PASS",
-    "note": "No completion claim is an oracle here: the record reaches confirmed only through an explicit transition, and settling is the furthest reconciliation can reach.",
+    "note": "Re-verified with the built acceptance runner: a REAL child exit code is recorded, and command_not_found leaves exit.code as null rather than a convenient 0. No model claim is an input anywhere in the classification. The earlier evidence (state-machine transitions) proved the record could not self-confirm, which is a weaker claim than an independent runner observing a real process.",
     "deployment_identity": "0ca14d4ee0ebea5eb85a3f72d66f48d839356f1b336c0e4f11f9a4f8ddf2ab7c",
     "evidence": [
       {
-        "path": "qualification/results/M3.2-N10-concurrency/tests.txt",
-        "sha256": "7d5a4cefb5405e53815b34cd329fd04977e3ba71408a3a47f457d5f822284d9b"
+        "path": "qualification/results/M9.1-acceptance-runner/FINDINGS.md",
+        "sha256": "fb0ef3f4a1ce85a0ee780c76d6a9c6dde0b097daabf9830d244a16ad56cc1ea3"
       },
       {
-        "path": "qualification/results/M2.2-work-host/tests.txt",
-        "sha256": "0b33ead1a3558b8ef41fdc7335e7227cc60d8c3f0e4f3a58cd26094fee58707b"
+        "path": "qualification/results/M9.1-acceptance-runner/cli-transcript.txt",
+        "sha256": "4dddf7628cffdcd82b04182529a71b61c8203d032c24a617cb08000c47e3f30e"
       }
     ]
   },
@@ -1112,12 +1112,16 @@
     "stimulus": "无命令、全skip、runner未调用、错误被吞。",
     "oracle": "明确unverified/FAIL，不默认allow。",
     "status": "PASS",
-    "note": "Absent evidence is unknown, never PASS: reconciliation quarantines unprobed tasks and the durability runner reports FAIL on any false check.",
+    "note": "Re-verified, and this is the sharpest result in the runner: TWO cases carry a REAL exit code of 0 and are still non-PASS -- an all-skipped suite (receipt-all-skipped.json: total=1 passed=0 skipped=1) and vitest's --passWithNoTests zero-test shape. An exit-code-only verifier calls both green. Classification covers command-not-found, all-skipped, runner-never-ran, timeout, interrupted, zero-tests and unknown; a PASS needs a real exit 0 AND a matching declared test count.",
     "deployment_identity": "0ca14d4ee0ebea5eb85a3f72d66f48d839356f1b336c0e4f11f9a4f8ddf2ab7c",
     "evidence": [
       {
-        "path": "qualification/results/M3.2-N10-concurrency/tests.txt",
-        "sha256": "7d5a4cefb5405e53815b34cd329fd04977e3ba71408a3a47f457d5f822284d9b"
+        "path": "qualification/results/M9.1-acceptance-runner/FINDINGS.md",
+        "sha256": "fb0ef3f4a1ce85a0ee780c76d6a9c6dde0b097daabf9830d244a16ad56cc1ea3"
+      },
+      {
+        "path": "qualification/results/M9.1-acceptance-runner/receipt-all-skipped.json",
+        "sha256": "a789eab79c1cb42bdc1b2491b8887c8412f79ff2aca8e69c5c93ca03f333a7ff"
       }
     ]
   },
@@ -1129,12 +1133,16 @@
     "stimulus": "验证后源文件改变。",
     "oracle": "旧receipt不对应新tree，重新验证。",
     "status": "PASS",
-    "note": "Every evidence directory stores source digests alongside results, so a stale receipt is detectable.",
+    "note": "Re-verified end to end: fresh -> fresh:true exit 0 -> change one byte -> fresh:false exit 1. The receipt carries a candidate tree digest, an acceptance-definition digest and an environment identity, so a stale receipt is machine-detectable rather than a matter of noticing.",
     "deployment_identity": "0ca14d4ee0ebea5eb85a3f72d66f48d839356f1b336c0e4f11f9a4f8ddf2ab7c",
     "evidence": [
       {
-        "path": "qualification/results/M4.1-process-kill/report-final.json",
-        "sha256": "006429518b3ce8f4bf6f28ea7146ae06633fb4f06affc5dab4a951780d24a0c4"
+        "path": "qualification/results/M9.1-acceptance-runner/FINDINGS.md",
+        "sha256": "fb0ef3f4a1ce85a0ee780c76d6a9c6dde0b097daabf9830d244a16ad56cc1ea3"
+      },
+      {
+        "path": "qualification/results/M9.1-acceptance-runner/staleness.txt",
+        "sha256": "552d6bb6a4959296e6ae15dd5137549ee7955334279a71f71cf604d025de09d9"
       }
     ]
   },
@@ -1145,8 +1153,15 @@
     "required_for": "daily_ready",
     "stimulus": "验证过程中源A→B→A。",
     "oracle": "不可变输入快照避免误证；前后相同hash不单独足够。",
-    "status": "NOT_RUN",
-    "note": "ABA during verification has not been exercised; there is no verifier yet."
+    "status": "PASS",
+    "note": "Exercised with a two-arm contrast, and the SECOND arm is what makes the first meaningful. Snapshot arm: the child sees A, passes. In-place arm: the SAME A->B->A mutation, the child sees B and exits 9 with SAW_THE_TAMPERED_TREE, while the live before/after digests report NO DRIFT AT ALL. Endpoint hashing alone would have certified the tampered run. The mutation runs concurrently with the acceptance on a schedule written out in the test (A->B at t=700ms, child reads at t=1200ms, tree back to A at t=1900ms, child exits t=2800ms), so the window is real rather than assumed. A second case covers a command that rewrites its own declared input inside the snapshot, which yields unknown and holds the reservation rather than passing.",
+    "deployment_identity": "0ca14d4ee0ebea5eb85a3f72d66f48d839356f1b336c0e4f11f9a4f8ddf2ab7c",
+    "evidence": [
+      {
+        "path": "qualification/results/M9.1-acceptance-runner/FINDINGS.md",
+        "sha256": "fb0ef3f4a1ce85a0ee780c76d6a9c6dde0b097daabf9830d244a16ad56cc1ea3"
+      }
+    ]
   },
   {
     "id": "F05",
@@ -1156,12 +1171,16 @@
     "stimulus": "Agent削弱受保护测试或改expected输出。",
     "oracle": "受信acceptance digest变化需要授权，不能静默绿色。",
     "status": "PASS",
-    "note": "The acceptance spec is copied into the repo and its sha256 verified against the lock; it is not editable by the model.",
+    "note": "Strengthened: a digest mismatch now REFUSES the run with acceptance_definition_changed, and --print-digest is a separate step so a definition cannot authorize itself. The frozen spec is additionally verified against the lock: sha256 b6e68075e097b5d790a406cb92820465381b6a716a84b53b0a8b8d99d584ad47, unchanged from the delivery package.",
     "deployment_identity": "0ca14d4ee0ebea5eb85a3f72d66f48d839356f1b336c0e4f11f9a4f8ddf2ab7c",
     "evidence": [
       {
         "path": "qualification/results/M3.1-c2-profile/dump-config-daily-candidate.yml",
         "sha256": "23f763d1bf2af8ba3210473d6743bc39ac0185bdefd661861935414a01e5af6b"
+      },
+      {
+        "path": "qualification/results/M9.1-acceptance-runner/FINDINGS.md",
+        "sha256": "fb0ef3f4a1ce85a0ee780c76d6a9c6dde0b097daabf9830d244a16ad56cc1ea3"
       }
     ]
   },
@@ -1182,8 +1201,15 @@
     "required_for": "daily_ready",
     "stimulus": "不可修复环境错误持续。",
     "oracle": "有界重试和blocked，不无限续行直到刷过。",
-    "status": "NOT_RUN",
-    "note": "Bounded retry on an unrepairable environment error has not been exercised."
+    "status": "PASS",
+    "note": "Candidate defects are not retried at all; environment-shaped failures stop as blocked once the budget is spent. So a persistent unrepairable environment error terminates as blocked rather than looping until something turns green.",
+    "deployment_identity": "0ca14d4ee0ebea5eb85a3f72d66f48d839356f1b336c0e4f11f9a4f8ddf2ab7c",
+    "evidence": [
+      {
+        "path": "qualification/results/M9.1-acceptance-runner/FINDINGS.md",
+        "sha256": "fb0ef3f4a1ce85a0ee780c76d6a9c6dde0b097daabf9830d244a16ad56cc1ea3"
+      }
+    ]
   },
   {
     "id": "F08",
@@ -1192,8 +1218,15 @@
     "required_for": "daily_ready",
     "stimulus": "验证candidate后integration HEAD改变。",
     "oracle": "expected-ref拒绝陈旧发布；不能force覆盖。",
-    "status": "NOT_RUN",
-    "note": "No Git integration CAS exists yet; this project does not merge."
+    "status": "PASS",
+    "note": "refCas has NO write path -- no force, no reset, no update -- so a stale expected-ref cannot be overwritten. Tested against a real temporary git repository, including the unreadable-ref case. This project does not merge, so the CAS is a refusal surface rather than a publish path.",
+    "deployment_identity": "0ca14d4ee0ebea5eb85a3f72d66f48d839356f1b336c0e4f11f9a4f8ddf2ab7c",
+    "evidence": [
+      {
+        "path": "qualification/results/M9.1-acceptance-runner/FINDINGS.md",
+        "sha256": "fb0ef3f4a1ce85a0ee780c76d6a9c6dde0b097daabf9830d244a16ad56cc1ea3"
+      }
+    ]
   },
   {
     "id": "T01",

@@ -1,0 +1,42 @@
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.8 [39m[90mD:/DSH/work/dsh-native-daily/packages/dsh-daily-work[39m
+
+ [32m✓[39m src/verify.test.ts[2m > [22mF01: only a real runner is an oracle[2m > [22ma real command that passes yields PASS with the real exit code recorded[33m 737[2mms[22m[39m
+ [32m✓[39m src/verify.test.ts[2m > [22mF01: only a real runner is an oracle[2m > [22ma real command that fails yields FAIL, and the failure is visible in the receipt[33m 702[2mms[22m[39m
+ [32m✓[39m src/verify.test.ts[2m > [22mF01: only a real runner is an oracle[2m > [22ma command that does not exist is NOT a pass[32m 38[2mms[22m[39m
+ [32m✓[39m src/verify.test.ts[2m > [22mF01: only a real runner is an oracle[2m > [22ma command that times out is NOT a pass and is classified as a timeout[33m 1534[2mms[22m[39m
+ [32m✓[39m src/verify.test.ts[2m > [22mF01: only a real runner is an oracle[2m > [22man external stop is reported as interrupted, never as a pass[33m 1247[2mms[22m[39m
+ [32m✓[39m src/verify.test.ts[2m > [22mF02: no tests, skipped tests and a runner that never ran are all non-PASS[2m > [22ma suite that is entirely skipped is NOT a pass, despite exit code 0[33m 707[2mms[22m[39m
+ [32m✓[39m src/verify.test.ts[2m > [22mF02: no tests, skipped tests and a runner that never ran are all non-PASS[2m > [22ma runner that executed zero tests is NOT a pass, despite exit code 0[33m 720[2mms[22m[39m
+ [32m✓[39m src/verify.test.ts[2m > [22mF02: no tests, skipped tests and a runner that never ran are all non-PASS[2m > [22ma runner that never reports a summary is NOT a pass, despite exit code 0[32m 197[2mms[22m[39m
+ [32m✓[39m src/verify.test.ts[2m > [22mF02: no tests, skipped tests and a runner that never ran are all non-PASS[2m > [22ma declared count that does not match the observed count is NOT a pass[33m 720[2mms[22m[39m
+ [32m✓[39m src/verify.test.ts[2m > [22mF02: no tests, skipped tests and a runner that never ran are all non-PASS[2m > [22ma definition with an empty command is refused rather than run[32m 0[2mms[22m[39m
+ [32m✓[39m src/verify.test.ts[2m > [22mF03/F04: the receipt is bound to a snapshot of the inputs[2m > [22mthe receipt digest changes when the input tree changes[33m 378[2mms[22m[39m
+ [32m✓[39m src/verify.test.ts[2m > [22mF03/F04: the receipt is bound to a snapshot of the inputs[2m > [22mthe acceptance-definition digest changes when a threshold is weakened[32m 0[2mms[22m[39m
+ [32m✓[39m src/verify.test.ts[2m > [22mF03/F04: the receipt is bound to a snapshot of the inputs[2m > [22man unauthorized change to the acceptance definition refuses the run[32m 199[2mms[22m[39m
+ [32m✓[39m src/verify.test.ts[2m > [22mF03/F04: the receipt is bound to a snapshot of the inputs[2m > [22man A->B->A mutation during verification cannot fool the runner[33m 4942[2mms[22m[39m
+ [32m✓[39m src/verify.test.ts[2m > [22mF03/F04: the receipt is bound to a snapshot of the inputs[2m > [22ma snapshot that moves under the run yields unknown, not pass[33m 1202[2mms[22m[39m
+ [32m✓[39m src/verify.test.ts[2m > [22mF03/F04: the receipt is bound to a snapshot of the inputs[2m > [22mverifying in place is allowed but the receipt says it is limited[32m 166[2mms[22m[39m
+ [32m✓[39m src/verify.test.ts[2m > [22mF03/F04: the receipt is bound to a snapshot of the inputs[2m > [22mthe snapshot is removed afterwards unless the caller asks to keep it[32m 170[2mms[22m[39m
+ [32m✓[39m src/verify.test.ts[2m > [22mthe untrusted child does not inherit host privilege[2m > [22ma credential-shaped variable in the runner is not visible to the acceptance command[32m 184[2mms[22m[39m
+ [32m✓[39m src/verify.test.ts[2m > [22mF07: the retry budget is bounded and ends blocked[2m > [22ma candidate defect is not retried at all[32m 169[2mms[22m[39m
+ [32m✓[39m src/verify.test.ts[2m > [22mF07: the retry budget is bounded and ends blocked[2m > [22man environment-shaped failure stops as blocked once the budget is spent[33m 2085[2mms[22m[39m
+warning: in the working copy of 'file.txt', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'file.txt', LF will be replaced by CRLF the next time Git touches it
+ [32m✓[39m src/verify.test.ts[2m > [22mF08: the integration ref is accepted only by exact expected-ref CAS[2m > [22ma moved ref refuses the publication, and an unchanged ref accepts it[33m 789[2mms[22m[39m
+ [32m✓[39m src/verify.test.ts[2m > [22mthe receipt is machine-readable and self-describing[2m > [22mserializes to JSON that records every required binding[32m 189[2mms[22m[39m
+ [32m✓[39m src/verify.test.ts[2m > [22mthe receipt is machine-readable and self-describing[2m > [22mbounds the output it retains while recording how much there was[32m 196[2mms[22m[39m
+ [32m✓[39m src/verify.test.ts[2m > [22mthe receipt is machine-readable and self-describing[2m > [22mrefuses an input that escapes cwd instead of silently covering less[32m 2[2mms[22m[39m
+ [32m✓[39m src/verify.test.ts[2m > [22msummary parsing matches what the real runners print[2m > [22mreads vitest counts through its ANSI colouring[32m 0[2mms[22m[39m
+ [32m✓[39m src/verify.test.ts[2m > [22msummary parsing matches what the real runners print[2m > [22mreads a mixed vitest summary[32m 0[2mms[22m[39m
+ [32m✓[39m src/verify.test.ts[2m > [22msummary parsing matches what the real runners print[2m > [22mreads vitest "no tests" as a real zero rather than as unparsed[32m 0[2mms[22m[39m
+ [32m✓[39m src/verify.test.ts[2m > [22msummary parsing matches what the real runners print[2m > [22mreports no counts when there is no summary line at all[32m 0[2mms[22m[39m
+ [32m✓[39m src/verify.test.ts[2m > [22msummary parsing matches what the real runners print[2m > [22mreads the node:test spec summary[32m 1[2mms[22m[39m
+ [32m✓[39m src/verify.test.ts[2m > [22msummary parsing matches what the real runners print[2m > [22mreads a node:test run in which every case was skipped[32m 0[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[32m30 passed[39m[22m[90m (30)[39m
+[2m   Start at [22m 19:09:44
+[2m   Duration [22m 17.72s[2m (transform 164ms, setup 0ms, import 209ms, tests 17.33s, environment 0ms)[22m
+
+test_exit=0
