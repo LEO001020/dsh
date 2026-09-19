@@ -42,6 +42,7 @@ E = {
     "a03": evidence("M0.6-launcher-identity/A03-launcher-identity.txt"),
     "first": evidence("M0.4-first-toolcall/A03-first-toolcall.txt"),
     "lifecycle": evidence("M8.2-lifecycle-gates/FINDINGS.md"),
+    "wire": evidence("M8.3-wire-faults/FINDINGS.md"),
 }
 
 # gate id -> (status, evidence keys, note)
@@ -83,7 +84,7 @@ G: dict[str, tuple[str, list[str], str]] = {
     "C06": ("PASS", ["n10"], "A pause stops admission with free slots remaining; the count of real children does not grow."),
     "C07": ("PASS", ["t0t1", "lifecycle"], "A cancel that is only requested still holds its slot and its credit; asserted both in the counting tests and against the real registry."),
     "C08": ("PASS", ["lifecycle"], "A teardown failure is visible only as stopReason 'error' on subagent/end (the event carries no error field); the controller does not release a slot on an end event alone, and the disposal-failure window reconciles to unknown."),
-    "C09": ("NOT_RUN", [], "HTTP 429 handling has not been driven through the mock wire server."),
+    "C09": ("PASS", ["wire"], "Driven through the real HTTP/SSE mock server: 429, 500 and 401 are all produced on the wire, a 429 keeps the target at 10 and reports a deficit rather than lowering N, and an exhausted script fails loudly instead of silently succeeding."),
     "C10": ("PASS", ["t0t1"], "Admission reserves atomically in one record transform; a reservation that would exceed the ceiling is refused."),
     "C11": ("NOT_RUN", [], "Actual spend exceeding the reservation has not been observed; no live provider."),
     "C12": ("PASS", ["n10"], "maxDepth 1 is carried on the child and grandchild depth is asserted; the tool surface exposes no spawn path."),
@@ -100,7 +101,7 @@ G: dict[str, tuple[str, list[str], str]] = {
     "D04": ("PASS", ["durability", "t0t1"], "A reserved id with no trace becomes unknown and is explicitly NOT relaunched; DUPLICATE_CHILD is rethrown unchanged."),
     "D05": ("PASS", ["durability"], "A pending prompt is left to native Inbox recovery; no duplicate delivery is made."),
     "D06": ("PASS", ["durability"], "Claim with no request confirmation resolves to accepted rather than being called done."),
-    "D07": ("PASS", ["durability"], "A request with no terminal turn is unknown with the reservation held; an error outcome is also unknown."),
+    "D07": ("PASS", ["durability", "wire"], "A request with no terminal turn is unknown with the reservation held; an error outcome is also unknown. Driven against a real stream disconnect and a real stalled request, and every fault-shaped evidence record resolves to unknown or a conservative earlier state, never to a released slot."),
     "D08": ("PASS", ["durability"], "A completed turn goes to settling, never confirmed; a lost parent notice is not treated as a child failure."),
     "D09": ("PASS", ["durability", "lifecycle"], "Reconciliation never replays and never releases a slot, asserted over every state; an end event alone also does not release one."),
     "D10": ("PASS", ["t0t1"], "The record carries a run epoch and reconciliation refuses a mismatched child identity."),

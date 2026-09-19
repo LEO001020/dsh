@@ -502,8 +502,15 @@
     "required_for": "daily_ready",
     "stimulus": "429、RPM/TPM不足、网络错误持续出现。",
     "oracle": "有界backoff与真实blocked理由，不将等待包装成执行10，不无限重试。",
-    "status": "NOT_RUN",
-    "note": "HTTP 429 handling has not been driven through the mock wire server."
+    "status": "PASS",
+    "note": "Driven through the real HTTP/SSE mock server: 429, 500 and 401 are all produced on the wire, a 429 keeps the target at 10 and reports a deficit rather than lowering N, and an exhausted script fails loudly instead of silently succeeding.",
+    "deployment_identity": "0ca14d4ee0ebea5eb85a3f72d66f48d839356f1b336c0e4f11f9a4f8ddf2ab7c",
+    "evidence": [
+      {
+        "path": "qualification/results/M8.3-wire-faults/FINDINGS.md",
+        "sha256": "b4bc78c516e5019cd5405b88a73fa7a2e21eaaede126969126bcb9ad753cad68"
+      }
+    ]
   },
   {
     "id": "C10",
@@ -748,12 +755,16 @@
     "stimulus": "provider已接收但connection lost/host crash。",
     "oracle": "unknown usage/effect，不自动当未收费/未执行。",
     "status": "PASS",
-    "note": "A request with no terminal turn is unknown with the reservation held; an error outcome is also unknown.",
+    "note": "A request with no terminal turn is unknown with the reservation held; an error outcome is also unknown. Driven against a real stream disconnect and a real stalled request, and every fault-shaped evidence record resolves to unknown or a conservative earlier state, never to a released slot.",
     "deployment_identity": "0ca14d4ee0ebea5eb85a3f72d66f48d839356f1b336c0e4f11f9a4f8ddf2ab7c",
     "evidence": [
       {
         "path": "qualification/results/M4.1-process-kill/report-final.json",
         "sha256": "006429518b3ce8f4bf6f28ea7146ae06633fb4f06affc5dab4a951780d24a0c4"
+      },
+      {
+        "path": "qualification/results/M8.3-wire-faults/FINDINGS.md",
+        "sha256": "b4bc78c516e5019cd5405b88a73fa7a2e21eaaede126969126bcb9ad753cad68"
       }
     ]
   },
