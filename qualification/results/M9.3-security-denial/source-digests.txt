@@ -1,0 +1,39 @@
+# Source and evidence digests for M9.3 (sha256, GNU coreutils format).
+# Run from the repository root: sha256sum <paths>
+
+## This evidence directory's own artifacts
+d18f9d086c4cf4e22b52ae9ea1ba2dd6379acded32ead7964c90a6ee77d83f5b *packages/dsh-daily-work/src/security-denial.test.ts
+9af15afaba70ff4290aefa7b30bf5ae358d5a4e94b777334f58a55c8e01650b1 *qualification/fixtures/canary/README.md
+645efff8b6a3d43c3105c12d77d356fa455be738da24a65a78f16df010e9bd2d *qualification/fixtures/canary/workspace/canary-marker.txt
+1f4c3bad78c61f3e59df03ec0b157148ab0f68e36d8a885014e6c0a741b1fd30 *qualification/fixtures/canary/outside/canary-secret.txt
+c87b4e261026a6187ae4057400f9bbddd6c723701412fdbd25e5bf3bc19a8469 *qualification/fixtures/canary/outside/canary-credential-shaped.env
+
+## The DSH sources this evidence reads, interprets, or asserts against
+# (pinned checkout: compatibility.lock.json records D:\DSH\src\dsh-src @ ddefc45fbc7f8e46dd73185e68295696d1297887)
+32f62c1966c536308428be2fa090042a37358d9af8084e7fb0d0878c68ac3b9d *D:/DSH/src/dsh-src/packages/sandbox/sandbox/src/index.ts
+68e491d68991c8bbc609c67617cebc8d72e5031a8d63f232d89a4321b378812a *D:/DSH/src/dsh-src/packages/sandbox/sandbox/src/escalation.ts
+8a18e1474012415def8197a4ee493394a91cc739a6ec94eb83c6b4d980b7a23b *D:/DSH/src/dsh-src/packages/sandbox/sandbox/src/roots.ts
+f7f21872ae725111f6a043eab37b533d9c8b9712d3ff9684aeded150e6f10b37 *D:/DSH/src/dsh-src/packages/sandbox/sandbox-local/src/index.ts
+7af7d5d12c8e9347b4880dc939815fea9b8f7ab45d7dc80fe868e5fee4c1bdc4 *D:/DSH/src/dsh-src/packages/sandbox/sandbox-windows-acl/src/index.ts
+542b77278d974f5f93c2a0b925468e96e52737366ed88df7d118a5af67c2eff0 *D:/DSH/src/dsh-src/packages/sandbox/sandbox-windows-acl/src/runner.ts
+7332eef52a304789921e104b1ca38246ea8b44673ea08e952bc43791a9af6411 *D:/DSH/src/dsh-src/packages/sandbox/sandbox-windows-acl/src/workspace-sid.ts
+6fce58e5bf63475f761871389bbf01043fba859f22e44c805522c39afbff32d6 *D:/DSH/src/dsh-src/packages/sandbox/sandbox-policy/src/index.ts
+afe650fc43e87031eb7b50d9a1717b926906e4fcaab01199cd434235586714d7 *D:/DSH/src/dsh-src/packages/sandbox/sandbox-policy/src/session-mode.ts
+0264b62850764a5e32f1e2da93540cdcbe6e0e6442314f72b25a8ee2da6d2995 *D:/DSH/src/dsh-src/packages/terminal/terminal/src/index.ts
+007745a94c054119fbbb113a6985308fd6210017d49e4e586ffae1a139a38d36 *D:/DSH/src/dsh-src/packages/terminal/terminal-bash/src/index.ts
+a24bc151a96eca2e1d831a2435d3ab4cbc0ddbbfb0bc43eab312b4486a1255d8 *D:/DSH/src/dsh-src/packages/terminal/terminal-bash/src/config.ts
+19e3fde571d0cd1f76e95696477a7d38677529aaf51b07c429965f2e4330065f *D:/DSH/src/dsh-src/packages/subprocess/subprocess/src/index.ts
+e65166444ff791994a7198a86ac4a821e8329120bd551f342913623c87e5a715 *D:/DSH/src/dsh-src/packages/subprocess/subprocess/src/types.ts
+d04e779d9d7c6aac18cdbc7bb4694ea15b2b8ac6df4595a22108ace90c869581 *D:/DSH/src/dsh-src/packages/subprocess/subprocess-local/src/index.ts
+e023efeb512491bea4040e52fa1462b86f9371bcd3bb59d8433d54414e50c75b *D:/DSH/src/dsh-src/packages/subprocess/subprocess-local/src/spawn.ts
+73918f195eb42911fad1e39078dd5b03d785ab5ec3a8dd8ad7a517097dc8ba33 *D:/DSH/src/dsh-src/packages/shell/bash-sandbox/src/index.ts
+e4d2f6091fbda36e19297ee67b45da44d171cf1b2177aef2b1f9175c75e1faf3 *D:/DSH/src/dsh-src/packages/web/web-fetch-http/src/network.ts
+f7f291e08f0650b860d23af496327468b2a4f74b4d0c5ecc95741b869d1e970d *D:/DSH/src/dsh-src/packages/web/web-fetch-http/src/provider.ts
+baba926440e3bcaf9c5f70c4e7d5478efd977d66c76e025c4deb82534ce3256b *D:/DSH/src/dsh-src/packages/fs/fs-sandbox/src/index.ts
+4f8615e4672016cf5a33a2cf8af9880419d8cb3e6064a24d12828345c08da30e *D:/DSH/src/dsh-src/packages/fs/tool-fs/src/sandbox.ts
+
+## Environment this evidence was produced in
+host_os: Windows 11 (10.0.26200) AMD64
+node: v24.18.0
+runner_selected: windows-acl (sole win32 candidate; enforcement 'partial')
+runner_entry: D:/DSH/src/dsh-src/packages/sandbox/sandbox-windows-acl/lib/runner.js

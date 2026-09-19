@@ -1,0 +1,26 @@
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.8 [39m[90mD:/DSH/work/dsh-native-daily/packages/dsh-daily-work[39m
+
+ [32m✓[39m src/security-denial.test.ts[2m > [22mE01: credential isolation at the real OS boundary[2m > [22mreports the enforcement the Windows ACL rung actually achieves, and its denial dialect[32m 18[2mms[22m[39m
+ [32m✓[39m src/security-denial.test.ts[2m > [22mE01: credential isolation at the real OS boundary[2m > [22mTHE LIMITATION: a READ of the canary secret OUTSIDE the workspace SUCCEEDS under every confined mode[33m 544[2mms[22m[39m
+ [32m✓[39m src/security-denial.test.ts[2m > [22mE01: credential isolation at the real OS boundary[2m > [22mthe boundary that DOES hold is writes: outside is denied in both modes, inside only under workspace-write[33m 509[2mms[22m[39m
+ [32m✓[39m src/security-denial.test.ts[2m > [22mE01: credential isolation at the real OS boundary[2m > [22mthe ONE credential control that exists is an environment-name scrub in the subprocess seam, not the sandbox[32m 182[2mms[22m[39m
+ [32m✓[39m src/security-denial.test.ts[2m > [22mE01: credential isolation at the real OS boundary[2m > [22mthe sandbox vocabulary cannot express a credential or read policy — it is file-effect only[32m 10[2mms[22m[39m
+ [32m✓[39m src/security-denial.test.ts[2m > [22mE01: credential isolation at the real OS boundary[2m > [22mmounts no terminalController, so no test here can reach the human Web terminal[32m 1[2mms[22m[39m
+ [32m✓[39m src/security-denial.test.ts[2m > [22mE03: a sandbox-mode change is refused while a PTY is live[2m > [22mrefuses the change, and the refusal is TOTAL: no event is logged and the resolved mode is unchanged[33m 977[2mms[22m[39m
+ [32m✓[39m src/security-denial.test.ts[2m > [22mE03: a sandbox-mode change is refused while a PTY is live[2m > [22mfences only the owner with the live PTY: an unrelated session may change mode at will[33m 869[2mms[22m[39m
+ [32m✓[39m src/security-denial.test.ts[2m > [22mE03: a sandbox-mode change is refused while a PTY is live[2m > [22mcloses the other half of the oracle: the widened capability is gone from the PTY the moment it is closed[33m 1136[2mms[22m[39m
+ [32m✓[39m src/security-denial.test.ts[2m > [22mE03: a sandbox-mode change is refused while a PTY is live[2m > [22mTHE LIMITATION: under read-only no PTY can reach readiness, so there is nothing to fence there[33m 5218[2mms[22m[39m
+ [32m✓[39m src/security-denial.test.ts[2m > [22mE06: network egress from a confined command[2m > [22mTHE FINDING: a confined child completes a real HTTP request to a loopback server[33m 370[2mms[22m[39m
+ [32m✓[39m src/security-denial.test.ts[2m > [22mE06: network egress from a confined command[2m > [22ma confined child also reaches a PUBLIC address: the loopback result is not an artefact of the local server[32m 160[2mms[22m[39m
+ [32m✓[39m src/security-denial.test.ts[2m > [22mE06: network egress from a confined command[2m > [22mthe ONLY egress-adjacent control in DSH is web-fetch-http's SSRF guard, and it constrains the fetch TOOL, not a shell[32m 52[2mms[22m[39m
+ [32m✓[39m src/security-denial.test.ts[2m > [22mE06: network egress from a confined command[2m > [22mthe sandbox seam has no egress vocabulary to enforce: its wrap carries no network fact[32m 14[2mms[22m[39m
+ [32m✓[39m src/security-denial.test.ts[2m > [22mthe canary fixture is fabricated and self-consistent[2m > [22mships the marker inside the workspace and the secret outside it[32m 1[2mms[22m[39m
+ [32m✓[39m src/security-denial.test.ts[2m > [22mthe canary fixture is fabricated and self-consistent[2m > [22mstages a copy rather than using the fixture in place, so no standing ACE lands on this repository[32m 10[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[32m16 passed[39m[22m[90m (16)[39m
+[2m   Start at [22m 19:02:21
+[2m   Duration [22m 10.80s[2m (transform 430ms, setup 0ms, import 548ms, tests 10.07s, environment 0ms)[22m
+
+test_exit=0

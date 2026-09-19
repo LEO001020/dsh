@@ -49,6 +49,7 @@ E = {
     "b03": evidence("M9.18-b03-lifecycle/FINDINGS.md"),
     "b03raw": evidence("M9.18-b03-lifecycle/b03.json"),
     "e2etool": evidence("M8.5-c2-real-boot/e2e-tool.json"),
+    "secd": evidence("M9.3-security-denial/FINDINGS.md"),
 }
 
 # gate id -> (status, evidence keys, note)
@@ -123,12 +124,12 @@ G: dict[str, tuple[str, list[str], str]] = {
     "D13": ("PASS", ["durability", "t0t1"], "A run without restart authorization comes back paused; an expired authorization also comes back paused."),
     "D14": ("NOT_RUN", [], "Residual OS processes after a host kill have not been inventoried."),
     # E - M5 security and effects
-    "E01": ("NOT_RUN", [], "Credential isolation has not been probed with a canary; Windows sandboxing is documented partial, restricting writes only."),
+    "E01": ("FAIL", ["secd"], "Measured with a canary, and it FAILS on Windows. A confined child READ the fake secret outside the workspace root verbatim, exit 0, under BOTH read-only and workspace-write. The boundary is a WRITE boundary: writes outside are EPERM in both modes. WRITE_RESTRICTED intersects only write accesses, enforcement is literally 'partial', and SandboxPolicy carries only mode + workspaceRoot, so the seam has no read lever even in principle. The only credential control that exists anywhere is scrubbedParentEnv() in @deepseek-ai/dsh-subprocess -- a NAME heuristic (drops /KEY|PASSWORD|SECRET|TOKEN/i and DSH_*), which is defeated by a credential in a file and by an explicit env entry by design."),
     "E02": ("PARTIAL", ["security"], "The surface shape is proven: the preset mounts no terminal tool and this project adds none. A live model-to-control-plane probe has not been run."),
-    "E03": ("NOT_RUN", [], "Permission-mode change with a live PTY has not been exercised."),
+    "E03": ("PASS", ["secd"], "Exercised against a real confined pwsh PTY. The fence refuses, and the refusal is TOTAL: zero sandbox/mode events logged AND resolve() still reports the old mode. That distinction matters because the event IS the store -- a fence that threw after appending would still be a hole, and asserting only 'it throws' would have missed it. Also proven owner-scoped (an unrelated session changes freely) and close-then-change works."),
     "E04": ("PASS", ["security"], "tool-plugin-manager is disabled in the shipped standard preset and demands danger-full-access when enabled; this project does not enable it."),
     "E05": ("PASS", ["security"], "Control files and task workspaces are different paths by construction; the profile is copied into the home rather than read from the repo."),
-    "E06": ("NOT_RUN", [], "No network egress control exists upstream for bash, pwsh, subprocess or PTC; a denial test has not been run."),
+    "E06": ("FAIL", ["secd"], "Measured, and it FAILS. A confined child completed a real HTTP round trip to a loopback server and connected to a public address, under both read-only and workspace-write. web-fetch-http's SSRF guard is real and was exercised (127.0.0.1, ::1, 169.254.169.254, 10.0.0.1 refused; WEB_BLOCKED_URL; pinned lookup) -- but it filters THAT TOOL'S URL, has no relation to ctx.sandbox, and is bypassed by any shell command. The seam README says file effects are the whole vocabulary, which is now executable evidence rather than a doc claim."),
     "E07": ("NOT_RUN", [], "No external effect adapter exists yet, so idempotency is not exercised."),
     "E08": ("NOT_RUN", [], "Same as E07: no effect adapter exists yet."),
     "E09": ("NOT_RUN", [], "Opaque shell classification has not been attempted; the design relies on the permission boundary."),
