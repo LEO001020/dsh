@@ -147,6 +147,264 @@
 # conflict rather than a harmless second mount.
 
 # ---------------------------------------------------------------------------
+# DIFFERENCE 3 (mandatory): mount the LOCAL filesystem provider, not the sandboxed one.
+# ---------------------------------------------------------------------------
+#
+# WHAT CHANGES. `fs-sandbox` is disabled and `fs-local` is inserted in its place.
+# Both register the SAME service name (`ctx.fs` -- `packages/fs/fs/src/index.ts:88`
+# and `packages/fs/fs-local/src/index.ts:66`), so every consumer is untouched:
+# `tool-fs`, `tool-fs-search`, `workspace-files`, `ui-deliverables`, `present`
+# and `ptc-runtime` keep working without a single edit, and the model-facing
+# `read`/`write`/`edit` tools are the same tools.
+#
+# WHY THIS IS A TWO-ROW CHANGE AND NOT A RENAME. A patch cannot rename a row.
+# `applyEntryPatches` destructures `name` OUT of the patch before applying the
+# rest (`vendor/include/src/index.ts:77`), so `name` is only a GUARD: passing a
+# new name on an existing id is a mismatch and the whole patch is skipped with
+# `patch: name mismatch for %C ... skipping` (`vendor/include/src/index.ts:115-118`).
+# Disabling the old row and inserting a new one is therefore the only mechanism
+# the dialect offers, and it is also the honest description of the change.
+#
+# WHY THIS DOES NOT REPRODUCE FACT F (`toolCount: 0`). That failure came from
+# deleting rows that OTHER rows `inject`. `sandboxPolicy` is injected by seven
+# rows (pwsh-sandbox, ptc-runtime, terminal-controller, workspace-files,
+# ui-deliverables, permission, workflow-ptc), so it stays mounted -- this change
+# does not touch it, and the `sandbox-policy` row keeps its shipped config. The
+# provider being replaced is `fs-sandbox`, whose `inject = ['sandboxPolicy']`
+# (`packages/fs/fs-sandbox/src/index.ts:56`) is the ONLY reason it participates in
+# the readiness graph at all. The replacement, `LocalFileSystem`, declares no
+# `inject` member (`packages/fs/fs-local/src/index.ts:66`), so it cannot
+# introduce a new pending row. A DISABLED row is not reported as "did not
+# activate", which is why the activation-warning count stays at 0.
+#
+# WHAT IS GIVEN UP. `SandboxedFileSystem` extends `LocalFileSystem` and overrides
+# exactly three members (`packages/fs/fs-sandbox/src/index.ts:65,80,101`): the
+# `sandboxMode` capability getter, and the two MUTATION entry points
+# `writeText`/`editText`, each of which canonicalizes the target and requires
+# containment under a writable root. Nothing else. So this swap removes ACCESS
+# CONTAINMENT on mutations and nothing else: every file-operation CORRECTNESS
+# property -- realpath-derived target identity, per-target mutation
+# serialization, the version/staleness guard, create-if-absent,
+# read-before-overwrite, atomic publication, literal edit matching, line-ending
+# preservation and the diff basis -- is owned by `LocalFileSystem` and is
+# inherited by both providers verbatim. The delta is tabulated with file:line in
+# `qualification/results/T2-fs/FINDINGS.md`, and the boot probe recorded there
+# proves the guards still refuse under the local provider.
+#
+# NO `config` IS STATED, deliberately. The base bundle mounts `fs-sandbox` with
+# no config block either, so the schema defaults apply identically in both
+# compositions (`cwd: process.cwd()`, `diffBasisMaxBytes: 10 MiB`). Stating them
+# here would be a second place to keep in sync for no behavioural gain, and
+# agent calls never reach the provider default anyway: `tool-fs` always passes
+# the calling session's own cwd (`packages/fs/tool-fs/src/session-cwd.ts:29-31`).
+#
+# ONE OBSERVABLE TOOL-FACE CONSEQUENCE, stated rather than left to be discovered:
+# `ctx.fs.sandboxMode` becomes `undefined`, and `dsh-tool-fs` advertises the
+# `sandbox_permissions`/`justification` escalation parameters ONLY when it is
+# defined (`packages/fs/tool-fs/src/sandbox.ts:44-45`). So those two escalation
+# parameters disappear from the `write` and `edit` schemas. That is correct --
+# there is no longer a fence to escalate past -- and it is the honest visible
+# cost of the swap, not a defect to be patched around.
+- id: fs-sandbox
+  disabled: true
+
+- insert:
+    - id: fs-local
+      name: '@deepseek-ai/dsh-fs-local'
+
+# ---------------------------------------------------------------------------
+# DIFFERENCE 4 (mandatory): mount the LOCAL pwsh executor, not the sandboxed one.
+# ---------------------------------------------------------------------------
+#
+# WHAT CHANGES. `pwsh-sandbox` is disabled and `pwsh-local` is inserted in its
+# place. Both register the SAME service name (`ctx.shell` --
+# `packages/shell/shell/src/index.ts:67` registers the key, and each subclass
+# provides it), so every consumer is untouched: `tool-pwsh` injects `shell` and
+# keeps working, `shell-env` is unaffected, and the model-facing `pwsh` tool is
+# the same tool.
+#
+# WHY THIS IS A TWO-ROW CHANGE AND NOT A RENAME. A patch cannot rename a row.
+# `applyEntryPatches` destructures `name` OUT of the patch before applying the
+# rest (`vendor/include/src/index.ts:77`), so `name` is only a GUARD: passing a
+# new name on an existing id is a mismatch and the whole patch is skipped with
+# `patch: name mismatch for %C ... skipping`
+# (`vendor/include/src/index.ts:115-118`). Disabling the old row and inserting a
+# new one is the only mechanism the dialect offers. Same mechanism, and the same
+# reason, as DIFFERENCE 3 above.
+#
+# THE SHIPPED ROW'S `disabled` EXPRESSION IS REPLACED, and that is safe in both
+# directions. The base bundle gates `pwsh-sandbox` on
+# `!!js process.platform !== 'win32'` (`packages/bundle/base/cordis.patch.yml:229`).
+# `applyEntryPatches` assigns over the whole key, so this literal `true` replaces
+# the expression. On Windows the row was enabled and is now off (the change we
+# want); on POSIX it was already off and stays off (no behaviour change).
+#
+# WHY THIS DOES NOT REPRODUCE FACT F (`toolCount: 0`). That failure came from
+# removing rows that OTHER rows `inject`. `pwsh-sandbox` declares
+# `inject = ['subprocess', 'sandbox', 'sandboxPolicy']`
+# (`packages/shell/pwsh-sandbox/src/index.ts:53`); the replacement `PwshLocalExecutor`
+# declares `inject = ['subprocess']` (`packages/shell/pwsh-local/src/index.ts:129`).
+# `subprocess` is mounted by the base bundle
+# (`packages/bundle/base/cordis.patch.yml:207`), so the replacement CANNOT
+# introduce a pending row -- it injects strictly less than the row it replaces.
+#
+# `sandbox` AND `sandbox-policy` STAY MOUNTED, deliberately, and this change does
+# not touch them. They are not part of this difference: `sandboxPolicy` is still
+# injected by terminal-controller, workspace-files, ui-deliverables,
+# ptc-runtime-node and workflow-ptc, and `sandbox` is still injected by
+# ptc-runtime-node (`packages/ptc-runtime/ptc-runtime-node/src/index.ts:53`).
+# Removing them is what produced the measured `toolCount: 0`; leaving them
+# mounted is what keeps the activation-warning count at 0.
+#
+# WHAT IS GIVEN UP. `SandboxPwshExecutor` extends `PwshLocalExecutor` and adds
+# exactly: the `sandboxMode` capability getter
+# (`packages/shell/pwsh-sandbox/src/index.ts:83`), the per-call policy stamp in
+# `resolve` (`:92`), the `confine` wrap and its `SANDBOX_UNAVAILABLE`
+# classification in `run`/`start` (`:99,136,193`), and the per-process
+# enforcement/denial facts in `onProcessDone` (`:164`). Nothing else. So this
+# swap removes ARGV CONFINEMENT and nothing else: command defaulting, deadlines,
+# cause classification, the model-friendly environment, bounded output, spill
+# files and managed-range termination are all `PwshLocalExecutor`'s and are
+# inherited verbatim by both.
+#
+# ONE OBSERVABLE TOOL-FACE CONSEQUENCE, stated rather than left to be discovered:
+# `ctx.shell.sandboxMode` becomes `undefined`, and `dsh-tool-pwsh` advertises the
+# `sandbox_permissions`/`justification` escalation parameters ONLY when it is
+# defined (`packages/shell/tool-pwsh/src/index.ts:196-197,268`). So those two
+# parameters disappear from the `pwsh` schema. That is correct -- there is no
+# longer a fence to escalate past -- and it is the same honest visible cost
+# DIFFERENCE 3 records for `write`/`edit`.
+- id: pwsh-sandbox
+  disabled: true
+
+- insert:
+    - id: pwsh-local
+      name: '@deepseek-ai/dsh-pwsh-local'
+
+# ---------------------------------------------------------------------------
+# DIFFERENCE 5 (mandatory): turn OFF the permission control plane.
+# ---------------------------------------------------------------------------
+#
+# THIS IS A HARD CONSTRAINT, NOT A PREFERENCE. `permission-presets` reads
+# `ctx.shell.sandboxMode` in its CONSTRUCTOR and throws when it is undefined
+# (`packages/interaction/permission-presets/src/index.ts:214-216`):
+#
+#     if (ctx.shell.sandboxMode === undefined) {
+#       throw new Error('permission: the mounted bash executor does not confine
+#         (no sandboxMode) -- presets bundle a sandbox mode, so composing this
+#         plugin over an unconfined executor is a misconfiguration')
+#     }
+#
+# `PwshLocalExecutor` inherits the seam's base getter, which returns `undefined`
+# (`packages/shell/shell/src/index.ts:75-77`; `pwsh-local` does not override it).
+# DIFFERENCE 4 therefore makes the throw reachable, and it is a CONSTRUCTION
+# failure -- the row cannot activate at all. `permission-presets` CANNOT coexist
+# with an unconfined executor, so it is disabled here rather than left to fail.
+#
+# WHY `ui-permission` IS DISABLED TOO, and not left mounted. The UI half depends
+# on the host service through the Remote namespace, so without it the surface is
+# a dead picker rather than an absent one:
+#   - `packages/client/ui-permission-presets/src/client/index.ts:61` lists
+#     `'remote.permissionPresets'` in its client `inject` array;
+#   - `packages/client/ui-permission-presets/src/client/catalog.ts:134` calls
+#     `this.ctx.remote.permissionPresets.catalog()`.
+# The host half of that package is an empty `apply()`
+# (`packages/client/ui-permission-presets/src/index.ts:9`) with NO `inject`, so
+# it would still ACTIVATE -- it would just render a permission row and a
+# `/permission` popup whose every read fails. Disabling the row removes it from
+# the browser roster instead: the `dsh.client` scan reads `ctx.loader.entries()`
+# and skips disabled entries (`packages/client/modules/src/index.ts:946`).
+#
+# THE PRESET-MOUNT TRAP, re-checked because it is the failure this change could
+# cause. `inject` is a READINESS GATE, and a preset with any non-activating row
+# fails to mount ENTIRELY (`packages/preset/agent-presets/src/mount.ts:396`),
+# which is what took the measured tool face to `toolCount: 0`. So every consumer
+# of the two services this removes was searched for, not assumed:
+#   - `permissionPresets` is injected by exactly ONE row in the whole checkout,
+#     `permission-presets` itself (`.../permission-presets/src/index.ts:198`), plus
+#     `packages/experimental/auto-review/src/index.ts:124` -- and `auto-review` is
+#     mounted by NO bundle patch or profile, so it is not in this composition.
+#     The `remote.permissionPresets` client edge is browser-side factory
+#     ordering, not a host readiness gate, and it disappears with the row above.
+#   - the `permissions` session projection is registered by `permission-presets`
+#     and read only by `ui-permission-presets` (`PermissionSelect.tsx:99`,
+#     `client/index.ts:74`). Both halves are gone together; nothing else reads it.
+#   - the `/permission` command is registered by `permission-presets`; the client
+#     name table that localizes it (`packages/client/ui-commands/src/client/
+#     resolution.ts:11`) is a lookup on descriptors received from the host, so an
+#     absent command simply never matches.
+# Nothing is left `pending`, and the probe in
+# `qualification/results/T3-shell/` measures that rather than asserting it.
+#
+# WHAT IS GIVEN UP, stated plainly because it is a real loss and not a detail:
+# the user loses the ABILITY TO BE ASKED. With this plane removed there is no
+# `/permission` command, no permission picker, and no preset that writes the
+# sandbox and approval knobs. In a trusted-local deployment that is intended --
+# the model already runs with the user's own OS authority, so an escalation
+# prompt would be asking permission to do what it can already do -- but it is
+# the deployment's central security consequence and it is recorded as such in
+# `qualification/results/T3-shell/FINDINGS.md` rather than glossed here.
+- id: permission
+  disabled: true
+
+- id: ui-permission
+  disabled: true
+
+# ---------------------------------------------------------------------------
+# DIFFERENCE 6 (mandatory): pin the approval policy to `never` explicitly.
+# ---------------------------------------------------------------------------
+#
+# WHY THIS IS NOT LEFT AT ITS SHIPPED VALUE. The base bundle computes the policy
+# from an environment variable
+# (`packages/bundle/base/cordis.patch.yml:233-234`):
+#
+#     policy: !!js "(process.env.DSH_PERMISSION_MODE ?? 'workspace-write')
+#                    === 'danger-full-access' ? 'never' : 'ask'"
+#
+# With `DSH_PERMISSION_MODE` UNSET -- the default, and the state of this machine
+# -- that expression evaluates to `'ask'`, not `'never'`. Under DIFFERENCE 5
+# there is no longer any preset or `/permission` command that could change it, so
+# the deployment's stated policy would be a value nobody chose and no surface can
+# correct. Stating `never` makes the stance explicit and removes the dependence
+# on an environment variable for a fact the composition should own.
+#
+# WHAT `never` ACTUALLY DOES, read from the code rather than assumed, because the
+# audit's claim about it needed checking:
+#   1. `ApprovalService.decide` returns `'rejected'` BEFORE dispatching to any
+#      answerer (`packages/interaction/user-approval/src/index.ts:268`), so every
+#      ask resolves deterministically without prompting anyone.
+#   2. It ALSO injects a model-facing sentence into the runtime context
+#      (`:155-167`). For `never` that sentence is `NEVER_SENTENCE` (`:66`):
+#      "Approval prompts are disabled in this session: actions that require
+#       approval are rejected automatically -- do not request sandbox escalation
+#       (do not set `sandbox_permissions`)."
+# The audit's claim is CONFIRMED: the note does reach model runtime context. Its
+# SECOND clause is now unreachable advice -- after DIFFERENCES 3 and 4 neither
+# `ctx.fs` nor `ctx.shell` reports a `sandboxMode`, so `tool-fs` and `tool-pwsh`
+# do not advertise `sandbox_permissions` at all and the model cannot set it. The
+# first clause remains true and load-bearing: it tells the model that an ask
+# cannot succeed, so a denial is final rather than retryable.
+#
+# WHY `approval` IS KEPT MOUNTED rather than disabled with the rest of the plane.
+# It is not in conflict with the constraint above -- `user-approval` never reads
+# `ctx.shell`, and its only `inject` is the optional `['systemPrompt']`
+# (`:155`). Keeping it preserves the `approval/asked` + `approval/decided` audit
+# pair on the session log, which is the durable record of what was asked and how
+# it resolved. Disabling it would also be a LARGER change than the architecture
+# decision requires: with `approval` absent, `ToolRuntime` denies the same asks
+# anyway through its `ctx.get('approval') === undefined` branch
+# (`packages/core/tools/src/index.ts:1702-1708`), but it denies them WITHOUT
+# logging that pair. Keeping the row costs nothing and keeps the record.
+#
+# NO `name` IS STATED, so the row is matched by id alone. `policy` is the ONLY
+# key the base row sets, so restating it is complete -- the whole-`config`
+# replacement rule of TRAP 4 is satisfied trivially here, and there is no second
+# key to silently revert.
+- id: approval
+  config:
+    policy: never
+
+# ---------------------------------------------------------------------------
 # NOT changed here, on purpose.
 # ---------------------------------------------------------------------------
 #
