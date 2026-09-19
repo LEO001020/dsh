@@ -1,0 +1,3 @@
+- insert:
+    - id: verify-kernel-cwd-chain
+      name: 'D:/DSH/work/dsh-native-daily/.probe/verify-kernel-cwd-chain.mjs'

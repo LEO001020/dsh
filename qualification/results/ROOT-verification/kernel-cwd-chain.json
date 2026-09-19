@@ -1,0 +1,11 @@
+{
+ "probe": "verify-kernel-cwd-chain",
+ "steps": [],
+ "sessionId": "session-1ceba545-e4cd-415e-b7f1-f5f914466b04",
+ "sessionCwdRequested": "D:/DSH/work/dsh-native-daily",
+ "agentFound": true,
+ "agentSessionCwd": "D:/DSH/work/dsh-native-daily",
+ "cellOutcome": "ok",
+ "cellStdout": "CWD=D:\\DSH\\work\\dsh-native-daily\nENV_KERNEL_CWD=D:/DSH/work/dsh-native-daily\nENV_KERNEL_DIR=D:\\DSH\\work\\dsh-native-daily\\.ipython-kernels\\session-1ceba545-e4cd-415e-b7f1-f5f914466b04\n",
+ "kernelStatus": null
+}
