@@ -1,0 +1,18 @@
+# T10: createRun callers, enumerated (the G-SEAM-31 re-verification)
+# Command: grep -rn createRun over src/, profiles/, cordis.patch.yml, qualification/runners/
+# Excludes *.test.ts on purpose: a test caller is not a production caller.
+
+packages/dsh-daily-work/src\durability-runner.ts:63:  await service.createRun({
+packages/dsh-daily-work/src\host.ts:150:   * `daily-work` settings namespace (`src/target-setting.ts`); `createRun` reads
+packages/dsh-daily-work/src\host.ts:210: * This is a default, not a policy: `createRun` accepts an explicit value, and
+packages/dsh-daily-work/src\host.ts:371:   * WHY IT IS BOUND HERE, AT createRun. The port needs the exact live root
+packages/dsh-daily-work/src\host.ts:372:   * Agent, and `createRun` is the only place that object is in hand. Binding it
+packages/dsh-daily-work/src\host.ts:503:  async createRun(input: {
+packages/dsh-daily-work/src\programmatic-scope.ts:8: * `createRunCodeTool`'s `execute`, reachable only by running a `run_code`
+qualification/runners\verify-c2-service.mjs:18:    hasCreateRun: typeof service?.createRun === 'function',
+qualification/runners\verify-unwired.mjs:20: *      That reader is the one `createRun` uses to seed a run's target, so if it
+qualification/runners\verify-t10-capacity.mjs:7: * `WorkService` directly and calls `createRun` on it. That proves the MECHANISM
+qualification/runners\verify-t10-capacity.mjs:11: * names `createRun` as instance 9. So this probe boots the REAL profile through
+qualification/runners\verify-t10-capacity.mjs:25: *   2. IS THE RUN REACHABLE? `createRun`'s non-test callers are enumerated by
+qualification/runners\verify-t10-capacity.mjs:36: * to make a gate green. `createRun` is deliberately NOT called: calling it would
+qualification/runners\verify-t10-capacity.mjs:206:    // It creates ONE child, not thirty, and it does not call `createRun`.

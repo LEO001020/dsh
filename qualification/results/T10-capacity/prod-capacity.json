@@ -1,0 +1,122 @@
+{
+  "probe": "T10-capacity",
+  "ranAt": "2026-09-19T22:51:43.380Z",
+  "profileName": "unknown",
+  "workServicePresent": true,
+  "gateLimit": 30,
+  "ledgerBeforeChild": {
+    "capacity": 30,
+    "liveChildren": 0,
+    "unbackedReservations": 0,
+    "unknownQuarantined": 0,
+    "occupied": 0,
+    "highWater": 0,
+    "refusals": {
+      "HOST_CAPACITY_REACHED": 0,
+      "DEPTH_CEILING_EXCEEDED": 0
+    }
+  },
+  "childCreated": true,
+  "childId": "5ee9d0ea-40e8-4fd2-ac11-68b19b930885",
+  "ledgerAfterChild": {
+    "capacity": 30,
+    "liveChildren": 1,
+    "unbackedReservations": 0,
+    "unknownQuarantined": 0,
+    "occupied": 1,
+    "highWater": 1,
+    "refusals": {
+      "HOST_CAPACITY_REACHED": 0,
+      "DEPTH_CEILING_EXCEEDED": 0
+    }
+  },
+  "guardIsLive": true,
+  "childCreateError": null,
+  "workToolPresent": true,
+  "subagentToolPresent": true,
+  "toolCountAgentKey": 27,
+  "workToolError": "this session has no active run; a run is created by user authorization",
+  "workToolResult": {
+    "isError": true,
+    "error": {
+      "message": "this session has no active run; a run is created by user authorization"
+    },
+    "content": [
+      {
+        "type": "text",
+        "text": "Error: this session has no active run; a run is created by user authorization"
+      }
+    ]
+  },
+  "runReachable": false,
+  "subagentRowConfig": {
+    "id": "subagent",
+    "name": "@deepseek-ai/dsh-subagent",
+    "config": {
+      "maxActiveSubagents": 10,
+      "maxDepth": 1
+    },
+    "fiberState": 2
+  },
+  "hardChildCapacity": 30,
+  "ledgerBeforeBoundary": {
+    "capacity": 30,
+    "liveChildren": 1,
+    "unbackedReservations": 0,
+    "unknownQuarantined": 0,
+    "occupied": 1,
+    "highWater": 1,
+    "refusals": {
+      "HOST_CAPACITY_REACHED": 0,
+      "DEPTH_CEILING_EXCEEDED": 0
+    }
+  },
+  "ledgerAtBoundary": {
+    "capacity": 30,
+    "liveChildren": 30,
+    "unbackedReservations": 0,
+    "unknownQuarantined": 0,
+    "occupied": 30,
+    "highWater": 30,
+    "refusals": {
+      "HOST_CAPACITY_REACHED": 0,
+      "DEPTH_CEILING_EXCEEDED": 0
+    }
+  },
+  "capRefusedRealChild": true,
+  "capRefusalError": "dailyWork: refusing a child agent — the host already holds 30 children and the hard capacity is 30. This is a deployment constant; a UI target N is bounded by it, not able to change it.",
+  "ledgerAfterRefusal": {
+    "capacity": 30,
+    "liveChildren": 30,
+    "unbackedReservations": 0,
+    "unknownQuarantined": 0,
+    "occupied": 30,
+    "highWater": 30,
+    "refusals": {
+      "HOST_CAPACITY_REACHED": 1,
+      "DEPTH_CEILING_EXCEEDED": 0
+    }
+  },
+  "ledgerAfterRelease": {
+    "capacity": 30,
+    "liveChildren": 1,
+    "unbackedReservations": 0,
+    "unknownQuarantined": 0,
+    "occupied": 1,
+    "highWater": 30,
+    "refusals": {
+      "HOST_CAPACITY_REACHED": 1,
+      "DEPTH_CEILING_EXCEEDED": 0
+    }
+  },
+  "agentPreset": "daily-standard",
+  "sessionId": "session-e9805479-b76e-4547-bfe8-ee6be90c134b",
+  "presetRoots": [
+    "D:\\DSH\\src\\dsh-src\\packages\\preset\\agent-presets\\presets\\",
+    "D:/DSH/home/t10-capacity/profiles/daily/presets/",
+    "D:\\DSH\\home\\t10-capacity\\.agent-presets"
+  ],
+  "error": null,
+  "errorPhase": null,
+  "ledgerDelta": 1
+}
