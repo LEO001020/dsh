@@ -1,5 +1,16 @@
 # RECOVERY — what survives a crash, and what must be reconciled
 
+> **Reachability caveat on everything below.** This document describes recovering
+> a **run**. `WorkService.createRun` has no production caller (G-SEAM-31,
+> measured: `qualification/results/ROOT-verification/work-tool.json` with a
+> positive control), so a run cannot be created by any user action on the
+> composed profile. Recovery of a managed run is therefore **not exercisable
+> end to end today**, and every recovery claim below is a statement about the
+> mechanism rather than about the product. Two of the mechanisms are additionally
+> unreachable on their own terms, stated where they appear: the epoch guard
+> (step 2) and the reconciliation path (`recovery.ts` / `reconcile.ts` have no
+> production importer). The measurements are real; the reachability is not.
+
 ## The five positions are not the same event
 
 ```
@@ -31,8 +42,20 @@ States may be merged by type in an implementation, but test coverage must not be
 
 1. Verify **deployment identity**, `schemaVersion`, and whether the old process
    can still produce effects.
-2. An old epoch is never reused. Stale callbacks are rejected when writing
-   authoritative records.
+2. **An old epoch is never reused — but be precise about what enforces that.**
+   The guard that would refuse a stale-epoch settlement
+   (`applyWorkerSettlement` in `recovery.ts`) is real and tested and is **not
+   reachable from any production path**: `recovery.ts` has no non-test importer,
+   the function has no caller outside its own module and its test, and nothing
+   bumps or reads the record's `epoch` after `initialRunRecord` sets it to 1. So
+   the field is **inert in the product**, and a callback carrying a stale epoch
+   cannot today be rejected *on epoch grounds*. What IS enforced is **object
+   identity** (`tool-protocol-guards.ts` compares the calling Agent against the
+   live registry), which covers the in-process resume case; a run re-adopted
+   across a **process** boundary has no epoch enforcement. An earlier revision of
+   this file stated the requirement as if it were the implementation — that is
+   the defect shape `docs/DELETE-AUDIT.md` §3.8 records three times, and
+   `record.ts:410-437` now says so in the schema itself.
 3. For every reserved `childId`, query the existing Session / descriptor / Inbox
    / actual request and result.
 4. Pending input that never entered a request is recovered by **DSH natively**;
@@ -70,9 +93,30 @@ is the final-close operation, which is why a *pause* never uses it.
 ## Authorization on restart
 
 Reopening a Session does **not** re-authorize unbounded background execution.
-There is an explicit persisted per-run "this run may continue after host restart"
-authorization with a TTL. Without it, recovery comes back **paused** and shows
-the pending work.
+There is an explicit persisted per-run flag, `restartResumeAuthorized` on the run
+record (`record.ts`), and it defaults to **false** (`host.ts` writes
+`input.restartResumeAuthorized ?? false`). Without it, recovery comes back
+**paused** and shows the pending work. An earlier revision of this file described
+this as "an authorization with a TTL"; **there is no TTL in the implementation** —
+the field is a boolean, and nothing expires it. Stated precisely because a TTL
+implies a time-based guarantee this code does not make.
+
+## Rollback
+
+Rollback restores old artifacts **and** the old consistent state snapshot. State
+that the new version already migrated must be accounted for. External effects
+already produced by the new version are reconciled **before** the rewind — the
+local ledger that names the operations may refuse to open once the state is
+rewound, which is why the reconciliation cannot wait. Rolling back software does
+not undo a remote action. Cold backup or the official consistency export is
+required — copying a live database file is not a consistent snapshot.
+
+**A concrete, checkable sequence is in `docs/DELIVERY.md` §12.** **Honesty
+marker:** the rollback has been **rehearsed, not exercised** — no real newer
+version has ever been rolled back, because no version has been promoted. The
+rehearsal is `qualification/results/R4-upgrade/u06-rollback-rerun.json` over a
+temp home, with a fixture for the newer version and an in-process fake for the
+remote, and its `notClaimed` array says exactly that.
 
 ## Quarantine
 
@@ -92,11 +136,3 @@ heartbeat is **not** evidence that no residual process exists.
 - Migrations are not automatic. A schema version change needs offline conversion
   or a new namespace with an explicit cutover. An un-migratable schema refuses to
   start rather than silently reading an old backup and calling it current.
-
-## Rollback
-
-Rollback restores old artifacts **and** the old consistent state snapshot. State
-that the new version already migrated must be accounted for. External effects
-already produced by the new version are reconciled; rolling back software does
-not undo a remote action. Cold backup or the official consistency export is
-required — copying a live database file is not a consistent snapshot.
