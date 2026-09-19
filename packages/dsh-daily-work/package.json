@@ -19,7 +19,11 @@
       "types": "./lib/tools.d.ts",
       "default": "./lib/tools.js"
     },
-    "./package.json": "./package.json"
+    "./package.json": "./package.json",
+    "./web-search": {
+      "types": "./lib/web-search-plugin.d.ts",
+      "default": "./lib/web-search-plugin.js"
+    }
   },
   "files": [
     "lib/**/*.js",
@@ -30,7 +34,8 @@
     "@deepseek-ai/dsh-agent": "*",
     "@deepseek-ai/dsh-storage-domain": "*",
     "@deepseek-ai/dsh-subagent": "*",
-    "@deepseek-ai/dsh-tools": "*"
+    "@deepseek-ai/dsh-tools": "*",
+    "@deepseek-ai/dsh-web": "*"
   },
   "devDependencies": {
     "@deepseek-ai/cordis": "*",
@@ -38,6 +43,7 @@
     "@deepseek-ai/dsh-storage-domain": "*",
     "@deepseek-ai/dsh-subagent": "*",
     "@deepseek-ai/dsh-tools": "*",
-    "typescript": "^6.0.3"
+    "typescript": "^6.0.3",
+    "@deepseek-ai/dsh-web": "*"
   }
 }

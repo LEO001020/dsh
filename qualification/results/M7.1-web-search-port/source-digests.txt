@@ -1,0 +1,3 @@
+68dd28dfed4694b76221ea02b412d387b49563088e0c450f9d812a9160236564 *src/web-search-plugin.ts
+fc7ef18bb0e9c6213df6bee204488365450e5c8e117ec3eb97f79f63a8b46c6b *src/web-search.test.ts
+8d6ec8fca407daba46f7cde629d7a3d4ff8d00418746fa9806c14d7ba2226649 *src/web-search.ts
