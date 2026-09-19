@@ -40,6 +40,10 @@ async function openService(root: string): Promise<{ ctx: Context; service: WorkS
   const service = new WorkService(ctx, {
     targetChildren: 10,
     maxDepth: 1,
+    // This rig mounts no subagent runtime, so the production port cannot bind and
+    // the drain path reports `no launch port installed`. That is correct here:
+    // the rig exercises record durability across a hard kill, not launching.
+    subagentProvider: 'spawn',
     budgetCeiling: 1000,
     currency: 'USD',
     priceVersion: 'durability-v1',

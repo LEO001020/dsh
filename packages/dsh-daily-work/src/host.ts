@@ -28,6 +28,7 @@ import { randomUUID } from 'node:crypto'
 import { z } from 'zod'
 import { admissionReason, countRun, mayAdmit, type Counts, type TaskLiveness } from './counting.ts'
 import { acquireHomeLock, type HeldHomeLock } from './homelock.ts'
+import { createContinuableLaunchPort } from './launch-port.ts'
 import {
   applySpend,
   budgetReport,
@@ -124,6 +125,15 @@ export interface WorkServiceConfig {
   readonly targetChildren: number
   /** Delegation depth granted to children. 1 forbids grandchildren. */
   readonly maxDepth: number
+  /**
+   * The continuable-child provider the production launch port uses, e.g. 'spawn'.
+   *
+   * Named in config rather than hardcoded because the provider roster belongs to
+   * the host composition: the base bundle mounts `subagent-spawn-in-process` and
+   * sets `subagentProvider: spawn`, and a deployment that mounts a different
+   * provider must be able to say so without patching this package.
+   */
+  readonly subagentProvider: string
   /** Hard budget ceiling for a new run. */
   readonly budgetCeiling: number
   readonly currency: string
@@ -193,6 +203,49 @@ export class WorkService extends Service {
   /** Set the launch port. Exactly one may be installed; a second call replaces it. */
   setLaunchPort(port: LaunchPort): void {
     this.launchPort = port
+  }
+
+  /**
+   * Install the PRODUCTION launch port for a root, unless one is already set.
+   *
+   * WHY THIS EXISTS. `host-plugin.ts` used to construct the service, register
+   * the disposer and call `open()` — and never install a port. The drain branch
+   * below documents what that meant: every `submit` recorded a task, moved it to
+   * `unknown` with `uncertainty: 'no launch port installed'`, and launched
+   * nothing. The N=10 concurrency result was therefore a result about the
+   * service with a port a TEST had installed, which is what a port seam is for,
+   * but the composed daily profile could not launch a single child. The gap
+   * between "the mechanism is proven" and "the product does it" was one missing
+   * call.
+   *
+   * WHY IT IS BOUND HERE, AT createRun. The port needs the exact live root
+   * Agent, and `createRun` is the only place that object is in hand. Binding it
+   * to a session-id string instead would reintroduce the stale-owner problem
+   * `tool-protocol-guards.ts` exists to close: authority must follow the object,
+   * not an id that survives replacement.
+   *
+   * WHY IT DOES NOT OVERWRITE AN INSTALLED PORT. A test that installs a
+   * scripted port must keep it; silently replacing it with the real one would
+   * make every scripted test reach a real provider and would hide the very seam
+   * being tested. So the production port is a DEFAULT, not an override.
+   *
+   * @param root - the exact live root Agent this run belongs to.
+   */
+  private installDefaultLaunchPort(root: Agent): void {
+    if (this.launchPort !== undefined) return
+    const subagents = this.ctx.get('subagents')
+    if (subagents === undefined) {
+      // No subagent runtime: leaving the port unset is correct, because the
+      // drain path reports `no launch port installed` rather than pretending a
+      // task failed cleanly. Inventing a port here would fabricate the ability.
+      return
+    }
+    this.launchPort = createContinuableLaunchPort({
+      subagents,
+      parent: root,
+      provider: this.config.subagentProvider,
+      maxDepth: this.config.maxDepth,
+    })
   }
 
   /**
@@ -306,6 +359,10 @@ export class WorkService extends Service {
     this.assertOpen()
     const now = input.now ?? new Date().toISOString()
     const ceiling = this.config.budgetCeiling
+    // The production launch port is bound to THIS exact root before any task can
+    // be admitted, so a submit through the composed profile reaches the real
+    // continuable seam instead of reporting `no launch port installed`.
+    this.installDefaultLaunchPort(input.root)
     const rootReserve = input.rootReserve ?? defaultRootReserve(ceiling)
     if (rootReserve < 0) throw new Error(`dailyWork: rootReserve ${rootReserve} cannot be negative`)
     if (rootReserve > ceiling) {

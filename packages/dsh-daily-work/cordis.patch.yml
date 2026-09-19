@@ -69,6 +69,11 @@
       config:
         targetChildren: 10
         maxDepth: 1
+        # The continuable-child provider the PRODUCTION launch port launches
+        # through. The base bundle mounts `subagent-spawn-in-process` and sets
+        # `subagentProvider: spawn` for its own rows; naming it here is what lets
+        # the work service reach the real seam without hardcoding a provider.
+        subagentProvider: spawn
         budgetCeiling: 200
         currency: USD
         priceVersion: unversioned-2026-09-19
