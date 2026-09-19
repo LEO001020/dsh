@@ -350,11 +350,24 @@ describe('DEP-02: the old 104-case evidence does not migrate into the new spec',
     expect(build).not.toContain('acceptance-spec.json')
     // And the new spec has exactly one producer: the audit package it was
     // copied from. Nothing generates it locally.
-    const runners = readdirSync(join(REPO_ROOT, 'qualification', 'runners'))
+    //
+    // The walk is RECURSIVE, and that is a strengthening rather than a
+    // workaround. The first version listed `runners/` and read every entry as a
+    // file, which broke the moment a probe subdirectory was added -- and the
+    // tempting fix, skipping non-files, would have let a writer hide one level
+    // down. Walking the whole tree keeps the invariant over every runner at any
+    // depth, which is what the claim is actually about.
+    const runnersDir = join(REPO_ROOT, 'qualification', 'runners')
+    const walk = (dir: string): string[] => readdirSync(dir, { withFileTypes: true }).flatMap(entry => {
+      const full = join(dir, entry.name)
+      return entry.isDirectory() ? walk(full) : [full]
+    })
+    const runners = walk(runnersDir)
+    expect(runners.length, 'the walk must find files, or this is an empty negative').toBeGreaterThan(10)
     for (const file of runners) {
-      const text = readFileSync(join(REPO_ROOT, 'qualification', 'runners', file), 'utf8')
+      const text = readFileSync(file, 'utf8')
       expect(text.includes('writeFileSync') && text.includes('acceptance-spec.json'),
-        `${file} must not write the acceptance spec`).toBe(false)
+        `${relative(REPO_ROOT, file)} must not write the acceptance spec`).toBe(false)
     }
   })
 })
