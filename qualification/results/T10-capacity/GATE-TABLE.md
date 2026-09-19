@@ -195,6 +195,13 @@ UI action, settings writer or session hook that creates a run. `dsh`'s `session/
 event (`packages/core/session/src/index.ts:50`) is available as a hook point, but wiring
 a run to every session would fabricate the authorization edge rather than implement it.
 
+**Disposition (recorded 2026-09-20):** the root agent has recorded the `work`-tool option
+as the CANDIDATE in `docs/GAPS.md` G-SEAM-31, and the delivery owner decides. It is not
+implemented by any agent, for the reason above. Note for whoever reads this next: the
+`work` tool's action enum is currently `status | submit | finish`
+(`src/tools.ts:78-80`) — there is no create action, so the candidate is an addition to
+the tool's surface and not a re-wiring of something that already exists.
+
 ---
 
 ## 6. Reproduce
