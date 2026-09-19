@@ -63,6 +63,15 @@ node /d/DSH/src/dsh-src/node_modules/typescript/bin/tsc -p tsconfig.check.json -
 | `faults.test.ts -t "under the cap\|restart advances"` | 2 | **1 passed / 1 failed** — the minimal reproducing pair | `tests-faults-undercap-then-restart-FAIL.txt` |
 | `tsc -p tsconfig.check.json --noEmit` | — | **exit 0** | `tsc-check.txt` |
 
+**Commit provenance.** The two test files and the first capture of this slice's
+evidence were committed by the root agent's deliberate checkpoint commit
+`ec464e2` ("commit the accumulated evidence from waves 1 and 2: 242 files"), which
+swept nine agents' uncommitted work into one commit on purpose, with the reason
+stated in its message (an uncommitted change in a shared tree is what lost an
+earlier filing). This run's own commit carries the refresh of
+`tests-lifecycle-full.txt` from the final verification run. Verified: the
+committed bytes of both test files are byte-identical to the disk copies.
+
 ---
 
 ## 1. Gate table

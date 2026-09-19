@@ -1,37 +1,37 @@
 
  RUN  v4.1.8 D:/DSH/work/dsh-native-daily/packages/dsh-ipython
 
- ✓ src/lifecycle.test.ts > IPY-04: the Session owns kernel identity, not the Agent activation > two Agent objects on one Session reach the same kernel PROCESS, and two Sessions do not 14717ms
- ✓ src/lifecycle.test.ts > IPY-05: an activation ending does not destroy a reusable kernel > ending an activation leaves the kernel alive, unchanged, and still bound to the Session 9598ms
- ✓ src/lifecycle.test.ts > IPY-05: an activation ending does not destroy a reusable kernel > evict is the explicit way to end a kernel, and it is host-only 8108ms
- ✓ src/lifecycle.test.ts > IPY-09: raw and rich output ordering is defined > stdout order and display order are each preserved, and they are separate sequences 3612ms
- ✓ src/lifecycle.test.ts > IPY-09: raw and rich output ordering is defined > stderr is its own ordered sequence, separate from stdout 3130ms
- ✓ src/lifecycle.test.ts > IPY-12: no automatic cell replay > a cell that kills its own kernel is not re-run in the replacement 6884ms
- ✓ src/lifecycle.test.ts > IPY-13: the broker is owned by the DSH subprocess seam > the classifier has teeth: it reports nothing when nothing of ours runs, and finds a started kernel 16039ms
- ✓ src/lifecycle.test.ts > IPY-13: the broker is owned by the DSH subprocess seam > the broker runs under the subprocess-local runner, not a bare spawn 16251ms
+ ✓ src/lifecycle.test.ts > IPY-04: the Session owns kernel identity, not the Agent activation > two Agent objects on one Session reach the same kernel PROCESS, and two Sessions do not 11191ms
+ ✓ src/lifecycle.test.ts > IPY-05: an activation ending does not destroy a reusable kernel > ending an activation leaves the kernel alive, unchanged, and still bound to the Session 7864ms
+ ✓ src/lifecycle.test.ts > IPY-05: an activation ending does not destroy a reusable kernel > evict is the explicit way to end a kernel, and it is host-only 6766ms
+ ✓ src/lifecycle.test.ts > IPY-09: raw and rich output ordering is defined > stdout order and display order are each preserved, and they are separate sequences 2950ms
+ ✓ src/lifecycle.test.ts > IPY-09: raw and rich output ordering is defined > stderr is its own ordered sequence, separate from stdout 3111ms
+ ✓ src/lifecycle.test.ts > IPY-12: no automatic cell replay > a cell that kills its own kernel is not re-run in the replacement 7244ms
+ ✓ src/lifecycle.test.ts > IPY-13: the broker is owned by the DSH subprocess seam > the classifier has teeth: it reports nothing when nothing of ours runs, and finds a started kernel 15835ms
+ ✓ src/lifecycle.test.ts > IPY-13: the broker is owned by the DSH subprocess seam > the broker runs under the subprocess-local runner, not a bare spawn 16639ms
 stdout | src/lifecycle.test.ts > IPY-14: host-side loss is reconciled, and crash orphans are observed > a broker killed out from under the host is reported, and its kernel is not left stranded
-[T6-MEASURED] IPY-14-crash-orphan {"brokerPid":8652,"kernelPid":23292,"unexpectedExitReported":"broker exited with code 1 signal null","kernelSurvivedBroker":false,"kernelAliveAfterBrokerKilled":false}
+[T6-MEASURED] IPY-14-crash-orphan {"brokerPid":25256,"kernelPid":36736,"unexpectedExitReported":"broker exited with code 1 signal null","kernelSurvivedBroker":false,"kernelAliveAfterBrokerKilled":false}
 
- ✓ src/lifecycle.test.ts > IPY-14: host-side loss is reconciled, and crash orphans are observed > a broker killed out from under the host is reported, and its kernel is not left stranded 33273ms
+ ✓ src/lifecycle.test.ts > IPY-14: host-side loss is reconciled, and crash orphans are observed > a broker killed out from under the host is reported, and its kernel is not left stranded 32511ms
 stdout | src/lifecycle.test.ts > IPY-15: the kernel working directory is the Session's project root > os.getcwd() inside the kernel is the Session header cwd, per Session
-[T6-MEASURED] IPY-15-kernel-cwd {"kernelCwdReportedByCell":"c:/users/hzq00/appdata/local/temp/t6-project-a-w1pc1s","sessionCwdRequested":"c:/users/hzq00/appdata/local/temp/t6-project-a-w1pc1s","secondSessionCwd":"c:/users/hzq00/appdata/local/temp/t6-project-b-dkpvzb","secondSessionRequested":"c:/users/hzq00/appdata/local/temp/t6-project-b-dkpvzb"}
+[T6-MEASURED] IPY-15-kernel-cwd {"kernelCwdReportedByCell":"c:/users/hzq00/appdata/local/temp/t6-project-a-rw3icc","sessionCwdRequested":"c:/users/hzq00/appdata/local/temp/t6-project-a-rw3icc","secondSessionCwd":"c:/users/hzq00/appdata/local/temp/t6-project-b-mbdosk","secondSessionRequested":"c:/users/hzq00/appdata/local/temp/t6-project-b-mbdosk"}
 
- ✓ src/lifecycle.test.ts > IPY-15: the kernel working directory is the Session's project root > os.getcwd() inside the kernel is the Session header cwd, per Session 10709ms
- ✓ src/lifecycle.test.ts > IPY-15: the kernel working directory is the Session's project root > a Session with no declared cwd falls back to the host root, never to an arbitrary directory 4544ms
+ ✓ src/lifecycle.test.ts > IPY-15: the kernel working directory is the Session's project root > os.getcwd() inside the kernel is the Session header cwd, per Session 6134ms
+ ✓ src/lifecycle.test.ts > IPY-15: the kernel working directory is the Session's project root > a Session with no declared cwd falls back to the host root, never to an arbitrary directory 3105ms
 stdout | src/lifecycle.test.ts > IPY-15: the kernel working directory is the Session's project root > the kernel cwd and the scratch dir are SEPARATE, and each holds what it should
-[T6-MEASURED] IPY-15-cwd-vs-scratch {"kernelOsGetcwd":"c:/users/hzq00/appdata/local/temp/t6-cwd-scratch-luvcli","kernelEnvKernelCwd":"c:/users/hzq00/appdata/local/temp/t6-cwd-scratch-luvcli","kernelEnvKernelDir":"c:/users/hzq00/appdata/local/temp/dsh-ipython-lifecycle-3qiphd/session-cwd-scratch","kernelEnvSpillDir":"c:/users/hzq00/appdata/local/temp/dsh-ipython-lifecycle-3qiphd/session-cwd-scratch","sessionProjectRoot":"c:/users/hzq00/appdata/local/temp/t6-cwd-scratch-luvcli","hostScratchDir":"c:/users/hzq00/appdata/local/temp/dsh-ipython-lifecycle-3qiphd/session-cwd-scratch","cwdEqualsSessionRoot":true,"dirEqualsScratch":true,"spillEqualsScratch":true,"scratchDiffersFromCwd":true}
+[T6-MEASURED] IPY-15-cwd-vs-scratch {"kernelOsGetcwd":"c:/users/hzq00/appdata/local/temp/t6-cwd-scratch-w7anr4","kernelEnvKernelCwd":"c:/users/hzq00/appdata/local/temp/t6-cwd-scratch-w7anr4","kernelEnvKernelDir":"c:/users/hzq00/appdata/local/temp/dsh-ipython-lifecycle-pznv7m/session-cwd-scratch","kernelEnvSpillDir":"c:/users/hzq00/appdata/local/temp/dsh-ipython-lifecycle-pznv7m/session-cwd-scratch","sessionProjectRoot":"c:/users/hzq00/appdata/local/temp/t6-cwd-scratch-w7anr4","hostScratchDir":"c:/users/hzq00/appdata/local/temp/dsh-ipython-lifecycle-pznv7m/session-cwd-scratch","cwdEqualsSessionRoot":true,"dirEqualsScratch":true,"spillEqualsScratch":true,"scratchDiffersFromCwd":true}
 
- ✓ src/lifecycle.test.ts > IPY-15: the kernel working directory is the Session's project root > the kernel cwd and the scratch dir are SEPARATE, and each holds what it should 4027ms
- ✓ src/lifecycle.test.ts > IPY-15: the kernel working directory is the Session's project root > the scratch dir is created for a Session, and its spill/log files are bounded by the cap 6833ms
+ ✓ src/lifecycle.test.ts > IPY-15: the kernel working directory is the Session's project root > the kernel cwd and the scratch dir are SEPARATE, and each holds what it should 3256ms
+ ✓ src/lifecycle.test.ts > IPY-15: the kernel working directory is the Session's project root > the scratch dir is created for a Session, and its spill/log files are bounded by the cap 5641ms
 stdout | src/lifecycle.test.ts > IPY-10: the model cannot own kernel lifecycle > no lifecycle surface is reachable from inside a cell, and the cap/timeout are not cell state
 [T6-MEASURED] IPY-10-lifecycle-surface {"builtin_lifecycle_names":["__IPYTHON__","get_ipython"],"has_ctx":false,"has_kernel_service":false,"has_ipython_service":false,"lifecycle_callables":[],"control_env":"pipe","cap_or_timeout_symbols":[]}
 
- ✓ src/lifecycle.test.ts > IPY-10: the model cannot own kernel lifecycle > no lifecycle surface is reachable from inside a cell, and the cap/timeout are not cell state 3640ms
- ✓ src/lifecycle.test.ts > IPY-10: the model cannot own kernel lifecycle > a cell that shuts down its own kernel is reported as a NEW generation with the loss stated 11550ms
+ ✓ src/lifecycle.test.ts > IPY-10: the model cannot own kernel lifecycle > no lifecycle surface is reachable from inside a cell, and the cap/timeout are not cell state 2672ms
+ ✓ src/lifecycle.test.ts > IPY-10: the model cannot own kernel lifecycle > a cell that shuts down its own kernel is reported as a NEW generation with the loss stated 11125ms
 
  Test Files  1 passed (1)
       Tests  15 passed (15)
-   Start at  07:38:10
-   Duration  153.41s (transform 217ms, setup 0ms, import 274ms, tests 152.92s, environment 0ms)
+   Start at  07:56:43
+   Duration  136.48s (transform 180ms, setup 0ms, import 233ms, tests 136.05s, environment 0ms)
 
 EXIT=0
