@@ -10,6 +10,17 @@ The three supporting probes live in `qualification/runners/t2-probes/` and are
 re-runnable; each carries its own "why this exists" note, and its measured output
 is quoted below. Every claim in this file came from running one of them.
 
+**Commit provenance, recorded because it is misleading otherwise.** These changes
+were committed in `cfdff75` ("G-SEAM-36: the kernel restart defect…"), which is
+another agent's commit about unrelated work: a concurrent agent ran `git add -A`
+in the shared worktree and swept this file, `VERDICT.json`, the two test-file
+edits and `qualification/runners/t2-probes/` into it. The commit message does not
+describe any of it. That is an instance of the defect class already recorded as
+G-SEAM-35 (parallel agents in one worktree damaging each other's git state), and
+it is noted here so a reader who greps the log for T2's evidence is not misled by
+the message it is filed under. The content itself is the measured content; only
+the attribution is wrong.
+
 ## Result
 
 `VERDICT.json`: **23/23 checks pass**, on the current composition
