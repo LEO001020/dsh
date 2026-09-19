@@ -1,0 +1,161 @@
+{
+  "scope": "local IPython/Jupyter mechanics only; no DSH, no native tools, no LLM",
+  "python": "3.14.3 (tags/v3.14.3:323c59a, Feb  3 2026, 16:04:56) [MSC v.1944 64 bit (AMD64)]",
+  "packages": {
+    "ipython": "9.16.1",
+    "ipykernel": "7.3.0",
+    "jupyter_client": "8.10.0",
+    "pyzmq": "27.2.0"
+  },
+  "cases": [
+    {
+      "case": "real_ipython_and_magic",
+      "passed": true,
+      "evidence": {
+        "status": "ok",
+        "stdout": "ZMQInteractiveShell\nCPU times: total: 0 ns\nWall time: 5.72 μs\n",
+        "errors": [],
+        "display": [
+          {
+            "text/plain": "2"
+          }
+        ],
+        "elapsed_seconds": 0.0161,
+        "projected_bytes": 84,
+        "msg_id": "7137e1fc-c54f279e4df79f4f3ce949df_38208_3",
+        "matching_idle": true
+      }
+    },
+    {
+      "case": "one_cell_512_simulated_bounded_observations",
+      "passed": true,
+      "acquired_bytes": 33554432,
+      "native_tool_integration": false,
+      "evidence": {
+        "status": "ok",
+        "stdout": "{'pages': 512, 'bytes': 33554432}\n",
+        "errors": [],
+        "display": [],
+        "elapsed_seconds": 0.0384,
+        "projected_bytes": 36,
+        "msg_id": "7137e1fc-c54f279e4df79f4f3ce949df_38208_4",
+        "matching_idle": true
+      }
+    },
+    {
+      "case": "persistent_working_state_next_cell",
+      "passed": true,
+      "evidence": {
+        "status": "ok",
+        "stdout": "512 9\n",
+        "errors": [],
+        "display": [],
+        "elapsed_seconds": 0.0072,
+        "projected_bytes": 8,
+        "msg_id": "7137e1fc-c54f279e4df79f4f3ce949df_38208_5",
+        "matching_idle": true
+      }
+    },
+    {
+      "case": "exception_does_not_roll_back_namespace",
+      "passed": true,
+      "evidence": [
+        {
+          "status": "error",
+          "stdout": "",
+          "errors": [
+            "ValueError"
+          ],
+          "display": [],
+          "elapsed_seconds": 0.4439,
+          "projected_bytes": 2,
+          "msg_id": "7137e1fc-c54f279e4df79f4f3ce949df_38208_6",
+          "matching_idle": true
+        },
+        {
+          "status": "ok",
+          "stdout": "7\n",
+          "errors": [],
+          "display": [],
+          "elapsed_seconds": 0.0075,
+          "projected_bytes": 4,
+          "msg_id": "7137e1fc-c54f279e4df79f4f3ce949df_38208_7",
+          "matching_idle": true
+        }
+      ]
+    },
+    {
+      "case": "two_kernels_namespace_separate",
+      "passed": true,
+      "evidence": {
+        "status": "ok",
+        "stdout": "False\n",
+        "errors": [],
+        "display": [],
+        "elapsed_seconds": 0.0118,
+        "projected_bytes": 8,
+        "msg_id": "a4145d00-057ea4804ff222f4428f508b_38208_1",
+        "matching_idle": true
+      }
+    },
+    {
+      "case": "interrupt_and_reuse_simple_python_loop",
+      "passed": true,
+      "evidence": [
+        {
+          "status": "error",
+          "stdout": "",
+          "errors": [
+            "KeyboardInterrupt"
+          ],
+          "display": [],
+          "elapsed_seconds": 0.7362,
+          "projected_bytes": 2,
+          "msg_id": "7137e1fc-c54f279e4df79f4f3ce949df_38208_8",
+          "matching_idle": true
+        },
+        {
+          "status": "ok",
+          "stdout": "7\n",
+          "errors": [],
+          "display": [],
+          "elapsed_seconds": 0.0072,
+          "projected_bytes": 4,
+          "msg_id": "7137e1fc-c54f279e4df79f4f3ce949df_38208_9",
+          "matching_idle": true
+        }
+      ]
+    },
+    {
+      "case": "kernel_restart_loses_volatile_state",
+      "passed": true,
+      "evidence": {
+        "status": "ok",
+        "stdout": "False\n",
+        "errors": [],
+        "display": [],
+        "elapsed_seconds": 0.0105,
+        "projected_bytes": 8,
+        "msg_id": "7137e1fc-c54f279e4df79f4f3ce949df_38208_1",
+        "matching_idle": true
+      }
+    },
+    {
+      "case": "stdin_disabled",
+      "passed": true,
+      "evidence": {
+        "status": "error",
+        "stdout": "",
+        "errors": [
+          "StdinNotImplementedError"
+        ],
+        "display": [],
+        "elapsed_seconds": 0.526,
+        "projected_bytes": 2,
+        "msg_id": "7137e1fc-c54f279e4df79f4f3ce949df_38208_2",
+        "matching_idle": true
+      }
+    }
+  ],
+  "passed": 8
+}

@@ -1,0 +1,28 @@
+{
+  "scope": "standalone extracted-protocol interleaving; not DSH integration",
+  "platform": "nt",
+  "stale_lock_race_reproduced": true,
+  "both_contenders_return_success": true,
+  "second_contender_renamed_live_first_lock": true,
+  "final_lock_owner": "B",
+  "stable_handle_lock_second_acquisition_rejected": true,
+  "trace": [
+    {
+      "step": 1,
+      "A_observed": "stale",
+      "B_observed": "stale"
+    },
+    {
+      "step": 2,
+      "owner": "A",
+      "moved": "stale",
+      "acquired": true
+    },
+    {
+      "step": 3,
+      "owner": "B",
+      "moved": "A",
+      "acquired": true
+    }
+  ]
+}
