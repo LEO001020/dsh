@@ -2,7 +2,7 @@
   "dailyHistoryServicePresent": true,
   "sessionQueryServicePresent": true,
   "historyAvailable": true,
-  "createdSessionId": "session-377dccdf-fcdf-4dfb-94f1-62b716e43b60",
+  "createdSessionId": "session-d4558d52-6e41-4c27-8654-fd988aeb7430",
   "selfRead": {
     "eventCount": 1,
     "exhausted": false,
@@ -16,11 +16,11 @@
     "eventsSeen": 3,
     "exhausted": true,
     "truncatedAtPageCap": false,
-    "replayCount": 3
+    "replayCount": 1
   },
   "replayCounterControl": {
-    "afterFirstScan": 3,
-    "afterSecondScan": 4,
+    "afterFirstScan": 1,
+    "afterSecondScan": 2,
     "controlHasTeeth": true
   },
   "provenanceRecord": {

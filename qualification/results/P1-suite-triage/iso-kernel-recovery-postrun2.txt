@@ -1,0 +1,76 @@
+START=2026-09-20T03:24:57
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.8 [39m[90mD:/DSH/work/dsh-native-daily/packages/dsh-daily-work[39m
+
+ [32m✓[39m src/kernel-recovery.test.ts[2m > [22mkernel identity is not the Agent object[2m > [22mnames a slot by session + world + environment, and an incarnation by epoch[32m 3[2mms[22m[39m
+ [32m✓[39m src/kernel-recovery.test.ts[2m > [22mkernel identity is not the Agent object[2m > [22mrefuses a second registration of the same slot[32m 2[2mms[22m[39m
+ [32m✓[39m src/kernel-recovery.test.ts[2m > [22mkernel identity is not the Agent object[2m > [22mdoes not destroy a parked kernel when an activation ends, and rebinds it at the SAME epoch[32m 2[2mms[22m[39m
+ [32m✓[39m src/kernel-recovery.test.ts[2m > [22mserial per kernel, concurrent across kernels[2m > [22mruns one cell at a time on a kernel and queues rather than dispatching a second[32m 1[2mms[22m[39m
+ [32m✓[39m src/kernel-recovery.test.ts[2m > [22mserial per kernel, concurrent across kernels[2m > [22mruns cells on two kernels concurrently[32m 1[2mms[22m[39m
+ [32m✓[39m src/kernel-recovery.test.ts[2m > [22mserial per kernel, concurrent across kernels[2m > [22mbounds the queue and REFUSES past the bound rather than growing[32m 0[2mms[22m[39m
+ [32m✓[39m src/kernel-recovery.test.ts[2m > [22mlate and unattributed output is classified, never attached to the next cell[2m > [22mclassifies output arriving after a cell settled as `late` for the ORIGINATING cell[32m 2[2mms[22m[39m
+ [32m✓[39m src/kernel-recovery.test.ts[2m > [22mlate and unattributed output is classified, never attached to the next cell[2m > [22mclassifies a frame whose parent was never issued as `unattributed`, not as the running cell[32m 0[2mms[22m[39m
+ [32m✓[39m src/kernel-recovery.test.ts[2m > [22mlate and unattributed output is classified, never attached to the next cell[2m > [22mclassifies a stray shell reply as `foreign` and lets it settle nothing[32m 0[2mms[22m[39m
+ [32m✓[39m src/kernel-recovery.test.ts[2m > [22mbudgets are explicit and their breaches are reported[2m > [22mbounds kept output, reports the true total, and spills the dropped tail[32m 1[2mms[22m[39m
+ [32m✓[39m src/kernel-recovery.test.ts[2m > [22mbudgets are explicit and their breaches are reported[2m > [22mcuts a truncated stream on a character boundary rather than corrupting UTF-8[32m 0[2mms[22m[39m
+ [32m✓[39m src/kernel-recovery.test.ts[2m > [22mbudgets are explicit and their breaches are reported[2m > [22mbounds MIME separately from stdout and counts it without keeping it[32m 0[2mms[22m[39m
+ [32m✓[39m src/kernel-recovery.test.ts[2m > [22mbudgets are explicit and their breaches are reported[2m > [22mbounds IPC frames and stops keeping payloads past the bound[32m 0[2mms[22m[39m
+ [32m✓[39m src/kernel-recovery.test.ts[2m > [22mbudgets are explicit and their breaches are reported[2m > [22mbounds nested native calls per cell and states what the refusal cannot undo[32m 0[2mms[22m[39m
+ [32m✓[39m src/kernel-recovery.test.ts[2m > [22mbudgets are explicit and their breaches are reported[2m > [22mbounds data-plane bytes per cell[32m 0[2mms[22m[39m
+ [32m✓[39m src/kernel-recovery.test.ts[2m > [22mbudgets are explicit and their breaches are reported[2m > [22mbounds declared kernel RSS and process count, and says the memory is already resident[32m 0[2mms[22m[39m
+ [32m✓[39m src/kernel-recovery.test.ts[2m > [22man interrupt that does not settle becomes unknown and restarts the kernel[2m > [22mdoes not wait for the reply: the bounded grace fires and the cell becomes unknown[32m 1[2mms[22m[39m
+ [32m✓[39m src/kernel-recovery.test.ts[2m > [22man interrupt that does not settle becomes unknown and restarts the kernel[2m > [22mresolves a cell whose transport promise NEVER settles at all[32m 0[2mms[22m[39m
+ [32m✓[39m src/kernel-recovery.test.ts[2m > [22man interrupt that does not settle becomes unknown and restarts the kernel[2m > [22mescalates to process isolation on a non-interruptible C extension, and says so[32m 0[2mms[22m[39m
+ [32m✓[39m src/kernel-recovery.test.ts[2m > [22man interrupt that does not settle becomes unknown and restarts the kernel[2m > [22mreports the restart loss: the namespace is gone and the loss is named[32m 0[2mms[22m[39m
+ [32m✓[39m src/kernel-recovery.test.ts[2m > [22man interrupt that does not settle becomes unknown and restarts the kernel[2m > [22mrefuses further cells on a kernel that could not be restarted[32m 0[2mms[22m[39m
+ [32m✓[39m src/kernel-recovery.test.ts[2m > [22man interrupt that does not settle becomes unknown and restarts the kernel[2m > [22mstarts the grace even when the interrupt could not be dispatched at all[32m 0[2mms[22m[39m
+ [32m✓[39m src/kernel-recovery.test.ts[2m > [22man interrupt that does not settle becomes unknown and restarts the kernel[2m > [22mdoes NOT declare unknown when the cell settles inside the grace[32m 0[2mms[22m[39m
+ [32m✓[39m src/kernel-recovery.test.ts[2m > [22man interrupt that does not settle becomes unknown and restarts the kernel[2m > [22mtreats a reply without a matching idle as NOT settled[32m 0[2mms[22m[39m
+ [32m✓[39m src/kernel-recovery.test.ts[2m > [22man interrupt that does not settle becomes unknown and restarts the kernel[2m > [22mthe `unknown` decision is NODE-SIDE: it is made by the supervisor's own timer, not by the broker[32m 1[2mms[22m[39m
+ [32m✓[39m src/kernel-recovery.test.ts[2m > [22mcontrol is not stuck behind a data stream[2m > [22mdispatches cancel while frames are still arriving, and both latencies stay visible[32m 1[2mms[22m[39m
+ [32m✓[39m src/kernel-recovery.test.ts[2m > [22mcontrol is not stuck behind a data stream[2m > [22mrefuses a second cancel for a cell that already has an interrupt in flight[32m 0[2mms[22m[39m
+ [32m✓[39m src/kernel-recovery.test.ts[2m > [22mcontrol is not stuck behind a data stream[2m > [22mrefuses to cancel a cell that is not the running one[32m 0[2mms[22m[39m
+ [32m✓[39m src/kernel-recovery.test.ts[2m > [22munknown side effects stay quarantined[2m > [22mkeeps an in-flight cell with no confirmed terminal state quarantined[32m 0[2mms[22m[39m
+ [32m✓[39m src/kernel-recovery.test.ts[2m > [22munknown side effects stay quarantined[2m > [22mdoes NOT re-execute an ambiguous call when the transport reconnects[32m 0[2mms[22m[39m
+ [32m✓[39m src/kernel-recovery.test.ts[2m > [22munknown side effects stay quarantined[2m > [22mclears a quarantine only through an explicit, evidenced resolution[32m 0[2mms[22m[39m
+ [32m✓[39m src/kernel-recovery.test.ts[2m > [22munknown side effects stay quarantined[2m > [22mrefuses to resolve a cell that was never quarantined[32m 0[2mms[22m[39m
+ [32m✓[39m src/kernel-recovery.test.ts[2m > [22mreset and permission change: close admission, cancel, then a NEW epoch[2m > [22mrestarts the kernel and advances the epoch on a reset[32m 0[2mms[22m[39m
+ [32m✓[39m src/kernel-recovery.test.ts[2m > [22mreset and permission change: close admission, cancel, then a NEW epoch[2m > [22mMUST restart on a read-permission-domain change, and must not carry variables across[32m 0[2mms[22m[39m
+ [32m✓[39m src/kernel-recovery.test.ts[2m > [22mreset and permission change: close admission, cancel, then a NEW epoch[2m > [22madvances the epoch and moves the slot when the execution world or environment changes[32m 0[2mms[22m[39m
+ [32m✓[39m src/kernel-recovery.test.ts[2m > [22mreset and permission change: close admission, cancel, then a NEW epoch[2m > [22mcancels the running cell before replacing the process[32m 0[2mms[22m[39m
+ [32m✓[39m src/kernel-recovery.test.ts[2m > [22mparked kernels count against the memory budget[2m > [22mcounts parked RSS and evicts explicitly with a loss notification[32m 1[2mms[22m[39m
+ [32m✓[39m src/kernel-recovery.test.ts[2m > [22mparked kernels count against the memory budget[2m > [22mreports the parked budget even when nothing needs evicting[32m 0[2mms[22m[39m
+ [32m✓[39m src/kernel-recovery.test.ts[2m > [22mparked kernels count against the memory budget[2m > [22mrefuses to park a kernel that is running a cell[32m 0[2mms[22m[39m
+ [32m✓[39m src/kernel-recovery.test.ts[2m > [22ma cell id is not a malicious-code isolation boundary[2m > [22mstates the semantics in the DATA, and reports the Session/kernel boundary as the real one[32m 0[2mms[22m[39m
+ [32m✓[39m src/kernel-recovery.test.ts[2m > [22ma cell id is not a malicious-code isolation boundary[2m > [22mrecords an old cell reaching a later cell as a fact, not as a prevented attack[32m 0[2mms[22m[39m
+ [32m✓[39m src/kernel-recovery.test.ts[2m > [22mcheckpoint restore accepts only explicitly safe formats[2m > [22maccepts a JSON document and a real non-object .npy array[32m 6[2mms[22m[39m
+ [32m✓[39m src/kernel-recovery.test.ts[2m > [22mcheckpoint restore accepts only explicitly safe formats[2m > [22mREFUSES every pickle family format by name[32m 3[2mms[22m[39m
+ [32m✓[39m src/kernel-recovery.test.ts[2m > [22mcheckpoint restore accepts only explicitly safe formats[2m > [22mREFUSES a pickle disguised as json, on the BYTES rather than the extension[32m 3[2mms[22m[39m
+ [32m✓[39m src/kernel-recovery.test.ts[2m > [22mcheckpoint restore accepts only explicitly safe formats[2m > [22mREFUSES an object-dtype array read from the REAL .npy header[32m 3[2mms[22m[39m
+ [32m✓[39m src/kernel-recovery.test.ts[2m > [22mcheckpoint restore accepts only explicitly safe formats[2m > [22mREFUSES a truncated array whose header promises more data than the file holds[32m 4[2mms[22m[39m
+ [32m✓[39m src/kernel-recovery.test.ts[2m > [22mcheckpoint restore accepts only explicitly safe formats[2m > [22mREFUSES a checkpoint that disagrees with its own declared size[32m 3[2mms[22m[39m
+ [32m✓[39m src/kernel-recovery.test.ts[2m > [22mcheckpoint restore accepts only explicitly safe formats[2m > [22maccepts a real .npz of safe arrays and REFUSES one containing an object array[32m 7[2mms[22m[39m
+ [32m✓[39m src/kernel-recovery.test.ts[2m > [22mcheckpoint restore accepts only explicitly safe formats[2m > [22mREFUSES an archive whose declared uncompressed size is past the bomb bound[32m 5[2mms[22m[39m
+ [32m✓[39m src/kernel-recovery.test.ts[2m > [22mcheckpoint restore accepts only explicitly safe formats[2m > [22mREFUSES an archive that lies about its sizes, caught by zlib rather than by arithmetic[32m 4[2mms[22m[39m
+ [32m✓[39m src/kernel-recovery.test.ts[2m > [22mcheckpoint restore accepts only explicitly safe formats[2m > [22mREFUSES an archive whose member is not a .npy at all[32m 4[2mms[22m[39m
+ [32m✓[39m src/kernel-recovery.test.ts[2m > [22mcheckpoint restore accepts only explicitly safe formats[2m > [22maccepts Parquet and Arrow on magic-at-both-ends, and refuses a prefix-only fake[32m 5[2mms[22m[39m
+ [32m✓[39m src/kernel-recovery.test.ts[2m > [22mcheckpoint restore accepts only explicitly safe formats[2m > [22mrefuses a format M5 does not restore, naming it[32m 3[2mms[22m[39m
+ [32m✓[39m src/kernel-recovery.test.ts[2m > [22mcheckpoint restore accepts only explicitly safe formats[2m > [22mreports an unreadable entry as skipped rather than throwing[32m 1[2mms[22m[39m
+ [32m✓[39m src/kernel-recovery.test.ts[2m > [22mcheckpoint restore accepts only explicitly safe formats[2m > [22msums the accepted bytes so a caller can see the restore size[32m 3[2mms[22m[39m
+ [32m✓[39m src/kernel-recovery.test.ts[2m > [22mrecovery reports state honestly and never claims full session recovery[2m > [22mreports epoch, as-of, restored, lost, environment change and unresolved effects[32m 1[2mms[22m[39m
+ [32m✓[39m src/kernel-recovery.test.ts[2m > [22mrecovery reports state honestly and never claims full session recovery[2m > [22mflags an environment change and refuses to pretend the data is comparable[32m 0[2mms[22m[39m
+ [32m✓[39m src/kernel-recovery.test.ts[2m > [22mrecovery reports state honestly and never claims full session recovery[2m > [22msays a restart is not full session recovery in the DATA a model reads[32m 0[2mms[22m[39m
+ [32m✓[39m src/kernel-recovery.test.ts[2m > [22mrecovery reports state honestly and never claims full session recovery[2m > [22mreports a checkpoint as-of even when nothing was restored, so staleness is visible[32m 0[2mms[22m[39m
+ [32m✓[39m src/kernel-recovery.test.ts[2m > [22mrecovery reports state honestly and never claims full session recovery[2m > [22mreports no as-of when there was no checkpoint at all[32m 0[2mms[22m[39m
+ [32m✓[39m src/kernel-recovery.test.ts[2m > [22mrefusals carry no output and shutdown releases everything[2m > [22mgives a refusal a null output, so it cannot be read as an empty cell[32m 0[2mms[22m[39m
+ [32m✓[39m src/kernel-recovery.test.ts[2m > [22mrefusals carry no output and shutdown releases everything[2m > [22mreports a transport that refuses to dispatch, and returns the kernel to idle[32m 0[2mms[22m[39m
+ [32m✓[39m src/kernel-recovery.test.ts[2m > [22mrefusals carry no output and shutdown releases everything[2m > [22mcloses every kernel and reports the count[32m 0[2mms[22m[39m
+ [32m✓[39m src/kernel-recovery.test.ts[2m > [22mrefusals carry no output and shutdown releases everything[2m > [22mreports an unknown slot rather than inventing one[32m 0[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[32m64 passed[39m[22m[90m (64)[39m
+[2m   Start at [22m 03:24:58
+[2m   Duration [22m 470ms[2m (transform 109ms, setup 0ms, import 144ms, tests 79ms, environment 0ms)[22m
+
+EXIT=0
+END=2026-09-20T03:24:58

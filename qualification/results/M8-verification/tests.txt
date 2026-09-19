@@ -1,6 +1,6 @@
 # M8 verification-gates.test.ts -- RE-RUN by the independent verifier
 # command: vitest run src/verification-gates.test.ts --maxWorkers=1 --no-file-parallelism
-# host: node v24.18.0, date 2026-09-19T19:13:51Z
+# host: node v24.18.0, git 2.55.0.windows.3, date 2026-09-19T19:27:38Z
 # test_exit=0   (45 passed / 45)
 #
 # CORRECTION: the previous recording said 44 passed / 44 with test_exit=0.
@@ -8,67 +8,71 @@
 # (recorded sha256 6db105e8..., actual on disk 145eceb0... at first re-read), and
 # the real count is 45, not 44: a VER-05 independence case had been added.
 #
-# The first re-run found 1 FAILURE in W02 -- a broken assertion (a literal dotted
-# config key that git's INI writer never emits), NOT a broken scenario. This
-# verifier fixed it and strengthened it; see FINDINGS.md 'What I refuted or
-# strengthened'. The output below is the run AFTER that fix.
+# This verifier's first re-run found 1 FAILURE in W02: a broken assertion (a
+# literal dotted config key that git's INI writer never emits), NOT a broken
+# scenario. Fixed and STRENGTHENED. See FINDINGS.md.
 #
+# A later full run then failed VER-06 under load (a load-dependent oracle: the
+# mutation window started before the child process existed). Fixed structurally
+# -- readiness marker + polling -- and PROVEN under the same load condition
+# (45/45 at 93.2 s with 6 CPU-saturating processes). See FINDINGS.md.
+#
+# The output below is the final run after both fixes.
 # The superseded recording is preserved verbatim as tests.stale-preverify.txt.
 
 
  RUN  v4.1.8 D:/DSH/work/dsh-native-daily/packages/dsh-daily-work
 
- ✓ src/verification-gates.test.ts > VER-01/VER-02: a green exit code over no executed test is not a pass > VER-01: the runner exits 0 having collected no test, and the verdict is NOT PASS 1511ms
- ✓ src/verification-gates.test.ts > VER-01/VER-02: a green exit code over no executed test is not a pass > VER-02: every test skipped is NOT PASS, and the child still exited 0 794ms
- ✓ src/verification-gates.test.ts > VER-01/VER-02: a green exit code over no executed test is not a pass > VER-01/VER-02: a PASS that declared no counts is refused as evidence of real tests 287ms
- ✓ src/verification-gates.test.ts > VER-01/VER-02: a green exit code over no executed test is not a pass > VER-01: a runner that never reported at all is NOT PASS either, and is a DIFFERENT outcome 246ms
- ✓ src/verification-gates.test.ts > VER-03: a candidate cannot weaken the protected acceptance > a weakened threshold carrying the authorized digest is REFUSED, not run 243ms
- ✓ src/verification-gates.test.ts > VER-03: a candidate cannot weaken the protected acceptance > MEASURED GAP: an oracle outside `inputs` is neither covered by any digest NOR frozen 753ms
+ ✓ src/verification-gates.test.ts > VER-01/VER-02: a green exit code over no executed test is not a pass > VER-01: the runner exits 0 having collected no test, and the verdict is NOT PASS 1654ms
+ ✓ src/verification-gates.test.ts > VER-01/VER-02: a green exit code over no executed test is not a pass > VER-02: every test skipped is NOT PASS, and the child still exited 0 850ms
+ ✓ src/verification-gates.test.ts > VER-01/VER-02: a green exit code over no executed test is not a pass > VER-01/VER-02: a PASS that declared no counts is refused as evidence of real tests 272ms
+ ✓ src/verification-gates.test.ts > VER-01/VER-02: a green exit code over no executed test is not a pass > VER-01: a runner that never reported at all is NOT PASS either, and is a DIFFERENT outcome 244ms
+ ✓ src/verification-gates.test.ts > VER-03: a candidate cannot weaken the protected acceptance > a weakened threshold carrying the authorized digest is REFUSED, not run 229ms
+ ✓ src/verification-gates.test.ts > VER-03: a candidate cannot weaken the protected acceptance > MEASURED GAP: an oracle outside `inputs` is neither covered by any digest NOR frozen 832ms
  ✓ src/verification-gates.test.ts > VER-03: a candidate cannot weaken the protected acceptance > CLOSURE: an oracle digest taken outside the candidate refuses a receipt whose oracle changed 7ms
  ✓ src/verification-gates.test.ts > VER-03: a candidate cannot weaken the protected acceptance > CLOSURE: a receipt from another machine is refused, so a verdict is bound to the environment that produced it 3ms
- ✓ src/verification-gates.test.ts > VER-03: a candidate cannot weaken the protected acceptance > CLOSURE: observedBasis re-reads the tree, so a caller cannot pass the record in as the observation 9ms
- ✓ src/verification-gates.test.ts > VER-03: a candidate cannot weaken the protected acceptance > CLOSURE: declaring the oracle as an input makes the snapshot cover it, so a live rewrite cannot reach the run 854ms
- ✓ src/verification-gates.test.ts > VER-03: a candidate cannot weaken the protected acceptance > the oracle digest is not the candidate digest: an undeclared oracle file still moves it 7ms
- ✓ src/verification-gates.test.ts > VER-04: what the verification environment genuinely enforces > ENFORCED: the untrusted candidate inherits no host credential and no DSH_* name 219ms
- ✓ src/verification-gates.test.ts > VER-04: what the verification environment genuinely enforces > NOT ENFORCED — VER-04 FAIL: the candidate CAN read a host file outside its snapshot 236ms
- ✓ src/verification-gates.test.ts > VER-04: what the verification environment genuinely enforces > NOT ENFORCED — VER-04 FAIL: the candidate CAN open a network connection 253ms
- ✓ src/verification-gates.test.ts > VER-04: what the verification environment genuinely enforces > ENFORCED: the candidate gets an argv and a cwd and nothing else — no control-plane handle 248ms
- ✓ src/verification-gates.test.ts > VER-04: what the verification environment genuinely enforces > HONEST LABEL: the runner states what its digest does NOT cover 439ms
+ ✓ src/verification-gates.test.ts > VER-03: a candidate cannot weaken the protected acceptance > CLOSURE: observedBasis re-reads the tree, so a caller cannot pass the record in as the observation 10ms
+ ✓ src/verification-gates.test.ts > VER-03: a candidate cannot weaken the protected acceptance > CLOSURE: declaring the oracle as an input makes the snapshot cover it, so a live rewrite cannot reach the run 1033ms
+ ✓ src/verification-gates.test.ts > VER-03: a candidate cannot weaken the protected acceptance > the oracle digest is not the candidate digest: an undeclared oracle file still moves it 6ms
+ ✓ src/verification-gates.test.ts > VER-04: what the verification environment genuinely enforces > ENFORCED: the untrusted candidate inherits no host credential and no DSH_* name 236ms
+ ✓ src/verification-gates.test.ts > VER-04: what the verification environment genuinely enforces > NOT ENFORCED — VER-04 FAIL: the candidate CAN read a host file outside its snapshot 228ms
+ ✓ src/verification-gates.test.ts > VER-04: what the verification environment genuinely enforces > NOT ENFORCED — VER-04 FAIL: the candidate CAN open a network connection 262ms
+ ✓ src/verification-gates.test.ts > VER-04: what the verification environment genuinely enforces > ENFORCED: the candidate gets an argv and a cwd and nothing else — no control-plane handle 228ms
+ ✓ src/verification-gates.test.ts > VER-04: what the verification environment genuinely enforces > HONEST LABEL: the runner states what its digest does NOT cover 472ms
  ✓ src/verification-gates.test.ts > VER-05: an old verdict cannot be reused as a current completion > the receipt is refused after the WORKSPACE changes 221ms
- ✓ src/verification-gates.test.ts > VER-05: an old verdict cannot be reused as a current completion > the receipt is refused after the ORACLE changes, with the workspace untouched 4ms
- ✓ src/verification-gates.test.ts > VER-05: an old verdict cannot be reused as a current completion > the three bindings are INDEPENDENT: each refuses alone, with the other two still matching 14ms
+ ✓ src/verification-gates.test.ts > VER-05: an old verdict cannot be reused as a current completion > the receipt is refused after the ORACLE changes, with the workspace untouched 5ms
+ ✓ src/verification-gates.test.ts > VER-05: an old verdict cannot be reused as a current completion > the three bindings are INDEPENDENT: each refuses alone, with the other two still matching 16ms
  ✓ src/verification-gates.test.ts > VER-05: an old verdict cannot be reused as a current completion > the receipt is refused after the ENVIRONMENT changes 3ms
- ✓ src/verification-gates.test.ts > VER-05: an old verdict cannot be reused as a current completion > a FRESH receipt is still checked for PASSED, so freshness is never a verdict 226ms
- ✓ src/verification-gates.test.ts > VER-06: A->B->A during verification, over tree AND oracle AND config > two-arm proof: the frozen copy is what is tested, and endpoint hashing cannot see the tamper 5501ms
- ✓ src/verification-gates.test.ts > VER-06: A->B->A during verification, over tree AND oracle AND config > a command that rewrites its own declared input inside the snapshot yields unknown, not pass 1052ms
- ✓ src/verification-gates.test.ts > VER-07: a request to complete while a background mutation is still running > freezing while a writer still holds the workspace is REFUSED as in-flight 1412ms
- ✓ src/verification-gates.test.ts > VER-07: a request to complete while a background mutation is still running > a workspace still changing under the sampler is refused; only a stable one converges 1668ms
- ✓ src/verification-gates.test.ts > VER-07: a request to complete while a background mutation is still running > the structural invariant: a refusal NEVER carries a digest 1394ms
- ✓ src/verification-gates.test.ts > VER-08: after a verification failure a legitimate recovery can continue > a failed acceptance leaves the run resumable: pause does NOT use the permanent family drain 162ms
- ✓ src/verification-gates.test.ts > VER-08: after a verification failure a legitimate recovery can continue > a failed acceptance is a RECEIPT, not a throw, so the caller can recover and retry 475ms
- ✓ src/verification-gates.test.ts > writer isolation: one writer, one workspace, one lease > binds the writer cwd to its own workspace, on its own branch, at the exact base 1586ms
- ✓ src/verification-gates.test.ts > writer isolation: one writer, one workspace, one lease > gives each writer its own branch and its own paths, so two writers cannot collide 2791ms
- ✓ src/verification-gates.test.ts > writer isolation: one writer, one workspace, one lease > REFUSES a second writer on the same workspace, in this process and on disk 2890ms
- ✓ src/verification-gates.test.ts > writer isolation: one writer, one workspace, one lease > releases the lease on demand, leaving no branch, directory or lock behind 1991ms
- ✓ src/verification-gates.test.ts > W02: a git worktree is NOT a security boundary, and the code says so > MEASURED: a writer inside a worktree CAN move a shared ref, write shared config, and plant a shared hook 1796ms
-(node:35096) MaxListenersExceededWarning: Possible EventEmitter memory leak detected. 11 exit listeners added to [process]. MaxListeners is 10. Use emitter.setMaxListeners() to increase limit
+ ✓ src/verification-gates.test.ts > VER-05: an old verdict cannot be reused as a current completion > a FRESH receipt is still checked for PASSED, so freshness is never a verdict 237ms
+ ✓ src/verification-gates.test.ts > VER-06: A->B->A during verification, over tree AND oracle AND config > two-arm proof: the frozen copy is what is tested, and endpoint hashing cannot see the tamper 8634ms
+ ✓ src/verification-gates.test.ts > VER-06: A->B->A during verification, over tree AND oracle AND config > a command that rewrites its own declared input inside the snapshot yields unknown, not pass 1086ms
+ ✓ src/verification-gates.test.ts > VER-07: a request to complete while a background mutation is still running > freezing while a writer still holds the workspace is REFUSED as in-flight 1964ms
+ ✓ src/verification-gates.test.ts > VER-07: a request to complete while a background mutation is still running > a workspace still changing under the sampler is refused; only a stable one converges 2400ms
+ ✓ src/verification-gates.test.ts > VER-07: a request to complete while a background mutation is still running > the structural invariant: a refusal NEVER carries a digest 1666ms
+ ✓ src/verification-gates.test.ts > VER-08: after a verification failure a legitimate recovery can continue > a failed acceptance leaves the run resumable: pause does NOT use the permanent family drain 161ms
+ ✓ src/verification-gates.test.ts > VER-08: after a verification failure a legitimate recovery can continue > a failed acceptance is a RECEIPT, not a throw, so the caller can recover and retry 432ms
+ ✓ src/verification-gates.test.ts > writer isolation: one writer, one workspace, one lease > binds the writer cwd to its own workspace, on its own branch, at the exact base 1575ms
+ ✓ src/verification-gates.test.ts > writer isolation: one writer, one workspace, one lease > gives each writer its own branch and its own paths, so two writers cannot collide 3271ms
+ ✓ src/verification-gates.test.ts > writer isolation: one writer, one workspace, one lease > REFUSES a second writer on the same workspace, in this process and on disk 3338ms
+ ✓ src/verification-gates.test.ts > writer isolation: one writer, one workspace, one lease > releases the lease on demand, leaving no branch, directory or lock behind 2576ms
+ ✓ src/verification-gates.test.ts > W02: a git worktree is NOT a security boundary, and the code says so > MEASURED: a writer inside a worktree CAN move a shared ref, write shared config, and plant a shared hook 1887ms
+(node:47496) MaxListenersExceededWarning: Possible EventEmitter memory leak detected. 11 exit listeners added to [process]. MaxListeners is 10. Use emitter.setMaxListeners() to increase limit
 (Use `node --trace-warnings ...` to show where the warning was created)
- ✓ src/verification-gates.test.ts > W02: a git worktree is NOT a security boundary, and the code says so > what git DOES enforce: the integration branch cannot be checked out inside a writer worktree 1454ms
- ✓ src/verification-gates.test.ts > W02: a git worktree is NOT a security boundary, and the code says so > DETECTION is the honest claim: the shared-metadata digest catches every one of those mutations 3839ms
- ✓ src/verification-gates.test.ts > W02: a git worktree is NOT a security boundary, and the code says so > a CLONE is a real boundary: a writer can mutate its own everything and the root is byte-identical 2991ms
- ✓ src/verification-gates.test.ts > the root is the single integration authority, and it does not merge > accepts a clean candidate on the exact base, and binds the patch by digest 4019ms
- ✓ src/verification-gates.test.ts > the root is the single integration authority, and it does not merge > REFUSES a candidate whose base is not the revision the root expected 2471ms
- ✓ src/verification-gates.test.ts > the root is the single integration authority, and it does not merge > REFUSES a conflicting candidate and returns it to the root — there is no auto-merge 2808ms
- ✓ src/verification-gates.test.ts > the root is the single integration authority, and it does not merge > REFUSES a candidate that changed a path outside the allowed scope 2684ms
- ✓ src/verification-gates.test.ts > the root is the single integration authority, and it does not merge > REFUSES a candidate with no receipt, and one whose receipt claims a pass with no tests 3552ms
- ✓ src/verification-gates.test.ts > the root is the single integration authority, and it does not merge > a writer cannot publish: the precondition takes the ref as an input, and no merge verb exists 1437ms
- ✓ src/verification-gates.test.ts > the root is the single integration authority, and it does not merge > the module contains no merge verb: every git subcommand it runs is read-only or workspace-lifecycle 2ms
- ✓ src/verification-gates.test.ts > the writer service has a production entry point, not just a module > the package declares a `writers` export that resolves to the plugin, and the plugin mounts a real service 3186ms
- ✓ src/verification-gates.test.ts > the writer service has a production entry point, not just a module > the plugin declares no hard `inject`, so a deployment without a subprocess provider can still boot and REPORT 3ms
+ ✓ src/verification-gates.test.ts > W02: a git worktree is NOT a security boundary, and the code says so > what git DOES enforce: the integration branch cannot be checked out inside a writer worktree 1337ms
+ ✓ src/verification-gates.test.ts > W02: a git worktree is NOT a security boundary, and the code says so > DETECTION is the honest claim: the shared-metadata digest catches every one of those mutations 4322ms
+ ✓ src/verification-gates.test.ts > W02: a git worktree is NOT a security boundary, and the code says so > a CLONE is a real boundary: a writer can mutate its own everything and the root is byte-identical 2995ms
+ ✓ src/verification-gates.test.ts > the root is the single integration authority, and it does not merge > accepts a clean candidate on the exact base, and binds the patch by digest 4451ms
+ ✓ src/verification-gates.test.ts > the root is the single integration authority, and it does not merge > REFUSES a candidate whose base is not the revision the root expected 3208ms
+ ✓ src/verification-gates.test.ts > the root is the single integration authority, and it does not merge > REFUSES a conflicting candidate and returns it to the root — there is no auto-merge 3260ms
+ ✓ src/verification-gates.test.ts > the root is the single integration authority, and it does not merge > REFUSES a candidate that changed a path outside the allowed scope 3047ms
+ ✓ src/verification-gates.test.ts > the root is the single integration authority, and it does not merge > REFUSES a candidate with no receipt, and one whose receipt claims a pass with no tests 3464ms
+ ✓ src/verification-gates.test.ts > the root is the single integration authority, and it does not merge > a writer cannot publish: the precondition takes the ref as an input, and no merge verb exists 1416ms
+ ✓ src/verification-gates.test.ts > the root is the single integration authority, and it does not merge > the module contains no merge verb: every git subcommand it runs is read-only or workspace-lifecycle 1ms
+ ✓ src/verification-gates.test.ts > the writer service has a production entry point, not just a module > the package declares a `writers` export that resolves to the plugin, and the plugin mounts a real service 2597ms
+ ✓ src/verification-gates.test.ts > the writer service has a production entry point, not just a module > the plugin declares no hard `inject`, so a deployment without a subprocess provider can still boot and REPORT 1ms
 
  Test Files  1 passed (1)
       Tests  45 passed (45)
-   Start at  03:11:26
-   Duration  68.69s (transform 697ms, setup 0ms, import 902ms, tests 67.50s, environment 0ms)
+   Start at  03:26:16
+   Duration  76.11s (transform 748ms, setup 0ms, import 985ms, tests 74.89s, environment 0ms)
 
-test_exit=0

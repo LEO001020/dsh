@@ -63,6 +63,24 @@ function tempDir(label) {
   return dir
 }
 
+/**
+ * Clean up on EVERY exit path, including a thrown error.
+ *
+ * The first version cleaned up only at the end of the happy path, so an
+ * early throw (a resolution failure during development) left `r10-*` temp
+ * directories behind. Registered on both `exit` and the uncaught paths, and
+ * idempotent, because a probe that leaks fixtures on failure is a probe that
+ * quietly changes the machine it measures on.
+ */
+function cleanupAll() {
+  for (const dir of cleanup.splice(0)) {
+    try { rmSync(dir, { recursive: true, force: true, maxRetries: 3 }) } catch { /* best effort */ }
+  }
+}
+process.on('exit', cleanupAll)
+process.on('uncaughtException', error => { cleanupAll(); throw error })
+process.on('unhandledRejection', error => { cleanupAll(); throw error })
+
 /** The parent directory of a path (no `node:path` dirname import collision). */
 function dirnameOf(path) {
   const index = Math.max(path.lastIndexOf('/'), path.lastIndexOf('\\'))
@@ -226,7 +244,7 @@ say('')
 }
 
 // --- cleanup ---------------------------------------------------------------
-for (const dir of cleanup) rmSync(dir, { recursive: true, force: true })
+cleanupAll()
 say('=== PROBE COMPLETE (no credential was read; all canaries fabricated) ===')
 say('')
 say('CONCLUSION:')

@@ -95,6 +95,116 @@ back once, and because junction targets are stored as absolute paths, every
 `node_modules/@deepseek-ai/*` link pointed at a non-existent directory during the
 move. Re-run the script after any move of the install root.
 
+### Install the extension into a profile — VERIFIED
+
+Both extension packages are installed into a profile as **bundles**, which is what
+makes their host-plane rows activate. The profile manifest carries the two
+dependencies and names them in `dsh.profile.bundles`:
+
+```jsonc
+// profiles/daily-candidate/package.json
+"dependencies": {
+  "dsh-daily-work": "link:D:/DSH/work/dsh-native-daily/packages/dsh-daily-work",
+  "dsh-ipython":    "link:D:/DSH/work/dsh-native-daily/packages/dsh-ipython"
+},
+"dsh": { "profile": { "bundles": [
+  "@deepseek-ai/dsh-base", "@deepseek-ai/dsh-web-app",
+  "dsh-daily-work", "dsh-ipython"
+] } }
+```
+
+```sh
+export PATH="/d/DSH/tools/bin:$PATH"
+export DSH_HOME='D:\DSH\home\<your-home>'
+mkdir -p "$DSH_HOME/profiles"
+cp -r /d/DSH/work/dsh-native-daily/profiles/daily-candidate "$DSH_HOME/profiles/daily"
+cd "$DSH_HOME/profiles/daily"
+node /d/DSH/src/dsh-src/apps/cli/lib/bin.js plugin --profile daily install
+node /d/DSH/src/dsh-src/apps/cli/lib/bin.js --profile daily --dump-config | grep -A2 'agent-presets'
+```
+
+The install directory name (`daily` above) is **chosen by the operator** and is
+not referenced anywhere in the profile. That is deliberate — see Trap 6.
+
+**Trap 5 — a `link:` dependency must be absolute, or the profile is not
+relocatable.** `link:../../packages/x` is resolved against the **installed**
+profile directory, not the repository, so it points at a path that does not exist
+once the profile is copied into `$DSH_HOME`. Both dependencies therefore carry an
+absolute `link:`. Measured: with the relative form the install reported success
+and `--dump-config` then failed with
+`cannot resolve profile bundle "dsh-daily-work"`.
+
+**Trap 6 — the agent-preset root must not be relative, and must not name the
+install directory.** The `agent-presets` row adds a `roots` entry pointing at the
+profile's own `presets/` directory, which is where the two agent-scoped tool rows
+live (`work` and `ipython`). Two forms that look correct both fail:
+
+| Form | Why it fails |
+|---|---|
+| `./presets` | `scanRoot` does `resolve(expandHomePath(root.path))` (`packages/preset/agent-presets/src/discovery.ts:285`), and Node's `resolve` is relative to the **process cwd**. Booting from the profile directory worked; booting the same installed profile from elsewhere gave `RemoteError: preset "daily-standard" not found` with **zero** tools. |
+| `process.env.DSH_HOME + '/profiles/daily-candidate/presets'` | Absolute and cwd-independent, but it **hardcodes the install name**, which the operator chooses. Installed as `daily` it resolved nothing. |
+
+The working form derives the path from `ctx.baseUrl`, which the launcher anchors
+at the profile's own directory (`apps/cli/src/profile-boot.ts:160-164`). **The
+`.replace()` is load-bearing on Windows and a no-op on POSIX:**
+
+```yaml
+- id: agent-presets
+  config:
+    default: daily-standard
+    roots:
+      - path: !!js new URL('presets/', ctx.baseUrl).pathname.replace(/^\/([A-Za-z]:)/, '$1')
+        trust: system
+    includeShippedRoot: true
+    includeUserRoot: true
+```
+
+**Trap 6b — a `URL.pathname` on Windows starts with a slash, and `resolve()`
+then makes the path meaningless.** `new URL('presets/', 'file:///D:/x/cordis.yml').pathname`
+is `"/D:/x/presets/"`. Node's `resolve` does **not** treat a leading slash before
+a drive letter as a drive-absolute path; it treats it as rooted on the **current
+drive**, so from a cwd on `E:` the result is `E:\D:\x\presets` — a path that
+cannot exist. The failure is silent in the worst way: the directory is simply
+absent, `scanRoot` returns no presets, and the roster reports
+`preset "daily-standard" not found` with **zero** tools. The fix is the
+drive-letter strip above. This was measured in both directions — with the strip,
+`presetsListed: standard, ptc, minimal, cordis, daily-standard` and
+`toolCountAgentKey: 28`; without it, `daily-standard` is absent and the count is 0.
+
+Both the working and the failing direction are recorded in
+`qualification/results/M12-deliverable-surface/`.
+
+**Trap 7 — a tool row belongs in the AGENT preset, not in the profile patch.**
+`ctx.tools` layers are keyed by the Agent object, so a tool row mounted at host
+level publishes into the root realm where no agent's scope sees it: the model gets
+the service and no way to call it, with no warning. This is why the two model-facing
+rows live in `profiles/daily-candidate/presets/daily-standard/agent.cordis.yml`
+while the host-plane services come from each package's own bundle patch.
+
+**Trap 8 — do not declare a row twice.** The profile patch and
+`dsh-daily-work`'s own bundle patch both used to insert `daily-work-host`, so
+installing the package as a bundle would have registered the service twice. The
+bundle is now the sole owner; the profile patch keeps only the `subagent` capacity
+override and the `agent-presets` row.
+
+### Verify the install reached the model — VERIFIED
+
+A boot probe that adds **no** rows of its own, so whatever it reports comes from
+the profile's own composition:
+
+```sh
+cd /d/DSH/home/<your-home>/profiles/daily
+node /d/DSH/src/dsh-src/apps/cli/lib/bin.js --profile daily \
+  --patch 'D:\DSH\work\dsh-native-daily\qualification\runners\verify-deliverable-surface.patch.yml' \
+  --no-open
+# then read qualification/results/M12-deliverable-surface/surface.json
+```
+
+Measured on this machine: `toolCountAgentKey: 28`, `ipythonToolPresent: true`,
+`workToolPresent: true`, `ipythonParameterNames: ["code"]`,
+`forbiddenLifecycleTools: []`. `toolCountContextKey` is recorded alongside as `0`,
+which is the contrast that shows the agent-keyed scope is the one that matters.
+
 **Trap 4 — the build and the typecheck are different configs.**
 
 ```sh

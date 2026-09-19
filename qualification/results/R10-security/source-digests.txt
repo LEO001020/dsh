@@ -1,5 +1,5 @@
 # R10-security — source digests (sha256)
-# repo commit: a1d6e6decedb4f8f2d7b218ba82a22976a0b95c2
+# repo commit: 1e0b8d6917d24d40e2f72f512a9e42a19931997c
 # pinned checkout: ddefc45fbc7f8e46dd73185e68295696d1297887
 # node: v24.18.0  platform: win32 10.0.26200
 
@@ -7,8 +7,8 @@
 08f45e81a14a94fcaf0de0b68a9c882bf69f5038843a50fb44a6664987e252cb *packages/dsh-daily-work/src/sec-gates.test.ts
 619bfac3a0742578070663b98d5358c33b185080fe37653526eba5cf053c2898 *packages/dsh-daily-work/src/security.test.ts
 a8851721fd7bc4f0578b5e9ce9fbe62b7924f2277437b5ae7d65094c93f20e4f *packages/dsh-daily-work/src/security-denial.test.ts
-03e889db7fa60d3f69e11424f09034215673c6b3cb82ba94a65438906798f04e *qualification/results/R10-security/probe-seams.mjs
-e44ae06680659abe1d4cd5df563de97b2c54aa9e1bbf38136d59cf4f9df49614 *qualification/results/R10-security/FINDINGS.md
+7744c6267adffa8a6e1a9b42f7239eecd0ab21136a1c2dc1f8e892f1d4f627a9 *qualification/results/R10-security/probe-seams.mjs
+09c8fb1940ef88ffcd9ae007d4f8bf883b6d8d75e71736d65edc7ad9d2be7f75 *qualification/results/R10-security/FINDINGS.md
 
 ## pinned-checkout files quoted in FINDINGS.md
 32f62c1966c536308428be2fa090042a37358d9af8084e7fb0d0878c68ac3b9d *packages/sandbox/sandbox/src/index.ts

@@ -1,0 +1,5 @@
+=== tsc -p tsconfig.json --noEmit ===
+exit=0
+
+=== tsc -p tsconfig.check.json ===
+exit=0

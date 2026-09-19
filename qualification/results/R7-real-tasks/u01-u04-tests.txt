@@ -1,0 +1,30 @@
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.8 [39m[90mD:/DSH/work/dsh-native-daily/packages/dsh-daily-work[39m
+
+ [32m✓[39m src/u02-research-loop.test.ts[2m > [22mU02: the audit artifact is reviewable, and states its disputes[2m > [22mevery finding carries citations, a falsification condition, and its unknowns[32m 2[2mms[22m[39m
+ [32m✓[39m src/u02-research-loop.test.ts[2m > [22mU02: the audit artifact is reviewable, and states its disputes[2m > [22mthe spot-check re-reads every citation and finds the quote VERBATIM on the cited line[32m 2[2mms[22m[39m
+ [32m✓[39m src/u02-research-loop.test.ts[2m > [22mU02: the audit artifact is reviewable, and states its disputes[2m > [22mthe spot-check has teeth: a citation with a plausible but WRONG quote is detected[32m 1[2mms[22m[39m
+ [32m✓[39m src/u02-research-loop.test.ts[2m > [22mU02: the audit artifact is reviewable, and states its disputes[2m > [22mthe audit pins the checkout revision, so a citation cannot silently refer to different text[32m 1[2mms[22m[39m
+ [32m✓[39m src/u02-research-loop.test.ts[2m > [22mU02: the audit artifact is reviewable, and states its disputes[2m > [22mthe disputed finding names the measurement that would settle it, and does not claim to have made it[32m 0[2mms[22m[39m
+ [32m✓[39m src/u04-paired-comparison.test.ts[2m > [22mU04: paired C0/C1/C2 comparison on a controlled fixture[2m > [22mthe three groups differ by exactly the rows the plan names, and by nothing else[32m 15[2mms[22m[39m
+ [32m✓[39m src/u04-paired-comparison.test.ts[2m > [22mU04: paired C0/C1/C2 comparison on a controlled fixture[2m > [22mall three groups run on the same model, task and budget, and the three axes are reported SEPARATELY[32m 153[2mms[22m[39m
+ [32m✓[39m src/u04-paired-comparison.test.ts[2m > [22mU04: paired C0/C1/C2 comparison on a controlled fixture[2m > [22mthe comparison cannot declare a winner: with n=1 per group the difference is not separable from noise[32m 0[2mms[22m[39m
+ [32m✓[39m src/real-tasks.test.ts[2m > [22mE12: the untrusted child is a separate process with no inherited authority[2m > [22mthe runner hands over NO route to a host secret: no env name, no harness home, no absolute path[33m 586[2mms[22m[39m
+ [32m✓[39m src/u03-sustained-load.test.ts[2m > [22mU03: sustained load — resources, cost and state, measured[2m > [22ma control arm establishes the one-time cost so the load arm can be read as a trend[32m 34[2mms[22m[39m
+ [32m✓[39m src/real-tasks.test.ts[2m > [22mE12: the untrusted child is a separate process with no inherited authority[2m > [22mthe runner hands the child no control-plane handle: the child gets argv, cwd, stdio and env and nothing else[33m 488[2mms[22m[39m
+ [32m✓[39m src/real-tasks.test.ts[2m > [22mE12: the untrusted child is a separate process with no inherited authority[2m > [22mthe runner adds NO network permission to the child, and the child can still reach loopback[32m 289[2mms[22m[39m
+ [32m✓[39m src/real-tasks.test.ts[2m > [22mE12: a trusted runner is not a truth oracle for untrusted output[2m > [22man untrusted test that forges a passing summary cannot turn a real failure into a pass[32m 230[2mms[22m[39m
+ [32m✓[39m src/u03-sustained-load.test.ts[2m > [22mU03: sustained load — resources, cost and state, measured[2m > [22msix load cycles of top-up with pause/resume interleaved show no per-cycle resource trend[33m 980[2mms[22m[39m
+ [32m✓[39m src/real-tasks.test.ts[2m > [22mE12: a trusted runner is not a truth oracle for untrusted output[2m > [22ma runner that reports success while executing nothing is not a pass, even from a trusted command[32m 231[2mms[22m[39m
+ [32m✓[39m src/real-tasks.test.ts[2m > [22mE12: the isolation claim in the runner header, clause by clause[2m > [22mthe header claim is present verbatim, so a change to it is visible rather than inherited[32m 1[2mms[22m[39m
+ [32m✓[39m src/u03-sustained-load.test.ts[2m > [22mU03: sustained load — resources, cost and state, measured[2m > [22mNO STATE POLLUTION: a second run in the same process shares no task state with the first[32m 185[2mms[22m[39m
+ [32m✓[39m src/u01-coding-loop.test.ts[2m > [22mU01: the coding loop closes on a real multi-file bug[2m > [22mthe acceptance FAILS on the buggy tree and PASSES after the patch, with the acceptance frozen throughout[33m 2461[2mms[22m[39m
+ [32m✓[39m src/u01-coding-loop.test.ts[2m > [22mU01: the coding loop closes on a real multi-file bug[2m > [22man acceptance that is edited instead of the code is DETECTED, so a weakened oracle cannot pass[32m 13[2mms[22m[39m
+ [32m✓[39m src/u01-coding-loop.test.ts[2m > [22mU01: the coding loop closes on a real multi-file bug[2m > [22mthe bug is a REAL defect: the same predicate is consumed by counting and by admission[32m 1[2mms[22m[39m
+ [32m✓[39m src/u03-sustained-load.test.ts[2m > [22mU03: sustained load — resources, cost and state, measured[2m > [22mthe measured range is reported as a series, so a reader can judge the load rather than trust a verdict[33m 776[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m5 passed[39m[22m[90m (5)[39m
+[2m      Tests [22m [1m[32m21 passed[39m[22m[90m (21)[39m
+[2m   Start at [22m 03:28:44
+[2m   Duration [22m 3.18s[2m (transform 1.23s, setup 0ms, import 1.81s, tests 6.46s, environment 1ms)[22m
+

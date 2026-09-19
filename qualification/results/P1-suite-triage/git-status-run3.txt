@@ -1,0 +1,105 @@
+ M README.md
+ M docs/DELIVERY.md
+ M docs/GAPS.md
+ M docs/OPERATIONS.md
+ M packages/dsh-daily-work/cordis.patch.yml
+ M packages/dsh-daily-work/package.json
+ D packages/dsh-daily-work/sig-probe.mjs
+ M packages/dsh-daily-work/src/control-plane.test.ts
+ M packages/dsh-daily-work/src/host-plugin.ts
+ M packages/dsh-daily-work/src/host.ts
+ M packages/dsh-daily-work/src/isolation.test.ts
+ M packages/dsh-daily-work/src/research-chain.test.ts
+ M packages/dsh-daily-work/src/security-denial.test.ts
+ M packages/dsh-daily-work/src/security.test.ts
+ M packages/dsh-daily-work/src/terminal-advanced.test.ts
+ M packages/dsh-daily-work/src/u04-paired-comparison.test.ts
+ M qualification/results/M12-deliverable-surface/surface.json
+ M qualification/results/M7-history/boot-probe.json
+ M qualification/results/P1-suite-triage/source-digests.txt
+ M qualification/results/R10-security/FINDINGS.md
+ M qualification/results/R10-security/probe-seams.mjs
+ M qualification/results/R10-security/probe-seams.txt
+ M qualification/results/R10-security/source-digests.txt
+ M qualification/results/R10-security/tests.txt
+ M qualification/results/R11-history/boot-probe.txt
+ D qualification/results/R11-history/scratch-boot-falsified-pin.txt
+ D qualification/results/R11-history/scratch-boot-falsified.txt
+ D qualification/results/R11-history/scratch-build.txt
+ D qualification/results/R11-history/scratch-current-tests.txt
+ D qualification/results/R11-history/scratch-falsify-counter.txt
+ D qualification/results/R11-history/scratch-falsify-pin.txt
+ D qualification/results/R11-history/scratch-falsify-scan.txt
+ D qualification/results/R11-history/scratch-history-plane.BAK.ts
+ D qualification/results/R11-history/scratch-history-plugin.BAK.ts
+ D qualification/results/R11-history/scratch-lib-before.txt
+ D qualification/results/R11-history/scratch-lib-plane.BAK.js
+ D qualification/results/R11-history/scratch-mutation-tests.txt
+ D qualification/results/R11-history/scratch-restored.txt
+ M qualification/results/R7-real-tasks/canary-rollback.json
+ M qualification/results/R7-real-tasks/canary-rollback.log
+ M qualification/results/R7-real-tasks/canary-rollback.mjs
+?? docs/DELETE-AUDIT.md
+?? packages/dsh-daily-work/.probe/probe1.mts
+?? packages/dsh-daily-work/.probe/probe10.mts
+?? packages/dsh-daily-work/.probe/probe11.mts
+?? packages/dsh-daily-work/.probe/probe12.mts
+?? packages/dsh-daily-work/.probe/probe2.mts
+?? packages/dsh-daily-work/.probe/probe3.mts
+?? packages/dsh-daily-work/.probe/probe4.mts
+?? packages/dsh-daily-work/.probe/probe5.mts
+?? packages/dsh-daily-work/.probe/probe6.mts
+?? packages/dsh-daily-work/.probe/probe7.mts
+?? packages/dsh-daily-work/.probe/probe8.mts
+?? packages/dsh-daily-work/.probe/probe9.mts
+?? packages/dsh-daily-work/src/artifacts.ts
+?? packages/dsh-daily-work/src/capacity.test.ts
+?? packages/dsh-daily-work/src/capacity.ts
+?? packages/dsh-daily-work/src/data-plane.test.ts
+?? packages/dsh-daily-work/src/data-plugin.ts
+?? packages/dsh-daily-work/src/data-service.ts
+?? packages/dsh-daily-work/src/dep-gates.test.ts
+?? packages/dsh-daily-work/src/history-plane.ts
+?? packages/dsh-daily-work/src/history-plugin.ts
+?? packages/dsh-daily-work/src/history-web.test.ts
+?? packages/dsh-daily-work/src/kernel-lifecycle.ts
+?? packages/dsh-daily-work/src/kernel-recovery.test.ts
+?? packages/dsh-daily-work/src/observations.ts
+?? packages/dsh-daily-work/src/perf-metrics.ts
+?? packages/dsh-daily-work/src/programmatic-scope-plugin.ts
+?? packages/dsh-daily-work/src/programmatic-scope.test.ts
+?? packages/dsh-daily-work/src/programmatic-scope.ts
+?? packages/dsh-daily-work/src/sec-gates.test.ts
+?? packages/dsh-daily-work/src/target-setting.test.ts
+?? packages/dsh-daily-work/src/target-setting.ts
+?? packages/dsh-daily-work/src/upg-gates.test.ts
+?? packages/dsh-daily-work/src/verification-gates.test.ts
+?? packages/dsh-daily-work/src/web-provenance.ts
+?? packages/dsh-daily-work/src/worktree-isolation.ts
+?? packages/dsh-daily-work/src/writers-plugin.ts
+?? packages/dsh-daily-work/tsconfig.eco.json
+?? packages/dsh-ipython/
+?? qualification/results/M12-deliverable-surface/surface-MINE.json
+?? qualification/results/P1-suite-triage/HEAD-run3.txt
+?? qualification/results/P1-suite-triage/git-status-run3.txt
+?? qualification/results/P1-suite-triage/iso-kernel-recovery-postrun2.txt
+?? qualification/results/P1-suite-triage/iso-zz-m5-trace.txt
+?? qualification/results/R11-history/FINDINGS.md
+?? qualification/results/R11-history/falsify-01-pin-removed.txt
+?? qualification/results/R11-history/falsify-02-property-form.txt
+?? qualification/results/R11-history/tests.txt
+?? qualification/results/R5-data/ipython-substitution-probe.mjs
+?? qualification/results/R7-real-tasks/tsc-check.txt
+?? qualification/results/R7-real-tasks/tsc-package.txt
+?? qualification/results/R7-real-tasks/u01-u04-tests.txt
+?? qualification/runners/verify-a12-signal-probe.mjs
+?? qualification/runners/verify-data-plane.mjs
+?? qualification/runners/verify-data-plane.patch.yml
+?? qualification/runners/verify-ipython-e2e.mjs
+?? qualification/runners/verify-ipython-e2e.patch.yml
+?? qualification/runners/verify-m2-scope.mjs
+?? qualification/runners/verify-m2-scope.patch.yml
+?? qualification/runners/verify-m7-history.mjs
+?? qualification/runners/verify-m7-history.patch.yml
+?? qualification/runners/verify-writers-mounted.mjs
+?? qualification/specs/acceptance-spec.json

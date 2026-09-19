@@ -1,0 +1,24 @@
+{
+  // Attribution probe for R10-security, NOT a gate config.
+  //
+  // While this pass ran, other agents edited `src/data-plane.test.ts` and
+  // `src/research-chain.test.ts`, and `tsconfig.check.json` (the shared gate
+  // config) therefore exits non-zero on THOSE files. This config keeps the SAME
+  // strict flags and the SAME include set and excludes ONLY those two files, so
+  // a green result here proves this pass's files typecheck cleanly and the
+  // remaining errors are attributable to their owners rather than to this task.
+  //
+  // Run from packages/dsh-daily-work:
+  //   node /d/DSH/src/dsh-src/node_modules/typescript/bin/tsc \
+  //     -p ../../qualification/results/R10-security/tsconfig.attribution.json
+  "extends": "../../../packages/dsh-daily-work/tsconfig.check.json",
+  "compilerOptions": {
+    // `types: ["node"]` resolves from the config's own directory upward, and this
+    // file sits outside the package, so point it at the package's own @types.
+    "typeRoots": ["../../../packages/dsh-daily-work/node_modules/@types"]
+  },
+  "exclude": [
+    "../../../packages/dsh-daily-work/src/data-plane.test.ts",
+    "../../../packages/dsh-daily-work/src/research-chain.test.ts"
+  ]
+}

@@ -1,0 +1,77 @@
+{
+  "scope": "R7_SUPPLEMENT_TO_THE_STRUCTURAL_GATE_REPORT",
+  "note": "This file is a SUPPLEMENT, not a regeneration. `checker-output.json` and `generator-output.txt` in this directory were produced by the M8.1 structural checker over `qualification/gates.json`; that file still records U01-U06 as NOT_RUN because gates.json was NOT edited by the R7 work. A reader looking for the honest status of U01-U06 must read the R7 report, which is where the executed evidence lives.",
+  "gate_report_source": "qualification/gates.json (NOT edited by R7)",
+  "supplement": {
+    "path": "qualification/results/R7-real-tasks/FINDINGS.md",
+    "sha256_scope": "the six-gate table, the executed commands with exit codes, and the explicit 'what is NOT proven' list",
+    "evidence_index": "qualification/results/R7-real-tasks/ is the evidence directory"
+  },
+  "u01_u06_status_as_established_by_r7": {
+    "U01": {
+      "status": "PARTIAL",
+      "label": "OFFLINE_MECHANICS_PROVEN",
+      "max_offline_claim": "A frozen independent acceptance (sha256 before the patch) discriminates a real multi-file bug in real sources via a real vitest run, and detects an edited acceptance.",
+      "blocked_remainder": "BLOCKED_EXTERNAL: no model turn. The patch is a scripted edit.",
+      "executed": "vitest run src/u01-coding-loop.test.ts -> exit 0"
+    },
+    "U02": {
+      "status": "PARTIAL",
+      "label": "OFFLINE_MECHANICS_PROVEN",
+      "max_offline_claim": "A conflicting-source audit whose conclusions are bound to quoted lines at a pinned revision, spot-checked mechanically against the real checkout, with the dispute preserved and negative controls present.",
+      "blocked_remainder": "BLOCKED_EXTERNAL: no model performed the audit and no web search ran.",
+      "executed": "vitest run src/u02-research-loop.test.ts -> exit 0"
+    },
+    "U03": {
+      "status": "PASS",
+      "label": "CONTROLLED_INPUT_LOAD_TEST",
+      "max_offline_claim": "Six waves of rolling top-up with pause/resume interleaved through the real production stack: resource drift +1, listener drift 0, cost exact (4/cycle), no state pollution.",
+      "blocked_remainder": "BLOCKED_EXTERNAL: the model route is a scripted adapter, so cost is reservation arithmetic and no real latency exists. Not a long Session; bounds a leak over the range run only.",
+      "executed": "vitest run src/u03-sustained-load.test.ts -> exit 0"
+    },
+    "U04": {
+      "status": "PARTIAL",
+      "label": "STATISTICAL_HALF_PASS_LIVE_HALF_BLOCKED",
+      "max_offline_claim": "C0/C1/C2 composed as real presets differing by exactly one row per step; real tool catalogs; three axes reported separately; no winner declared with the reason computed from n=1.",
+      "blocked_remainder": "BLOCKED_EXTERNAL: the LIVE half. All three groups ran on one scripted adapter, so completionQuality is a constant and the cost series is identical across groups. The comparison the gate asks for was NOT made.",
+      "executed": "vitest run src/u04-paired-comparison.test.ts -> exit 0"
+    },
+    "U05": {
+      "status": "PASS",
+      "label": "PROCEDURE_EXECUTED_AND_REAL_UPGRADE_EXECUTED",
+      "max_offline_claim": "A canary procedure that does not write the daily home (with a positive control), plus a real artifact upgrade through the real `dsh plugin` install path against a real DSH_HOME: the composed tree measurably moved (budgetCeiling 200 -> 250) and the upgraded deployment booted with the extension loaded.",
+      "blocked_remainder": "BLOCKED_EXTERNAL: no newer release is installable. The staged new artifact differs in version string and patch config only; its lib/ payload is byte-identical.",
+      "executed": "node qualification/results/R7-real-tasks/canary-rollback.mjs -> exit 0 (19 PASS / 0 FAIL)"
+    },
+    "U06": {
+      "status": "PASS",
+      "label": "REAL_ROLLBACK_EXECUTED",
+      "max_offline_claim": "Old artifact reinstalled through the real install path, cold pre-upgrade snapshot restored byte-for-byte, old artifact booting against the restored state, external effect reconciled from the world without re-sending (1 -> 1) and still present, read by a separate process.",
+      "blocked_remainder": "BLOCKED_EXTERNAL: the remote is a durable local file, not a network service. No real newer version was rolled back.",
+      "executed": "node qualification/results/R7-real-tasks/canary-rollback.mjs -> exit 0"
+    }
+  },
+  "corrections_to_prior_records": [
+    {
+      "target": "qualification/results/M9.20-real-tasks/u06-rollback.json step R8a",
+      "issue": "The recorded schema refusal is attributed to the state rewind. In u06-rollback.mjs the effect store is a SIBLING of the state root and is never rewound. The refusal is caused by that script's adapter returning { kind: 'accepted' } where src/effects.ts:253-256 requires { status: 'confirmed' }, so status is written as undefined.",
+      "isolated_by": "qualification/results/R7-real-tasks/probe-u06-refusal-cause.mjs -> exit 0"
+    },
+    {
+      "target": "src/u01-coding-loop.test.ts header",
+      "issue": "The header claims the acceptance catches a one-file fix through the second consumer (`admit` in host.ts). Measured: the acceptance never imports host.ts; a one-file fix fails only the two DIRECT holdsSlot assertions, while all five countRun/mayAdmit assertions pass.",
+      "method": "staged the bug plus a counting.ts-only fix outside the repo and ran the test file's own ACCEPTANCE_TEST against it -> exit 1, 2 failed / 5 passed"
+    }
+  ],
+  "verification": {
+    "tsc_tsconfig_json": "exit 0",
+    "tsc_tsconfig_check_json": "exit 0",
+    "tests_executed": "vitest run src/u01-coding-loop.test.ts src/u02-research-loop.test.ts src/u03-sustained-load.test.ts src/u04-paired-comparison.test.ts src/real-tasks.test.ts -> exit 0, 21 passed",
+    "full_suite_run": false,
+    "full_suite_run_reason": "other agents were editing sibling files in this tree; only this agent's files were run",
+    "hosts_left_running": 0,
+    "dsh_src_modified": false,
+    "committed": false,
+    "commit_note": "This agent ran no git commit or push. Another agent commit 1e0b8d6917d24d40e2f72f512a9e42a19931997c (03:21:01) swept the R7 .mjs files into git while they were being written; the working-tree versions are ahead of that commit."
+  }
+}

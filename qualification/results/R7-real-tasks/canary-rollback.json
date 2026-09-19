@@ -1,7 +1,7 @@
 {
   "gate": "U05+U06",
   "kind": "REAL_CANARY_UPGRADE_AND_ROLLBACK_THROUGH_THE_REAL_INSTALL_PATH",
-  "date": "2026-09-19T19:19:24.680Z",
+  "date": "2026-09-19T19:22:44.042Z",
   "home": "D:/DSH/home/canary11",
   "seedHome": "D:/DSH/home/canary2",
   "launcher": "D:/DSH/src/dsh-src/apps/cli/lib/bin.js",
@@ -23,18 +23,18 @@
       "id": "S1",
       "name": "the old and new artifacts are staged as separate immutable version directories",
       "status": "PASS",
-      "detail": "old 72114d220598580e... at D:/DSH/home/canary11/versions/dsh-daily-work-0.1.0; new fcba3898462d4c04... at D:/DSH/home/canary11/versions/dsh-daily-work-0.1.1; lib payload byte-identical: true (the difference is version + patch config, stated as such)",
+      "detail": "old 5f08811ef43b2cdb... at D:/DSH/home/canary11/versions/dsh-daily-work-0.1.0; new 1d8e015c1178bb43... at D:/DSH/home/canary11/versions/dsh-daily-work-0.1.1; lib payload byte-identical: true (the difference is version + patch config, stated as such)",
       "oldDir": "D:/DSH/home/canary11/versions/dsh-daily-work-0.1.0",
-      "oldDigest": "72114d220598580e5316a5eca17c26a68b95d7e6b071cd1e1034de6865a18565",
+      "oldDigest": "5f08811ef43b2cdba35ce791088bb734b292179e88a3b78eb683fbb14396f92c",
       "newDir": "D:/DSH/home/canary11/versions/dsh-daily-work-0.1.1",
-      "newDigest": "fcba3898462d4c04aad90d4e8638929dc12e65a239f4152285f29bbf718bdb71",
+      "newDigest": "1d8e015c1178bb435a4428368273aeb67111fea6d11281c7a4031ee0ff2714f4",
       "libIdentical": true
     },
     {
       "id": "S2",
       "name": "the OLD artifact is installed through the real `dsh plugin` path",
       "status": "PASS",
-      "detail": "pnpm through the launcher exited 0: + dsh-daily-work 0.1.0 <- ..\\..\\versions\\dsh-daily-work-0.1.0 |  | Done in 333ms using pnpm v11.7.0",
+      "detail": "pnpm through the launcher exited 0: + dsh-daily-work 0.1.0 <- ..\\..\\versions\\dsh-daily-work-0.1.0 |  | Done in 420ms using pnpm v11.7.0",
       "command": "dsh plugin --profile canary11 add link:<old>"
     },
     {
@@ -56,7 +56,7 @@
       "id": "S5",
       "name": "the NEW artifact is installed over the old one through the real `dsh plugin` path",
       "status": "PASS",
-      "detail": "pnpm exited 0: + dsh-daily-work 0.1.1 <- ..\\..\\versions\\dsh-daily-work-0.1.1 |  | Done in 330ms using pnpm v11.7.0",
+      "detail": "pnpm exited 0: + dsh-daily-work 0.1.1 <- ..\\..\\versions\\dsh-daily-work-0.1.1 |  | Done in 436ms using pnpm v11.7.0",
       "command": "dsh plugin --profile canary11 add link:<new>"
     },
     {
@@ -69,21 +69,22 @@
     },
     {
       "id": "S7",
-      "name": "the NEW version boots through the real launcher and completes a real turn",
-      "status": "FAIL",
-      "detail": "exit 1; turn_end present: false; stderr: file:///D:/DSH/src/dsh-src/packages/boot/app-boot/lib/index.js:957\r\n\t\tif (template === void 0) throw new Error(`${binName}: profile ${JSON.stringify(name)} does not exist; create it with 'dsh plugin --profile ${name} add <package>'`);\r\n\t\t                               ^\r\n\r\nError: dsh: profile \"canar",
+      "name": "the NEW version boots through the real launcher with the EXTENSION LOADED, and completes a real turn",
+      "status": "PASS",
+      "detail": "exit 0; the turn ended completed; no \"did not activate\" warning; the scripted route made a real tool call and a real session write on disk",
       "launcher": "D:/DSH/src/dsh-src/apps/cli/lib/bin.js",
       "overlay": "D:/DSH/home/canary11/overlay-keyless.yml",
-      "stdout": ""
+      "failedRows": [],
+      "stdout": "{\"type\":\"session\",\"sessionId\":\"session-9a4297a1-9e35-45dd-884c-39dab2bb233e\",\"cwd\":\"D:\\\\DSH\\\\work\\\\dsh-native-daily\"}\n{\"type\":\"status\",\"phase\":\"turn_start\",\"turn\":1}\n{\"type\":\"status\",\"phase\":\"step_start\",\"turn\":1,\"step\":1}\n{\"type\":\"tool_call\",\"callId\":\"m914-call\",\"tool\":\"pwsh\",\"input\":{\"command\":\"Write-Output 'M914_OK'\",\"description\":\"Prove the one-shot runner drives a real tool call.\"}}\n{\"type\":\"tool_result\",\"callId\":\"m914-call\",\"status\":\"completed\",\"result\":\"M914_OK\\r\\n\"}\n{\"type\":\"status\",\"phase\":\"step_end\",\"turn\":1,\"step\":1,\"usage\":{\"inputTokens\":11,\"outputTokens\":3}}\n{\"type\":\"status\",\"phase\":\"step_start\",\"turn\":1,\"step\":2}\n{\"type\":\"text\",\"text\":\"M914_REPORT: done.\"}\n{\"type\":\"status\",\"phase\":\"step_end\",\"turn\":1,\"step\":2,\"usage\":{\"inputTokens\":5,\"outputTokens\":4}}\n{\"type\":\"status\",\"phase\":\"turn_end\",\"turn\":1,\"reason\":{\"kind\":\"completed\"}}\n{\"type\":\"final\",\"text\":\"M914_REPORT: done.\"}\n"
     },
     {
       "id": "S8",
       "name": "the NEW version performed an external effect, and it is durable in the world",
       "status": "PASS",
-      "detail": "ledger outcome undefined; transport invoked 1 time(s); the remote file D:/DSH/home/canary11/remote-world.json holds the operation: true",
+      "detail": "ledger outcome confirmed; transport invoked 1 time(s); the remote file D:/DSH/home/canary11/remote-world.json holds the operation: true",
       "operationId": "eff_6b528babc489eef3800e9c31162d032f",
       "performCount": 1,
-      "ledgerStatusBeforeRollback": null
+      "ledgerStatusBeforeRollback": "confirmed"
     },
     {
       "id": "S9",
@@ -98,7 +99,7 @@
       "id": "S10",
       "name": "the rollback reinstalls the OLD artifact through the real `dsh plugin` path",
       "status": "PASS",
-      "detail": "pnpm exited 0: + dsh-daily-work 0.1.0 <- ..\\..\\versions\\dsh-daily-work-0.1.0 |  | Done in 336ms using pnpm v11.7.0",
+      "detail": "pnpm exited 0: + dsh-daily-work 0.1.0 <- ..\\..\\versions\\dsh-daily-work-0.1.0 |  | Done in 428ms using pnpm v11.7.0",
       "command": "dsh plugin --profile canary11 add link:<old>"
     },
     {
@@ -119,17 +120,19 @@
     },
     {
       "id": "S13",
-      "name": "the OLD artifact boots against the RESTORED state and completes a turn",
-      "status": "FAIL",
-      "detail": "exit 1; stderr: file:///D:/DSH/src/dsh-src/packages/boot/app-boot/lib/index.js:957\r\n\t\tif (template === void 0) throw new Error(`${binName}: profile ${JSON.stringify(name)} does not exist; create it with 'dsh plugin --profile ${name} add <package>'`);\r\n\t\t                               ^\r\n\r\nError: dsh: profile \"canar",
-      "stdout": ""
+      "name": "the OLD artifact boots against the RESTORED state with the extension loaded, and completes a turn",
+      "status": "PASS",
+      "detail": "exit 0, the turn ended, no \"did not activate\" warning; the rolled-back deployment reads the restored state",
+      "failedRows": [],
+      "stdout": "{\"type\":\"session\",\"sessionId\":\"session-a03d0810-245a-41b0-b057-3d718ba97ed0\",\"cwd\":\"D:\\\\DSH\\\\work\\\\dsh-native-daily\"}\n{\"type\":\"status\",\"phase\":\"turn_start\",\"turn\":1}\n{\"type\":\"status\",\"phase\":\"step_start\",\"turn\":1,\"step\":1}\n{\"type\":\"tool_call\",\"callId\":\"m914-call\",\"tool\":\"pwsh\",\"input\":{\"command\":\"Write-Output 'M914_OK'\",\"description\":\"Prove the one-shot runner drives a real tool call.\"}}\n{\"type\":\"tool_result\",\"callId\":\"m914-call\",\"status\":\"completed\",\"result\":\"M914_OK\\r\\n\"}\n{\"type\":\"status\",\"phase\":\"step_end\",\"turn\":1,\"step\":1,\"usage\":{\"inputTokens\":11,\"outputTokens\":3}}\n{\"type\":\"status\",\"phase\":\"step_start\",\"turn\":1,\"step\":2}\n{\"type\":\"text\",\"text\":\"M914_REPORT: done.\"}\n{\"type\":\"status\",\"phase\":\"step_end\",\"turn\":1,\"step\":2,\"usage\":{\"inputTokens\":5,\"outputTokens\":4}}\n{\"type\":\"status\",\"phase\":\"turn_end\",\"turn\":1,\"reason\":{\"kind\":\"completed\"}}\n{\"type\":\"final\",\"text\":\"M914_REPORT: done.\"}\n"
     },
     {
       "id": "S14",
-      "name": "the LOCAL ledger over rewound state cannot be trusted to describe the world",
+      "name": "after the rewind the ledger opens cleanly and holds NO record of the effect",
       "status": "PASS",
-      "detail": "the ledger opened with no complaint; it holds no record of the effect, so reconciliation cannot be driven from it",
+      "detail": "the ledger opened with no complaint; its record of eff_6b528babc489eef3800e9c31162d032f is ABSENT. The restored state predates the effect, so the local knowledge is gone while the world still holds it -- which is why reconciliation must be driven from the world, by operation id.",
       "ledgerOpened": true,
+      "recordAfterRewind": null,
       "refusal": null
     },
     {
@@ -158,6 +161,19 @@
       "status": "PASS",
       "detail": "reconciliation text: \"reconciled from the world by operationId eff_6b528babc489eef3800e9c31162d032f: the world reports confirmed\"; a reversal claim is present: false",
       "reconciliationText": "reconciled from the world by operationId eff_6b528babc489eef3800e9c31162d032f: the world reports confirmed"
+    },
+    {
+      "id": "S18",
+      "name": "the world still holds the effect after the software was rolled back",
+      "status": "PASS",
+      "detail": "the world file holds eff_6b528babc489eef3800e9c31162d032f: true; the LOCAL record was rewound away (S14); the software is back on D:/DSH/home/canary11/versions/dsh-daily-work-0.1.0",
+      "operationId": "eff_6b528babc489eef3800e9c31162d032f",
+      "stillInWorld": true,
+      "worldEntry": {
+        "resultRef": "world-1",
+        "at": "2026-09-19T19:22:40.383Z",
+        "logicalKey": "run-canary11/task-1/notify"
+      }
     }
   ],
   "blocked": [
@@ -178,8 +194,8 @@
     }
   ],
   "summary": {
-    "pass": 16,
-    "fail": 2,
+    "pass": 19,
+    "fail": 0,
     "blockedExternal": 3
   },
   "claim": "Against a real DSH_HOME seeded with real state, a real artifact is installed through the real `dsh plugin` path, the composed tree is measured before and after, the new artifact really boots and really performs a durable effect in the world, and the rollback really restores the old artifact and the old cold consistency snapshot. After the rollback the effect is still readable in the world by a separate process, and the reconciliation does not claim it was undone.",

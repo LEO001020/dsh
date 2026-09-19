@@ -1,29 +1,22 @@
 [PASS] S0 a NEW canary home is created and seeded with REAL state: home D:/DSH/home/canary11; seeded from D:/DSH/home/canary2: sessions, storages; 10 entries; credentials copied: none
-[PASS] S1 the old and new artifacts are staged as separate immutable version directories: old 72114d220598580e... at D:/DSH/home/canary11/versions/dsh-daily-work-0.1.0; new fcba3898462d4c04... at D:/DSH/home/canary11/versions/dsh-daily-work-0.1.1; lib payload byte-identical: true (the difference is version + patch config, stated as such)
-[PASS] S2 the OLD artifact is installed through the real `dsh plugin` path: pnpm through the launcher exited 0: + dsh-daily-work 0.1.0 <- ..\..\versions\dsh-daily-work-0.1.0 |  | Done in 333ms using pnpm v11.7.0
+[PASS] S1 the old and new artifacts are staged as separate immutable version directories: old 5f08811ef43b2cdb... at D:/DSH/home/canary11/versions/dsh-daily-work-0.1.0; new 1d8e015c1178bb43... at D:/DSH/home/canary11/versions/dsh-daily-work-0.1.1; lib payload byte-identical: true (the difference is version + patch config, stated as such)
+[PASS] S2 the OLD artifact is installed through the real `dsh plugin` path: pnpm through the launcher exited 0: + dsh-daily-work 0.1.0 <- ..\..\versions\dsh-daily-work-0.1.0 |  | Done in 420ms using pnpm v11.7.0
 [PASS] S3 the composed tree carries the OLD artifact's patch config: --dump-config exited 0; budgetCeiling in the composed tree: 200 (old artifact states 200)
 [PASS] S3b a COLD consistency snapshot of the home state is taken before the upgrade: snapshot at D:/DSH/home/canary11/snapshots/pre-upgrade; digest a8945b6459c04b22...; 10 entries; nothing was running, so this is a cold copy and not a live-DB copy
-[PASS] S5 the NEW artifact is installed over the old one through the real `dsh plugin` path: pnpm exited 0: + dsh-daily-work 0.1.1 <- ..\..\versions\dsh-daily-work-0.1.1 |  | Done in 330ms using pnpm v11.7.0
+[PASS] S5 the NEW artifact is installed over the old one through the real `dsh plugin` path: pnpm exited 0: + dsh-daily-work 0.1.1 <- ..\..\versions\dsh-daily-work-0.1.1 |  | Done in 436ms using pnpm v11.7.0
 [PASS] S6 the composed tree MOVED to the new artifact's patch config: --dump-config exited 0; budgetCeiling in the composed tree: 250 (was 200); daily-work-host rows: 1
-[FAIL] S7 the NEW version boots through the real launcher and completes a real turn: exit 1; turn_end present: false; stderr: file:///D:/DSH/src/dsh-src/packages/boot/app-boot/lib/index.js:957
-		if (template === void 0) throw new Error(`${binName}: profile ${JSON.stringify(name)} does not exist; create it with 'dsh plugin --profile ${name} add <package>'`);
-		                               ^
-
-Error: dsh: profile "canar
-[PASS] S8 the NEW version performed an external effect, and it is durable in the world: ledger outcome undefined; transport invoked 1 time(s); the remote file D:/DSH/home/canary11/remote-world.json holds the operation: true
+[PASS] S7 the NEW version boots through the real launcher with the EXTENSION LOADED, and completes a real turn: exit 0; the turn ended completed; no "did not activate" warning; the scripted route made a real tool call and a real session write on disk
+[PASS] S8 the NEW version performed an external effect, and it is durable in the world: ledger outcome confirmed; transport invoked 1 time(s); the remote file D:/DSH/home/canary11/remote-world.json holds the operation: true
 [PASS] S9 the LOCAL record of the effect is inside the state the rollback will rewind: the effect store is at D:\DSH\home\canary11\storages/dsh_daily_effects.json (present: true); the pre-upgrade snapshot contains it: false (false is correct: the snapshot predates the effect)
-[PASS] S10 the rollback reinstalls the OLD artifact through the real `dsh plugin` path: pnpm exited 0: + dsh-daily-work 0.1.0 <- ..\..\versions\dsh-daily-work-0.1.0 |  | Done in 336ms using pnpm v11.7.0
+[PASS] S10 the rollback reinstalls the OLD artifact through the real `dsh plugin` path: pnpm exited 0: + dsh-daily-work 0.1.0 <- ..\..\versions\dsh-daily-work-0.1.0 |  | Done in 428ms using pnpm v11.7.0
 [PASS] S11 the composed tree is back on the OLD artifact: --dump-config exited 0; budgetCeiling: 200 (upgraded was 250, old is 200)
 [PASS] S12 the OLD consistency snapshot is restored byte-for-byte: the RESTORED HOME STATE digest e7e2e7b19a452201... equals the SNAPSHOT digest e7e2e7b19a452201... (compared across different directories by the same rule); the effect record the new version wrote is gone from the state: true
-[FAIL] S13 the OLD artifact boots against the RESTORED state and completes a turn: exit 1; stderr: file:///D:/DSH/src/dsh-src/packages/boot/app-boot/lib/index.js:957
-		if (template === void 0) throw new Error(`${binName}: profile ${JSON.stringify(name)} does not exist; create it with 'dsh plugin --profile ${name} add <package>'`);
-		                               ^
-
-Error: dsh: profile "canar
-[PASS] S14 the LOCAL ledger over rewound state cannot be trusted to describe the world: the ledger opened with no complaint; it holds no record of the effect, so reconciliation cannot be driven from it
+[PASS] S13 the OLD artifact boots against the RESTORED state with the extension loaded, and completes a turn: exit 0, the turn ended, no "did not activate" warning; the rolled-back deployment reads the restored state
+[PASS] S14 after the rewind the ledger opens cleanly and holds NO record of the effect: the ledger opened with no complaint; its record of eff_6b528babc489eef3800e9c31162d032f is ABSENT. The restored state predates the effect, so the local knowledge is gone while the world still holds it -- which is why reconciliation must be driven from the world, by operation id.
 [PASS] S15 the rollback reconciled the effect from the WORLD, without re-sending it: transport invocations before 1, after 1; the world reports confirmed with resultRef world-1
 [PASS] S16 a SEPARATE process still finds the effect in the world after the rollback: independent read of D:/DSH/home/canary11/remote-world.json: {"stillPresent":true,"resultRef":"world-1"}
 [PASS] S17 the reconciliation does NOT claim the effect was undone: reconciliation text: "reconciled from the world by operationId eff_6b528babc489eef3800e9c31162d032f: the world reports confirmed"; a reversal claim is present: false
+[PASS] S18 the world still holds the effect after the software was rolled back: the world file holds eff_6b528babc489eef3800e9c31162d032f: true; the LOCAL record was rewound away (S14); the software is back on D:/DSH/home/canary11/versions/dsh-daily-work-0.1.0
 
 R7 report: D:/DSH/work/dsh-native-daily/qualification/results/R7-real-tasks/canary-rollback.json
-summary: {"pass":16,"fail":2,"blockedExternal":3}
+summary: {"pass":19,"fail":0,"blockedExternal":3}

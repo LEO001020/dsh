@@ -2,7 +2,7 @@
 # RE-DERIVED by the independent verifier 2026-09-19T19:13:56Z
 #
 ## files this slice adds or edits
-98588945b789329302722cda31653e9c463d10832b668cdc0da46faefd80e54d *packages/dsh-daily-work/src/verification-gates.test.ts
+3f5fd1714a5744972184093210aa6b3d635c0f657e4ea5ee4113a3bb191d49cf *packages/dsh-daily-work/src/verification-gates.test.ts
 adb26a5d9587bdce73e082a795ad28cd7a6e819fc1080327ff8c3008c26d6432 *packages/dsh-daily-work/src/worktree-isolation.ts
 61d3aafe546ba77bf1d886131fe59a81652f2974769729f4d4c31621e4678102 *packages/dsh-daily-work/src/writers-plugin.ts
 15eeeeed0997250a19b8fcde4407f969b821f6dc9c6f7cb45041b059f24f3e1a *packages/dsh-daily-work/package.json
@@ -19,6 +19,6 @@ b4c3e038a7c269b15135aafa6087bd99607eca357b3eb6501008510a55f57af2 *qualification/
 ## NOTE ON verification-gates.test.ts
 ## The pre-verify recording listed it at 6db105e8ed724b46b11fc8b072c5674deb903122260cc8170f97f06f02fca027.
 ## It was ALREADY different before this verifier touched it (145eceb02c3f65ec62b6a647015f8fccde4cf0252f1e76e32ea84162b2e82b0e),
-## and this verifier then edited exactly ONE assertion in it (the W02 config check, strengthened).
+## and this verifier then edited it: the W02 config assertion (strengthened) and the VER-06 mutation-window anchoring (made load-independent).
 ## which is why the recorded 44/44 was stale. Every OTHER digest above is byte-identical
 ## to the pre-verify recording, so the module under test did NOT move -- only the test file did.

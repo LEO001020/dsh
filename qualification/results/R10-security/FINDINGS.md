@@ -469,17 +469,24 @@ mistake the record for something stronger:
 
 ## 7. Rows to add to `docs/GAPS.md` (NOT applied — this file's owner owns it)
 
-`docs/GAPS.md` was **not edited**. If its owner wants to absorb this pass's
-findings, these are the exact rows, matching the file's existing column shape
+`docs/GAPS.md` was **not edited** — its owner is actively editing it (it grew from
+G-SEAM-21 to G-SEAM-27 and gained G-VER-01..04 while this pass ran), so the rows
+below use the next FREE ids in their namespaces as of this writing and the owner
+should re-check them before pasting. Note that G-VER-03, added by that other
+agent, independently reaches the same SEC-01/03 conclusion from the same source
+(`SandboxPolicy` has no read or egress lever; `WRITE_RESTRICTED` intersects writes
+only) — two independent passes agreeing is worth recording as such.
+
+These are the exact rows, matching the file's column shape
 (`| ID | Gap | Status | Note |`) and its status vocabulary
 (`OPEN` / `IN_PROGRESS` / `RESOLVED` / `BLOCKED_EXTERNAL` / `NOT_APPLICABLE`):
 
 ```markdown
-| G-SEAM-12 | Windows sandbox is real but write-only and `enforcement: 'partial'`. | **CONFIRMED BY MEASUREMENT — CLOSABILITY RE-VERIFIED** | A confined child **read** a canary secret outside the workspace root successfully, verbatim, under both `read-only` and `workspace-write` (exit 0). Writes outside are `EPERM` in both modes. `WRITE_RESTRICTED` intersects only write accesses, and `SandboxPolicy` is only `mode` + `workspaceRoot`, so the seam has no read lever even in principle. Network egress is uncontrolled for bash/pwsh/subprocess/PTC; only `web_fetch` has SSRF filtering, which filters that tool's URL and is bypassed by any shell command. **Closability is now measured rather than argued** (R10-security `probe-seams.mjs`): every mode the seam can carry reads outside verbatim; the windows-acl runner refuses unknown argv with exit 127 (probed with `--deny-net`, `--read-only-fs`, `--no-network`); the `runnerCommand` override can only substitute a runner for the SAME bwrap-compatible file-effect profile (`sandbox-local/src/index.ts:320-327`) and is an unprobed operator assertion, and the win32 chain has exactly one candidate (`index.ts:165`) — so no public seam expresses read or network policy. Closing either needs new OS-level infrastructure (a read-confining runner, a container/VM/network namespace), not a code change here. Evidence: `qualification/results/M9.3-security-denial/`, `qualification/results/R10-security/`. |
+| G-SEAM-12 | Windows sandbox is real but write-only and `enforcement: 'partial'`. | **CONFIRMED BY MEASUREMENT — CLOSABILITY RE-VERIFIED** | A confined child **read** a canary secret outside the workspace root successfully, verbatim, under both `read-only` and `workspace-write` (exit 0). Writes outside are `EPERM` in both modes. `WRITE_RESTRICTED` intersects only write accesses, and `SandboxPolicy` is only `mode` + `workspaceRoot`, so the seam has no read lever even in principle. Network egress is uncontrolled for bash/pwsh/subprocess/PTC; only `web_fetch` has SSRF filtering, which filters that tool's URL and is bypassed by any shell command. **Closability is now measured rather than argued** (R10-security `probe-seams.mjs`): every mode the seam can carry reads outside verbatim; the windows-acl runner refuses unknown argv with exit 127 (probed against the REAL built runner with `--deny-net`, `--read-only-fs`, `--no-network`); the `runnerCommand` override can only substitute a runner for the SAME bwrap-compatible file-effect profile (`sandbox-local/src/index.ts:320-327`) and is an unprobed operator assertion, and the win32 chain has exactly one candidate (`index.ts:165`) — so no public seam expresses read or network policy. Closing either needs new OS-level infrastructure (a read-confining runner, a container/VM/network namespace), not a code change here. Evidence: `qualification/results/M9.3-security-denial/`, `qualification/results/R10-security/`. |
 
-| G-SEAM-22 | **The run-record `epoch` is never BUMPED, so wiring the guard alone would still refuse nothing.** | OPEN — second half of G-SEAM-21 | G-SEAM-21 records that `applyWorkerSettlement` is unreachable. This is the other half: even if it were imported, its precondition cannot occur. Across all production sources the `epoch` field is written in exactly ONE place — `record.ts:493`, `epoch: 1` inside `initialRunRecord` — and the production re-adoption path (`WorkService.resume`, `host.ts:707-713`) re-opens the phase WITHOUT touching it. So the guard would evaluate `1 !== 1` and accept every settlement; the value it exists to refuse (a settlement from a previous host generation) is a value no code in this package can produce. **Concrete consequence if left open**: host A admits a task under epoch 1, dies, and host B re-adopts the run; a late settlement from A's child passes the `childId` string match and is applied, moving the task terminal and RELEASING its reservation in a generation that never admitted it — freeing a slot the new generation believes is occupied and attributing spend to the wrong generation (`WorkService.transition`, `host.ts:900`). **Minimal honest fix, both halves required**: bump the epoch on the real re-adoption path, AND route settlements through `applyWorkerSettlement` instead of `WorkService.transition`. Not wired, deliberately: no production settlement-receiving path exists, so wiring one would invent a caller rather than connect a real one. Evidence: `qualification/results/R10-security/FINDINGS.md` §3. |
+| G-SEAM-28 | **The run-record `epoch` is never BUMPED, so wiring the guard alone would still refuse nothing.** | OPEN — second half of G-SEAM-21 | G-SEAM-21 records that `applyWorkerSettlement` is unreachable. This is the other half: even if it were imported, its precondition cannot occur. Across all production sources the `epoch` field is written in exactly ONE place — `record.ts:493`, `epoch: 1` inside `initialRunRecord` — and the production re-adoption path (`WorkService.resume`, `host.ts:707-713`) re-opens the phase WITHOUT touching it. So the guard would evaluate `1 !== 1` and accept every settlement; the value it exists to refuse (a settlement from a previous host generation) is a value no code in this package can produce. **Concrete consequence if left open**: host A admits a task under epoch 1, dies, and host B re-adopts the run; a late settlement from A's child passes the `childId` string match and is applied, moving the task terminal and RELEASING its reservation in a generation that never admitted it — freeing a slot the new generation believes is occupied and attributing spend to the wrong generation (`WorkService.transition`, `host.ts:900`). **Minimal honest fix, both halves required**: bump the epoch on the real re-adoption path, AND route settlements through `applyWorkerSettlement` instead of `WorkService.transition`. Not wired, deliberately: no production settlement-receiving path exists, so wiring one would invent a caller rather than connect a real one. Evidence: `qualification/results/R10-security/FINDINGS.md` §3. |
 
-| G-DOC-01 | A test title in `sec-gates.test.ts` asserted `SEC-08` is `BLOCKED_EXTERNAL` while the verdict table records `NOT_RUN`. | RESOLVED | The two statuses are not interchangeable: `BLOCKED_EXTERNAL` means the remaining work needs an AUTHORIZATION this machine does not have, while `NOT_RUN` means not exercised. SEC-08 needs a second provisioned execution world (infrastructure) and its mechanism is present-but-unwired, so `NOT_RUN` is correct. The title and section comment now say `NOT_RUN`, and the test asserts the distinction — pinning the `upg-gates` row, the `NOT_RUN` set `['DEP-04','SEC-08','UPG-08']`, the `BLOCKED_EXTERNAL` set `['UPG-07']`, and both status definitions from `docs/DELIVERY.md`. Evidence: `qualification/results/R10-security/FINDINGS.md` §4.1. |
+| G-VER-05 | A test title in `sec-gates.test.ts` asserted `SEC-08` is `BLOCKED_EXTERNAL` while the verdict table records `NOT_RUN`. | RESOLVED — recording corrected in the stricter direction | The two statuses are not interchangeable: `BLOCKED_EXTERNAL` means the remaining work needs an AUTHORIZATION this machine does not have, while `NOT_RUN` means not exercised. SEC-08 needs a second provisioned execution world (infrastructure) and its mechanism is present-but-unwired, so `NOT_RUN` is correct. The title and section comment now say `NOT_RUN`, and the test asserts the distinction — pinning the `upg-gates` row, the `NOT_RUN` set `['DEP-04','SEC-08','UPG-08']`, the `BLOCKED_EXTERNAL` set `['UPG-07']`, and both status definitions from `docs/DELIVERY.md`. Evidence: `qualification/results/R10-security/FINDINGS.md` §4.1. |
 ```
 
 ---
@@ -500,7 +507,40 @@ node /d/DSH/src/dsh-src/node_modules/typescript/bin/tsc -p tsconfig.check.json  
 node qualification/results/R10-security/probe-seams.mjs                            # → exit 0
 ```
 
+**A transient cross-agent typecheck conflict, recorded because it was real and
+because the resolution is not obvious from the final green.** While this pass ran,
+the shared `tsconfig.check.json` exited **2** on two files this task does not own —
+`src/data-plane.test.ts` and `src/research-chain.test.ts` — which other agents were
+editing at that moment (both were rewritten between 03:25 and 03:26, after this
+pass's files were final). Two of the three errors were theirs directly; the third
+(`packages/fs/tool-fs/src/sandbox.ts(43,15)`) was a **transitive** consequence of
+`data-plane.test.ts`'s deliberate deep import of `@deepseek-ai/dsh-tool-fs/src/index.ts`,
+which pulls that checkout file into the program. This pass's files were never in
+the error list (verified by grep, 0 hits), and both configs exited **0** again once
+those agents' edits settled.
+
+`tsconfig.attribution.json` in this directory preserves the method, so the
+attribution can be re-checked rather than taken on trust: it extends the real check
+config with identical strict flags and excludes only those two foreign files. It
+exited **0** while the shared config exited 2, which is what proved the errors were
+not this pass's. It is an attribution probe, **not** a gate config — it must never
+be substituted for `tsconfig.check.json` in a verdict, because excluding a file is
+exactly the "false pass" that DEP-03 exists to catch.
+
 Pinned-checkout integrity: `git -C /d/DSH/src/dsh-src rev-parse HEAD` →
-`ddefc45fbc7f8e46dd73185e68295696d1297887`, unmodified. Nothing was committed.
-No credential was read; every canary in the fixtures and in the new tests is a
-fabricated `CANARY-FAKE-*` value.
+`ddefc45fbc7f8e46dd73185e68295696d1297887`, unmodified. No credential was read;
+every canary in the fixtures and in the new tests is a fabricated
+`CANARY-FAKE-*` value.
+
+**Commit attribution, recorded because it affects how a reader reads the history.**
+This pass made **no commit and no push** (`git commit`/`git push` were never run
+here). During the pass, a *different* agent working in the same tree ran
+`git commit`, producing `1e0b8d69` ("R10 security re-derivation: FAILs
+sharpened, SEC-08 corrected stricter"), whose message describes this pass's work
+and which swept in this pass's in-flight files along with many other agents'
+evidence directories. The working tree is the source of truth for this report:
+the digests in `source-digests.txt` are of the **on-disk** files, and
+`sec-gates.test.ts` is still untracked (`git ls-files` does not know it) because
+the committing agent did not add it. `FINDINGS.md` was edited *after* that commit
+(the free-id correction in §7), so its committed and on-disk contents differ; the
+digest file records the on-disk content.

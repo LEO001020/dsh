@@ -1,4 +1,4 @@
-06e29c23632f3252d4461a7652dc6a7ce16d137fccb4cdc120a88e3e97a2b4a8 *packages/dsh-daily-work/src/artifacts.ts
+ab323affa20702b0cf77d365cdf61c0cc4439f21968acadc1b07426e908458bb *packages/dsh-daily-work/src/artifacts.ts
 b85e020d4fd8b5c2b6c9648e7685ed8a2c103046fa56380f89a5f4d977165433 *packages/dsh-daily-work/src/capacity.test.ts
 a1adc4426309eac91c0fe3071b5ba437ff315409e02fa3392b1316354db7856d *packages/dsh-daily-work/src/capacity.ts
 4d62ffb3297df890caf4cf68a8df246ccbcc152a37dfccf0ab78950f8cc6880b *packages/dsh-daily-work/src/concurrency.test.ts
@@ -25,8 +25,8 @@ c0af7d516689b3037dc79805a4bf8a59332264443a17029a2ec9fff8104cc5c6 *packages/dsh-d
 2009968049ecfa1e308ffd9316fa11c82c244c8d40977d870c90bc999123e366 *packages/dsh-daily-work/src/host.test.ts
 17c78677a23fe809e7f8613785e97c375b473965874a10fd561a381d8de40bd6 *packages/dsh-daily-work/src/host.ts
 7e70a6a5e34430b901b28e479f5e3e72db0bbb81dfd469fbb1e372d0968cd7a1 *packages/dsh-daily-work/src/isolation.test.ts
-06b94fb543c0b49755cf05f768972818cb8a5b8c3b24f2c871e17801959e48af *packages/dsh-daily-work/src/kernel-lifecycle.ts
-dc660033db789d6d9b5b6e05797a7f3574ee6227e07115ff570f575683bcabb2 *packages/dsh-daily-work/src/kernel-recovery.test.ts
+b2a90624601afb906a046fe82b97a7ddc3f6f1489c56d9e511d4e4d15bca3cbd *packages/dsh-daily-work/src/kernel-lifecycle.ts
+03797887c64150e0794478ee955adb5670a93b1ef1a7c947992aa5b85f366547 *packages/dsh-daily-work/src/kernel-recovery.test.ts
 257dbd44f81d775f5e6e59394637a751a829244c6246a0b618ae7a104a4d18c9 *packages/dsh-daily-work/src/launch-port.test.ts
 de70463a211cd47e55ac95928f63a374d8e8c669401c4f3b35aee32ede584fff *packages/dsh-daily-work/src/launch-port.ts
 579b07c911b5c5d215fcbe82736be6f049be752f151b1ff9822954591cc20a83 *packages/dsh-daily-work/src/lifecycle.test.ts
@@ -44,7 +44,7 @@ cd5bea90a5477be520bb632ee774e0194176b31a144d78a2961641e2c4574136 *packages/dsh-d
 bc5cd7f06a437a07f82682241023b0b50f10043df6928d0ebde2ed92dbc85b70 *packages/dsh-daily-work/src/reconcile.ts
 96026da6bd546b10489515cabfb12fc5928467b51e76d765dcf2cfa9232bd39e *packages/dsh-daily-work/src/record.ts
 5edde8a5d8d79b0a138f06818a9deb3a04ccc6c22dd7bfe1ae338c967a45f440 *packages/dsh-daily-work/src/recovery.ts
-424226da9bab3a153cb9ae1572dd09dc4ee1ce77d5231408b7f97142cf0ab3ae *packages/dsh-daily-work/src/research-chain.test.ts
+77438762eb46961399b86a0c12790859177569218428fdebe8a55d87d04e7c7c *packages/dsh-daily-work/src/research-chain.test.ts
 239379c4c3cfa281a094f31a83663733b0af2336416341c6598a71bed998ee0d *packages/dsh-daily-work/src/research.test.ts
 4bb4824203d6dcca9a2b879ab97f2d4ee571a7a3dfed182d94a6d21d577e6dbe *packages/dsh-daily-work/src/scheduling.test.ts
 08f45e81a14a94fcaf0de0b68a9c882bf69f5038843a50fb44a6664987e252cb *packages/dsh-daily-work/src/sec-gates.test.ts
@@ -64,8 +64,8 @@ d04bb64850331c13f7d215d9ce6e3806037eb16c99b30a7bce82a5fe797227d6 *packages/dsh-d
 451930eb9f8e92aacfd630d47a5a238aa85191f8ebc6fb34226837d80a01b578 *packages/dsh-daily-work/src/u02-research-loop.test.ts
 090bc7bced891928a0a81923b1f493fbc9d8a6664c55f96d49f5f24649abcd65 *packages/dsh-daily-work/src/u03-sustained-load.test.ts
 e8cafc2f61284e1409217b08f2ab91cbcdc840c79098a9b519f224281b155e6f *packages/dsh-daily-work/src/u04-paired-comparison.test.ts
-4135ad234638511d57424cb2786b13898d874c442a113631983367799ce943eb *packages/dsh-daily-work/src/upg-gates.test.ts
-98588945b789329302722cda31653e9c463d10832b668cdc0da46faefd80e54d *packages/dsh-daily-work/src/verification-gates.test.ts
+a80dccf3422368c5748efca44e6482a946bce84dc0253e83f6cb4ebfa89e42ab *packages/dsh-daily-work/src/upg-gates.test.ts
+3f5fd1714a5744972184093210aa6b3d635c0f657e4ea5ee4113a3bb191d49cf *packages/dsh-daily-work/src/verification-gates.test.ts
 23b8892983d3ae55d4a8f9f8d3d9b4e712cc5cbacae213f0dc891aaa281b6adc *packages/dsh-daily-work/src/verify.test.ts
 95281a41c60b9f70ddc57a0f7754749ac203eb72706850f400a5ca661fd822ae *packages/dsh-daily-work/src/verify.ts
 c2fa1d5dabe4277f78ee0e7c8f29f37275783a7d0ec3761e4bc5241dfe045236 *packages/dsh-daily-work/src/web-provenance.ts
@@ -75,4 +75,3 @@ fc7ef18bb0e9c6213df6bee204488365450e5c8e117ec3eb97f79f63a8b46c6b *packages/dsh-d
 447ae603840b231c0469766a45414bcd36686025594a83127ea43edaec44b749 *packages/dsh-daily-work/src/wire-faults.test.ts
 adb26a5d9587bdce73e082a795ad28cd7a6e819fc1080327ff8c3008c26d6432 *packages/dsh-daily-work/src/worktree-isolation.ts
 61d3aafe546ba77bf1d886131fe59a81652f2974769729f4d4c31621e4678102 *packages/dsh-daily-work/src/writers-plugin.ts
-0d1d453fba47f8c42209fe1843ede1dbaa6ca54cd59be2359740a3f6006dd53a *packages/dsh-daily-work/src/zz-m5-trace.test.ts

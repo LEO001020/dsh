@@ -111,7 +111,7 @@
   config:
     default: daily-standard
     roots:
-      - path: !!js new URL('presets/', ctx.baseUrl).pathname
+      - path: !!js new URL('presets/', ctx.baseUrl).pathname.replace(/^\/([A-Za-z]:)/, '$1')
         trust: system
     includeShippedRoot: true
     includeUserRoot: true

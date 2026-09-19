@@ -15,7 +15,7 @@
   },
   "deployment": {
     "status": "UNQUALIFIED_OFFLINE",
-    "identity": "6b214b9f56c80d422e47083bae55ff09cd3e05753150536a91dbf3c7dca738db",
+    "identity": "ece4037a9d5bbb014aa5a8395ed15531715a11949f2aa687166fcfeb5717576f",
     "identity_algorithm": "sha256(UTF8(json.dumps(inputs, sort_keys=True, separators=(',', ':'), ensure_ascii=True)))",
     "inputs": {
       "upstream_repository": "deepseek-ai/deepseek-harness",
@@ -30,7 +30,7 @@
       "native_binary_digests": "none-no-native-addon-built",
       "os_and_architecture": "Windows 10.0.26200 / AMD64",
       "isolation_image_or_policy_digest": "sandbox-windows-acl-partial",
-      "host_profile_digest": "2a0aff17ba2112e80c15784493ea220bced31abb1f26759f954546163750a3cf",
+      "host_profile_digest": "59f23346955d24063a923b1a205bbcb40c541e054e6fd04dbdde4218eaa2ab7f",
       "agent_preset_id": "standard",
       "agent_preset_digest": "0934f22b2fdbc158fd2edad33ec5dd2671b5b1f727800dcaab74cee3bd7294af",
       "resolved_plugin_graph_digest": "23f763d1bf2af8ba3210473d6743bc39ac0185bdefd661861935414a01e5af6b",

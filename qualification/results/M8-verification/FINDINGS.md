@@ -108,6 +108,49 @@ skipped, deleted or relaxed; no N was lowered; no permission was widened. The
 `it.skip` occurrences at lines 475–476 are inside a **fixture string** that is
 written to disk as the VER-02 all-skipped suite, not skipped tests of this file.
 
+**Strengthened — VER-06 was a LOAD-DEPENDENT ORACLE, and it failed under load.**
+This is the most interesting finding of the pass, and it was found only because
+the suite was re-run rather than trusted. On a clean machine VER-06 passed; run
+while other agents were working it **failed** at
+`expect(inPlace.exit.code).toBe(9)` with `expected +0 to be 9` — the in-place arm
+exited **0**, meaning the child never saw the tampered tree.
+
+The cause was the test's own schedule, not the runner. The mutation window was
+anchored to a timer that started **before the child process existed**:
+
+```ts
+const mutation = mutate()          // starts a 700 ms timer NOW
+const snapshotted = await runKeepingSnapshot(definition)
+```
+
+`runAcceptance` must digest the tree, copy the snapshot and spawn `node` before
+the child executes a single line. Under load that prelude exceeded 700 ms, so the
+tamper was **already restored** by the time the child looked — and the arm that
+exists to prove "in place, the child really does execute against the tampered
+tree" silently stopped proving it. It failed loudly here; a slightly different
+timing would have had it pass while testing nothing. **That is the
+oracle-weaker-than-its-scenario shape this whole project is about, found inside
+the suite that certifies it.**
+
+The fix is structural, not a retry or a longer sleep:
+
+1. The child writes a **readiness marker as its first action**, and the mutation
+   window opens only after that marker appears — so the window is anchored to
+   the child genuinely running rather than to spawn latency. The marker path is
+   outside `inputs` deliberately: arm 1's child runs in the frozen snapshot, so a
+   path under `dir` would be written to the snapshot in one arm and the live tree
+   in the other, and the watcher could never see arm 1's.
+2. The child now **polls** for the tampered revision (50 ms interval, 6 s
+   deadline) instead of sampling once at a fixed offset. Polling asserts what the
+   gate actually claims — that the in-place child observes the tampered tree at
+   some point inside the window — rather than betting on timer scheduling.
+3. The marker is cleared between arms, or arm 2 would see arm 1's marker and
+   re-open the same race.
+
+**Proven under the condition that exposed it**: with six CPU-saturating
+processes running, the suite was `45 passed / 45, test_exit=0` at 93.2 s — the
+same load under which it had failed. A clean run is 67–75 s.
+
 **Not reproducible — the claimed stale `gates.json` hashes.** The prior pass
 reported that `T05`, `T06` and `T08` cite a stale `M9.2-terminal-advanced/
 FINDINGS.md`. Recomputed all **127** evidence hashes in `qualification/gates.json`
@@ -483,17 +526,30 @@ worse than one with a smaller claim.
 
 | Item | Value |
 |---|---|
-| Tests, after fix | **45 passed / 45**, `test_exit=0` (68.7 s) |
-| Tests, first re-run (before fix) | **45: 1 failed, 44 passed**, `test_exit=1` |
+| Tests, after both fixes | **45 passed / 45**, `test_exit=0` (76.1 s) |
+| Tests, under deliberate CPU load (6 saturating processes) | **45 passed / 45**, `test_exit=0` (93.2 s) |
+| Tests, first re-run (before fixes) | **45: 1 failed, 44 passed**, `test_exit=1` (W02) |
+| Tests, mid-pass (before the VER-06 fix, under load) | **45: 1 failed, 44 passed**, `test_exit=1` (VER-06) |
 | `tsc -p tsconfig.json --noEmit` | exit **0**, no output |
-| `tsc -p tsconfig.check.json` | exit **0**, no output |
+| `tsc -p tsconfig.check.json` | exit **0** for every file in this slice — see the attribution note below |
 | `git` version measured against | `2.55.0.windows.3` |
 | `node` | `v24.18.0` |
 | Commits made | **none** (per instruction) |
-| `D:\DSH\src\dsh-src` modified | **no** |
+| `D:\DSH\src\dsh-src` modified | **no** (its pre-existing dirty files predate this session by ~8 h and are not mine) |
 | Leftover temp dirs (`dsh-ver-*`, `dsh-writers-probe-*`, …) | **0** |
-| Port 3080 | **not listening** after the probe boot was killed |
-| Files changed by this pass | `src/verification-gates.test.ts` (one assertion, strengthened); `tests.txt`, `source-digests.txt`, `FINDINGS.md`, `writers-mounted.json` (evidence) |
+| Port 3080 | **not listening**; the boot probe was killed and the port verified released |
+| Files changed by this pass | `src/verification-gates.test.ts` (two assertions/anchoring, both strengthened); `tests.txt`, `source-digests.txt`, `FINDINGS.md`, `writers-mounted.json` (evidence); `docs/GAPS.md` (G-VER-01..05) |
+
+**Attribution note on `tsconfig.check.json`.** At one point during this pass that
+config exited 2 with `src/research-chain.test.ts(140,3): error TS2741: Property
+'headers' is missing`. That file is **not part of this slice** and was being
+edited concurrently by another agent — its mtime moved `03:24:51 → 03:25:19` and
+the error moved `line 140 → line 161` between two consecutive runs. **No error in
+that run referenced `verification-gates.test.ts`, `worktree-isolation.ts` or
+`writers-plugin.ts`.** This is reported rather than fixed, per the instruction to
+attribute rather than touch another agent's file. It is a transient of concurrent
+editing, not a defect in M8.
+
 
 **One file was touched in the shared package config, and it was not touched by
 me.** `package.json` and `cordis.patch.yml` already carried the `./writers` export

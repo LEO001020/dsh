@@ -1278,7 +1278,7 @@ describe('ECO-07: the stock control arm is not secretly modified, and the variab
   /** M0.5's recorded digest of the composed stock `web` graph. */
   const M05_DUMP_SHA256 = 'b64151b308f3cbb0f5efe57b04c35bfddda641e249300ee28148391f07e1af01'
   /** M0.5's recorded digest of the daily-candidate profile patch. */
-  const DAILY_PATCH_SHA256 = '2a0aff17ba2112e80c15784493ea220bced31abb1f26759f954546163750a3cf'
+  const DAILY_PATCH_SHA256 = '59f23346955d24063a923b1a205bbcb40c541e054e6fd04dbdde4218eaa2ab7f'
 
   it('the stock arm declares no plugin rows, and its files hash to the committed values', () => {
     // "A control group that has been quietly modified is not a control group."

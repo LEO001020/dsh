@@ -1,0 +1,37 @@
+=== BUNDLE LAYERS (resolved by the real resolver) ===
+  @deepseek-ai/dsh-base
+      dir=D:\DSH\src\dsh-src\apps\cli\node_modules\@deepseek-ai\dsh-base
+      patch=D:\DSH\src\dsh-src\apps\cli\node_modules\@deepseek-ai\dsh-base\cordis.patch.yml exists=true
+  @deepseek-ai/dsh-web-app
+      dir=D:\DSH\src\dsh-src\apps\cli\node_modules\@deepseek-ai\dsh-web-app
+      patch=D:\DSH\src\dsh-src\apps\cli\node_modules\@deepseek-ai\dsh-web-app\cordis.patch.yml exists=true
+  dsh-daily-work
+      dir=C:\Users\hzq00\AppData\Local\Temp\r6home\profiles\daily-candidate\node_modules\dsh-daily-work
+      patch=C:\Users\hzq00\AppData\Local\Temp\r6home\profiles\daily-candidate\node_modules\dsh-daily-work\cordis.patch.yml exists=true
+  profile own patch: C:\Users\hzq00\AppData\Local\Temp\r6home\profiles\daily-candidate\cordis.patch.yml (0 entries)
+
+=== COMPOSED ENTRIES (170) ===
+daily-web-search row: {
+ "id": "daily-web-search",
+ "name": "dsh-daily-work/web-search",
+ "config": {
+  "id": "daily-search",
+  "endpoint": "https://api.exa.ai/search",
+  "apiKeyEnv": "EXA_API_KEY",
+  "maxResults": 60
+ }
+}
+web row: {
+ "id": "web",
+ "name": "@deepseek-ai/dsh-web",
+ "config": {
+  "searchProvider": "deepseek-official",
+  "fetchProvider": "http"
+ }
+}
+
+=== SELECTION ===
+web.searchProvider = "deepseek-official"
+our provider id    = "daily-search"
+MISMATCH: the seam selects deepseek-official, not daily-search
+shipped deepseek provider row present: true

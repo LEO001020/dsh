@@ -12,7 +12,7 @@ node: v24.18.0  platform: win32
   seam states network is out of vocabulary: true
 
 --- 2. does a different `mode` change READ behaviour? (measured) ---
-  fixture: outside=C:\Users\hzq00\AppData\Local\Temp\r10-mode-X7rfSu\outside\canary.txt (sibling of workspace, so past the only boundary)
+  fixture: outside=C:\Users\hzq00\AppData\Local\Temp\r10-mode-rsCojM\outside\canary.txt (sibling of workspace, so past the only boundary)
   mode=read-only        exit=0 enforcement=partial -> READ_OK:CANARY-FAKE-R10-READ-NOT-A-CREDENTIAL
   mode=workspace-write  exit=0 enforcement=partial -> READ_OK:CANARY-FAKE-R10-READ-NOT-A-CREDENTIAL
   bash-sandbox short-circuits danger-full-access before confine(): true

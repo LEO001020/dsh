@@ -65,7 +65,7 @@
 import { createHash } from 'node:crypto'
 import { spawnSync } from 'node:child_process'
 import {
-  cpSync, existsSync, lstatSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync,
+  cpSync, existsSync, lstatSync, mkdirSync, readdirSync, readFileSync, rmSync, symlinkSync, writeFileSync,
 } from 'node:fs'
 import { join, relative } from 'node:path'
 
@@ -208,6 +208,36 @@ record('S0', 'a NEW canary home is created and seeded with REAL state', copiedCr
 // a change of WHICH directory the profile points at.
 // ---------------------------------------------------------------------------
 
+/**
+ * Stage one version as its own immutable directory.
+ *
+ * PEER RESOLUTION, AND WHY A JUNCTION IS HERE. The profile installs this
+ * directory with `link:`, so pnpm creates `profiles/canary11/node_modules/dsh-daily-work`
+ * as a junction to it and does NOT install the package's own dependencies.
+ * `lib/host-plugin.js` then imports `@deepseek-ai/cordis` and the other peers by
+ * bare specifier, which Node resolves by walking up from the FILE's directory --
+ * i.e. from inside this version directory. Without a `node_modules` here every
+ * row fails to import, which is exactly what the first run of this script
+ * produced:
+ *
+ *   dsh: warning: 7 entries did not activate
+ *   daily-work-host (dsh-daily-work/host): failed to import
+ *
+ * That was a defect in the STAGING, not in the deployment: the package itself
+ * carries these same junctions in its own `node_modules`
+ * (`packages/dsh-daily-work/node_modules/@deepseek-ai/* -> D:/DSH/src/dsh-src/...`).
+ * The junction reproduces that layout for the staged copy.
+ *
+ * RECORDED LIMITATION: these peer links are junctioned rather than installed.
+ * The package is `private: true` and is not published, so there is no registry
+ * install to run. The artifact under test is therefore `lib/` + `cordis.patch.yml`
+ * + `package.json`; its dependency resolution is borrowed from the working tree.
+ * A real release would install its own dependencies, and that half is NOT
+ * exercised.
+ *
+ * @param version - the version string to stamp into `package.json`.
+ * @param substitutions - exact `[from, to]` edits to `cordis.patch.yml`.
+ */
 function stageVersion(version, { patchSubstitutions }) {
   const dir = `${HOME}/versions/dsh-daily-work-${version}`
   rmSync(dir, { recursive: true, force: true })
@@ -223,6 +253,12 @@ function stageVersion(version, { patchSubstitutions }) {
     patch = patch.replace(from, to)
   }
   writeFileSync(join(dir, 'cordis.patch.yml'), patch, 'utf8')
+  const link = join(dir, 'node_modules')
+  mkdirSync(link, { recursive: true })
+  for (const entry of readdirSync(join(PKG, 'node_modules'))) {
+    if (entry === '.vite' || entry === '.vite-temp' || entry === '.bin') continue
+    symlinkSync(join(PKG, 'node_modules', entry), join(link, entry), 'junction')
+  }
   return { dir, digest: treeDigest(dir).digest }
 }
 
@@ -397,16 +433,57 @@ writeFileSync(OVERLAY, [
   '',
 ].join('\n'), 'utf8')
 
-const sessionRootNew = `${HOME}/sessions-after-upgrade`
+/**
+ * The turn-completion marker, as the runner actually emits it.
+ *
+ * The line is `{"type":"status","phase":"turn_end",...}` -- the discriminator is
+ * `type: "status"` and the event is named by `phase`. An earlier version of this
+ * script looked for `"type":"turn_end"`, which never appears, so a perfectly
+ * clean boot was reported as a failure. The marker below is the exact substring
+ * copied from a real transcript (`canary-rollback.log`), not a guess.
+ */
+const TURN_ENDED = '"phase":"turn_end"'
+const TURN_COMPLETED = '"reason":{"kind":"completed"}'
+
+/**
+ * Did the EXTENSION actually activate?
+ *
+ * `exit 0` and a completed turn are NOT sufficient. On the first run of this
+ * script the launcher exited 0 and the turn completed while the extension's rows
+ * were entirely unloaded, because the staged version directory could not resolve
+ * its peers:
+ *
+ *   dsh: warning: 7 entries did not activate
+ *   daily-work-host (dsh-daily-work/host): failed to import
+ *
+ * A boot that completes a turn with the product absent is exactly the shape of
+ * "a green light that proves nothing", so the warning is treated as a FAILURE of
+ * the boot step rather than as noise. The check is on the WARNING TEXT, which is
+ * what the launcher prints when a row does not mount.
+ */
+function extensionActivated(bootResult) {
+  const noise = `${bootResult.stdout}\n${bootResult.stderr}`
+  const failedRows = [...noise.matchAll(/^(daily-[a-z-]+) \(dsh-daily-work\/[a-z-]+\): failed to import$/gm)]
+    .map(match => match[1])
+  const activationWarning = /did not activate/.test(noise)
+  return { activated: failedRows.length === 0 && !activationWarning, failedRows, activationWarning }
+}
+
 const bootNew = dsh(HOME, ['--profile', 'canary11', '--patch', OVERLAY, '--json', 'r7 post-upgrade turn'],
-  { env: { M914_SESSION_ROOT: sessionRootNew }, timeoutMs: 300_000 })
-const bootNewCompleted = bootNew.ok && bootNew.stdout.includes('"type":"turn_end"') && bootNew.stdout.includes('"reason":{"kind":"completed"}')
-record('S7', 'the NEW version boots through the real launcher and completes a real turn', bootNewCompleted ? 'PASS' : 'FAIL',
+  { timeoutMs: 300_000 })
+const newActivation = extensionActivated(bootNew)
+const bootNewCompleted = bootNew.ok && bootNew.stdout.includes(TURN_ENDED)
+  && bootNew.stdout.includes(TURN_COMPLETED) && newActivation.activated
+record('S7', 'the NEW version boots through the real launcher with the EXTENSION LOADED, and completes a real turn',
+  bootNewCompleted ? 'PASS' : 'FAIL',
   bootNewCompleted
-    ? `exit 0; the turn ended completed; the scripted route made a real tool call and a real session write`
-    : `exit ${String(bootNew.status)}; turn_end present: ${String(bootNew.stdout.includes('"type":"turn_end"'))}; `
+    ? `exit 0; the turn ended completed; no "did not activate" warning; the scripted route made a real tool call `
+      + 'and a real session write on disk'
+    : `exit ${String(bootNew.status)}; turn_end present: ${String(bootNew.stdout.includes(TURN_ENDED))}; `
+      + `extension rows that failed to import: ${newActivation.failedRows.join(', ') || 'none'}; `
+      + `"did not activate" warning present: ${String(newActivation.activationWarning)}; `
       + `stderr: ${(bootNew.stderr || '').slice(0, 300)}`,
-  { launcher: LAUNCHER, overlay: OVERLAY, stdout: bootNew.stdout.slice(0, 4000) })
+  { launcher: LAUNCHER, overlay: OVERLAY, failedRows: newActivation.failedRows, stdout: bootNew.stdout.slice(0, 4000) })
 
 // And the new version performs an effect in the world. This is the stimulus the
 // gate names: "a new version read the state, and some external effects have
@@ -526,17 +603,19 @@ record('S12', 'the OLD consistency snapshot is restored byte-for-byte', restored
   { restoredDigest, snapshotStateDigest: snapshotStateDigestValue, effectRecordSurvivesRewind: existsSync(effectFileInState) })
 
 // The restored state is one the OLD version can read: a real boot, in a new
-// process, against the restored state and the rolled-back artifact.
-const sessionRootRolledBack = `${HOME}/sessions-after-rollback`
+// process, against the restored state and the rolled-back artifact. The SAME
+// activation check applies, for the same reason.
 const bootOld = dsh(HOME, ['--profile', 'canary11', '--patch', OVERLAY, '--json', 'r7 post-rollback turn'],
-  { env: { M914_SESSION_ROOT: sessionRootRolledBack }, timeoutMs: 300_000 })
-const bootOldCompleted = bootOld.ok && bootOld.stdout.includes('"type":"turn_end"')
-record('S13', 'the OLD artifact boots against the RESTORED state and completes a turn',
+  { timeoutMs: 300_000 })
+const oldActivation = extensionActivated(bootOld)
+const bootOldCompleted = bootOld.ok && bootOld.stdout.includes(TURN_ENDED) && oldActivation.activated
+record('S13', 'the OLD artifact boots against the RESTORED state with the extension loaded, and completes a turn',
   bootOldCompleted ? 'PASS' : 'FAIL',
   bootOldCompleted
-    ? 'exit 0 and the turn ended; the rolled-back deployment reads the restored state'
-    : `exit ${String(bootOld.status)}; stderr: ${(bootOld.stderr || '').slice(0, 300)}`,
-  { stdout: bootOld.stdout.slice(0, 2000) })
+    ? 'exit 0, the turn ended, no "did not activate" warning; the rolled-back deployment reads the restored state'
+    : `exit ${String(bootOld.status)}; extension rows that failed to import: `
+      + `${oldActivation.failedRows.join(', ') || 'none'}; stderr: ${(bootOld.stderr || '').slice(0, 300)}`,
+  { failedRows: oldActivation.failedRows, stdout: bootOld.stdout.slice(0, 2000) })
 
 // ---------------------------------------------------------------------------
 // STEP 7 — RECONCILE the effect. This is the clause the gate turns on.

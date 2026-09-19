@@ -1,0 +1,16 @@
+{
+  "profileName": "unknown",
+  "servicePresent": true,
+  "targetBefore": 10,
+  "settingsPresent": false,
+  "namespaceRegistered": false,
+  "namespaceRevision": null,
+  "namespaceValue": null,
+  "targetSettingHandlePresent": true,
+  "writeAttempted": false,
+  "writeOk": false,
+  "writeReason": null,
+  "targetAfterWrite": null,
+  "liveReaderObserved": false,
+  "error": "ctx.settings is ABSENT: the daily-work namespace has no provider, so targetActiveChildren() is the composition value only"
+}

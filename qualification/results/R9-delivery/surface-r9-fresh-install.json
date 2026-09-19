@@ -1,0 +1,57 @@
+{
+  "profileBooted": true,
+  "profileName": "daily-candidate (installed as \"daily\")",
+  "presetDefaultId": "daily-standard",
+  "presetRoots": [
+    {
+      "path": "D:\\DSH\\src\\dsh-src\\packages\\preset\\agent-presets\\presets\\",
+      "trust": "system"
+    },
+    {
+      "path": "/D:/DSH/home/r9-scratch/profiles/daily/presets/",
+      "trust": "system"
+    },
+    {
+      "path": "D:\\DSH\\home\\r9-scratch\\.agent-presets",
+      "trust": "user"
+    }
+  ],
+  "kernelServicePresent": true,
+  "workServicePresent": true,
+  "dataServicePresent": true,
+  "historyServicePresent": true,
+  "programmaticScopePresent": true,
+  "sessionCreated": false,
+  "sessionId": null,
+  "toolCountAgentKey": 0,
+  "toolCountContextKey": 0,
+  "ipythonToolPresent": false,
+  "ipythonParameterNames": null,
+  "ipythonIsOnlyParameter": false,
+  "workToolPresent": false,
+  "forbiddenLifecycleTools": [],
+  "tools": [],
+  "error": "RemoteError: agent-presets: preset \"daily-standard\" not found (available: standard, ptc, minimal, cordis)",
+  "presetsListed": [
+    {
+      "id": "standard",
+      "trust": "system",
+      "broken": null
+    },
+    {
+      "id": "ptc",
+      "trust": "system",
+      "broken": null
+    },
+    {
+      "id": "minimal",
+      "trust": "system",
+      "broken": null
+    },
+    {
+      "id": "cordis",
+      "trust": "system",
+      "broken": null
+    }
+  ]
+}

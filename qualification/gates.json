@@ -8,7 +8,7 @@
     "oracle": "逐项记录并拒绝不一致；不能以版本字符串替代artifact identity。",
     "status": "PASS",
     "note": "Source identity, lockfile and package.json hashes recorded; artifact sha256 captured; C0 graph hashed.",
-    "deployment_identity": "6b214b9f56c80d422e47083bae55ff09cd3e05753150536a91dbf3c7dca738db",
+    "deployment_identity": "ece4037a9d5bbb014aa5a8395ed15531715a11949f2aa687166fcfeb5717576f",
     "evidence": [
       {
         "path": "qualification/results/M0.5-c0-resolved-graph/C0-resolved-graph.md",
@@ -29,7 +29,7 @@
     "oracle": "doctor明确失败；只在实际满足engine/选定工具链后构建。",
     "status": "PASS",
     "note": "Node v24.18.0 satisfies the engines field; corepack pinned pnpm 11.7.0; the global 11.24.0 was not used.",
-    "deployment_identity": "6b214b9f56c80d422e47083bae55ff09cd3e05753150536a91dbf3c7dca738db",
+    "deployment_identity": "ece4037a9d5bbb014aa5a8395ed15531715a11949f2aa687166fcfeb5717576f",
     "evidence": [
       {
         "path": "qualification/results/M0.4-first-toolcall/A03-first-toolcall.txt",
@@ -46,7 +46,7 @@
     "oracle": "收到关联正确的tool/result；捕获src/lib Symbol或Cordis多实例；非仅--help成功。",
     "status": "PASS",
     "note": "First real tool chain proven on the built launcher; the source launcher was separately shown to differ, which is the finding this gate exists for.",
-    "deployment_identity": "6b214b9f56c80d422e47083bae55ff09cd3e05753150536a91dbf3c7dca738db",
+    "deployment_identity": "ece4037a9d5bbb014aa5a8395ed15531715a11949f2aa687166fcfeb5717576f",
     "evidence": [
       {
         "path": "qualification/results/M0.6-launcher-identity/A03-launcher-identity.txt",
@@ -67,7 +67,7 @@
     "oracle": "生成完整row config，dump/运行值与预期一致，无误以deep-merge丢配置。",
     "status": "PASS",
     "note": "The mechanism is vendor/include/src/index.ts:120-123: `target[key] = value`, no recursion -- so a patch REPLACES the row whole config. Measured with a FALSIFYING case rather than a happy path: patching only `openAt` on session-query-sqlite DROPS `path` entirely, and because `path` is .required() in that row own schema, the row does not activate at all (`1 entry did not activate ... $.path missing required value`). So the wrong mental model does not produce a subtly different graph; it produces a tree that will not mount. Five mutations were run against this test and each turned the intended assertion red.",
-    "deployment_identity": "6b214b9f56c80d422e47083bae55ff09cd3e05753150536a91dbf3c7dca738db",
+    "deployment_identity": "ece4037a9d5bbb014aa5a8395ed15531715a11949f2aa687166fcfeb5717576f",
     "evidence": [
       {
         "path": "qualification/results/M3.1-c2-profile/dump-config-daily-candidate.yml",
@@ -92,7 +92,7 @@
     "oracle": "最终resolved graph明确显示覆盖；C0使用无污染独立home。",
     "status": "PASS",
     "note": "Layer order measured as bundles -> profile -> HOME -> --patch, with a home replacement OUTRANKING the profile own layer under the same whole-value semantics. --dump-default-config omits BOTH the profile and home layers, which is exactly why it is the stock baseline, and the launcher REFUSES to combine it with --patch -- so the baseline cannot be contaminated by construction.",
-    "deployment_identity": "6b214b9f56c80d422e47083bae55ff09cd3e05753150536a91dbf3c7dca738db",
+    "deployment_identity": "ece4037a9d5bbb014aa5a8395ed15531715a11949f2aa687166fcfeb5717576f",
     "evidence": [
       {
         "path": "qualification/results/M0.5-c0-resolved-graph/C0-resolved-graph.md",
@@ -113,7 +113,7 @@
     "oracle": "无host registry重复，无sibling service不可见，无跨Session闭包状态污染。",
     "status": "PASS",
     "note": "Two presets, parallel Sessions, with the REAL dsh-jobs-local, dsh-tool-jobs and dsh-compaction-basic behind entry-local realms. Registrations are per-Session: distinct tool catalogs, distinct isolated jobs and compaction instances, NO duplicate host registry, and no leak of a value from preset A into preset B. THE TRAP IS REAL BUT NARROWER THAN NAMED: two presets naming the same composition file get ONE ESM MODULE INSTANCE -- the test asserts this by having preset gamma write a module-scope value that preset delta reads back. The tool catalogs stay separate (scoped registrations shadow); the module does not. That is Cordis/ESM semantics rather than a DSH bug, and it is exactly why src/tools.ts holds no cross-session state. Also pinned: a preset is NOT self-contained -- mounting a real shipped preset against a hand-rolled context fails because its rows inject host services, which is why these assertions use authored fixtures.",
-    "deployment_identity": "6b214b9f56c80d422e47083bae55ff09cd3e05753150536a91dbf3c7dca738db",
+    "deployment_identity": "ece4037a9d5bbb014aa5a8395ed15531715a11949f2aa687166fcfeb5717576f",
     "evidence": [
       {
         "path": "qualification/results/M9.7-profile-isolation/FINDINGS.md",
@@ -130,7 +130,7 @@
     "oracle": "记录真实优先级和拒绝/版本行为；生产不依赖mtime检测作为哈希保证。",
     "status": "PASS",
     "note": "Re-verified end to end through the REAL roster, not just read from source: a shipped preset shadows a same-id user preset (the winner PATH is checked, not only its trust label); a unique user id is discovered alongside the shipped ones; resolve(unknown) throws agent-preset/not-found naming alternatives. The generation stamp is {mtimeMs, size} and is NOT a content hash -- verified by a same-length, same-stamp, different-content write, so production must not rely on it as a hash guarantee.",
-    "deployment_identity": "6b214b9f56c80d422e47083bae55ff09cd3e05753150536a91dbf3c7dca738db",
+    "deployment_identity": "ece4037a9d5bbb014aa5a8395ed15531715a11949f2aa687166fcfeb5717576f",
     "evidence": [
       {
         "path": "qualification/results/M0.5-c0-resolved-graph/C0-resolved-graph.md",
@@ -151,7 +151,7 @@
     "oracle": "全部差异可归因；未删除stock组件后仍称stock。",
     "status": "PASS",
     "note": "Measured from real dumps: C0 -> C2 is 163 vs 164 rows. The `subagent` row gains {maxActiveSubagents:10, maxDepth:1} and `daily-work-host` is INSERTED. NOTHING is removed, and the Goal (5), fork (2) and compaction (4) families are byte-identical -- so no stock component was deleted while the result was still called stock.",
-    "deployment_identity": "6b214b9f56c80d422e47083bae55ff09cd3e05753150536a91dbf3c7dca738db",
+    "deployment_identity": "ece4037a9d5bbb014aa5a8395ed15531715a11949f2aa687166fcfeb5717576f",
     "evidence": [
       {
         "path": "qualification/results/M0.5-c0-resolved-graph/C0-resolved-graph.md",
@@ -176,7 +176,7 @@
     "oracle": "两条能力分别报状态，不把模型回答冒充搜索。",
     "status": "PASS",
     "note": "The sharpest finding is that TWO DIFFERENT THINGS both look like `search unavailable`. The shipped DeepSeekSearchProvider.available() tests PRESENCE OF A RESOLVER, not a key -- so with no key it returns TRUE, and the failure appears only at the request as WEB_PROVIDER_CREDENTIAL_MISSING with nothing sent to the wire. Separately, ctx.web selection throws WEB_PROVIDER_CONFIGURED_UNAVAILABLE rather than returning {sources: []}. IMPORTANT CORRECTION: the daily profile mounts the SHIPPED provider, not this repo ported one -- so an A09 result must not be read as evidence about the ported provider.",
-    "deployment_identity": "6b214b9f56c80d422e47083bae55ff09cd3e05753150536a91dbf3c7dca738db",
+    "deployment_identity": "ece4037a9d5bbb014aa5a8395ed15531715a11949f2aa687166fcfeb5717576f",
     "evidence": [
       {
         "path": "qualification/results/M7.1-web-search-port/PORT-NOTES.md",
@@ -197,7 +197,7 @@
     "oracle": "CLI事件用于交互，原Session用于证据；exit0不被判业务成功。",
     "status": "PASS",
     "note": "Both halves measured. The CLI stream is BOUNDED while the Session is not: a ~1 MiB tool result was projected to exactly 8192 chars with truncated:true, while the persisted Session held 50000 (`final` is deliberately unbounded). And exit 0 is about the TURN, not the work: a shell exiting 3 produced turn/end completed, isError false, and CLI exit 0 -- with the complement asserted, since a real turn error exits 1.",
-    "deployment_identity": "6b214b9f56c80d422e47083bae55ff09cd3e05753150536a91dbf3c7dca738db",
+    "deployment_identity": "ece4037a9d5bbb014aa5a8395ed15531715a11949f2aa687166fcfeb5717576f",
     "evidence": [
       {
         "path": "qualification/results/M0.4-first-toolcall/A03-first-toolcall.txt",
@@ -218,7 +218,7 @@
     "oracle": "按上游契约明确拒绝，未静默创建新Session或换目录。",
     "status": "PASS",
     "note": "Driven against the REAL built launcher, with exit codes and stderr captured. session-id does not exist -> exit 1 with `session \"...\" does not exist; omit --session-id to start a new Session`. Unknown profile -> exit 1 with `profile \"X\" does not exist`. Missing --profile -> exit 1. A resume from a different cwd -> exit 1 naming both directories. Three things make these REFUSALS rather than just error strings, all asserted: $DSH_HOME/sessions is never created for a bad session-id; no profiles/<name> directory is created for a bad profile (the check precedes initProfile); and a POSITIVE CONTROL runs the same command with a real correctly-placed Session, which gets past identity and stops only at MISSING_CREDENTIAL -- so the refusals are not indiscriminate.",
-    "deployment_identity": "6b214b9f56c80d422e47083bae55ff09cd3e05753150536a91dbf3c7dca738db",
+    "deployment_identity": "ece4037a9d5bbb014aa5a8395ed15531715a11949f2aa687166fcfeb5717576f",
     "evidence": [
       {
         "path": "qualification/results/M9.7-profile-isolation/FINDINGS.md",
@@ -245,7 +245,7 @@
     "oracle": "编译probe失败；未以any/deep import/.d.ts补丁掩盖。",
     "status": "PASS",
     "note": "The package compiles against real DSH declarations with tsc --noEmit; no any, no .d.ts edits, no deep imports. The compiled lib/ output was additionally import-verified in plain Node, which is what the profile resolver actually loads.",
-    "deployment_identity": "6b214b9f56c80d422e47083bae55ff09cd3e05753150536a91dbf3c7dca738db",
+    "deployment_identity": "ece4037a9d5bbb014aa5a8395ed15531715a11949f2aa687166fcfeb5717576f",
     "evidence": [
       {
         "path": "qualification/results/M2.2-work-host/tests.txt",
@@ -262,7 +262,7 @@
     "oracle": "Cordis及关键DSH服务单实例，built不混src。",
     "status": "PASS",
     "note": "Re-verified against the REAL profile resolver. Every peer resolves to exactly one realpath across three resolution roots (extension, profile, checkout); all resolve to built lib/*.js with zero source-resolved copies; all six injected services are live. Prior evidence (direct ctx.plugin mounting) was an over-claim and is retracted in the FINDINGS.",
-    "deployment_identity": "6b214b9f56c80d422e47083bae55ff09cd3e05753150536a91dbf3c7dca738db",
+    "deployment_identity": "ece4037a9d5bbb014aa5a8395ed15531715a11949f2aa687166fcfeb5717576f",
     "evidence": [
       {
         "path": "qualification/results/M9.17-b02-resolver/FINDINGS.md",
@@ -283,7 +283,7 @@
     "oracle": "新接纳关闭、已拥有资源清理、无孤儿timer/listener/domain句柄。",
     "status": "PASS",
     "note": "Re-verified inside a real profile boot: three load/unload cycles with a pending await. Zero timer leak (Timeout count returns to pre-mount), zero per-cycle handle growth in steady state, flat resource series, and the shared domain stays usable. A control arm runs first so one-time host init is not misattributed. Two measurement errors in the first probe (wrong baseline, and _getActiveHandles being blind to timers) are recorded in the FINDINGS.",
-    "deployment_identity": "6b214b9f56c80d422e47083bae55ff09cd3e05753150536a91dbf3c7dca738db",
+    "deployment_identity": "ece4037a9d5bbb014aa5a8395ed15531715a11949f2aa687166fcfeb5717576f",
     "evidence": [
       {
         "path": "qualification/results/M9.18-b03-lifecycle/FINDINGS.md",
@@ -304,7 +304,7 @@
     "oracle": "旧对象/epoch拒绝，不能污染新run。",
     "status": "PASS",
     "note": "MEASURED: AgentRegistry.resume publishes a NEW Agent object under the SAME id (registry.get(id) === new is true, === old is false, while String(old.id) === String(new.id)). tools.ts resolved a run by STRING comparison, so a superseded object mapped to the run the new lifecycle owns. src/tool-protocol-guards.ts closes it with OBJECT IDENTITY, mirroring DSH's own TerminalSessionService.isLiveOwner and the jobs-local owner check, registered through ctx.tools.guard (the MONOTONIC slot, where no later listener can restore permission). A paired test proves the guard is load-bearing: without it the stale object drives finish and moves the run to closing. SEPARATELY VERIFIED MOUNTED: a real boot probe (M9.21) shows the composed profile mounts the guard row and that it denies a forged owner while leaving an unrelated tool and an ownerless call untouched. LIMIT, stated: the record epoch field is INERT -- nothing reads or writes it after initialRunRecord sets 1 -- so object identity covers an in-process resume and a cross-PROCESS re-adoption has no enforcement today.",
-    "deployment_identity": "6b214b9f56c80d422e47083bae55ff09cd3e05753150536a91dbf3c7dca738db",
+    "deployment_identity": "ece4037a9d5bbb014aa5a8395ed15531715a11949f2aa687166fcfeb5717576f",
     "evidence": [
       {
         "path": "qualification/results/M9.11-tool-protocol/FINDINGS.md",
@@ -325,7 +325,7 @@
     "oracle": "各run任务/额度/取消完全隔离。",
     "status": "PASS",
     "note": "Measured rather than described: one livePresetMounts() entry, standingMountFor(a.ctx) === standingMountFor(b.ctx), and tools.get(work, a) === tools.get(work, b) -- the SAME ToolDefinition object for two Sessions. The isolation test interleaves A and B with different targets, ready counts and a pause on one run; tasks, budget and cancellation stay separate, and a read in the OPPOSITE order from the writes excludes a currentRun-style field. The standing-composition trap is real but NARROWER than the plan named it: registrations are per-Session, and it is the ESM MODULE that is shared between two presets naming the same composition file -- which is exactly why src/tools.ts holds no cross-session state.",
-    "deployment_identity": "6b214b9f56c80d422e47083bae55ff09cd3e05753150536a91dbf3c7dca738db",
+    "deployment_identity": "ece4037a9d5bbb014aa5a8395ed15531715a11949f2aa687166fcfeb5717576f",
     "evidence": [
       {
         "path": "qualification/results/M9.11-tool-protocol/FINDINGS.md",
@@ -346,7 +346,7 @@
     "oracle": "相同canonical JSON，无prose解析、无BigInt/循环值/未校验字段。",
     "status": "PASS",
     "note": "One tool definition with typed canonical JSON; the schema is asserted to carry exactly the four documented parameters.",
-    "deployment_identity": "6b214b9f56c80d422e47083bae55ff09cd3e05753150536a91dbf3c7dca738db",
+    "deployment_identity": "ece4037a9d5bbb014aa5a8395ed15531715a11949f2aa687166fcfeb5717576f",
     "evidence": [
       {
         "path": "qualification/results/M2.2-work-host/tests.txt",
@@ -363,7 +363,7 @@
     "oracle": "最终guard仍拒绝；未把async Promise当作guard返回值。",
     "status": "PASS",
     "note": "The guard slot is now USED (see B04), so this gate is about monotonicity rather than absence. An allowing listener registered AFTER the guard, and another with { prepend: true }, both fail to restore permission. An async guard is NOT awaited: the Promise is not undefined so it denies, and it is not JSON so materialization fails -- with the sync-undefined contrast asserted in the same test. A throwing guard fails closed.",
-    "deployment_identity": "6b214b9f56c80d422e47083bae55ff09cd3e05753150536a91dbf3c7dca738db",
+    "deployment_identity": "ece4037a9d5bbb014aa5a8395ed15531715a11949f2aa687166fcfeb5717576f",
     "evidence": [
       {
         "path": "qualification/results/M9.11-tool-protocol/FINDINGS.md",
@@ -380,7 +380,7 @@
     "oracle": "不宣称执行回滚；关键状态通过独立intent/对账保持明确。",
     "status": "PASS",
     "note": "Both a synchronous throw and an async rejection leave the tool outcome intact and un-worded with rollback; the failures are LOGGED, so containment is not silence. The ordering that makes it safe is asserted from INSIDE the observer: a durable read already shows the reservation and the task state, so a lost observation cannot erase what was committed.",
-    "deployment_identity": "6b214b9f56c80d422e47083bae55ff09cd3e05753150536a91dbf3c7dca738db",
+    "deployment_identity": "ece4037a9d5bbb014aa5a8395ed15531715a11949f2aa687166fcfeb5717576f",
     "evidence": [
       {
         "path": "qualification/results/M9.11-tool-protocol/FINDINGS.md",
@@ -397,7 +397,7 @@
     "oracle": "无幽灵Job；已发布work不因等待结束丢失；owner stop按产品契约停止。",
     "status": "PASS",
     "note": "(a) A pre-aborted signal makes drain launch NOTHING and return an EMPTY outcome list -- not refusals -- because the guard breaks before any request is considered; on the real JobRegistry a pre-abort refusal publishes no record AND consumes no id (the next start is still bash-1). Structural fact: JobStart has NO signal field at all (jobs/src/types.ts:46-69), so the refusal happens one layer ABOVE publication and the registry cannot be asked about it -- pinned at compile time. (b) An abort can never un-admit a task past its atomic reservation: it keeps its slot and credit and the run stays open. Signal OBJECT IDENTITY is asserted across caller -> drain -> port -> startContinuable, because a wrapper with its own controller would pass every behavioural test while silently decoupling the abort. (c) Disposing the exact live owner calls cancel, moves to stopping and AWAITS the producer; stopping still occupies the bucket, and a real registered Agent is required because ensureOwnerCleanup rejects stubs. SCOPE: this project publishes no background Job, so the Job-layer claims are asserted against the real registry directly rather than through a product path.",
-    "deployment_identity": "6b214b9f56c80d422e47083bae55ff09cd3e05753150536a91dbf3c7dca738db",
+    "deployment_identity": "ece4037a9d5bbb014aa5a8395ed15531715a11949f2aa687166fcfeb5717576f",
     "evidence": [
       {
         "path": "qualification/results/M9.9-signal/FINDINGS.md",
@@ -414,7 +414,7 @@
     "oracle": "未以process-local Inbox stub覆盖durability测试。",
     "status": "PASS",
     "note": "Durability and recovery tests use real Sessions and the production loop; no process-local Inbox stub is used for those.",
-    "deployment_identity": "6b214b9f56c80d422e47083bae55ff09cd3e05753150536a91dbf3c7dca738db",
+    "deployment_identity": "ece4037a9d5bbb014aa5a8395ed15531715a11949f2aa687166fcfeb5717576f",
     "evidence": [
       {
         "path": "qualification/results/M2.2-work-host/tests.txt",
@@ -446,7 +446,7 @@
     "oracle": "不等待整波结束；在冻结SLO内启动replacement，保存时间线。",
     "status": "PASS",
     "note": "Re-measured with a timeline: nine held while one settles, confirming the settled task frees ONE slot, filled by exactly one replacement that reaches its own model request while the original nine are still held. Measured refill latency (confirmation -> replacement admitted) is 19-25 ms across runs; admitted -> first model request is 0 ms. NO numeric SLO is asserted, because none is frozen anywhere in this repository -- asserting one would make the test the author of its own standard.",
-    "deployment_identity": "6b214b9f56c80d422e47083bae55ff09cd3e05753150536a91dbf3c7dca738db",
+    "deployment_identity": "ece4037a9d5bbb014aa5a8395ed15531715a11949f2aa687166fcfeb5717576f",
     "evidence": [
       {
         "path": "qualification/results/M3.2-N10-concurrency/tests.txt",
@@ -467,7 +467,7 @@
     "oracle": "无重复launch、超发或遗漏补位；coalesced drain可重复触发。",
     "status": "PASS",
     "note": "Three concurrent drains, three slots freed in one interval, three refill drains: exactly three admitted, no duplicate, no overshoot, and the coalesced drain re-triggers successfully afterwards. FINDING that came out of it: listChildren is a DURABLE ENUMERATION, not an occupancy count -- a disposed child still appears with activity inactive and it reported 13 children where only 10 slots were held. Occupancy must come from the live registry or the run record.",
-    "deployment_identity": "6b214b9f56c80d422e47083bae55ff09cd3e05753150536a91dbf3c7dca738db",
+    "deployment_identity": "ece4037a9d5bbb014aa5a8395ed15531715a11949f2aa687166fcfeb5717576f",
     "evidence": [
       {
         "path": "qualification/results/M3.2-N10-concurrency/tests.txt",
@@ -488,7 +488,7 @@
     "oracle": "明确deficit并合并补位请求；不创建七个sleep/空闲占位。",
     "status": "PASS",
     "note": "Three ready tasks against target 10 create exactly three real children and report deficit 7 with reason insufficient_ready_tasks.",
-    "deployment_identity": "6b214b9f56c80d422e47083bae55ff09cd3e05753150536a91dbf3c7dca738db",
+    "deployment_identity": "ece4037a9d5bbb014aa5a8395ed15531715a11949f2aa687166fcfeb5717576f",
     "evidence": [
       {
         "path": "qualification/results/M3.2-N10-concurrency/tests.txt",
@@ -505,7 +505,7 @@
     "oracle": "root仍能取得保留credit，完成结果整合与补任务。",
     "status": "PASS",
     "note": "CLOSED at the ARITHMETIC level; the provider-quota half stays NOT_RUN (no provider authorized). The invariant added and asserted: for every reachable state, spent + reserved + unknownReserved <= ceiling - rootReserve, so the root always retains at least rootReserve - rootSpent of its own credit however many children were admitted. rootReserve is CARVED OUT of the ceiling at createRun rather than added beside it (default 1/10, capped at 20), and one subtraction in childCeiling is read by BOTH the gate (mayAdmit) and the reported reason, so a refusal and its stated reason cannot drift. Boundary-tested: ceiling 100 / reserve 10, a child asking 91 is refused with a reason naming all four numbers.",
-    "deployment_identity": "6b214b9f56c80d422e47083bae55ff09cd3e05753150536a91dbf3c7dca738db",
+    "deployment_identity": "ece4037a9d5bbb014aa5a8395ed15531715a11949f2aa687166fcfeb5717576f",
     "evidence": [
       {
         "path": "qualification/results/M9.6-cost/FINDINGS.md",
@@ -522,7 +522,7 @@
     "oracle": "不再自动接纳或偷偷续轮，产品中明确哪些已发布effects仍在停止/对账。",
     "status": "PASS",
     "note": "A pause stops admission with free slots remaining; the count of real children does not grow.",
-    "deployment_identity": "6b214b9f56c80d422e47083bae55ff09cd3e05753150536a91dbf3c7dca738db",
+    "deployment_identity": "ece4037a9d5bbb014aa5a8395ed15531715a11949f2aa687166fcfeb5717576f",
     "evidence": [
       {
         "path": "qualification/results/M3.2-N10-concurrency/tests.txt",
@@ -539,7 +539,7 @@
     "oracle": "slot仍占用/隔离，未提前补位导致超发。",
     "status": "PASS",
     "note": "Interrupt sent, child still running: the slot is held, the credit is held, and a premature refill is refused; only a confirmed cancelled frees it. holdsSlot(cancel_requested) and holdsSlot(unknown) are both asserted true against src/states.ts, which is the single source of truth for occupancy.",
-    "deployment_identity": "6b214b9f56c80d422e47083bae55ff09cd3e05753150536a91dbf3c7dca738db",
+    "deployment_identity": "ece4037a9d5bbb014aa5a8395ed15531715a11949f2aa687166fcfeb5717576f",
     "evidence": [
       {
         "path": "qualification/results/M2.2-work-host/tests.txt",
@@ -564,7 +564,7 @@
     "oracle": "区分正常结束与quarantined_unknown，不只凭end释放安全额度。",
     "status": "PASS",
     "note": "A teardown failure is visible only as stopReason 'error' on subagent/end (the event carries no error field); the controller does not release a slot on an end event alone, and the disposal-failure window reconciles to unknown.",
-    "deployment_identity": "6b214b9f56c80d422e47083bae55ff09cd3e05753150536a91dbf3c7dca738db",
+    "deployment_identity": "ece4037a9d5bbb014aa5a8395ed15531715a11949f2aa687166fcfeb5717576f",
     "evidence": [
       {
         "path": "qualification/results/M8.2-lifecycle-gates/FINDINGS.md",
@@ -581,7 +581,7 @@
     "oracle": "有界backoff与真实blocked理由，不将等待包装成执行10，不无限重试。",
     "status": "PASS",
     "note": "A real mock HTTP/SSE server returns 429 with Retry-After; with the real llm-retry mounted, EXACTLY 3 attempts per child and then a stop, with no further attempts after waiting. The target stays 10 and no silent downgrade to 8 occurs. PROPOSED GAP (not yet placed in GAPS.md): under sustained 429, deficitReason reads none and capacityDeficit reads 0 because all ten slots are held -- a reader consulting deficitReason ALONE sees a healthy full wave while nothing executes and DSH holds zero resident children. The block is visible only via activeAssignments 0 plus ten held slots.",
-    "deployment_identity": "6b214b9f56c80d422e47083bae55ff09cd3e05753150536a91dbf3c7dca738db",
+    "deployment_identity": "ece4037a9d5bbb014aa5a8395ed15531715a11949f2aa687166fcfeb5717576f",
     "evidence": [
       {
         "path": "qualification/results/M8.3-wire-faults/FINDINGS.md",
@@ -602,7 +602,7 @@
     "oracle": "原子预留不超发；未知usage保持保守reservation。",
     "status": "PASS",
     "note": "Admission reserves atomically in one record transform; a reservation that would exceed the ceiling is refused.",
-    "deployment_identity": "6b214b9f56c80d422e47083bae55ff09cd3e05753150536a91dbf3c7dca738db",
+    "deployment_identity": "ece4037a9d5bbb014aa5a8395ed15531715a11949f2aa687166fcfeb5717576f",
     "evidence": [
       {
         "path": "qualification/results/M2.2-work-host/tests.txt",
@@ -619,7 +619,7 @@
     "oracle": "记录实际超支/未知并暂停新增，不删账单保持绿色。",
     "status": "PASS",
     "note": "CLOSED at the arithmetic level; the real-billing half stays NOT_RUN. Reserve 1, actual 3: spent records 3 IN FULL, overage 2 is part of spent rather than beside it, a halt is set, and admission is refused on both admit and drain with budget_overage_halt, DISTINCT from budget_blocked. The halt is sticky -- resume does not clear it, only resolveHalt (a human edge) -- and the bill survives, so nothing is deleted to keep the report green. Unknown-usage path: with a task, the amount MOVES reserved -> unknownReserved (total unchanged, clamped to that task own reservation); without a task it is ADDED, which can only tighten. Nothing is zeroed either way.",
-    "deployment_identity": "6b214b9f56c80d422e47083bae55ff09cd3e05753150536a91dbf3c7dca738db",
+    "deployment_identity": "ece4037a9d5bbb014aa5a8395ed15531715a11949f2aa687166fcfeb5717576f",
     "evidence": [
       {
         "path": "qualification/results/M9.6-cost/FINDINGS.md",
@@ -636,7 +636,7 @@
     "oracle": "全部计量或明确拒绝；模型未传tool_filter不能解除deployment限制。",
     "status": "PASS",
     "note": "maxDepth 1 is carried on the child and grandchild depth is asserted; the tool surface exposes no spawn path.",
-    "deployment_identity": "6b214b9f56c80d422e47083bae55ff09cd3e05753150536a91dbf3c7dca738db",
+    "deployment_identity": "ece4037a9d5bbb014aa5a8395ed15531715a11949f2aa687166fcfeb5717576f",
     "evidence": [
       {
         "path": "qualification/results/M3.2-N10-concurrency/tests.txt",
@@ -653,7 +653,7 @@
     "oracle": "depth/每run与global provider限额分别生效，不误把家族池当全局。",
     "status": "PASS",
     "note": "Per-run isolation is asserted: two runs in one host keep separate tasks, budgets and pause state, and taking continuation for one root leaves another root armed with its own objective and revision. The depth half of this gate is covered by C12.",
-    "deployment_identity": "6b214b9f56c80d422e47083bae55ff09cd3e05753150536a91dbf3c7dca738db",
+    "deployment_identity": "ece4037a9d5bbb014aa5a8395ed15531715a11949f2aa687166fcfeb5717576f",
     "evidence": [
       {
         "path": "qualification/results/M8.4-goal-handover/FINDINGS.md",
@@ -674,7 +674,7 @@
     "oracle": "只对本run解除并防冲突；无双续行loop，其他Session不受影响。",
     "status": "PASS",
     "note": "takeContinuation calls the public ctx.goals.disarm and asserts the objective and revision survive, the phase stays active, another root is untouched, and a later human resume still works. No double-continuation loop, and no fake completion.",
-    "deployment_identity": "6b214b9f56c80d422e47083bae55ff09cd3e05753150536a91dbf3c7dca738db",
+    "deployment_identity": "ece4037a9d5bbb014aa5a8395ed15531715a11949f2aa687166fcfeb5717576f",
     "evidence": [
       {
         "path": "qualification/results/M8.4-goal-handover/FINDINGS.md",
@@ -691,7 +691,7 @@
     "oracle": "有界通知且不丢结果refs；不每秒空烧root模型。",
     "status": "PASS",
     "note": "The drain is coalesced per run; repeated triggers do not stack.",
-    "deployment_identity": "6b214b9f56c80d422e47083bae55ff09cd3e05753150536a91dbf3c7dca738db",
+    "deployment_identity": "ece4037a9d5bbb014aa5a8395ed15531715a11949f2aa687166fcfeb5717576f",
     "evidence": [
       {
         "path": "qualification/results/M3.2-N10-concurrency/tests.txt",
@@ -708,7 +708,7 @@
     "oracle": "业务run仍有效；新结果能在后续原生模型步被观察；不提前终止host。",
     "status": "PASS",
     "note": "Admission lands in accepted, not executing: an unobserved child is not counted as an active assignment.",
-    "deployment_identity": "6b214b9f56c80d422e47083bae55ff09cd3e05753150536a91dbf3c7dca738db",
+    "deployment_identity": "ece4037a9d5bbb014aa5a8395ed15531715a11949f2aa687166fcfeb5717576f",
     "evidence": [
       {
         "path": "qualification/results/M3.2-N10-concurrency/tests.txt",
@@ -725,7 +725,7 @@
     "oracle": "有界纠错可继续；此前未调用永久family drain。",
     "status": "PASS",
     "note": "Closing a run stops new admissions while leaving the family open, so a failed acceptance remains recoverable. Asserted against the real seam: a child can still be established after beginClosing. The acceptance runner itself is not built, so the end-to-end recovery path is not exercised.",
-    "deployment_identity": "6b214b9f56c80d422e47083bae55ff09cd3e05753150536a91dbf3c7dca738db",
+    "deployment_identity": "ece4037a9d5bbb014aa5a8395ed15531715a11949f2aa687166fcfeb5717576f",
     "evidence": [
       {
         "path": "qualification/results/M8.2-lifecycle-gates/FINDINGS.md",
@@ -742,7 +742,7 @@
     "oracle": "明确关闭语义，不改私有标志复活；后续工作经正常新run生命周期。",
     "status": "PASS",
     "note": "A real drainContinuableDescendants closes admission for that exact parent permanently: a later startContinuable is rejected. Pause, by contrast, is asserted to still be resumable, which is the property that proves pause did not use drain.",
-    "deployment_identity": "6b214b9f56c80d422e47083bae55ff09cd3e05753150536a91dbf3c7dca738db",
+    "deployment_identity": "ece4037a9d5bbb014aa5a8395ed15531715a11949f2aa687166fcfeb5717576f",
     "evidence": [
       {
         "path": "qualification/results/M8.2-lifecycle-gates/FINDINGS.md",
@@ -759,7 +759,7 @@
     "oracle": "不存在task已接纳而credit未预留；不存在虚构跨key事务。",
     "status": "PASS",
     "note": "Task state, credit reservation and outbox move in ONE record transform; no cross-key transaction is claimed. Re-verified with a barrier simulation across the pre- and post-write windows: there is never a task admitted with credit unreserved. The honest scope is stated: KvTable.update() gives PER-RECORD atomicity only, and the window is defined by a claim CONTENT rather than by what survived a kill.",
-    "deployment_identity": "6b214b9f56c80d422e47083bae55ff09cd3e05753150536a91dbf3c7dca738db",
+    "deployment_identity": "ece4037a9d5bbb014aa5a8395ed15531715a11949f2aa687166fcfeb5717576f",
     "evidence": [
       {
         "path": "qualification/results/M2.2-work-host/tests.txt",
@@ -780,7 +780,7 @@
     "oracle": "拒绝/隔离到其他home，不把进程内KV缓存当跨进程一致数据库。",
     "status": "PASS",
     "note": "MEASURED, and the measurement is the alarming part: a REAL second Node process opens the same live store with NO error, its write lands durably, and then the first host's next publish ERASES it. Nothing upstream refuses; last-completion-wins exactly as the backend README says. So a second host can destroy committed work while the first never learns it existed. A cheap honest guard was added (homeLockPath config -> lockfile carrying pid/hostname/token, claimed via link() so check-and-claim is one atomic step) and proven with an independent probe: a real second process is refused while the first is live, the store is untouched, and the error names the holder. With homeLockPath unset -- the DEFAULT -- the deployment boundary remains the only protection, and the code says so.",
-    "deployment_identity": "6b214b9f56c80d422e47083bae55ff09cd3e05753150536a91dbf3c7dca738db",
+    "deployment_identity": "ece4037a9d5bbb014aa5a8395ed15531715a11949f2aa687166fcfeb5717576f",
     "evidence": [
       {
         "path": "qualification/results/M9.4-durability-advanced/FINDINGS.md",
@@ -797,7 +797,7 @@
     "oracle": "只启动一次原childId对应assignment。",
     "status": "PASS",
     "note": "Real SIGKILL on a forked Node child, with the exit SIGNAL asserted rather than the kill() return value. A reservation that provably never launched returns to prepared, and it is the only path back, requiring positive proof. A REAL GAP was found here and fixed in a new file: reconciliation could return a task to prepared but NOTHING could act on it -- drain calls admit, and admit refuses a task that still holds its slot (prepared IS slot-holding), so a reconciled task would have sat forever while the run reported a capacity deficit. The refusal is asserted as a fact and resolved by relaunchPrepared.",
-    "deployment_identity": "6b214b9f56c80d422e47083bae55ff09cd3e05753150536a91dbf3c7dca738db",
+    "deployment_identity": "ece4037a9d5bbb014aa5a8395ed15531715a11949f2aa687166fcfeb5717576f",
     "evidence": [
       {
         "path": "qualification/results/M4.1-process-kill/report-final.json",
@@ -822,7 +822,7 @@
     "oracle": "对账同childId；DUPLICATE_CHILD不换ID重复执行。",
     "status": "PASS",
     "note": "Real SIGKILL. A reserved id with no trace becomes unknown and is explicitly NOT relaunched; DUPLICATE_CHILD is rethrown unchanged rather than switching to a fresh id.",
-    "deployment_identity": "6b214b9f56c80d422e47083bae55ff09cd3e05753150536a91dbf3c7dca738db",
+    "deployment_identity": "ece4037a9d5bbb014aa5a8395ed15531715a11949f2aa687166fcfeb5717576f",
     "evidence": [
       {
         "path": "qualification/results/M4.1-process-kill/report-final.json",
@@ -847,7 +847,7 @@
     "oracle": "使用原生agent/inbox/spliced恢复，不重复注入。",
     "status": "PASS",
     "note": "Real SIGKILL, and the method is load-bearing: a GRACEFUL teardown DESTROYS the fact under test, because Agent.cancel calls inbox.clear() unless keepInbox (agent-loop/src/agent.ts:149-152) and the lifecycle disposer issues exactly that cancel. Only SIGKILL preserves the pending inbox. The restored message comes from DSH own agent/inbox/spliced fold via sessionProjections.stateOf(session, inbox), and the projection THROWS on a duplicate id, so double-injection cannot even be represented.",
-    "deployment_identity": "6b214b9f56c80d422e47083bae55ff09cd3e05753150536a91dbf3c7dca738db",
+    "deployment_identity": "ece4037a9d5bbb014aa5a8395ed15531715a11949f2aa687166fcfeb5717576f",
     "evidence": [
       {
         "path": "qualification/results/M4.1-process-kill/report-final.json",
@@ -868,7 +868,7 @@
     "oracle": "区分已取走与已执行；按源事实恢复或明确unknown，不盲当完成。",
     "status": "PASS",
     "note": "Real SIGKILL. Claim with no request confirmation resolves to accepted rather than being called done, so taken and executed stay distinguishable.",
-    "deployment_identity": "6b214b9f56c80d422e47083bae55ff09cd3e05753150536a91dbf3c7dca738db",
+    "deployment_identity": "ece4037a9d5bbb014aa5a8395ed15531715a11949f2aa687166fcfeb5717576f",
     "evidence": [
       {
         "path": "qualification/results/M4.1-process-kill/report-final.json",
@@ -889,7 +889,7 @@
     "oracle": "unknown usage/effect，不自动当未收费/未执行。",
     "status": "PASS",
     "note": "Real SIGKILL, plus real wire faults. A request with no terminal turn is unknown with the reservation held; an error outcome is also unknown. Driven against a real stream disconnect and a real stalled request, and every fault-shaped evidence record resolves to unknown or a conservative earlier state, never to a released slot.",
-    "deployment_identity": "6b214b9f56c80d422e47083bae55ff09cd3e05753150536a91dbf3c7dca738db",
+    "deployment_identity": "ece4037a9d5bbb014aa5a8395ed15531715a11949f2aa687166fcfeb5717576f",
     "evidence": [
       {
         "path": "qualification/results/M4.1-process-kill/report-final.json",
@@ -914,7 +914,7 @@
     "oracle": "从child Session/产物对账找回，不重复任务。",
     "status": "PASS",
     "note": "Real SIGKILL. A completed turn goes to settling, never confirmed; a lost parent notice is not treated as a child failure, and recovery finds the work from the child Session rather than repeating the task.",
-    "deployment_identity": "6b214b9f56c80d422e47083bae55ff09cd3e05753150536a91dbf3c7dca738db",
+    "deployment_identity": "ece4037a9d5bbb014aa5a8395ed15531715a11949f2aa687166fcfeb5717576f",
     "evidence": [
       {
         "path": "qualification/results/M4.1-process-kill/report-final.json",
@@ -935,7 +935,7 @@
     "oracle": "采用上游repair契约，明确未知与从未开始；不手工抹掉错误事实。",
     "status": "PASS",
     "note": "REAL FILE DAMAGE rather than a simulation: a session log torn with an incomplete trailing record, then resumed, using the upstream repair contract. Reconciliation never replays and never releases a slot, asserted over every state; an end event alone also does not release one. SIGKILL proves SURVIVAL, not fsync ordering -- Windows skips the directory fsync by design, which is stated rather than implied.",
-    "deployment_identity": "6b214b9f56c80d422e47083bae55ff09cd3e05753150536a91dbf3c7dca738db",
+    "deployment_identity": "ece4037a9d5bbb014aa5a8395ed15531715a11949f2aa687166fcfeb5717576f",
     "evidence": [
       {
         "path": "qualification/results/M4.1-process-kill/report-final.json",
@@ -960,7 +960,7 @@
     "oracle": "拒绝权威写入，保留diagnostic evidence。",
     "status": "PASS",
     "note": "CORRECTED EVIDENCE. The previous note said the record carries a run epoch and that reconciliation refuses a mismatched identity -- the epoch half was NOT enforced: nothing read or wrote it after initialRunRecord set 1. The agent caught this, and also caught its OWN first test being tautological (it hand-rolled staleClaim.epoch === record.epoch, asserting its own arithmetic rather than the system). A real guard now refuses a stale-generation settlement, with diagnostic evidence going to a SEPARATE domain (dsh_daily_work_refusals) so a refusal can never be mistaken for authority or take the run record write chain. LIMIT: object identity and this guard cover the in-process case; a cross-process re-adoption still has no epoch enforcement.",
-    "deployment_identity": "6b214b9f56c80d422e47083bae55ff09cd3e05753150536a91dbf3c7dca738db",
+    "deployment_identity": "ece4037a9d5bbb014aa5a8395ed15531715a11949f2aa687166fcfeb5717576f",
     "evidence": [
       {
         "path": "qualification/results/M2.2-work-host/tests.txt",
@@ -981,7 +981,7 @@
     "oracle": "共享唯一host handle，close正确，无already-open悬挂。",
     "status": "PASS",
     "note": "Barrier-simulated (the window is defined by a claim content, not by what survived a kill). A second open of the same domain is rejected; writes after close are refused; a single shared host handle is used and unload->reload does not leave an already-open hang.",
-    "deployment_identity": "6b214b9f56c80d422e47083bae55ff09cd3e05753150536a91dbf3c7dca738db",
+    "deployment_identity": "ece4037a9d5bbb014aa5a8395ed15531715a11949f2aa687166fcfeb5717576f",
     "evidence": [
       {
         "path": "qualification/results/M2.2-work-host/tests.txt",
@@ -1002,7 +1002,7 @@
     "oracle": "拒绝或显式离线迁移；未silent fallback到过时副本。",
     "status": "PASS",
     "note": "Proven by writing the bad records and opening the domain: a v2-shaped run record is rejected with DomainError/invalid-record; a malformed record likewise; a foreign unit version gives StorageError/version-mismatch; non-JSON gives malformed-medium. The store file's sha256 is asserted BYTE-IDENTICAL after the refused open, so it refuses rather than silently reading or migrating a backup. A matching record opens normally, which shows the refusal is version-driven and not a blanket failure.",
-    "deployment_identity": "6b214b9f56c80d422e47083bae55ff09cd3e05753150536a91dbf3c7dca738db",
+    "deployment_identity": "ece4037a9d5bbb014aa5a8395ed15531715a11949f2aa687166fcfeb5717576f",
     "evidence": [
       {
         "path": "qualification/results/M9.4-durability-advanced/FINDINGS.md",
@@ -1019,7 +1019,7 @@
     "oracle": "不自动重新消耗预算或产生effects，恢复为明确暂停。",
     "status": "PASS",
     "note": "Real SIGKILL. A run without restart authorization comes back PAUSED, and an expired authorization also comes back paused -- it does not automatically re-consume budget or produce effects.",
-    "deployment_identity": "6b214b9f56c80d422e47083bae55ff09cd3e05753150536a91dbf3c7dca738db",
+    "deployment_identity": "ece4037a9d5bbb014aa5a8395ed15531715a11949f2aa687166fcfeb5717576f",
     "evidence": [
       {
         "path": "qualification/results/M4.1-process-kill/report-final.json",
@@ -1044,7 +1044,7 @@
     "oracle": "重启后先检测/隔离/对账，不仅依据PID缺失或Session状态猜清理成功。",
     "status": "PASS",
     "note": "Measured with real OS processes: a DETACHED grandchild SURVIVES a hard SIGKILL of the host (3/3), while a non-detached one does not (3/3). So 'the parent is dead' is not evidence the process is gone. The recovery oracle is asserted: with no Session and no live Agent the task reconciles to unknown with the slot and its reservation STILL HELD, never to a settled or released state. Cleanup is observed via process.kill(pid,0) before the test passes rather than assumed. A guard covers the trap that process.kill(0,0) succeeds by signalling the caller's own process group, which would make a missing pid read as alive.",
-    "deployment_identity": "6b214b9f56c80d422e47083bae55ff09cd3e05753150536a91dbf3c7dca738db",
+    "deployment_identity": "ece4037a9d5bbb014aa5a8395ed15531715a11949f2aa687166fcfeb5717576f",
     "evidence": [
       {
         "path": "qualification/results/M9.4-durability-advanced/FINDINGS.md",
@@ -1081,7 +1081,7 @@
     "oracle": "遵循上游拒绝/关闭再变更；旧PTY不保留超出新授权的能力。",
     "status": "PASS",
     "note": "Exercised against a real confined pwsh PTY. The fence refuses, and the refusal is TOTAL: zero sandbox/mode events logged AND resolve() still reports the old mode. That distinction matters because the event IS the store -- a fence that threw after appending would still be a hole, and asserting only 'it throws' would have missed it. Also proven owner-scoped (an unrelated session changes freely) and close-then-change works.",
-    "deployment_identity": "6b214b9f56c80d422e47083bae55ff09cd3e05753150536a91dbf3c7dca738db",
+    "deployment_identity": "ece4037a9d5bbb014aa5a8395ed15531715a11949f2aa687166fcfeb5717576f",
     "evidence": [
       {
         "path": "qualification/results/M9.3-security-denial/FINDINGS.md",
@@ -1098,7 +1098,7 @@
     "oracle": "作为不可信数据，不执行；仅可信维护流程可改host。",
     "status": "PASS",
     "note": "tool-plugin-manager is disabled in the shipped standard preset and demands danger-full-access when enabled; this project does not enable it.",
-    "deployment_identity": "6b214b9f56c80d422e47083bae55ff09cd3e05753150536a91dbf3c7dca738db",
+    "deployment_identity": "ece4037a9d5bbb014aa5a8395ed15531715a11949f2aa687166fcfeb5717576f",
     "evidence": [
       {
         "path": "qualification/results/M5.1-security-boundaries/SECURITY-BOUNDARIES.md",
@@ -1115,7 +1115,7 @@
     "oracle": "任务sandbox不可写可信控制文件；开发Agent授权与日用模型分开。",
     "status": "PASS",
     "note": "Control files and task workspaces are different paths by construction; the profile is copied into the home rather than read from the repo.",
-    "deployment_identity": "6b214b9f56c80d422e47083bae55ff09cd3e05753150536a91dbf3c7dca738db",
+    "deployment_identity": "ece4037a9d5bbb014aa5a8395ed15531715a11949f2aa687166fcfeb5717576f",
     "evidence": [
       {
         "path": "qualification/results/M5.1-security-boundaries/SECURITY-BOUNDARIES.md",
@@ -1142,7 +1142,7 @@
     "oracle": "相同logical operationId对账，无重复effect。",
     "status": "PASS",
     "note": "48 tests, exit 0. The operationId digests (kind, logicalKey) ONLY -- never the tool callId -- so a retry under a changed callId lands on the same record and the counting fake stays at 1, including across a simulated restart and across a lost reply resolved by query. With no query support it stays unknown across three retries and still does not resend. reconcile() reached the transport zero times across five operations in every recorded state, which makes 'reconcile, never replay' a property of the module rather than a convention.",
-    "deployment_identity": "6b214b9f56c80d422e47083bae55ff09cd3e05753150536a91dbf3c7dca738db",
+    "deployment_identity": "ece4037a9d5bbb014aa5a8395ed15531715a11949f2aa687166fcfeb5717576f",
     "evidence": [
       {
         "path": "qualification/results/M9.5-effects/FINDINGS.md",
@@ -1159,7 +1159,7 @@
     "oracle": "明确冲突，不能复用原ack授权新动作。",
     "status": "PASS",
     "note": "A changed payload under a recorded operationId is a CONFLICT with performed:false, and reconcile of the changed params returns resultRef undefined rather than the stale ack. conflict is deliberately not a stored status, so a refused attempt cannot overwrite the ack it was refused against -- the original ack does not authorize the new action.",
-    "deployment_identity": "6b214b9f56c80d422e47083bae55ff09cd3e05753150536a91dbf3c7dca738db",
+    "deployment_identity": "ece4037a9d5bbb014aa5a8395ed15531715a11949f2aa687166fcfeb5717576f",
     "evidence": [
       {
         "path": "qualification/results/M9.5-effects/FINDINGS.md",
@@ -1176,7 +1176,7 @@
     "oracle": "用权限边界限制；不宣称正则能完整判断只读。",
     "status": "PASS",
     "note": "The classifier is closed-allowlist and returns unknown by default, and it was defeated by REAL shell, not by listing failing regexes: four defeats (function shadowing, PATH shadowing, a redirect hidden in a variable via eval, and an exported function into a child shell), each with an observed write to disk. Two real holes surfaced while building it -- sort had to be REMOVED because `sort in out` writes with no flag, and `tar xf` writes with no dash anywhere. This is a refusal device, not a control: enforcement stays with the sandbox and process identity, and the test says so.",
-    "deployment_identity": "6b214b9f56c80d422e47083bae55ff09cd3e05753150536a91dbf3c7dca738db",
+    "deployment_identity": "ece4037a9d5bbb014aa5a8395ed15531715a11949f2aa687166fcfeb5717576f",
     "evidence": [
       {
         "path": "qualification/results/M9.5-effects/FINDINGS.md",
@@ -1193,7 +1193,7 @@
     "oracle": "不重放整个run_code；逐具体effect处理unknown。",
     "status": "PASS",
     "note": "replayedWholeProgram:false is a literal in the type, so no code path can produce a full-program replay. The committed effect is reconciled individually; the un-entered step is recorded as unknown, deliberately NOT as not_started, because the runner's control flow is not evidence about the remote.",
-    "deployment_identity": "6b214b9f56c80d422e47083bae55ff09cd3e05753150536a91dbf3c7dca738db",
+    "deployment_identity": "ece4037a9d5bbb014aa5a8395ed15531715a11949f2aa687166fcfeb5717576f",
     "evidence": [
       {
         "path": "qualification/results/M9.5-effects/FINDINGS.md",
@@ -1210,7 +1210,7 @@
     "oracle": "告知可能已发生，按真实查询对账；不宣称cancel等于撤销。",
     "status": "PASS",
     "note": "CancellationReport.reverted is a literal false in the type, so no code path can report an undo. Five branches are asserted, none matching /rolled back|undone|reverted|reversed/. A cancellation after a send reports 'may have happened' and reconciles by query.",
-    "deployment_identity": "6b214b9f56c80d422e47083bae55ff09cd3e05753150536a91dbf3c7dca738db",
+    "deployment_identity": "ece4037a9d5bbb014aa5a8395ed15531715a11949f2aa687166fcfeb5717576f",
     "evidence": [
       {
         "path": "qualification/results/M9.5-effects/FINDINGS.md",
@@ -1237,7 +1237,7 @@
     "oracle": "只使用实际runner和对应环境产物，声明不成为PASS。",
     "status": "PASS",
     "note": "Re-verified with the built acceptance runner: a REAL child exit code is recorded, and command_not_found leaves exit.code as null rather than a convenient 0. No model claim is an input anywhere in the classification. The earlier evidence (state-machine transitions) proved the record could not self-confirm, which is a weaker claim than an independent runner observing a real process.",
-    "deployment_identity": "6b214b9f56c80d422e47083bae55ff09cd3e05753150536a91dbf3c7dca738db",
+    "deployment_identity": "ece4037a9d5bbb014aa5a8395ed15531715a11949f2aa687166fcfeb5717576f",
     "evidence": [
       {
         "path": "qualification/results/M9.1-acceptance-runner/FINDINGS.md",
@@ -1258,7 +1258,7 @@
     "oracle": "明确unverified/FAIL，不默认allow。",
     "status": "PASS",
     "note": "Re-verified, and this is the sharpest result in the runner: TWO cases carry a REAL exit code of 0 and are still non-PASS -- an all-skipped suite (receipt-all-skipped.json: total=1 passed=0 skipped=1) and vitest's --passWithNoTests zero-test shape. An exit-code-only verifier calls both green. Classification covers command-not-found, all-skipped, runner-never-ran, timeout, interrupted, zero-tests and unknown; a PASS needs a real exit 0 AND a matching declared test count.",
-    "deployment_identity": "6b214b9f56c80d422e47083bae55ff09cd3e05753150536a91dbf3c7dca738db",
+    "deployment_identity": "ece4037a9d5bbb014aa5a8395ed15531715a11949f2aa687166fcfeb5717576f",
     "evidence": [
       {
         "path": "qualification/results/M9.1-acceptance-runner/FINDINGS.md",
@@ -1279,7 +1279,7 @@
     "oracle": "旧receipt不对应新tree，重新验证。",
     "status": "PASS",
     "note": "Re-verified end to end: fresh -> fresh:true exit 0 -> change one byte -> fresh:false exit 1. The receipt carries a candidate tree digest, an acceptance-definition digest and an environment identity, so a stale receipt is machine-detectable rather than a matter of noticing.",
-    "deployment_identity": "6b214b9f56c80d422e47083bae55ff09cd3e05753150536a91dbf3c7dca738db",
+    "deployment_identity": "ece4037a9d5bbb014aa5a8395ed15531715a11949f2aa687166fcfeb5717576f",
     "evidence": [
       {
         "path": "qualification/results/M9.1-acceptance-runner/FINDINGS.md",
@@ -1300,7 +1300,7 @@
     "oracle": "不可变输入快照避免误证；前后相同hash不单独足够。",
     "status": "PASS",
     "note": "Exercised with a two-arm contrast, and the SECOND arm is what makes the first meaningful. Snapshot arm: the child sees A, passes. In-place arm: the SAME A->B->A mutation, the child sees B and exits 9 with SAW_THE_TAMPERED_TREE, while the live before/after digests report NO DRIFT AT ALL. Endpoint hashing alone would have certified the tampered run. The mutation runs concurrently with the acceptance on a schedule written out in the test (A->B at t=700ms, child reads at t=1200ms, tree back to A at t=1900ms, child exits t=2800ms), so the window is real rather than assumed. A second case covers a command that rewrites its own declared input inside the snapshot, which yields unknown and holds the reservation rather than passing.",
-    "deployment_identity": "6b214b9f56c80d422e47083bae55ff09cd3e05753150536a91dbf3c7dca738db",
+    "deployment_identity": "ece4037a9d5bbb014aa5a8395ed15531715a11949f2aa687166fcfeb5717576f",
     "evidence": [
       {
         "path": "qualification/results/M9.1-acceptance-runner/FINDINGS.md",
@@ -1317,7 +1317,7 @@
     "oracle": "受信acceptance digest变化需要授权，不能静默绿色。",
     "status": "PASS",
     "note": "Strengthened: a digest mismatch now REFUSES the run with acceptance_definition_changed, and --print-digest is a separate step so a definition cannot authorize itself. The frozen spec is additionally verified against the lock: sha256 b6e68075e097b5d790a406cb92820465381b6a716a84b53b0a8b8d99d584ad47, unchanged from the delivery package.",
-    "deployment_identity": "6b214b9f56c80d422e47083bae55ff09cd3e05753150536a91dbf3c7dca738db",
+    "deployment_identity": "ece4037a9d5bbb014aa5a8395ed15531715a11949f2aa687166fcfeb5717576f",
     "evidence": [
       {
         "path": "qualification/results/M3.1-c2-profile/dump-config-daily-candidate.yml",
@@ -1338,7 +1338,7 @@
     "oracle": "中止/明确错误，不新建纠错轮、不await自身idle。",
     "status": "PASS",
     "note": "Serial with NO next, asserted at compile time and at runtime with the waterfall contrast measured on ONE turn (pre-step:2 vs stopping:1). An in-listener abort yields one aborted turn/end, ONE model request, and no correction round; a throwing listener yields an explicit error turn with one request. The deadlock is proven and traced, not asserted: whenIdle -> activityDone -> kick() -> turn() -> serial dispatch, so the listener waits for the driver waiting for it and no turn/end is ever appended. The project registers NO such hook, and a test asserts that absence so a future addition without the required care fails. FINDING: the daily profile DOES inherit a live turn-stopping listener -- dsh-web-app mounts workspace-changes, which registers one and does real git-snapshot work at the stop boundary. Stock and deliberately not removed, but it means the stimulus is not hypothetical. Five mutations were run and all caught.",
-    "deployment_identity": "6b214b9f56c80d422e47083bae55ff09cd3e05753150536a91dbf3c7dca738db",
+    "deployment_identity": "ece4037a9d5bbb014aa5a8395ed15531715a11949f2aa687166fcfeb5717576f",
     "evidence": [
       {
         "path": "qualification/results/M9.9-signal/FINDINGS.md",
@@ -1355,7 +1355,7 @@
     "oracle": "有界重试和blocked，不无限续行直到刷过。",
     "status": "PASS",
     "note": "Candidate defects are not retried at all; environment-shaped failures stop as blocked once the budget is spent. So a persistent unrepairable environment error terminates as blocked rather than looping until something turns green.",
-    "deployment_identity": "6b214b9f56c80d422e47083bae55ff09cd3e05753150536a91dbf3c7dca738db",
+    "deployment_identity": "ece4037a9d5bbb014aa5a8395ed15531715a11949f2aa687166fcfeb5717576f",
     "evidence": [
       {
         "path": "qualification/results/M9.1-acceptance-runner/FINDINGS.md",
@@ -1372,7 +1372,7 @@
     "oracle": "expected-ref拒绝陈旧发布；不能force覆盖。",
     "status": "PASS",
     "note": "refCas has NO write path -- no force, no reset, no update -- so a stale expected-ref cannot be overwritten. Tested against a real temporary git repository, including the unreadable-ref case. This project does not merge, so the CAS is a refusal surface rather than a publish path.",
-    "deployment_identity": "6b214b9f56c80d422e47083bae55ff09cd3e05753150536a91dbf3c7dca738db",
+    "deployment_identity": "ece4037a9d5bbb014aa5a8395ed15531715a11949f2aa687166fcfeb5717576f",
     "evidence": [
       {
         "path": "qualification/results/M9.1-acceptance-runner/FINDINGS.md",
@@ -1389,7 +1389,7 @@
     "oracle": "先检验真实服务/backend/tool catalog；未伪造可用。",
     "status": "PASS",
     "note": "The registry and the shell backend are asserted mounted, not inferred from a source directory.",
-    "deployment_identity": "6b214b9f56c80d422e47083bae55ff09cd3e05753150536a91dbf3c7dca738db",
+    "deployment_identity": "ece4037a9d5bbb014aa5a8395ed15531715a11949f2aa687166fcfeb5717576f",
     "evidence": [
       {
         "path": "qualification/results/M6.1-terminal-qualification/M6-FINDINGS.md",
@@ -1406,7 +1406,7 @@
     "oracle": "使用ctx.terminals，spawn没有虚构command字段。",
     "status": "PASS",
     "note": "spawn is exercised with type, name and cwd only; no command field exists.",
-    "deployment_identity": "6b214b9f56c80d422e47083bae55ff09cd3e05753150536a91dbf3c7dca738db",
+    "deployment_identity": "ece4037a9d5bbb014aa5a8395ed15531715a11949f2aa687166fcfeb5717576f",
     "evidence": [
       {
         "path": "qualification/results/M6.1-terminal-qualification/M6-FINDINGS.md",
@@ -1423,7 +1423,7 @@
     "oracle": "同一PTY状态存在，独立PTY/owner不共享。",
     "status": "PASS",
     "note": "A value set in one send is read back in a later send on the same PTY; owner isolation is asserted too.",
-    "deployment_identity": "6b214b9f56c80d422e47083bae55ff09cd3e05753150536a91dbf3c7dca738db",
+    "deployment_identity": "ece4037a9d5bbb014aa5a8395ed15531715a11949f2aa687166fcfeb5717576f",
     "evidence": [
       {
         "path": "qualification/results/M6.1-terminal-qualification/M6-FINDINGS.md",
@@ -1440,7 +1440,7 @@
     "oracle": "send返回不自动写cell_completed，下一cell不污染当前输入。",
     "status": "PASS",
     "note": "The send result is asserted to carry a wait reason and to have no exitCode or succeeded field.",
-    "deployment_identity": "6b214b9f56c80d422e47083bae55ff09cd3e05753150536a91dbf3c7dca738db",
+    "deployment_identity": "ece4037a9d5bbb014aa5a8395ed15531715a11949f2aa687166fcfeb5717576f",
     "evidence": [
       {
         "path": "qualification/results/M6.1-terminal-qualification/M6-FINDINGS.md",
@@ -1457,7 +1457,7 @@
     "oracle": "控制请求不被execution锁阻塞，结果状态如实。",
     "status": "PASS",
     "note": "CLOSED (unconfined). The signal is delivered on an INDEPENDENT control path: 8-9 ms against a running cell, so it does not wait for the command to finish. The command really stops, the post-state is reported honestly, and signalling is owner-authorized. The unconfined qualifier is inherited from the read-only spawn limitation and is stated rather than hidden.",
-    "deployment_identity": "6b214b9f56c80d422e47083bae55ff09cd3e05753150536a91dbf3c7dca738db",
+    "deployment_identity": "ece4037a9d5bbb014aa5a8395ed15531715a11949f2aa687166fcfeb5717576f",
     "evidence": [
       {
         "path": "qualification/results/M9.2-terminal-advanced/FINDINGS.md",
@@ -1474,7 +1474,7 @@
     "oracle": "新epoch不冒充旧kernel，不自动重放未知cell。",
     "status": "PASS",
     "note": "CLOSED (unconfined). A fresh context starts with NO terminals, so a historical pty-N id is not silently adopted; a cell does not survive the host that owned it, with a positive control proving the test can detect survival. The package has no replay call site, so no historical cell is auto-replayed.",
-    "deployment_identity": "6b214b9f56c80d422e47083bae55ff09cd3e05753150536a91dbf3c7dca738db",
+    "deployment_identity": "ece4037a9d5bbb014aa5a8395ed15531715a11949f2aa687166fcfeb5717576f",
     "evidence": [
       {
         "path": "qualification/results/M9.2-terminal-advanced/FINDINGS.md",
@@ -1491,7 +1491,7 @@
     "oracle": "有界视图+明确truncation/原产物ref，不称全量日志。",
     "status": "PASS",
     "note": "read is asserted bounded and self-reporting through totalLines and truncated.",
-    "deployment_identity": "6b214b9f56c80d422e47083bae55ff09cd3e05753150536a91dbf3c7dca738db",
+    "deployment_identity": "ece4037a9d5bbb014aa5a8395ed15531715a11949f2aa687166fcfeb5717576f",
     "evidence": [
       {
         "path": "qualification/results/M6.1-terminal-qualification/M6-FINDINGS.md",
@@ -1508,7 +1508,7 @@
     "oracle": "错误/unknown不误当success；framing不是验收防伪。",
     "status": "PASS",
     "note": "CLOSED (unconfined). A failing command is not reported as success; a printed fake done-marker is NOT trusted as verification; and an input()-style read settles without being read as completion. MEASURED AND SECURITY-RELEVANT: a send result carries an IDENTICAL field list for success and failure (viewport | waitReason | sessionStatus | truncated) with NO verdict field, so failure is visible only as text. The framing attack was quantified: a forged OSC `133;D;0` plus prompt settles the send in 138-185 ms versus 3025-3135 ms for the same command answered honestly, while the cell is still sleeping. The `<1500 ms` bound is DERIVED from the mechanism (idleSilenceMs = 3000), so a regression that stopped accepting the forgery would fail loudly rather than quietly pass. This is a real boundary on what framing can be trusted for and belongs beside the E01/E06 findings.",
-    "deployment_identity": "6b214b9f56c80d422e47083bae55ff09cd3e05753150536a91dbf3c7dca738db",
+    "deployment_identity": "ece4037a9d5bbb014aa5a8395ed15531715a11949f2aa687166fcfeb5717576f",
     "evidence": [
       {
         "path": "qualification/results/M9.2-terminal-advanced/FINDINGS.md",
@@ -1525,7 +1525,7 @@
     "oracle": "无无主子进程，kill失败明确可见。",
     "status": "PASS",
     "note": "kill releases the session and list is empty afterwards; the real throw-on-second-kill contract is asserted.",
-    "deployment_identity": "6b214b9f56c80d422e47083bae55ff09cd3e05753150536a91dbf3c7dca738db",
+    "deployment_identity": "ece4037a9d5bbb014aa5a8395ed15531715a11949f2aa687166fcfeb5717576f",
     "evidence": [
       {
         "path": "qualification/results/M6.1-terminal-qualification/M6-FINDINGS.md",
@@ -1542,7 +1542,7 @@
     "oracle": "已测能力和未支持项分开；需要专用kernel才进入条件切片。",
     "status": "PASS",
     "note": "The capability range is stated explicitly, including that confinement breaks spawn; no rich-MIME or cross-restart claim is made.",
-    "deployment_identity": "6b214b9f56c80d422e47083bae55ff09cd3e05753150536a91dbf3c7dca738db",
+    "deployment_identity": "ece4037a9d5bbb014aa5a8395ed15531715a11949f2aa687166fcfeb5717576f",
     "evidence": [
       {
         "path": "qualification/results/M6.1-terminal-qualification/M6-FINDINGS.md",
@@ -1569,7 +1569,7 @@
     "oracle": "标bytes_captured而非primary_read/understood。",
     "status": "PASS",
     "note": "Two INDEPENDENT barriers against accidental promotion. (1) EvidenceTier is a union that does not CONTAIN primary_read or understood -- they are unspellable, not merely refused. (2) The only mutator demands a named transition carrying its own evidence, and it refuses skipped steps, backwards steps, unevidenced transitions, and the subtle one: a `parsed` transition that does not declare its COVERAGE, so a partial parse cannot be silently upgraded while the tier is promoted.",
-    "deployment_identity": "6b214b9f56c80d422e47083bae55ff09cd3e05753150536a91dbf3c7dca738db",
+    "deployment_identity": "ece4037a9d5bbb014aa5a8395ed15531715a11949f2aa687166fcfeb5717576f",
     "evidence": [
       {
         "path": "qualification/results/M7.1-web-search-port/PORT-NOTES.md",
@@ -1590,7 +1590,7 @@
     "oracle": "标读取范围与局限，必要时换真实解析/视觉途径；不补写缺失内容。",
     "status": "PASS",
     "note": "Six evidence states in a CLOSED tuple, so `understood` cannot appear by accident. Range and limits live in structured fields the states cannot carry: fetch: not_fetched | failed{code} | responded{statusCode,bytes,truncated,usable}, and parse: {range, complete, limit?}. `parsed` is set ONLY for a complete parse, so states.has(parsed) means fully parsed while parse.range answers the different question of which part was read. The only function permitted to say `the source does not contain X` THROWS unless a complete parse exists -- it never returns an empty string, which would be indistinguishable from a real negative answer. Proven through the real ctx.web seam with a fixture transport, so the WebFetchResult values and WebError codes are DSH own: 404 -> responded/usable false, timeout and redirect-refusal -> failed, unconfigured provider -> failed, never an empty source. NAMED LIMIT: a PDF never reaches even bytes_captured, because web_fetch accepts only html/text bodies (web/src/types.ts:93-95) and classifyContentType returns undefined for application/pdf (policy.ts:78-84), so it throws WEB_UNSUPPORTED_CONTENT_TYPE before any body is read. No document pipeline exists, so the record type and the refusal are qualified but the PDF retrieval route is NOT.",
-    "deployment_identity": "6b214b9f56c80d422e47083bae55ff09cd3e05753150536a91dbf3c7dca738db",
+    "deployment_identity": "ece4037a9d5bbb014aa5a8395ed15531715a11949f2aa687166fcfeb5717576f",
     "evidence": [
       {
         "path": "qualification/results/M9.8-research/FINDINGS.md",
@@ -1607,7 +1607,7 @@
     "oracle": "request manifest不以最大seq假装已见。",
     "status": "PASS",
     "note": "The counterexample is MEASURED on a real Session rather than asserted in prose: visible seqs are [2,1] -- NOT ascending -- because a replacement lands at a higher seq while occupying an older surface position. So no rule of the form `everything at or below some seq` can express this surface AT ALL; that is the structural reason the shortcut is invalid, not merely one bad example. The test also pins the DIRECTION of the error: the inferred set differs from the real one by exactly the shadowed node, claiming MORE was seen than really was. LIMIT: no real CompactionEngine is used (it needs llm + tokenMeter); the surface transition appended is the one compactSurfaceRegion appends, so visibility semantics are qualified while range selection is not.",
-    "deployment_identity": "6b214b9f56c80d422e47083bae55ff09cd3e05753150536a91dbf3c7dca738db",
+    "deployment_identity": "ece4037a9d5bbb014aa5a8395ed15531715a11949f2aa687166fcfeb5717576f",
     "evidence": [
       {
         "path": "qualification/results/M9.8-research/FINDINGS.md",
@@ -1624,7 +1624,7 @@
     "oracle": "可在受控案例识别两种顺序；普通语义依赖审计不装普遍证明器。",
     "status": "PASS",
     "note": "Two orderings distinguished on the production loop, in BOTH the response index and on the wire. IMPORTANT FINDING: the OBVIOUS predicate -- was the effect tool/call logged before the observation tool/result? -- is WRONG. For exclusive tools the call is logged AFTER the result, because executeToolCalls makes each exclusive call a group of one (tool-calls.ts:90). The naive predicate classifies that case as observed-then-sampled when in fact both calls came from ONE response. The test asserts both verdicts side by side rather than hiding the trap, so anyone reading this gate off sequence numbers would get the exclusive case backwards. No universal semantic-dependency prover is claimed.",
-    "deployment_identity": "6b214b9f56c80d422e47083bae55ff09cd3e05753150536a91dbf3c7dca738db",
+    "deployment_identity": "ece4037a9d5bbb014aa5a8395ed15531715a11949f2aa687166fcfeb5717576f",
     "evidence": [
       {
         "path": "qualification/results/M9.16-research-chain/FINDINGS.md",
@@ -1641,7 +1641,7 @@
     "oracle": "保留原usage语义与全部已知费用；未知项不置零。",
     "status": "PASS",
     "note": "CLOSED at the ledger-semantics level; real per-attempt bills stay NOT_RUN. A UsageLedger over USAGE_SOURCES = root|child|retry|compaction|summary|search, with NO ?? 0 on the unknown path; a retry is a separate attemptId; unknownCount, unknownUsageCount and unknownCostCount are reported separately AND per source; a repeated attemptId and a reused requestId are both refused and both counted. Token buckets keep DSH own disjointness (quoted from llm/llm/src/types.ts:162), so reasoning is not re-added to output.",
-    "deployment_identity": "6b214b9f56c80d422e47083bae55ff09cd3e05753150536a91dbf3c7dca738db",
+    "deployment_identity": "ece4037a9d5bbb014aa5a8395ed15531715a11949f2aa687166fcfeb5717576f",
     "evidence": [
       {
         "path": "qualification/results/M9.6-cost/FINDINGS.md",
@@ -1658,7 +1658,7 @@
     "oracle": "实际请求差异可解释；不用累计surface估计代替wire事实。",
     "status": "PASS",
     "note": "Both stimuli measured on the dispatched GenerateOptions, with buildRequest, headerEquals and orderTools quoted by line: (a) only unrelated dynamic state updated, (b) the tool ORDER changed. The actual REQUEST differences are explainable in both cases. contentGeneration -- the cumulative surface quantity the oracle explicitly names as a substitute to avoid -- is used NOWHERE in the file.",
-    "deployment_identity": "6b214b9f56c80d422e47083bae55ff09cd3e05753150536a91dbf3c7dca738db",
+    "deployment_identity": "ece4037a9d5bbb014aa5a8395ed15531715a11949f2aa687166fcfeb5717576f",
     "evidence": [
       {
         "path": "qualification/results/M9.16-research-chain/FINDINGS.md",
@@ -1675,7 +1675,7 @@
     "oracle": "只允许授权范围，不为检索便利暴露DSH_HOME。",
     "status": "PASS",
     "note": "The allow-list is consulted BEFORE the store, because ctx.sessions.get(id) returns undefined for BOTH `not authorized` and `does not exist`; consulting the store first would collapse a refusal into an apparent absence. read() throws SESSION_QUERY_TOOL_UNAUTHORIZED (DSH own code) for a session the test first PROVES exists, and a genuine not-found stays separately distinguishable. Six independent no-implicit-widening assertions, including that the fields are #private -- a TypeScript `private` is erased and would leave scope.store a real property. LIMITS: the guard is not yet wired into a production tool surface, and DSH own session-query authorization is a DIFFERENT model (workspace/cwd scoped) which was neither replaced nor measured. The `DSH_HOME not mounted` half is addressed only as `the scope object names no filesystem location` -- no mount configuration was audited.",
-    "deployment_identity": "6b214b9f56c80d422e47083bae55ff09cd3e05753150536a91dbf3c7dca738db",
+    "deployment_identity": "ece4037a9d5bbb014aa5a8395ed15531715a11949f2aa687166fcfeb5717576f",
     "evidence": [
       {
         "path": "qualification/results/M9.8-research/FINDINGS.md",
