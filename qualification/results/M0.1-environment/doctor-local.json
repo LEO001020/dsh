@@ -1,0 +1,50 @@
+{
+  "scope": "READ_ONLY_BOOTSTRAP_METADATA_NOT_DSH_QUALIFICATION",
+  "dsh_launched": false,
+  "network_requested": false,
+  "credentials_or_configuration_read": false,
+  "seed_engine": "^22.19.0 || >=24.0.0",
+  "source": {
+    "status": "READ",
+    "path": "D:\\DSH\\src\\dsh-src",
+    "manifest_name": "@deepseek-ai/dsh-root",
+    "manifest_version": "0.1.6-alpha.2",
+    "package_manager": "pnpm@11.7.0",
+    "node_engine": "^22.19.0 || >=24.0.0",
+    "git_revision": {
+      "available": true,
+      "path": "C:\\Program Files\\Git\\mingw64\\bin\\git.EXE",
+      "realpath": "C:\\Program Files\\Git\\mingw64\\bin\\git.exe",
+      "exit_code": 0,
+      "value": "ddefc45fbc7f8e46dd73185e68295696d1297887",
+      "stderr_present": false,
+      "status": "RETURNED"
+    }
+  },
+  "node": {
+    "available": true,
+    "path": "C:\\Program Files\\nodejs\\node.EXE",
+    "realpath": "C:\\Program Files\\nodejs\\node.exe",
+    "exit_code": 0,
+    "value": "v24.18.0",
+    "stderr_present": false,
+    "status": "RETURNED"
+  },
+  "git": {
+    "available": true,
+    "path": "C:\\Program Files\\Git\\mingw64\\bin\\git.EXE",
+    "realpath": "C:\\Program Files\\Git\\mingw64\\bin\\git.exe",
+    "exit_code": 0,
+    "value": "git version 2.55.0.windows.3",
+    "stderr_present": false,
+    "status": "RETURNED"
+  },
+  "pnpm": {
+    "path": "C:\\Users\\hzq00\\AppData\\Roaming\\npm\\pnpm.CMD",
+    "status": "NOT_INVOKED"
+  },
+  "node_engine_source": "manifest",
+  "node_engine_check": "SATISFIED",
+  "qualification_status": "NOT_RUN",
+  "ready_to_build_claim": false
+}

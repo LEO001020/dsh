@@ -1,0 +1,36 @@
+{
+  "scope": "READ_ONLY_BOOTSTRAP_METADATA_NOT_DSH_QUALIFICATION",
+  "dsh_launched": false,
+  "network_requested": false,
+  "credentials_or_configuration_read": false,
+  "seed_engine": "^22.19.0 || >=24.0.0",
+  "source": {
+    "status": "NOT_PROVIDED"
+  },
+  "node": {
+    "available": true,
+    "path": "/opt/nvm/versions/node/v22.16.0/bin/node",
+    "realpath": "/opt/nvm/versions/node/v22.16.0/bin/node",
+    "exit_code": 0,
+    "value": "v22.16.0",
+    "stderr_present": false,
+    "status": "RETURNED"
+  },
+  "git": {
+    "available": true,
+    "path": "/usr/bin/git",
+    "realpath": "/usr/bin/git",
+    "exit_code": 0,
+    "value": "git version 2.47.3",
+    "stderr_present": false,
+    "status": "RETURNED"
+  },
+  "pnpm": {
+    "path": null,
+    "status": "NOT_INVOKED"
+  },
+  "node_engine_source": "seed_only",
+  "node_engine_check": "NOT_SATISFIED",
+  "qualification_status": "NOT_RUN",
+  "ready_to_build_claim": false
+}

@@ -1,0 +1,75 @@
+{
+  "schema_version": 1,
+  "kind": "PROJECT_QUALIFICATION_LOCK_NOT_DSH_LOADER_CONFIG",
+  "audit_date": "2026-09-19",
+  "observed_reference": {
+    "repository": "deepseek-ai/deepseek-harness",
+    "commit": "ddefc45fbc7f8e46dd73185e68295696d1297887",
+    "tag": "dsh-v0.1.6-alpha.2",
+    "version": "0.1.6-alpha.2",
+    "package_manager": "pnpm@11.7.0",
+    "node_engine": "^22.19.0 || >=24.0.0",
+    "source_access": "LOCAL_CLONE_VERIFIED: git ls-remote and detached checkout at D:\\DSH\\src\\dsh-src",
+    "distribution_tested": false,
+    "delivery_package_note": "The delivery package recorded a DNS-blocked clone and Node v22.16.0. This machine re-established both: clone succeeded and Node is v24.18.0. The delivery package's version facts were treated as re-checkable seeds."
+  },
+  "deployment": {
+    "status": "UNQUALIFIED",
+    "identity": null,
+    "identity_algorithm": "sha256(UTF8(json.dumps(inputs, sort_keys=True, separators=(',', ':'), ensure_ascii=True)))",
+    "inputs": {
+      "upstream_repository": "deepseek-ai/deepseek-harness",
+      "upstream_commit": "ddefc45fbc7f8e46dd73185e68295696d1297887",
+      "upstream_patchset_sha256": null,
+      "artifact_sha256": null,
+      "launcher_realpath": null,
+      "launcher_args_redacted": null,
+      "node_version": "v24.18.0",
+      "package_manager_version": "11.7.0",
+      "dependency_lock_sha256": null,
+      "native_binary_digests": null,
+      "os_and_architecture": "Windows 10.0.26200 / AMD64",
+      "isolation_image_or_policy_digest": null,
+      "host_profile_digest": null,
+      "agent_preset_id": null,
+      "agent_preset_digest": null,
+      "resolved_plugin_graph_digest": null,
+      "model_and_provider_capabilities_digest": null,
+      "request_accounting_policy_digest": null,
+      "acceptance_spec_sha256": "b6e68075e097b5d790a406cb92820465381b6a716a84b53b0a8b8d99d584ad47",
+      "enabled_conditional_gate_ids": [],
+      "authority_policy_digest": null,
+      "data_schema_version": null
+    }
+  },
+  "concurrency_requirement": {
+    "status": "MANDATORY_NOT_OPTIONAL",
+    "user_selects_target": true,
+    "required_live_qualification_target": 10,
+    "root_excluded_from_child_count": true,
+    "idle_children_count_as_productive": false,
+    "silent_target_downgrade_allowed": false,
+    "final_state_pending_cleanup_may_release_slot": false,
+    "native_tool_width_equals_child_count": false,
+    "refill_slo_ms": null
+  },
+  "runtime_authorization": {
+    "scope": "LOCAL_IMPLEMENTATION_ONLY",
+    "live_provider_budget_authorized": false,
+    "budget_amount": null,
+    "currency": null,
+    "deadline": null,
+    "restart_resume_authorized": false,
+    "external_publication_authorized": false,
+    "secrets": "Never put key values in this file; record safe source labels only."
+  },
+  "promotion": {
+    "daily_home": "D:\\DSH\\home\\daily",
+    "canary_home": "D:\\DSH\\home\\canary",
+    "previous_immutable_artifact_and_state": null,
+    "decision": "NOT_READY",
+    "gates_path": "qualification/gates.json",
+    "spec_path": "qualification/specs/gate-spec.json",
+    "gate_spec_sha256": "b6e68075e097b5d790a406cb92820465381b6a716a84b53b0a8b8d99d584ad47"
+  }
+}

@@ -1,0 +1,24 @@
+=== OS ===
+
+Microsoft Windows [°æ±¾ 10.0.26200.8737]
+=== ARCH ===
+PROCESSOR_ARCHITECTURE=AMD64
+=== CPU count ===
+20
+=== Node ===
+v24.18.0
+=== npm ===
+11.16.0
+=== pnpm global ===
+11.24.0
+=== corepack ===
+0.35.0
+=== git ===
+git version 2.55.0.windows.3
+=== python ===
+Python 3.14.3
+=== disk ===
+Filesystem      Size  Used Avail Use% Mounted on
+D:              901G  294G  607G  33% /d
+E:              901G  526G  375G  59% /e
+C:              850G  638G  213G  76% /c
