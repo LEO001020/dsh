@@ -1,0 +1,24 @@
+{
+ "probe": "verify-contract-mounted",
+ "servicePresent": true,
+ "reportOk": true,
+ "reportVerdict": null,
+ "checkCount": 8,
+ "failedChecks": [
+  "sandboxPolicy.defaultMode",
+  "ptcRuntime.sandboxMode"
+ ],
+ "observedMode": null,
+ "loaderPresent": true,
+ "sampleRow": null,
+ "rowsMatchingNoSandbox": [
+  {
+   "id": "include:daily-no-sandbox-contract",
+   "name": null,
+   "disabled": false,
+   "fiberState": null
+  }
+ ],
+ "rowPresent": true,
+ "rowFiberState": null
+}

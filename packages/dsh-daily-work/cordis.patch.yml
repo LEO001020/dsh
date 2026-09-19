@@ -300,3 +300,5 @@
         # reproduces stock `run_code` behaviour; it exists so the two transports
         # can be compared on one registry, not as the daily default.
         contentProjection: reference
+    - id: daily-no-sandbox-contract
+      name: dsh-daily-work/no-sandbox-contract

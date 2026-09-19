@@ -23,6 +23,10 @@
       "types": "./lib/host-plugin.d.ts",
       "default": "./lib/host-plugin.js"
     },
+    "./no-sandbox-contract": {
+      "types": "./lib/no-sandbox-contract.d.ts",
+      "default": "./lib/no-sandbox-contract.js"
+    },
     "./package.json": "./package.json",
     "./programmatic-scope": {
       "types": "./lib/programmatic-scope-plugin.d.ts",
