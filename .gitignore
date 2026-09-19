@@ -3,3 +3,9 @@
 packages/dsh-daily-work/node_modules/
 packages/dsh-daily-work/lib/
 **/.vite-temp/
+
+# Junction farms created inside an evidence directory are the same
+# machine-layout artifact as the package's own: they point at the pinned DSH
+# checkout and must never be committed. A junction is a reparse point, so a
+# checkout that recursed into one would copy the whole DSH tree.
+qualification/results/**/node_modules/

@@ -70,7 +70,7 @@ python <delivery>/helpers/check_plan.py \
 
 ## What is actually proven
 
-**68 of 104 gates PASS, 2 are honest FAILs**, with the delivery package's checker
+**83 of 104 gates PASS, 2 are honest FAILs**, with the delivery package's checker
 reporting **zero structural errors** on the report. Every PASS carries at least
 one evidence file whose sha256 is recorded, and the generator refuses to emit a
 PASS with no evidence on disk. The load-bearing results:
@@ -114,6 +114,21 @@ Read `docs/GAPS.md` for the full list. The ones that matter most:
   `web_fetch`'s SSRF guard filters that tool's URL only and is bypassed by any
   shell command. Both were previously `NOT_RUN`; measuring them moved them to
   `FAIL`, which understates less.
+- **Terminal framing is forgeable, and the cost is quantified.** A send result
+  carries an identical field list for success and failure with **no verdict
+  field**, so failure is visible only as text. A forged OSC `133;D;0` marker
+  settles the send in **138–185 ms** versus **3025–3135 ms** for the same command
+  answered honestly, while the cell is still sleeping. Framing is a convenience,
+  not an integrity mechanism.
+- **The record's `epoch` field is inert.** `record.ts` documents it as the
+  reject-on-stale point, but nothing reads or writes it after
+  `initialRunRecord` sets it to 1. Object identity covers an in-process resume; a
+  run re-adopted across a **process** boundary has no enforcement today.
+- **A preset is not self-contained, and two presets sharing one composition file
+  share one ESM module instance.** Registrations are per-Session and the tool
+  catalogs stay separate, but module-scope state does not. That is why
+  `src/tools.ts` holds no cross-session state — a measured constraint, not a
+  style preference.
 - **A second host silently destroys the first host's committed work.** Measured:
   a real second process opens the same live store with no error, its write lands
   durably, and then the first host's next publish erases it. Nothing upstream
