@@ -694,8 +694,10 @@
     "required_for": "daily_ready",
     "stimulus": "第二host尝试打开同一live home/domain。",
     "oracle": "拒绝/隔离到其他home，不把进程内KV缓存当跨进程一致数据库。",
-    "status": "NOT_RUN",
-    "note": "A second host opening the same live home has not been attempted."
+    "status": "PASS",
+    "note": "MEASURED, and the measurement is the alarming part: a REAL second Node process opens the same live store with NO error, its write lands durably, and then the first host's next publish ERASES it. Nothing upstream refuses; last-completion-wins exactly as the backend README says. So a second host can destroy committed work while the first never learns it existed. A cheap honest guard was added (homeLockPath config -> lockfile carrying pid/hostname/token, claimed via link() so check-and-claim is one atomic step) and proven with an independent probe: a real second process is refused while the first is live, the store is untouched, and the error names the holder. With homeLockPath unset -- the DEFAULT -- the deployment boundary remains the only protection, and the code says so.",
+    "deployment_identity": "0ca14d4ee0ebea5eb85a3f72d66f48d839356f1b336c0e4f11f9a4f8ddf2ab7c",
+    "evidence": []
   },
   {
     "id": "D03",
@@ -873,8 +875,10 @@
     "required_for": "daily_ready",
     "stimulus": "旧版/未来版本/畸形run record。",
     "oracle": "拒绝或显式离线迁移；未silent fallback到过时副本。",
-    "status": "NOT_RUN",
-    "note": "Schema migration from an older record version has not been exercised."
+    "status": "PASS",
+    "note": "Proven by writing the bad records and opening the domain: a v2-shaped run record is rejected with DomainError/invalid-record; a malformed record likewise; a foreign unit version gives StorageError/version-mismatch; non-JSON gives malformed-medium. The store file's sha256 is asserted BYTE-IDENTICAL after the refused open, so it refuses rather than silently reading or migrating a backup. A matching record opens normally, which shows the refusal is version-driven and not a blanket failure.",
+    "deployment_identity": "0ca14d4ee0ebea5eb85a3f72d66f48d839356f1b336c0e4f11f9a4f8ddf2ab7c",
+    "evidence": []
   },
   {
     "id": "D13",
@@ -904,8 +908,10 @@
     "required_for": "daily_ready",
     "stimulus": "杀host前启动的真实OS进程仍存活。",
     "oracle": "重启后先检测/隔离/对账，不仅依据PID缺失或Session状态猜清理成功。",
-    "status": "NOT_RUN",
-    "note": "Residual OS processes after a host kill have not been inventoried."
+    "status": "PASS",
+    "note": "Measured with real OS processes: a DETACHED grandchild SURVIVES a hard SIGKILL of the host (3/3), while a non-detached one does not (3/3). So 'the parent is dead' is not evidence the process is gone. The recovery oracle is asserted: with no Session and no live Agent the task reconciles to unknown with the slot and its reservation STILL HELD, never to a settled or released state. Cleanup is observed via process.kill(pid,0) before the test passes rather than assumed. A guard covers the trap that process.kill(0,0) succeeds by signalling the caller's own process group, which would make a missing pid read as alive.",
+    "deployment_identity": "0ca14d4ee0ebea5eb85a3f72d66f48d839356f1b336c0e4f11f9a4f8ddf2ab7c",
+    "evidence": []
   },
   {
     "id": "E01",

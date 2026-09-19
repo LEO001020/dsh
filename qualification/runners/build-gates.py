@@ -54,6 +54,7 @@ E = {
     "runner": evidence("M9.1-acceptance-runner/FINDINGS.md"),
     "runnercli": evidence("M9.1-acceptance-runner/cli-transcript.txt"),
     "runnerstale": evidence("M9.1-acceptance-runner/staleness.txt"),
+    "duradv": evidence("M9.4-durability-advanced/FINDINGS.md"),
     "runnerskip": evidence("M9.1-acceptance-runner/receipt-all-skipped.json"),
 }
 
@@ -115,7 +116,7 @@ G: dict[str, tuple[str, list[str], str]] = {
     "C18": ("PASS", ["lifecycle"], "A real drainContinuableDescendants closes admission for that exact parent permanently: a later startContinuable is rejected. Pause, by contrast, is asserted to still be resumable, which is the property that proves pause did not use drain."),
     # D - M4 recovery
     "D01": ("PASS", ["t0t1"], "Task state, credit reservation and outbox move in one record transform; no cross-key transaction is claimed."),
-    "D02": ("NOT_RUN", [], "A second host opening the same live home has not been attempted."),
+    "D02": ("PASS", ["duradv"], "MEASURED, and the measurement is the alarming part: a REAL second Node process opens the same live store with NO error, its write lands durably, and then the first host's next publish ERASES it. Nothing upstream refuses; last-completion-wins exactly as the backend README says. So a second host can destroy committed work while the first never learns it existed. A cheap honest guard was added (homeLockPath config -> lockfile carrying pid/hostname/token, claimed via link() so check-and-claim is one atomic step) and proven with an independent probe: a real second process is refused while the first is live, the store is untouched, and the error names the holder. With homeLockPath unset -- the DEFAULT -- the deployment boundary remains the only protection, and the code says so."),
     "D03": ("PASS", ["durability", "t0t1"], "A reservation that provably never launched returns to prepared; the only path back, and it needs positive proof."),
     "D04": ("PASS", ["durability", "t0t1"], "A reserved id with no trace becomes unknown and is explicitly NOT relaunched; DUPLICATE_CHILD is rethrown unchanged."),
     "D05": ("PASS", ["durability"], "A pending prompt is left to native Inbox recovery; no duplicate delivery is made."),
@@ -125,9 +126,9 @@ G: dict[str, tuple[str, list[str], str]] = {
     "D09": ("PASS", ["durability", "lifecycle"], "Reconciliation never replays and never releases a slot, asserted over every state; an end event alone also does not release one."),
     "D10": ("PASS", ["t0t1"], "The record carries a run epoch and reconciliation refuses a mismatched child identity."),
     "D11": ("PASS", ["t0t1"], "A second open of the same domain is rejected; writes after close are refused."),
-    "D12": ("NOT_RUN", [], "Schema migration from an older record version has not been exercised."),
+    "D12": ("PASS", ["duradv"], "Proven by writing the bad records and opening the domain: a v2-shaped run record is rejected with DomainError/invalid-record; a malformed record likewise; a foreign unit version gives StorageError/version-mismatch; non-JSON gives malformed-medium. The store file's sha256 is asserted BYTE-IDENTICAL after the refused open, so it refuses rather than silently reading or migrating a backup. A matching record opens normally, which shows the refusal is version-driven and not a blanket failure."),
     "D13": ("PASS", ["durability", "t0t1"], "A run without restart authorization comes back paused; an expired authorization also comes back paused."),
-    "D14": ("NOT_RUN", [], "Residual OS processes after a host kill have not been inventoried."),
+    "D14": ("PASS", ["duradv"], "Measured with real OS processes: a DETACHED grandchild SURVIVES a hard SIGKILL of the host (3/3), while a non-detached one does not (3/3). So 'the parent is dead' is not evidence the process is gone. The recovery oracle is asserted: with no Session and no live Agent the task reconciles to unknown with the slot and its reservation STILL HELD, never to a settled or released state. Cleanup is observed via process.kill(pid,0) before the test passes rather than assumed. A guard covers the trap that process.kill(0,0) succeeds by signalling the caller's own process group, which would make a missing pid read as alive."),
     # E - M5 security and effects
     "E01": ("FAIL", ["secd"], "Measured with a canary, and it FAILS on Windows. A confined child READ the fake secret outside the workspace root verbatim, exit 0, under BOTH read-only and workspace-write. The boundary is a WRITE boundary: writes outside are EPERM in both modes. WRITE_RESTRICTED intersects only write accesses, enforcement is literally 'partial', and SandboxPolicy carries only mode + workspaceRoot, so the seam has no read lever even in principle. The only credential control that exists anywhere is scrubbedParentEnv() in @deepseek-ai/dsh-subprocess -- a NAME heuristic (drops /KEY|PASSWORD|SECRET|TOKEN/i and DSH_*), which is defeated by a credential in a file and by an explicit env entry by design."),
     "E02": ("PARTIAL", ["security"], "The surface shape is proven: the preset mounts no terminal tool and this project adds none. A live model-to-control-plane probe has not been run."),

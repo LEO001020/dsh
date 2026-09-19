@@ -15,6 +15,7 @@
  * different numbers and are reported as three different numbers.
  */
 import type { RunRecord } from './record.ts'
+import { childCeiling, childCommitted, isHalted } from './record.ts'
 import { holdsSlot } from './states.ts'
 
 /** Per-task liveness facts observed from DSH, not from our own optimism. */
@@ -71,6 +72,8 @@ export type DeficitReason =
   | 'slots_held_by_unconfirmed'
   /** Budget or authorization blocks new admission. */
   | 'budget_blocked'
+  /** Actual spend exceeded its reservation; a human must resolve it. */
+  | 'budget_overage_halt'
   /** The run is paused or closing. */
   | 'run_not_open'
 
@@ -159,40 +162,62 @@ export function countRun(
 function explainDeficit(record: RunRecord, deficit: number, readyTasks: number): DeficitReason {
   if (deficit === 0) return 'none'
   if (record.phase !== 'open') return 'run_not_open'
+  // A recorded overage outranks the plain budget reading: both stop admission,
+  // but only this one says the reservation was WRONG and needs a human. The
+  // order matters, because "budget_blocked" on an overspent run would read as
+  // a normal ceiling stop and hide that the bill exceeded its estimate.
+  if (isHalted(record.budget)) return 'budget_overage_halt'
   if (budgetExhausted(record)) return 'budget_blocked'
   if (readyTasks < record.requestedTarget) return 'insufficient_ready_tasks'
   return 'slots_held_by_unconfirmed'
 }
 
-/** Total committed against the ceiling: spent, reserved, and conservatively held unknowns. */
+/**
+ * Total cost committed against the CHILD ceiling: spent, reserved, and
+ * conservatively held unknowns.
+ *
+ * Note what this is NOT: it is not `spent + reserved + unknownReserved` measured
+ * against `ceiling`. The root's reserve is subtracted first, so a run whose
+ * children have committed everything they are allowed still reports headroom
+ * for the root. See `childCeiling` in `record.ts` for the single definition.
+ */
 function committedCost(record: RunRecord): number {
-  return record.budget.spent + record.budget.reserved + record.budget.unknownReserved
+  return childCommitted(record.budget)
 }
 
 /**
- * Whether the authorized budget leaves no room for any further commitment.
+ * Whether the child budget leaves no room for any further commitment.
  *
- * Equality counts as exhausted: at `committed === ceiling` no new task, however
- * cheap, can be admitted, because every real task also drags retry, compaction
- * and search calls behind it. Refusing here is the correct direction for a hard
- * budget (INV-C5: report blocked, never silently degrade).
+ * Equality counts as exhausted: at `committed === childCeiling` no new task,
+ * however cheap, can be admitted, because every real task also drags retry,
+ * compaction and search calls behind it. Refusing here is the correct
+ * direction for a hard budget (INV-C5: report blocked, never silently degrade).
  */
 function budgetExhausted(record: RunRecord): boolean {
-  return committedCost(record) >= record.budget.ceiling
+  return committedCost(record) >= childCeiling(record.budget)
 }
 
 /**
  * Whether new work may be admitted.
  *
- * Two independent gates, both of which must pass:
+ * Three independent gates, all of which must pass:
  *
- *   budget  - no headroom left, and the new commitment must fit under the
- *             ceiling. Committing exactly the ceiling is allowed; exceeding it
- *             is not. This is the SAME predicate `explainDeficit` reports as
- *             `budget_blocked`, deliberately: a system whose reason for a
- *             deficit disagrees with its admission gate would report "blocked"
- *             while still admitting.
+ *   phase   - the run must be open.
+ *   halt    - no recorded overage is waiting for a human. A halt is checked
+ *             BEFORE the arithmetic because an overspent run can still have
+ *             arithmetic headroom (the ceiling was not reached; the RESERVATION
+ *             was). Admitting into that headroom would spend more credit on the
+ *             strength of an estimate that was just proven wrong.
+ *   budget  - the new commitment must fit under the CHILD ceiling, which is
+ *             `ceiling - rootReserve`. This is what makes INV-C5 mechanical:
+ *             a child admission that would eat into the root reserve is refused
+ *             by this comparison, not by a separate check somewhere else.
  *   slots   - the target must not already be fully occupied.
+ *
+ * This is the SAME predicate `explainDeficit` reports as `budget_blocked` /
+ * `budget_overage_halt`, deliberately: a system whose reason for a deficit
+ * disagrees with its admission gate would report "blocked" while still
+ * admitting.
  *
  * Occupancy is taken from `capacityDeficit`, which is derived from the state
  * machine's own `holdsSlot` predicate. Computing occupancy a second way here
@@ -206,7 +231,8 @@ function budgetExhausted(record: RunRecord): boolean {
  */
 export function mayAdmit(record: RunRecord, counts: Counts, outstandingCost: number): boolean {
   if (record.phase !== 'open') return false
+  if (isHalted(record.budget)) return false
   if (budgetExhausted(record)) return false
-  if (committedCost(record) + outstandingCost > record.budget.ceiling) return false
+  if (committedCost(record) + outstandingCost > childCeiling(record.budget)) return false
   return counts.capacityDeficit > 0
 }

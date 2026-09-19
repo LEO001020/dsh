@@ -24,9 +24,26 @@ import type { Context } from '@deepseek-ai/cordis'
 import { Service } from '@deepseek-ai/cordis'
 import type { Agent } from '@deepseek-ai/dsh-agent'
 import { defineDomain, domainTable, type Domain } from '@deepseek-ai/dsh-storage-domain'
+import { randomUUID } from 'node:crypto'
+import { link, mkdir, readFile, rename, rm, writeFile } from 'node:fs/promises'
+import { hostname } from 'node:os'
+import { dirname } from 'node:path'
 import { z } from 'zod'
 import { countRun, mayAdmit, type Counts, type TaskLiveness } from './counting.ts'
-import { initialRunRecord, runRecordSchema, type RunRecord, type TaskRecord } from './record.ts'
+import {
+  applySpend,
+  budgetReport,
+  childCeiling,
+  childCommitted,
+  holdUnknown,
+  initialRunRecord,
+  isHalted,
+  retainAsUnknown,
+  runRecordSchema,
+  type BudgetReport,
+  type RunRecord,
+  type TaskRecord,
+} from './record.ts'
 import { assertTransition, holdsSlot, type AdmissionState } from './states.ts'
 
 /** The domain name. Doubles as the backend unit name, so it must match UNIT_NAME_RE. */
@@ -113,6 +130,77 @@ export interface WorkServiceConfig {
   readonly budgetCeiling: number
   readonly currency: string
   readonly priceVersion: string
+  /**
+   * Path of the deployment-boundary ownership file, or absent for no guard.
+   *
+   * The service cannot derive this: the store root belongs to the storage-json
+   * backend's config, and reaching into that backend for its private `root`
+   * would be a private-ABI dependency this project forbids. So the operator
+   * names it, and its absence is reported rather than hidden.
+   */
+  readonly homeLockPath?: string
+}
+
+/** Who holds the deployment-boundary lock, written so a refusal can name it. */
+interface HomeLockIdentity {
+  readonly pid: number
+  readonly hostname: string
+  readonly startedAt: string
+  /** So a releasing holder never deletes a successor's lock. */
+  readonly token: string
+}
+
+/**
+ * Whether a pid is alive, using the only probe that is evidence: a real signal.
+ *
+ * `EPERM` means the process EXISTS but this user may not signal it, so it must
+ * count as alive. Treating only "no throw" as alive would let a live host that
+ * runs as another user be reclaimed as stale, which is the one direction this
+ * guard must never get wrong.
+ */
+function pidAlive(pid: number): boolean {
+  try {
+    process.kill(pid, 0)
+    return true
+  } catch (error) {
+    return (error as NodeJS.ErrnoException).code === 'EPERM'
+  }
+}
+
+/**
+ * Whether a recorded holder is PROVEN gone, which is the only condition that
+ * licenses taking the store from it.
+ *
+ * A pid from another machine cannot be tested at all: pid 4242 here is not the
+ * pid 4242 there, and probing it would test an unrelated local process. On a
+ * shared store the honest answer is "not proven gone", so this refuses and the
+ * operator decides. `same pid` is also not proof of the same process — a
+ * recycled pid looks identical — so it refuses too, which costs availability
+ * in the rare crash-and-reclaim case and never costs correctness.
+ */
+function holderProvenGone(holder: HomeLockIdentity): boolean {
+  if (holder.hostname !== hostname()) return false
+  if (holder.pid === process.pid) return false
+  return !pidAlive(holder.pid)
+}
+
+/**
+ * The default root reserve for a ceiling.
+ *
+ * A tenth of the ceiling, floored at 1 and capped at 20 units. The floor exists
+ * because a reserve smaller than one unit cannot pay for a single call, which
+ * would make the reserve decorative; the cap exists because the reserve is for
+ * the root's OWN integration and re-planning work, which does not grow with the
+ * size of the delegated budget. The cap is deliberately in the run's currency
+ * unit rather than a fraction, since a fraction of a large ceiling would reserve
+ * credit the root cannot plausibly spend while starving the children.
+ *
+ * This is a default, not a policy: `createRun` accepts an explicit value, and
+ * the ceiling itself is the user's authorization.
+ */
+function defaultRootReserve(ceiling: number): number {
+  if (ceiling <= 0) return 0
+  return Math.min(20, Math.max(1, Math.round(ceiling / 10)))
 }
 
 export class WorkService extends Service {
@@ -132,6 +220,8 @@ export class WorkService extends Service {
    * later requests.
    */
   private readonly pendingDrain = new Map<string, Promise<LaunchOutcome[]>>()
+  /** This process's deployment-boundary lock token, when a guard is configured. */
+  private lockToken: string | undefined
   private disposed = false
 
   constructor(ctx: Context, config: WorkServiceConfig) {
@@ -151,14 +241,27 @@ export class WorkService extends Service {
    * handle's lifetime is owned by that effect rather than by this constructor.
    * Opening twice is a caller bug and the facility rejects it; we surface that
    * rather than swallowing it.
+   *
+   * The deployment-boundary guard runs FIRST, before the domain is touched, so
+   * a second host is refused before it can read a stale snapshot and republish
+   * it over the live host's writes.
    */
   async open(): Promise<void> {
     if (this.domain !== undefined) throw new Error('dailyWork: domain is already open')
+    await this.acquireHomeLock()
     const facility = this.ctx.get('storageDomain')
     if (facility === undefined) {
+      await this.releaseHomeLock()
       throw new Error('dailyWork: the storageDomain service is not mounted; cannot persist run records')
     }
-    this.domain = await facility.open(workDomainSpec)
+    try {
+      this.domain = await facility.open(workDomainSpec)
+    } catch (error) {
+      // The domain never opened, so this process holds no store: releasing the
+      // claim here is what stops a failed boot from blocking the next one.
+      await this.releaseHomeLock()
+      throw error
+    }
   }
 
   /** Close the domain. Refuses new writes first, then releases the handle. */
@@ -166,7 +269,181 @@ export class WorkService extends Service {
     this.disposed = true
     const domain = this.domain
     this.domain = undefined
-    if (domain !== undefined) await domain.close()
+    try {
+      if (domain !== undefined) await domain.close()
+    } finally {
+      // In a finally because a failed teardown must not leave the deployment
+      // boundary claimed by a process that is no longer serving the store.
+      await this.releaseHomeLock()
+    }
+  }
+
+  /**
+   * Take the deployment-boundary lock, or refuse to start.
+   *
+   * WHY THIS EXISTS AT ALL, and its exact limit. DSH's storage domain has no
+   * cross-process write locking (packages/storage/storage-json/README.md:
+   * "No cross-process write locking — two processes writing the same unit can
+   * interleave replacements; writes to the same file use last-completion
+   * wins"). MEASURED in durability-advanced.test.ts: a second process opens the
+   * same live directory WITHOUT error, its own writes succeed, and its runs are
+   * then erased when the first host next publishes its stale in-memory
+   * snapshot. Silent data loss, no error anywhere.
+   *
+   * So the single-writer assumption has to be enforced by us or not at all.
+   * This is deliberately NOT a distributed lease: it is a same-machine,
+   * same-store exclusion file for the deployment boundary. It does not make the
+   * domain a cross-process CAS, and it does not protect a caller that writes
+   * the store root directly, bypassing this service.
+   *
+   * Two honest gaps, stated rather than papered over:
+   *   - a holder whose pid was recycled, or whose record comes from another
+   *     machine, is never reclaimed (see holderProvenGone). A human deletes the
+   *     file. Blocking is the safe direction: refusing a second host is the
+   *     goal, so a false "still live" costs availability, never correctness.
+   *   - no guard is installed when `homeLockPath` is absent, which is the
+   *     default. The protection is then purely the deployment boundary.
+   */
+  private async acquireHomeLock(): Promise<void> {
+    const path = this.config.homeLockPath
+    if (path === undefined) return
+    const identity: HomeLockIdentity = {
+      pid: process.pid,
+      hostname: hostname(),
+      startedAt: new Date().toISOString(),
+      token: randomUUID(),
+    }
+    const payload = `${JSON.stringify(identity, null, 2)}\n`
+    // `link` publishes the lock with a complete payload and fails if the name
+    // exists, so check-and-claim is one step and a reader never observes an
+    // empty lock. `open(..., 'wx')` also refuses an existing name, but it
+    // creates the file EMPTY and fills it afterwards; a host killed in that
+    // window would leave a lock with no pid to test, which reads as stale and
+    // would hand the store to a second host. This mirrors the no-clobber
+    // link()+unlink() protocol the session-log backend already uses.
+    if (await this.tryClaimLock(path, identity.token, payload)) {
+      this.lockToken = identity.token
+      return
+    }
+
+    const existing = await this.readHomeLock(path)
+    if (existing === 'unreadable') {
+      throw new Error(
+        `dailyWork: refusing to open the work domain — ${path} exists but carries no readable owner identity. `
+        + 'A lock that cannot be read is not evidence that its owner is dead, so this process will not take '
+        + 'the store from it. Inspect the file; delete it only once you have confirmed no host is running.',
+      )
+    }
+    if (existing !== 'absent' && !holderProvenGone(existing)) {
+      throw new Error(
+        `dailyWork: refusing to open the work domain — the store is already owned by pid ${existing.pid} `
+        + `on ${existing.hostname} (since ${existing.startedAt}), recorded in ${path}. `
+        + 'DSH storage has no cross-process write locking, so two hosts over one store silently lose the '
+        + 'loser\'s writes. Stop the other host, or delete that file once you have confirmed it is stale.',
+      )
+    }
+
+    // The recorded holder is PROVEN gone (see holderProvenGone). Reclaim by
+    // RENAMING the stale file aside, not by removing it: two processes
+    // reclaiming at once both see the file, but only the first rename can
+    // succeed — the loser gets ENOENT, because after a successful rename there
+    // is nothing left at `path` to move. A `rm` + claim pair has no such
+    // discriminator, and would let both reclaimers believe they won.
+    const aside = `${path}.stale-${identity.token}`
+    try {
+      await rename(path, aside)
+    } catch (error) {
+      // Lost the reclaim race, or a live claim landed in the gap. Either way
+      // this process is not the owner, and guessing otherwise would create the
+      // second writer this guard exists to prevent.
+      if ((error as NodeJS.ErrnoException).code === 'ENOENT'
+        && await this.tryClaimLock(path, identity.token, payload)) {
+        this.lockToken = identity.token
+        return
+      }
+      throw new Error(
+        `dailyWork: refusing to open the work domain — ownership of ${path} changed while reclaiming a stale `
+        + `lock (${(error as NodeJS.ErrnoException).code}). Another host holds it; stop that host first.`,
+      )
+    }
+    await rm(aside, { force: true })
+    if (!await this.tryClaimLock(path, identity.token, payload)) {
+      throw new Error(
+        `dailyWork: refusing to open the work domain — another process claimed ${path} while this one was `
+        + 'reclaiming a stale lock. Stop that host first.',
+      )
+    }
+    this.lockToken = identity.token
+  }
+
+  /**
+   * Claim the lock name atomically, with the payload already complete.
+   *
+   * @returns `false` when the name is taken, which is the only non-throwing
+   * failure: any other error is a real I/O fault and must surface.
+   */
+  private async tryClaimLock(path: string, token: string, payload: string): Promise<boolean> {
+    const staged = `${path}.claim-${token}`
+    // The lock may be configured outside the store root, so its directory is
+    // not guaranteed to exist yet.
+    await mkdir(dirname(path), { recursive: true })
+    await writeFile(staged, payload, { encoding: 'utf8', mode: 0o600 })
+    try {
+      await link(staged, path)
+      return true
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code === 'EEXIST') return false
+      throw error
+    } finally {
+      // The link is the published name; the staging name must not linger or a
+      // later claim would see a same-directory leftover rather than the lock.
+      await rm(staged, { force: true })
+    }
+  }
+
+  /**
+   * Read the current lock holder.
+   *
+   * The three outcomes are deliberately distinct, because collapsing them is
+   * how a guard like this hands the store to a second writer:
+   *   - `'absent'`: no lock file. Free to claim.
+   *   - `'unreadable'`: a lock file exists but carries no usable identity. We
+   *     cannot tell a live owner from debris, so the caller must REFUSE. A
+   *     corrupted lock is an operator problem, not evidence of a dead host.
+   *   - a parsed identity: the caller tests its pid for liveness.
+   */
+  private async readHomeLock(path: string): Promise<'absent' | 'unreadable' | HomeLockIdentity> {
+    let text: string
+    try {
+      text = await readFile(path, 'utf8')
+    } catch (error) {
+      return (error as NodeJS.ErrnoException).code === 'ENOENT' ? 'absent' : 'unreadable'
+    }
+    try {
+      const parsed = JSON.parse(text) as Partial<HomeLockIdentity>
+      if (typeof parsed.pid !== 'number' || typeof parsed.hostname !== 'string') return 'unreadable'
+      return {
+        pid: parsed.pid,
+        hostname: parsed.hostname,
+        startedAt: typeof parsed.startedAt === 'string' ? parsed.startedAt : 'unknown',
+        token: typeof parsed.token === 'string' ? parsed.token : '',
+      }
+    } catch {
+      return 'unreadable'
+    }
+  }
+
+  private async releaseHomeLock(): Promise<void> {
+    const path = this.config.homeLockPath
+    const token = this.lockToken
+    if (path === undefined || token === undefined) return
+    this.lockToken = undefined
+    // Delete only this holder's file: after a stale reclaim the path may belong
+    // to a successor, and removing it would revoke a live host's claim.
+    const existing = await this.readHomeLock(path)
+    if (existing === 'absent' || existing === 'unreadable' || existing.token === token) {
+      await rm(path, { force: true })
+    }
   }
 
   private runs() {
@@ -181,6 +458,15 @@ export class WorkService extends Service {
    * The root Agent is stored as an identity, not as a string: authority is
    * bound to the live object plus the run epoch, so a stale callback carrying
    * the same session id cannot write authoritative state (INV-L3).
+   *
+   * `rootReserve` carves the root's own credit out of the ceiling at creation
+   * time. It defaults to a fraction of the ceiling rather than to zero, because
+   * a zero reserve would make INV-C2 ("root retains reserved inference credit")
+   * a sentence with nothing behind it: ten children could commit the whole
+   * ceiling and the root would have no credit left to integrate results or
+   * submit replacements, which is precisely the failure C05 names. The default
+   * is one tenth, bounded so a small ceiling still leaves the root something
+   * usable and a large one does not reserve more than a root can spend.
    */
   async createRun(input: {
     runId: string
@@ -188,10 +474,20 @@ export class WorkService extends Service {
     authorizationRef: string
     targetChildren?: number
     restartResumeAuthorized?: boolean
+    rootReserve?: number
     now?: string
   }): Promise<RunRecord> {
     this.assertOpen()
     const now = input.now ?? new Date().toISOString()
+    const ceiling = this.config.budgetCeiling
+    const rootReserve = input.rootReserve ?? defaultRootReserve(ceiling)
+    if (rootReserve < 0) throw new Error(`dailyWork: rootReserve ${rootReserve} cannot be negative`)
+    if (rootReserve > ceiling) {
+      throw new Error(
+        `dailyWork: rootReserve ${rootReserve} exceeds the ceiling ${ceiling}; the reserve is a part of the `
+        + 'ceiling, not an addition to it',
+      )
+    }
     const record = initialRunRecord({
       runId: input.runId,
       rootSessionId: input.root.session.header.id,
@@ -205,7 +501,10 @@ export class WorkService extends Service {
         spent: 0,
         reserved: 0,
         unknownReserved: 0,
-        ceiling: this.config.budgetCeiling,
+        ceiling,
+        rootReserve,
+        rootSpent: 0,
+        overage: 0,
       },
       restartResumeAuthorized: input.restartResumeAuthorized ?? false,
       now,
@@ -358,6 +657,20 @@ export class WorkService extends Service {
    * atomic would be a lie: the domain gives atomicity per record, not across
    * keys (INV-D1).
    *
+   * Two refusals happen here that are worth naming, because they are the C05
+   * and C11 gates expressed as arithmetic:
+   *
+   *   - the commitment is measured against `childCeiling` = `ceiling - rootReserve`,
+   *     NOT against `ceiling`. A child admission that would eat into the root's
+   *     reserve is therefore refused by the same comparison that refuses an
+   *     over-ceiling one. This is the invariant: **for every reachable state,
+   *     `spent + reserved + unknownReserved <= ceiling - rootReserve`, so the
+   *     root always retains at least `rootReserve - rootSpent` of its own
+   *     credit regardless of how many children were admitted.**
+   *   - a recorded overage halt refuses admission outright, even when the
+   *     arithmetic headroom is positive. See `mayAdmit` for why that ordering
+   *     matters.
+   *
    * The transform is pure and synchronous. No I/O, no launch, no network inside.
    */
   async admit(input: {
@@ -375,10 +688,19 @@ export class WorkService extends Service {
       if (record.phase !== 'open') {
         throw new Error(`dailyWork: run "${input.runId}" is ${record.phase}; refusing admission`)
       }
-      const committed = record.budget.spent + record.budget.reserved + record.budget.unknownReserved
-      if (committed + input.reservedCost > record.budget.ceiling) {
+      if (isHalted(record.budget)) {
         throw new Error(
-          `dailyWork: run "${input.runId}" has no budget headroom (committed ${committed}, ceiling ${record.budget.ceiling})`,
+          `dailyWork: run "${input.runId}" is halted on a recorded budget overage (${record.budget.halt?.reason}); `
+          + 'refusing admission until a human resolves it',
+        )
+      }
+      const budget = record.budget
+      const committed = childCommitted(budget)
+      const limit = childCeiling(budget)
+      if (committed + input.reservedCost > limit) {
+        throw new Error(
+          `dailyWork: run "${input.runId}" has no budget headroom (committed ${committed}, child ceiling ${limit}, `
+          + `root reserve ${budget.rootReserve ?? 0} of ceiling ${budget.ceiling})`,
         )
       }
       const existing = record.tasks[input.taskId]
@@ -404,7 +726,7 @@ export class WorkService extends Service {
       return {
         ...record,
         tasks: { ...record.tasks, [input.taskId]: task },
-        budget: { ...record.budget, reserved: record.budget.reserved + input.reservedCost },
+        budget: { ...budget, reserved: budget.reserved + input.reservedCost },
         outbox: {
           ...record.outbox,
           [`admit-${input.taskId}`]: {
@@ -429,6 +751,17 @@ export class WorkService extends Service {
    * `releaseReservation` is explicit because releasing a credit is a separate
    * decision from changing a state: a cancel that is merely *requested* must not
    * release anything.
+   *
+   * `spentCost` is the ACTUAL cost attributed to this transition, and it is
+   * applied through `applySpend`, which is what makes C11 true here: when the
+   * actual cost exceeds the reservation this task holds, the excess is recorded
+   * in `budget.overage` and an admission halt is set. The full amount is added
+   * to `spent` in every case. Nothing is clamped to the reservation, and no
+   * code path in this method can leave an overspend looking green.
+   *
+   * The reservation this spend is measured against is the task's own
+   * `reservedCost`, read from the STORED task rather than from the caller. A
+   * caller cannot widen the estimate after the fact to hide an overage.
    */
   async transition(input: {
     runId: string
@@ -447,8 +780,21 @@ export class WorkService extends Service {
       assertTransition(task.state, input.to, input.taskId)
 
       const release = input.releaseReservation ?? (input.to === 'confirmed' || input.to === 'cancelled')
-      const reserved = release ? Math.max(0, record.budget.reserved - task.reservedCost) : record.budget.reserved
-      const spent = record.budget.spent + (input.spentCost ?? 0)
+      const spentCost = input.spentCost ?? 0
+      const budget = spentCost === 0
+        ? {
+            ...record.budget,
+            reserved: release
+              ? Math.max(0, record.budget.reserved - task.reservedCost)
+              : record.budget.reserved,
+          }
+        : applySpend(record.budget, {
+            reservationReleased: release ? task.reservedCost : 0,
+            reservationCovering: task.reservedCost,
+            actualCost: spentCost,
+            reason: `task "${input.taskId}" settled as ${input.to}`,
+            now,
+          })
 
       const next: TaskRecord = {
         ...task,
@@ -465,7 +811,7 @@ export class WorkService extends Service {
       return {
         ...record,
         tasks: { ...record.tasks, [input.taskId]: next },
-        budget: { ...record.budget, reserved, spent },
+        budget,
         terminalTombstones: tombstones,
         updatedAt: now,
       }
@@ -473,6 +819,239 @@ export class WorkService extends Service {
     const task = updated.tasks[input.taskId]
     if (task === undefined) throw new Error(`dailyWork: transition of "${input.taskId}" did not persist`)
     return task
+  }
+
+  /**
+   * Record a spend that belongs to no task transition: a retry, a compaction, a
+   * summary, or a root call.
+   *
+   * WHY THIS IS A SEPARATE METHOD from `transition`. The plan's cost rule is
+   * "cost covers root + descendants + retries + compaction/summary/search", and
+   * three of those five are not task state changes. A compaction request does
+   * not move any task, and the root's own integration work belongs to no child.
+   * Routing them through `transition` would require inventing a task for each,
+   * which would corrupt the counts that C01/C04/C07 depend on.
+   *
+   * @param input.taskId - the task this spend is measured against, when there is
+   *   one. Its STORED `reservedCost` is the estimate the actual is compared to,
+   *   so an overage is detected against what was really reserved.
+   * @param input.reservationCovering - the estimate to compare against when
+   *   there is no task (a compaction reserve, a root-call reserve). Ignored when
+   *   `taskId` resolves.
+   * @param input.releaseReservation - whether this spend retires the task's
+   *   reservation. Defaults to false: a spend that is merely reported must not
+   *   free credit, because the work may still be running.
+   * @param input.actualCost - what was actually charged. Recorded in full.
+   */
+  async recordSpend(input: {
+    runId: string
+    taskId?: string
+    reservationCovering?: number
+    releaseReservation?: boolean
+    actualCost: number
+    reason: string
+    now?: string
+  }): Promise<RunRecord> {
+    if (input.actualCost < 0) throw new Error(`dailyWork: actualCost ${input.actualCost} cannot be negative`)
+    return this.mutate(input.runId, record => {
+      const task = input.taskId === undefined ? undefined : record.tasks[input.taskId]
+      if (input.taskId !== undefined && task === undefined) {
+        throw new Error(`dailyWork: task "${input.taskId}" is not in run "${input.runId}"`)
+      }
+      const covering = task?.reservedCost ?? input.reservationCovering ?? 0
+      const release = input.releaseReservation ?? false
+      if (release && task === undefined) {
+        throw new Error(
+          'dailyWork: releaseReservation requires a taskId; there is no reservation to retire otherwise',
+        )
+      }
+      return {
+        ...record,
+        budget: applySpend(record.budget, {
+          reservationReleased: release ? (task?.reservedCost ?? 0) : 0,
+          reservationCovering: covering,
+          actualCost: input.actualCost,
+          reason: input.reason,
+          now: input.now ?? new Date().toISOString(),
+        }),
+        updatedAt: input.now ?? new Date().toISOString(),
+      }
+    })
+  }
+
+  /**
+   * Spend part of the ROOT's own reserve.
+   *
+   * This is the other half of C05: the reserve is not merely withheld from
+   * children, it is spendable by the root. Two properties are enforced here and
+   * tested:
+   *
+   *   - a root spend draws only on `rootReserve - rootSpent`, so the reserve is
+   *     a real budget rather than a number that is never used;
+   *   - it never touches `spent`, `reserved` or `unknownReserved`, so a root
+   *     spend cannot consume child headroom, and a child admission can never
+   *     consume the root's.
+   *
+   * The overage rule applies here too: a root spend larger than the remaining
+   * reserve is recorded IN FULL in `rootSpent` and halts admission, rather than
+   * being trimmed to fit. Trimming would hide the fact that the reserve was
+   * undersized.
+   *
+   * @returns the run record after the spend, so a caller can read the deficit.
+   */
+  async spendRoot(input: {
+    runId: string
+    actualCost: number
+    reason: string
+    now?: string
+  }): Promise<RunRecord> {
+    if (input.actualCost < 0) throw new Error(`dailyWork: actualCost ${input.actualCost} cannot be negative`)
+    const now = input.now ?? new Date().toISOString()
+    return this.mutate(input.runId, record => {
+      const reserve = record.budget.rootReserve ?? 0
+      const spentRoot = record.budget.rootSpent ?? 0
+      const available = Math.max(0, reserve - spentRoot)
+      const overage = Math.max(0, input.actualCost - available)
+      const nextRootSpent = spentRoot + input.actualCost
+      const budget = {
+        ...record.budget,
+        rootSpent: nextRootSpent,
+        ...(overage === 0
+          ? {}
+          : {
+              halt: {
+                reason:
+                  `${input.reason}: root spend ${input.actualCost} exceeded the remaining root reserve ${available} `
+                  + `by ${overage}; the full amount is recorded in rootSpent and new admissions are paused until a `
+                  + 'human resolves it',
+                at: now,
+              },
+            }),
+      }
+      return { ...record, budget, updatedAt: now }
+    })
+  }
+
+  /**
+   * Hold a reservation as permanently UNKNOWN rather than zero.
+   *
+   * This is the D07/C10 rule applied to cost: a request whose usage we will
+   * never learn keeps a conservative reservation. Nothing is released, nothing
+   * is zeroed, and the gap remains legible in the record.
+   *
+   * Two distinct situations, and conflating them would be a real bug:
+   *
+   *   - `taskId` given: the amount moves from `reserved` to `unknownReserved`.
+   *     The commitment total is UNCHANGED - the credit was already committed,
+   *     and this only renames why it is held. The amount is clamped to the
+   *     TASK's own `reservedCost`, not to the run's `reserved`, so one task's
+   *     unknown can never eat a sibling's reservation.
+   *   - no `taskId`: the amount was never reserved (a compaction, summary or
+   *     search call authorized on the fly). It is ADDED to `unknownReserved`,
+   *     which raises the commitment total and can only tighten admission. That
+   *     is the conservative direction, and it is the whole point: an
+   *     unreported auxiliary charge must not look like a free one.
+   *
+   * @returns the run record after the change, so a caller can read the deficit.
+   */
+  async retainUnknown(input: {
+    runId: string
+    taskId?: string
+    amount: number
+    reason: string
+    now?: string
+  }): Promise<RunRecord> {
+    if (input.amount < 0) throw new Error(`dailyWork: unknown retention ${input.amount} cannot be negative`)
+    const now = input.now ?? new Date().toISOString()
+    return this.mutate(input.runId, record => {
+      const taskId = input.taskId
+      const task = taskId === undefined ? undefined : record.tasks[taskId]
+      if (taskId !== undefined && task === undefined) {
+        throw new Error(`dailyWork: task "${taskId}" is not in run "${input.runId}"`)
+      }
+      const budget = task === undefined
+        ? holdUnknown(record.budget, input.amount)
+        : retainAsUnknown(record.budget, Math.min(input.amount, task.reservedCost))
+      const tasks = task === undefined || taskId === undefined
+        ? record.tasks
+        : { ...record.tasks, [taskId]: { ...task, uncertainty: input.reason, updatedAt: now } }
+      return { ...record, tasks, budget, updatedAt: now }
+    })
+  }
+
+  /**
+   * Clear a recorded overage halt. This is a HUMAN authorization edge.
+   *
+   * It is deliberately not called by any automatic path, and not by `resume`:
+   * an overspend is resolved by a person deciding the run may continue, or by
+   * the run ending. Clearing it automatically would make the halt decorative.
+   * The overage itself is NOT cleared - `budget.overage` and `budget.spent` keep
+   * the full amount forever, because the bill is history.
+   */
+  async resolveHalt(input: {
+    runId: string
+    authorizationRef: string
+    note: string
+    now?: string
+  }): Promise<RunRecord> {
+    const now = input.now ?? new Date().toISOString()
+    return this.mutate(input.runId, record => {
+      const halt = record.budget.halt
+      if (halt === undefined) throw new Error(`dailyWork: run "${input.runId}" has no budget halt to resolve`)
+      const { halt: _dropped, ...rest } = record.budget
+      return {
+        ...record,
+        budget: rest,
+        updatedAt: now,
+        outbox: {
+          ...record.outbox,
+          [`halt-resolved-${now}`]: {
+            id: `halt-resolved-${now}`,
+            destination: 'root',
+            payloadDigest: `${input.authorizationRef}: ${input.note}`,
+            stage: 'pending' as const,
+            createdAt: now,
+          },
+        },
+      }
+    })
+  }
+
+  /**
+   * The budget as a reader needs it: the reserve, the child headroom, the
+   * overage and the halt, each as its own number.
+   *
+   * This exists so no caller has to re-derive `ceiling - rootReserve` by hand.
+   * A second derivation is how a gate and its reported reason drift apart.
+   */
+  budget(runId: string): BudgetReport {
+    return budgetReport(this.requireRun(runId).budget)
+  }
+
+  /**
+   * Whether a task may be admitted right now, and why not when it may not.
+   *
+   * A read-only companion to `admit`, so a caller can report the deficit
+   * WITHOUT attempting a write. The plan's rule for a blocked target is that
+   * the fact stays unchanged and the deficit is shown: this is the method that
+   * shows it. It shares `mayAdmit` with the write path, so the answer cannot
+   * disagree with what `admit` would do.
+   */
+  admissionCheck(runId: string, outstandingCost: number): {
+    readonly allowed: boolean
+    readonly reason: string
+    readonly counts: Counts
+    readonly budget: BudgetReport
+  } {
+    const record = this.requireRun(runId)
+    const counts = this.counts(runId)
+    const allowed = mayAdmit(record, counts, outstandingCost)
+    return {
+      allowed,
+      reason: allowed ? 'none' : counts.deficitReason,
+      counts,
+      budget: budgetReport(record.budget),
+    }
   }
 
   /**
