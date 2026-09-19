@@ -1,0 +1,246 @@
+{
+  "probe": "T4-preset",
+  "ranAt": "2026-09-19T21:14:26.772Z",
+  "profileName": "daily-candidate (installed as \"daily\")",
+  "presetDefaultId": "daily-standard",
+  "presetRoots": [
+    {
+      "path": "D:\\DSH\\src\\dsh-src\\packages\\preset\\agent-presets\\presets\\",
+      "trust": "system"
+    },
+    {
+      "path": "D:/DSH/home/t4-preset/profiles/daily/presets/",
+      "trust": "system"
+    },
+    {
+      "path": "D:\\DSH\\home\\t4-preset\\.agent-presets",
+      "trust": "user"
+    }
+  ],
+  "presetsListed": [
+    {
+      "id": "standard",
+      "trust": "system",
+      "broken": null
+    },
+    {
+      "id": "ptc",
+      "trust": "system",
+      "broken": null
+    },
+    {
+      "id": "minimal",
+      "trust": "system",
+      "broken": null
+    },
+    {
+      "id": "cordis",
+      "trust": "system",
+      "broken": null
+    },
+    {
+      "id": "daily-standard",
+      "trust": "system",
+      "broken": null
+    }
+  ],
+  "loaderEntryCount": 175,
+  "inactiveEntries": [],
+  "kernelServicePresent": true,
+  "workServicePresent": true,
+  "dataServicePresent": true,
+  "historyServicePresent": true,
+  "programmaticScopePresent": true,
+  "writersServicePresent": true,
+  "sessionCreated": true,
+  "sessionId": "session-1da9be6c-fe3d-4832-ac29-f4d3a44e12c5",
+  "agentPreset": "daily-standard",
+  "toolCountAgentKey": 27,
+  "toolCountContextKey": 0,
+  "tools": [
+    "ask_user_question",
+    "create_goal",
+    "edit",
+    "exit_plan_mode",
+    "get_goal",
+    "glob",
+    "grep",
+    "interrupt_agent",
+    "ipython",
+    "job_kill",
+    "job_list",
+    "job_output",
+    "list_agents",
+    "present",
+    "read",
+    "read_image",
+    "send_message",
+    "skill",
+    "subagent",
+    "subagent_fork",
+    "todo_write",
+    "update_goal",
+    "web_fetch",
+    "web_search",
+    "work",
+    "workflow",
+    "write"
+  ],
+  "rowTools": {
+    "tool-fs": [
+      "read",
+      "write",
+      "edit",
+      "read_image"
+    ],
+    "tool-fs-search": [
+      "grep",
+      "glob"
+    ],
+    "tool-web": [
+      "web_search",
+      "web_fetch"
+    ],
+    "tool-jobs": [
+      "job_list",
+      "job_output",
+      "job_kill"
+    ],
+    "tool-skill": [
+      "skill"
+    ],
+    "tool-goal": [
+      "create_goal",
+      "get_goal",
+      "update_goal"
+    ],
+    "plan-mode": [
+      "exit_plan_mode"
+    ],
+    "tool-subagent-control": [
+      "list_agents",
+      "interrupt_agent"
+    ],
+    "tool-subagent": [
+      "subagent"
+    ],
+    "tool-subagent-fork": [
+      "subagent_fork"
+    ],
+    "tool-workflow": [
+      "workflow"
+    ],
+    "tool-ask-user": [
+      "ask_user_question"
+    ],
+    "tool-todo": [
+      "todo_write"
+    ],
+    "present": [
+      "present"
+    ],
+    "daily-work-tools": [
+      "work"
+    ],
+    "ipython-tool": [
+      "ipython"
+    ]
+  },
+  "pwshToolPresent": false,
+  "ipythonToolPresent": true,
+  "ipythonParameterNames": [
+    "code"
+  ],
+  "ipythonIsOnlyParameter": true,
+  "forbiddenLifecycleTools": [],
+  "escalationFieldsByTool": {
+    "write": [
+      "sandbox_permissions",
+      "justification"
+    ],
+    "edit": [
+      "sandbox_permissions",
+      "justification"
+    ]
+  },
+  "toolsWithEscalationFields": [
+    "edit",
+    "write"
+  ],
+  "shellSandboxMode": "workspace-write",
+  "fsSandboxMode": "workspace-write",
+  "error": null,
+  "skippedSelfRowId": "verify-t4-preset",
+  "hostRowsOfInterest": [
+    {
+      "id": "tool-bash",
+      "name": "@deepseek-ai/dsh-tool-bash",
+      "disabled": true,
+      "disabledError": null,
+      "fiberState": null
+    },
+    {
+      "id": "tool-pwsh",
+      "name": "@deepseek-ai/dsh-tool-pwsh",
+      "disabled": true,
+      "disabledError": null,
+      "fiberState": null
+    },
+    {
+      "id": "tool-jobs",
+      "name": "@deepseek-ai/dsh-tool-jobs",
+      "disabled": true,
+      "disabledError": null,
+      "fiberState": null
+    },
+    {
+      "id": "tool-fs",
+      "name": "@deepseek-ai/dsh-tool-fs",
+      "disabled": true,
+      "disabledError": null,
+      "fiberState": null
+    },
+    {
+      "id": "tool-fs-search",
+      "name": "@deepseek-ai/dsh-tool-fs-search",
+      "disabled": true,
+      "disabledError": null,
+      "fiberState": null
+    },
+    {
+      "id": "tool-subagent",
+      "name": "@deepseek-ai/dsh-tool-subagent",
+      "disabled": true,
+      "disabledError": null,
+      "fiberState": null
+    },
+    {
+      "id": "tool-workflow",
+      "name": "@deepseek-ai/dsh-tool-workflow",
+      "disabled": true,
+      "disabledError": null,
+      "fiberState": null
+    },
+    {
+      "id": "tool-todo",
+      "name": "@deepseek-ai/dsh-tool-todo",
+      "disabled": true,
+      "disabledError": null,
+      "fiberState": null
+    },
+    {
+      "id": "tool-web",
+      "name": "@deepseek-ai/dsh-tool-web",
+      "disabled": true,
+      "disabledError": null,
+      "fiberState": null
+    },
+    {
+      "id": "agent-presets",
+      "name": "@deepseek-ai/dsh-agent-presets",
+      "disabled": false,
+      "disabledError": null,
+      "fiberState": 2
+    }
+  ]
+}

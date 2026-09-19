@@ -1,0 +1,19 @@
+# T4 verification overlay: the preset-plane probe, and NOTHING ELSE.
+#
+# ONE row, and it is the PROBE ONLY. There is deliberately NO tool row here.
+#
+# A `--patch` overlay that inserted a tool row would make the probe's catalog a
+# measurement of the OVERLAY rather than of the preset -- the G-FIX-04 /
+# G-FIX-05 / G-FIX-12 defect class, where a gate passes on evidence a
+# verification fixture produced while the product carries nothing. So whatever
+# `verify-t4-preset.mjs` reports is produced by the profile's own composition:
+# its bundles (`dsh-daily-work`, `dsh-ipython`) plus its `agent-presets` root,
+# which resolves `daily-standard` from
+# `profiles/daily-candidate/presets/daily-standard/agent.cordis.yml`.
+#
+# The port is NOT set here. `boot-harness.mjs` appends its own `webserver` patch
+# AFTER this one, so the port it bound is the port that is used, and this file
+# stays free of a second source of truth for it.
+- insert:
+    - id: verify-t4-preset
+      name: 'D:/DSH/work/dsh-native-daily/qualification/runners/verify-t4-preset.mjs'

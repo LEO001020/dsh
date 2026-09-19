@@ -16,6 +16,58 @@
 # private instance, apart from every other preset's. (A shared label does NOT
 # pool instances — `provide()` throws on the second registration under the
 # same realm symbol; labels join REALMS, and are not what this file needs.)
+#
+# ── THIS FILE, NOT THE PROFILE PATCH, DECIDES THE MODEL'S TOOL SURFACE ───────
+#
+# The Web bundle moved the agent plane behind agent presets.
+# `packages/bundle/web-app/cordis.patch.yml` DISABLES the host rows `tool-pwsh`,
+# `tool-bash`, `tool-fs`, `tool-fs-search`, `tool-jobs`, `tool-skill`,
+# `tool-subagent*`, `workflow-ptc`, `tool-workflow`, `tool-todo`, `tool-web`,
+# `plan-mode`, `compaction-*` and `agent-instructions`, and lets the roster
+# mount a preset per Session that composes them instead. The base keeps them
+# because the TUI composes its agent process-wide; the Web surface disables them
+# rather than deleting them, so a row cannot silently reappear if the
+# composition is ever reordered.
+#
+# The mechanism is that `ctx.tools` layers are keyed by the AGENT OBJECT:
+# `AgentLoop` builds the scope with `createScope(loopCtx, this)`
+# (packages/core/agent-loop/src/agent.ts:104). A tool row mounted at HOST level
+# publishes into the root realm, which no agent's scope selects, so the model
+# gets the service and no way to call it — silently. That is Trap 7 in
+# `docs/DELIVERY.md` and the reason `daily-work-tools` and `ipython-tool` live
+# here at all.
+#
+# CONSEQUENCE, and it is the correction this file's edit is based on:
+# **editing `profiles/daily-candidate/cordis.patch.yml` cannot change the
+# model's tool surface.** That patch owns the host plane (the roster, the
+# subagent capacity override, the sandbox and approval rows). This file owns
+# what the model sees. A change to the tool face that is written anywhere else
+# is a change to a plane the model does not read.
+#
+# ── IPYTHON IS THE PRIMARY PROGRAMMABLE EXECUTION SURFACE ───────────────────
+#
+# For this deployment (Windows, trusted-local, no sandbox — see
+# `docs/decisions/AUDIT-REQUEST-nosandbox.md`) the model's execution surface is
+# the persistent IPython kernel, and `ipython` is the ONE tool that reaches it.
+# `tool-pwsh` is disabled in the shell section below; `tool-bash` keeps its
+# shipped POSIX-only expression and is therefore inert here too.
+#
+# WHAT THAT DOES AND DOES NOT BUY.
+#   - It DOES give the model one language with real state between cells: a
+#     kernel that holds variables, imports, and open handles across calls, and
+#     that can reach subprocesses, the filesystem and the network through
+#     CPython rather than through a second tool schema.
+#   - It DOES NOT confine anything. The kernel is unconfined, runs as the same
+#     OS user, and has the same authority the shell had (G-SEAM-25). Removing
+#     the shell row removes a second interface, not a capability. No part of
+#     this file is a containment claim, and none may be cited as one.
+#   - The native `fs` tools (`read`/`write`/`edit`/`read_image`, `grep`/`glob`)
+#     STAY. They are not a redundant dialect: `read` carries offset/limit
+#     paging, `edit` is an exact-match replacement that fails loudly rather than
+#     writing a wrong file, and both are the path the workspace change feed and
+#     the browser's file views observe. Reaching the same bytes through
+#     `open()` in a cell would bypass that observation, so the native tools
+#     remain the model's default for file work.
 
 # ── identity ────────────────────────────────────────────────────────────────
 
@@ -34,21 +86,53 @@
     maxBytes: 65536
 
 # ── shell ───────────────────────────────────────────────────────────────────
-
+#
+# THE MODEL-FACING SHELL IS OFF ON THIS DEPLOYMENT, AND `ipython` REPLACES IT.
+#
+# The target architecture for this deployment is WINDOWS TRUSTED-LOCAL, with a
+# PERSISTENT IPYTHON KERNEL as the model's primary programmable execution
+# surface (`docs/decisions/AUDIT-REQUEST-nosandbox.md`, layer B). `tool-pwsh` is
+# therefore disabled below, unconditionally.
+#
+# WHY `ipython` REPLACES A SHELL RATHER THAN SITTING BESIDE ONE. The kernel is a
+# real CPython with its own pid, and `import subprocess` reaches every command
+# PowerShell could run. Keeping both would present the model with TWO action
+# dialects over the SAME OS authority, which costs schema tokens in every
+# request and splits behaviour: a model that learned a task through `pwsh`
+# cannot reuse it through `ipython`, and vice versa. One programmable surface
+# removes the fork instead of documenting it.
+#
+# THIS IS NOT A SECURITY MEASURE, AND NOBODY SHOULD READ IT AS CONTAINMENT.
+# Disabling this row does NOT reduce what the model can reach: the `ipython`
+# kernel runs unconfined, as the same OS user, with the same file and network
+# access a shell had (`docs/GAPS.md` G-SEAM-25). It removes a second interface,
+# not a capability. Anyone who later wants containment must build it somewhere
+# else and must not cite this row as evidence that any exists.
+#
+# WHY `tool-bash` IS LEFT EXACTLY AS SHIPPED. Its shipped expression enables it
+# on POSIX, and this deployment is Windows, so the row is inert here either way.
+# Changing it would be a POSIX claim with no POSIX evidence behind it — the
+# "claim you did not measure" failure this repository records as G-FIX-04. The
+# asymmetry is stated here so a reader sees it rather than inferring it.
+#
 # `shell-env` stays in the HOST composition: `apps/cli/src/web.ts` injects it to
 # publish `DSH_WEB_URL`/`DSH_WEB_MODE`, and a host row that injects a service is
 # the criterion for host-plane ownership — injection resolves before any session
 # exists, so there is no agent to key by. Behind a preset realm those variables
-# never reached the model's shell at all. Both shell tools consume the host
-# registry from here; their executors (`bash-sandbox`/`pwsh-sandbox`) are
-# host-plane too.
+# never reached the model's shell at all.
+#
+# The `shell` SERVICE is unaffected by this row. It is provided by the
+# host-plane executor rows (`pwsh-sandbox`/`bash-sandbox`, mounted by
+# `@deepseek-ai/dsh-base`), and the host rows that consume it — the terminal
+# controller, the permission stack — keep resolving it. What this file chooses
+# is only whether the AGENT gets a model-facing shell tool.
 - id: tool-bash
   name: '@deepseek-ai/dsh-tool-bash'
   disabled: !!js process.platform === 'win32'
 
 - id: tool-pwsh
   name: '@deepseek-ai/dsh-tool-pwsh'
-  disabled: !!js process.platform !== 'win32'
+  disabled: true
 
 # ── filesystem ──────────────────────────────────────────────────────────────
 
@@ -267,7 +351,7 @@
 
 # ── dsh-daily-work ──────────────────────────────────────────────────────────
 #
-# THE ONE DIFFERENCE FROM THE SHIPPED `standard` PRESET: these two rows.
+# THE OTHER DIFFERENCE FROM THE SHIPPED `standard` PRESET: these two rows.
 #
 # WHY A PRESET ROW AND NOT A BUNDLE ROW. A tool is AGENT-SCOPED: `ctx.tools`
 # layers are keyed by the Agent object, so a tool row mounted at host level
@@ -297,5 +381,57 @@
 # VERIFICATION OVERLAY that inserted the row, which proved the tool worked
 # without proving the product carried it -- the same weaker-oracle mistake
 # recorded as G-FIX-04 and G-FIX-12.
+#
+# THIS ROW IS NOW THE DEPLOYMENT'S PRIMARY EXECUTION SURFACE, not one of two.
+# See the shell section above for why the model-facing shell is off, and for the
+# explicit statement that this is NOT containment.
 - id: ipython-tool
   name: dsh-ipython/tool
+
+# ── THE PTC / `workflow` DEPENDENCY CHAIN, RECORDED SO IT IS NOT BROKEN ─────
+#
+# There is NO `run_code` tool in this preset's catalog, and that is MEASURED
+# rather than assumed: a real Session on this preset reports 28 tools and
+# `run_code` is not among them (qualification/results/T4-preset/boot-before.json).
+# The reason is that the `tools` registry's presentation mode is its schema
+# default `native` — `packages/bundle/web-app/cordis.patch.yml` sets
+# `mode: !!js process.env.DSH_TOOLS_MODE` and that variable is unset on this
+# deployment, so no `run_code` transport is presented and no SDK prompt is
+# assembled. **PTC is a mounted SERVICE here, not a model-facing surface.**
+#
+# That matters because a later reader could easily conclude the opposite from
+# the presence of the `workflow` tool and try to "remove PTC" by deleting rows.
+# The chain that must move TOGETHER is:
+#
+#   tool-workflow  injects workflowEngine
+#   workflow-ptc   provides workflowEngine (PtcWorkflowEngine extends
+#                  WorkflowEngine, whose constructor publishes `workflowEngine`)
+#                  and injects ['subagents', 'ptcRuntime', 'sandboxPolicy']
+#                  (packages/workflow/workflow-ptc/src/index.ts:103)
+#   ptc-runtime    provides ptcRuntime and injects
+#                  ['fs', 'subprocess', 'sandbox', 'sandboxPolicy']
+#                  (packages/ptc-runtime/ptc-runtime-node/src/index.ts:53)
+#
+# `inject` is a READINESS GATE, not decoration. A row whose injected service
+# never publishes stays PENDING forever, and `mountPreset` throws when ANY row
+# is unusable (packages/preset/agent-presets/src/mount.ts:394-396) — the preset
+# then fails to mount ENTIRELY and the model's tool face goes to zero. That
+# all-or-nothing behaviour is MEASURED, not inferred: removing the sandbox rows
+# produced `toolCount: 0` with `pwsh`, `ipython` and `work` all absent
+# (Fact F in `docs/decisions/AUDIT-REQUEST-nosandbox.md`, and the
+# `M12-deliverable-surface/surface-MINE.json` error field reproduces it).
+#
+# SO: `workflow-ptc` and `tool-workflow` can only leave as a PAIR, and only once
+# `ptcRuntime` is no longer needed — which is when the IPython -> native-tool
+# bridge is qualified and a cell can reach native tools without a `run_code`
+# transport. That bridge is a different agent's work. Until it lands, the
+# correct action is to leave these rows alone: deleting `workflow-ptc` alone
+# would take `tool-workflow` pending with it, and deleting `ptc-runtime` alone
+# would take `workflow-ptc` pending, and either way the whole preset unmounts.
+#
+# WHAT A LATER AGENT MUST VERIFY BEFORE REMOVING ANY OF IT:
+#   1. the IPython -> native-tool bridge is qualified;
+#   2. a boot probe on THIS preset reports a non-zero `toolCountAgentKey` with
+#      the removed row's tool ABSENT — the count is what separates "removed"
+#      from "the mount died";
+#   3. zero "did not activate" lines at boot.

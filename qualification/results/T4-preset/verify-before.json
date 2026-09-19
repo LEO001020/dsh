@@ -1,0 +1,338 @@
+{
+  "phase": "before",
+  "port": 11122,
+  "portReleased": true,
+  "timedOut": false,
+  "exitCode": null,
+  "bootCwd": "C:/",
+  "home": "D:/DSH/home/t4-preset",
+  "presetPath": "D:/DSH/home/t4-preset/profiles/daily/presets/daily-standard/agent.cordis.yml",
+  "presetSha256": "1e89d675d05a4e2a3bac19d2e8cfff6c2e6561edaa074acf286977a4668c6648",
+  "inputDigests": {
+    "installedProfilePatch": "59f23346955d24063a923b1a205bbcb40c541e054e6fd04dbdde4218eaa2ab7f",
+    "repoProfilePatch": "3755f904c9340fdb8326529dd5e47943848879898f833e73c4be9af4bee40a02",
+    "installedPreset": "1e89d675d05a4e2a3bac19d2e8cfff6c2e6561edaa074acf286977a4668c6648",
+    "repoPreset": "16bc20e559d0c05b810876522fd468952b421a69ed2b5276a3ddd06c01053bce",
+    "workBundlePatch": "c424b86aed5079392f9d3c01d74de91cb17711520bdcff2d38dc6c0f25c9abd1",
+    "ipythonBundlePatch": "c5c4e1c48ab10f46722228b9b8ac4e115409de2cbad63ea2861243f20a1cbbea",
+    "overlay": "18fe50d97008630119e1a527568e7ce0fdbcb7de991b44fd52006a21ca57dece"
+  },
+  "presetRoots": [
+    "D:\\DSH\\src\\dsh-src\\packages\\preset\\agent-presets\\presets\\",
+    "D:/DSH/home/t4-preset/profiles/daily/presets/",
+    "D:\\DSH\\home\\t4-preset\\.agent-presets"
+  ],
+  "activationWarningLines": [],
+  "loaderEntryCount": 175,
+  "inactiveEntries": [],
+  "hostRowsOfInterest": [
+    {
+      "id": "tool-bash",
+      "name": "@deepseek-ai/dsh-tool-bash",
+      "disabled": true,
+      "disabledError": null,
+      "fiberState": null
+    },
+    {
+      "id": "tool-pwsh",
+      "name": "@deepseek-ai/dsh-tool-pwsh",
+      "disabled": true,
+      "disabledError": null,
+      "fiberState": null
+    },
+    {
+      "id": "tool-jobs",
+      "name": "@deepseek-ai/dsh-tool-jobs",
+      "disabled": true,
+      "disabledError": null,
+      "fiberState": null
+    },
+    {
+      "id": "tool-fs",
+      "name": "@deepseek-ai/dsh-tool-fs",
+      "disabled": true,
+      "disabledError": null,
+      "fiberState": null
+    },
+    {
+      "id": "tool-fs-search",
+      "name": "@deepseek-ai/dsh-tool-fs-search",
+      "disabled": true,
+      "disabledError": null,
+      "fiberState": null
+    },
+    {
+      "id": "tool-subagent",
+      "name": "@deepseek-ai/dsh-tool-subagent",
+      "disabled": true,
+      "disabledError": null,
+      "fiberState": null
+    },
+    {
+      "id": "tool-workflow",
+      "name": "@deepseek-ai/dsh-tool-workflow",
+      "disabled": true,
+      "disabledError": null,
+      "fiberState": null
+    },
+    {
+      "id": "tool-todo",
+      "name": "@deepseek-ai/dsh-tool-todo",
+      "disabled": true,
+      "disabledError": null,
+      "fiberState": null
+    },
+    {
+      "id": "tool-web",
+      "name": "@deepseek-ai/dsh-tool-web",
+      "disabled": true,
+      "disabledError": null,
+      "fiberState": null
+    },
+    {
+      "id": "agent-presets",
+      "name": "@deepseek-ai/dsh-agent-presets",
+      "disabled": false,
+      "disabledError": null,
+      "fiberState": 2
+    }
+  ],
+  "toolCountAgentKey": 28,
+  "toolCountContextKey": 0,
+  "pwshToolPresent": true,
+  "ipythonToolPresent": true,
+  "ipythonParameterNames": [
+    "code"
+  ],
+  "escalationFieldsByTool": {
+    "pwsh": [
+      "sandbox_permissions",
+      "justification"
+    ],
+    "write": [
+      "sandbox_permissions",
+      "justification"
+    ],
+    "edit": [
+      "sandbox_permissions",
+      "justification"
+    ]
+  },
+  "toolsWithEscalationFields": [
+    "edit",
+    "pwsh",
+    "write"
+  ],
+  "shellSandboxMode": "workspace-write",
+  "fsSandboxMode": "workspace-write",
+  "agentPreset": "daily-standard",
+  "tools": [
+    "ask_user_question",
+    "create_goal",
+    "edit",
+    "exit_plan_mode",
+    "get_goal",
+    "glob",
+    "grep",
+    "interrupt_agent",
+    "ipython",
+    "job_kill",
+    "job_list",
+    "job_output",
+    "list_agents",
+    "present",
+    "pwsh",
+    "read",
+    "read_image",
+    "send_message",
+    "skill",
+    "subagent",
+    "subagent_fork",
+    "todo_write",
+    "update_goal",
+    "web_fetch",
+    "web_search",
+    "work",
+    "workflow",
+    "write"
+  ],
+  "checks": [
+    {
+      "label": "zero \"did not activate\" warning lines at boot",
+      "ok": true,
+      "detail": "0 line(s): []"
+    },
+    {
+      "label": "the live loader audit reports zero inactive entries",
+      "ok": true,
+      "detail": "[] (of 175 loader entries)"
+    },
+    {
+      "label": "the probe produced no error",
+      "ok": true,
+      "detail": "null"
+    },
+    {
+      "label": "a real Session was created",
+      "ok": true,
+      "detail": "sessionId: \"session-dbed1ff1-4bbb-4234-9191-d9fa581de9d6\""
+    },
+    {
+      "label": "the Session mounted the deployment default preset",
+      "ok": true,
+      "detail": "\"daily-standard\""
+    },
+    {
+      "label": "the roster resolved the deployment-added preset",
+      "ok": true,
+      "detail": "\"daily-standard\""
+    },
+    {
+      "label": "`daily-standard` is listed as an available preset",
+      "ok": true,
+      "detail": "[\"standard\",\"ptc\",\"minimal\",\"cordis\",\"daily-standard\"]"
+    },
+    {
+      "label": "the agent-keyed catalog is non-empty",
+      "ok": true,
+      "detail": "toolCountAgentKey: 28"
+    },
+    {
+      "label": "toolCountAgentKey equals the length of the reported list",
+      "ok": true,
+      "detail": "count 28 vs list 28"
+    },
+    {
+      "label": "the context-keyed view is the empty one (G-FIX-06 contrast)",
+      "ok": true,
+      "detail": "toolCountContextKey: 0"
+    },
+    {
+      "label": "the ipython KERNEL service resolves",
+      "ok": true,
+      "detail": "kernelServicePresent: true"
+    },
+    {
+      "label": "the dailyWork service resolves",
+      "ok": true,
+      "detail": "workServicePresent: true"
+    },
+    {
+      "label": "the dailyData service resolves",
+      "ok": true,
+      "detail": "dataServicePresent: true"
+    },
+    {
+      "label": "the dailyHistory service resolves",
+      "ok": true,
+      "detail": "historyServicePresent: true"
+    },
+    {
+      "label": "the programmaticScope service resolves",
+      "ok": true,
+      "detail": "programmaticScopePresent: true"
+    },
+    {
+      "label": "the dailyWriters service resolves",
+      "ok": true,
+      "detail": "writersServicePresent: true"
+    },
+    {
+      "label": "`ipython` is PRESENT in the model catalog",
+      "ok": true,
+      "detail": "ipythonToolPresent: true"
+    },
+    {
+      "label": "`ipython` takes exactly one parameter, `code`",
+      "ok": true,
+      "detail": "parameterNames: [\"code\"]"
+    },
+    {
+      "label": "no kernel lifecycle tool exists",
+      "ok": true,
+      "detail": "[]"
+    },
+    {
+      "label": "row `tool-fs` still registers read/write/edit/read_image",
+      "ok": true,
+      "detail": "missing: []"
+    },
+    {
+      "label": "row `tool-fs-search` still registers grep/glob",
+      "ok": true,
+      "detail": "missing: []"
+    },
+    {
+      "label": "row `tool-web` still registers web_search/web_fetch",
+      "ok": true,
+      "detail": "missing: []"
+    },
+    {
+      "label": "row `tool-jobs` still registers job_list/job_output/job_kill",
+      "ok": true,
+      "detail": "missing: []"
+    },
+    {
+      "label": "row `tool-skill` still registers skill",
+      "ok": true,
+      "detail": "missing: []"
+    },
+    {
+      "label": "row `tool-goal` still registers create_goal/get_goal/update_goal",
+      "ok": true,
+      "detail": "missing: []"
+    },
+    {
+      "label": "row `plan-mode` still registers exit_plan_mode",
+      "ok": true,
+      "detail": "missing: []"
+    },
+    {
+      "label": "row `tool-subagent-control` still registers list_agents/interrupt_agent",
+      "ok": true,
+      "detail": "missing: []"
+    },
+    {
+      "label": "row `tool-subagent` still registers subagent",
+      "ok": true,
+      "detail": "missing: []"
+    },
+    {
+      "label": "row `tool-subagent-fork` still registers subagent_fork",
+      "ok": true,
+      "detail": "missing: []"
+    },
+    {
+      "label": "row `tool-workflow` still registers workflow",
+      "ok": true,
+      "detail": "missing: []"
+    },
+    {
+      "label": "row `tool-ask-user` still registers ask_user_question",
+      "ok": true,
+      "detail": "missing: []"
+    },
+    {
+      "label": "row `tool-todo` still registers todo_write",
+      "ok": true,
+      "detail": "missing: []"
+    },
+    {
+      "label": "row `present` still registers present",
+      "ok": true,
+      "detail": "missing: []"
+    },
+    {
+      "label": "row `daily-work-tools` still registers work",
+      "ok": true,
+      "detail": "missing: []"
+    },
+    {
+      "label": "row `ipython-tool` still registers ipython",
+      "ok": true,
+      "detail": "missing: []"
+    }
+  ],
+  "failures": [],
+  "verdict": "PASS"
+}
