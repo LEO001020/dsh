@@ -2599,17 +2599,84 @@ describe('VER-09: stale Git expected-ref publication is rejected', () => {
     // integration ref then advances, and the publication is refused. This is the
     // VER-09 scenario driven through the module's own decision function rather
     // than through raw git.
-    const { root, base } = makeRepo('ver09b')
+    //
+    // WHY THIS FIXTURE HAD TO BE REBUILT, and it is worth stating because the
+    // broken version was green-looking. It used to assess
+    // `candidate: { cwd: root, baseRevision: base, headRevision: base }` with no
+    // receipt, and then assert `accept_for_publication`. That input CANNOT be
+    // accepted, and refusing it is CORRECT — measured on the built artifact:
+    //
+    //   decision refuse, patchApplies false, patchBytes 0, testsAreReal false
+    //     - the candidate patch does not apply to the current tree:
+    //       error: No valid patches in input (allow with "--allow-empty")
+    //     - there is no acceptance receipt, so there is no evidence that any test ran
+    //
+    // `head === base` makes the diff empty, and `git apply --check <empty>` exits
+    // 128 on this host (git 2.55.0.windows.3), so the assessment refused for two
+    // reasons that have nothing to do with the ref. The case then failed at
+    // `expect(assessment.decision).toBe('accept_for_publication')` — and the
+    // fixture, not the product, was the defect: a candidate with no change and no
+    // evidence is exactly what the integration authority is supposed to refuse.
+    //
+    // The repair makes the scenario REAL rather than weakening the assertion: a
+    // genuine workspace commit and a genuine receipt from a genuine vitest run,
+    // so `accept_for_publication` is earned and the subsequent ref refusal is the
+    // only thing standing between the candidate and publication.
+    const { root, base } = makeVitestRepo('ver09b')
+    const workspace = await acquireWriterWorkspace({
+      root,
+      writerId: 'stale',
+      baseRevision: base,
+      parentDir: makeRoot('ver09b-ws'),
+    })
+    workspaces.push(workspace)
+    write(workspace.path, 'src/app.txt', 'the candidate change\n')
+    write(workspace.path, 'src/ok.test.ts', `
+import { describe, expect, it } from 'vitest'
+describe('candidate', () => {
+  it('case 0', () => { expect(1 + 0).toBe(1) })
+  it('case 1', () => { expect(1 + 1).toBe(2) })
+  it('case 2', () => { expect(1 + 2).toBe(3) })
+})
+`)
+    git(workspace.path, 'add', '-A')
+    git(workspace.path, 'commit', '-q', '-m', 'the candidate change')
+    const head = git(workspace.path, 'rev-parse', 'HEAD')
+
+    const oracleDir = makeRoot('ver09b-oracle')
+    write(oracleDir, 'suite/acceptance.test.ts', 'export const assertion = "expect(total).toBe(3)"\n')
+    const oracleFiles = { suite: join(oracleDir, 'suite', 'acceptance.test.ts') }
+    const definition: AcceptanceDefinition = {
+      id: 'ver09b-receipt',
+      command: [process.execPath, VITEST_ENTRY, 'run', 'src/ok.test.ts'],
+      cwd: workspace.path,
+      inputs: ['src', 'package.json', 'vitest.config.ts'],
+      testReporter: 'vitest',
+      expectTests: { passed: 3 },
+      timeoutMs: 60_000,
+    }
+    const receipt = await runAcceptance(definition)
+    expect(receipt.outcome).toBe('pass')
+    expect(receipt.observedTests?.passed).toBe(3)
+
     const ctx = await makeContext()
     const assessment = await assessIntegration({
       ctx,
       root,
-      candidate: { cwd: root, baseRevision: base, headRevision: base },
+      candidate: { cwd: workspace.path, baseRevision: base, headRevision: head },
       expectedBase: base,
       allowedPaths: ['src'],
+      receipt,
+      recordedBinding: observedBasis({ definition, oracleFiles }),
+      oracleFiles,
+      definition,
       patchDir: makeRoot('ver09b-patch'),
     })
     expect(assessment.decision).toBe('accept_for_publication')
+    // No reasons at all, so the acceptance below is not a near-miss that a later
+    // edit could turn into a refusal for an unrelated cause.
+    expect(assessment.reasons).toEqual([])
+    expect(assessment.patchApplies).toBe(true)
 
     // The ref moves while the candidate is being considered.
     git(root, 'commit', '-q', '--allow-empty', '-m', 'root moved on')
@@ -2646,30 +2713,55 @@ describe('VER-09: stale Git expected-ref publication is rejected', () => {
     // And the module states the CAS is what publication must use, so the missing
     // write path is a documented boundary rather than an oversight.
     expect(source).toContain('expected-ref CAS')
-  })
+    // A real vitest run is inside this case now, so it carries the same explicit
+    // budget the other receipt-driven cases use rather than the 60s suite default.
+  }, 240_000)
 
   it('an unreadable ref is a refusal, not a benefit of the doubt', async () => {
     // The other half of a CAS: a ref that cannot be read is UNKNOWN, and an
     // unknown must never be treated as "unchanged". This is the same shape as
     // VER-05's freshness rule.
+    //
+    // THE ASSESSMENT IS SUPPLIED AS A LITERAL, and that is the repair rather than
+    // a shortcut. This case used to assess `headRevision: base` with no receipt,
+    // which — measured on the built artifact — already REFUSES (empty diff,
+    // `git apply --check` exit 128, no receipt). So `accepted: false` was true
+    // whether or not the unreadable-ref branch ran at all: an oracle weaker than
+    // its scenario, which is the defect class this file exists to catch. Pinning
+    // the assessment to `accept_for_publication` with no reasons makes the
+    // refusal ATTRIBUTABLE — the only remaining cause is the unreadable ref, and
+    // the assertion below says so explicitly. Same construction as the W02 case
+    // above, and for the same reason: the subject here is
+    // `publicationPrecondition`, not `assessIntegration`.
     const { root, base } = makeRepo('ver09c')
-    const ctx = await makeContext()
-    const assessment = await assessIntegration({
-      ctx,
-      root,
-      candidate: { cwd: root, baseRevision: base, headRevision: base },
-      expectedBase: base,
-      allowedPaths: ['src'],
-      patchDir: makeRoot('ver09c-patch'),
-    })
     const unreadable = publicationPrecondition({
-      assessment,
+      assessment: {
+        decision: 'accept_for_publication',
+        reasons: [],
+        baseRevision: base,
+        expectedBase: base,
+        headRevision: base,
+        baseRevisionMatches: true,
+        headDescendsFromBase: true,
+        patchApplies: true,
+        patchDigest: 'c'.repeat(64),
+        patchBytes: 1,
+        changedPaths: ['src/app.txt'],
+        outOfScope: [],
+        scopeOk: true,
+        testsAreReal: true,
+        testReason: 'declared by the caller for this case',
+      },
       ref: 'refs/heads/main',
       expectedSha: base,
       refUnreadableReason: 'the ref could not be read',
     })
     expect(unreadable.accepted).toBe(false)
     expect(unreadable.reasons.join(' ')).toContain('could not be read')
+    // The refusal is the unreadable ref and NOTHING else, so this cannot pass on
+    // a refusal the assessment contributed.
+    expect(unreadable.reasons).toHaveLength(1)
+    expect(unreadable.reasons.join(' ')).not.toContain('the integration assessment refused')
     // The observed value stays undefined: the function does not invent one.
     expect(unreadable.observedRef).toBeUndefined()
   }, 120_000)

@@ -3,14 +3,21 @@
  * the root's integration authority (M8, ARCHITECTURE §15).
  *
  * NAMING, because it decides what a reader thinks needs verifying: a writer
- * workspace is a `concurrency-isolated worktree`, and it is **NOT a security
- * boundary**. Its jobs are to stop concurrent writes clobbering each other, to
- * give every candidate a deterministic merge basis, and to bind a verification
- * to one specific candidate. In this trusted-local deployment all writers share
+ * workspace is a `concurrency-isolated worktree`, and it is NOT a security boundary.
+ * Its jobs are to stop concurrent writes clobbering each other, to give every
+ * candidate a deterministic merge basis, and to bind a verification to one
+ * specific candidate. In this trusted-local deployment all writers share
  * the invoking user's full authority, so no claim of containment is made or
  * implied anywhere in this file. What the service offers instead is DETECTION
  * (`verifyShared`) plus a real boundary only where one is constructed
  * (`kind: 'clone'`).
+ *
+ * The phrase `NOT a security boundary` is kept CONTIGUOUS ON ONE LINE on
+ * purpose, and a future editor should not re-wrap it. `verification-gates.test.ts`
+ * pins it with a literal `toContain`, which is what makes the disclaimer
+ * greppable in the source rather than merely implied by a paragraph; a cosmetic
+ * re-wrap silently defeats that pin. `worktree-isolation.ts` states the same
+ * sentence the same way, so the two files read as one claim.
  *
  * WHY THIS FILE EXISTS. `worktree-isolation.ts` was, until this entry point
  * existed, a TEST-ONLY module: mounting it directly in a test proved it WORKS

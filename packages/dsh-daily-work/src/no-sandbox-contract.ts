@@ -328,7 +328,7 @@ export function deploymentChecks(observed: DeploymentObservation): ContractCheck
       ? { detail: 'no ctx.sandboxPolicy service is mounted, so no default mode exists. In this deployment that is also the tool-face-zeroing precondition: seven rows inject sandboxPolicy, and without it shell/fs/ptcRuntime never publish and the preset mount fails (measured: toolCount 0).' }
       : observed.defaultMode === TRUSTED_LOCAL_MODE
         ? {}
-        : { detail: `the deployment default is '${observed.defaultMode}', which CONFIRES. Note the observability limit: 'read-only' here is indistinguishable from an unset config, because Config's schema default is 'read-only' (sandbox-policy/src/index.ts:113).` },
+        : { detail: `the deployment default is '${observed.defaultMode}', which CONFINES. Note the observability limit: 'read-only' here is indistinguishable from an unset config, because Config's schema default is 'read-only' (sandbox-policy/src/index.ts:113).` },
   })
 
   checks.push({
