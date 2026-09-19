@@ -120,6 +120,18 @@ describe('the production launch port is installed by the product, not by a test'
       const record = service.getRun('run-prodport')
       expect(record?.tasks['t1']?.state).not.toBe('unknown')
       expect(record?.tasks['t1']?.childId).toBe('child-t1')
+
+      // The Goal handover ran on the PRODUCT path. It has zero callers before
+      // this wiring, so a managed run never disarmed the Goal round-driver and
+      // two continuation owners could drive one root. The record now carries the
+      // result, which is what makes the "one owner" rule checkable after the
+      // fact instead of only observable at creation time.
+      //
+      // This profile mounts no Goal service, so the honest recorded answer is
+      // `goalPresent: false` with the note saying so -- not a missing field.
+      expect(record?.continuation).toBeDefined()
+      expect(record?.continuation?.goalPresent).toBe(false)
+      expect(record?.continuation?.note).toContain('no goal service')
     } finally {
       await service.close()
       await ctx.fiber.dispose()

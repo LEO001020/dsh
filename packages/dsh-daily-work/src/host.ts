@@ -27,7 +27,17 @@ import { defineDomain, domainTable, type Domain } from '@deepseek-ai/dsh-storage
 import { randomUUID } from 'node:crypto'
 import { z } from 'zod'
 import { admissionReason, countRun, mayAdmit, type Counts, type TaskLiveness } from './counting.ts'
+import {
+  ChildAdmissionGate,
+  mountChildAdmissionGuard,
+  type CapacitySnapshot,
+  type ChildRefusal,
+} from './capacity.ts'
 import { acquireHomeLock, type HeldHomeLock } from './homelock.ts'
+import {
+  installDailyWorkTargetSetting,
+  type TargetSettingHandle,
+} from './target-setting.ts'
 import { createContinuableLaunchPort } from './launch-port.ts'
 import {
   applySpend,
@@ -121,9 +131,28 @@ export interface ContinuationHandover {
 }
 
 export interface WorkServiceConfig {
-  /** Default target N for a new run. Root is not part of it. */
+  /**
+   * The COMPOSITION default for the sustained child target N. Root is not part of it.
+   *
+   * This value seeds a new run and is the fallback when no settings provider is
+   * mounted. The live, UI-settable value is `targetActiveChildren` in the
+   * `daily-work` settings namespace (`src/target-setting.ts`); `createRun` reads
+   * it through {@link WorkService.targetActiveChildren} unless the caller names
+   * one explicitly. Both exist on purpose: a host with no settings provider
+   * still has a defined target, and a host WITH one is adjustable without a
+   * restart.
+   */
   readonly targetChildren: number
-  /** Delegation depth granted to children. 1 forbids grandchildren. */
+  /**
+   * Delegation depth granted to children. 1 forbids grandchildren.
+   *
+   * Enforced at the DEPLOYMENT BOUNDARY by `src/capacity.ts`, not merely passed
+   * to the provider. `resolveChildDepth(parent, request.maxDepth)` treats a
+   * caller's value as an absolute cap, so a caller passing `99` LIFTS the
+   * ceiling and an omitted value is not a refusal either (docs/GAPS.md
+   * G-SEAM-18). The boundary check reads the child's own durable
+   * `delegationDepth`, which no request field can lower.
+   */
   readonly maxDepth: number
   /**
    * The continuable-child provider the production launch port uses, e.g. 'spawn'.
@@ -194,10 +223,113 @@ export class WorkService extends Service {
    */
   private homeLock: HeldHomeLock | undefined
   private disposed = false
+  /**
+   * The host-wide child slot ledger and the deployment depth ceiling.
+   *
+   * One per HOST, not one per run: the plan's cap is "child 全局 hard
+   * capacity = 30，所有 root 合计". The service is mounted once by the host
+   * profile for exactly this reason.
+   */
+  private readonly gate: ChildAdmissionGate
+  /** The UI-settable sustained target. A live reader; see `target-setting.ts`. */
+  private targetSetting: TargetSettingHandle | undefined
+  /** Refusals the boundary produced, in order, so a report can surface them. */
+  private readonly childRefusals: ChildRefusal[] = []
 
   constructor(ctx: Context, config: WorkServiceConfig) {
     super(ctx, 'dailyWork')
     this.config = config
+    this.gate = new ChildAdmissionGate()
+    mountChildAdmissionGuard(ctx, {
+      gate: this.gate,
+      maxDepth: config.maxDepth,
+      onRefusal: (refusal) => {
+        // Bounded: a refusal storm must not grow without limit. The COUNT is kept
+        // in the gate snapshot, so dropping the oldest text loses no fact.
+        if (this.childRefusals.length >= 64) this.childRefusals.shift()
+        this.childRefusals.push(refusal)
+      },
+    })
+  }
+
+  /**
+   * The sustained child target, read LIVE.
+   *
+   * Read from the settings section when one is installed, otherwise from
+   * composition config. Called on every admission decision rather than captured
+   * at construction, which is what makes a UI change take effect without a
+   * restart — the same property `SubagentRuntime` gets from its
+   * `settingsSource` thunk (packages/subagent/subagent/src/index.ts:229).
+   */
+  targetActiveChildren(): number {
+    return this.targetSetting?.target() ?? this.config.targetChildren
+  }
+
+  /** The UI-settable target handle, or undefined when no settings provider is mounted. */
+  get targetSettingHandle(): TargetSettingHandle | undefined {
+    return this.targetSetting
+  }
+
+  /**
+   * Install the `daily-work` settings section.
+   *
+   * Separate from the constructor so a test can mount the settings service
+   * AFTER the work service, which is the composition order the profile loader
+   * can produce. Idempotent per service instance: a second call replaces the
+   * handle, which is what an HMR reload of the settings plugin needs.
+   *
+   * @param owner - the context whose unload suppresses the settings fallback.
+   */
+  installTargetSetting(owner: Context): TargetSettingHandle {
+    this.targetSetting = installDailyWorkTargetSetting(owner, {
+      targetActiveChildren: this.config.targetChildren,
+    })
+    return this.targetSetting
+  }
+
+  /** The host-wide capacity reading, every occupancy class separate. */
+  capacity(): CapacitySnapshot {
+    return this.gate.snapshot()
+  }
+
+  /**
+   * The host-wide slot ledger itself.
+   *
+   * Exposed because the boundary check and the report must read ONE ledger, and
+   * a test that re-derived occupancy from the record would be measuring a second
+   * opinion. Read-only by convention: the only mutators are `admit`, `transition`
+   * and the `agent/created` / `agent/disposed` listeners.
+   */
+  get capacityGate(): ChildAdmissionGate {
+    return this.gate
+  }
+
+  /** Refusals the deployment boundary produced, newest last. */
+  refusals(): readonly ChildRefusal[] {
+    return [...this.childRefusals]
+  }
+
+  /**
+   * Resolve the target a new run records.
+   *
+   * The default is the LIVE setting, not the composition value captured at
+   * construction: a user who raises N through the UI must get the raised target
+   * on the next run without restarting the host. A caller-supplied value wins,
+   * because the caller is a host authorization edge and the live setting is a
+   * default.
+   *
+   * The value is validated as a non-negative safe integer but NOT clamped to the
+   * hard capacity, for the reason given at the call site: a target is a promise
+   * about intent, and the gate is the thing that refuses children.
+   */
+  private resolveRequestedTarget(explicit: number | undefined): number {
+    const target = explicit ?? this.targetActiveChildren()
+    if (!Number.isSafeInteger(target) || target < 0 || Object.is(target, -0)) {
+      throw new Error(
+        `dailyWork: target children must be a non-negative safe integer, got ${String(target)}`,
+      )
+    }
+    return target
   }
 
   /** Set the launch port. Exactly one may be installed; a second call replaces it. */
@@ -363,6 +495,18 @@ export class WorkService extends Service {
     // be admitted, so a submit through the composed profile reaches the real
     // continuable seam instead of reporting `no launch port installed`.
     this.installDefaultLaunchPort(input.root)
+    // Exactly ONE continuation owner per root. A managed run wakes its root when
+    // a child settles, and DSH's Goal round-driver ALSO auto-continues an idle
+    // agent; leaving both armed is a double-continuation loop. Taking it here --
+    // at the only moment the exact live root is in hand, and before the run can
+    // accept any work -- is what makes the "one owner" rule true in the product
+    // rather than only in the tests that call `takeContinuation` directly.
+    //
+    // The handover result is RECORDED rather than acted on, so a reader can check
+    // that the durable objective and its revision survived instead of trusting
+    // that `disarm` was mild. Nothing here fails the run if the goal service is
+    // absent: with no Goal mounted there is nothing to contend with.
+    const continuation = this.takeContinuation(input.root)
     const rootReserve = input.rootReserve ?? defaultRootReserve(ceiling)
     if (rootReserve < 0) throw new Error(`dailyWork: rootReserve ${rootReserve} cannot be negative`)
     if (rootReserve > ceiling) {
@@ -375,8 +519,23 @@ export class WorkService extends Service {
       runId: input.runId,
       rootSessionId: input.root.session.header.id,
       authorizationRef: input.authorizationRef,
-      requestedTarget: input.targetChildren ?? this.config.targetChildren,
+      // An explicit `targetChildren` is a HOST authorization edge: the UI reaches
+      // this through the live setting, a test fixture names it directly. It is
+      // deliberately NOT bounded by HARD_CHILD_CAPACITY here, and the reason is
+      // stated rather than left implicit: this number is a TARGET, and the only
+      // thing that can actually refuse a child is the capacity gate. Bounding a
+      // target would not bound a child; it would only make the recorded target
+      // disagree with the deficit the host reports. A target above the cap
+      // therefore surfaces as a permanent, honestly-labelled deficit, while the
+      // gate refuses the child that would exceed 30. The UI CONTROL path is
+      // bounded at both boundaries by `src/target-setting.ts`.
+      requestedTarget: this.resolveRequestedTarget(input.targetChildren),
       maxDepth: this.config.maxDepth,
+      // Stored, not merely logged: see continuationHandoverSchema. A run whose
+      // continuation was never handed over is indistinguishable from one whose
+      // handover was recorded as "no goal present" unless the result is on the
+      // record, and those are different facts about who drives this root.
+      continuation: continuation,
       policyDigest: this.config.priceVersion,
       budget: {
         currency: this.config.currency,
@@ -567,6 +726,18 @@ export class WorkService extends Service {
   }): Promise<TaskRecord> {
     this.assertOpen()
     const now = input.now ?? new Date().toISOString()
+    // The host-wide slot is taken BEFORE the record write and released if the
+    // write refuses. WHY BEFORE: the plan's rule is "pre-publication同步
+    // reserve；失败清理后release；不能'先启动再计数'". Taking it after the record
+    // write would leave a window in which the record says a task exists and the
+    // host has not counted it, which is exactly the "start first, count later"
+    // shape the rule forbids.
+    //
+    // The bucket starts at `reserved`, which the plan counts:
+    // `occupied = reserved + starting + active_assignment + stopping +
+    // unknown_quarantined`. A reservation with no child yet therefore still
+    // blocks the 31st admission.
+    const slot = this.gate.reserveTask(input.taskId, 'reserved', input.childId)
     const updated = await this.runs().update(input.runId, record => {
       if (record.phase !== 'open') {
         throw new Error(`dailyWork: run "${input.runId}" is ${record.phase}; refusing admission`)
@@ -622,9 +793,18 @@ export class WorkService extends Service {
         },
         updatedAt: now,
       }
+    }).catch((error: unknown) => {
+      // The record write refused, so no task exists: give the slot back rather
+      // than leaking capacity for a child that was never admitted. This is the
+      // "失败清理后 release" half of the plan's rule.
+      slot.release()
+      throw error
     })
     const task = updated.tasks[input.taskId]
-    if (task === undefined) throw new Error(`dailyWork: admission of "${input.taskId}" did not persist`)
+    if (task === undefined) {
+      slot.release()
+      throw new Error(`dailyWork: admission of "${input.taskId}" did not persist`)
+    }
     return task
   }
 
@@ -701,7 +881,55 @@ export class WorkService extends Service {
     })
     const task = updated.tasks[input.taskId]
     if (task === undefined) throw new Error(`dailyWork: transition of "${input.taskId}" did not persist`)
+    this.syncSlotToState(input.taskId, input.to)
     return task
+  }
+
+  /**
+   * Keep the host-wide slot's occupancy class in step with the task's state.
+   *
+   * WHY THIS IS NOT DERIVED FROM THE RECORD. The record is durable and shared;
+   * the slot is process-local and must track what THIS host has materialized.
+   * Deriving the bucket from the stored state on every read would make the gate
+   * agree with a record it cannot actually enforce — a second host reading the
+   * same store would then believe it held children it never created.
+   *
+   * The two mappings that carry the plan's meaning:
+   *   - `executing` and `settling` are `active_assignment`. A child blocked
+   *     inside its own tool or provider call is `executing` here and STILL
+   *     occupies: waiting is not finishing.
+   *   - `cancel_requested` is `stopping`. A cancel that has been requested but
+   *     not confirmed holds the slot, so it still blocks the 31st admission.
+   *
+   * `confirmed` and `cancelled` are the only states that release, and they
+   * release the TASK slot only. The physical child's own slot is released by
+   * `agent/disposed` in `capacity.ts`, because a record transition is not
+   * evidence that a process stopped.
+   */
+  private syncSlotToState(taskId: string, to: AdmissionState): void {
+    switch (to) {
+      case 'confirmed':
+      case 'cancelled':
+        this.gate.releaseTask(taskId)
+        return
+      case 'prepared':
+        this.gate.reserveTask(taskId, 'reserved')
+        return
+      case 'launching':
+        this.gate.reserveTask(taskId, 'starting')
+        return
+      case 'unknown':
+        this.gate.reserveTask(taskId, 'unknown_quarantined')
+        return
+      case 'cancel_requested':
+        this.gate.reserveTask(taskId, 'stopping')
+        return
+      case 'accepted':
+      case 'executing':
+      case 'settling':
+        this.gate.reserveTask(taskId, 'active_assignment')
+        return
+    }
   }
 
   /**
@@ -993,6 +1221,25 @@ export class WorkService extends Service {
           // request's cost. `counts.deficitReason` cannot see it and would
           // report a slot problem for a budget refusal.
           reason: admissionReason(record, counts, request.reservedCost),
+        })
+        continue
+      }
+      // The HOST-WIDE gate, which the per-run deficit cannot see.
+      //
+      // WHY A SECOND CHECK IS NOT REDUNDANT. `counts.capacityDeficit` is
+      // `requestedTarget - held` for THIS run. It says nothing about the other
+      // roots sharing the host, and nothing about children materialized outside
+      // this run's record (a workflow's `startChild`, a direct delegation). So a
+      // run with a free target slot can still be the request that would push the
+      // HOST past 30. `admit` re-checks synchronously and throws, which is the
+      // authoritative refusal; this check exists so the outcome reports the
+      // host-capacity reason instead of surfacing as a generic admission error.
+      if (this.gate.occupied >= this.gate.limit) {
+        outcomes.push({
+          taskId: request.taskId,
+          childId: request.childId,
+          accepted: false,
+          reason: 'host_capacity_reached',
         })
         continue
       }

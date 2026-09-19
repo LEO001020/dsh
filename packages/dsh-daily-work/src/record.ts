@@ -110,6 +110,33 @@ export const admissionHaltSchema = z.object({
 export type AdmissionHalt = z.infer<typeof admissionHaltSchema>
 
 /**
+ * What the Goal handover did when a run was created.
+ *
+ * Stored because "exactly one continuation owner" is a claim a reader should be
+ * able to CHECK rather than trust. The handover reports whether the durable
+ * objective and its revision survived `disarm`, and whether a goal was present
+ * at all; keeping that on the record makes a run's continuation state auditable
+ * after the fact instead of only observable at creation time.
+ *
+ * Every field is required WITHIN this object, but the object itself is optional
+ * on the record, so a record written before this field existed still validates
+ * on read. Refusing to open such a record would be a migration the domain cannot
+ * perform, and the honest answer for an old run is "the handover was not
+ * recorded", not "the run is invalid".
+ */
+export const continuationHandoverSchema = z.object({
+  goalPresent: z.boolean(),
+  disarmed: z.boolean(),
+  objectivePreserved: z.boolean().optional(),
+  revisionUnchanged: z.boolean().optional(),
+  phaseBefore: z.string().optional(),
+  phaseAfter: z.string().optional(),
+  activationAfter: z.string().optional(),
+  note: z.string(),
+})
+export type ContinuationHandoverRecord = z.infer<typeof continuationHandoverSchema>
+
+/**
  * Budget accounting.
  *
  * `unknownReserved` is a separate field from `reserved` on purpose: a request
@@ -402,6 +429,14 @@ export const runRecordSchema = z.object({
    * unbounded background execution.
    */
   restartResumeAuthorized: z.boolean(),
+  /**
+   * What the Goal handover did at run creation, when one ran.
+   *
+   * Optional so a record written before this field existed still validates on
+   * read. See {@link continuationHandoverSchema} for why the result is stored
+   * rather than merely logged.
+   */
+  continuation: continuationHandoverSchema.optional(),
   budget: budgetSchema,
   tasks: z.record(z.string(), taskRecordSchema),
   outbox: z.record(z.string(), outboxEntrySchema),
@@ -423,6 +458,8 @@ export function initialRunRecord(input: {
   policyDigest: string
   budget: Budget
   restartResumeAuthorized: boolean
+  /** The Goal handover result, when one ran. Optional: a run may be created with no Goal mounted. */
+  continuation?: ContinuationHandoverRecord
   now: string
 }): RunRecord {
   return {
@@ -436,6 +473,7 @@ export function initialRunRecord(input: {
     maxDepth: input.maxDepth,
     policyDigest: input.policyDigest,
     restartResumeAuthorized: input.restartResumeAuthorized,
+    ...input.continuation === undefined ? {} : { continuation: input.continuation },
     budget: input.budget,
     tasks: {},
     outbox: {},
