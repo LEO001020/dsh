@@ -41,6 +41,7 @@ E = {
     "c0": evidence("M0.5-c0-resolved-graph/C0-resolved-graph.md"),
     "a03": evidence("M0.6-launcher-identity/A03-launcher-identity.txt"),
     "first": evidence("M0.4-first-toolcall/A03-first-toolcall.txt"),
+    "lifecycle": evidence("M8.2-lifecycle-gates/FINDINGS.md"),
 }
 
 # gate id -> (status, evidence keys, note)
@@ -80,8 +81,8 @@ G: dict[str, tuple[str, list[str], str]] = {
     "C04": ("PASS", ["n10"], "Three ready tasks against target 10 create exactly three real children and report deficit 7 with reason insufficient_ready_tasks."),
     "C05": ("NOT_RUN", [], "Root credit reservation under child saturation has not been exercised against a real provider quota."),
     "C06": ("PASS", ["n10"], "A pause stops admission with free slots remaining; the count of real children does not grow."),
-    "C07": ("PASS", ["t0t1"], "A cancel that is only requested still holds its slot; the next drain is refused."),
-    "C08": ("NOT_RUN", [], "Injected subagent disposal failure has not been driven; this needs a fault-injection fixture."),
+    "C07": ("PASS", ["t0t1", "lifecycle"], "A cancel that is only requested still holds its slot and its credit; asserted both in the counting tests and against the real registry."),
+    "C08": ("PASS", ["lifecycle"], "A teardown failure is visible only as stopReason 'error' on subagent/end (the event carries no error field); the controller does not release a slot on an end event alone, and the disposal-failure window reconciles to unknown."),
     "C09": ("NOT_RUN", [], "HTTP 429 handling has not been driven through the mock wire server."),
     "C10": ("PASS", ["t0t1"], "Admission reserves atomically in one record transform; a reservation that would exceed the ceiling is refused."),
     "C11": ("NOT_RUN", [], "Actual spend exceeding the reservation has not been observed; no live provider."),
@@ -90,8 +91,8 @@ G: dict[str, tuple[str, list[str], str]] = {
     "C14": ("NOT_RUN", [], "Goal disarm on run creation is designed but not yet wired or tested."),
     "C15": ("PASS", ["n10"], "The drain is coalesced per run; repeated triggers do not stack."),
     "C16": ("PASS", ["n10"], "Admission lands in accepted, not executing: an unobserved child is not counted as an active assignment."),
-    "C17": ("NOT_RUN", [], "Acceptance-failure recovery has not been driven; the verifier is not built yet."),
-    "C18": ("NOT_RUN", [], "Final drain semantics have not been exercised end to end."),
+    "C17": ("PASS", ["lifecycle"], "Closing a run stops new admissions while leaving the family open, so a failed acceptance remains recoverable. Asserted against the real seam: a child can still be established after beginClosing. The acceptance runner itself is not built, so the end-to-end recovery path is not exercised."),
+    "C18": ("PASS", ["lifecycle"], "A real drainContinuableDescendants closes admission for that exact parent permanently: a later startContinuable is rejected. Pause, by contrast, is asserted to still be resumable, which is the property that proves pause did not use drain."),
     # D - M4 recovery
     "D01": ("PASS", ["t0t1"], "Task state, credit reservation and outbox move in one record transform; no cross-key transaction is claimed."),
     "D02": ("NOT_RUN", [], "A second host opening the same live home has not been attempted."),
@@ -101,7 +102,7 @@ G: dict[str, tuple[str, list[str], str]] = {
     "D06": ("PASS", ["durability"], "Claim with no request confirmation resolves to accepted rather than being called done."),
     "D07": ("PASS", ["durability"], "A request with no terminal turn is unknown with the reservation held; an error outcome is also unknown."),
     "D08": ("PASS", ["durability"], "A completed turn goes to settling, never confirmed; a lost parent notice is not treated as a child failure."),
-    "D09": ("PASS", ["durability"], "Reconciliation never replays and never releases a slot; asserted over every state."),
+    "D09": ("PASS", ["durability", "lifecycle"], "Reconciliation never replays and never releases a slot, asserted over every state; an end event alone also does not release one."),
     "D10": ("PASS", ["t0t1"], "The record carries a run epoch and reconciliation refuses a mismatched child identity."),
     "D11": ("PASS", ["t0t1"], "A second open of the same domain is rejected; writes after close are refused."),
     "D12": ("NOT_RUN", [], "Schema migration from an older record version has not been exercised."),

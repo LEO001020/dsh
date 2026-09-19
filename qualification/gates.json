@@ -465,12 +465,16 @@
     "stimulus": "SIGTERM/interrupt已发送但child或其进程仍运行。",
     "oracle": "slot仍占用/隔离，未提前补位导致超发。",
     "status": "PASS",
-    "note": "A cancel that is only requested still holds its slot; the next drain is refused.",
+    "note": "A cancel that is only requested still holds its slot and its credit; asserted both in the counting tests and against the real registry.",
     "deployment_identity": "0ca14d4ee0ebea5eb85a3f72d66f48d839356f1b336c0e4f11f9a4f8ddf2ab7c",
     "evidence": [
       {
         "path": "qualification/results/M2.2-work-host/tests.txt",
         "sha256": "0b33ead1a3558b8ef41fdc7335e7227cc60d8c3f0e4f3a58cd26094fee58707b"
+      },
+      {
+        "path": "qualification/results/M8.2-lifecycle-gates/FINDINGS.md",
+        "sha256": "18196b0517ec809a9db7b5181b1da6199f18c6129205778bc5719aea1e938431"
       }
     ]
   },
@@ -481,8 +485,15 @@
     "required_for": "daily_ready",
     "stimulus": "故障注入使subagent disposal失败但上游end事件出现。",
     "oracle": "区分正常结束与quarantined_unknown，不只凭end释放安全额度。",
-    "status": "NOT_RUN",
-    "note": "Injected subagent disposal failure has not been driven; this needs a fault-injection fixture."
+    "status": "PASS",
+    "note": "A teardown failure is visible only as stopReason 'error' on subagent/end (the event carries no error field); the controller does not release a slot on an end event alone, and the disposal-failure window reconciles to unknown.",
+    "deployment_identity": "0ca14d4ee0ebea5eb85a3f72d66f48d839356f1b336c0e4f11f9a4f8ddf2ab7c",
+    "evidence": [
+      {
+        "path": "qualification/results/M8.2-lifecycle-gates/FINDINGS.md",
+        "sha256": "18196b0517ec809a9db7b5181b1da6199f18c6129205778bc5719aea1e938431"
+      }
+    ]
   },
   {
     "id": "C09",
@@ -599,8 +610,15 @@
     "required_for": "daily_ready",
     "stimulus": "root请求finish，验收失败。",
     "oracle": "有界纠错可继续；此前未调用永久family drain。",
-    "status": "NOT_RUN",
-    "note": "Acceptance-failure recovery has not been driven; the verifier is not built yet."
+    "status": "PASS",
+    "note": "Closing a run stops new admissions while leaving the family open, so a failed acceptance remains recoverable. Asserted against the real seam: a child can still be established after beginClosing. The acceptance runner itself is not built, so the end-to-end recovery path is not exercised.",
+    "deployment_identity": "0ca14d4ee0ebea5eb85a3f72d66f48d839356f1b336c0e4f11f9a4f8ddf2ab7c",
+    "evidence": [
+      {
+        "path": "qualification/results/M8.2-lifecycle-gates/FINDINGS.md",
+        "sha256": "18196b0517ec809a9db7b5181b1da6199f18c6129205778bc5719aea1e938431"
+      }
+    ]
   },
   {
     "id": "C18",
@@ -609,8 +627,15 @@
     "required_for": "daily_ready",
     "stimulus": "确定完成后drain，再试图同exact parent新开child。",
     "oracle": "明确关闭语义，不改私有标志复活；后续工作经正常新run生命周期。",
-    "status": "NOT_RUN",
-    "note": "Final drain semantics have not been exercised end to end."
+    "status": "PASS",
+    "note": "A real drainContinuableDescendants closes admission for that exact parent permanently: a later startContinuable is rejected. Pause, by contrast, is asserted to still be resumable, which is the property that proves pause did not use drain.",
+    "deployment_identity": "0ca14d4ee0ebea5eb85a3f72d66f48d839356f1b336c0e4f11f9a4f8ddf2ab7c",
+    "evidence": [
+      {
+        "path": "qualification/results/M8.2-lifecycle-gates/FINDINGS.md",
+        "sha256": "18196b0517ec809a9db7b5181b1da6199f18c6129205778bc5719aea1e938431"
+      }
+    ]
   },
   {
     "id": "D01",
@@ -757,12 +782,16 @@
     "stimulus": "尾部不完整记录/flush错误。",
     "oracle": "采用上游repair契约，明确未知与从未开始；不手工抹掉错误事实。",
     "status": "PASS",
-    "note": "Reconciliation never replays and never releases a slot; asserted over every state.",
+    "note": "Reconciliation never replays and never releases a slot, asserted over every state; an end event alone also does not release one.",
     "deployment_identity": "0ca14d4ee0ebea5eb85a3f72d66f48d839356f1b336c0e4f11f9a4f8ddf2ab7c",
     "evidence": [
       {
         "path": "qualification/results/M4.1-process-kill/report-final.json",
         "sha256": "006429518b3ce8f4bf6f28ea7146ae06633fb4f06affc5dab4a951780d24a0c4"
+      },
+      {
+        "path": "qualification/results/M8.2-lifecycle-gates/FINDINGS.md",
+        "sha256": "18196b0517ec809a9db7b5181b1da6199f18c6129205778bc5719aea1e938431"
       }
     ]
   },
