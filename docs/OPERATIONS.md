@@ -11,9 +11,45 @@
 | DSH source checkout (pinned, disposable) | `D:\DSH\src\dsh-src` |
 | This implementation repo | `D:\DSH\work\dsh-native-daily` |
 | Pinned pnpm shim (see the trap below) | `D:\DSH\tools\bin\pnpm` |
-| Canary `DSH_HOME` (C0/C2 experiments) | `D:\DSH\home\canary`, `D:\DSH\home\canary3` |
-| Daily `DSH_HOME` (production) | not created — nothing is promoted yet |
+| Canary `DSH_HOME` (C0/C2 experiments) | `D:\DSH\home\canary` … `canary8` (plus `m914`, used by the M9.14 profile-config runs) |
+| Daily `DSH_HOME` (production) | not created — nothing is promoted yet. `D:\DSH\home\daily` does **not** exist; verified. |
 | Task workspaces | `D:\DSH\work\<task>` |
+
+**The install procedure lives in `docs/DELIVERY.md` §2** and covers the profile
+install, the `link:` dependencies and the `agent-presets` root. It is not repeated
+here because two copies of an install procedure drift apart, which is exactly how
+this project has been bitten before (G-FIX-04, G-FIX-05, G-FIX-12).
+
+## Known blocker: managed child work cannot be started
+
+> **MEASURED 2026-09-20. Read this before following the run instructions below.**
+
+The composed `daily` profile mounts the work service and the model-facing `work`
+tool, and **nothing in the product creates a run**. `WorkService.createRun` has
+exactly one non-test caller in the repository — `durability-runner.ts:63`, a
+hand-run CLI that is itself in no production import graph. So the `work` tool
+resolves the run first and throws:
+
+```
+this session has no active run; a run is created by user authorization
+```
+
+Measured on a real boot of the composed profile, with a positive control that
+proves the traversal and the service both work when `createRun` is called
+directly: `qualification/results/ROOT-verification/work-tool.json`.
+
+**What this does and does not affect.** The capacity machinery is real and the
+hard cap is measured binding in production — T10 recorded a genuine creation
+call being refused at 30, with the refusal naming the deployment constant
+(`qualification/results/T10-capacity/prod-capacity-report.json`). The launch
+port is correctly installed by `createRun` (`2d4534f`), and
+`production-port.test.ts` proves it by installing nothing. What is missing is
+the **entry point**: no user action reaches `createRun`, so the N=10 rolling
+top-up that the delivery plan makes mandatory cannot be exercised on the
+composed profile. Recorded as G-SEAM-31 and as a caveat on gate `C01`.
+
+This is stated here rather than only in `GAPS.md` because an operator following
+this manual would otherwise hit it as an unexplained error.
 
 ## Pinned identity
 
@@ -107,20 +143,35 @@ separator is expected`. The loader fails loudly, which is the behaviour you want
 **TRAP 4 — a patch replaces the whole `config` object.** It is not a deep merge.
 Restate every key you need, or the others silently revert to schema defaults.
 
-## Run this package's tests (VERIFIED)
+## Run this package's tests
 
 ```sh
 cd /d/DSH/work/dsh-native-daily/packages/dsh-daily-work
-cmd /c link-dsh.cmd                    # Windows: junction the pinned DSH packages
+powershell -NoProfile -ExecutionPolicy Bypass -File link-all-dsh.ps1
 export PATH="/d/DSH/tools/bin:/d/DSH/src/dsh-src/node_modules/.bin:$PATH"
-vitest run                             # 126 tests, 9 files
-tsc -p tsconfig.json --noEmit          # exit 0
+vitest run
+tsc -p tsconfig.check.json --noEmit     # NOT tsconfig.json -- see below
 ```
 
-`link-dsh.cmd` creates junctions into the pinned checkout so the package compiles
-against REAL DSH type declarations. It is a development convenience for this
-machine's layout, not part of the deliverable; a real deployment resolves these
-through the profile's own dependency installation.
+`link-all-dsh.ps1` junctions the pinned DSH packages into the extension's
+`node_modules` so it compiles against REAL DSH type declarations, deriving the
+junction set from the checkout rather than maintaining it by hand. It is a
+development convenience for this machine's layout, not part of the deliverable.
+
+**Test count: 1084 collected across 47 files** (`vitest list` at commit `a1d6e6d`).
+That is a **collection** count, not a passing count — no full-suite pass/fail run
+is recorded in this repository. Earlier revisions of this file said "126 tests, 9
+files" (M2 era) and then "592 across 37 files" (`2d4534f`); both were accurate for
+their tree and both had gone stale.
+
+**Use `tsconfig.check.json`, not `tsconfig.json`, for any gate whose evidence is
+"the tests type-check".** `tsconfig.json` excludes `src/**/*.test.ts` (correct for
+the build, so test code never emits into `lib/`), which means
+`tsc -p tsconfig.json --noEmit` exits 0 **with or without** a test file present —
+a false pass. `tsconfig.check.json` extends it, keeps identical strict flags and
+clears only the exclude. Switching to it immediately surfaced two real type errors
+the old config was hiding (recorded in
+`qualification/results/M9.2-terminal-advanced/FINDINGS.md`).
 
 ## Durability runner (VERIFIED)
 
@@ -165,10 +216,20 @@ recorded against the old one. That is the intended behaviour.
 
 ## Roll back
 
-Restore the old artifact **and** the old state snapshot the new version has not
-migrated. Reconcile external effects the new version already produced — rolling
-back software does not withdraw a remote action. A schema that cannot be migrated
-safely refuses to start rather than silently reading a backup.
+**A concrete, checkable sequence is in `docs/DELIVERY.md` §12** — restore the old
+artifact **and** the old state snapshot the new version has not migrated, verify
+by **tree digest** rather than by presence, and reconcile external effects the new
+version already produced **before** the rewind (rolling back software does not
+withdraw a remote action). A schema that cannot be migrated safely refuses to
+start rather than silently reading a backup.
+
+**Honesty marker:** the rollback has been **rehearsed, not exercised.** No real
+newer version has ever been rolled back, because no version has ever been promoted
+— the daily home does not exist. The rehearsal is
+`qualification/results/R4-upgrade/u06-rollback-rerun.json` (12/12 steps PASS) over
+a temp home, with a fixture standing in for the newer version and a counting
+in-process fake for the remote. Its own `notClaimed` array says so, and the shell
+sequence in DELIVERY §12 has **not** been run end to end by anyone.
 
 ## Evidence layout
 
