@@ -287,7 +287,10 @@ async function runGroup(
   // `whenIdle` is the observed edge that the turn is over -- both are the real
   // Agent API, not a test-only path.
   const callsBefore = adapter.calls
-  agent.followup(createUserMessage({ content: [{ type: 'text', text: 'u04 task' }] }))
+  agent.followup(createUserMessage({
+    content: [{ type: 'text', text: 'u04 task' }],
+    source: { kind: 'plugin', plugin: 'u04-paired-comparison', form: 'prompt' },
+  }))
   await agent.whenIdle()
   const wallMs = Date.now() - started
   const callsThisGroup = adapter.calls - callsBefore

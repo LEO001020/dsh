@@ -38,6 +38,13 @@
 # `anchorInsertedPluginNames` converts to a file URL, which is what the shipped
 # keyless fixture (apps/cli/tests/profiles/headless/tests/fixtures/cli.patch.yml)
 # also does.
+#
+# The path points INTO the package, not at a sibling file: the adapter is
+# TypeScript importing `@deepseek-ai/dsh-llm`, and Node resolves those bare
+# specifiers by walking up from the FILE's directory. This directory has no such
+# ancestor, so a local copy would fail with `Cannot find package
+# '@deepseek-ai/dsh-llm'` — reproduced. The package resolves them, which is why
+# the shipped keyless fixture also lives inside the checkout.
 - insert:
     - id: cli-mock-llm
-      name: './m914-mock-llm.ts'
+      name: 'D:/DSH/work/dsh-native-daily/packages/dsh-daily-work/m914-mock-llm.ts'

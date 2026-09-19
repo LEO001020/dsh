@@ -41,15 +41,15 @@
     "wallTime": [
       {
         "group": "C0",
-        "mountAndCreateMs": 72
+        "mountAndCreateMs": 28
       },
       {
         "group": "C1",
-        "mountAndCreateMs": 40
+        "mountAndCreateMs": 7
       },
       {
         "group": "C2",
-        "mountAndCreateMs": 42
+        "mountAndCreateMs": 8
       }
     ]
   },
@@ -101,9 +101,9 @@
     },
     "wallStats": {
       "n": 3,
-      "min": 40,
-      "max": 72,
-      "mean": 51.333333333333336
+      "min": 7,
+      "max": 28,
+      "mean": 14.333333333333334
     },
     "winnerDeclared": false,
     "reason": "one observation per group gives no variance estimate, so no difference on any axis can be distinguished from noise. The gate forbids declaring a winner without a statistical basis and this run does not have one."

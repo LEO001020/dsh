@@ -91,6 +91,25 @@ for children this project launches and is **not** true for children a workflow
 launches. That is a finding, not a test failure, and it is recorded here rather
 than papered over.
 
+**How that row was established, stated precisely.** The claim is a chain of two
+measured facts, not an end-to-end workflow run:
+
+1. `workflow-ptc/src/host.ts:200` calls `this.subagents.start(this.provider, { prompt, parent, signal, ... })`
+   with no `maxDepth` key. Read from source; the file's digest is in
+   `source-digests.txt`.
+2. A call with no `maxDepth` from a depth-1 parent DOES create a depth-2 child.
+   Asserted directly in the test, against the real seam.
+
+An attempt WAS made to drive the real `PtcWorkflowRun` end to end as a third
+link. It is **NOT_RUN**: the engine mounted, `workflowEngine.start()` returned a
+run, and the run reported `agentsStarted: 1` before failing with
+`WorkflowError: agent() could not start a child: Error: cannot create effect on
+inactive context` — a PTC execution-context problem in the probe's own rig, not a
+depth refusal and not a workflow defect. So the third link is unproven and the
+conclusion rests on links 1 and 2. Anyone re-opening this gate should drive the
+workflow engine from a proper PTC host and observe the grandchild's
+`session.header.delegationDepth` directly.
+
 **The model-supplied `toolFilter` cannot lift anything**, asserted two ways:
 
 - A `deny` filter removes tools and can never add them back, because restrictions
@@ -316,8 +335,9 @@ the old one is still refused.
 ## HONEST GAPS
 
 1. **Workflow-launched grandchildren are not bounded by `maxDepth`.** Detailed
-   under C12. The path omits the cap, and an omitted cap is not a refusal on this
-   source. Our own launches are bounded; a workflow's are not.
+   under C12, including the exact two-link chain the claim rests on and the
+   NOT_RUN third link (driving the real `PtcWorkflowRun`). Our own launches are
+   bounded; a workflow's are not.
 
 2. **The `update_goal` tool is not driven end to end** (C14). The service-level
    compare-and-set it delegates to IS asserted; the tool's turn/authority gating
@@ -336,6 +356,27 @@ the old one is still refused.
    per root; this is a real constraint of `ContinuableLaunchDeps`, stated here
    because a two-run test that ignored it would measure the port rather than the
    run.
+
+6. **`maxActiveSubagents` is per-family, so it is NOT a host-wide concurrency
+   ceiling.** Measured: two roots each get their own full pool. A deployment that
+   wants a host-wide bound must add one; DSH's setting does not provide it. This
+   matters for the N=10 claim, which is a per-run target and not a host cap.
+
+---
+
+## Note on the C12 `maxDepth` finding versus the C2 profile patch
+
+The patch in `profiles/daily-candidate/cordis.patch.yml` and
+`packages/dsh-daily-work/cordis.patch.yml` both set `subagent.maxDepth: 1` with
+the comment that it "forbids them from opening unbilled grandchildren". Read
+against the measurements above, that comment is **too strong as written**: the
+setting bounds the cap that `tool-subagent` passes (it reads
+`ctx.subagents.resolveMaxDepth(config.maxDepth)`, defaulting to the settings
+value), so it does bound the shipped delegation tool. It does NOT bound a
+delegation that omits `maxDepth` entirely, and `workflow-ptc` is exactly such a
+caller. The comment is left untouched here — that file is owned elsewhere — and
+the correction is recorded rather than applied, so whoever owns the profile can
+decide whether to narrow the comment or add a guard.
 
 ---
 

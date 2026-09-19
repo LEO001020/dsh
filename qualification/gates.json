@@ -1483,7 +1483,7 @@
     "stimulus": "异常、用户打印伪结束marker、input()等待。",
     "oracle": "错误/unknown不误当success；framing不是验收防伪。",
     "status": "PASS",
-    "note": "CLOSED (unconfined). A failing command is not reported as success; a printed fake done-marker is NOT trusted as verification (markers are not tamper-proof); and an input()-style read settles as stdin_read rather than completion. The real waitReason values are asserted, so a send result is treated as a wait reason and never as a completion signal.",
+    "note": "CLOSED (unconfined). A failing command is not reported as success; a printed fake done-marker is NOT trusted as verification; and an input()-style read settles without being read as completion. MEASURED AND SECURITY-RELEVANT: a send result carries an IDENTICAL field list for success and failure (viewport | waitReason | sessionStatus | truncated) with NO verdict field, so failure is visible only as text. The framing attack was quantified: a forged OSC `133;D;0` plus prompt settles the send in 138-185 ms versus 3025-3135 ms for the same command answered honestly, while the cell is still sleeping. The `<1500 ms` bound is DERIVED from the mechanism (idleSilenceMs = 3000), so a regression that stopped accepting the forgery would fail loudly rather than quietly pass. This is a real boundary on what framing can be trusted for and belongs beside the E01/E06 findings.",
     "deployment_identity": "0ca14d4ee0ebea5eb85a3f72d66f48d839356f1b336c0e4f11f9a4f8ddf2ab7c",
     "evidence": [
       {
