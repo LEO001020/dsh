@@ -58,8 +58,20 @@ FILE_INPUTS = {
     "host_profile_digest": "profiles/daily-candidate/cordis.patch.yml",
     "agent_preset_digest": "profiles/daily-candidate/presets/daily-standard/agent.cordis.yml",
     "acceptance_spec_sha256": "qualification/specs/acceptance-spec.json",
-    "trusted_local_acceptance_spec_sha256": "qualification/specs/acceptance-spec.trusted-local-v1.json",
+    # The trusted-local spec pin names the FROZEN as-authored snapshot, NOT the
+    # live spec. The live spec is also the evidence ledger, so filing a verdict
+    # changes its digest -- which made this check report a stale pin for a spec
+    # behaving exactly as designed. The pin protects the AUTHORED artifact; the
+    # live ledger's consistency is verify-spec.py's business. (Found by running
+    # this doctor after the first family filed: it and verify-identity.py had
+    # briefly disagreed about what the pin meant.)
+    "trusted_local_acceptance_spec_sha256":
+        "qualification/specs/frozen/acceptance-spec.trusted-local-v1.as-authored.json",
 }
+
+# The live ledger, checked for SHAPE rather than for its digest: it must carry the
+# same case ids as the frozen snapshot, so a filing cannot silently restructure it.
+LIVE_LEDGER = "qualification/specs/acceptance-spec.trusted-local-v1.json"
 
 # Inputs that name a path rather than a digest, checked for existence and, where
 # a digest of the same file is recorded, for agreement with it.
@@ -176,6 +188,30 @@ def main() -> int:
                 say(f"[FAIL] {path_input:42s} hash mismatch with {digest_input}")
         else:
             say(f"[ok  ] {path_input:42s} exists (no digest recorded to compare)")
+
+    # --- 3b. the live ledger has the same shape as the frozen snapshot --------
+    # A pin on the authored artifact would be satisfied by a ledger that had been
+    # restructured around it, so the ids are compared directly.
+    frozen_rel = FILE_INPUTS["trusted_local_acceptance_spec_sha256"]
+    frozen_path = ROOT / frozen_rel
+    live_path = ROOT / LIVE_LEDGER
+    if frozen_path.is_file() and live_path.is_file():
+        try:
+            frozen_ids = [c.get("id") for c in json.loads(frozen_path.read_text(encoding="utf-8"))["cases"]]
+            live = json.loads(live_path.read_text(encoding="utf-8"))
+            live_ids = [c.get("id") for c in live["cases"]]
+        except (KeyError, json.JSONDecodeError) as exc:
+            problems.append(f"the live ledger is unreadable: {exc}")
+            say(f"[FAIL] live ledger readable                        {exc}")
+        else:
+            if frozen_ids == live_ids:
+                filed = sum(1 for c in live["cases"] if c.get("status") != "NOT_RUN")
+                say(f"[ok  ] live ledger case ids match the frozen spec   {len(live_ids)} ids, {filed} filed")
+            else:
+                problems.append(
+                    f"the live ledger's case ids differ from the frozen snapshot "
+                    f"(frozen {len(frozen_ids)}, live {len(live_ids)})")
+                say(f"[FAIL] live ledger case ids differ                  frozen={len(frozen_ids)} live={len(live_ids)}")
 
     # --- 4. the promotion decision, reported rather than judged ---------------
     promotion = lock.get("promotion") or {}
