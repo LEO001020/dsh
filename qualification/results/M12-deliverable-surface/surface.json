@@ -8,11 +8,11 @@
       "trust": "system"
     },
     {
-      "path": "D:\\DSH\\home\\canary8/profiles/daily-candidate/presets",
+      "path": "D:/DSH/home/t-root/profiles/daily/presets/",
       "trust": "system"
     },
     {
-      "path": "D:\\DSH\\home\\canary8\\.agent-presets",
+      "path": "D:\\DSH\\home\\t-root\\.agent-presets",
       "trust": "user"
     }
   ],
@@ -22,7 +22,7 @@
   "historyServicePresent": true,
   "programmaticScopePresent": true,
   "sessionCreated": true,
-  "sessionId": "session-00558387-536f-4569-951e-7b700de2ee38",
+  "sessionId": "session-4ca164f4-a6a8-4bf6-9838-09505915e467",
   "toolCountAgentKey": 28,
   "toolCountContextKey": 0,
   "ipythonToolPresent": true,
@@ -86,7 +86,7 @@
     },
     {
       "id": "daily-standard",
-      "trust": "user",
+      "trust": "system",
       "broken": null
     }
   ]

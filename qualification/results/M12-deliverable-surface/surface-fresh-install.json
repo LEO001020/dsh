@@ -8,11 +8,11 @@
       "trust": "system"
     },
     {
-      "path": "D:/DSH/home/canary13/profiles/daily/presets/",
+      "path": "D:/DSH/home/root-m12-fresh/profiles/daily/presets/",
       "trust": "system"
     },
     {
-      "path": "D:\\DSH\\home\\canary13\\.agent-presets",
+      "path": "D:\\DSH\\home\\root-m12-fresh\\.agent-presets",
       "trust": "user"
     }
   ],
@@ -21,17 +21,47 @@
   "dataServicePresent": true,
   "historyServicePresent": true,
   "programmaticScopePresent": true,
-  "sessionCreated": false,
-  "sessionId": null,
-  "toolCountAgentKey": 0,
+  "sessionCreated": true,
+  "sessionId": "session-40c155b3-04cf-4b78-aa94-37071b2992d7",
+  "toolCountAgentKey": 27,
   "toolCountContextKey": 0,
-  "ipythonToolPresent": false,
-  "ipythonParameterNames": null,
-  "ipythonIsOnlyParameter": false,
-  "workToolPresent": false,
+  "ipythonToolPresent": true,
+  "ipythonParameterNames": [
+    "code"
+  ],
+  "ipythonIsOnlyParameter": true,
+  "workToolPresent": true,
   "forbiddenLifecycleTools": [],
-  "tools": [],
-  "error": "RemoteError: agent-presets: preset \"daily-standard\" failed to mount: 5 row(s) did not activate:\ntool-pwsh (@deepseek-ai/dsh-tool-pwsh): waiting for shell\ntool-fs (@deepseek-ai/dsh-tool-fs): waiting for fs\npresent (@deepseek-ai/dsh-tool-present): waiting for fs\nworkflow-ptc (@deepseek-ai/dsh-workflow-ptc): waiting for ptcRuntime, sandboxPolicy\ntool-workflow (@deepseek-ai/dsh-tool-workflow): waiting for workflowEngine (D:\\DSH\\home\\canary13\\profiles\\daily\\presets\\daily-standard\\agent.cordis.yml)",
+  "tools": [
+    "ask_user_question",
+    "create_goal",
+    "edit",
+    "exit_plan_mode",
+    "get_goal",
+    "glob",
+    "grep",
+    "interrupt_agent",
+    "ipython",
+    "job_kill",
+    "job_list",
+    "job_output",
+    "list_agents",
+    "present",
+    "read",
+    "read_image",
+    "send_message",
+    "skill",
+    "subagent",
+    "subagent_fork",
+    "todo_write",
+    "update_goal",
+    "web_fetch",
+    "web_search",
+    "work",
+    "workflow",
+    "write"
+  ],
+  "error": null,
   "presetsListed": [
     {
       "id": "standard",

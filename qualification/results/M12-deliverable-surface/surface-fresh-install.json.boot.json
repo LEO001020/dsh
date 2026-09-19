@@ -1,0 +1,15 @@
+{
+ "boot": {
+  "port": 6815,
+  "exitCode": null,
+  "stdout": "dsh web: http://127.0.0.1:6815/?token=vt7jsA1DR60dLM7NRFsPsLXDvcuo1lc18L3FyJr70NA\n",
+  "stderr": "",
+  "timedOut": false,
+  "portReleased": true
+ },
+ "roots": [
+  "D:\\DSH\\src\\dsh-src\\packages\\preset\\agent-presets\\presets\\",
+  "D:/DSH/home/root-m12-fresh/profiles/daily/presets/",
+  "D:\\DSH\\home\\root-m12-fresh\\.agent-presets"
+ ]
+}
