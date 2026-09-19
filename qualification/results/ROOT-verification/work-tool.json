@@ -1,0 +1,20 @@
+{
+ "probe": "verify-work-tool-unusable",
+ "steps": [],
+ "sessionId": "session-ce481c01-cc6b-4374-944a-0f398601960a",
+ "sessionCreated": true,
+ "servicePresent": true,
+ "listRunIds": [],
+ "runCount": 0,
+ "runForThisSession": null,
+ "toolWouldThrow": true,
+ "toolErrorText": "this session has no active run; a run is created by user authorization",
+ "agentFound": true,
+ "controlCreateRun": {
+  "ok": true,
+  "runId": null,
+  "phase": "open"
+ },
+ "controlRunFoundAfterCreate": true,
+ "controlLaunchPortInstalled": true
+}

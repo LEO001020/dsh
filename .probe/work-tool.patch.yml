@@ -1,0 +1,3 @@
+- insert:
+    - id: verify-work-tool-unusable
+      name: 'D:/DSH/work/dsh-native-daily/.probe/verify-work-tool-unusable.mjs'

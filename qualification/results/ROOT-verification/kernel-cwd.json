@@ -1,0 +1,7 @@
+{
+  "projectRoot": "D:/DSH/work/dsh-native-daily",
+  "error": null,
+  "sessionCwd": "D:/DSH/work/dsh-native-daily",
+  "cellOut": "{\"outcome\":\"ok\",\"stdout\":{\"text\":\"KERNEL_CWD=D:\\\\DSH\\\\work\\\\dsh-native-daily\\\\.ipython-kernels\\\\session-d6432773-4ebe-42fb-8ff3-2198458425de\\n\",\"totalBytes\":102,\"truncated\":false,\"droppedFrames\":0},\"stderr\":{\"text\":\"\",\"totalBytes\":0,\"truncated\":false,\"droppedFrames\":0},\"display\":[],\"epoch\":1,\"foreignFrames\":1}",
+  "writeOut": "{\"outcome\":\"ok\",\"stdout\":{\"text\":\"\",\"totalBytes\":0,\"truncated\":false,\"droppedFrames\":0},\"stderr\":{\"text\":\"\",\"totalBytes\":0,\"truncated\":false,\"droppedFrames\":0},\"display\":[{\"mime\":\"text/plain\",\"text\":\"1\",\"truncated\":false}],\"epoch\":1,\"foreignFrames\":1}"
+}

@@ -1,0 +1,3 @@
+- insert:
+    - id: probe-tool-schema
+      name: 'file:///D:/DSH/work/dsh-native-daily/.probe/tool-schema-probe.mjs'
