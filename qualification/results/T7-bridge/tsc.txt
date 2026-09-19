@@ -1,0 +1,24 @@
+# tsc.txt -- real typecheck output for packages/dsh-ipython, tests INCLUDED.
+#
+# command (from packages/dsh-ipython):
+#   node /d/DSH/src/dsh-src/node_modules/typescript/bin/tsc -p tsconfig.check.json --noEmit
+#
+# tsconfig.check.json extends tsconfig.json and CLEARS its exclude, because
+# tsconfig.json excludes src/**/*.test.ts so the build never emits test code into
+# lib/. That exclusion makes 'tsc -p tsconfig.json' exit 0 with or without a test
+# file present -- a false pass for any gate whose evidence is 'the tests
+# type-check'.
+#
+# A NOTE ON A TRANSIENT FAILURE, recorded because it happened during this run.
+# An intermediate invocation exited 2 with four TS2304 diagnostics in
+# src/faults.test.ts (missing 'service', 'KernelService', 'Agent'). That file was
+# being edited concurrently by another agent (T6, gate IPY-15); its mtime moved
+# between two of my invocations. The re-run below is clean. This is NOT a defect
+# in the files this gate added, and the partition is stated so a reader does not
+# have to guess: zero diagnostics in src/bridge-seam.test.ts or src/t7-measure.ts.
+#
+tsc_exit=0
+
+# The command's entire stdout/stderr is reproduced above. Empty output with
+# tsc_exit=0 is the honest rendering of 'no diagnostics': a summarised 'clean'
+# would be a claim about output that was never shown.

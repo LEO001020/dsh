@@ -1,0 +1,80 @@
+{
+  "bridge": {
+    "boundPort": 6075,
+    "clientPath": "C:\\Users\\hzq00\\AppData\\Local\\Temp\\t7-measure-VXvI48\\artifacts\\dsh_bridge_client.py"
+  },
+  "seam": {
+    "cellOutcome": "ok",
+    "cellStdout": "CELL_SAW:{\"marker\":\"registry-materialized-value\",\"tag\":\"from-the-cell\"}",
+    "pipelineSaw": [
+      {
+        "name": "probe_echo",
+        "callId": "ipython-call-1:bridge:1",
+        "rootCallId": "ipython-call-1",
+        "parentIsSet": true,
+        "agentIsSet": true,
+        "arguments": {
+          "tag": "from-the-cell"
+        }
+      }
+    ],
+    "pipelineResults": [
+      "probe_echo:ipython-call-1:bridge:1"
+    ]
+  },
+  "oneModelLoop": {
+    "cellOutcome": "ok",
+    "cellStdout": "TOTAL:3",
+    "dispatches": [
+      "ipython-call-loop:bridge:1",
+      "ipython-call-loop:bridge:2",
+      "ipython-call-loop:bridge:3"
+    ],
+    "results": [
+      "probe_echo:ipython-call-loop:bridge:1",
+      "probe_echo:ipython-call-loop:bridge:2",
+      "probe_echo:ipython-call-loop:bridge:3"
+    ],
+    "dispatchCount": 3
+  },
+  "nativeCallContract": {
+    "toolError": {
+      "outcome": "ok",
+      "stdout": "CODE:TOOL_FAILED\nMESSAGE:the tool body failed on purpose\nCELL_SURVIVED:True"
+    },
+    "unknownTool": {
+      "outcome": "ok",
+      "stdout": "CODE:UNKNOWN_TOOL"
+    },
+    "guardDenial": {
+      "outcome": "ok",
+      "stdout": "CODE:TOOL_FAILED\nMESSAGE:the probe tool is not permitted here",
+      "note": "a monotonic guard denies without info, so the registry reports TOOL_FAILED"
+    },
+    "policyDenialWithCode": {
+      "outcome": "ok",
+      "stdout": "CODE:POLICY_DENIED\nMESSAGE:denied by the pre-execute policy",
+      "note": "a pre-execute denial that supplies info.code keeps it through the bridge"
+    },
+    "timeout": {
+      "outcome": "ok",
+      "stdout": "CODE:TIMEOUT\nCELL_SURVIVED_TIMEOUT:True\nKERNEL_STILL_USABLE:4.0",
+      "hostReceivedTheCall": true
+    },
+    "artifact": {
+      "outcome": "ok",
+      "stdout": "TYPE:Artifact\nVERIFY:True\nLEN:2097152",
+      "payloadLength": 2097152
+    }
+  },
+  "cellNamespace": {
+    "outcome": "ok",
+    "stdout": "HOST_MODULES:['dsh']\nHOST_TERMINAL_MODULES:[]\nCLIENT_SURFACE:['Artifact', 'BridgeError', 'call', 'call_sync', 'tools']\nCLIENT_HAS_TERMINAL:False\nIPYTHON_TERMINAL_MODULES:['IPython.terminal', 'IPython.terminal.debugger', 'IPython.terminal.embed', 'IPython.terminal.interactiveshell', 'IPython.terminal.ipapp', 'IPython.terminal.magics', 'IPython.terminal.prompts', 'IPython.terminal.pt_inputhooks', 'IPython.terminal.ptutils', 'IPython.terminal.shortcuts', 'IPython.terminal.shortcuts.auto_match', 'IPython.terminal.shortcuts.auto_suggest', 'IPython.terminal.shortcuts.filters', 'IPython.utils.terminal']"
+  },
+  "environment": {
+    "python": "C:/Users/hzq00/AppData/Local/Programs/Python/Python314/python.exe",
+    "broker": "D:\\DSH\\work\\dsh-native-daily\\packages\\dsh-ipython\\src\\broker.py",
+    "toolchain": "node /d/DSH/src/dsh-src/node_modules/vitest/vitest.mjs",
+    "dshToolsEntry": "@deepseek-ai/dsh-tools ToolRuntime.execute (packages/core/tools/src/index.ts:1348)"
+  }
+}

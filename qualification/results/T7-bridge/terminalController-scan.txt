@@ -1,0 +1,37 @@
+# The forbidden seam, repository-wide: terminalController
+#
+# The constraint: 严禁把 ctx.terminalController 用作模型 Python 能力
+# Command: grep -rn terminalController over packages/ and profiles/,
+#          then partitioned into non-test and test files.
+#
+# EXIT 1 on the production partition means NO MATCH, which is the PASS.
+
+=== PRODUCTION (non-test) files under packages/ and profiles/ ===
+(no matches -- exit 1)
+
+=== TEST files (assertions that it is ABSENT) ===
+packages/\dsh-daily-work\src\security-denial.test.ts:44: * `ctx.terminalController` is never touched anywhere in this file: it is the
+packages/\dsh-daily-work\src\security-denial.test.ts:438:  it('mounts no terminalController, so no test here can reach the human Web terminal', async () => {
+packages/\dsh-daily-work\src\security-denial.test.ts:444:    expect(ctx.get('terminalController' as never)).toBeUndefined()
+packages/\dsh-daily-work\src\sec-gates.test.ts:530:   *   1. `ctx.terminalController` must NEVER be exposed to the model. Its own
+packages/\dsh-daily-work\src\sec-gates.test.ts:559:  it('this project mounts no terminalController, so no model-facing path can reach it', async () => {
+packages/\dsh-daily-work\src\sec-gates.test.ts:564:    expect(ctx.get('terminalController' as never)).toBeUndefined()
+packages/\dsh-daily-work\src\sec-gates.test.ts:572:    expect(denial).toContain('mounts no terminalController, so no test here can reach the human Web terminal')
+packages/\dsh-ipython\src\bridge-seam.test.ts:299:  it('a mounted terminalController is never touched while a cell calls a tool', async () => {
+packages/\dsh-ipython\src\bridge-seam.test.ts:1141:    expect(ctxAfterMount.get('terminalController' as never)).toBeUndefined()
+
+=== the pinned checkout: what terminalController actually IS ===
+# packages/api/terminal-controller/src/index.ts:102
+102:    super(ctx, 'terminalController', { namespace: 'terminal' })
+# packages/api/terminal-controller/src/index.ts:21 -- the declared service
+
+export type * from './types.ts'
+
+declare module '@deepseek-ai/cordis' {
+  interface Context {
+    /** Interactive user terminals, separate from the Agent terminal tool registry. */
+    terminalController: TerminalController
+  }
+}
+
+/** Deployment limits and an optional shell profile. */
