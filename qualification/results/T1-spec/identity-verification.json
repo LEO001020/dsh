@@ -1,0 +1,150 @@
+{
+  "scope": "IDENTITY_ARITHMETIC_OVER_FILES_NOT_A_CERTIFICATION",
+  "lock": "D:\\DSH\\work\\dsh-native-daily\\compatibility.lock.json",
+  "computed_identity": "549732b5d8cad4e86d3df7c55dbf090598753a8fa015e8207ff6f851e376d813",
+  "recorded_identity": "549732b5d8cad4e86d3df7c55dbf090598753a8fa015e8207ff6f851e376d813",
+  "verdict": "MATCH",
+  "checks": [
+    {
+      "check": "identity recomputes from inputs",
+      "ok": true,
+      "detail": "computed=549732b5d8cad4e86d3df7c55dbf090598753a8fa015e8207ff6f851e376d813 recorded=549732b5d8cad4e86d3df7c55dbf090598753a8fa015e8207ff6f851e376d813 (MATCH)"
+    },
+    {
+      "check": "identity equals the recorded trusted-local value",
+      "ok": true,
+      "detail": "recorded=549732b5d8cad4e86d3df7c55dbf090598753a8fa015e8207ff6f851e376d813 expected=549732b5d8cad4e86d3df7c55dbf090598753a8fa015e8207ff6f851e376d813"
+    },
+    {
+      "check": "identity is a lowercase sha256",
+      "ok": true,
+      "detail": "value='549732b5d8cad4e86d3df7c55dbf090598753a8fa015e8207ff6f851e376d813'"
+    },
+    {
+      "check": "new spec digest on disk matches the pinned input",
+      "ok": true,
+      "detail": "pinned=e5b6a1d2481f39c52a6012ec6b48a72e4618ff713f1927b6b0d6827a24b10ce7 on_disk=e5b6a1d2481f39c52a6012ec6b48a72e4618ff713f1927b6b0d6827a24b10ce7"
+    },
+    {
+      "check": "old spec on disk still matches the retained historical input",
+      "ok": true,
+      "detail": "pinned=2fe95835425eb98eb3bac9eead17985df5bf951669460c8d7a87b8887afb1e0b on_disk=2fe95835425eb98eb3bac9eead17985df5bf951669460c8d7a87b8887afb1e0b expected=2fe95835425eb98eb3bac9eead17985df5bf951669460c8d7a87b8887afb1e0b"
+    },
+    {
+      "check": "every case id is unique",
+      "ok": true,
+      "detail": "109 ids, 109 distinct"
+    },
+    {
+      "check": "family counts match the mandated minimum",
+      "ok": true,
+      "detail": "actual={'BR': 12, 'CAP': 13, 'CMP': 14, 'DATA': 12, 'FS': 6, 'ID': 6, 'IPY': 15, 'OBS': 6, 'REC': 10, 'RES': 6, 'VER': 9} expected={'BR': 12, 'CAP': 13, 'CMP': 14, 'DATA': 12, 'FS': 6, 'ID': 6, 'IPY': 15, 'OBS': 6, 'REC': 10, 'RES': 6, 'VER': 9}"
+    },
+    {
+      "check": "declared family_counts agrees with the actual cases",
+      "ok": true,
+      "detail": "declared={'ID': 6, 'CMP': 14, 'IPY': 15, 'BR': 12, 'DATA': 12, 'REC': 10, 'FS': 6, 'CAP': 13, 'VER': 9, 'RES': 6, 'OBS': 6}"
+    },
+    {
+      "check": "total case count matches the sum of families",
+      "ok": true,
+      "detail": "actual=109 declared=109 expected=109"
+    },
+    {
+      "check": "no case is pre-marked PASS (every status is NOT_RUN)",
+      "ok": true,
+      "detail": "all NOT_RUN"
+    },
+    {
+      "check": "no case ships with evidence (every evidence list is empty)",
+      "ok": true,
+      "detail": "all empty"
+    },
+    {
+      "check": "every case is mandatory",
+      "ok": true,
+      "detail": "all mandatory"
+    },
+    {
+      "check": "every case carries a non-empty id/requirement/stimulus/oracle/layer",
+      "ok": true,
+      "detail": "all present"
+    },
+    {
+      "check": "the five inherited isolation gates are recorded NOT_APPLICABLE",
+      "ok": true,
+      "detail": "entries=['SEC-01', 'SEC-03', 'SEC-08', 'DEP-04', 'VER-04']"
+    },
+    {
+      "check": "no inherited isolation gate is silently reused as an in-scope case",
+      "ok": true,
+      "detail": "overlap=[]"
+    },
+    {
+      "check": "the VER-04 id collision is documented on both the case and the family",
+      "ok": true,
+      "detail": "documented"
+    },
+    {
+      "check": "every NOT_APPLICABLE entry states its reasoning",
+      "ok": true,
+      "detail": "5 entries, all with reasoning"
+    },
+    {
+      "check": "no case in `cases` uses the status NOT_APPLICABLE",
+      "ok": true,
+      "detail": "none"
+    },
+    {
+      "check": "promotion names trusted-local-daily, and safe-daily appears only where it is forbidden",
+      "ok": true,
+      "detail": "name='trusted-local-daily' safe_daily_offenders=[]"
+    },
+    {
+      "check": "the promotion section explains why safe-daily is not reused",
+      "ok": true,
+      "detail": "explanation present"
+    },
+    {
+      "check": "promotion decision is not a promotion",
+      "ok": true,
+      "detail": "decision='NOT_READY'"
+    },
+    {
+      "check": "promotion spec_sha256 matches the new spec on disk",
+      "ok": true,
+      "detail": "promotion=e5b6a1d2481f39c52a6012ec6b48a72e4618ff713f1927b6b0d6827a24b10ce7 on_disk=e5b6a1d2481f39c52a6012ec6b48a72e4618ff713f1927b6b0d6827a24b10ce7"
+    },
+    {
+      "check": "promotion spec_path names the trusted-local spec",
+      "ok": true,
+      "detail": "spec_path='qualification/specs/acceptance-spec.trusted-local-v1.json'"
+    },
+    {
+      "check": "promotion gate_spec_sha256 is the true digest of gate-spec.json",
+      "ok": true,
+      "detail": "recorded=b6e68075e097b5d790a406cb92820465381b6a716a84b53b0a8b8d99d584ad47 on_disk=b6e68075e097b5d790a406cb92820465381b6a716a84b53b0a8b8d99d584ad47"
+    },
+    {
+      "check": "the superseded gate_spec_sha256 value is recorded, not deleted",
+      "ok": true,
+      "detail": "correction note present"
+    },
+    {
+      "check": "intermediate identity (spec input added only) is reproducible",
+      "ok": true,
+      "detail": "computed=e89a583c8fff0afeef5317d3e7773c27924a138c73f0c5bb94b9596407779d61 expected=e89a583c8fff0afeef5317d3e7773c27924a138c73f0c5bb94b9596407779d61"
+    },
+    {
+      "check": "reverting the isolation input reproduces the OLD identity",
+      "ok": true,
+      "detail": "computed=ece4037a9d5bbb014aa5a8395ed15531715a11949f2aa687166fcfeb5717576f expected=ece4037a9d5bbb014aa5a8395ed15531715a11949f2aa687166fcfeb5717576f"
+    },
+    {
+      "check": "the isolation input carries the trusted-local value",
+      "ok": true,
+      "detail": "value='none-trusted-local-os-user-account-is-the-execution-authority-boundary'"
+    }
+  ],
+  "failures": []
+}

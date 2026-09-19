@@ -1,0 +1,36 @@
+lock: D:\DSH\work\dsh-native-daily\compatibility.lock.json
+computed identity: 549732b5d8cad4e86d3df7c55dbf090598753a8fa015e8207ff6f851e376d813
+recorded identity: 549732b5d8cad4e86d3df7c55dbf090598753a8fa015e8207ff6f851e376d813
+verdict: MATCH
+
+  [ok  ] identity recomputes from inputs                                                         computed=549732b5d8cad4e86d3df7c55dbf090598753a8fa015e8207ff6f851e376d813 recorded=549732b5d8cad4e86d3df7c55dbf090598753a8fa015e8207ff6f851e376d813 (MATCH)
+  [ok  ] identity equals the recorded trusted-local value                                        recorded=549732b5d8cad4e86d3df7c55dbf090598753a8fa015e8207ff6f851e376d813 expected=549732b5d8cad4e86d3df7c55dbf090598753a8fa015e8207ff6f851e376d813
+  [ok  ] identity is a lowercase sha256                                                          value='549732b5d8cad4e86d3df7c55dbf090598753a8fa015e8207ff6f851e376d813'
+  [ok  ] new spec digest on disk matches the pinned input                                        pinned=e5b6a1d2481f39c52a6012ec6b48a72e4618ff713f1927b6b0d6827a24b10ce7 on_disk=e5b6a1d2481f39c52a6012ec6b48a72e4618ff713f1927b6b0d6827a24b10ce7
+  [ok  ] old spec on disk still matches the retained historical input                            pinned=2fe95835425eb98eb3bac9eead17985df5bf951669460c8d7a87b8887afb1e0b on_disk=2fe95835425eb98eb3bac9eead17985df5bf951669460c8d7a87b8887afb1e0b expected=2fe95835425eb98eb3bac9eead17985df5bf951669460c8d7a87b8887afb1e0b
+  [ok  ] every case id is unique                                                                 109 ids, 109 distinct
+  [ok  ] family counts match the mandated minimum                                                actual={'BR': 12, 'CAP': 13, 'CMP': 14, 'DATA': 12, 'FS': 6, 'ID': 6, 'IPY': 15, 'OBS': 6, 'REC': 10, 'RES': 6, 'VER': 9} expected={'BR': 12, 'CAP': 13, 'CMP': 14, 'DATA': 12, 'FS': 6, 'ID': 6, 'IPY': 15, 'OBS': 6, 'REC': 10, 'RES': 6, 'VER': 9}
+  [ok  ] declared family_counts agrees with the actual cases                                     declared={'ID': 6, 'CMP': 14, 'IPY': 15, 'BR': 12, 'DATA': 12, 'REC': 10, 'FS': 6, 'CAP': 13, 'VER': 9, 'RES': 6, 'OBS': 6}
+  [ok  ] total case count matches the sum of families                                            actual=109 declared=109 expected=109
+  [ok  ] no case is pre-marked PASS (every status is NOT_RUN)                                    all NOT_RUN
+  [ok  ] no case ships with evidence (every evidence list is empty)                              all empty
+  [ok  ] every case is mandatory                                                                 all mandatory
+  [ok  ] every case carries a non-empty id/requirement/stimulus/oracle/layer                     all present
+  [ok  ] the five inherited isolation gates are recorded NOT_APPLICABLE                          entries=['SEC-01', 'SEC-03', 'SEC-08', 'DEP-04', 'VER-04']
+  [ok  ] no inherited isolation gate is silently reused as an in-scope case                      overlap=[]
+  [ok  ] the VER-04 id collision is documented on both the case and the family                   documented
+  [ok  ] every NOT_APPLICABLE entry states its reasoning                                         5 entries, all with reasoning
+  [ok  ] no case in `cases` uses the status NOT_APPLICABLE                                       none
+  [ok  ] promotion names trusted-local-daily, and safe-daily appears only where it is forbidden  name='trusted-local-daily' safe_daily_offenders=[]
+  [ok  ] the promotion section explains why safe-daily is not reused                             explanation present
+  [ok  ] promotion decision is not a promotion                                                   decision='NOT_READY'
+  [ok  ] promotion spec_sha256 matches the new spec on disk                                      promotion=e5b6a1d2481f39c52a6012ec6b48a72e4618ff713f1927b6b0d6827a24b10ce7 on_disk=e5b6a1d2481f39c52a6012ec6b48a72e4618ff713f1927b6b0d6827a24b10ce7
+  [ok  ] promotion spec_path names the trusted-local spec                                        spec_path='qualification/specs/acceptance-spec.trusted-local-v1.json'
+  [ok  ] promotion gate_spec_sha256 is the true digest of gate-spec.json                         recorded=b6e68075e097b5d790a406cb92820465381b6a716a84b53b0a8b8d99d584ad47 on_disk=b6e68075e097b5d790a406cb92820465381b6a716a84b53b0a8b8d99d584ad47
+  [ok  ] the superseded gate_spec_sha256 value is recorded, not deleted                          correction note present
+  [ok  ] intermediate identity (spec input added only) is reproducible                           computed=e89a583c8fff0afeef5317d3e7773c27924a138c73f0c5bb94b9596407779d61 expected=e89a583c8fff0afeef5317d3e7773c27924a138c73f0c5bb94b9596407779d61
+  [ok  ] reverting the isolation input reproduces the OLD identity                               computed=ece4037a9d5bbb014aa5a8395ed15531715a11949f2aa687166fcfeb5717576f expected=ece4037a9d5bbb014aa5a8395ed15531715a11949f2aa687166fcfeb5717576f
+  [ok  ] the isolation input carries the trusted-local value                                     value='none-trusted-local-os-user-account-is-the-execution-authority-boundary'
+
+all 28 checks passed. The identity recomputes from the file.
+This verifies arithmetic over files. It does not certify the deployment.
