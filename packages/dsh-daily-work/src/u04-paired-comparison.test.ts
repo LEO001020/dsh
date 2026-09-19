@@ -57,7 +57,7 @@ import { afterEach, describe, expect, it } from 'vitest'
  * `@deepseek-ai/*` rows against. Without it the composition cannot import the
  * shipped plugin names.
  */
-const HARNESS_BASE = new URL('file:///D:/DSH/src/dsh-src/')
+const HARNESS_BASE = 'file:///D:/DSH/src/dsh-src/'
 
 /** Temp roots created by this file, removed after each test. */
 const tempRoots: string[] = []
@@ -306,7 +306,11 @@ async function runGroup(
   const tokensBefore = adapter.outputTokens
   agent.followup(createUserMessage({
     content: [{ type: 'text', text: 'u04 task' }],
-    source: { kind: 'plugin', plugin: 'u04-paired-comparison', form: 'prompt' },
+    // `form` is a closed union in `MessageSource` (`dsh-llm/src/message.ts:82-83`);
+    // 'prompt' is not a member. Omitting `form` stays valid -- the union has an
+    // `{ readonly form?: never }` arm -- so the source names its producer without
+    // claiming a form the type does not have.
+    source: { kind: 'plugin', plugin: 'u04-paired-comparison' },
   }))
   await agent.whenIdle()
   const wallMs = Date.now() - started
@@ -316,7 +320,13 @@ async function runGroup(
   // The scope key is the AGENT OBJECT. Passing `agent.ctx` collapses to the
   // global layer and reports zero tools -- the false negative M8.5 records.
   const names = ctx.tools.schemas(agent).map(schema => schema.name).sort()
-  const sections = ctx.systemPrompt.sections?.() ?? []
+  // The ASSEMBLED sections come from `assemble()`, which is ASYNC
+  // (`dsh-system-prompt/lib/types/index.d.ts:293`), not from a `sections()`
+  // method -- `SystemPrompt` has no such member. Awaiting it is what makes the
+  // count a real one rather than a `Promise.sections` that reads `undefined`
+  // and silently collapses to zero.
+  const assembled = await ctx.systemPrompt.assemble()
+  const sections = assembled.sections ?? []
 
   const result: GroupResult = {
     group,

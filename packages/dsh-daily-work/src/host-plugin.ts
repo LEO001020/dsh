@@ -23,8 +23,10 @@ export const name = 'dsh-daily-work'
 export const inject = ['storageDomain']
 
 /**
- * Configuration. `targetChildren` is the user's N; it is not the model's to
- * change. The model has a tool, but that tool cannot write this value.
+ * Configuration. `targetChildren` is the COMPOSITION default for the user's N;
+ * it is not the model's to change. The model has a tool, but that tool cannot
+ * write this value, and the live value the UI edits lives in the `daily-work`
+ * settings namespace rather than here (see `target-setting.ts`).
  */
 export interface Config extends WorkServiceConfig {}
 
@@ -39,6 +41,16 @@ export async function apply(ctx: Context, config: Config): Promise<void> {
   // The effect owns the domain handle. Its disposer is awaited by Cordis, so
   // unloading waits for the storage write chain to drain before releasing.
   ctx.effect(() => () => service.close(), 'dsh-daily-work: run domain')
+  // The UI-settable target. Installed from the SERVICE's context rather than
+  // this plugin's, because `installSection` decides whether losing the settings
+  // PROVIDER should fall back to the composition entry by testing the owner
+  // fiber's unloading state — and the owner that must outlive a settings-plugin
+  // reload is the service, not this apply() call.
+  //
+  // Optional by construction: `installSection` lives behind `owner.inject`, so a
+  // host with no settings provider mounts, keeps the composition target, and
+  // reports no writer rather than failing to boot.
+  service.installTargetSetting(ctx)
   await service.open()
 }
 

@@ -719,6 +719,32 @@ describe('R03: an incomplete read states its range and its limits', () => {
       expect(() => recordPresentation(record, { start: 0, end: 10 }))
         .toThrow(/that was never parsed/)
     })
+
+    it('is refused by the SHIPPED locator even when the same words are in the artifact', async () => {
+      // The four tests above assert this against the test-local model in this
+      // file. That model is a model of the product, so on its own it proves the
+      // DISCIPLINE and not that any shipped code enforces it. This test closes
+      // that gap with the real function: `locateClaim` in `src/web-provenance.ts`,
+      // which is what `dsh-daily-work/history` exposes.
+      //
+      // The strongest available form is used: the quoted words ARE present in the
+      // captured artifact, so the refusal cannot be explained away as "the text
+      // was not found". The only thing that changes the verdict is the ORIGIN tag.
+      const { locateClaim, sha256 } = await import('./web-provenance.ts')
+      const quote = snippet.snippet ?? ''
+      const artifactText = `Abstract. ${quote} Methods follow.`
+      const artifact = { artifact: 'src-1', sha256: sha256(artifactText), text: artifactText }
+      expect(artifactText).toContain(quote)
+
+      const asDocument = locateClaim(quote, artifact)
+      expect(asDocument.kind).toBe('located')
+
+      const asSnippet = locateClaim(quote, artifact, { origin: 'search_snippet' })
+      expect(asSnippet.kind).toBe('not-located')
+      if (asSnippet.kind !== 'not-located') return
+      expect(asSnippet.code).toBe('snippet-is-not-full-text')
+      expect(asSnippet.reason).toContain('not a span of the captured document')
+    })
   })
 
   describe('there is no automatic understood state', () => {

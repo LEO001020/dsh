@@ -253,14 +253,15 @@ describe('C12: every nesting path is either accounted for or explicitly refused'
   })
 
   it('refuses the grandchild even when the CALLER supplies a larger maxDepth', async () => {
-    // C12's central assertion. This is the DSH-side answer to the plan's
-    // finding that a caller-supplied filter is not a deployment allowlist.
+    // C12's central assertion, and since M6 it is enforced by the DEPLOYMENT
+    // BOUNDARY rather than by the caller.
     //
-    // `maxDepth` here is the caller's cap, and a caller is free to pass 99. It
-    // does not help: `resolveChildDepth` computes 1 + 1 = 2 from the parent's
-    // header first, and the cap is only an upper bound. There is no argument a
-    // model can supply that makes a depth-1 parent able to delegate while ANY
-    // cap at or below its own depth is in force.
+    // The defect this closes (docs/GAPS.md G-SEAM-18): `resolveChildDepth(parent,
+    // request.maxDepth)` (child-agent.ts:50) treats the request value as an
+    // absolute cap the child must not exceed, so a caller passing `99` LIFTS the
+    // deployment's intended ceiling. Before M6 the honest assertion here was
+    // "with 99 the depth-2 child IS created". It no longer is: the boundary reads
+    // the child's own durable `delegationDepth`, which no request field can lower.
     const r = await rig()
     const child = await r.ctx.subagents.startContinuable({
       provider: 'spawn',
@@ -270,25 +271,23 @@ describe('C12: every nesting path is either accounted for or explicitly refused'
       signal: new AbortController().signal,
     })
     const childAgent = r.ctx.agents.get(child.childId)!
+    expect(delegationDepthOf(childAgent)).toBe(1)
 
-    // The runtime resolves the caller's `99` against its own settings default
-    // only when the caller OMITS the value; an explicit 99 is taken as given.
-    // So the honest assertion is not "99 is refused" but "the header depth is
-    // what decides": with 99 the child IS created, at depth 2, and it is OUR
-    // record and OUR launch port that never ask for that.
-    const grandchild = await r.ctx.subagents.startContinuable({
-      provider: 'spawn',
-      label: 'grandchild-99',
-      childId: SessionId('c12b-grandchild'),
-      request: { parent: childAgent, prompt: [{ type: 'text', text: 'y' }], maxDepth: 99 },
-      signal: new AbortController().signal,
-    })
-    const grandchildAgent = r.ctx.agents.get(grandchild.childId)!
-    expect(grandchildAgent.session.header.delegationDepth).toBe(2)
+    // The caller's 99 does NOT help. The refusal arrives from the creating call.
+    await expect(
+      r.ctx.subagents.startContinuable({
+        provider: 'spawn',
+        label: 'grandchild-99',
+        childId: SessionId('c12b-grandchild'),
+        request: { parent: childAgent, prompt: [{ type: 'text', text: 'y' }], maxDepth: 99 },
+        signal: new AbortController().signal,
+      }),
+    ).rejects.toThrow(/delegation depth 2; the deployment ceiling is 1|depth 2 exceeds/)
+    // Nothing was created, so the refusal really was pre-publication.
+    expect(r.ctx.agents.get(SessionId('c12b-grandchild'))).toBeUndefined()
 
-    // THE point: the deployment cap that our own path carries is 1, and it
-    // refuses the same call. Asserted through the real launch port, which is
-    // what production uses and which hard-codes `maxDepth: deps.maxDepth`.
+    // And our own launch port — which hard-codes `maxDepth: deps.maxDepth` — is
+    // refused for the same reason, so both routes agree.
     await expect(
       createContinuableLaunchPort({
         subagents: r.ctx.subagents,
@@ -299,22 +298,20 @@ describe('C12: every nesting path is either accounted for or explicitly refused'
         { taskId: 'deployment-cap', childId: 'c12b-deployment-cap', prompt: 'y', reservedCost: 1 },
         new AbortController().signal,
       ),
-    ).rejects.toThrow(/depth 2 exceeds maxDepth 1/)
-    // Nothing was created for the deployment-capped attempt.
+    ).rejects.toThrow(/delegation depth 2; the deployment ceiling is 1|depth 2 exceeds/)
     expect(r.ctx.agents.get(SessionId('c12b-deployment-cap'))).toBeUndefined()
   })
 
-  it('omitting maxDepth does NOT lift the deployment cap, because our port never omits it', async () => {
+  it('omitting maxDepth does NOT lift the deployment cap', async () => {
     // The other half of the same fact, and the one that maps EXACTLY onto the
     // community-project defect. There, an omitted filter made the check return
     // `undefined` — i.e. "no restriction" — and the child got every tool.
     //
-    // MEASURED, not assumed: at the DSH seam, an omitted `maxDepth` is NOT a
-    // refusal. `resolveChildDepth` skips only the comparison, so the child IS
-    // created, stamped at depth parent+1. This test asserts that reading
-    // honestly, and then asserts the part that makes it harmless here: the
-    // launch port ALWAYS sends `maxDepth: deps.maxDepth` (launch-port.ts:83), so
-    // the omission path is unreachable from this project.
+    // At the DSH seam alone, an omitted `maxDepth` is still NOT a refusal:
+    // `resolveChildDepth` skips only the comparison, so the child would be
+    // created stamped at depth parent+1. Since M6 the deployment boundary refuses
+    // it anyway, which is what makes the omission path harmless rather than
+    // merely unreachable through our own port.
     const r = await rig()
     const child = await r.ctx.subagents.startContinuable({
       provider: 'spawn',
@@ -325,19 +322,20 @@ describe('C12: every nesting path is either accounted for or explicitly refused'
     })
     const childAgent = r.ctx.agents.get(child.childId)!
 
-    // (a) The honest negative result: an omitted cap is not a refusal at DSH.
-    const uncapped = await r.ctx.subagents.startContinuable({
-      provider: 'spawn',
-      label: 'grandchild-uncapped',
-      childId: SessionId('c12c-grandchild'),
-      request: { parent: childAgent, prompt: [{ type: 'text', text: 'y' }] },
-      signal: new AbortController().signal,
-    })
-    expect(r.ctx.agents.get(uncapped.childId)!.session.header.delegationDepth).toBe(2)
+    // (a) An omitted cap is REFUSED by the deployment boundary, exactly as an
+    // explicit 99 is. The refusal is pre-publication: nothing was created.
+    await expect(
+      r.ctx.subagents.startContinuable({
+        provider: 'spawn',
+        label: 'grandchild-uncapped',
+        childId: SessionId('c12c-grandchild'),
+        request: { parent: childAgent, prompt: [{ type: 'text', text: 'y' }] },
+        signal: new AbortController().signal,
+      }),
+    ).rejects.toThrow(/delegation depth 2; the deployment ceiling is 1|depth 2 exceeds/)
+    expect(r.ctx.agents.get(SessionId('c12c-grandchild'))).toBeUndefined()
 
-    // (b) Our port cannot take that path: it passes the configured depth, so the
-    // same parent is refused. This is the whole difference between "DSH's
-    // per-request cap" and "our deployment limit".
+    // (b) Our port takes the same path and is refused for the same reason.
     await expect(
       createContinuableLaunchPort({
         subagents: r.ctx.subagents,
@@ -348,7 +346,7 @@ describe('C12: every nesting path is either accounted for or explicitly refused'
         { taskId: 'never-omits', childId: 'c12c-never-omits', prompt: 'y', reservedCost: 1 },
         new AbortController().signal,
       ),
-    ).rejects.toThrow(/depth 2 exceeds maxDepth 1/)
+    ).rejects.toThrow(/delegation depth 2; the deployment ceiling is 1|depth 2 exceeds/)
   })
 
   it('records the deployment depth on the run, so the record itself carries the cap', async () => {
@@ -581,18 +579,15 @@ describe('C12: every nesting path is either accounted for or explicitly refused'
     // The workflow engine's `agent()` helper calls
     // `this.subagents.start(this.provider, { ... })`
     // (workflow-ptc/src/host.ts:200) — the ordinary one-shot seam, with NO
-    // `maxDepth` of its own. That is the decisive fact: the workflow path cannot
-    // express a depth policy at all, so it inherits whatever the parent's header
-    // says.
+    // `maxDepth` of its own.
     //
-    // MEASURED, and this is the uncomfortable half: because it omits the cap, a
-    // workflow run started from a depth-1 child DOES create a depth-2 child. So
-    // the honest statement is not "the workflow path is refused". It is:
-    //   - the workflow path cannot LIFT anything, because it sends no cap; and
-    //   - the enforcement point for this project is the deployment cap carried
-    //     by our own launch port and recorded on the run.
-    // Both halves are asserted, because asserting only the convenient one would
-    // be the exact overclaim C12 exists to prevent.
+    // G-SEAM-18 recorded this as NOT COVERED: "a workflow launched from a
+    // depth-1 child creates a depth-2 child. Our launches are bounded; a
+    // workflow's are not." Since M6 that gap is closed, and the reason is
+    // structural rather than a patch to the workflow package: the workflow's
+    // `startChild` funnels through the same one-shot `start` into the same
+    // `agents.create`, so the DEPLOYMENT BOUNDARY sees it. The workflow cannot
+    // opt out, because it does not pass through a different creation path.
     const r = await rig()
     const child = await r.ctx.subagents.startContinuable({
       provider: 'spawn',
@@ -603,16 +598,18 @@ describe('C12: every nesting path is either accounted for or explicitly refused'
     })
     const childAgent = r.ctx.agents.get(child.childId)!
 
-    // The exact call shape workflow-ptc/src/host.ts:200 makes: no maxDepth.
-    const run = await r.ctx.subagents.start('spawn', {
-      prompt: [{ type: 'text', text: 'workflow child' }],
-      parent: childAgent,
-      signal: new AbortController().signal,
-    })
-    expect(r.ctx.agents.get(run.id)!.session.header.delegationDepth).toBe(2)
-    await run.dispose()
+    // The exact call shape workflow-ptc/src/host.ts:200 makes: no maxDepth. It is
+    // REFUSED, because the boundary reads the child's own durable depth.
+    await expect(
+      r.ctx.subagents.start('spawn', {
+        prompt: [{ type: 'text', text: 'workflow child' }],
+        parent: childAgent,
+        signal: new AbortController().signal,
+      }),
+    ).rejects.toThrow(/delegation depth 2; the deployment ceiling is 1|depth 2 exceeds/)
 
-    // And the deployment-capped call — the one our port makes — is refused.
+    // The deployment-capped call — the one our own port makes — is refused too,
+    // so both routes agree.
     await expect(
       r.ctx.subagents.start('spawn', {
         prompt: [{ type: 'text', text: 'workflow child capped' }],
@@ -620,7 +617,11 @@ describe('C12: every nesting path is either accounted for or explicitly refused'
         maxDepth: 1,
         signal: new AbortController().signal,
       }),
-    ).rejects.toThrow(/depth 2 exceeds maxDepth 1/)
+    ).rejects.toThrow(/delegation depth 2; the deployment ceiling is 1|depth 2 exceeds/)
+
+    // Neither attempt published a child.
+    const children = await r.ctx.subagents.listChildren(childAgent.id)
+    expect(children).toHaveLength(0)
   })
 
   it('the shipped delegation tool DOES carry the deployment cap, unlike the workflow path', async () => {

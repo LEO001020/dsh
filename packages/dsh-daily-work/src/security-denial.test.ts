@@ -53,7 +53,7 @@
  * checked-in fixture would leave standing ACEs on this repository.
  */
 import { spawn } from 'node:child_process'
-import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { cpSync, existsSync, linkSync, mkdirSync, mkdtempSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs'
 import { createServer } from 'node:http'
 import type { AddressInfo } from 'node:net'
 import { tmpdir } from 'node:os'
@@ -83,6 +83,21 @@ const FIXTURE = fileURLToPath(new URL('../../../qualification/fixtures/canary/',
  * recorded location and the override exists only for a relocated checkout.
  */
 const DSH_SRC_ROOT = process.env.DSH_SRC_ROOT ?? 'D:/DSH/src/dsh-src'
+
+/** The repo root, resolved from this file rather than from cwd. */
+const REPO_ROOT = fileURLToPath(new URL('../../..', import.meta.url)).replace(/[\\/]$/u, '')
+
+/**
+ * Collapse a source file's comment wrapping so a phrase survives a reflow but
+ * not a reword. Only LEADING line markers are stripped, so markdown emphasis
+ * inside a line (part of the record) is preserved.
+ */
+function flat(text: string): string {
+  return text
+    .split(/\r?\n/u)
+    .map(line => line.replace(/^\s*(?:\/\/|\*|\/\*|\*\/|#)\s?/u, ''))
+    .join(' ')
+}
 
 /** Values that appear ONLY in the fabricated fixture. A hit means a boundary leaked. */
 const CANARY_SECRET = 'CANARY-FAKE-SECRET-7f3a91c4-NOT-A-REAL-CREDENTIAL'
@@ -299,6 +314,71 @@ process.stdout.write(JSON.stringify(o));
     expect(ww.readOutsideValue).toBe(CANARY_SECRET)
 
     await ctx.fiber.dispose()
+  })
+
+  it('THE SECOND LIMITATION: a hard link inside the workspace writes THROUGH to the outside name', { timeout: 180_000 }, async () => {
+    // The same non-boundary as the read finding, reached by a WRITE. The write
+    // boundary that holds is a PATH boundary (a capability SID's ACE on a
+    // directory), and a hard link is not a path relation: `<workspace>/link.txt`
+    // and `<outside>/target.txt` ARE one file object. The ACE that permits the
+    // write is the workspace one, and NTFS checks it against the object the
+    // handle names — so the write lands on the outside name too.
+    //
+    // This is measured through the CONFINED SHELL, not the fs seam, because the
+    // fs seam's atomic temp-file+rename severs the link and would hide the
+    // escape. Both halves are in the record (`sec-gates.test.ts` measures the fs
+    // seam and the severing); this is the one where the escape lands.
+    //
+    // The fixture is built under the repo's own evidence tree on ONE volume:
+    // `link()` cannot cross volumes (`EXDEV`), and the ACL rung materializes a
+    // standing ACE on any root it is handed, so a checked-in fixture would be
+    // modified. The directory is removed in the `finally`.
+    const { ctx, sandbox } = await mountSandbox()
+    const base = join(REPO_ROOT, 'qualification', 'results', 'P3-security', '.hardlink')
+    rmSync(base, { recursive: true, force: true })
+    const workspace = join(base, 'workspace')
+    const outside = join(base, 'outside')
+    mkdirSync(workspace, { recursive: true })
+    mkdirSync(outside, { recursive: true })
+    const secret = join(outside, 'target.txt')
+    writeFileSync(secret, 'OUTSIDE-ORIGINAL', 'utf8')
+    const link = join(workspace, 'hardlink.txt')
+    linkSync(secret, link)
+    // The premise: one file object under two names. Without it the result below
+    // would mean something else entirely.
+    expect(statSync(link).ino, 'the two names must be the same file object').toBe(statSync(secret).ino)
+
+    try {
+      const run = await runConfined(ctx, sandbox, probeScript(`
+const fs = require('node:fs'); const o = {};
+try { fs.writeFileSync(${JSON.stringify(link)}, 'WRITTEN-THROUGH-HARDLINK'); o.write = 'allowed' } catch (e) { o.write = e.code || 'error' }
+o.insideValue = fs.readFileSync(${JSON.stringify(link)}, 'utf8');
+process.stdout.write(JSON.stringify(o));
+`), { mode: 'workspace-write', workspaceRoot: workspace })
+      expect(run.exitCode, run.stderr).toBe(0)
+      const observed = JSON.parse(run.stdout) as { write: string; insideValue: string }
+      // The write is ALLOWED — correctly, by the policy: the path it names IS
+      // inside the granted root. Nothing here is a bug in the containment check.
+      expect(observed.write).toBe('allowed')
+      // THE FINDING: the outside name observes it. The workspace write
+      // capability reached a file whose other name is outside the boundary.
+      expect(readFileSync(secret, 'utf8'), 'the OUTSIDE name observes the write').toBe('WRITTEN-THROUGH-HARDLINK')
+      expect(observed.insideValue).toBe('WRITTEN-THROUGH-HARDLINK')
+      // The link is NOT severed here, unlike the fs seam's atomic write: the
+      // object is still shared, which is exactly what makes this an escape.
+      expect(statSync(link).ino).toBe(statSync(secret).ino)
+      // The backend's own record of this boundary, which is why it reports
+      // `partial` rather than claiming an absolute promise.
+      const winReadme = readFileSync(join(DSH_SRC_ROOT, 'packages', 'sandbox', 'sandbox-windows-acl', 'README.md'), 'utf8')
+      expect(flat(winReadme)).toContain('Hard links are file-object aliases, not path aliases')
+      expect(flat(winReadme)).toContain('so the same object is writable through an external alias')
+      expect(flat(winReadme)).toContain('rejecting multiply-linked files is not viable for ordinary pnpm installations')
+      const winHeader = readFileSync(join(DSH_SRC_ROOT, 'packages', 'sandbox', 'sandbox-windows-acl', 'src', 'index.ts'), 'utf8')
+      expect(flat(winHeader)).toContain('writes are restricted; reads, network, and process visibility are NOT')
+    } finally {
+      await ctx.fiber.dispose()
+      rmSync(base, { recursive: true, force: true })
+    }
   })
 
   it('the ONE credential control that exists is an environment-name scrub in the subprocess seam, not the sandbox', async () => {

@@ -33,11 +33,18 @@ describe('the tool surface this project adds', () => {
   it('adds exactly one tool, and it is not a terminal or plugin-manager tool', async () => {
     // E02: the cheapest way to escalate would be to add a tool that reaches a
     // higher-privilege service. Assert the surface is exactly what was intended.
+    //
+    // The count is asserted, not implied. An earlier version of this test only
+    // checked that six forbidden NAMES were absent, which would have passed just
+    // as well if this plugin had registered `terminal_exec` or `admin_rpc` —
+    // the oracle was weaker than the claim in its own title. `toEqual(OUR_TOOLS)`
+    // makes any added tool fail here by name, which is the property that matters.
     const ctx = new Context()
     await ctx.plugin(SystemPrompt)
     await ctx.plugin(ToolRuntime)
     await ctx.plugin(toolsPlugin as never, {} as never)
     const names = ctx.get('tools')!.schemas().map(s => s.name)
+    expect(names.sort()).toEqual([...OUR_TOOLS].sort())
     for (const forbidden of [
       'terminal_open',
       'terminal_send',

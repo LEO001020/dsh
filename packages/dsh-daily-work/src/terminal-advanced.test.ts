@@ -160,8 +160,22 @@ function scrollback(ctx: Context, owner: Agent, id: string): string {
  * before the command ran and every "did the command produce this" check would be
  * true for the wrong reason. Assembling the string inside the shell keeps the
  * literal out of the echoed text, which is what makes the assertion meaningful.
+ *
+ * THE LENGTH GUARD IS LOAD-BEARING. If the marker is not longer than the split
+ * index, the second half is the EMPTY string and the assembled token degenerates
+ * to the bare marker — which the echo DOES contain, so the check silently passes
+ * for the wrong reason. A 4-character marker did exactly that in the ad-hoc probe
+ * used to characterize the confinement finding, and it reported "the command
+ * survived the interrupt" in every mode including the control where the command
+ * was killed. It fails toward a plausible positive result, which is the worst
+ * direction, so the guard throws rather than trusting callers to remember.
  */
-const TOKEN = (marker: string): string => `('${marker.slice(0, 4)}'+'${marker.slice(4)}')`
+function TOKEN(marker: string): string {
+  if (marker.length <= 4) {
+    throw new Error(`TOKEN: marker "${marker}" is too short to split safely; the echo would contain it and the check would pass for the wrong reason`)
+  }
+  return `('${marker.slice(0, 4)}'+'${marker.slice(4)}')`
+}
 
 describe('T05: interrupt on an independent control path', () => {
   it('T05: SIGINT resolves while the cell is running, and the cell is not a success', async () => {
@@ -741,15 +755,34 @@ describe('T05/T06/T08 under workspace-write confinement', () => {
     await r.close()
   }, 90_000)
 
-  it('T05 under confinement: SIGINT still reaches a running cell on its own path', async () => {
+  it('T05 under confinement: SIGINT is reported delivered but DOES NOT stop the cell', async () => {
+    // THE FINDING, and it is the opposite of the unconfined arm.
+    //
+    // Under `workspace-write` the backend wraps the shell in the Windows ACL
+    // runner (measured argv: node runner.js --workspace ... --mode
+    // workspace-write -- C:/pwsh.exe -NoLogo -NoProfile). On Windows the
+    // interrupt is delivered as a `\x03` input write, which conhost turns into a
+    // console-wide CTRL_C. That byte reaches the RUNNER's console, not
+    // powershell's foreground process, so the running command is unaffected.
+    //
+    // The backend still reports `delivered: true` in ~17 ms, because writing the
+    // byte succeeded. So under confinement a caller that trusts `delivered` is
+    // told the interrupt landed when the command is in fact still running to
+    // completion. That is a real, security-relevant limit on the T05 control
+    // path, and it is asserted here rather than smoothed over.
+    //
+    // Measured, repeated: 5/5 confined trials ran to completion; the token for a
+    // 20 s sleep appeared at 20.1 s with the signal sent at 2.5 s. Unconfined
+    // controls: 0/3 survived.
     const r = await rig('workspace-write')
     const owner = await r.agent('owner-ww-t05')
     const session = await r.ctx.terminals.spawn(owner, { type: BACKEND_TYPE })
     const id = session.sessionId
-    const lateToken = 'WW-LATE'
+    const lateToken = 'WWLATE'
 
+    const cellStartedAt = Date.now()
     const cell = r.ctx.terminals.startSend(owner, id, {
-      text: `Start-Sleep -Seconds 12; Write-Output ${TOKEN(lateToken)}`,
+      text: `Start-Sleep -Seconds 10; Write-Output ${TOKEN(lateToken)}`,
       submit: true,
     })
     await sleep(2_500)
@@ -757,23 +790,63 @@ describe('T05/T06/T08 under workspace-write confinement', () => {
     const signalStartedAt = Date.now()
     const signalResult = await r.ctx.terminals.signal(owner, id, 'SIGINT')
     const signalMs = Date.now() - signalStartedAt
+
+    // The control path is still NOT blocked by the execution path, and the
+    // backend still claims delivery. Both are true; neither means the command
+    // stopped, which is exactly the trap.
     expect(signalMs).toBeLessThan(1_500)
     expect(signalResult.delivered).toBe(true)
+    measured('WW T05 signalMs', signalMs)
+    measured('WW T05 signalResult', JSON.stringify(signalResult))
 
     const settled = await cell.done
     expect(WAIT_REASONS).toContain(settled.waitReason)
     expect(settled.waitReason).not.toBe('session_exit')
     expect(settled.sessionStatus.kind).toBe('running')
-    measured('WW T05 signalMs', signalMs)
-    measured('WW T05 signalResult', JSON.stringify(signalResult))
     measured('WW T05 settled', `${settled.waitReason} ${JSON.stringify(settled.sessionStatus)}`)
 
-    // The command really stopped: its token never appears, even past the point
-    // it would have finished on its own.
-    await sleep(11_000)
-    expect(scrollback(r.ctx, owner, id)).not.toContain(lateToken)
+    // THE ASSERTION THAT MATTERS: the command was NOT stopped. Sampling shows
+    // the token appearing only at the natural duration, so this is "ran to
+    // completion", not "was killed late".
+    const naturalDurationMs = 10_000
+    await sleep(Math.max(0, naturalDurationMs - (Date.now() - cellStartedAt)) + 2_500)
+    const after = scrollback(r.ctx, owner, id)
+    measured('WW T05 commandSurvivedInterrupt', String(after.includes(lateToken)))
+    expect(after).toContain(lateToken)
 
     await r.ctx.terminals.kill(owner, id, 'test cleanup')
+    await r.close()
+  }, 90_000)
+
+  it('T05 under confinement: kill() IS the control that stops the cell', async () => {
+    // The mitigation, asserted so the finding above does not read as "nothing
+    // works under confinement". `kill()` reaches the real process tree through
+    // the registry's teardown path (taskkill on the verified root identity)
+    // rather than through a console input byte, so it stops the command where
+    // SIGINT and SIGTERM do not.
+    //
+    // Measured: confined kill stopped the cell; confined SIGTERM did NOT
+    // (survived=true with delivered=true), so the distinction is signal vs
+    // teardown, not "some signals work".
+    const r = await rig('workspace-write')
+    const owner = await r.agent('owner-ww-t05kill')
+    const session = await r.ctx.terminals.spawn(owner, { type: BACKEND_TYPE })
+    const id = session.sessionId
+    const lateToken = 'WWKILL'
+
+    const cellStartedAt = Date.now()
+    r.ctx.terminals.startSend(owner, id, {
+      text: `Start-Sleep -Seconds 10; Write-Output ${TOKEN(lateToken)}`,
+      submit: true,
+    })
+    await sleep(2_500)
+    expect(await r.ctx.terminals.kill(owner, id, 'stop the confined cell')).toBe(true)
+
+    // Past the natural duration: a killed cell never prints its token.
+    await sleep(Math.max(0, 10_000 - (Date.now() - cellStartedAt)) + 2_500)
+    expect(r.ctx.terminals.list(owner)).toHaveLength(0)
+    measured('WW T05 kill stopped the cell', String(!scrollback(r.ctx, owner, id).includes(lateToken)))
+
     await r.close()
   }, 90_000)
 

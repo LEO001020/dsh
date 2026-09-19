@@ -67,6 +67,17 @@ export const WORK_DOMAIN_NAME = 'dsh_daily_work'
  */
 export const WORK_SCHEMA_VERSION = 1
 
+/**
+ * The provider name the base bundle mounts for continuable children.
+ *
+ * Used only when `subagentProvider` is absent from config. The value is the one
+ * `packages/bundle/base` sets and the shipped presets rely on, so defaulting to
+ * it cannot select a provider the deployment does not have — and if the
+ * deployment mounts none, the launch port is not installed at all and the drain
+ * path reports `no launch port installed` rather than failing obscurely.
+ */
+export const DEFAULT_SUBAGENT_PROVIDER = 'spawn'
+
 export const workDomainSpec = defineDomain({
   name: WORK_DOMAIN_NAME,
   version: WORK_SCHEMA_VERSION,
@@ -161,8 +172,15 @@ export interface WorkServiceConfig {
    * the host composition: the base bundle mounts `subagent-spawn-in-process` and
    * sets `subagentProvider: spawn`, and a deployment that mounts a different
    * provider must be able to say so without patching this package.
+   *
+   * OPTIONAL, defaulting to `'spawn'`. It is the one field with a safe default:
+   * the value is only read when the service installs its DEFAULT launch port, and
+   * that path already returns early when no subagent runtime is mounted. A test
+   * that installs its own port never reads it. The other fields have no safe
+   * default — a guessed budget ceiling or depth would be a policy the operator
+   * never authorized — so they stay required.
    */
-  readonly subagentProvider: string
+  readonly subagentProvider?: string
   /** Hard budget ceiling for a new run. */
   readonly budgetCeiling: number
   readonly currency: string
@@ -375,7 +393,10 @@ export class WorkService extends Service {
     this.launchPort = createContinuableLaunchPort({
       subagents,
       parent: root,
-      provider: this.config.subagentProvider,
+      // The composition's provider name, or the base bundle's `spawn` when the
+      // operator named none. See the field's doc comment for why this one field
+      // may default and the others may not.
+      provider: this.config.subagentProvider ?? DEFAULT_SUBAGENT_PROVIDER,
       maxDepth: this.config.maxDepth,
     })
   }
@@ -688,6 +709,40 @@ export class WorkService extends Service {
       ...record,
       phase: record.phase === 'paused' ? 'open' : record.phase,
       updatedAt: now,
+    }))
+  }
+
+  /**
+   * Change one run's sustained target.
+   *
+   * This is the HOST authorization edge for the live target. In production the
+   * value arrives through the `daily-work` settings section
+   * (`src/target-setting.ts`) and is written by the authenticated UI; this method
+   * is the record-level application of it, so a test can exercise the same
+   * semantics without a settings provider.
+   *
+   * What it deliberately does NOT do, because the plan's rules are all
+   * prohibitions here:
+   *   - it does not touch a running task's own `reservedCost` (INV: "N变化不改正在
+   *     运行任务的原budget");
+   *   - it does not cancel, kill or drain anything ("N降低停止新接纳，让已运行任务
+   *     收敛；急停是单独显式操作");
+   *   - it does not touch the budget ceiling, which is a separate authorization.
+   *
+   * A LOWER therefore only reduces the deficit; existing holders keep their slots
+   * until they settle, and no new admission occurs while `held >= target`.
+   *
+   * @param runId - the run whose target changes.
+   * @param target - the new target; a non-negative safe integer.
+   */
+  async setTargetChildren(runId: string, target: number): Promise<RunRecord> {
+    if (!Number.isSafeInteger(target) || target < 0 || Object.is(target, -0)) {
+      throw new Error(`dailyWork: target children must be a non-negative safe integer, got ${String(target)}`)
+    }
+    return this.mutate(runId, record => ({
+      ...record,
+      requestedTarget: target,
+      updatedAt: new Date().toISOString(),
     }))
   }
 

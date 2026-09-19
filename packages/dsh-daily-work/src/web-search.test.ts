@@ -265,6 +265,61 @@ describe('successful search', () => {
   })
 })
 
+describe('the dialect this port speaks, pinned because it is the substrate boundary', () => {
+  it('sends exactly {query, maxResults} and NO credential header', async () => {
+    // This is the request contract the controlled fake is written to. Pinning it
+    // here means a change to the port's wire shape breaks this test rather than
+    // silently making the R01 fake describe a provider that no longer exists.
+    //
+    // The absence of an auth header is not an oversight to be fixed in the test:
+    // the ported source layer takes the key out of band, and this port reads
+    // credential PRESENCE only. It is asserted so the consequence is visible --
+    // this request could not authenticate against a real paid endpoint even if
+    // one were authorized.
+    let seenHeaders: Record<string, string> = {}
+    let seenBody: unknown
+    stubFetch((_url, init) => {
+      seenHeaders = Object.fromEntries(
+        Object.entries((init.headers ?? {}) as Record<string, string>).map(([k, v]) => [k.toLowerCase(), String(v)]),
+      )
+      seenBody = JSON.parse(String(init.body))
+      return jsonResponse({ results: [] })
+    })
+    const provider = createDualLaneSearchProvider(
+      { endpoint: 'https://example.com/search', apiKeyEnv: 'K' },
+      configured,
+    )
+    await provider.search({ query: 'q' })
+
+    // Exactly two keys, so a future added field is a visible change here.
+    expect(Object.keys(seenBody as Record<string, unknown>).sort()).toEqual(['maxResults', 'query'])
+    expect(seenHeaders).toEqual({ 'content-type': 'application/json' })
+    expect('authorization' in seenHeaders).toBe(false)
+    expect('x-api-key' in seenHeaders).toBe(false)
+  })
+
+  it('reads `snippet`/`publishedAt` and NOT the Exa fields the production row targets', async () => {
+    // The production row points at `https://api.exa.ai/search`. Exa's rows carry
+    // `highlights[]` and `publishedDate`. This asserts the mismatch as a property
+    // of the shipped mapper, so the "live half is BLOCKED_EXTERNAL" claim rests
+    // on a measured dialect difference and not only on a budget flag.
+    const exaRow = { url: 'https://example.com/a', title: 'A', publishedDate: '2026-05-06', highlights: ['a sentence'] }
+    const sources = mapHits([exaRow], 10)
+    expect(sources.map(source => source.url)).toEqual(['https://example.com/a'])
+    // The URL survives; the snippet and the date do not, because the port does
+    // not read those field names.
+    expect(sources[0]?.snippet).toBeUndefined()
+    expect(sources[0]?.publishedAt).toBeUndefined()
+
+    // The port DOES read the fields it names, so the miss above is the dialect
+    // and not a mapper that drops everything.
+    const portRow = { url: 'https://example.com/b', title: 'B', snippet: 'a sentence', publishedAt: '2026-05-06' }
+    const portSources = mapHits([portRow], 10)
+    expect(portSources[0]?.snippet).toBe('a sentence')
+    expect(portSources[0]?.publishedAt).toBe('2026-05-06')
+  })
+})
+
 describe('plugin registration through the real ctx.web seam', () => {
   it('routes ctx.web.search() to the ported provider, and stops on unload', async () => {
     // The seam exists so backends are interchangeable behind ONE model-facing

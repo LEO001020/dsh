@@ -227,6 +227,7 @@ describe('E02: the control-plane universe is measured, not assumed', () => {
       modelToolCatalog: string[]
       modelToolCount: number
       controlPlaneAsModelTool: Record<string, { exposedAsTool: boolean; authority: string }>
+      cordisInspectTools: string[]
     }
 
     // The catalog is the model's real capability surface, and it is non-empty:

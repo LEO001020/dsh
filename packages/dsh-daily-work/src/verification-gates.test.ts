@@ -1,12 +1,29 @@
 /**
- * M8 — verification mechanics and writer isolation: gates VER-01..08 plus W02/W03.
+ * M8/T12 — verification mechanics and writer workspaces: gates VER-01..09 plus
+ * W02/W03 and FS-06.
+ *
+ * THE RE-DEFINITION THIS FILE TESTS AGAINST
+ * =========================================
+ * A writer workspace is a `concurrency-isolated worktree`, and it is **NOT a
+ * security boundary**. Its three jobs are: avoid concurrent writes clobbering
+ * each other, establish a deterministic merge basis, and bind verification to a
+ * specific candidate. It is not to contain the writer — under trusted-local,
+ * every writer child runs as the same OS user with that user's full authority.
+ *
+ * The mirror-image honesty rule applies to the verifier itself: **a verifier
+ * that runs with host authority is not a control, it is another host process.**
+ * It provides MECHANICAL WORLD OBSERVATION — a real command with a real exit
+ * code, and digests recomputed from Git/filesystem state — never containment.
+ * The FS-06 case below exists precisely because that distinction has teeth:
+ * model-written Python can mutate the world without producing a DSH fs receipt,
+ * so the verifier must rediscover the final world rather than trust a receipt.
  *
  * WHAT THIS FILE IS
  * =================
  * `packages/dsh-daily-work/src/verify.ts` and `qualification/runners/acceptance.mjs`
  * are the SUBJECT UNDER TEST here, not a helper. They already exist and already
  * pass their own 30-test suite (`M9.1-acceptance-runner/`). The job of this file
- * is to attack them against the eight VER gates and to CLOSE THE GAPS the M9.1
+ * is to attack them against the VER gates and to CLOSE THE GAPS the M9.1
  * slice recorded honestly as open, rather than to restate what already works.
  *
  * Three gaps were named in that slice's "What is NOT proven", and they are the
@@ -86,6 +103,7 @@ import {
   testsAreReal,
   verifySharedMetadata,
   writerLeaseHeld,
+  type VerdictBinding,
   type WriterWorkspace,
 } from './worktree-isolation.ts'
 
@@ -243,7 +261,20 @@ async function waitForMarker(markerPath: string, timeoutMs: number): Promise<voi
   }
 }
 
-/** A small repository with one commit on `main`, for the writer-isolation cases. */
+/**
+ * The real Python interpreter, resolved the same way the data-plane suite does.
+ *
+ * FS-06 is about MODEL-WRITTEN PYTHON, so the interpreter has to be the real one
+ * the `ipython` path would use rather than a stand-in. It is resolved from the
+ * pinned location first because the audit's environment is explicit about which
+ * Python it means, and a PATH lookup could silently pick a different one.
+ */
+function pythonPath(): string {
+  const pinned = 'C:\\Users\\hzq00\\AppData\\Local\\Programs\\Python\\Python314\\python.exe'
+  return existsSync(pinned) ? pinned : 'python'
+}
+
+/** A small repository with one commit on `main`, for the writer-workspace cases. */
 function makeRepo(prefix: string): { root: string; base: string } {
   const root = makeRoot(prefix)
   git(root, 'init', '-q', '-b', 'main')
@@ -1743,10 +1774,10 @@ describe('VER-08: after a verification failure a legitimate recovery can continu
 })
 
 // ---------------------------------------------------------------------------
-// Part B — writer isolation
+// Part B — writer workspaces: concurrency isolation, not containment
 // ---------------------------------------------------------------------------
 
-describe('writer isolation: one writer, one workspace, one lease', () => {
+describe('writer concurrency isolation: one writer, one workspace, one lease', () => {
   it('binds the writer cwd to its own workspace, on its own branch, at the exact base', async () => {
     const { root, base } = makeRepo('w01')
     const workspace = await acquireWriterWorkspace({
@@ -1782,7 +1813,9 @@ describe('writer isolation: one writer, one workspace, one lease', () => {
     // GIT_DIR and friends are TOMBSTONED, not merely absent: a parent that had
     // GIT_DIR set would otherwise hand the writer a git context pointing at the
     // ROOT repository, and its commit would write the root's index and branch
-    // from inside what looks like an isolated directory.
+    // from inside what merely LOOKS like a separate directory. This is a
+    // DETERMINISM fix (the commit must land on the writer's branch), not a
+    // containment measure — the writer's process authority is unchanged.
     for (const name of ['GIT_DIR', 'GIT_WORK_TREE', 'GIT_INDEX_FILE', 'GIT_COMMON_DIR']) {
       expect(name in workspace.env).toBe(true)
       expect(workspace.env[name]).toBeUndefined()
@@ -1810,7 +1843,7 @@ describe('writer isolation: one writer, one workspace, one lease', () => {
     expect(git(alpha.path, 'rev-parse', 'HEAD')).not.toBe(base)
     expect(git(beta.path, 'rev-parse', 'HEAD')).toBe(base)
     // CRLF is normalised: git's autocrlf rewrites the working copy on checkout,
-    // and a platform line ending is not a finding about writer isolation.
+    // and a platform line ending is not a finding about writer workspaces.
     expect(readText(join(beta.path, 'src', 'app.txt'))).toBe('version one\n')
   }, 120_000)
 
@@ -1877,11 +1910,15 @@ describe('writer isolation: one writer, one workspace, one lease', () => {
   }, 90_000)
 })
 
-describe('W02: a git worktree is NOT a security boundary, and the code says so', () => {
+describe('W02: a concurrency-isolated worktree is NOT a security boundary, and the code says so', () => {
   it('MEASURED: a writer inside a worktree CAN move a shared ref, write shared config, and plant a shared hook', async () => {
     // The measurement that makes "worktree is not a security boundary" a fact
     // rather than a caution. All three mutations are performed by a process whose
     // cwd is the WRITER's workspace, using only git, and none is denied.
+    //
+    // This is the evidence behind the re-definition: the worktree is renamed to
+    // "concurrency-isolated" because the word "isolation" was previously doing
+    // double duty for a containment claim it cannot support on this platform.
     const { root, base } = makeRepo('w02a')
     const workspace = await acquireWriterWorkspace({
       root,
@@ -2478,6 +2515,319 @@ ${Array.from({ length: 12 }, (_, index) => `  it('case ${index}', () => { expect
     expect(/\[\s*'apply'[^\]]*'--3way'/.test(source)).toBe(false)
     expect(source).toContain('NEVER `--3way`')
   })
+
+  it('the naming is honest: the module re-scopes the worktree instead of calling it isolation', async () => {
+    // NAMING IS LOAD-BEARING, not cosmetic. A reader who believes a writer
+    // workspace is a security boundary will conclude that a hostile writer is
+    // contained, and will therefore skip the checks that actually catch one — the
+    // shared-metadata digest, the exact-base refusal and the ref CAS. The
+    // re-definition is asserted here so a future edit cannot quietly restore the
+    // old framing.
+    const source = readFileSync(join(import.meta.dirname, 'worktree-isolation.ts'), 'utf8')
+    // The concept is named for what it does.
+    expect(source).toContain('concurrency-isolated worktree')
+    expect(source).toContain('NOT a security boundary')
+    // The three jobs are stated, so "what is this for" has a written answer.
+    expect(source).toContain('avoid concurrent writes clobbering each other')
+    expect(source).toContain('establish a deterministic merge basis')
+    expect(source).toContain('bind verification to a specific candidate')
+    // The containment disclaimer is explicit, and it names the deployment
+    // semantics rather than treating them as a defect.
+    expect(source).toContain('same OS user')
+    expect(source).toContain('intended deployment semantics')
+    // The verifier honesty rule, which is the mirror image and is equally easy to
+    // get wrong: host-authority observation is not a control.
+    expect(source).toContain('MECHANICAL WORLD OBSERVATION')
+
+    // And the MISLEADING names are gone from the public surface. `IsolationKind`
+    // read as a security gradient; `WriterWorkspaceKind` does not.
+    expect(source).not.toContain('WriterIsolationKind')
+    expect(source).not.toContain('Isolation strength')
+    const plugin = readFileSync(join(import.meta.dirname, 'writers-plugin.ts'), 'utf8')
+    expect(plugin).toContain('NOT a security boundary')
+    expect(plugin).toContain('concurrency-isolated')
+  })
+})
+
+// ---------------------------------------------------------------------------
+// VER-09 — stale publication is rejected by an expected-ref compare-and-swap
+// ---------------------------------------------------------------------------
+
+describe('VER-09: stale Git expected-ref publication is rejected', () => {
+  it('MEASURED: the CAS-less form really does clobber, so the expected value is load-bearing', async () => {
+    // WHY THE CONTROL ARM IS FIRST. "A stale publication is rejected" is only a
+    // meaningful claim if the stale publication would otherwise SUCCEED. If git
+    // refused a clobbering `update-ref` on its own, every CAS assertion below
+    // would be passing for a reason that has nothing to do with the CAS, and the
+    // test would be an oracle weaker than its scenario.
+    //
+    // Measured here on this host (git 2.55.0.windows.3): the two-argument form
+    // `git update-ref <ref> <new>` exits 0 and moves the ref REGARDLESS of what it
+    // pointed at. There is no implicit expected value. That is precisely why the
+    // three-argument form exists and why it is what publication must use.
+    const { root, base } = makeRepo('ver09a')
+    git(root, 'commit', '-q', '--allow-empty', '-m', 'the integration branch advanced')
+    const advanced = git(root, 'rev-parse', 'refs/heads/main')
+    expect(advanced).not.toBe(base)
+
+    // The careless publisher: no expected value, so the newer commit is lost.
+    const clobbered = gitTry(root, 'update-ref', 'refs/heads/main', base)
+    expect(clobbered.code).toBe(0)
+    expect(git(root, 'rev-parse', 'refs/heads/main')).toBe(base)
+    // The advance is GONE from the ref. That is the failure VER-09 exists to stop.
+    expect(git(root, 'rev-parse', 'refs/heads/main')).not.toBe(advanced)
+
+    // Restore, then perform the same publication with the expected value that is
+    // now STALE. The three-argument form is a genuine compare-and-swap and refuses.
+    git(root, 'update-ref', 'refs/heads/main', advanced)
+    const stale = gitTry(root, 'update-ref', 'refs/heads/main', base, base)
+    expect(stale.code).not.toBe(0)
+    expect(stale.stderr).toContain('but expected')
+    // And the refusal is a no-op on the ref: the newer commit survives.
+    expect(git(root, 'rev-parse', 'refs/heads/main')).toBe(advanced)
+
+    // With the CORRECT expected value it succeeds, so the mechanism is not
+    // always-refusing — the control arm that makes the refusal above mean
+    // something.
+    const correct = gitTry(root, 'update-ref', 'refs/heads/main', base, advanced)
+    expect(correct.code).toBe(0)
+    expect(git(root, 'rev-parse', 'refs/heads/main')).toBe(base)
+  }, 120_000)
+
+  it('the publication path takes the ref as an INPUT, so a stale candidate cannot publish itself', async () => {
+    // The end-to-end shape: a candidate is verified against `base`, the
+    // integration ref then advances, and the publication is refused. This is the
+    // VER-09 scenario driven through the module's own decision function rather
+    // than through raw git.
+    const { root, base } = makeRepo('ver09b')
+    const ctx = await makeContext()
+    const assessment = await assessIntegration({
+      ctx,
+      root,
+      candidate: { cwd: root, baseRevision: base, headRevision: base },
+      expectedBase: base,
+      allowedPaths: ['src'],
+      patchDir: makeRoot('ver09b-patch'),
+    })
+    expect(assessment.decision).toBe('accept_for_publication')
+
+    // The ref moves while the candidate is being considered.
+    git(root, 'commit', '-q', '--allow-empty', '-m', 'root moved on')
+    const moved = git(root, 'rev-parse', 'refs/heads/main')
+
+    const refused = publicationPrecondition({
+      assessment,
+      ref: 'refs/heads/main',
+      expectedSha: base,
+      observedSha: moved,
+    })
+    expect(refused.accepted).toBe(false)
+    expect(refused.reasons.join(' ')).toContain('refused rather than forced')
+    // The refusal names BOTH revisions, so an operator can see the divergence
+    // rather than just being told no.
+    expect(refused.reasons.join(' ')).toContain(base)
+    expect(refused.reasons.join(' ')).toContain(moved)
+    expect(refused.expectedBase).toBe(base)
+    expect(refused.observedRef).toBe(moved)
+
+    // HONEST SCOPE, asserted rather than described: the precondition is a
+    // read-and-compare with NO write path. It cannot publish anything itself, so
+    // it is a gate in front of a publisher, not the publisher. A reader who
+    // assumed this function performs the CAS would be wrong, and the source scan
+    // below is what pins that.
+    const source = readFileSync(join(import.meta.dirname, 'worktree-isolation.ts'), 'utf8')
+    // No write verb is executed anywhere in the module: `update-ref` appears only
+    // in the header's prose describing what a HOSTILE WRITER can do.
+    const executed = [...source.matchAll(/git(?:Run|Ok)\(\s*ctx\s*,\s*[^,]+,\s*\[\s*'([a-z-]+)'/g)].map(m => m[1]!)
+    expect(executed).not.toContain('update-ref')
+    expect(executed).not.toContain('push')
+    expect(executed).not.toContain('reset')
+    expect(executed).not.toContain('commit')
+    // And the module states the CAS is what publication must use, so the missing
+    // write path is a documented boundary rather than an oversight.
+    expect(source).toContain('expected-ref CAS')
+  })
+
+  it('an unreadable ref is a refusal, not a benefit of the doubt', async () => {
+    // The other half of a CAS: a ref that cannot be read is UNKNOWN, and an
+    // unknown must never be treated as "unchanged". This is the same shape as
+    // VER-05's freshness rule.
+    const { root, base } = makeRepo('ver09c')
+    const ctx = await makeContext()
+    const assessment = await assessIntegration({
+      ctx,
+      root,
+      candidate: { cwd: root, baseRevision: base, headRevision: base },
+      expectedBase: base,
+      allowedPaths: ['src'],
+      patchDir: makeRoot('ver09c-patch'),
+    })
+    const unreadable = publicationPrecondition({
+      assessment,
+      ref: 'refs/heads/main',
+      expectedSha: base,
+      refUnreadableReason: 'the ref could not be read',
+    })
+    expect(unreadable.accepted).toBe(false)
+    expect(unreadable.reasons.join(' ')).toContain('could not be read')
+    // The observed value stays undefined: the function does not invent one.
+    expect(unreadable.observedRef).toBeUndefined()
+  }, 120_000)
+})
+
+// ---------------------------------------------------------------------------
+// FS-06 — a raw Python mutation is visible to the verifier
+// ---------------------------------------------------------------------------
+
+describe('FS-06: raw Python mutation must be visible to the verifier', () => {
+  it('MEASURED: model-written Python writes the file directly, with no DSH fs receipt, and the verifier rediscovers it', async () => {
+    // THE DISTINCTION THIS GATE TURNS ON.
+    //
+    // Under trusted-local, `ipython` runs real CPython as the invoking user. A
+    // model that writes a file with `open(...).write(...)` produces NO DSH fs
+    // receipt: it never went through `ctx.fs`. So "what did the writer change"
+    // cannot be answered from the tool-call log, and a verifier that trusted its
+    // own receipts would report an unchanged tree while the tree had changed.
+    //
+    // The verifier's answer is not a better receipt — it is MECHANICAL WORLD
+    // OBSERVATION: re-read the actual filesystem/Git state at verification time.
+    // This case measures that the mutation is invisible to a receipt-shaped
+    // account and VISIBLE to the digest the verifier recomputes.
+    const dir = makeRoot('fs06')
+    git(dir, 'init', '-q', '-b', 'main')
+    write(dir, 'src/app.txt', 'original\n')
+    git(dir, 'add', '-A')
+    git(dir, 'commit', '-q', '-m', 'base')
+
+    const definition: AcceptanceDefinition = {
+      id: 'fs06-candidate',
+      command: [process.execPath, '-e', 'process.exit(0)'],
+      cwd: dir,
+      inputs: ['src'],
+      timeoutMs: 30_000,
+    }
+    const beforeDigest = digestInputs(definition)
+    const beforeHead = git(dir, 'rev-parse', 'HEAD')
+    // Clean at the start, so the "dirty" finding below is caused by the Python
+    // write and not by the fixture's own scaffolding.
+    expect(gitTry(dir, 'status', '--porcelain').stdout).toBe('')
+
+    // THE RAW PYTHON MUTATION. Real CPython, direct file I/O, no DSH tool in the
+    // loop — exactly the capability the audit says the model has.
+    const python = pythonPath()
+    const script = [
+      'import pathlib, sys',
+      `p = pathlib.Path(r"${join(dir, 'src', 'app.txt').replace(/\\/g, '\\\\')}")`,
+      'p.write_text("mutated by raw python\\n", encoding="utf-8")',
+      'print("RAW_PYTHON_WROTE", p)',
+    ].join('\n')
+    const wrote = spawnSync(python, ['-c', script], { encoding: 'utf8' })
+    expect(wrote.status, `python failed: ${wrote.stderr}`).toBe(0)
+    expect(wrote.stdout).toContain('RAW_PYTHON_WROTE')
+
+    // 1. The mutation really landed, read back from the filesystem.
+    expect(readText(join(dir, 'src', 'app.txt'))).toBe('mutated by raw python\n')
+
+    // 2. A RECEIPT-SHAPED account does not see it. There is no fs receipt to
+    //    consult, and the definition digest is unchanged because the definition
+    //    did not change — only the world did.
+    expect(acceptanceDefinitionDigest(definition)).toBe(
+      acceptanceDefinitionDigest({ ...definition }),
+    )
+
+    // 3. THE VERIFIER REDISCOVERS IT from the world, which is the only honest
+    //    source. The recomputed digest moves...
+    const afterDigest = digestInputs(definition)
+    expect(afterDigest).not.toBe(beforeDigest)
+
+    // ...a binding recorded BEFORE the write no longer describes the tree that
+    //    exists now, so it cannot be reused as current evidence. The recorded
+    //    side is the `VerdictBinding` shape the comparison actually takes -- a
+    //    receipt carries a different field set -- so the only difference between
+    //    the recorded and observed sides is the tree digest the write moved.
+    const staleReceipt: VerdictBinding = {
+      candidateTreeDigest: beforeDigest,
+      acceptanceDefinitionDigest: acceptanceDefinitionDigest(definition),
+      oracleDigest: oracleDigest({}),
+      environment: { node: process.version, platform: process.platform, arch: process.arch },
+    }
+    const binding = bindReceipt(staleReceipt, observedBasis({ definition, oracleFiles: {} }))
+    expect(binding.applicable).toBe(false)
+    expect(binding.mismatches.join(' ')).toContain('candidateTreeDigest')
+
+    // ...and the GIT-LEVEL account agrees with the filesystem account. Two
+    // independent observations of the same world, which is what makes this
+    // mechanical rather than a second opinion.
+    expect(gitTry(dir, 'status', '--porcelain').stdout).toContain('src/app.txt')
+    expect(git(dir, 'rev-parse', 'HEAD')).toBe(beforeHead)
+    // HEAD did not move: the change is UNCOMMITTED. A verifier that only read
+    // the commit graph would have called this tree clean.
+    expect(gitTry(dir, 'diff', '--name-only').stdout).toContain('src/app.txt')
+  }, 120_000)
+
+  it('the raw-Python write is caught by the candidate/HEAD comparison the root actually makes', async () => {
+    // The integration half. A writer's raw-Python edit is not in any commit, so
+    // `headRevision` does not describe it and `git diff base head` does not
+    // contain it. The root must therefore compare the COMMIT against the
+    // WORKING TREE, or it would integrate a revision that does not match what was
+    // verified. This case measures the gap rather than describing it.
+    const { root, base } = makeRepo('fs06b')
+    const workspace = await acquireWriterWorkspace({
+      root,
+      writerId: 'rawpy',
+      baseRevision: base,
+      parentDir: makeRoot('fs06b-ws'),
+    })
+    workspaces.push(workspace)
+
+    // The writer commits one change, then makes a SECOND change with raw Python
+    // and does not commit it.
+    write(workspace.path, 'src/app.txt', 'committed change\n')
+    git(workspace.path, 'commit', '-q', '-am', 'committed change')
+    const head = git(workspace.path, 'rev-parse', 'HEAD')
+
+    const python = pythonPath()
+    const script = [
+      'import pathlib',
+      `pathlib.Path(r"${join(workspace.path, 'src', 'app.txt').replace(/\\/g, '\\\\')}").write_text("raw python change\\n", encoding="utf-8")`,
+    ].join('\n')
+    const wrote = spawnSync(python, ['-c', script], { encoding: 'utf8' })
+    expect(wrote.status, `python failed: ${wrote.stderr}`).toBe(0)
+
+    // The committed revision is unchanged, so an assessment that read only commits
+    // would be judging a tree that is not on disk.
+    expect(git(workspace.path, 'rev-parse', 'HEAD')).toBe(head)
+    // But the WORKING TREE differs from that revision, and git reports it.
+    const dirty = gitTry(workspace.path, 'status', '--porcelain')
+    expect(dirty.stdout).toContain('src/app.txt')
+    expect(readText(join(workspace.path, 'src', 'app.txt'))).toBe('raw python change\n')
+
+    // The root's assessment of the COMMIT is not wrong — it is about the commit.
+    // What it cannot do is speak for the uncommitted edit, and that is the gap the
+    // verifier has to close by reading the world.
+    const ctx = await makeContext()
+    const assessment = await assessIntegration({
+      ctx,
+      root,
+      candidate: { cwd: workspace.path, baseRevision: base, headRevision: head },
+      expectedBase: base,
+      allowedPaths: ['src'],
+      patchDir: makeRoot('fs06b-patch'),
+    })
+    // The patch is the COMMITTED delta and says nothing about the raw edit.
+    expect(assessment.patchDigest).not.toBe('')
+    expect(gitTry(workspace.path, 'diff', '--name-only', base, head).stdout).toContain('src/app.txt')
+    // The uncommitted edit is NOT in the diff the root assessed — asserted, not
+    // assumed, so the residual gap is visible to a reader.
+    const committedDiff = git(workspace.path, 'diff', base, head)
+    expect(committedDiff).toContain('committed change')
+    expect(committedDiff).not.toContain('raw python change')
+    // HONEST STATEMENT OF THE GAP: `assessIntegration` does not itself check for a
+    // dirty working tree, so a raw-Python edit made AFTER the commit is not part
+    // of the patch it evaluates. The verifier closes this by recomputing the tree
+    // digest from disk (the FS-06 case above), not by trusting the commit.
+    expect(assessment.decision).toBe('accept_for_publication')
+  }, 180_000)
 })
 
 // ---------------------------------------------------------------------------
