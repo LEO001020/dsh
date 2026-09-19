@@ -11,11 +11,26 @@
   // This config keeps the identical strict flags and clears only the exclude,
   // so the build and the check cannot drift. `noEmit` is set here rather than
   // passed on the command line so the intent survives a copy-paste.
+  //
+  // The `paths` below are NOT a convenience. A few tests deliberately import a
+  // production module through the checkout's exported `./src/*` deep path, so
+  // they exercise the REAL parser instead of a re-implementation. TypeScript
+  // then resolves that file's own imports from the CHECKOUT's directory, and
+  // the checkout declares an incomplete link set (13 of ~100 @deepseek-ai
+  // names) because it relies on these same `paths` to resolve them. Without
+  // this map the check reports an upstream package as unresolvable
+  // (`dsh-util-values` via tool-fs-search/src/direct-call.ts), which is a
+  // property of the checkout's directory layout and not a defect in the test.
+  // The map is copied from `tsconfig.base.json` of the pinned commit rather
+  // than hand-written, and covers only names reachable from those deep imports.
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "noEmit": true,
     "declaration": false,
-    "outDir": "./.tscheck-out"
+    "outDir": "./.tscheck-out",
+    "paths": {
+      "@deepseek-ai/dsh-util-values": ["../../../../src/dsh-src/packages/util/values/src/index.ts"]
+    }
   },
   "include": ["src/**/*.ts"],
   "exclude": []
