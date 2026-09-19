@@ -1,0 +1,25 @@
+=== A. WSL kernel + bwrap availability ===
+6.18.33.2-microsoft-standard-WSL2
+bubblewrap 0.11.1
+144271
+
+=== B. bwrap --unshare-net blocks egress (measured) ===
+bash: connect: Network is unreachable
+bash: line 1: /dev/tcp/1.1.1.1/80: Network is unreachable
+NET_BLOCKED
+
+=== C. bwrap read isolation: an unbound path does not exist inside (measured) ===
+cat: /tmp/secret-test/creds.txt: No such file or directory
+READ_BLOCKED
+
+=== D. control: WITHOUT bwrap the same file IS readable ===
+CANARY-SECRET
+
+=== E. DSH first-party SSH provider packages present in the pinned checkout ===
+  ssh              name:@deepseek-ai/dsh-ssh
+  fs-ssh           name:@deepseek-ai/dsh-fs-ssh
+  sandbox-ssh      name:@deepseek-ai/dsh-sandbox-ssh
+  subprocess-ssh   name:@deepseek-ai/dsh-subprocess-ssh
+
+=== F. does any shipped bundle patch mount an ssh provider? ===
+  none
