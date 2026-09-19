@@ -17,7 +17,7 @@
     "status": "UNQUALIFIED_OFFLINE",
     "trust_model": "trusted-local",
     "trust_model_statement": "The OS user account is the execution authority boundary. No sandbox, no WSL, no Linux VM, no SSH execution world. Every process this deployment starts -- including the persistent IPython kernel -- runs as the invoking OS user with that user's full filesystem, network and process visibility. This deployment claims NO confinement of reads, writes, network or process visibility, and no case in qualification/specs/acceptance-spec.trusted-local-v1.json may be read as establishing one.",
-    "identity": "549732b5d8cad4e86d3df7c55dbf090598753a8fa015e8207ff6f851e376d813",
+    "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
     "identity_algorithm": "sha256(UTF8(json.dumps(inputs, sort_keys=True, separators=(',', ':'), ensure_ascii=True)))",
     "inputs": {
       "upstream_repository": "deepseek-ai/deepseek-harness",
@@ -32,9 +32,9 @@
       "native_binary_digests": "none-no-native-addon-built",
       "os_and_architecture": "Windows 10.0.26200 / AMD64",
       "isolation_image_or_policy_digest": "none-trusted-local-os-user-account-is-the-execution-authority-boundary",
-      "host_profile_digest": "59f23346955d24063a923b1a205bbcb40c541e054e6fd04dbdde4218eaa2ab7f",
-      "agent_preset_id": "standard",
-      "agent_preset_digest": "0934f22b2fdbc158fd2edad33ec5dd2671b5b1f727800dcaab74cee3bd7294af",
+      "host_profile_digest": "5b8b2a8e5d9ae13d35c1d86833f8b96eeb84078a13027a08efc1379a6fc8afb4",
+      "agent_preset_id": "daily-standard",
+      "agent_preset_digest": "16bc20e559d0c05b810876522fd468952b421a69ed2b5276a3ddd06c01053bce",
       "resolved_plugin_graph_digest": "23f763d1bf2af8ba3210473d6743bc39ac0185bdefd661861935414a01e5af6b",
       "model_and_provider_capabilities_digest": "no-live-provider-authorized",
       "request_accounting_policy_digest": "reserve-before-launch-unknown-holds",
@@ -66,6 +66,18 @@
         "reason_moved": null,
         "invalidates": null,
         "note": "CURRENT. 109-case trusted-local spec. Every case NOT_RUN. Promotion decision NOT_READY."
+      },
+      {
+        "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+        "recorded": "2026-09-19T23:23:51.263715+00:00",
+        "supersedes": "549732b5d8cad4e86d3df7c55dbf090598753a8fa015e8207ff6f851e376d813",
+        "why": "THREE inputs had gone stale, found by T17 and confirmed by the root agent against disk. (1) host_profile_digest pinned 59f23346... while the file on disk hashes to 5b8b2a8e...; the profile patch gained 258 lines implementing DIFFERENCE 3/4/5/6 of the trusted-local decision, and those lines sat UNCOMMITTED, so the pin was never re-derived. (2) agent_preset_digest pinned 0934f22b... while disk hashes to 16bc20e5...; the preset changed when tool-pwsh was disabled unconditionally (commit 35c829d). (3) agent_preset_id read \"standard\" while the profile roster defaults to \"daily-standard\". NOTE: T17 reported only (1); (2) and (3) were found by the root agent re-checking EVERY input rather than the reported one, which is the difference between fixing a symptom and fixing the class.",
+        "stale_values_replaced": {
+          "host_profile_digest": "59f23346955d24063a923b1a205bbcb40c541e054e6fd04dbdde4218eaa2ab7f",
+          "agent_preset_digest": "0934f22b2fdbc158fd2edad33ec5dd2671b5b1f727800dcaab74cee3bd7294af",
+          "agent_preset_id": "standard"
+        },
+        "consequence": "Every PASS recorded against 549732b5... is now history for a superseded identity. qualification/gates.json remains the OLD 104-case report bound to ece4037a... and is NOT regenerated, because build-gates.py would re-label its 85 old PASSes with the current identity, which is exactly the inheritance the trusted-local spec forbids (T17 verified this and reverted a regeneration attempt). The 109 cases of acceptance-spec.trusted-local-v1.json stay NOT_RUN. Promotion stays NOT_READY."
       }
     ]
   },

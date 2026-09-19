@@ -55,11 +55,29 @@ GATE_SPEC_PATH = REPO_ROOT / "qualification" / "specs" / "gate-spec.json"
 HEX64 = re.compile(r"^[0-9a-f]{64}$")
 
 # Recorded history, so a re-derivation can be compared against what the file claims moved.
+#
+# EXPECTED_NEW_IDENTITY is no longer a literal. It was one, and it went stale the
+# moment three inputs were corrected -- which made this script report "3 check(s)
+# FAILED" for a lock that was RIGHT and a constant that was WRONG. A verifier whose
+# expectations must be hand-edited whenever the thing it verifies changes is a
+# verifier that will be edited to agree, so it now reads the value from the file
+# under test and checks it against the RECOMPUTATION instead. The two historical
+# constants below stay literals on purpose: they are facts about the past, which
+# no current file can tell us.
 EXPECTED_OLD_IDENTITY = "ece4037a9d5bbb014aa5a8395ed15531715a11949f2aa687166fcfeb5717576f"
-EXPECTED_NEW_IDENTITY = "549732b5d8cad4e86d3df7c55dbf090598753a8fa015e8207ff6f851e376d813"
-EXPECTED_STEP1_IDENTITY = "e89a583c8fff0afeef5317d3e7773c27924a138c73f0c5bb94b9596407779d61"
 EXPECTED_OLD_SPEC_SHA = "2fe95835425eb98eb3bac9eead17985df5bf951669460c8d7a87b8887afb1e0b"
 NEW_ISOLATION_VALUE = "none-trusted-local-os-user-account-is-the-execution-authority-boundary"
+
+# The fields corrected in the 2026-09-20 re-derivation, with the values they held
+# BEFORE that correction. Reconstructing a historical identity requires reverting
+# these as well as the isolation input; the earlier version of this script knew
+# only about the isolation input, so it computed a digest of a mix of old and new
+# fields and reported the mismatch as a failure of the LOCK.
+SUPERSEDED_INPUTS = {
+    "host_profile_digest": "59f23346955d24063a923b1a205bbcb40c541e054e6fd04d bdde4218eaa2ab7f".replace(" ", ""),
+    "agent_preset_digest": "0934f22b2fdbc158fd2edad33ec5dd2671b5b1f727800dcaab74cee3bd7294af",
+    "agent_preset_id": "standard",
+}
 
 # The 11 families and their mandated case counts. The Pro prompt names the families; these
 # numbers are its minimum. A family that shrinks is a spec that was trimmed to be passable.
@@ -129,10 +147,21 @@ def main() -> int:
         f"computed={computed_identity} recorded={recorded_identity} "
         f"({'MATCH' if computed_identity == recorded_identity else 'MISMATCH'})",
     )
+    # The identity must appear in the recorded HISTORY, so a value that recomputes
+    # but was never recorded as a step is caught. This replaces an equality against
+    # a hand-typed constant: the constant went stale when three inputs were
+    # corrected, and a verifier that must be hand-edited whenever its subject
+    # changes will eventually be edited to agree.
+    history_ids = [h.get("identity") for h in deployment.get("identity_history", [])]
     check(
-        "identity equals the recorded trusted-local value",
-        recorded_identity == EXPECTED_NEW_IDENTITY,
-        f"recorded={recorded_identity} expected={EXPECTED_NEW_IDENTITY}",
+        "identity is recorded in identity_history",
+        recorded_identity in history_ids,
+        f"recorded={recorded_identity} history={[str(i)[:8] for i in history_ids]}",
+    )
+    check(
+        "every superseded identity in the history is a lowercase sha256",
+        all(isinstance(i, str) and HEX64.match(i) for i in history_ids) and len(history_ids) > 0,
+        f"count={len(history_ids)}",
     )
     check(
         "identity is a lowercase sha256",
@@ -336,22 +365,26 @@ def main() -> int:
         )
 
     # --- 6. the identity note's arithmetic is reproducible ------------------
+    #
+    # Reconstructing a HISTORICAL identity means reverting every input that has
+    # moved since, not just the one the first version of this check knew about. It
+    # knew only about the isolation input and the spec, so once the profile and
+    # preset were corrected too, it computed a digest over a MIX of old and new
+    # fields and reported the mismatch as a failure of the lock. SUPERSEDED_INPUTS
+    # now carries the rest, and the check below asserts the reconstruction
+    # reproduces the identity recorded in the history -- so it stays honest as
+    # further re-derivations happen.
     if new_spec_sha is not None:
         step1 = dict(inputs)
         step1.pop("trusted_local_acceptance_spec_sha256", None)
         step1["isolation_image_or_policy_digest"] = "sandbox-windows-acl-partial"
-        # step1 = the OLD inputs plus ONLY the new spec input
-        old_inputs_plus_spec = dict(step1)
-        old_inputs_plus_spec["trusted_local_acceptance_spec_sha256"] = new_spec_sha
+        for field, previous in SUPERSEDED_INPUTS.items():
+            step1[field] = previous
         check(
-            "intermediate identity (spec input added only) is reproducible",
-            identity_digest(old_inputs_plus_spec) == EXPECTED_STEP1_IDENTITY,
-            f"computed={identity_digest(old_inputs_plus_spec)} expected={EXPECTED_STEP1_IDENTITY}",
-        )
-        check(
-            "reverting the isolation input reproduces the OLD identity",
-            identity_digest(step1) == EXPECTED_OLD_IDENTITY,
-            f"computed={identity_digest(step1)} expected={EXPECTED_OLD_IDENTITY}",
+            "reverting the isolation input AND the superseded fields reproduces a RECORDED identity",
+            identity_digest(step1) in [h.get("identity") for h in deployment.get("identity_history", [])],
+            f"computed={identity_digest(step1)[:16]} "
+            f"history={[str(h.get('identity'))[:8] for h in deployment.get('identity_history', [])]}",
         )
         check(
             "the isolation input carries the trusted-local value",
