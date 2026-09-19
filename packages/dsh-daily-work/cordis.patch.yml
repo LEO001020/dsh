@@ -96,6 +96,33 @@
         maxResults: 60
 
 # ---------------------------------------------------------------------------
+# DIFFERENCE 3b (mandatory): mount the M7 history + provenance service.
+# ---------------------------------------------------------------------------
+#
+# WHY A PLUGIN ROW AND NOT JUST A MODULE. `src/history-plane.ts` and
+# `src/web-provenance.ts` are the M7 implementation, and a module with no
+# production importer is test-only: mounting it directly in a test proves it
+# works, NOT that the product uses it. This project has already retracted that
+# over-claim three times (a launch port with no production caller, a continuation
+# taker with none, and a package with no `dsh.bundle`), so the row below is what
+# makes `ctx.dailyHistory` reachable by a real profile rather than by a test.
+#
+# The service is reachable as `ctx.dailyHistory` and owns:
+#   - `history(caller)`      an authorized `HistoryPlane` over `ctx.sessionQuery`
+#   - `recordFetch(...)`     a provenance record for a real `ctx.web.fetch` result
+#   - `recordSearch(...)`    a search record whose coverage is a RANKING, not exhaustion
+#   - `untrusted(...)`       retrieved content carried as data, never as authority
+#
+# NO `inject` ON sessionQuery, deliberately. The shipped profile configures
+# `session-query-sqlite` with `openAt: never`, and a deployment may omit the
+# service entirely; `inject` would turn that into a boot failure. The dependency
+# is resolved per call, so a missing service produces a typed refusal naming the
+# DEPLOYMENT as the cause instead of an empty history that reads as "no events".
+- insert:
+    - id: daily-history
+      name: dsh-daily-work/history
+
+# ---------------------------------------------------------------------------
 # DIFFERENCE 4 (mandatory): mount the exact-owner guard for the `work` tool.
 # ---------------------------------------------------------------------------
 #
@@ -123,6 +150,55 @@
       name: dsh-daily-work/tool-protocol-guards
 
 # ---------------------------------------------------------------------------
+# DIFFERENCE 5 (mandatory): mount the writer-isolation and integration service.
+# ---------------------------------------------------------------------------
+#
+# WHY A PLUGIN ROW AND NOT JUST A MODULE. `src/worktree-isolation.ts` is the M8
+# implementation of ARCHITECTURE §15 ("root是主整合者；每个writer child拥有自己的隔离
+# worktree/快照。git worktree不是安全边界"), and until this row existed it had NO
+# production importer: mounting it directly in a test proved it works and proved
+# nothing about whether the product uses it. This project has retracted that
+# over-claim four times now:
+#
+#   1. `setLaunchPort` had no production caller, so the shipped profile launched
+#      nothing and every `submit` became `unknown` (2d4534f).
+#   2. `takeContinuation` had none, so a managed run never disarmed the Goal
+#      round-driver and TWO continuation owners could drive one root while
+#      `goal.test.ts` passed (982e82b).
+#   3. `dsh-ipython` declared no `dsh.bundle`, so the package could never reach
+#      the model even with green tests.
+#   4. This module.
+#
+# `docs/GAPS.md` G-FIX-04 states the lesson: an oracle weaker than its scenario
+# passes while the product is broken. The row below is what makes
+# `ctx.dailyWriters` reachable by a real profile rather than only by a test.
+#
+# The service is reachable as `ctx.dailyWriters` and owns:
+#   - `open(...)`        create ONE writer's isolated worktree/clone and return a
+#                        lease; refuses a second writer on the same workspace
+#   - `converge(...)`    converge + digest a workspace BEFORE the freeze, refusing
+#                        an in-flight writer (the step the runner cannot take)
+#   - `verifyShared(...)` re-read the shared git refs/config/hooks a writer is
+#                        able to mutate but git does not deny
+#   - `assess(...)`      judge one candidate: base revision, patch applies,
+#                        workspace change scope, real tests, receipt bindings
+#   - `publicationPrecondition(...)`  exact-base patch + expected-ref CAS
+#
+# NO MERGE PATH EXISTS. Every mutating git command it can reach is a
+# workspace-lifecycle operation scoped to a workspace it created. `git apply` is
+# used with `--check` only and never `--3way`, so a conflict is RETURNED to the
+# root as a refusal rather than auto-resolved — the plan is explicit that a
+# semantic auto-merge controller must not be written.
+#
+# NO `root` CONFIG IS SET HERE, deliberately. The integration root is a
+# per-deployment path and the service REFUSES to guess one: a guessed root is a
+# service that could operate on the wrong repository. `available()` reports the
+# gap, and a caller passes a root explicitly.
+- insert:
+    - id: daily-writers
+      name: dsh-daily-work/writers
+
+# ---------------------------------------------------------------------------
 # NOT changed here, on purpose.
 # ---------------------------------------------------------------------------
 #
@@ -138,3 +214,89 @@
 #
 # - The storage backend stays `json`. Switching to SQLite because the substrate
 #   "should" be a database is exactly what the plan forbids.
+
+# ---------------------------------------------------------------------------
+# DIFFERENCE 5 (mandatory): mount the observation/artifact data plane.
+# ---------------------------------------------------------------------------
+#
+# WHY THIS ROW EXISTS AT ALL. Without it, `artifacts.ts` and `observations.ts`
+# are TEST-ONLY: they have no production importer, so the only thing proving
+# they work is a test that mounts them directly. That proves the MODULE works and
+# says nothing about whether the PRODUCT uses it -- the defect class this project
+# has already recorded three times (setLaunchPort with no production caller;
+# takeContinuation with no production caller; a dsh-ipython bundle with no
+# `dsh.bundle`). `docs/GAPS.md` G-FIX-04 states the lesson: a gate whose oracle
+# is weaker than its scenario passes while the product is broken.
+#
+# The service registers as `ctx.dailyData`. Its intended model-facing caller is
+# the M3 `python_exec`/`ipython` worker's `data.capture_file` / `data.pages`
+# tools; the service is the stable seam that worker binds to, and it is complete
+# and probeable without it.
+#
+# `artifactRoot` is deliberately NOT set here. The service derives its root from
+# the storage domain's own configured root, so artifacts live beside the records
+# that reference them. Setting it in the patch would create a second, separately
+# configured tree to keep in sync.
+- insert:
+    - id: daily-data-plane
+      name: dsh-daily-work/data-host
+      config:
+        # The owner scope every capture and cursor is bound to. A permission
+        # domain change bumps this scope's revision and invalidates every
+        # descriptor minted before it.
+        ownerScope: project:daily
+        # The execution world recorded on descriptors. `local` is what the
+        # composed profile's fs backend actually is; naming it here keeps the
+        # recorded fact honest rather than implied.
+        executionWorld: local
+        # 64 KiB pages: a 32 MiB artifact is exactly 512 pages, which is the
+        # DAT-02 stimulus, and one page is never a context-budget problem alone.
+        pageBytes: 65536
+        # Per-artifact ceiling. Exceeding it is a recorded retention gap and a
+        # `partial` observation -- never a silent fallback to unbounded inline.
+        quotaBytes: 268435456
+
+# ---------------------------------------------------------------------------
+# DIFFERENCE 6 (mandatory): mount the public programmatic-call scope service.
+# ---------------------------------------------------------------------------
+#
+# WHY THIS ROW EXISTS. `src/programmatic-scope.ts` is the M2 extraction of the
+# nested-dispatch machinery that stock `run_code` already implements inside
+# `packages/core/tools/src/ptc.ts`. It is built on the PUBLIC `ToolRuntime`
+# surface -- `registry.execute` is the registry's own composition of the SAME
+# four staged functions the private `TOOL_RUNTIME_SCHEDULER` symbol exposes, so
+# no upstream patch is required and none was made. Until this row existed, the
+# scope had no production importer: mounting it directly in a test would prove
+# it works and prove NOTHING about whether the product uses it. That is the
+# G-FIX-04 defect class this project has already shipped three times
+# (`setLaunchPort` and `takeContinuation` both had zero production callers, and
+# a plugin with no `dsh.bundle` never reached the model).
+#
+# WHO CONSUMES IT. The M3 `python_exec` cell. When the IPython kernel's
+# native-tool callback arrives, the cell handler asks this service for a scope
+# bound to the ENCLOSING execution and routes every `tools.<name>(...)` call
+# through it; `observations.call` in the architecture's Python SDK is the same
+# call with `delivery: 'reference'`. Actor, Session, parent execution and policy
+# are construction inputs taken from the host call site, never from the program.
+#
+# WHY IT ADDS NO MODEL-FACING TOOL. The model's execution surface stays exactly
+# what the profile already composes. A second tool that could call tools would
+# be the "second tool-bridge engine" MASTER_EXECUTION_PLAN M2 forbids.
+#
+# The bounds are the scope's own defaults, restated so the composed profile
+# states them: 10 overlapping top-level calls (the registry's own
+# `maxParallelSubCalls` default), 64 KiB of canonical JSON per `value` delivery,
+# 4096 characters per control notice, 64 direct notices before coalescing.
+- insert:
+    - id: daily-programmatic-scope
+      name: dsh-daily-work/programmatic-scope
+      config:
+        maxParallel: 10
+        valueBudgetBytes: 65536
+        noticeChars: 4096
+        noticeLimit: 64
+        # `reference` keeps bulk payloads (for example a large image) OUT of
+        # model context and retains them as auditable references. `defer-images`
+        # reproduces stock `run_code` behaviour; it exists so the two transports
+        # can be compared on one registry, not as the daily default.
+        contentProjection: reference

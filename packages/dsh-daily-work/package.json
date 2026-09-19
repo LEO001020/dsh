@@ -7,11 +7,27 @@
   "license": "MIT",
   "main": "lib/host-plugin.js",
   "exports": {
+    "./data-host": {
+      "types": "./lib/data-plugin.d.ts",
+      "default": "./lib/data-plugin.js"
+    },
+    "./data-service": {
+      "types": "./lib/data-service.d.ts",
+      "default": "./lib/data-service.js"
+    },
+    "./history": {
+      "types": "./lib/history-plugin.d.ts",
+      "default": "./lib/history-plugin.js"
+    },
     "./host": {
       "types": "./lib/host-plugin.d.ts",
       "default": "./lib/host-plugin.js"
     },
     "./package.json": "./package.json",
+    "./programmatic-scope": {
+      "types": "./lib/programmatic-scope-plugin.d.ts",
+      "default": "./lib/programmatic-scope-plugin.js"
+    },
     "./service": {
       "types": "./lib/host.d.ts",
       "default": "./lib/host.js"
@@ -27,6 +43,10 @@
     "./web-search": {
       "types": "./lib/web-search-plugin.d.ts",
       "default": "./lib/web-search-plugin.js"
+    },
+    "./writers": {
+      "types": "./lib/writers-plugin.d.ts",
+      "default": "./lib/writers-plugin.js"
     }
   },
   "files": [
@@ -40,6 +60,7 @@
     "@deepseek-ai/dsh-credentials": "*",
     "@deepseek-ai/dsh-storage-domain": "*",
     "@deepseek-ai/dsh-subagent": "*",
+    "@deepseek-ai/dsh-tool-fs-search": "*",
     "@deepseek-ai/dsh-tools": "*",
     "@deepseek-ai/dsh-web": "*"
   },
@@ -49,6 +70,7 @@
     "@deepseek-ai/dsh-credentials": "*",
     "@deepseek-ai/dsh-storage-domain": "*",
     "@deepseek-ai/dsh-subagent": "*",
+    "@deepseek-ai/dsh-tool-fs-search": "*",
     "@deepseek-ai/dsh-tools": "*",
     "@deepseek-ai/dsh-web": "*",
     "typescript": "^6.0.3"

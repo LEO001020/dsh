@@ -965,6 +965,17 @@ class _Channel:
             self._waiters[request_id] = waiter
         try:
             return await _asyncio.wait_for(waiter.future, timeout)
+        except _asyncio.TimeoutError:
+            # wait_for raises asyncio.TimeoutError, which is NOT a BridgeError
+            # and carries no code. Letting it through would make the async path
+            # report a different exception type from the sync one for the same
+            # condition, and would break the contract this module's docstring
+            # states: every refusal arrives as BridgeError with a stable code,
+            # so a caller can branch without parsing prose.
+            # MEASURED before this was added: a 4 s tool called with
+            # timeout=1.0 raised TimeoutError (MRO TimeoutError,OSError,
+            # Exception) with isinstance(exc, BridgeError) False and no .code.
+            raise BridgeError("TIMEOUT", "%s did not answer within %ss" % (tool, timeout))
         finally:
             with self._lock:
                 self._waiters.pop(request_id, None)
