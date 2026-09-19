@@ -1,6 +1,6 @@
 # tsc -p tsconfig.check.json (whole tree, tests included)
-# exit 2, 1 error(s) across 1 file(s)
-# run: 2026-09-19T19:25:48.174Z
+# exit 0, 0 error(s) across 0 file(s)
+# run: 2026-09-19T23:31:43.359Z
 #
 # DEP-03's oracle is "all production packages AND tests compile". A non-zero
 # count below falsifies it. The list is empty when the gate holds.
@@ -11,4 +11,4 @@
 # files, and pinned-checkout tool-fs-search/src/direct-call.ts). None was in a
 # file this work owns. That work has since settled.
 
-  1  src/research-chain.test.ts
+(none)

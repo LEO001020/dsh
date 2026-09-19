@@ -5,9 +5,9 @@
   "series": [
     {
       "cycle": 0,
-      "resources": 6,
+      "resources": 7,
       "listeners": 14,
-      "heapMb": 70.3,
+      "heapMb": 70.5,
       "admitted": 4,
       "spent": 4
     },
@@ -15,7 +15,7 @@
       "cycle": 1,
       "resources": 6,
       "listeners": 14,
-      "heapMb": 58.1,
+      "heapMb": 57,
       "admitted": 4,
       "spent": 8
     },
@@ -23,7 +23,7 @@
       "cycle": 2,
       "resources": 6,
       "listeners": 14,
-      "heapMb": 68.8,
+      "heapMb": 69,
       "admitted": 4,
       "spent": 12
     },
@@ -31,15 +31,15 @@
       "cycle": 3,
       "resources": 6,
       "listeners": 14,
-      "heapMb": 56,
+      "heapMb": 55.4,
       "admitted": 4,
       "spent": 16
     },
     {
       "cycle": 4,
-      "resources": 6,
+      "resources": 5,
       "listeners": 14,
-      "heapMb": 67,
+      "heapMb": 67.3,
       "admitted": 4,
       "spent": 20
     },
@@ -47,18 +47,18 @@
       "cycle": 5,
       "resources": 6,
       "listeners": 14,
-      "heapMb": 54.2,
+      "heapMb": 53.6,
       "admitted": 4,
       "spent": 24
     }
   ],
   "resourceTrend": {
-    "first": 6,
+    "first": 7,
     "last": 6,
-    "min": 6,
-    "max": 6,
-    "largestStep": 0,
-    "drift": 0
+    "min": 5,
+    "max": 7,
+    "largestStep": 1,
+    "drift": -1
   },
   "listenerTrend": {
     "first": 14,
