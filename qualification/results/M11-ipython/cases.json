@@ -1,0 +1,56 @@
+{
+  "interrupt_await_suspended": {
+    "settled": false,
+    "seconds_after_interrupt": 20.15,
+    "reply_status": null,
+    "ename": null,
+    "stdout": "",
+    "stderr": "",
+    "foreign": [
+      {
+        "chan": "shell",
+        "type": "kernel_info_reply",
+        "parent": "ea326514-0d6d670788534015ef8e54aa_33732_1"
+      }
+    ],
+    "second_interrupt_settled": false,
+    "second_interrupt_status": null,
+    "second_interrupt_ename": null,
+    "second_interrupt_seconds": 10.07,
+    "second_interrupt_stderr": "",
+    "process_alive_after": true
+  },
+  "after_await_interrupt_plain_cell": {
+    "stdout": "",
+    "status": "aborted",
+    "ename": null
+  },
+  "exception_no_rollback": {
+    "first": {
+      "status": "error",
+      "ename": "ValueError",
+      "evalue": "boom",
+      "traceback_lines": 4
+    },
+    "second_stdout": "kept: 11\n",
+    "second_status": "ok"
+  },
+  "stdout_flood_200mb": {
+    "seconds": 2.94,
+    "iopub_stream_bytes_received": 209715212,
+    "stream_message_count": 2,
+    "reply_status": "ok",
+    "saw_flood_done": true,
+    "kernel_alive": true
+  },
+  "kernel_killed": {
+    "pid": 31172,
+    "alive_before": true,
+    "alive_after_taskkill": false,
+    "reply_after_kill": false,
+    "iopub_after_kill": 0
+  },
+  "stopped_channels_execute": {
+    "stopped": true
+  }
+}

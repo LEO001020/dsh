@@ -1,0 +1,83 @@
+{
+  "connection_file": {
+    "transport": "tcp",
+    "has_curve_publickey": true,
+    "has_curve_secretkey": true,
+    "has_key": true,
+    "ip": "127.0.0.1",
+    "keys": [
+      "control_port",
+      "curve_publickey",
+      "curve_secretkey",
+      "hb_port",
+      "iopub_port",
+      "ip",
+      "kernel_name",
+      "key",
+      "shell_port",
+      "signature_scheme",
+      "stdin_port",
+      "transport"
+    ]
+  },
+  "kernel_pid": 37536,
+  "kernelspec_interrupt_mode": "signal",
+  "kernelspec_supported_encryption": "curve",
+  "real_ipython_and_tla": {
+    "stdout": "ZMQInteractiveShell\nCPU times: total: 0 ns\nWall time: 6.2 \u03bcs\nawait: 42\nshell: True\n",
+    "reply_status": "ok",
+    "error": null
+  },
+  "top_level_await_bare": {
+    "stdout": "tla2 7\n",
+    "reply_status": "ok"
+  },
+  "stdin_disabled": {
+    "reply_status": "error",
+    "ename": "StdinNotImplementedError",
+    "evalue": "raw_input was called, but this frontend does not support input requests."
+  },
+  "late_thread_output": {
+    "cell_stdout": "cell-done\n",
+    "cell_msg_id": "12a23770-10ee66cf23d370c976f8726d_40092_5",
+    "after_settle": [
+      {
+        "msg_type": "stream",
+        "parent_msg_id": "12a23770-10ee66cf23d370c976f8726d_40092_5",
+        "parent_msg_type": "execute_request",
+        "text": "LATE-FROM-THREAD\n",
+        "state": null
+      }
+    ]
+  },
+  "foreign_shell_frame_while_busy": {
+    "long_msg_id": "12a23770-10ee66cf23d370c976f8726d_40092_6",
+    "kernel_info_msg_id": "12a23770-10ee66cf23d370c976f8726d_40092_7",
+    "kernel_info_reply_seen": "kernel_info_reply",
+    "long_execute_reply_seen": "execute_reply",
+    "unexpected": [],
+    "info_reply_arrived_before_long_reply": null
+  },
+  "interrupt_cpu_loop": {
+    "elapsed_s": 1.8,
+    "reply_status": "error",
+    "ename": "KeyboardInterrupt"
+  },
+  "reuse_after_interrupt": {
+    "stdout": "reuse-ok 42\n",
+    "reply_status": "ok"
+  },
+  "interrupt_await_suspended": {
+    "elapsed_s": 21.61,
+    "reply_status": null,
+    "ename": null,
+    "stderr": ""
+  },
+  "exception_no_rollback": {
+    "first_status": "aborted",
+    "first_ename": null,
+    "second_stdout": ""
+  },
+  "kernel_stderr_has_plaintext_warning": false,
+  "kernel_stderr_tail": ""
+}

@@ -1,0 +1,20 @@
+Traceback (most recent call last):
+  File "D:\DSH\work\dsh-native-daily\qualification\results\M11-ipython\probe-interrupt.py", line 85, in <module>
+    ctrl.send(k.km.session.msg("interrupt_request", content={}))
+    ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\hzq00\AppData\Local\Programs\Python\Python314\Lib\site-packages\zmq\sugar\socket.py", line 713, in send
+    return super().send(data, flags=flags, copy=copy, track=track)
+           ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "zmq/backend/cython/_zmq.py", line 1152, in zmq.backend.cython._zmq.Socket.send
+    def send(self, data, flags=0, copy: bint = True, track: bint = False):
+    ^^^^^^^
+  File "zmq/backend/cython/_zmq.py", line 1200, in zmq.backend.cython._zmq.Socket.send
+    return _send_copy(self.handle, data, flags)
+    
+  File "zmq/backend/cython/_zmq.py", line 1455, in zmq.backend.cython._zmq._send_copy
+    c_bytes_len = _asbuffer(buf, address(c_bytes))
+    ^^^^^^^
+  File "zmq/backend/cython/_zmq.py", line 267, in zmq.backend.cython._zmq._asbuffer
+    rc: C.int = PyObject_GetBuffer(obj, address(pybuf), flags)
+    ^^^^^^^
+TypeError: a bytes-like object is required, not 'dict'
