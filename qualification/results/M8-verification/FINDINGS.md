@@ -8,8 +8,8 @@ this machine.
 >
 > A second agent re-ran and re-read every gate below. **The recorded summary line
 > "44 passed / 44, `test_exit=0`" was STALE and has been corrected.** The real
-> first re-run was **45 tests: 1 failed, 44 passed, `test_exit=1`.** Two facts
-> explain it, and only one of them was a defect in the product:
+> first re-run was **45 tests: 1 failed, 44 passed, `test_exit=1`.** Three things
+> came out of this pass, and only two of them were defects at all:
 >
 > 1. **The evidence was recorded against a file that then changed.**
 >    `verification-gates.test.ts` was `6db105e8…` when `tests.txt` was written and
@@ -23,14 +23,20 @@ this machine.
 >    a `[dailywork]` section header and `detected = yes`; the flattened key never
 >    appears. The assertion failed **while the mutation it was checking had in fact
 >    landed**, and it masked the digest check below it, which never ran.
+> 3. **A second test was a LOAD-DEPENDENT ORACLE and failed on a later run.**
+>    VER-06's in-place arm anchored its mutation window to a timer started *before*
+>    the child process existed, so under load the tamper was restored before the
+>    child looked and the arm exited **0 instead of 9** — silently proving nothing.
+>    Fixed structurally (readiness marker + polling) and **proven under the same
+>    load**: 45/45 at 93.2 s with six CPU-saturating processes.
 >
-> The fix **strengthens** that assertion rather than weakening it (details in
-> "What I refuted or strengthened" below). After the fix: **45 passed / 45,
-> `test_exit=0`**, `tsc -p tsconfig.json --noEmit` exit 0, `tsc -p
-> tsconfig.check.json` exit 0. The superseded recording is preserved verbatim as
-> `tests.stale-preverify.txt`, and the superseded digest list as
-> `source-digests.stale-preverify.txt`, so the correction is auditable rather
-> than silent.
+> Both fixes **strengthen** the assertions rather than weakening them (details in
+> "What I refuted or strengthened" below). Final state: **45 passed / 45,
+> `test_exit=0`** (also under deliberate load), `tsc -p tsconfig.json --noEmit`
+> exit 0, `tsc -p tsconfig.check.json` exit 0. The superseded recording is
+> preserved verbatim as `tests.stale-preverify.txt`, and the superseded digest
+> list as `source-digests.stale-preverify.txt`, so the correction is auditable
+> rather than silent.
 
 | Gate | Verdict | One-line basis |
 |---|---|---|
@@ -39,15 +45,15 @@ this machine.
 | VER-03 candidate rewrites the oracle | **PASS** — and it exposed a real gap, closed here | The runner does NOT detect an undeclared oracle. `oracleDigest`+`bindReceipt` do. |
 | VER-04 host execution bypass | **FAIL** — honest | Credentials are scrubbed and there is no control handle; reads and egress are NOT denied. |
 | VER-05 stale receipt | **PASS** | Workspace, oracle and environment bindings each refuse independently. |
-| VER-06 A→B→A | **PASS**, scope stated | Two-arm proof extended to the oracle and config; endpoint hashing provably blind. |
+| VER-06 A→B→A | **PASS**, scope stated | Two-arm proof extended to the oracle and config; endpoint hashing provably blind. **Was a load-dependent oracle; fixed and re-proven under load.** |
 | VER-07 in-flight writer | **PASS** | Converge-before-freeze refuses a live lease and a still-moving tree; an unknown never carries a digest. |
 | VER-08 recover after failure | **PASS** | Pause is a record change; the permanent family drain is proven to be the different, later operation. |
 | W02 worktree is not a boundary | **PASS** — detection, not prevention | A writer really can move shared refs/config/hooks; the digest catches all three. |
 | W03 integrate after both change | **PASS** | Conflicts are REFUSED and returned to the root; no merge verb exists in the code. |
 
-**Evidence:** `tests.txt` (45 passed / 45, `test_exit=0`, re-run by the verifier),
-`tsc.txt` (`tsc_exit=0`, whole package, test files included),
-`source-digests.txt` (re-derived), `cli-transcript.txt`,
+**Evidence:** `tests.txt` (45 passed / 45, `test_exit=0`, re-run by the verifier,
+and separately under deliberate CPU load), `tsc.txt` (`tsc_exit=0`, whole package,
+test files included), `source-digests.txt` (re-derived), `cli-transcript.txt`,
 `w02-git-measurements.txt`, `boot-probe.txt` + `writers-mounted.json`.
 
 ---
