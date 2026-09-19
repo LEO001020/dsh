@@ -49,6 +49,12 @@ REPO_ROOT = Path(__file__).resolve().parents[3]
 
 LOCK_PATH = REPO_ROOT / "compatibility.lock.json"
 NEW_SPEC_PATH = REPO_ROOT / "qualification" / "specs" / "acceptance-spec.trusted-local-v1.json"
+# The spec AS AUTHORED, frozen. The live spec is ALSO the evidence ledger, so the
+# first family to file a verdict changes its digest -- which made four of the checks
+# below fail against a spec that was behaving exactly as designed. The pinned input
+# is a snapshot of the AUTHORED artifact, so it is checked against this file, and
+# the LIVE ledger is checked by verify-spec.py instead.
+FROZEN_SPEC_PATH = REPO_ROOT / "qualification" / "specs" / "frozen" / "acceptance-spec.trusted-local-v1.as-authored.json"
 OLD_SPEC_PATH = REPO_ROOT / "qualification" / "specs" / "acceptance-spec.json"
 GATE_SPEC_PATH = REPO_ROOT / "qualification" / "specs" / "gate-spec.json"
 
@@ -170,14 +176,35 @@ def main() -> int:
     )
 
     # --- 2. the new spec pin is not stale -----------------------------------
-    if NEW_SPEC_PATH.is_file():
-        new_spec_sha = sha256_file(NEW_SPEC_PATH)
+    #
+    # Checked against the FROZEN as-authored snapshot, not the live ledger. The
+    # spec serves two roles at once: it is a pinned identity input AND the place
+    # verdicts are filed. Filing a verdict changes the live file's digest, so
+    # comparing the pin to the live file reported a failure for the spec doing
+    # its job. The pin names the AUTHORED artifact; the live ledger's own
+    # consistency is verify-spec.py's business.
+    if FROZEN_SPEC_PATH.is_file():
+        new_spec_sha = sha256_file(FROZEN_SPEC_PATH)
         pinned_new = inputs.get("trusted_local_acceptance_spec_sha256")
         check(
-            "new spec digest on disk matches the pinned input",
+            "the pinned spec digest matches the FROZEN as-authored snapshot",
             pinned_new == new_spec_sha,
-            f"pinned={pinned_new} on_disk={new_spec_sha}",
+            f"pinned={pinned_new} frozen={new_spec_sha}",
         )
+        # And the live ledger must still declare the same case count and the same
+        # ids, so a verdict can be filed without the spec being edited into a
+        # different shape. That is the property the pin is really protecting.
+        if NEW_SPEC_PATH.is_file():
+            frozen = json.loads(FROZEN_SPEC_PATH.read_text(encoding="utf-8"))
+            live = json.loads(NEW_SPEC_PATH.read_text(encoding="utf-8"))
+            frozen_ids = [c.get("id") for c in frozen.get("cases", [])]
+            live_ids = [c.get("id") for c in live.get("cases", [])]
+            check(
+                "the live ledger has the same case ids as the frozen snapshot",
+                frozen_ids == live_ids,
+                f"frozen={len(frozen_ids)} live={len(live_ids)} "
+                f"({'identical' if frozen_ids == live_ids else 'DIFFERENT'})",
+            )
     else:
         new_spec_sha = None
         check("new spec file exists", False, f"missing: {NEW_SPEC_PATH}")
@@ -226,19 +253,41 @@ def main() -> int:
             f"actual={len(cases)} declared={spec.get('total_cases')} expected={EXPECTED_TOTAL}",
         )
 
-        non_not_run = [c.get("id") for c in cases if c.get("status") != "NOT_RUN"]
-        check(
-            "no case is pre-marked PASS (every status is NOT_RUN)",
-            not non_not_run,
-            "all NOT_RUN" if not non_not_run else f"offenders={non_not_run}",
-        )
-
-        non_empty_evidence = [c.get("id") for c in cases if c.get("evidence") != []]
-        check(
-            "no case ships with evidence (every evidence list is empty)",
-            not non_empty_evidence,
-            "all empty" if not non_empty_evidence else f"offenders={non_empty_evidence}",
-        )
+        # The anti-rigging pair, checked against the FROZEN snapshot rather than
+        # the live ledger. As stated ("every status is NOT_RUN", "every evidence
+        # list is empty") these are AUTHORING-TIME properties: they assert the
+        # spec shipped unrigged. Applied to the live file they forbid filing a
+        # verdict at all, which is the opposite of the spec's purpose -- the
+        # first family to file anything made both fail. Against the frozen
+        # snapshot they mean what they were written to mean, and they stay
+        # falsifiable: a spec that shipped with a pre-marked case still fails.
+        if FROZEN_SPEC_PATH.is_file():
+            frozen = json.loads(FROZEN_SPEC_PATH.read_text(encoding="utf-8"))
+            frozen_cases = frozen.get("cases", [])
+            frozen_non_not_run = [c.get("id") for c in frozen_cases if c.get("status") != "NOT_RUN"]
+            check(
+                "the spec SHIPPED with no case pre-marked PASS",
+                not frozen_non_not_run,
+                "all NOT_RUN at authoring time" if not frozen_non_not_run
+                else f"pre-marked at authoring time: {frozen_non_not_run}",
+            )
+            frozen_non_empty = [c.get("id") for c in frozen_cases if c.get("evidence") != []]
+            check(
+                "the spec SHIPPED with no evidence attached",
+                not frozen_non_empty,
+                "all empty at authoring time" if not frozen_non_empty
+                else f"shipped with evidence: {frozen_non_empty}",
+            )
+            # The live ledger may accumulate verdicts, but every case must still
+            # carry a status from the vocabulary, so a filing cannot invent one.
+            bad_status = [c.get("id") for c in cases
+                          if c.get("status") not in ("NOT_RUN", "RUNNING", "PASS", "FAIL",
+                                                     "BLOCKED_EXTERNAL", "NOT_APPLICABLE")]
+            check(
+                "every LIVE case status is in the declared vocabulary",
+                not bad_status,
+                "all valid" if not bad_status else f"invalid: {bad_status}",
+            )
 
         non_mandatory = [c.get("id") for c in cases if c.get("mandatory") is not True]
         check(
