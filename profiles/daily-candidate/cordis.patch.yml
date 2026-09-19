@@ -39,33 +39,112 @@
     maxDepth: 1
 
 # ---------------------------------------------------------------------------
+# DIFFERENCE 1b (mandatory): ship the agent preset that carries the tool rows.
+# ---------------------------------------------------------------------------
+#
+# WHY THE PRESET IS SHIPPED FROM THE REPOSITORY RATHER THAN AUTHORED BY HAND.
+# The tool half of both extensions lives in an AGENT PRESET, not in this patch:
+# a tool row is agent-scoped (`ctx.tools` layers are keyed by the Agent object),
+# so a host-level row publishes into the root realm where no agent's scope sees
+# it -- the model gets the service and no way to call it.
+#
+# The obvious home for a preset is `$DSH_HOME/.agent-presets`, and that is where
+# the earlier work put it. That location is a RUNTIME directory: no repository
+# file reproduces it, so a fresh install silently gets a kernel service with no
+# `ipython` tool and a work service with no `work` tool. The `dsh-ipython`
+# package's own `ipython-preset-row.yml` says as much -- it is a FRAGMENT to be
+# appended by hand -- and G-FIX-05 records the same failure already happening
+# once with the `work` tool, which was never wired into any preset while the
+# extension loaded fine.
+#
+# The roster accepts deployment-added `roots`, so the preset travels with the
+# profile instead. This row ADDS a root; it does not replace the shipped one or
+# the user's own (`includeShippedRoot` and `includeUserRoot` are restated at
+# their defaults because a patch replaces the whole `config` object).
+#
+# The root is an ABSOLUTE path, and that is not laziness -- a relative one is
+# broken, and this was measured rather than assumed. `scanRoot` does
+# `resolve(expandHomePath(root.path))` (packages/preset/agent-presets/src/
+# discovery.ts:285), and Node's `resolve` is relative to the PROCESS CWD, not to
+# the profile directory. Booting this profile from its own directory worked;
+# booting the SAME installed profile from a different cwd produced
+#
+#   RemoteError: agent-presets: preset "daily-standard" not found
+#     (available: standard, ptc, minimal, cordis)
+#
+# with `toolCountAgentKey: 0` and no `ipython` or `work` tool. Both runs are
+# recorded in qualification/results/M12-deliverable-surface/. So `./presets`
+# resolves only when the operator happens to be standing in the profile
+# directory, which is exactly the "looks healthy, model has neither tool"
+# failure this row exists to prevent.
+#
+# A `!!js` expression is the dialect's own escape for a computed value, and it is
+# evaluated at entry activation. The expression below derives the path from
+# `ctx.baseUrl`, which the launcher anchors at THE PROFILE'S OWN DIRECTORY
+# (`apps/cli/src/profile-boot.ts:160-164`: "the Loader needs a real include root
+# to anchor `baseUrl` at the profile directory"). That is the one anchor that
+# survives both problems above: it is absolute, and it follows the profile to
+# whatever directory the operator installed it under.
+#
+# TWO EARLIER ATTEMPTS FAILED, and both are recorded because each looked
+# reasonable:
+#   - `./presets` -- cwd-relative, so it broke from any other directory (above).
+#   - `process.env.DSH_HOME + '/profiles/daily-candidate/presets'` -- absolute
+#     and cwd-independent, but it HARDCODES the install name. The install
+#     directory is chosen by the operator (`dsh plugin --profile <name> add`),
+#     so this silently broke for anyone who named it anything else. Verified:
+#     installed as `daily` it resolved nothing.
+# `ctx.baseUrl` has neither defect.
+#
+# MEASURED, both directions, in qualification/results/M12-deliverable-surface/:
+# booting from an unrelated cwd with this row yields
+# `presetsListed: standard, ptc, minimal, cordis, daily-standard`,
+# `toolCountAgentKey: 28`, `ipythonToolPresent: true`, `workToolPresent: true`.
+# The failure direction is recorded too: the same installed profile with a
+# cwd-relative root yields `preset "daily-standard" not found` and zero tools.
+#
+# `default: daily-standard` is deliberate. The stock default is `standard`, which
+# has NO tool rows for these extensions; leaving it would mount a preset that
+# cannot reach either tool, and the deployment would look healthy while the
+# model had neither.
+- id: agent-presets
+  config:
+    default: daily-standard
+    roots:
+      - path: !!js new URL('presets/', ctx.baseUrl).pathname
+        trust: system
+    includeShippedRoot: true
+    includeUserRoot: true
+
+# ---------------------------------------------------------------------------
 # DIFFERENCE 2 (mandatory): mount the work extension's host service.
 # ---------------------------------------------------------------------------
 #
 # The host service owns the run record, the credit reservation and the admission
-# decisions. It is mounted ONCE here, in the host profile, because the record is
-# a host-scoped resource: a second handle would duplicate the single-writer
-# assumption the storage domain explicitly does not enforce.
+# decisions. It is mounted ONCE, and the record is a host-scoped resource: a
+# second handle would duplicate the single-writer assumption the storage domain
+# explicitly does not enforce.
 #
-# The `name` points at the package's /host export. The package is resolved from
-# the profile's own node_modules, so it must be installed there (see
-# docs/OPERATIONS.md); this template does not assume a global install.
+# THIS ROW IS NOW PROVIDED BY THE BUNDLE, and this comment is what remains of
+# the profile-side copy that used to be here. The reason for the move is a real
+# defect the first boot exposed: the profile patch AND `dsh-daily-work`'s own
+# bundle patch both inserted `daily-work-host`, so installing the package as a
+# bundle would have registered the service twice.
 #
-# The config values are USER-AUTHORIZED defaults. They are not writable by the
-# model: the model has a `work` tool, but that tool cannot reach these fields.
-- insert:
-    - id: daily-work-host
-      name: dsh-daily-work/host
-      config:
-        # Default target N for a new run. Root is not part of it.
-        targetChildren: 10
-        # Direct children only.
-        maxDepth: 1
-        # Hard budget ceiling. Top-up stops at this line and reports `blocked`;
-        # it never silently degrades the target.
-        budgetCeiling: 200
-        currency: USD
-        priceVersion: unversioned-2026-09-19
+# The bundle is the correct owner. It is the layer that travels WITH the code,
+# so a deployment cannot install the package and forget the row -- which is
+# exactly the failure G-FIX-04 recorded, where a package with no
+# `dsh.bundle.patch` installed as a plain dependency and activated no layer at
+# all. Keeping the row in the profile instead would reintroduce that coupling
+# between two files that can drift apart.
+#
+# The row's config values live in `packages/dsh-daily-work/cordis.patch.yml`.
+# They are USER-AUTHORIZED defaults, not writable by the model: the model has a
+# `work` tool, but that tool cannot reach these fields.
+#
+# There is no longer an `insert` entry in this file. That is deliberate: an
+# empty patch list is valid, and a duplicate row would be a registration
+# conflict rather than a harmless second mount.
 
 # ---------------------------------------------------------------------------
 # NOT changed here, on purpose.

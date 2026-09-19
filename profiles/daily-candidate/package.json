@@ -1,12 +1,17 @@
 {
   "name": "dsh-profile-daily-candidate",
   "private": true,
-  "dependencies": {},
+  "dependencies": {
+    "dsh-daily-work": "link:D:/DSH/work/dsh-native-daily/packages/dsh-daily-work",
+    "dsh-ipython": "link:D:/DSH/work/dsh-native-daily/packages/dsh-ipython"
+  },
   "dsh": {
     "profile": {
       "bundles": [
         "@deepseek-ai/dsh-base",
-        "@deepseek-ai/dsh-web-app"
+        "@deepseek-ai/dsh-web-app",
+        "dsh-daily-work",
+        "dsh-ipython"
       ]
     }
   }

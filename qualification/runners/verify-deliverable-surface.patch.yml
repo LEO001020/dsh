@@ -1,0 +1,12 @@
+# Verification overlay: probe the DELIVERABLE profile's own surface.
+#
+# ONE row, and it is the PROBE ONLY. There is deliberately NO tool row here.
+#
+# The earlier `ipython` evidence (`verify-ipython-e2e.patch.yml`) inserted the
+# `ipython-tool` row through this same mechanism, so it proved the tool works
+# when a row is present without proving the product carries one. This overlay
+# adds nothing to the model's catalog: whatever the probe reports is produced by
+# the profile's own composition -- its bundles plus its `agent-presets` root.
+- insert:
+    - id: verify-deliverable-surface
+      name: 'D:/DSH/work/dsh-native-daily/qualification/runners/verify-deliverable-surface.mjs'
