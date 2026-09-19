@@ -81,34 +81,43 @@ Append one entry per completed slice. Newest last.
 | 2026-09-19 | M2.1 work core: state machine + precise counting | DONE | `qualification/results/M2.1-work-core/` |
 | 2026-09-19 | M2.2 work host service vs real storage domain | DONE | `qualification/results/M2.2-work-host/` |
 | 2026-09-19 | M2.3 tool consumer + plugin lifecycle | DONE | `qualification/results/M2.3-plugin-lifecycle/` |
+| 2026-09-19 | M3.1 launch port + C2 profile (N=10 override) | DONE | `qualification/results/M3.1-c2-profile/` |
+| 2026-09-19 | M3.2 N=10 rolling top-up on the production loop | DONE (T1/T2) | `qualification/results/M3.2-N10-concurrency/` |
 
 ## Where we actually are
 
-**M0 is complete.** Auditable install, real first tool chain, hashed C0 graph.
+**M0 complete.** Auditable install, real first tool chain, hashed C0 graph.
 
-**M1 is complete for C0** (the stock control group). C1/C2 are next: C2 needs the
-work extension wired into a real profile, which is the immediate next slice.
+**M1 complete for C0.** The stock control group is measured and hashed; the
+capability gap (maxActiveSubagents=8, no config block) is a recorded fact rather
+than an assumption.
 
-**M2 is complete.** The extension compiles against real DSH declarations, mounts
+**M2 complete.** The extension compiles against real DSH declarations, mounts
 through the real Cordis pipeline, registers its tool once, releases its domain
 handle on unload, and survives load → unload → load.
 
-**M3 is partially done.** The rolling top-up logic, the coalesced drain, the
-precise counting and the budget reservation are implemented and tested against a
-real storage domain. What is NOT done, and is the mandatory part:
+**M3 substantially complete at the offline layers.** The mandatory rolling top-up
+now runs against the production AgentLoop with the real `startContinuable` seam:
+ten children admitted, ceiling enforced by DSH itself, one completion admits one
+replacement, the root stays separate, a pause stops admission, and a completion
+storm cannot double-admit.
 
-- wiring the `LaunchPort` to the real `ctx.subagents.startContinuable`
-- the profile/preset edits that mount the extension
-- a real N=10 run
+What remains in M3 is exactly one thing, and it is externally blocked:
 
-The first two need no live authorization and are next. The third is blocked on
-`G-EXT-02` (no authorized live-provider budget).
+- the **live paid** N=10 run (gate C01/T5). The lock records
+  `live_provider_budget_authorized: false`. A key being present does not
+  authorize large paid evaluation, so this stays `BLOCKED_EXTERNAL` until the
+  user authorizes a budget.
 
 ## Immediate next slice
 
-**M3.1 — wire the real launch port.** Implement `LaunchPort` over
-`ctx.subagents.startContinuable`, mount the extension in `daily-candidate`,
-override `maxActiveSubagents` to 10 in the profile patch (C0's measured gap),
-and prove with a controlled provider that ten children are admitted and topped
-up. This closes gates C01–C05, C07, C10, C12–C18 at the T1/T2 layer.
+**M4 — durability and reconciliation.** The five positions (intent admitted /
+Inbox accepted / Inbox claimed / entered a request / effect confirmed) are
+already modelled as distinct admission states with distinct slot semantics. What
+M4 adds is the *recovery procedure*: reopen a run in a NEW process, query each
+reserved `childId` against its Session, and resolve `unknown` honestly. The
+storage-domain reopen path is already proven by `host.test.ts`; what is missing
+is doing it after a real process kill and against real child Sessions.
+
+Gates targeted: D03, D04, D05, D06, D07, D08, D09, D10, D11, D13.
 

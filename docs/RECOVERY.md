@@ -44,6 +44,29 @@ States may be merged by type in an implementation, but test coverage must not be
 7. `interrupted`, `lost reply`, and `disposal error` are never automatically
    treated as safe to redo.
 
+## Shutdown order (measured, not assumed)
+
+The N=10 concurrency suite hung for 60 seconds per test until this order was
+found. It is worth stating precisely because the naive order deadlocks:
+
+```
+1. release any gate holding in-flight model calls
+2. close the work service        -> refuse new admissions, release the domain
+3. drainContinuableDescendants   -> stop the children
+4. dispose persistence, then the context
+```
+
+**Why the naive order hangs.** A child parked inside a model call cannot be torn
+down. Disposing the context fiber waits for the child's driver to exit, and that
+driver is waiting on the model call. So "dispose first, clean up after" waits
+forever on work that cannot finish.
+
+Step 1 is a test concern (the gate is the test's own invention), but steps 2–4 are
+the production sequence: refuse new work, then stop owned work, then release
+storage, then unwind the context. Note that step 3 uses
+`drainContinuableDescendants`, which closes admission for that exact parent — it
+is the final-close operation, which is why a *pause* never uses it.
+
 ## Authorization on restart
 
 Reopening a Session does **not** re-authorize unbounded background execution.
