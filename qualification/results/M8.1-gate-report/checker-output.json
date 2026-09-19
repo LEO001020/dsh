@@ -1,0 +1,190 @@
+{
+  "scope": "STRUCTURAL_REPORT_CHECK_NOT_TEST_EXECUTION",
+  "target": "daily",
+  "required_count": 98,
+  "errors": [],
+  "incomplete": [
+    {
+      "id": "A06",
+      "status": "NOT_RUN"
+    },
+    {
+      "id": "A12",
+      "status": "NOT_RUN"
+    },
+    {
+      "id": "B09",
+      "status": "NOT_RUN"
+    },
+    {
+      "id": "C01",
+      "status": "BLOCKED_EXTERNAL"
+    },
+    {
+      "id": "C05",
+      "status": "NOT_RUN"
+    },
+    {
+      "id": "C08",
+      "status": "NOT_RUN"
+    },
+    {
+      "id": "C09",
+      "status": "NOT_RUN"
+    },
+    {
+      "id": "C11",
+      "status": "NOT_RUN"
+    },
+    {
+      "id": "C13",
+      "status": "NOT_RUN"
+    },
+    {
+      "id": "C14",
+      "status": "NOT_RUN"
+    },
+    {
+      "id": "C17",
+      "status": "NOT_RUN"
+    },
+    {
+      "id": "C18",
+      "status": "NOT_RUN"
+    },
+    {
+      "id": "D02",
+      "status": "NOT_RUN"
+    },
+    {
+      "id": "D12",
+      "status": "NOT_RUN"
+    },
+    {
+      "id": "D14",
+      "status": "NOT_RUN"
+    },
+    {
+      "id": "E01",
+      "status": "NOT_RUN"
+    },
+    {
+      "id": "E02",
+      "status": "NOT_RUN"
+    },
+    {
+      "id": "E03",
+      "status": "NOT_RUN"
+    },
+    {
+      "id": "E06",
+      "status": "NOT_RUN"
+    },
+    {
+      "id": "E07",
+      "status": "NOT_RUN"
+    },
+    {
+      "id": "E08",
+      "status": "NOT_RUN"
+    },
+    {
+      "id": "E09",
+      "status": "NOT_RUN"
+    },
+    {
+      "id": "E10",
+      "status": "NOT_RUN"
+    },
+    {
+      "id": "E11",
+      "status": "NOT_RUN"
+    },
+    {
+      "id": "E12",
+      "status": "NOT_RUN"
+    },
+    {
+      "id": "F04",
+      "status": "NOT_RUN"
+    },
+    {
+      "id": "F06",
+      "status": "NOT_RUN"
+    },
+    {
+      "id": "F07",
+      "status": "NOT_RUN"
+    },
+    {
+      "id": "F08",
+      "status": "NOT_RUN"
+    },
+    {
+      "id": "T05",
+      "status": "NOT_RUN"
+    },
+    {
+      "id": "T06",
+      "status": "NOT_RUN"
+    },
+    {
+      "id": "T08",
+      "status": "NOT_RUN"
+    },
+    {
+      "id": "R01",
+      "status": "NOT_RUN"
+    },
+    {
+      "id": "R03",
+      "status": "NOT_RUN"
+    },
+    {
+      "id": "R04",
+      "status": "NOT_RUN"
+    },
+    {
+      "id": "R05",
+      "status": "NOT_RUN"
+    },
+    {
+      "id": "R06",
+      "status": "NOT_RUN"
+    },
+    {
+      "id": "R07",
+      "status": "NOT_RUN"
+    },
+    {
+      "id": "R08",
+      "status": "NOT_RUN"
+    },
+    {
+      "id": "U01",
+      "status": "NOT_RUN"
+    },
+    {
+      "id": "U02",
+      "status": "NOT_RUN"
+    },
+    {
+      "id": "U03",
+      "status": "NOT_RUN"
+    },
+    {
+      "id": "U04",
+      "status": "NOT_RUN"
+    },
+    {
+      "id": "U05",
+      "status": "NOT_RUN"
+    },
+    {
+      "id": "U06",
+      "status": "NOT_RUN"
+    }
+  ],
+  "structurally_complete": false,
+  "independent_deployment_certification": false
+}

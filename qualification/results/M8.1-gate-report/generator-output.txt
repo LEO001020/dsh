@@ -1,0 +1,10 @@
+{
+  "total": 104,
+  "PASS": 53,
+  "FAIL": 0,
+  "RUNNING": 0,
+  "BLOCKED_EXTERNAL": 1,
+  "NOT_RUN": 44,
+  "NOT_APPLICABLE": 6
+}
+generator_exit=0

@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "kind": "PROJECT_QUALIFICATION_SUMMARY_NOT_A_DSH_ARTIFACT",
+  "audit_date": "2026-09-19",
+  "deployment_identity": "0ca14d4ee0ebea5eb85a3f72d66f48d839356f1b336c0e4f11f9a4f8ddf2ab7c",
+  "summary": {
+    "total": 104,
+    "PASS": 53,
+    "FAIL": 0,
+    "RUNNING": 0,
+    "BLOCKED_EXTERNAL": 1,
+    "NOT_RUN": 44,
+    "NOT_APPLICABLE": 6
+  },
+  "promotion_decision": "NOT_READY",
+  "promotion_reason": "Mandatory gates remain NOT_RUN or BLOCKED_EXTERNAL. No daily promotion is claimed.",
+  "generator": "qualification/runners/build-gates.py",
+  "generator_problems": [],
+  "note": "qualification/gates.json is a bare array because the delivery package's checker requires that shape. This companion file carries the counts and the promotion decision."
+}
