@@ -25,11 +25,9 @@ import { Service } from '@deepseek-ai/cordis'
 import type { Agent } from '@deepseek-ai/dsh-agent'
 import { defineDomain, domainTable, type Domain } from '@deepseek-ai/dsh-storage-domain'
 import { randomUUID } from 'node:crypto'
-import { link, mkdir, readFile, rename, rm, writeFile } from 'node:fs/promises'
-import { hostname } from 'node:os'
-import { dirname } from 'node:path'
 import { z } from 'zod'
 import { admissionReason, countRun, mayAdmit, type Counts, type TaskLiveness } from './counting.ts'
+import { acquireHomeLock, type HeldHomeLock } from './homelock.ts'
 import {
   applySpend,
   budgetReport,
@@ -141,49 +139,6 @@ export interface WorkServiceConfig {
   readonly homeLockPath?: string
 }
 
-/** Who holds the deployment-boundary lock, written so a refusal can name it. */
-interface HomeLockIdentity {
-  readonly pid: number
-  readonly hostname: string
-  readonly startedAt: string
-  /** So a releasing holder never deletes a successor's lock. */
-  readonly token: string
-}
-
-/**
- * Whether a pid is alive, using the only probe that is evidence: a real signal.
- *
- * `EPERM` means the process EXISTS but this user may not signal it, so it must
- * count as alive. Treating only "no throw" as alive would let a live host that
- * runs as another user be reclaimed as stale, which is the one direction this
- * guard must never get wrong.
- */
-function pidAlive(pid: number): boolean {
-  try {
-    process.kill(pid, 0)
-    return true
-  } catch (error) {
-    return (error as NodeJS.ErrnoException).code === 'EPERM'
-  }
-}
-
-/**
- * Whether a recorded holder is PROVEN gone, which is the only condition that
- * licenses taking the store from it.
- *
- * A pid from another machine cannot be tested at all: pid 4242 here is not the
- * pid 4242 there, and probing it would test an unrelated local process. On a
- * shared store the honest answer is "not proven gone", so this refuses and the
- * operator decides. `same pid` is also not proof of the same process — a
- * recycled pid looks identical — so it refuses too, which costs availability
- * in the rare crash-and-reclaim case and never costs correctness.
- */
-function holderProvenGone(holder: HomeLockIdentity): boolean {
-  if (holder.hostname !== hostname()) return false
-  if (holder.pid === process.pid) return false
-  return !pidAlive(holder.pid)
-}
-
 /**
  * The default root reserve for a ceiling.
  *
@@ -221,7 +176,13 @@ export class WorkService extends Service {
    */
   private readonly pendingDrain = new Map<string, Promise<LaunchOutcome[]>>()
   /** This process's deployment-boundary lock token, when a guard is configured. */
-  private lockToken: string | undefined
+  /**
+   * The held kernel lock, or undefined when no guard is configured.
+   *
+   * Holding the object IS the exclusion; there is no separate token to compare,
+   * because the kernel object cannot be swapped the way a lock file can.
+   */
+  private homeLock: HeldHomeLock | undefined
   private disposed = false
 
   constructor(ctx: Context, config: WorkServiceConfig) {
@@ -281,169 +242,34 @@ export class WorkService extends Service {
   /**
    * Take the deployment-boundary lock, or refuse to start.
    *
-   * WHY THIS EXISTS AT ALL, and its exact limit. DSH's storage domain has no
-   * cross-process write locking (packages/storage/storage-json/README.md:
-   * "No cross-process write locking — two processes writing the same unit can
-   * interleave replacements; writes to the same file use last-completion
-   * wins"). MEASURED in durability-advanced.test.ts: a second process opens the
-   * same live directory WITHOUT error, its own writes succeed, and its runs are
-   * then erased when the first host next publishes its stale in-memory
-   * snapshot. Silent data loss, no error anywhere.
+   * The exclusion itself lives in `homelock.ts`: a KERNEL-held lock (a named
+   * Win32 semaphore, or `flock` on a verified inode), not the read/rename/link
+   * protocol this method used to implement. That protocol had a legal
+   * interleaving in which two contenders both won, reproduced on this machine in
+   * `qualification/results/M10.0-audit-repro/stale_lock_windows.py`; the fix is
+   * to stop making a replaceable FILE the mutual-exclusion object.
    *
-   * So the single-writer assumption has to be enforced by us or not at all.
-   * This is deliberately NOT a distributed lease: it is a same-machine,
-   * same-store exclusion file for the deployment boundary. It does not make the
-   * domain a cross-process CAS, and it does not protect a caller that writes
-   * the store root directly, bypassing this service.
-   *
-   * Two honest gaps, stated rather than papered over:
-   *   - a holder whose pid was recycled, or whose record comes from another
-   *     machine, is never reclaimed (see holderProvenGone). A human deletes the
-   *     file. Blocking is the safe direction: refusing a second host is the
-   *     goal, so a false "still live" costs availability, never correctness.
-   *   - no guard is installed when `homeLockPath` is absent, which is the
-   *     default. The protection is then purely the deployment boundary.
+   * The kernel releases the lock on process death, so a crashed holder never
+   * blocks a successor and no pid/TTL heuristic is needed.
    */
   private async acquireHomeLock(): Promise<void> {
     const path = this.config.homeLockPath
     if (path === undefined) return
-    const identity: HomeLockIdentity = {
-      pid: process.pid,
-      hostname: hostname(),
-      startedAt: new Date().toISOString(),
-      token: randomUUID(),
-    }
-    const payload = `${JSON.stringify(identity, null, 2)}\n`
-    // `link` publishes the lock with a complete payload and fails if the name
-    // exists, so check-and-claim is one step and a reader never observes an
-    // empty lock. `open(..., 'wx')` also refuses an existing name, but it
-    // creates the file EMPTY and fills it afterwards; a host killed in that
-    // window would leave a lock with no pid to test, which reads as stale and
-    // would hand the store to a second host. This mirrors the no-clobber
-    // link()+unlink() protocol the session-log backend already uses.
-    if (await this.tryClaimLock(path, identity.token, payload)) {
-      this.lockToken = identity.token
-      return
-    }
-
-    const existing = await this.readHomeLock(path)
-    if (existing === 'unreadable') {
-      throw new Error(
-        `dailyWork: refusing to open the work domain — ${path} exists but carries no readable owner identity. `
-        + 'A lock that cannot be read is not evidence that its owner is dead, so this process will not take '
-        + 'the store from it. Inspect the file; delete it only once you have confirmed no host is running.',
-      )
-    }
-    if (existing !== 'absent' && !holderProvenGone(existing)) {
-      throw new Error(
-        `dailyWork: refusing to open the work domain — the store is already owned by pid ${existing.pid} `
-        + `on ${existing.hostname} (since ${existing.startedAt}), recorded in ${path}. `
-        + 'DSH storage has no cross-process write locking, so two hosts over one store silently lose the '
-        + 'loser\'s writes. Stop the other host, or delete that file once you have confirmed it is stale.',
-      )
-    }
-
-    // The recorded holder is PROVEN gone (see holderProvenGone). Reclaim by
-    // RENAMING the stale file aside, not by removing it: two processes
-    // reclaiming at once both see the file, but only the first rename can
-    // succeed — the loser gets ENOENT, because after a successful rename there
-    // is nothing left at `path` to move. A `rm` + claim pair has no such
-    // discriminator, and would let both reclaimers believe they won.
-    const aside = `${path}.stale-${identity.token}`
-    try {
-      await rename(path, aside)
-    } catch (error) {
-      // Lost the reclaim race, or a live claim landed in the gap. Either way
-      // this process is not the owner, and guessing otherwise would create the
-      // second writer this guard exists to prevent.
-      if ((error as NodeJS.ErrnoException).code === 'ENOENT'
-        && await this.tryClaimLock(path, identity.token, payload)) {
-        this.lockToken = identity.token
-        return
-      }
-      throw new Error(
-        `dailyWork: refusing to open the work domain — ownership of ${path} changed while reclaiming a stale `
-        + `lock (${(error as NodeJS.ErrnoException).code}). Another host holds it; stop that host first.`,
-      )
-    }
-    await rm(aside, { force: true })
-    if (!await this.tryClaimLock(path, identity.token, payload)) {
-      throw new Error(
-        `dailyWork: refusing to open the work domain — another process claimed ${path} while this one was `
-        + 'reclaiming a stale lock. Stop that host first.',
-      )
-    }
-    this.lockToken = identity.token
+    this.homeLock = await acquireHomeLock(path)
   }
 
   /**
-   * Claim the lock name atomically, with the payload already complete.
+   * Give up the deployment-boundary lock.
    *
-   * @returns `false` when the name is taken, which is the only non-throwing
-   * failure: any other error is a real I/O fault and must surface.
+   * Releasing closes the kernel handle, which is the whole operation: the old
+   * protocol had to delete a file and therefore had to reason about whether the
+   * path still belonged to this holder. There is no file to reason about now.
    */
-  private async tryClaimLock(path: string, token: string, payload: string): Promise<boolean> {
-    const staged = `${path}.claim-${token}`
-    // The lock may be configured outside the store root, so its directory is
-    // not guaranteed to exist yet.
-    await mkdir(dirname(path), { recursive: true })
-    await writeFile(staged, payload, { encoding: 'utf8', mode: 0o600 })
-    try {
-      await link(staged, path)
-      return true
-    } catch (error) {
-      if ((error as NodeJS.ErrnoException).code === 'EEXIST') return false
-      throw error
-    } finally {
-      // The link is the published name; the staging name must not linger or a
-      // later claim would see a same-directory leftover rather than the lock.
-      await rm(staged, { force: true })
-    }
-  }
-
-  /**
-   * Read the current lock holder.
-   *
-   * The three outcomes are deliberately distinct, because collapsing them is
-   * how a guard like this hands the store to a second writer:
-   *   - `'absent'`: no lock file. Free to claim.
-   *   - `'unreadable'`: a lock file exists but carries no usable identity. We
-   *     cannot tell a live owner from debris, so the caller must REFUSE. A
-   *     corrupted lock is an operator problem, not evidence of a dead host.
-   *   - a parsed identity: the caller tests its pid for liveness.
-   */
-  private async readHomeLock(path: string): Promise<'absent' | 'unreadable' | HomeLockIdentity> {
-    let text: string
-    try {
-      text = await readFile(path, 'utf8')
-    } catch (error) {
-      return (error as NodeJS.ErrnoException).code === 'ENOENT' ? 'absent' : 'unreadable'
-    }
-    try {
-      const parsed = JSON.parse(text) as Partial<HomeLockIdentity>
-      if (typeof parsed.pid !== 'number' || typeof parsed.hostname !== 'string') return 'unreadable'
-      return {
-        pid: parsed.pid,
-        hostname: parsed.hostname,
-        startedAt: typeof parsed.startedAt === 'string' ? parsed.startedAt : 'unknown',
-        token: typeof parsed.token === 'string' ? parsed.token : '',
-      }
-    } catch {
-      return 'unreadable'
-    }
-  }
-
   private async releaseHomeLock(): Promise<void> {
-    const path = this.config.homeLockPath
-    const token = this.lockToken
-    if (path === undefined || token === undefined) return
-    this.lockToken = undefined
-    // Delete only this holder's file: after a stale reclaim the path may belong
-    // to a successor, and removing it would revoke a live host's claim.
-    const existing = await this.readHomeLock(path)
-    if (existing === 'absent' || existing === 'unreadable' || existing.token === token) {
-      await rm(path, { force: true })
-    }
+    const held = this.homeLock
+    if (held === undefined) return
+    this.homeLock = undefined
+    await held.release()
   }
 
   private runs() {

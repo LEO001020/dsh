@@ -507,24 +507,32 @@ describe('D02: a second host over one live store', () => {
     writeFileSync(goFlag, 'go', 'utf8')
     expect((await waitForExit(hostA)).code).toBe(0)
 
-    // A exited through its own close(), so the claim is gone and a fresh host
-    // over the same directory starts normally.
-    expect(existsSync(lockPath)).toBe(false)
+    // A exited through its own close(), so the KERNEL lock is gone and a fresh
+    // host over the same directory starts normally.
+    //
+    // The note FILE remains, deliberately. It is no longer the exclusion object:
+    // releasing closes a kernel handle, and the note is only an error message.
+    // Deleting it would add a file-removal step whose failure modes are exactly
+    // what the old protocol got wrong. What proves the claim is free is that the
+    // next host OPENS -- asserted here -- not the absence of a file.
     const { service } = await openService(dir, lockPath)
     expect(service.listRunIds().sort()).toEqual(['run-from-A', 'run-from-A-2'])
     await service.close()
-    expect(existsSync(lockPath)).toBe(false)
   })
 
-  it('refuses a lock it cannot read rather than assuming the owner is dead', async () => {
+  it('does not refuse a store because its advisory note is unreadable', async () => {
     const dir = makeTempDir('d02-unreadable')
     const lockPath = join(dir, 'owner.lock')
-    // No pid to test means no evidence the owner is gone. Reclaiming here is
-    // exactly the direction that creates a second writer.
+    // An unreadable note with NO kernel lock held is a free store. The note is
+    // advisory, so it cannot refuse: letting a file we cannot parse block a host
+    // would give corrupt debris the power to wedge the deployment permanently.
     writeFileSync(lockPath, 'not a lock record', 'utf8')
 
-    await expect(openService(dir, lockPath)).rejects.toThrow(/carries no readable owner identity/)
-    expect(readFileSync(lockPath, 'utf8')).toBe('not a lock record')
+    const { service } = await openService(dir, lockPath)
+    // The new holder replaces the unreadable note with its own identity, so the
+    // next refusal names a real process rather than debris.
+    expect(JSON.parse(readFileSync(lockPath, 'utf8')).pid).toBe(process.pid)
+    await service.close()
   })
 })
 
