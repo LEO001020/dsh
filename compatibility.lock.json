@@ -15,7 +15,7 @@
   },
   "deployment": {
     "status": "UNQUALIFIED_OFFLINE",
-    "identity": "73da4c62f93bc4f34544f46838f6eb9dbecd93d3f2043f0fd589ae9831c2b633",
+    "identity": "6b214b9f56c80d422e47083bae55ff09cd3e05753150536a91dbf3c7dca738db",
     "identity_algorithm": "sha256(UTF8(json.dumps(inputs, sort_keys=True, separators=(',', ':'), ensure_ascii=True)))",
     "inputs": {
       "upstream_repository": "deepseek-ai/deepseek-harness",
@@ -30,7 +30,7 @@
       "native_binary_digests": "none-no-native-addon-built",
       "os_and_architecture": "Windows 10.0.26200 / AMD64",
       "isolation_image_or_policy_digest": "sandbox-windows-acl-partial",
-      "host_profile_digest": "547a59b2d1661bb4c0666e8bad46eafb4c9f4b771436c0bcf8e6b09873d5a7b1",
+      "host_profile_digest": "2a0aff17ba2112e80c15784493ea220bced31abb1f26759f954546163750a3cf",
       "agent_preset_id": "standard",
       "agent_preset_digest": "0934f22b2fdbc158fd2edad33ec5dd2671b5b1f727800dcaab74cee3bd7294af",
       "resolved_plugin_graph_digest": "23f763d1bf2af8ba3210473d6743bc39ac0185bdefd661861935414a01e5af6b",
@@ -41,7 +41,7 @@
       "authority_policy_digest": "user-authorizes-n-model-cannot-widen",
       "data_schema_version": "dsh_daily_work-v1"
     },
-    "identity_note": "Every input below is resolved from a real artifact or file on this machine. The identity is a digest of those inputs, so any change to the artifact, the lockfile, the profile patch, the preset, the resolved graph or the acceptance spec changes the identity and invalidates every PASS recorded against it. RE-DERIVED 2026-09-19T18:26:08.151Z: the identity this file previously recorded (0ca14d4ee0ebea5eb85a3f72d66f48d839356f1b336c0e4f11f9a4f8ddf2ab7c) no longer described this tree. Two inputs had moved: acceptance_spec_sha256 (the 112-case spec was installed, so the digest changed) and launcher_realpath, which had been written with Python escape sequences applied -- \"apps\\\" became BEL (0x07) and \"\bin.js\" became backspace (0x08), so the field read \"dsh-src\u0007ppsclilib\bin.js\". The mangled value is what the OLD identity was computed over, so that hash described a path that does not exist. Both are corrected here and the identity is recomputed over the corrected inputs. Any PASS recorded against 0ca14d4ee0ebea5eb85a3f72d66f48d839356f1b336c0e4f11f9a4f8ddf2ab7c is invalidated by this change; that is the intended behaviour, not a regression."
+    "identity_note": "Every input below is resolved from a real artifact or file on this machine. The identity is a digest of those inputs, so any change to the artifact, the lockfile, the profile patch, the preset, the resolved graph or the acceptance spec changes the identity and invalidates every PASS recorded against it. RE-DERIVED 2026-09-19T18:26:08.151Z: the identity this file previously recorded (0ca14d4ee0ebea5eb85a3f72d66f48d839356f1b336c0e4f11f9a4f8ddf2ab7c) no longer described this tree. Two inputs had moved: acceptance_spec_sha256 (the 112-case spec was installed, so the digest changed) and launcher_realpath, which had been written with Python escape sequences applied -- \"apps\\\" became BEL (0x07) and \"\bin.js\" became backspace (0x08), so the field read \"dsh-src\u0007ppsclilib\bin.js\". The mangled value is what the OLD identity was computed over, so that hash described a path that does not exist. Both are corrected here and the identity is recomputed over the corrected inputs. Any PASS recorded against 0ca14d4ee0ebea5eb85a3f72d66f48d839356f1b336c0e4f11f9a4f8ddf2ab7c is invalidated by this change; that is the intended behaviour, not a regression. RE-DERIVED AGAIN: host_profile_digest moved because the profile patch gained the agent-presets row and lost its duplicate daily-work-host insert. Previous identity 73da4c62f93bc4f34544f46838f6eb9dbecd93d3f2043f0fd589ae9831c2b633."
   },
   "concurrency_requirement": {
     "status": "MANDATORY_NOT_OPTIONAL",
