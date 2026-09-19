@@ -195,7 +195,7 @@ A user Stop outranks top-up. Nothing in this project revives a stopped run.
 ## Diagnose
 
 ```sh
-python <delivery>/helpers/doctor.py --source /d/DSH/src/dsh-src
+python helpers/doctor.py --source /d/DSH/src/dsh-src
 python qualification/runners/build-gates.py
 ```
 

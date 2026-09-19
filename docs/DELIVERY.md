@@ -278,7 +278,7 @@ removed.
 ## 3. Doctor
 
 ```sh
-python <delivery-package>/helpers/doctor.py --source /d/DSH/src/dsh-src
+python helpers/doctor.py --source /d/DSH/src/dsh-src
 python qualification/runners/build-gates.py
 ```
 
