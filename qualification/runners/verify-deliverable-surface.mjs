@@ -34,7 +34,15 @@ export const name = 'verify-deliverable-surface'
 // reporting a false absence.
 export const inject = ['sessionController', 'ipython']
 
-const OUT = 'D:/DSH/work/dsh-native-daily/qualification/results/M12-deliverable-surface/surface.json'
+// The output path is OVERRIDABLE, and that is not a convenience.
+//
+// A probe that writes to a fixed path is a SHARED MUTABLE RESOURCE: two agents
+// running it cannot tell whose result they hold, and that produced a false PASS
+// earlier in this project (G-FIX-13). So a caller can set DSH_PROBE_OUT to get
+// its own file, and `boot-harness.mjs`'s readResult() then asserts the result
+// names the home that caller booted.
+const OUT = process.env.DSH_PROBE_OUT
+  ?? 'D:/DSH/work/dsh-native-daily/qualification/results/M12-deliverable-surface/surface.json'
 
 export async function apply(ctx) {
   const finding = {
