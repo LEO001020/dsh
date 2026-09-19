@@ -1,0 +1,6 @@
+=== package typecheck: tsc -p tsconfig.json --noEmit (excludes src/**/*.test.ts) ===
+package_tsc_exit=0
+
+=== test-file typecheck: the SAME compiler options plus a vitest path mapping ===
+=== (tsconfig.json excludes *.test.ts, so the suite would otherwise go unchecked) ===
+test_tsc_exit=0

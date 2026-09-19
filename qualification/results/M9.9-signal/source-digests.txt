@@ -1,0 +1,28 @@
+# sha256 of every source this result rests on.
+# Two groups: the project's own files, and the PINNED DSH sources whose
+# quoted contracts the tests assert. The DSH group matters because a
+# claim about 'what DSH does' is only valid against the commit it was read
+# from; these digests are what make a stale claim detectable.
+
+## project (dsh-native-daily)
+afb3fabb05f01f9a118451b774398298c1827180d2e6de2c5fb7963d8d0cfb5b *src/signal.test.ts
+717165f5ef1cdb34a481ef21c819fb5700427ed79e1fe190f52607e6dfd7b92b *src/host.ts
+de70463a211cd47e55ac95928f63a374d8e8c669401c4f3b35aee32ede584fff *src/launch-port.ts
+639b608897e283396c8e09109dd6a8d093a6416b4277d6cb0049417e6912a089 *cordis.patch.yml
+547a59b2d1661bb4c0666e8bad46eafb4c9f4b771436c0bcf8e6b09873d5a7b1 *profiles/daily-candidate/cordis.patch.yml
+ed235b80f97e2b2da8a7c477ae1f13efe8542dcc130075f3c635306a064d6275 *profiles/daily-candidate/package.json
+
+## pinned DSH source (D:/DSH/src/dsh-src @ ddefc45fbc7f8e46dd73185e68295696d1297887, tag dsh-v0.1.6-alpha.2)
+d0ac3509febb04308eff84bc6c949ff3c736dec9fd9f8d230c5d7fa3455ff204 *packages/core/agent/src/runtime-types.ts
+2b238998e1b63ac7ceffa20190caaaa4806a9ae275112807424d176244dfd014 *packages/core/agent-loop/src/agent.ts
+6dc2702311305b9ecc8c8a932417bb7929f7313722fbb432a899e53d16efc6e0 *packages/core/agent/src/dispatch.ts
+7d575021ad9e564f3910ea3fb055d1f40065586512d702a5454fda64678b2cd5 *packages/core/scope/src/scoped-events.generated.ts
+11e4a5fc2aa1bf2cb131f5dfdead07864614f2de2aa325dcc2e292f5eed94a10 *packages/jobs/jobs/src/index.ts
+e5c440b983e350859e893fa849d8cdcb036894f1b63cfaa27e9217d28abc5de2 *packages/jobs/jobs/src/types.ts
+c1f0cc7de70a11989f6f0f1bf8df8c275858b462603fde19bc8df5b7517bf479 *packages/jobs/jobs-local/src/index.ts
+a86feede898f5aa961d7c2e805a42ef2d0656c08f5d865b52e9f560306f4560a *packages/shell/tool-bash/src/index.ts
+945c691953c05448dfd7c281ed23fe9de7b7860b994cbc92c3966513495a306d *packages/deliverables/workspace-changes/src/index.ts
+3c4b13be0fd6df6aef1a81a2889fb7653ab263e7bd5b09de71293370cbf85928 *packages/deliverables/workspace-changes/src/recorder.ts
+a2fa88bf259e59ee0c010fa2ed0470feaf576296cfe532aabcaa0fd6c8bd1bfa *packages/bundle/web-app/cordis.patch.yml
+0827eecbe49a980201b42e2210237f567a6ac307fd0411083ffb5c72e91f65db *docs/cookbook/adding-a-tool.md
+6217b7365bf19ca6cf84e17f111a263114f99fee514cb504d488f81dcb7b89ef *docs/event-producer-consumer.md

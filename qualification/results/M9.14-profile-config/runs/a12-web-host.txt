@@ -1,0 +1,45 @@
+=== A12: the real daily Web host ===
+
+launcher: D:/DSH/src/dsh-src/apps/cli/lib/bin.js
+profile: m914-daily
+bundles: @deepseek-ai/dsh-base, @deepseek-ai/dsh-web-app
+profile_dependencies: {"dsh-daily-work":"link:D:/DSH/work/dsh-native-daily/packages/dsh-daily-work"}
+work_extension_mounted: true
+home: D:/DSH/home/m914
+port: 18401
+
+url_line: http://127.0.0.1:18401/?token=Vfip4llI5DFCfiMxx8Zpxn5yRKYGK_YSOGNnwLWC97I
+boot_stdout_has_url: true
+unauthenticated_api_status: 401
+unauthenticated_api_body: "unauthorized"
+token_exchange_status: 303
+token_exchange_sets_cookie: true
+authenticated_root_status: 200
+authenticated_root_is_app_shell: true
+model_catalog_ok: true
+model_catalog_default: {"provider":"deepseek-official","model":"deepseek-flash"}
+model_catalog_routable_providers: ["deepseek-official"]
+session_create_ok: true
+session_created_id: session-e1f4d5cd-86e1-4cde-adc6-a6ba6f0c9e47
+session_created_preset: standard
+session_list_ok: true
+session_list_found_created: true
+session_list_item_running: false
+session_list_item_cwd: D:/DSH/work/dsh-native-daily
+session_list_item_preset: standard
+session_list_item_permissions: workspace-write
+session_list_item_model_next: null
+credentials_file_exists: true
+credentials_file_record_keys: ["client-connection/browser-session","kind","payload","version","secret"]
+deepseek_api_key_in_process_env: false
+model_turn_run: false
+credential_boundary: DEEPSEEK_API_KEY not configured
+
+--- launcher stdout ---
+dsh web: http://127.0.0.1:18401/?token=Vfip4llI5DFCfiMxx8Zpxn5yRKYGK_YSOGNnwLWC97I
+--- launcher stderr ---
+
+--- shutdown ---
+stopped_by: SIGTERM (a supervisor stop request; the launcher exits 0 for SIGTERM)
+exit_code: null
+exit_signal: SIGTERM

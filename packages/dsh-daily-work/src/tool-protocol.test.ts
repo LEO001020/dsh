@@ -679,26 +679,32 @@ describe('B06: native and PTC must produce the SAME canonical value', () => {
     const native = await callWork(r.ctx, agent, { action: 'status' }, 'native-1')
     if (native.isError) throw new Error('native call failed')
 
-    // `content` is ContentBlock[]; `value` is JSON. Different types, different
-    // objects, and the value is the frozen authority.
+    // `content` is ContentBlock[]; `value` is JSON. Different fields, different
+    // types, and the value is the frozen authority.
     expect(Array.isArray(native.content)).toBe(true)
     expect(native.content[0]).toMatchObject({ type: 'text' })
     expect(native.value).not.toBe(native.content)
     expect(Object.isFrozen(native.value)).toBe(true)
     // The rendering is `JSON.stringify(value, null, 2)` (tools.ts), so parsing it
     // back yields the value exactly. That is what makes the text a PROJECTION:
-    // nothing in it is absent from the value.
+    // nothing in it is absent from the value, and the model can read it while a
+    // program gets the structure.
     const rendered = native.content[0] as { type: 'text'; text: string }
     expect(JSON.parse(rendered.text)).toEqual(native.value)
 
-    // The PTC route renders differently (run_code's own renderer) while carrying
-    // the SAME value, which is the clearest demonstration that the two are
-    // separate layers.
+    // The PTC route carries the SAME value under `run_code`'s own canonical
+    // shape `{ logs, result, sandbox? }`. The program receives `result` — the
+    // structure — not the rendered text, which is the point: a caller never has
+    // to parse the model's view to get at the data.
     const ptc = await callWorkThroughPtc(r.ctx, agent, 'ptc-1')
     if (ptc.isError) throw new Error('PTC call failed')
-    const ptcText = modelText(ptc)
-    expect(ptcText).not.toBe(rendered.text)
-    expect(JSON.parse((ptc.value as { result: unknown }).result as string ?? 'null')).toBeDefined()
+    const ptcValue = ptc.value as { result?: unknown; logs?: unknown }
+    expect(ptcValue.logs).toEqual([])
+    expect(ptcValue.result).toEqual(native.value)
+    // `run_code`'s own schema is closed too, so the wrapper cannot smuggle a
+    // field past the caller either.
+    const ptcSchema = r.ctx.tools.get(RUN_CODE_NAME, agent)!.output.schema as { additionalProperties?: boolean }
+    expect(ptcSchema.additionalProperties).toBe(false)
   })
 
   it('rejects a value that is not lossless JSON, rather than coercing it', async () => {
@@ -902,27 +908,65 @@ describe('B07: a guard cannot be widened by a later listener, and async is not a
   })
 
   it('the tool surface offers no parameter that widens its own authority', async () => {
-    // The B07 companion claim from the earlier security pass: the model cannot
-    // raise the target, raise the ceiling or widen permissions, because no such
-    // parameter exists. Asserted on the schema the MODEL sees, not on the
-    // handler, so a future parameter would be caught at the wire.
+    // The B07 companion claim: the model cannot raise the target, raise the
+    // ceiling or widen permissions, because no such parameter exists. Asserted
+    // on the schema the MODEL sees, not on the handler, so a future parameter
+    // would be caught at the wire.
+    //
+    // WHAT IS NOT CLAIMED, and it is a real limit of the protocol rather than of
+    // this tool: DSH's implicit parameter root is an OPEN object.
+    // `parameterSchemaSpecToJsonSchema` (packages/core/tools/src/schema.ts)
+    // builds `{ type: 'object', properties, required }` and never sets
+    // `additionalProperties`, so an undeclared argument is NOT rejected — it is
+    // passed to the body and ignored by destructuring. MEASURED below. The
+    // refusal is therefore by absence of any code path from an argument to a
+    // configuration field, which is a property of the handler, not of the wire.
+    // This project relies on it, and the security pass (E01-E11) tests the
+    // consequence rather than this shape.
     const r = await ptcRig()
     const agent = await r.ctx.agents.create({ sessionId: SessionId('sess-b07d') }).then(h => h.agent)
+    await r.service.createRun({ runId: 'run-b07', root: agent, authorizationRef: 'auth-b07', targetChildren: 2 })
     const schema = r.ctx.tools.get('work', agent)!
-    const params = schema.parameters as { properties?: Record<string, unknown>; required?: string[] }
+    const params = schema.parameters as {
+      type?: string
+      properties?: Record<string, { enum?: string[] }>
+      required?: string[]
+      additionalProperties?: boolean
+    }
+    expect(params.type).toBe('object')
     expect(Object.keys(params.properties ?? {}).sort()).toEqual(['action', 'childId', 'goal', 'taskId'])
     expect(params.required).toEqual(['action'])
-    // And there is no path from a tool argument to the run's configuration.
-    const smuggled = await r.ctx.tools.execute({
+    // The model-facing enum is closed, so the action itself is validated.
+    expect(params.properties?.action?.enum).toEqual(['status', 'submit', 'finish'])
+    expect(params.additionalProperties).toBeUndefined()
+
+    // A widening argument reaches the body and is INERT: the run's target and
+    // ceiling are read from the service's own configuration, never from `args`.
+    const widened = await r.ctx.tools.execute({
       callId: ToolCallId('smuggle'),
       name: 'work',
-      arguments: { action: 'status', targetChildren: 999, budgetCeiling: 999_999 },
+      arguments: { action: 'status', targetChildren: 999, budgetCeiling: 999_999, desiredTarget: 0 },
       agent,
       signal: new AbortController().signal,
     })
-    // Unknown parameters are rejected outright rather than ignored.
-    expect(smuggled.isError).toBe(true)
-    expect(smuggled.isError ? smuggled.error.info?.code : undefined).toBe('INVALID_ARGS')
+    expect(widened.isError).toBe(false)
+    const value = widened.isError ? undefined : widened.value as Record<string, unknown>
+    expect(value).toMatchObject({ action: 'status', runId: 'run-b07', desiredTarget: 2 })
+    expect(r.service.getRun('run-b07')?.requestedTarget).toBe(2)
+    expect(r.service.getRun('run-b07')?.budget.ceiling).toBe(WORK_CONFIG.budgetCeiling)
+
+    // A malformed ACTION is refused at the wire, which is the parameter that
+    // actually selects behaviour.
+    const badAction = await r.ctx.tools.execute({
+      callId: ToolCallId('bad-action'),
+      name: 'work',
+      arguments: { action: 'raise-my-budget' },
+      agent,
+      signal: new AbortController().signal,
+    })
+    expect(badAction.isError).toBe(true)
+    expect(badAction.isError ? badAction.error.info?.code : undefined).toBe('INVALID_ARGS')
+    expect(r.service.getRun('run-b07')?.budget.ceiling).toBe(WORK_CONFIG.budgetCeiling)
   })
 })
 

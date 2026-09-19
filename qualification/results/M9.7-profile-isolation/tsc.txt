@@ -1,0 +1,50 @@
+=== 1. package-wide typecheck ===
+command: node <dsh-src>/node_modules/typescript/bin/tsc --noEmit  (run from packages/dsh-daily-work)
+NOTE: tsconfig.json has "exclude": ["src/**/*.test.ts"], so this does NOT cover the new test file.
+package_tsc_exit=0
+
+=== 2. the new test file, typechecked explicitly ===
+The package tsconfig excludes *.test.ts, so the evidence file needs its own
+program. This config is reproduced verbatim below; it is the exact file passed
+to tsc -p (written to a temp path only because it must not be added to the
+repository's file set).
+
+--- /tmp/tscheck/tsconfig.iso.json ---
+{
+  "compilerOptions": {
+    "target": "ES2024",
+    "lib": ["ES2024"],
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "noImplicitOverride": true,
+    "verbatimModuleSyntax": true,
+    "erasableSyntaxOnly": true,
+    "allowImportingTsExtensions": true,
+    "skipLibCheck": true,
+    "noEmit": true,
+    "ignoreDeprecations": "6.0",
+    "types": ["node"],
+    "typeRoots": ["D:/DSH/work/dsh-native-daily/packages/dsh-daily-work/node_modules/@types"],
+    "baseUrl": "D:/DSH/work/dsh-native-daily/packages/dsh-daily-work",
+    "paths": {
+      "vitest": ["D:/DSH/src/dsh-src/node_modules/vitest/dist/index.d.ts"]
+    }
+  },
+  "files": ["D:/DSH/work/dsh-native-daily/packages/dsh-daily-work/src/profile-isolation.test.ts"]
+}
+--- end config ---
+
+command: node <dsh-src>/node_modules/typescript/bin/tsc -p /tmp/tscheck/tsconfig.iso.json
+iso_test_tsc_exit=0
+
+NOTE: two real type errors were found and fixed while writing this file, not
+suppressed:
+  - the fixture tools declared output { type: 'string' } but returned a JSON
+    object; the registry rejects that at runtime as INVALID_TOOL_OUTPUT, and
+    the fixture now returns a JSON string.
+  - ctx.jobs / ctx.compaction are declared by '@deepseek-ai/dsh-jobs' and
+    '@deepseek-ai/dsh-compaction' through module augmentation, so the test
+    needs type-only imports of those packages for serviceForAgent('jobs') and
+    serviceForAgent('compaction') to typecheck.

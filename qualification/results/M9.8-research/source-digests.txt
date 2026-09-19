@@ -1,0 +1,23 @@
+# Sources that produced M9.8 (R03/R04/R08).
+# Lines starting 'pkg/' are this repo's package; 'dsh/' lines are relative to the
+# pinned DSH checkout D:/DSH/src/dsh-src.
+
+239379c4c3cfa281a094f31a83663733b0af2336416341c6598a71bed998ee0d *pkg/src/research.test.ts
+8d6ec8fca407daba46f7cde629d7a3d4ff8d00418746fa9806c14d7ba2226649 *pkg/src/web-search.ts
+
+2e224866e7d11742a39a963a2414b17bc2b73b227311591b399d23b2a6d08c10 *dsh/packages/core/session/src/surface.ts
+c6ded93fde2c64e87a313f27877bbf37390e280ff90c3012ef575181e553e1fe *dsh/packages/core/session/src/index.ts
+312580d4e2ab568eeec466dbbcff5117cff84a932aeee5d10214bc6a087812eb *dsh/packages/core/session/src/types.ts
+abd8ef57c34ad6ddbc21ba83398092f6aff64ac5c0f38efb353cebb04f654ad4 *dsh/packages/core/session/src/request-header.ts
+5cc69bf21e79363cdc37d4f3a813a587ceec82e32813efa47b4b34200013fd00 *dsh/packages/core/session/src/known-event-types.ts
+72859150e72a6f75bd97a637f12c2488132f039eefa1ebd4294561b21ac918ef *dsh/packages/compaction/compaction/src/types.ts
+33c6e26a42e1fdb01e62eef4570472f1926756eca57eade1f2c4608cba56c3fc *dsh/packages/compaction/compaction-basic/src/region.ts
+5359ed9130690d7c2fceab7079ba2c2e017b1ac5e053a06cf612cbc6b7609896 *dsh/packages/web/web/src/types.ts
+70393ce16a880977f819c590176fce963c6772f48db26bd2f2274b2d81795e02 *dsh/packages/web/web/src/index.ts
+f7f291e08f0650b860d23af496327468b2a4f74b4d0c5ecc95741b869d1e970d *dsh/packages/web/web-fetch-http/src/provider.ts
+dd53d2c6d462e53d891da289e5595ebb0563385ec07c6339e6d8ba3a8f38373a *dsh/packages/web/web-fetch-http/src/policy.ts
+5850ab0dd78a26843d6ff899f5bb85af4cc8745f163ff71a17586bcda5da570f *dsh/packages/session-query/session-query/src/config.ts
+b3f9b33aa4a5db9d54d9c31038a182c333986ac8bd73ed46833c1effe0376337 *dsh/packages/session-query/session-query/src/observation.ts
+f67e74bdf163d79ec399c8f63865e9180346623ba970c60ea0d2cea76b20bd99 *dsh/packages/session-query/tool-session-query/src/service-boundary.ts
+6f2f38689b945e86bf898ecd2063eeaa257c2aea27838f884fd1ee777f763e35 *dsh/packages/session-query/tool-session-query/src/workspace-access.ts
+0e19944d71cce8172c640c801da6e9256c8940dff5906ec0e28aaf8a9c4ef130 *dsh/packages/llm/llm/src/message.ts

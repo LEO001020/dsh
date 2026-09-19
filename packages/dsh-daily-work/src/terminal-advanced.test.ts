@@ -205,6 +205,8 @@ describe('T05: interrupt on an independent control path', () => {
     expect(settled).not.toHaveProperty('succeeded')
     // It settled because of the interrupt, not because the sleep expired.
     expect(settleMs).toBeLessThan(6_000)
+    measured('T05 settled', `${settled.waitReason} ${JSON.stringify(settled.sessionStatus)} in ${settleMs}ms`)
+    measured('T05 result fields', settled.keys.join(','))
 
     await r.ctx.terminals.kill(owner, id, 'test cleanup')
     await r.close()
@@ -330,6 +332,7 @@ describe('T06: host loss and terminal id reuse', () => {
     // that matters rather than the id being unique.
     const secondSession = await second.ctx.terminals.spawn(secondOwner, { type: BACKEND_TYPE })
     expect(String(secondSession.sessionId)).toBe(String(historicalId))
+    measured('T06 generation-1 id / generation-2 id', `${historicalId} / ${secondSession.sessionId}`)
 
     // The reused id is a NEW process: none of the previous generation's state is
     // visible through it, and no cell from before is waiting to be resumed.
@@ -542,6 +545,9 @@ describe('T08: error and framing', () => {
 
     // The command had produced nothing at the moment it was reported ready.
     expect(scrollback(r.ctx, owner, id)).not.toContain(lateToken)
+    measured('T08 baseline (honest command) elapsedMs', honest.elapsedMs)
+    measured('T08 forged-marker elapsedMs', forged.elapsedMs)
+    measured('T08 forged waitReason', forged.waitReason)
 
     // And it was still running: the token arrives once the sleep really ends.
     await sleep(12_000)
@@ -579,6 +585,8 @@ describe('T08: error and framing', () => {
     expect(blocked.waitReason).not.toBe('session_exit')
     expect(blocked.sessionStatus.kind).toBe('running')
     expect(blocked.keys.filter(key => /exit|success|ok|fail|error/i.test(key))).toEqual([])
+    measured('T08 blocking read waitReason', blocked.waitReason)
+    measured('T08 blocking read elapsedMs', blocked.elapsedMs)
 
     // The read is genuinely blocked and has produced no answer.
     expect(blocked.viewport).toContain('WAIT>')

@@ -1,0 +1,148 @@
+Raw transcripts from the REAL built launcher: node D:/DSH/src/dsh-src/apps/cli/lib/bin.js
+Each block is a separate process with DSH_HOME set to a fresh temp directory.
+No credential is supplied anywhere; every refusal below happens before a
+provider call, which is why no key is needed to observe it.
+
+================================================================
+1. --help  (the launcher's own flag list; these are the ONLY flags used)
+================================================================
+Usage: dsh [--profile] <name> [options] [app-args...]
+       dsh plugin --profile <name> <pnpm-args...>
+
+dsh: boot a DeepSeek Harness profile — an ordered stack of plugin-bundle patch
+layers under your own overrides.
+
+Arguments:
+  args                           arguments for the booted profile's app (see:
+                                 dsh --profile <name> --help)
+
+Options:
+  -V, --version                  output the version number
+  --profile <name>               the profile under $DSH_HOME/profiles to boot
+  --from-default-profile <name>  initialize a new custom profile from a shipped
+                                 profile template
+  --patch <path>                 extra patch-list overlay applied after the
+                                 profile layer (repeatable)
+  --dump-config                  print the composed profile tree and exit
+  --dump-default-config          print the profile tree without its user layer
+                                 or --patch overlays and exit
+
+Examples:
+  dsh web                                   boot the web profile (same as: dsh --profile web)
+  dsh rescue --from-default-profile web
+                                            create rescue from the shipped web template, then boot it
+  dsh headless "run the tests"              answer one task, print the result, and exit
+  dsh tui --patch ./extra.yml               boot a custom profile with one extra overlay
+  dsh tui --resume <session>                arguments after the launcher flags reach the app
+  dsh web --help                            the web app's own flags and help
+  dsh plugin --profile tui add <package>    install a plugin into the tui profile
+
+exit=0
+
+================================================================
+2. --profile no-such-profile-xyz --dump-config
+================================================================
+exit=1
+--- stdout (bytes: 0) ---
+--- stderr ---
+file:///D:/DSH/src/dsh-src/packages/boot/app-boot/lib/index.js:957
+		if (template === void 0) throw new Error(`${binName}: profile ${JSON.stringify(name)} does not exist; create it with 'dsh plugin --profile ${name} add <package>'`);
+		                               ^
+
+Error: dsh: profile "no-such-profile-xyz" does not exist; create it with 'dsh plugin --profile no-such-profile-xyz add <package>'
+    at loadProfile (file:///D:/DSH/src/dsh-src/packages/boot/app-boot/lib/index.js:957:34)
+    at prepareProfile (file:///D:/DSH/src/dsh-src/apps/cli/lib/profile-boot-BNu17Y9U.js:187:18)
+    at runDumpConfig (file:///D:/DSH/src/dsh-src/apps/cli/lib/dump-config-Bb5YvFIX.js:25:17)
+    at runCli (file:///D:/DSH/src/dsh-src/apps/cli/lib/bin.js:232:4)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async file:///D:/DSH/src/dsh-src/apps/cli/lib/bin.js:238:23
+
+Node.js v24.18.0
+
+================================================================
+3. --dump-config with no --profile
+================================================================
+exit=1
+--- stdout (bytes: 0) ---
+--- stderr ---
+error: --profile <name> is required
+
+================================================================
+4. --profile headless --session-id session-does-not-exist-0000 hello
+   (cwd: a temp directory; no Session has ever been recorded there)
+================================================================
+exit=1
+--- stdout (bytes: 0) ---
+--- stderr ---
+dsh: session "session-does-not-exist-0000" does not exist; omit --session-id to start a new Session
+--- session directories written under $DSH_HOME (expected: none) ---
+(no sessions directory at all)
+
+================================================================
+5. --profile headless hello   (no --session-id; a fresh Session IS created)
+   This is the control: it proves the launcher is not refusing everything.
+================================================================
+exit=1
+--- stdout ---
+
+--- stderr ---
+dsh: MISSING_CREDENTIAL: llm-deepseek: no API key for provider route "deepseek-official"; store DEEPSEEK_API_KEY through the credentials service (the web Models page writes it), or export DEEPSEEK_API_KEY in the launching environment
+--- session directories now ---
+/tmp/m97-bPqfyG/sessions
+/tmp/m97-bPqfyG/sessions/--C-Users-hzq00-AppData-Local-Temp-m97cwd-qMsAlC--
+/tmp/m97-bPqfyG/sessions/--C-Users-hzq00-AppData-Local-Temp-m97cwd-qMsAlC--/session-2cd98c92-26dc-4e33-8d0f-9760bed8a729
+
+================================================================
+6. resume that Session from a DIFFERENT working directory
+================================================================
+exit=1
+--- stdout ---
+--- stderr ---
+dsh: session "session-2cd98c92-26dc-4e33-8d0f-9760bed8a729" was recorded in "C:\Users\hzq00\AppData\Local\Temp\m97cwd-qMsAlC", not "C:\Users\hzq00\AppData\Local\Temp\m97other-8c2uPw"
+
+================================================================
+7. resume that Session from the CORRECT working directory
+   (the positive control: identity checks pass, only the key is missing)
+================================================================
+exit=1
+--- stdout ---
+
+--- stderr ---
+dsh: MISSING_CREDENTIAL: llm-deepseek: no API key for provider route "deepseek-official"; store DEEPSEEK_API_KEY through the credentials service (the web Models page writes it), or export DEEPSEEK_API_KEY in the launching environment
+
+--- final: how many Sessions exist under this home? ---
+/tmp/m97-bPqfyG/sessions/--C-Users-hzq00-AppData-Local-Temp-m97cwd-qMsAlC--/session-2cd98c92-26dc-4e33-8d0f-9760bed8a729
+
+================================================================
+8. --dump-default-config --profile web   (no user layer; no boot)
+================================================================
+exit=0
+--- stderr ---
+--- the agent-presets row ---
+565:- id: agent-presets
+566:  name: '@deepseek-ai/dsh-agent-presets'
+567-  config:
+568-    default: standard
+--- total rows: 163 ---
+
+================================================================
+9. the SAME home with a user patch setting the preset default to minimal,
+   dumped BOTH ways. --dump-config reads it; --dump-default-config must not.
+================================================================
+--- user patch content ---
+- id: agent-presets
+  config:
+    default: minimal
+--- --dump-config ---
+566:- id: agent-presets
+567:  name: '@deepseek-ai/dsh-agent-presets'
+568-  config:
+569-    default: minimal
+--- --dump-default-config ---
+565:- id: agent-presets
+566:  name: '@deepseek-ai/dsh-agent-presets'
+567-  config:
+568-    default: standard
+
+NOTE: this temp home was created by this evidence run and removed with it.
+No D:/DSH/home/canary* directory was read or written.

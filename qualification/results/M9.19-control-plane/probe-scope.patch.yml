@@ -1,0 +1,3 @@
+- insert:
+    - id: verify-e02-scope
+      name: 'D:/DSH/work/dsh-native-daily/qualification/runners/verify-e02-scope.mjs'

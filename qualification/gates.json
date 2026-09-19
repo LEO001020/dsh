@@ -352,8 +352,15 @@
     "required_for": "offline_qualified",
     "stimulus": "发布Job前abort、发布后调用方abort、真实owner stop。",
     "oracle": "无幽灵Job；已发布work不因等待结束丢失；owner stop按产品契约停止。",
-    "status": "NOT_RUN",
-    "note": "Signal layering across a published background Job has not been exercised; this project publishes no Jobs."
+    "status": "PASS",
+    "note": "(a) A pre-aborted signal makes drain launch NOTHING and return an EMPTY outcome list -- not refusals -- because the guard breaks before any request is considered; on the real JobRegistry a pre-abort refusal publishes no record AND consumes no id (the next start is still bash-1). Structural fact: JobStart has NO signal field at all (jobs/src/types.ts:46-69), so the refusal happens one layer ABOVE publication and the registry cannot be asked about it -- pinned at compile time. (b) An abort can never un-admit a task past its atomic reservation: it keeps its slot and credit and the run stays open. Signal OBJECT IDENTITY is asserted across caller -> drain -> port -> startContinuable, because a wrapper with its own controller would pass every behavioural test while silently decoupling the abort. (c) Disposing the exact live owner calls cancel, moves to stopping and AWAITS the producer; stopping still occupies the bucket, and a real registered Agent is required because ensureOwnerCleanup rejects stubs. SCOPE: this project publishes no background Job, so the Job-layer claims are asserted against the real registry directly rather than through a product path.",
+    "deployment_identity": "0ca14d4ee0ebea5eb85a3f72d66f48d839356f1b336c0e4f11f9a4f8ddf2ab7c",
+    "evidence": [
+      {
+        "path": "qualification/results/M9.9-signal/FINDINGS.md",
+        "sha256": "3b38ce575b1e8addbef04f9afe9c5baab43ad3299698c4e31fbba4ef85652ea1"
+      }
+    ]
   },
   {
     "id": "B10",
@@ -1197,8 +1204,15 @@
     "required_for": "daily_ready",
     "stimulus": "hook执行中AbortSignal取消。",
     "oracle": "中止/明确错误，不新建纠错轮、不await自身idle。",
-    "status": "NOT_RUN",
-    "note": "No turn-stopping hook is registered by this project."
+    "status": "PASS",
+    "note": "Serial with NO next, asserted at compile time and at runtime with the waterfall contrast measured on ONE turn (pre-step:2 vs stopping:1). An in-listener abort yields one aborted turn/end, ONE model request, and no correction round; a throwing listener yields an explicit error turn with one request. The deadlock is proven and traced, not asserted: whenIdle -> activityDone -> kick() -> turn() -> serial dispatch, so the listener waits for the driver waiting for it and no turn/end is ever appended. The project registers NO such hook, and a test asserts that absence so a future addition without the required care fails. FINDING: the daily profile DOES inherit a live turn-stopping listener -- dsh-web-app mounts workspace-changes, which registers one and does real git-snapshot work at the stop boundary. Stock and deliberately not removed, but it means the stimulus is not hypothetical. Five mutations were run and all caught.",
+    "deployment_identity": "0ca14d4ee0ebea5eb85a3f72d66f48d839356f1b336c0e4f11f9a4f8ddf2ab7c",
+    "evidence": [
+      {
+        "path": "qualification/results/M9.9-signal/FINDINGS.md",
+        "sha256": "3b38ce575b1e8addbef04f9afe9c5baab43ad3299698c4e31fbba4ef85652ea1"
+      }
+    ]
   },
   {
     "id": "F07",
@@ -1309,8 +1323,15 @@
     "required_for": "daily_ready",
     "stimulus": "长cell占用execution锁时独立SIGINT。",
     "oracle": "控制请求不被execution锁阻塞，结果状态如实。",
-    "status": "NOT_RUN",
-    "note": "Independent SIGINT during a long cell has not been exercised."
+    "status": "PASS",
+    "note": "CLOSED (unconfined). The signal is delivered on an INDEPENDENT control path: 8-9 ms against a running cell, so it does not wait for the command to finish. The command really stops, the post-state is reported honestly, and signalling is owner-authorized. The unconfined qualifier is inherited from the read-only spawn limitation and is stated rather than hidden.",
+    "deployment_identity": "0ca14d4ee0ebea5eb85a3f72d66f48d839356f1b336c0e4f11f9a4f8ddf2ab7c",
+    "evidence": [
+      {
+        "path": "qualification/results/M9.2-terminal-advanced/FINDINGS.md",
+        "sha256": "29f68856c507f28b9b2bf433f248105931b9ab5f0c595415a62bd6da30dfe478"
+      }
+    ]
   },
   {
     "id": "T06",
@@ -1319,8 +1340,15 @@
     "required_for": "daily_ready",
     "stimulus": "执行中kill host再启动出现同terminal ID。",
     "oracle": "新epoch不冒充旧kernel，不自动重放未知cell。",
-    "status": "NOT_RUN",
-    "note": "Host kill and terminal id reuse have not been exercised."
+    "status": "PASS",
+    "note": "CLOSED (unconfined). A fresh context starts with NO terminals, so a historical pty-N id is not silently adopted; a cell does not survive the host that owned it, with a positive control proving the test can detect survival. The package has no replay call site, so no historical cell is auto-replayed.",
+    "deployment_identity": "0ca14d4ee0ebea5eb85a3f72d66f48d839356f1b336c0e4f11f9a4f8ddf2ab7c",
+    "evidence": [
+      {
+        "path": "qualification/results/M9.2-terminal-advanced/FINDINGS.md",
+        "sha256": "29f68856c507f28b9b2bf433f248105931b9ab5f0c595415a62bd6da30dfe478"
+      }
+    ]
   },
   {
     "id": "T07",
@@ -1346,8 +1374,15 @@
     "required_for": "daily_ready",
     "stimulus": "异常、用户打印伪结束marker、input()等待。",
     "oracle": "错误/unknown不误当success；framing不是验收防伪。",
-    "status": "NOT_RUN",
-    "note": "Error and framing behaviour has not been exercised."
+    "status": "PASS",
+    "note": "CLOSED (unconfined). A failing command is not reported as success; a printed fake done-marker is NOT trusted as verification (markers are not tamper-proof); and an input()-style read settles as stdin_read rather than completion. The real waitReason values are asserted, so a send result is treated as a wait reason and never as a completion signal.",
+    "deployment_identity": "0ca14d4ee0ebea5eb85a3f72d66f48d839356f1b336c0e4f11f9a4f8ddf2ab7c",
+    "evidence": [
+      {
+        "path": "qualification/results/M9.2-terminal-advanced/FINDINGS.md",
+        "sha256": "29f68856c507f28b9b2bf433f248105931b9ab5f0c595415a62bd6da30dfe478"
+      }
+    ]
   },
   {
     "id": "T09",

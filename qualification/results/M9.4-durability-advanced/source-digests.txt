@@ -1,0 +1,22 @@
+# Source digests for M9.4 (D02 / D12 / D14)
+#
+# The first two are the files this gate CREATED/CHANGED. The rest are the
+# upstream and project sources the findings are read FROM, so a reader can
+# detect that the evidence has gone stale against a changed basis.
+
+== this slice's own sources ==
+a4c0498d40f42843472e31a5e9e77153682238dc20add06d5c2882beb807b504 *packages/dsh-daily-work/src/durability-advanced.test.ts
+c2ea21b62276a488a5e7fe9a96505af8ae74d490cee772df9dd8a7b2c1f73d86 *packages/dsh-daily-work/src/host.ts
+
+== project sources the gates are measured against ==
+bc5cd7f06a437a07f82682241023b0b50f10043df6928d0ebde2ed92dbc85b70 *packages/dsh-daily-work/src/reconcile.ts
+e0d9cd752db667b70ca02335662541352d232fc31aebccd5d2eb97a08df38106 *packages/dsh-daily-work/src/record.ts
+e7207ffd46f4aef395d6ff48a8679edca6107a90545716be179280bb49617aa0 *packages/dsh-daily-work/src/states.ts
+a364a03a4ecd9b752794e04f4211625671b85dbdf5f17a0fbc5ce7ad7c9a59ce *packages/dsh-daily-work/src/counting.ts
+
+== upstream sources the findings are read from ==
+e22f0152014c167fea74b2d47e0228c942d16ec60579daa1d8bf3d583958f0eb */d/DSH/src/dsh-src/packages/storage/storage-json/README.md
+7419ddd28ad0f03d039ff5a91a2ab88bcb9f9bf4a6e9033de27617ce7fc5b9a6 */d/DSH/src/dsh-src/packages/storage/storage-json/src/format.ts
+db857ab80f6f77bb2e2ad4c7e798dc795417e4a34e753e613a7a2be0163e1f76 */d/DSH/src/dsh-src/packages/storage/storage-json/src/single-unit.ts
+661c0b7daa38e994443782a47362e9c3077c62df5da2c7db4892816ea5e8d32f */d/DSH/src/dsh-src/packages/storage/storage-domain/src/index.ts
+1f285ff8b6aeba68b96f048fc1f427212b5f6e1938770915adf40ecff3f938da */d/DSH/src/dsh-src/packages/storage/storage-domain/src/error.ts

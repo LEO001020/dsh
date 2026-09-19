@@ -1,0 +1,19 @@
+
+ RUN  v4.1.8 D:/DSH/work/dsh-native-daily/packages/dsh-daily-work
+
+ ✓ src/terminal-advanced.test.ts > T05: interrupt on an independent control path > T05: SIGINT resolves while the cell is running, and the cell is not a success 3504ms
+ ✓ src/terminal-advanced.test.ts > T05: interrupt on an independent control path > T05: the interrupt really stops the command, not just the wait 14597ms
+ ✓ src/terminal-advanced.test.ts > T05: interrupt on an independent control path > T05: SIGINT needs a live owned session, and a dead one is refused 770ms
+ ✓ src/terminal-advanced.test.ts > T06: host loss and terminal id reuse > T06: a fresh context starts with no terminals and does not adopt a historical id 2409ms
+ ✓ src/terminal-advanced.test.ts > T06: host loss and terminal id reuse > T06: a cell does not survive the host that owned it 12187ms
+ ✓ src/terminal-advanced.test.ts > T06: host loss and terminal id reuse > T06: this project has no code path that could replay a historical cell 3ms
+ ✓ src/terminal-advanced.test.ts > T08: error and framing > T08: a failed command is not reported as success 1077ms
+ ✓ src/terminal-advanced.test.ts > T08: error and framing > T08: a forged completion marker is accepted as readiness, so framing is not proof 16660ms
+ ✓ src/terminal-advanced.test.ts > T08: error and framing > T08: a blocking read settles as a non-success reason while the cell is still running 5523ms
+ ✓ src/terminal-advanced.test.ts > T08: error and framing > T08: the only honest exit code is the shell's own 1802ms
+
+ Test Files  1 passed (1)
+      Tests  10 passed (10)
+   Start at  19:19:08
+   Duration  59.32s (transform 439ms, setup 0ms, import 597ms, tests 58.53s, environment 0ms)
+

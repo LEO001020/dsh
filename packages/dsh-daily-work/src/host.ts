@@ -29,7 +29,7 @@ import { link, mkdir, readFile, rename, rm, writeFile } from 'node:fs/promises'
 import { hostname } from 'node:os'
 import { dirname } from 'node:path'
 import { z } from 'zod'
-import { countRun, mayAdmit, type Counts, type TaskLiveness } from './counting.ts'
+import { admissionReason, countRun, mayAdmit, type Counts, type TaskLiveness } from './counting.ts'
 import {
   applySpend,
   budgetReport,
@@ -1048,7 +1048,10 @@ export class WorkService extends Service {
     const allowed = mayAdmit(record, counts, outstandingCost)
     return {
       allowed,
-      reason: allowed ? 'none' : counts.deficitReason,
+      // `admissionReason`, not `counts.deficitReason`: the counts alone cannot
+      // see this request's cost, so reading them here would let a budget
+      // refusal be reported as a slot problem.
+      reason: allowed ? 'none' : admissionReason(record, counts, outstandingCost),
       counts,
       budget: budgetReport(record.budget),
     }
@@ -1103,7 +1106,10 @@ export class WorkService extends Service {
           taskId: request.taskId,
           childId: request.childId,
           accepted: false,
-          reason: counts.deficitReason,
+          // The reason must be the one the GATE used, which needs this
+          // request's cost. `counts.deficitReason` cannot see it and would
+          // report a slot problem for a budget refusal.
+          reason: admissionReason(record, counts, request.reservedCost),
         })
         continue
       }

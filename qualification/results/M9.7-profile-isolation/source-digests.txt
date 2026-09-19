@@ -1,0 +1,33 @@
+# Files this gate's assertions are bound to, sha256.
+# Section 1: the deliverable this evidence is about.
+
+08f4970fb8e5b74dccdcd51408f7f2b329d7c2fb6b35c33c9163fe91649743df *src/profile-isolation.test.ts
+
+# Section 2: the DSH sources each assertion reads its rule from. These are
+# pinned so a reader can tell whether a later upstream edit invalidates a
+# claim below. Paths are relative to D:/DSH/src/dsh-src.
+
+23b680864586b8eedea05598c99a41b94cc5f4ecac31e995ebd176e6c5d11d5e *packages/preset/agent-presets/src/discovery.ts
+7f0b3245de4a22501d39072bc239e4230f498d92a757f1ff56ea710bcfaf1eb8 *packages/preset/agent-presets/src/mount.ts
+7cf0bdeb76eb02b341ebd631cc56c5271f3b06ac7fb6c3332239c9e7269ac6b2 *packages/preset/agent-presets/src/index.ts
+37679b9300da8428e912c1283e8846622f54f5c76acb38b887ce98e65a290d6c *packages/preset/agent-presets/src/specifier.ts
+b05e02d7def17305c93704d7281a1d6f008b95392fde2325589d131b5452926f *packages/preset/agent-presets/src/metadata.ts
+b21d5924b772e781279ec1fb2132c93b0830aed7bd10eca2f5ddc90a06755c6a *packages/bundle/headless/src/index.ts
+4751a270ee65d7a6d20da08da8c274ff763b6a02de69a03a3677279078ab3fb1 *packages/boot/app-boot/src/profile.ts
+e040cf44c7a4c1b74650cc32f67503b8881cc1d5b1f47f1cb38cf0167a9bb3da *packages/core/tools/src/index.ts
+adc3f85968efc1bf6a97f66aec26d69b6c51e9c139ae0b508d94dcc9535fb8fd *packages/core/agent/src/index.ts
+c1f0cc7de70a11989f6f0f1bf8df8c275858b462603fde19bc8df5b7517bf479 *packages/jobs/jobs-local/src/index.ts
+75f3b4f0c6a3b14d1c4750c51a71d6376e420fd533a26c14ebf1fdaa07bde3b8 *packages/compaction/compaction-basic/src/index.ts
+
+# Section 3: the shipped preset compositions the roster assertions read.
+
+0934f22b2fdbc158fd2edad33ec5dd2671b5b1f727800dcaab74cee3bd7294af *packages/preset/agent-presets/presets/standard/agent.cordis.yml
+e75af996ab8c4cc966f8c5b54cd8dc354d7ac71bfcedbe07c8896f63bb7f073b *packages/preset/agent-presets/presets/minimal/agent.cordis.yml
+830928ce6e1281bc000afbfc937664d1acf79811d870099fcf0d0951a8203680 *packages/preset/agent-presets/presets/ptc/agent.cordis.yml
+d4882736a02aad417d8e93b73ea3b6b48eb39b5280c1a77e224ce73d38512984 *packages/preset/agent-presets/presets/cordis/agent.cordis.yml
+
+# Section 4: the qualified launcher. Its digest is what makes 'the real
+# launcher refused' a claim about a specific artifact rather than about
+# whatever bin.js happened to be on disk.
+
+69c49c871735dc7ee81ec51f266bbec129f075fd5066e046374f4b13ab02a705 *apps/cli/lib/bin.js

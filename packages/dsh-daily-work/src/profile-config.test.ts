@@ -345,7 +345,11 @@ describe('A04: a profile patch replaces the row config, it does not merge into i
     const row = parseRows(run.stdout).get('session-query-sqlite') as string
     // The home layer won: its `path` is present and the profile layer's `openAt`
     // is gone, because the home replacement replaced the whole object again.
-    expect(configLines(row)).toEqual(["path: './home-index.sqlite'"])
+    // The dump re-serializes YAML, so the quoting of the scalar is the printer's
+    // choice; the assertion is on the parsed content.
+    expect(configKeys(row)).toEqual(['path'])
+    expect(row).toContain('home-index.sqlite')
+    expect(row).not.toContain('openAt')
     // And the dump attributes the row to BOTH layers, so the override is
     // visible in the graph rather than only in the values.
     const labels = patchedBy(run.stdout, 'session-query-sqlite')

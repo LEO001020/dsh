@@ -1,55 +1,61 @@
-import { describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it } from 'vitest'
+import { createServer, type Server } from 'node:http'
+import type { AddressInfo } from 'node:net'
 import { Context } from '@deepseek-ai/cordis'
-import AgentLoop from '@deepseek-ai/dsh-agent-loop'
-import { mountAgentLoopTestDependencies } from '@deepseek-ai/dsh-agent-loop-testkit'
-import { LlmAdapter, createUserMessage, type GenerateOptions, type StreamChunk } from '@deepseek-ai/dsh-llm'
-import { SessionId, foldRequestHeader } from '@deepseek-ai/dsh-session'
+import { ToolCallId } from '@deepseek-ai/dsh-llm'
+import SystemPrompt from '@deepseek-ai/dsh-system-prompt'
+import ToolRuntime from '@deepseek-ai/dsh-tools'
+import WebRuntime from '@deepseek-ai/dsh-web'
+import * as ToolWeb from '@deepseek-ai/dsh-tool-web'
+import { createDualLaneSearchProvider } from './web-search.ts'
 
-class Scripted extends LlmAdapter {
-  requests: GenerateOptions[] = []
-  constructor(private script: StreamChunk[][]) { super() }
-  async * stream(options: GenerateOptions): AsyncIterable<StreamChunk> {
-    this.requests.push(options)
-    const entry = this.script.shift()
-    if (!entry) throw new Error('script exhausted')
-    for (const c of entry) yield c
-  }
-}
-function text(t: string): StreamChunk[] {
-  return [
-    { type: 'block-start', index: 0, blockType: 'text' },
-    { type: 'block-end', index: 0, block: { type: 'text', text: t } },
-    { type: 'usage', usage: { inputTokens: 5, outputTokens: 5 } },
-    { type: 'finish', reason: { kind: 'stop' } },
-  ]
-}
+const servers: Server[] = []
+afterEach(async () => {
+  for (const s of servers.splice(0)) await new Promise<void>(r => s.close(() => r()))
+})
 
-describe('probe r07', () => {
-  it('dynamic context provider change reaches the wire as a user message only', async () => {
-    let marker = 'ALPHA'
+describe('probe r01 search', () => {
+  it('drives a real search over loopback through the real tool', async () => {
+    const seen: unknown[] = []
+    let mode = 'ok'
+    const server = createServer((req, res) => {
+      let body = ''
+      req.on('data', (c: Buffer) => { body += c.toString() })
+      req.on('end', () => {
+        seen.push(JSON.parse(body))
+        if (mode === 'error') { res.writeHead(500, { 'content-type': 'application/json' }); res.end('{"error":"boom"}'); return }
+        if (mode === 'empty') { res.writeHead(200, { 'content-type': 'application/json' }); res.end(JSON.stringify({ results: [] })); return }
+        res.writeHead(200, { 'content-type': 'application/json' })
+        res.end(JSON.stringify({ results: [{ url: `https://example.test/${JSON.parse(body).query}`, title: 'T', snippet: 'S' }] }))
+      })
+    })
+    servers.push(server)
+    await new Promise<void>(r => server.listen(0, '127.0.0.1', r))
+    const endpoint = `http://127.0.0.1:${(server.address() as AddressInfo).port}/search`
+
     const ctx = new Context()
-    await mountAgentLoopTestDependencies(ctx)
-    await ctx.plugin(AgentLoop, { agents: [] })
-    const adapter = new Scripted([text('one'), text('two'), text('three')])
-    ctx.llm.registerAdapter(['mock'], adapter)
-    ctx.systemPrompt.context({ name: 'probe:dyn', order: 100, text: () => `marker=${marker}` })
-    const agent = await ctx.agentLoop.create(SessionId('r7'), { provider: 'mock', model: 'mock' })
-    agent.followup(createUserMessage({ content: [{ type: 'text', text: 'turn1' }], source: { kind: 'user' } }))
-    await agent.whenIdle()
-    const gen1 = agent.session.surface.contentGeneration
-    marker = 'BETA'
-    agent.followup(createUserMessage({ content: [{ type: 'text', text: 'turn2' }], source: { kind: 'user' } }))
-    await agent.whenIdle()
-    const gen2 = agent.session.surface.contentGeneration
-    const ev = agent.session.snapshotEvents()
-    console.log('GEN', gen1, gen2)
-    console.log('HEADERS', JSON.stringify(ev.filter(e => e.type === 'request/header').map(e => ({ seq: e.seq, reason: (e.data as {reason: string}).reason }))))
-    console.log('REQ1 msgs', JSON.stringify(adapter.requests[0]?.messages.map(m => ({ role: m.role, t: m.content.map(c => (c as {type:string}).type) }))))
-    console.log('REQ2 msgs', JSON.stringify(adapter.requests[1]?.messages.map(m => ({ role: m.role, txt: m.content.filter(c => c.type === 'text').map(c => (c as {text:string}).text.slice(0, 60)) }))))
-    console.log('TOOLS equal', JSON.stringify(adapter.requests[0]?.tools) === JSON.stringify(adapter.requests[1]?.tools))
-    console.log('SYS equal', JSON.stringify(adapter.requests[0]?.messages[0]) === JSON.stringify(adapter.requests[1]?.messages[0]))
-    console.log('PROMPT1', JSON.stringify(adapter.requests[0]?.messages[0]?.content))
-    expect(ev.length).toBeGreaterThan(0)
+    await ctx.plugin(SystemPrompt, {})
+    await ctx.plugin(ToolRuntime, {})
+    await ctx.plugin(WebRuntime, { searchProvider: 'probe-lane' } as never)
+    await ctx.plugin(ToolWeb as never, {} as never)
+    ctx.web.registerSearchProvider(createDualLaneSearchProvider(
+      { id: 'probe-lane', endpoint, apiKeyEnv: 'SEARCH_KEY' },
+      { isConfigured: () => true },
+    ))
+
+    const call = (name: string, args: unknown, id: string) => ctx.tools.execute({
+      signal: new AbortController().signal, callId: ToolCallId(id), name, arguments: args,
+    })
+    const two = await call('web_search', { queries: ['alpha', 'beta'] }, 'c1')
+    console.log('TWO-QUERY', JSON.stringify(two).slice(0, 900))
+    console.log('SEEN', JSON.stringify(seen))
+    mode = 'empty'
+    const empty = await call('web_search', { queries: ['gamma'] }, 'c2')
+    console.log('EMPTY', JSON.stringify(empty).slice(0, 500))
+    mode = 'error'
+    const err = await call('web_search', { queries: ['delta'] }, 'c3')
+    console.log('ERROR', JSON.stringify(err).slice(0, 500))
     await ctx.fiber.dispose()
+    expect(true).toBe(true)
   })
 })

@@ -1,6 +1,7 @@
-# The package tsconfig EXCLUDES src/**/*.test.ts, so it does not typecheck this
-# file at all: tsc -p tsconfig.json --noEmit exits 0 with or without it. That is a
-# false pass for a test artifact, and it is why the second command below exists.
+# The package tsconfig EXCLUDES src/**/*.test.ts, so tsc -p tsconfig.json --noEmit
+# exits 0 with or without this file. That is a FALSE PASS for a test artifact, so
+# the second command below is the one that actually covers it: the same strict
+# flags, the package's own exclude cleared, config kept OUTSIDE the repo.
 
 $ cd /d/DSH/work/dsh-native-daily/packages/dsh-daily-work
 $ export PATH="/d/DSH/tools/bin:/d/DSH/src/dsh-src/node_modules/.bin:$PATH"
@@ -8,8 +9,6 @@ $ tsc -p tsconfig.json --noEmit
 
 package_tsc_exit=0
 
-# The test file itself, under the SAME strict flags plus the package's own
-# exclude cleared. The config lives outside the repo so nothing in it is touched.
 $ tsc -p /tmp/tsconfig.research.json   # files: src/research.test.ts, src/web-search.ts
 
 test_tsc_exit=0

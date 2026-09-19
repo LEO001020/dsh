@@ -4,15 +4,17 @@ tsc_exit=0
 
 === command 2: the new test file itself ===
 tsconfig.json EXCLUDES src/**/*.test.ts, and 'vitest' is not resolvable from
-this package (it is installed in the pinned checkout, not here). So the test
-file is checked with a throwaway config that adds only the vitest path map.
-Reproduce with the config printed below, written anywhere outside the repo.
+this package (it is installed in the pinned checkout, not here), so the test
+file is checked with a throwaway config that adds ONLY the vitest path map.
+The config is printed in full below; write it anywhere outside the repo.
 
---- tsconfig.signal.json ---
+--- tsconfig.signal.json (verbatim) ---
 {
   "compilerOptions": {
     "target": "ES2024",
-    "lib": ["ES2024"],
+    "lib": [
+      "ES2024"
+    ],
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
     "strict": true,
@@ -24,15 +26,29 @@ Reproduce with the config printed below, written anywhere outside the repo.
     "rewriteRelativeImportExtensions": true,
     "noEmit": true,
     "skipLibCheck": true,
-    "types": ["node"],
-    "typeRoots": ["D:/DSH/work/dsh-native-daily/packages/dsh-daily-work/node_modules/@types"],
+    "types": [
+      "node"
+    ],
+    "typeRoots": [
+      "D:/DSH/work/dsh-native-daily/packages/dsh-daily-work/node_modules/@types"
+    ],
     "paths": {
-      "vitest": ["D:/DSH/src/dsh-src/node_modules/vitest/dist/index.d.ts"]
+      "vitest": [
+        "D:/DSH/src/dsh-src/node_modules/vitest/dist/index.d.ts"
+      ]
     }
   },
-  "files": ["D:/DSH/work/dsh-native-daily/packages/dsh-daily-work/src/launch-port.test.ts"]
+  "files": [
+    "D:/DSH/work/dsh-native-daily/packages/dsh-daily-work/src/signal.test.ts"
+  ]
 }
 --- end config ---
 
 $ tsc -p <that file>
 test_tsc_exit=0
+
+NOTE: this second check is not decoration. It caught a real error in the
+first draft of this test (an agent/pre-step listener typed as
+(\...args: unknown[]), whose return type did not satisfy PreStepDecision),
+and the compile-time arity assertion at the top of the file is itself part
+of the evidence for F06. A test that is never type-checked proves nothing.

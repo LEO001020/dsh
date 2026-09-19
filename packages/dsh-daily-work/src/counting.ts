@@ -155,11 +155,37 @@ export function countRun(
     confirmed,
     cancelled,
     capacityDeficit: deficit,
-    deficitReason: explainDeficit(record, deficit, readyTasks),
+    deficitReason: explainDeficit(record, deficit, readyTasks, 0),
   }
 }
 
-function explainDeficit(record: RunRecord, deficit: number, readyTasks: number): DeficitReason {
+/**
+ * Why this run cannot admit THIS request.
+ *
+ * Exists because `counts.deficitReason` is computed from the record alone and
+ * therefore cannot see the cost of the request in hand. A request whose cost
+ * does not fit under the child ceiling would be refused by `mayAdmit` while
+ * `deficitReason` reported something else entirely - measured: a request of 91
+ * against a child ceiling of 90 reported `slots_held_by_unconfirmed` with no
+ * task held at all. That is the drift this module's own header warns about, in
+ * the direction that matters: the gate refusing for a reason it does not state.
+ *
+ * Callers that are refusing a SPECIFIC request must use this function rather
+ * than reading `counts.deficitReason`, so the stated reason and the gate that
+ * produced it are the same decision.
+ *
+ * @param outstandingCost - the cost of the request being considered.
+ */
+export function admissionReason(record: RunRecord, counts: Counts, outstandingCost: number): DeficitReason {
+  return explainDeficit(record, counts.capacityDeficit, counts.readyTasks, outstandingCost)
+}
+
+function explainDeficit(
+  record: RunRecord,
+  deficit: number,
+  readyTasks: number,
+  outstandingCost: number,
+): DeficitReason {
   if (deficit === 0) return 'none'
   if (record.phase !== 'open') return 'run_not_open'
   // A recorded overage outranks the plain budget reading: both stop admission,
@@ -168,6 +194,9 @@ function explainDeficit(record: RunRecord, deficit: number, readyTasks: number):
   // a normal ceiling stop and hide that the bill exceeded its estimate.
   if (isHalted(record.budget)) return 'budget_overage_halt'
   if (budgetExhausted(record)) return 'budget_blocked'
+  // The same comparison `mayAdmit` makes, so a refusal it would make for budget
+  // is never reported as a slot problem.
+  if (committedCost(record) + outstandingCost > childCeiling(record.budget)) return 'budget_blocked'
   if (readyTasks < record.requestedTarget) return 'insufficient_ready_tasks'
   return 'slots_held_by_unconfirmed'
 }
