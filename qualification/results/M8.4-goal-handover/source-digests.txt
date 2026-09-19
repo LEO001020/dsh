@@ -1,0 +1,2 @@
+d8bf8f46759bf1cc77d1803106fe4f6c4f3ad8e75ccb00baddf5553b4b587cf0 *src/goal.test.ts
+8d727d62feda8b705bcf80ba3da1d7cc9608b009e231f5f698c954abd79978e9 *src/host.ts

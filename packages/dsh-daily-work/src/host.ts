@@ -86,6 +86,24 @@ export interface LaunchPort {
   launch(request: LaunchRequest, signal: AbortSignal): Promise<{ childId: string }>
 }
 
+/**
+ * The result of taking continuation ownership from the Goal driver.
+ *
+ * Every field is an observation, so a reader can check the claim instead of
+ * trusting the note. `objectivePreserved` and `revisionUnchanged` are the two
+ * that matter: they are what make this a handover rather than a deletion.
+ */
+export interface ContinuationHandover {
+  readonly goalPresent: boolean
+  readonly disarmed: boolean
+  readonly objectivePreserved?: boolean
+  readonly revisionUnchanged?: boolean
+  readonly phaseBefore?: string
+  readonly phaseAfter?: string
+  readonly activationAfter?: string
+  readonly note: string
+}
+
 export interface WorkServiceConfig {
   /** Default target N for a new run. Root is not part of it. */
   readonly targetChildren: number
@@ -221,6 +239,55 @@ export class WorkService extends Service {
       this.liveness.set(runId, perRun)
     }
     perRun.set(liveness.taskId, liveness)
+  }
+
+  /**
+   * Take over continuation for a root, so exactly ONE owner drives it.
+   *
+   * Why this exists: DSH's Goal is a durable objective PLUS an independent
+   * round driver that auto-continues an idle agent. A managed work run is also a
+   * continuation driver, because it wakes the root when a child settles. Two
+   * drivers on one root is a double-continuation loop, and the plan requires
+   * exactly one.
+   *
+   * The resolution is deliberately the mildest one available. `disarm` removes
+   * only the PROCESS-LOCAL continuation authority:
+   *
+   *   - it does NOT clear the durable objective
+   *   - it does NOT bump the goal revision
+   *   - it does NOT fake completion
+   *
+   * so the goal stays visible and honest on the medium, and a later
+   * human-authorized `resume` records a new activation edge. Nothing here
+   * touches the goal's private activation state.
+   *
+   * @param root - the exact live Agent whose continuation we are taking over.
+   * @returns what was found and what was changed, for the record.
+   */
+  takeContinuation(root: Agent): ContinuationHandover {
+    const goals = this.ctx.get('goals')
+    if (goals === undefined) {
+      // No Goal service in this profile. There is nothing to contend with, so
+      // this is a complete, honest answer rather than a failure.
+      return { goalPresent: false, disarmed: false, note: 'no goal service is mounted in this profile' }
+    }
+    const before = goals.get(root)
+    if (before === undefined) {
+      return { goalPresent: false, disarmed: false, note: 'the root has no current goal' }
+    }
+    goals.disarm(root)
+    const after = goals.get(root)
+    return {
+      goalPresent: true,
+      disarmed: true,
+      // Recorded so a reader can check the claim rather than trust it.
+      objectivePreserved: after?.objective === before.objective,
+      revisionUnchanged: after?.revision === before.revision,
+      phaseBefore: before.phase,
+      phaseAfter: after?.phase,
+      activationAfter: after?.activation,
+      note: 'process-local continuation removed; the durable objective and revision are untouched',
+    }
   }
 
   /** Every run id this host knows about. Used to map a live session to its run. */

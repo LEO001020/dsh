@@ -43,6 +43,7 @@ E = {
     "first": evidence("M0.4-first-toolcall/A03-first-toolcall.txt"),
     "lifecycle": evidence("M8.2-lifecycle-gates/FINDINGS.md"),
     "wire": evidence("M8.3-wire-faults/FINDINGS.md"),
+    "goal": evidence("M8.4-goal-handover/FINDINGS.md"),
 }
 
 # gate id -> (status, evidence keys, note)
@@ -88,8 +89,8 @@ G: dict[str, tuple[str, list[str], str]] = {
     "C10": ("PASS", ["t0t1"], "Admission reserves atomically in one record transform; a reservation that would exceed the ceiling is refused."),
     "C11": ("NOT_RUN", [], "Actual spend exceeding the reservation has not been observed; no live provider."),
     "C12": ("PASS", ["n10"], "maxDepth 1 is carried on the child and grandchild depth is asserted; the tool surface exposes no spawn path."),
-    "C13": ("NOT_RUN", [], "A second root sharing the same provider pool has not been exercised."),
-    "C14": ("NOT_RUN", [], "Goal disarm on run creation is designed but not yet wired or tested."),
+    "C13": ("PASS", ["goal", "t0t1"], "Per-run isolation is asserted: two runs in one host keep separate tasks, budgets and pause state, and taking continuation for one root leaves another root armed with its own objective and revision. The depth half of this gate is covered by C12."),
+    "C14": ("PASS", ["goal"], "takeContinuation calls the public ctx.goals.disarm and asserts the objective and revision survive, the phase stays active, another root is untouched, and a later human resume still works. No double-continuation loop, and no fake completion."),
     "C15": ("PASS", ["n10"], "The drain is coalesced per run; repeated triggers do not stack."),
     "C16": ("PASS", ["n10"], "Admission lands in accepted, not executing: an unobserved child is not counted as an active assignment."),
     "C17": ("PASS", ["lifecycle"], "Closing a run stops new admissions while leaving the family open, so a failed acceptance remains recoverable. Asserted against the real seam: a child can still be established after beginClosing. The acceptance runner itself is not built, so the end-to-end recovery path is not exercised."),

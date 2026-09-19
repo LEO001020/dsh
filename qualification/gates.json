@@ -563,8 +563,19 @@
     "required_for": "daily_ready",
     "stimulus": "child试图开孙辈、另一个root同时使用相同provider。",
     "oracle": "depth/每run与global provider限额分别生效，不误把家族池当全局。",
-    "status": "NOT_RUN",
-    "note": "A second root sharing the same provider pool has not been exercised."
+    "status": "PASS",
+    "note": "Per-run isolation is asserted: two runs in one host keep separate tasks, budgets and pause state, and taking continuation for one root leaves another root armed with its own objective and revision. The depth half of this gate is covered by C12.",
+    "deployment_identity": "0ca14d4ee0ebea5eb85a3f72d66f48d839356f1b336c0e4f11f9a4f8ddf2ab7c",
+    "evidence": [
+      {
+        "path": "qualification/results/M8.4-goal-handover/FINDINGS.md",
+        "sha256": "75140579a7f4791d4ed36de9de16c7e83a99f68038683221b4302c9a185eaa27"
+      },
+      {
+        "path": "qualification/results/M2.2-work-host/tests.txt",
+        "sha256": "0b33ead1a3558b8ef41fdc7335e7227cc60d8c3f0e4f3a58cd26094fee58707b"
+      }
+    ]
   },
   {
     "id": "C14",
@@ -573,8 +584,15 @@
     "required_for": "daily_ready",
     "stimulus": "已有active Goal、managed run启动，随后模型尝试resume_goal。",
     "oracle": "只对本run解除并防冲突；无双续行loop，其他Session不受影响。",
-    "status": "NOT_RUN",
-    "note": "Goal disarm on run creation is designed but not yet wired or tested."
+    "status": "PASS",
+    "note": "takeContinuation calls the public ctx.goals.disarm and asserts the objective and revision survive, the phase stays active, another root is untouched, and a later human resume still works. No double-continuation loop, and no fake completion.",
+    "deployment_identity": "0ca14d4ee0ebea5eb85a3f72d66f48d839356f1b336c0e4f11f9a4f8ddf2ab7c",
+    "evidence": [
+      {
+        "path": "qualification/results/M8.4-goal-handover/FINDINGS.md",
+        "sha256": "75140579a7f4791d4ed36de9de16c7e83a99f68038683221b4302c9a185eaa27"
+      }
+    ]
   },
   {
     "id": "C15",
