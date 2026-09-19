@@ -1,0 +1,31 @@
+# V5-data source digests (sha256), so every DATA-family claim is traceable to exact bytes.
+# Repo: D:/DSH/work/dsh-native-daily @ branch ipython-native, HEAD c3b9dba
+# Pinned DSH checkout D:/DSH/src/dsh-src @ ddefc45fbc7f8e46dd73185e68295696d1297887 (READ-ONLY)
+
+# Deployment identity (compatibility.lock.json -> deployment.identity)
+#   0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461
+#   re-verified by qualification/results/T1-spec/verify-identity.py: all 28 checks passed
+
+## The build these cases ran against
+# Built with: node /d/DSH/src/dsh-src/node_modules/typescript/bin/tsc -p tsconfig.json
+# Run from packages/dsh-daily-work, exit 0, no output.
+# lib/ sha256 BEFORE the rebuild and AFTER were byte-identical, so lib/ was already current:
+5de9d97a218762eec5a5bcd5c22daf304b71bce93a92f0b15da3bfe62bdabffa *packages/dsh-daily-work/lib/artifacts.js
+4bbc68994f6391d620dc932cd3445a2489f5f68a6619aa6e72a9c02a6123253f *packages/dsh-daily-work/lib/data-service.js
+6aaff6e4fe66619a0282652e9bde5155d736867ac8d0c30d4ae845dc5dcb228c *packages/dsh-daily-work/lib/observations.js
+
+## Production sources the DATA oracles depend on
+f809bd7ed21cca96e831c1630b2eb6e0aa045d51f0b27a7ac8049b1638d4ae1b *packages/dsh-daily-work/src/artifacts.ts
+7ead0000e5c785bf8c322cf4447f1a24309226dc5b3677e9e1bb1803146ca6e3 *packages/dsh-daily-work/src/observations.ts
+d029876fc93ba68b35e144d0b34a31dbdc55c07c7615fbf8b60d53955b002fd0 *packages/dsh-daily-work/src/data-service.ts
+c2fa1d5dabe4277f78ee0e7c8f29f37275783a7d0ec3761e4bc5241dfe045236 *packages/dsh-daily-work/src/web-provenance.ts
+
+## The test file that carries DATA-01..DATA-08
+a43d06d60eeacd388c2651d70473f7b22d06f80ba00a53047329d5940b6b9e8e *packages/dsh-daily-work/src/data-plane.test.ts
+
+## Pinned-checkout files the DATA claims depend on
+881c3f5da682e0df770634c2d657622b8af72099d1072efd44af9c603b4744b6 */d/DSH/src/dsh-src/packages/fs/tool-fs/src/read-render.ts
+7b12cf379bfbbf24792b259673d2c6fa74ab7ec9322b3590e4482f4ebc024cab */d/DSH/src/dsh-src/packages/fs/tool-fs-search/src/search-core.ts
+
+## V5-data instruments
+089293706720d3bbfe5c1dd0a93685efb7e2c1a3bc0e376cd053fef3e722341e *qualification/results/V5-data/v5-data-probe.mjs

@@ -670,8 +670,33 @@
       "requirement": "a long line is recovered byte-for-byte",
       "stimulus": "Capture a single 100 KiB line that spans several pages, then read it back.",
       "oracle": "The recovered bytes equal the source bytes exactly (digest compared), with no silent tail truncation at any intermediate cap. The measured byte count and the digest are recorded.",
-      "status": "NOT_RUN",
-      "evidence": []
+      "status": "PASS",
+      "evidence": [
+            {
+                  "path": "qualification/results/V5-data/GATES.md",
+                  "sha256": "660d593d9917538cb891d9bfa2a909fab300c169691c981a7f9e241c1705bf29",
+                  "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+                  "note": "Gate row DATA-01, with the command, the measured 102400 bytes and the recorded digest."
+            },
+            {
+                  "path": "qualification/results/V5-data/tests-data-plane.txt",
+                  "sha256": "6979b5548070e981b9244fcd47a64819e3bd818af907a90b4f19b28491961ee3",
+                  "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+                  "note": "DAT-01 [real] long line: 4 tests. The real buildWindow clips the line; the byte-range path recovers it."
+            },
+            {
+                  "path": "qualification/results/V5-data/v5-data-probe.json",
+                  "sha256": "42b9e9785c3a0e19e72fdac5176c211705a90c831ab3af860f94fb51b0ff2035",
+                  "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+                  "note": "g5_recordedDigests.DATA-01_longLineRecoveredByteForByte: source and recovered sha256 are equal (8f73f6f3193b1c3f71ef6395278559fb9c01a8eac0731dfdc6e37667e7a310b2), 2 pages, TAILMARKER present, and the read-tool clip at READ_MAX_LINE_LENGTH=2000 is recorded for contrast."
+            },
+            {
+                  "path": "qualification/results/V5-data/source-digests.txt",
+                  "sha256": "29ea1bc06f020f1ce6581033fbd30ee64b06a090569b25ea7d09c6d52d289685",
+                  "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+                  "note": "Build identity, lib/ and src/ digests, and pinned-checkout digests for every claim."
+            }
+      ]
     },
     {
       "id": "DATA-02",
@@ -681,8 +706,27 @@
       "requirement": "a large result stays out of the model context",
       "stimulus": "Consume 512 native pages totalling 32 MiB in one cell.",
       "oracle": "All pages are consumed correctly and the model-visible projection is at most 8 KiB, with the actual projection size recorded. The tier at which this was measured (in-process consumer vs a real out-of-process consumer) is stated explicitly and is not blurred.",
-      "status": "NOT_RUN",
-      "evidence": []
+      "status": "PASS",
+      "evidence": [
+            {
+                  "path": "qualification/results/V5-data/GATES.md",
+                  "sha256": "660d593d9917538cb891d9bfa2a909fab300c169691c981a7f9e241c1705bf29",
+                  "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+                  "note": "Gate row DATA-02: 32 MiB / 512 pages, projection 399 B in-process, 429 B real CPython, 437 B real ipykernel."
+            },
+            {
+                  "path": "qualification/results/V5-data/tests-data-plane.txt",
+                  "sha256": "6979b5548070e981b9244fcd47a64819e3bd818af907a90b4f19b28491961ee3",
+                  "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+                  "note": "DAT-02 [real capture / real consumers]: 3 tests, each naming its own consumer tier; projection asserted <= 8 KiB."
+            },
+            {
+                  "path": "qualification/results/V5-data/source-digests.txt",
+                  "sha256": "29ea1bc06f020f1ce6581033fbd30ee64b06a090569b25ea7d09c6d52d289685",
+                  "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+                  "note": "Build identity, lib/ and src/ digests, and pinned-checkout digests for every claim."
+            }
+      ]
     },
     {
       "id": "DATA-03",
@@ -692,8 +736,33 @@
       "requirement": "encoding and page boundaries do not corrupt records",
       "stimulus": "Split UTF-8 text, CRLF text and JSONL at each page boundary, including inside a multi-byte character.",
       "oracle": "No character is corrupted, no record is duplicated and no record is missing; the reassembled content equals the source.",
-      "status": "NOT_RUN",
-      "evidence": []
+      "status": "PASS",
+      "evidence": [
+            {
+                  "path": "qualification/results/V5-data/GATES.md",
+                  "sha256": "660d593d9917538cb891d9bfa2a909fab300c169691c981a7f9e241c1705bf29",
+                  "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+                  "note": "Gate row DATA-03, including the measured boundary that an individual fixed-byte page need not be standalone-valid UTF-8."
+            },
+            {
+                  "path": "qualification/results/V5-data/tests-data-plane.txt",
+                  "sha256": "6979b5548070e981b9244fcd47a64819e3bd818af907a90b4f19b28491961ee3",
+                  "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+                  "note": "DAT-03 [real]: 5 tests, page sizes 1..96 and 10 record-boundary sizes over CRLF+JSONL."
+            },
+            {
+                  "path": "qualification/results/V5-data/v5-data-probe.json",
+                  "sha256": "42b9e9785c3a0e19e72fdac5176c211705a90c831ab3af860f94fb51b0ff2035",
+                  "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+                  "note": "DATA-03_pageBoundarySweep: 5532 bytes, 120 records, 10 page sizes, every reassembly digest equals the source digest f1e356753b62073fffd9728c428416ad4a199f838a21a5bf1dc2952c56efa0c4, no U+FFFD."
+            },
+            {
+                  "path": "qualification/results/V5-data/source-digests.txt",
+                  "sha256": "29ea1bc06f020f1ce6581033fbd30ee64b06a090569b25ea7d09c6d52d289685",
+                  "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+                  "note": "Build identity, lib/ and src/ digests, and pinned-checkout digests for every claim."
+            }
+      ]
     },
     {
       "id": "DATA-04",
@@ -703,8 +772,27 @@
       "requirement": "pagination cannot stall silently",
       "stimulus": "A provider returns a repeated cursor and, separately, a backwards cursor.",
       "oracle": "A `pagination-stalled` error is raised in both cases and the read terminates. An unbounded loop, or a silent stop that reports success, is NOT PASS.",
-      "status": "NOT_RUN",
-      "evidence": []
+      "status": "PASS",
+      "evidence": [
+            {
+                  "path": "qualification/results/V5-data/GATES.md",
+                  "sha256": "660d593d9917538cb891d9bfa2a909fab300c169691c981a7f9e241c1705bf29",
+                  "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+                  "note": "Gate row DATA-04: repeated cursor stalls after 3 calls, backwards after 2, real store still completes."
+            },
+            {
+                  "path": "qualification/results/V5-data/tests-data-plane.txt",
+                  "sha256": "6979b5548070e981b9244fcd47a64819e3bd818af907a90b4f19b28491961ee3",
+                  "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+                  "note": "DAT-04 [mock provider]: 5 tests. The mock is the only mock in the file, labelled as such, because a correct provider cannot return a repeated or backwards cursor."
+            },
+            {
+                  "path": "qualification/results/V5-data/source-digests.txt",
+                  "sha256": "29ea1bc06f020f1ce6581033fbd30ee64b06a090569b25ea7d09c6d52d289685",
+                  "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+                  "note": "Build identity, lib/ and src/ digests, and pinned-checkout digests for every claim."
+            }
+      ]
     },
     {
       "id": "DATA-05",
@@ -714,8 +802,33 @@
       "requirement": "pages come from one snapshot",
       "stimulus": "Read page 1, modify the source file, then read page 2.",
       "oracle": "Page 2 either still matches the captured hash or the read fails explicitly. Pages from two different revisions are never mixed into one result, and the recorded hash is stated.",
-      "status": "NOT_RUN",
-      "evidence": []
+      "status": "PASS",
+      "evidence": [
+            {
+                  "path": "qualification/results/V5-data/GATES.md",
+                  "sha256": "660d593d9917538cb891d9bfa2a909fab300c169691c981a7f9e241c1705bf29",
+                  "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+                  "note": "Gate row DATA-05, with the captured hash and the post-rewrite source hash recorded."
+            },
+            {
+                  "path": "qualification/results/V5-data/tests-data-plane.txt",
+                  "sha256": "6979b5548070e981b9244fcd47a64819e3bd818af907a90b4f19b28491961ee3",
+                  "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+                  "note": "DAT-05 [real]: 3 tests, including a cursor bound to a different artifact and a cursor after a grant bump."
+            },
+            {
+                  "path": "qualification/results/V5-data/v5-data-probe.json",
+                  "sha256": "42b9e9785c3a0e19e72fdac5176c211705a90c831ab3af860f94fb51b0ff2035",
+                  "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+                  "note": "DATA-05_snapshotHashAfterSourceRewrite: captured b778c9b54fd1178b186ed04d4e93ddfc6b655b1309458f9b902bf1a9222ed392 vs rewritten source 42bb697d7220ece5a3829e41bc60ec3d7c661452653c41c444268cddccdc14da; page 2 still reports the captured hash."
+            },
+            {
+                  "path": "qualification/results/V5-data/source-digests.txt",
+                  "sha256": "29ea1bc06f020f1ce6581033fbd30ee64b06a090569b25ea7d09c6d52d289685",
+                  "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+                  "note": "Build identity, lib/ and src/ digests, and pinned-checkout digests for every claim."
+            }
+      ]
     },
     {
       "id": "DATA-06",
@@ -725,8 +838,27 @@
       "requirement": "paging does not rescan the whole file per page",
       "stimulus": "Read P pages of a fixed large file while counting physical bytes read.",
       "oracle": "The physical IO is bounded well below P full-file scans, and the actual IO and index cost are reported as measured numbers rather than described.",
-      "status": "NOT_RUN",
-      "evidence": []
+      "status": "PASS",
+      "evidence": [
+            {
+                  "path": "qualification/results/V5-data/GATES.md",
+                  "sha256": "660d593d9917538cb891d9bfa2a909fab300c169691c981a7f9e241c1705bf29",
+                  "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+                  "note": "Gate row DATA-06: 8 pages cost 524288 bytes; the index is one linear 4194304-byte scan; 5 repeated reads scanned 944445 bytes against 20480."
+            },
+            {
+                  "path": "qualification/results/V5-data/tests-data-plane.txt",
+                  "sha256": "6979b5548070e981b9244fcd47a64819e3bd818af907a90b4f19b28491961ee3",
+                  "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+                  "note": "DAT-06 [real]: 2 tests. The repeated-read control is the audit inference measured rather than assumed."
+            },
+            {
+                  "path": "qualification/results/V5-data/source-digests.txt",
+                  "sha256": "29ea1bc06f020f1ce6581033fbd30ee64b06a090569b25ea7d09c6d52d289685",
+                  "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+                  "note": "Build identity, lib/ and src/ digests, and pinned-checkout digests for every claim."
+            }
+      ]
     },
     {
       "id": "DATA-07",
@@ -736,8 +868,27 @@
       "requirement": "a renderer cap does not shrink the canonical set",
       "stimulus": "A grep returns more matches than the renderer displays, with the renderer showing 250 rows.",
       "oracle": "The canonical full set is readable through the programmatic path, and any backend raw cap is still marked `partial` with its coverage recorded. Treating the rendered 250 as the whole set is NOT PASS.",
-      "status": "NOT_RUN",
-      "evidence": []
+      "status": "PASS",
+      "evidence": [
+            {
+                  "path": "qualification/results/V5-data/GATES.md",
+                  "sha256": "660d593d9917538cb891d9bfa2a909fab300c169691c981a7f9e241c1705bf29",
+                  "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+                  "note": "Gate row DATA-07, which records the mechanism deviation: at the raw cap the product THROWS SEARCH_RAW_OUTPUT_OVERFLOW rather than returning a partial-marked descriptor. Both substantive requirements hold; a reader requiring the literal partial marking should read this as a deviation."
+            },
+            {
+                  "path": "qualification/results/V5-data/tests-data-plane.txt",
+                  "sha256": "6979b5548070e981b9244fcd47a64819e3bd818af907a90b4f19b28491961ee3",
+                  "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+                  "note": "DAT-07 [real ripgrep]: 2 tests. Canonical 900 matches read back by a real CPython process; renderer keeps 250 of 900 and says it omitted the rest; the cap is driven through runRipgrep and the refusal is measured."
+            },
+            {
+                  "path": "qualification/results/V5-data/source-digests.txt",
+                  "sha256": "29ea1bc06f020f1ce6581033fbd30ee64b06a090569b25ea7d09c6d52d289685",
+                  "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+                  "note": "Build identity, lib/ and src/ digests, and pinned-checkout digests for every claim."
+            }
+      ]
     },
     {
       "id": "DATA-08",
@@ -747,8 +898,27 @@
       "requirement": "quota and disk failure are explicit",
       "stimulus": "Fill the store to its quota and, separately, make a capture fail mid-write.",
       "oracle": "An explicit `partial`/failure is reported with its stage, no unbounded inline expansion is attempted, and no external effect is re-executed as a retry. The store's state after the failure is recorded.",
-      "status": "NOT_RUN",
-      "evidence": []
+      "status": "PASS",
+      "evidence": [
+            {
+                  "path": "qualification/results/V5-data/GATES.md",
+                  "sha256": "660d593d9917538cb891d9bfa2a909fab300c169691c981a7f9e241c1705bf29",
+                  "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+                  "note": "Gate row DATA-08: quota, orphan, missing, corruption and checkpoint arms, each with its stage and store state."
+            },
+            {
+                  "path": "qualification/results/V5-data/tests-data-plane.txt",
+                  "sha256": "6979b5548070e981b9244fcd47a64819e3bd818af907a90b4f19b28491961ee3",
+                  "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+                  "note": "DAT-08 [real]: 5 tests, plus the DATA-08 corruption block (replaced in place, truncated, and an intact control)."
+            },
+            {
+                  "path": "qualification/results/V5-data/source-digests.txt",
+                  "sha256": "29ea1bc06f020f1ce6581033fbd30ee64b06a090569b25ea7d09c6d52d289685",
+                  "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+                  "note": "Build identity, lib/ and src/ digests, and pinned-checkout digests for every claim."
+            }
+      ]
     },
     {
       "id": "DATA-09",
@@ -758,8 +928,33 @@
       "requirement": "every observation gap is attributed to a stage",
       "stimulus": "Produce captures that lose bytes at known stages: provider cap, native tool cap, a lossy transform, a storage refusal, a transport limit, and a model projection.",
       "oracle": "Each gap appears in `acquisition.gaps` with its stage from the closed set `provider-acquisition`, `native-acquisition`, `transform`, `retention`, `transport`, `model-projection`, plus a recovery from `page`/`refetch`/`none`/`unknown`. A loss that is not recorded as a gap is NOT PASS.",
-      "status": "NOT_RUN",
-      "evidence": []
+      "status": "FAIL",
+      "evidence": [
+            {
+                  "path": "qualification/results/V5-data/GATES.md",
+                  "sha256": "660d593d9917538cb891d9bfa2a909fab300c169691c981a7f9e241c1705bf29",
+                  "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+                  "note": "Gate row DATA-09 and section 3a: 4 of the 6 stages have a real producer and were driven; transport and model-projection have 0 assignments in production source, so two of the six stimuli this case names cannot produce a gap at all. The spec rule \"a loss that is not recorded as a gap is NOT PASS\" is therefore not met."
+            },
+            {
+                  "path": "qualification/results/V5-data/v5-data-probe.json",
+                  "sha256": "42b9e9785c3a0e19e72fdac5176c211705a90c831ab3af860f94fb51b0ff2035",
+                  "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+                  "note": "g1_gapAttribution: per-stage producer, measured gap, stage and recovery for all six; stagesWithNoProducer is [\"transport\",\"model-projection\"]."
+            },
+            {
+                  "path": "qualification/results/V5-data/v5-data-probe.mjs",
+                  "sha256": "e79f7f94a04f669684107a55b42a59f57cdb144e516e8e356ff458e71e6d7c2e",
+                  "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+                  "note": "The probe itself, so the measurement can be re-run and checked."
+            },
+            {
+                  "path": "qualification/results/V5-data/source-digests.txt",
+                  "sha256": "29ea1bc06f020f1ce6581033fbd30ee64b06a090569b25ea7d09c6d52d289685",
+                  "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+                  "note": "Build identity, lib/ and src/ digests, and pinned-checkout digests for every claim."
+            }
+      ]
     },
     {
       "id": "DATA-10",
@@ -769,8 +964,33 @@
       "requirement": "a refetch is a new observation, never a back-fill",
       "stimulus": "Fetch a URL, let the content change, then refetch it.",
       "oracle": "A new observation with its own hash and acquisition time is created, and the earlier hash and time remain retrievable. The earlier body is never overwritten or re-attributed to the new fetch.",
-      "status": "NOT_RUN",
-      "evidence": []
+      "status": "PASS",
+      "evidence": [
+            {
+                  "path": "qualification/results/V5-data/GATES.md",
+                  "sha256": "660d593d9917538cb891d9bfa2a909fab300c169691c981a7f9e241c1705bf29",
+                  "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+                  "note": "Gate row DATA-10: two observations with distinct ids; the earlier hash, time and byte count all survive."
+            },
+            {
+                  "path": "qualification/results/V5-data/tests-data-plane.txt",
+                  "sha256": "6979b5548070e981b9244fcd47a64819e3bd818af907a90b4f19b28491961ee3",
+                  "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+                  "note": "DATA-06 [real] a refetch is a NEW observation (the artifact-plane half), in tests-data-plane.txt."
+            },
+            {
+                  "path": "qualification/results/V5-data/v5-data-probe.json",
+                  "sha256": "42b9e9785c3a0e19e72fdac5176c211705a90c831ab3af860f94fb51b0ff2035",
+                  "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+                  "note": "g3_refetchIsANewObservation: 2 observations, distinct ids, relation first->changed, earlier sha256/acquiredAt/bytes intact, no API returning the current body for a url."
+            },
+            {
+                  "path": "qualification/results/V5-data/source-digests.txt",
+                  "sha256": "29ea1bc06f020f1ce6581033fbd30ee64b06a090569b25ea7d09c6d52d289685",
+                  "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+                  "note": "Build identity, lib/ and src/ digests, and pinned-checkout digests for every claim."
+            }
+      ]
     },
     {
       "id": "DATA-11",
@@ -780,8 +1000,33 @@
       "requirement": "a page cursor is not a bearer token",
       "stimulus": "Replay a valid cursor against a different store or a different revision.",
       "oracle": "The cursor is refused and the refusal is recorded. A cursor that yields pages from a store it was not issued for is NOT PASS.",
-      "status": "NOT_RUN",
-      "evidence": []
+      "status": "FAIL",
+      "evidence": [
+            {
+                  "path": "qualification/results/V5-data/GATES.md",
+                  "sha256": "660d593d9917538cb891d9bfa2a909fab300c169691c981a7f9e241c1705bf29",
+                  "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+                  "note": "Gate row DATA-11 and section 3b: the different-REVISION arm holds, but the different-STORE arm the oracle names FIRST is NOT refused and yields 64 bytes. The harm is isolated: with the object corrupted in the store the descriptor was minted from, pages() serves 64 bytes hashing cc7321cc... while the descriptor names 9076e7f7..., and resolveReference() refuses the same object with artifact-integrity-error."
+            },
+            {
+                  "path": "qualification/results/V5-data/v5-data-probe.json",
+                  "sha256": "42b9e9785c3a0e19e72fdac5176c211705a90c831ab3af860f94fb51b0ff2035",
+                  "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+                  "note": "g4_cursorIsNotABearerToken: the four arms and the isolated mechanism arm, with the control proving the cursor still works against its own store."
+            },
+            {
+                  "path": "qualification/results/V5-data/v5-data-probe.mjs",
+                  "sha256": "e79f7f94a04f669684107a55b42a59f57cdb144e516e8e356ff458e71e6d7c2e",
+                  "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+                  "note": "The probe itself, so the measurement can be re-run and checked."
+            },
+            {
+                  "path": "qualification/results/V5-data/source-digests.txt",
+                  "sha256": "29ea1bc06f020f1ce6581033fbd30ee64b06a090569b25ea7d09c6d52d289685",
+                  "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+                  "note": "Build identity, lib/ and src/ digests, and pinned-checkout digests for every claim."
+            }
+      ]
     },
     {
       "id": "DATA-12",
@@ -791,8 +1036,33 @@
       "requirement": "reference state is reported, never assumed",
       "stimulus": "Resolve references whose objects are durable, orphaned, and missing.",
       "oracle": "Each resolves to its true state from `durable`/`orphaned`/`missing` with the store's own verdict. A missing object must not return an empty success; an orphan must be reconcilable or eligible for grace GC, and must never be reported as delivered.",
-      "status": "NOT_RUN",
-      "evidence": []
+      "status": "PASS",
+      "evidence": [
+            {
+                  "path": "qualification/results/V5-data/GATES.md",
+                  "sha256": "660d593d9917538cb891d9bfa2a909fab300c169691c981a7f9e241c1705bf29",
+                  "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+                  "note": "Gate row DATA-12: durable, orphaned and missing all resolve to their true state from the store own verdict in one run."
+            },
+            {
+                  "path": "qualification/results/V5-data/tests-data-plane.txt",
+                  "sha256": "6979b5548070e981b9244fcd47a64819e3bd818af907a90b4f19b28491961ee3",
+                  "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+                  "note": "The DAT-08 orphan/missing/corrupt arms and the crash-consistency block, in tests-data-plane.txt."
+            },
+            {
+                  "path": "qualification/results/V5-data/v5-data-probe.json",
+                  "sha256": "42b9e9785c3a0e19e72fdac5176c211705a90c831ab3af860f94fb51b0ff2035",
+                  "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+                  "note": "g2_referenceStates: all three states distinct; missing never returns an empty success; the orphan is reconcilable and grace-GC eligible and is never reported as delivered; committed-then-deleted stays a separate integrity error."
+            },
+            {
+                  "path": "qualification/results/V5-data/source-digests.txt",
+                  "sha256": "29ea1bc06f020f1ce6581033fbd30ee64b06a090569b25ea7d09c6d52d289685",
+                  "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+                  "note": "Build identity, lib/ and src/ digests, and pinned-checkout digests for every claim."
+            }
+      ]
     },
     {
       "id": "REC-01",

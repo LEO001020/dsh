@@ -1,0 +1,402 @@
+{
+  "probe": "v5-data-probe",
+  "startedAt": "2026-09-19T23:46:56.047Z",
+  "command": "cd D:/DSH/work/dsh-native-daily/packages/dsh-daily-work && node --import tsx/esm D:/DSH/work/dsh-native-daily/qualification/results/V5-data/v5-data-probe.mjs",
+  "host": {
+    "node": "v24.18.0",
+    "platform": "win32 x64"
+  },
+  "gapVocabulary": {
+    "stages": [
+      "provider-acquisition",
+      "native-acquisition",
+      "transform",
+      "retention",
+      "transport",
+      "model-projection"
+    ],
+    "recoveries": [
+      "page",
+      "refetch",
+      "none",
+      "unknown"
+    ],
+    "stageCount": 6,
+    "recoveryCount": 4
+  },
+  "sections": {
+    "g1_gapAttribution": {
+      "question": "which of the six gap stages can a REAL production path produce?",
+      "stageEvidence": {
+        "native-acquisition": {
+          "producedBy": "captureFile with a reader that stops short of the file",
+          "producerFile": "packages/dsh-daily-work/src/artifacts.ts:1097",
+          "gapPresent": true,
+          "stage": "native-acquisition",
+          "recovery": "refetch",
+          "recoveryIsInClosedSet": true,
+          "reason": "the source was 1000 bytes at capture start but only 400 were acquired (600 bytes never reached the store); the captured object is the bytes that DID arrive, not the file that was named",
+          "reasonNamesMissingBytes": true,
+          "completeness": "partial",
+          "coverageVerdict": "partial-native-acquisition"
+        },
+        "retention": {
+          "producedBy": "captureFile against a store whose quota the source exceeds",
+          "producerFile": "packages/dsh-daily-work/src/artifacts.ts:1050",
+          "gapPresent": true,
+          "stage": "retention",
+          "recovery": "none",
+          "recoveryIsInClosedSet": true,
+          "reason": "artifact exceeds the 16384-byte quota after 65536 bytes; the capture is recorded as partial and no inline fallback is attempted",
+          "completeness": "partial",
+          "coverageVerdict": "partial-storage",
+          "referenceState": "missing"
+        },
+        "retention@orphan-window": {
+          "producedBy": "captureFile whose Session reference commit fails after publication",
+          "producerFile": "packages/dsh-daily-work/src/artifacts.ts:1154",
+          "gapPresent": true,
+          "stage": "retention",
+          "recovery": "none",
+          "reason": "object published but the Session reference was not committed: v5 simulated Session commit failure",
+          "referenceState": "orphaned",
+          "objectExistsOnDisk": true
+        },
+        "provider-acquisition": {
+          "producedBy": "acquisitionFromFetch with a provider-truncated body",
+          "producerFile": "packages/dsh-daily-work/src/web-provenance.ts:203",
+          "gapPresent": true,
+          "stage": "provider-acquisition",
+          "recovery": "refetch",
+          "recoveryIsInClosedSet": true,
+          "reason": "the provider capped the body at 3; 3 characters were delivered and the remainder was never sent to this process",
+          "completeness": "partial"
+        },
+        "transform": {
+          "producedBy": "deriveMarkdown when the injected converter throws, and when it yields no text",
+          "producerFile": "packages/dsh-daily-work/src/web-provenance.ts:348 and :364",
+          "gapPresent": true,
+          "stage": "transform",
+          "recovery": "none",
+          "recoveryIsInClosedSet": true,
+          "secondProducerStage": "transform",
+          "secondProducerRecovery": "none",
+          "derivedAbsentOnFailure": true,
+          "reason": "the v5-converter@0.0.1 conversion threw: v5 converter exploded; the raw artifact is the only content available"
+        },
+        "transport": {
+          "producedBy": null,
+          "searchedIn": [
+            "artifacts.ts",
+            "observations.ts",
+            "data-service.ts",
+            "web-provenance.ts"
+          ],
+          "assignmentsInProductionSource": 0,
+          "typeMemberInClosedSet": true,
+          "occurrencesInTestFile": 1,
+          "note": "the stage is a member of the closed set and is handled by the verdict mapper, but NO production path assigns it; the only occurrences are the vocabulary, the type union, the verdict mapper and the test fixture"
+        },
+        "model-projection": {
+          "producedBy": null,
+          "searchedIn": [
+            "artifacts.ts",
+            "observations.ts",
+            "data-service.ts",
+            "web-provenance.ts"
+          ],
+          "assignmentsInProductionSource": 0,
+          "typeMemberInClosedSet": true,
+          "occurrencesInTestFile": 1,
+          "note": "same as transport: a vocabulary member with no production producer"
+        }
+      },
+      "stagesWithARealProducer": [
+        "native-acquisition",
+        "retention",
+        "provider-acquisition",
+        "transform"
+      ],
+      "stagesWithNoProducer": [
+        "transport",
+        "model-projection"
+      ]
+    },
+    "g2_referenceStates": {
+      "question": "does each reference resolve to its TRUE state from durable/orphaned/missing, with the store's own verdict?",
+      "oneStoreForAllArms": true,
+      "arms": {
+        "durable": {
+          "expectedState": "durable",
+          "referenceState": "durable",
+          "resolvedBytes": 16,
+          "resolvedSha256": "225b05494678809622b2d632f25746555c632d1f47ca7a613853ce2d0c4e8613",
+          "storeStatBytes": 16,
+          "sourceFileBytes": 16,
+          "bytesMatchSource": true,
+          "sha256MatchesSource": true,
+          "resolveThrew": false
+        },
+        "orphaned": {
+          "expectedState": "orphaned",
+          "referenceState": "orphaned",
+          "objectExistsOnDisk": true,
+          "objectBytes": 15,
+          "resolveThrew": true,
+          "resolveErrorCode": "artifact-orphaned",
+          "resolveErrorNamesOrphan": true,
+          "isReconcilable": true,
+          "reconcilesAsOrphanNotDelivery": true,
+          "withinGraceNotCollected": true,
+          "withinGraceSkipReason": "within-grace (40ms < 60000ms)",
+          "pastGraceIsCollectable": true,
+          "reportedAsDelivered": false
+        },
+        "missing": {
+          "expectedState": "missing",
+          "referenceState": "missing",
+          "referenceArtifact": "",
+          "completeness": "partial",
+          "gapStages": [
+            "retention"
+          ],
+          "objectsReferencedInLog": [],
+          "placeholderRef": "artifact:unpublished:obs-v5-missing",
+          "objectOnDisk": "refused: artifact-not-found",
+          "resolveThrew": true,
+          "resolveErrorCode": "artifact-orphaned",
+          "returnedEmptySuccess": false,
+          "returnedNoBytes": true,
+          "errorNamesObservation": true
+        },
+        "committedThenDeleted": {
+          "referenceStateAtCapture": "durable",
+          "resolveThrew": true,
+          "resolveErrorCode": "artifact-integrity-error",
+          "tombstoneReason": "explicit-delete",
+          "errorNamesObservation": true
+        },
+        "integrityReplacedInPlace": {
+          "sameLengthAsOriginal": true,
+          "resolveThrew": true,
+          "resolveErrorCode": "artifact-integrity-error",
+          "errorNamesBothHashes": true
+        },
+        "integrityTruncated": {
+          "declaredBytes": 18,
+          "actualBytesOnDisk": 5,
+          "resolveThrew": true,
+          "resolveErrorCode": "artifact-integrity-error"
+        }
+      },
+      "verdicts": {
+        "allThreeStatesDistinct": true,
+        "everyStateIsInTheClosedSet": true,
+        "missingNeverReturnsEmptySuccess": true,
+        "committedThenDeletedIsIntegrityError": true,
+        "orphanNeverReportedAsDelivered": true,
+        "orphanIsReconcilableOrGraceCollectable": true
+      }
+    },
+    "g3_refetchIsANewObservation": {
+      "question": "is a refetch a NEW observation with its own hash and time, with the earlier one still retrievable?",
+      "url": "https://example.com/v5-refetch",
+      "observationsAfterRefetch": 2,
+      "firstRelation": "first",
+      "secondRelation": "changed",
+      "twoDistinctIds": true,
+      "earlierHashSurvives": true,
+      "earlierTimeSurvives": true,
+      "earlierBytesSurvive": true,
+      "earlierHashIsNotTheNewHash": true,
+      "newObservationHasItsOwnTime": true,
+      "noCurrentBodyLookup": true,
+      "earlierBodyOverwritten": false,
+      "earlierBodyReattributedToNewFetch": false,
+      "verdict": true
+    },
+    "g4_cursorIsNotABearerToken": {
+      "question": "is a valid cursor refused against a different store, and against a different revision?",
+      "sameArtifactSha256InBothStores": true,
+      "cursorIssuedByStoreA": true,
+      "arm_differentStore": {
+        "refused": false,
+        "errorCode": null,
+        "errorMessage": null,
+        "yieldedPages": true,
+        "yieldedBytes": 64,
+        "note": "BOTH planes use the same scope string, so only the store differs"
+      },
+      "arm_differentScopeOnAnotherStore": {
+        "refused": true,
+        "errorCode": "pagination-scope-denied",
+        "note": "the scope binding is live, so it cannot be the reason B1 refused"
+      },
+      "arm_corruptedOtherStoreHoldingTheSameRef": {
+        "refused": false,
+        "errorCode": null,
+        "yieldedBytes": 64,
+        "yieldedPageSha256": "cc7321cce5e4409bd8077d58422e1214969059bbd40b4eeb0de0a642f40f7282",
+        "expectedArtifactSha256": "9076e7f76f5ff90f416d5ebae347a8c7cc550f298016b893f01a920303d9689b",
+        "pageIsTheNamedArtifact": false,
+        "note": "THE HARM ARM: the other store holds DIFFERENT bytes under the same content address. If this yields bytes and they are not the named artifact, the cross-store replay returns unverified content."
+      },
+      "arm_otherStoreWithoutTheObject": {
+        "refused": true,
+        "errorCode": "artifact-integrity-error",
+        "yieldedBytes": null,
+        "note": "a store that does not hold the object: absence IS caught"
+      },
+      "arm_corruptedOWNStoreIsolatedMechanism": {
+        "note": "the cross-store question removed: the object is corrupted in the store the descriptor was minted from",
+        "pagesRefused": false,
+        "pagesErrorCode": null,
+        "pagesYieldedBytes": 64,
+        "pagesYieldedSha256": "cc7321cce5e4409bd8077d58422e1214969059bbd40b4eeb0de0a642f40f7282",
+        "pagesYieldedTheNamedArtifact": false,
+        "resolveReferenceRefused": true,
+        "resolveReferenceErrorCode": "artifact-integrity-error",
+        "pagingAndResolveDisagree": true
+      },
+      "arm_differentRevision": {
+        "refused": true,
+        "errorCode": "pagination-scope-denied",
+        "errorMessage": "observation obs-v5-cursor was minted under grant revision 1, which is stale"
+      },
+      "control_ownStoreStillWorks": {
+        "yieldedBytes": 64,
+        "offset": 64
+      },
+      "verdict_differentStoreRefused": false,
+      "verdict_differentRevisionRefused": true,
+      "verdict_crossStoreCanYieldUnverifiedBytes": true
+    },
+    "g5_recordedDigests": {
+      "DATA-01_longLineRecoveredByteForByte": {
+        "sourceFileBytes": 102400,
+        "sourceSha256": "8f73f6f3193b1c3f71ef6395278559fb9c01a8eac0731dfdc6e37667e7a310b2",
+        "recoveredBytes": 102400,
+        "recoveredSha256": "8f73f6f3193b1c3f71ef6395278559fb9c01a8eac0731dfdc6e37667e7a310b2",
+        "bytesEqual": true,
+        "digestsEqual": true,
+        "tailMarkerPresentInRecovery": true,
+        "captureCompleteness": "complete-within-request",
+        "pagesWalked": 2,
+        "readToolClip": {
+          "readMaxLineLength": 2000,
+          "clippedTextLength": 2034,
+          "clippedTextSaysTruncated": true,
+          "clippedTextContainsTailMarker": false,
+          "clippedTextIsAPrefixOfTheLine": false,
+          "lineIndexTotalLines": 1
+        }
+      },
+      "DATA-03_pageBoundarySweep": {
+        "sourceBytes": 5532,
+        "sourceSha256": "f1e356753b62073fffd9728c428416ad4a199f838a21a5bf1dc2952c56efa0c4",
+        "sourceRecordCount": 120,
+        "pageSizesSwept": [
+          1,
+          2,
+          3,
+          5,
+          7,
+          16,
+          64,
+          100,
+          997,
+          4096
+        ],
+        "everyReassemblyDigestMatches": true,
+        "everyRecordCountMatches": true,
+        "everyRecordSetComplete": true,
+        "anyReplacementCharacter": false,
+        "perSize": [
+          {
+            "pageSize": 1,
+            "reassemblyDigestEqualsSource": true,
+            "recordCount": 120,
+            "distinctRecordIndices": 120,
+            "replacementCharacterPresent": false
+          },
+          {
+            "pageSize": 2,
+            "reassemblyDigestEqualsSource": true,
+            "recordCount": 120,
+            "distinctRecordIndices": 120,
+            "replacementCharacterPresent": false
+          },
+          {
+            "pageSize": 3,
+            "reassemblyDigestEqualsSource": true,
+            "recordCount": 120,
+            "distinctRecordIndices": 120,
+            "replacementCharacterPresent": false
+          },
+          {
+            "pageSize": 5,
+            "reassemblyDigestEqualsSource": true,
+            "recordCount": 120,
+            "distinctRecordIndices": 120,
+            "replacementCharacterPresent": false
+          },
+          {
+            "pageSize": 7,
+            "reassemblyDigestEqualsSource": true,
+            "recordCount": 120,
+            "distinctRecordIndices": 120,
+            "replacementCharacterPresent": false
+          },
+          {
+            "pageSize": 16,
+            "reassemblyDigestEqualsSource": true,
+            "recordCount": 120,
+            "distinctRecordIndices": 120,
+            "replacementCharacterPresent": false
+          },
+          {
+            "pageSize": 64,
+            "reassemblyDigestEqualsSource": true,
+            "recordCount": 120,
+            "distinctRecordIndices": 120,
+            "replacementCharacterPresent": false
+          },
+          {
+            "pageSize": 100,
+            "reassemblyDigestEqualsSource": true,
+            "recordCount": 120,
+            "distinctRecordIndices": 120,
+            "replacementCharacterPresent": false
+          },
+          {
+            "pageSize": 997,
+            "reassemblyDigestEqualsSource": true,
+            "recordCount": 120,
+            "distinctRecordIndices": 120,
+            "replacementCharacterPresent": false
+          },
+          {
+            "pageSize": 4096,
+            "reassemblyDigestEqualsSource": true,
+            "recordCount": 120,
+            "distinctRecordIndices": 120,
+            "replacementCharacterPresent": false
+          }
+        ]
+      },
+      "DATA-05_snapshotHashAfterSourceRewrite": {
+        "recordedCapturedHash": "b778c9b54fd1178b186ed04d4e93ddfc6b655b1309458f9b902bf1a9222ed392",
+        "sourceHashAfterRewrite": "42bb697d7220ece5a3829e41bc60ec3d7c661452653c41c444268cddccdc14da",
+        "sourceDidChange": true,
+        "page1Sha256": "b778c9b54fd1178b186ed04d4e93ddfc6b655b1309458f9b902bf1a9222ed392",
+        "page2Sha256": "b778c9b54fd1178b186ed04d4e93ddfc6b655b1309458f9b902bf1a9222ed392",
+        "page2StillReportsCapturedHash": true,
+        "rejoinedPrefixIsTheOriginal": true,
+        "rejoinedContainsRewrittenBytes": false,
+        "wholeArtifactRereadSha256": "b778c9b54fd1178b186ed04d4e93ddfc6b655b1309458f9b902bf1a9222ed392"
+      }
+    }
+  },
+  "notes": [],
+  "finishedAt": "2026-09-19T23:47:01.153Z"
+}
