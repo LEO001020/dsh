@@ -715,15 +715,23 @@ describe('B06: native and PTC must produce the SAME canonical value', () => {
     // (`additionalProperties: false`), so the contract under test is the one the
     // work tool is subject to.
     const r = await ptcRig()
-    const cases: Record<string, () => unknown> = {
-      bigint: () => ({ action: 'status', count: 1n }),
+    // These cases are deliberately values the declared output schema CANNOT
+    // represent: a bigint, a cycle, an undefined field and a function. Refusing
+    // to emit them is the behaviour under test. The cast is confined to this
+    // boundary because `execute` is typed to return the declared shape, and the
+    // entire premise here is returning something else -- typing the map as the
+    // output type would make the file fail to compile for the right reason but
+    // for the wrong test.
+    type Declared = { action: string }
+    const cases: Record<string, () => Declared> = {
+      bigint: () => ({ action: 'status', count: 1n }) as unknown as Declared,
       circular: () => {
         const value: Record<string, unknown> = { action: 'status' }
         value.self = value
-        return value
+        return value as unknown as Declared
       },
-      undefinedField: () => ({ action: 'status', note: undefined }),
-      functionField: () => ({ action: 'status', fn: () => 1 }),
+      undefinedField: () => ({ action: 'status', note: undefined }) as unknown as Declared,
+      functionField: () => ({ action: 'status', fn: () => 1 }) as unknown as Declared,
     }
     for (const [label, body] of Object.entries(cases)) {
       r.ctx.tools.register(defineTool({
@@ -1007,9 +1015,18 @@ describe('B08: a failing tools/result observer must not hide or rewrite the outc
     r.ctx.on('tools/result', () => {
       throw new Error('observation sink rejected the record: disk full')
     })
-    r.ctx.on('tools/result', async () => {
+    // An async listener returns a Promise, which the declared event type forbids
+    // (`tools/result` returns `undefined`). The runtime nonetheless contains it:
+    // `ToolRuntime` does `void Promise.resolve(returned).catch(reportFailure)`,
+    // so a rejected Promise is reported through the same path as a synchronous
+    // throw. Testing that containment requires returning a Promise the type says
+    // is not allowed, so the listener is cast at this boundary rather than
+    // dropping the case -- an unhandled rejection here would be a real defect
+    // that a synchronous-only test cannot see.
+    const asyncListener = async (): Promise<void> => {
       throw new Error('observation sink write failed after commit')
-    })
+    }
+    r.ctx.on('tools/result', asyncListener as unknown as () => undefined)
 
     const submitted = await callWork(r.ctx, agent, { action: 'submit', taskId: 't1', goal: 'do the work' }, 'submit-1')
     // The outcome is the TOOL's outcome. Not an error about the observer.
