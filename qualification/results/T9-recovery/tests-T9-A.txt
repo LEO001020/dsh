@@ -1,0 +1,12 @@
+# T9-A: the epoch guard (G-SEAM-21) — measured 2026-09-20, HEAD d86e180
+# command: node /d/DSH/src/dsh-src/node_modules/vitest/vitest.mjs run src/durability-advanced.test.ts -t T9-A --maxWorkers=2 --no-file-parallelism
+
+ ✓ src/durability-advanced.test.ts > T9-A: the epoch guard (G-SEAM-21) — unreachable, and what that costs > the guard has no production importer and the epoch has no production writer 9ms
+ ✓ src/durability-advanced.test.ts > T9-A: the epoch guard (G-SEAM-21) — unreachable, and what that costs > is unreachable from every PACKAGE ENTRY POINT, not merely from a direct import 4ms
+ ✓ src/durability-advanced.test.ts > T9-A: the epoch guard (G-SEAM-21) — unreachable, and what that costs > the consequence: only TESTS reach these modules, so the product never reconciles at all 35ms
+ ✓ src/durability-advanced.test.ts > T9-A: the epoch guard (G-SEAM-21) — unreachable, and what that costs > and no production path can even EXPRESS the check: `transition` takes no epoch 25ms
+ ✓ src/durability-advanced.test.ts > T9-A: the epoch guard (G-SEAM-21) — unreachable, and what that costs > a REAL SIGKILL and a real re-adoption do NOT bump the epoch, so no settlement can be stale 286ms
+ ✓ src/durability-advanced.test.ts > T9-A: the epoch guard (G-SEAM-21) — unreachable, and what that costs > WITHOUT the guard, a previous generation's settlement IS applied and RELEASES the reservation 15ms
+ ✓ src/durability-advanced.test.ts > T9-A: the epoch guard (G-SEAM-21) — unreachable, and what that costs > WITH the guard, the same settlement is refused and the evidence is retained 13ms
+ Test Files  1 passed (1)
+      Tests  7 passed | 25 skipped (32)

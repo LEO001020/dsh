@@ -45,7 +45,7 @@ import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { afterEach, describe, expect, it } from 'vitest'
-import { EffectLedger, identify, type EffectIntent } from './effects.ts'
+import { EFFECT_RECORD_STATUSES, EffectLedger, identify, sendDecision, type EffectIntent } from './effects.ts'
 import { WorkService } from './host.ts'
 import { applyWorkerSettlement, RefusalLedger } from './recovery.ts'
 import { reconcileTask } from './reconcile.ts'
@@ -895,6 +895,177 @@ describe('T9-A: the epoch guard (G-SEAM-21) — unreachable, and what that costs
     expect(resume?.[1], 'resume must not bump the epoch').not.toMatch(/epoch/u)
   })
 
+  it('is unreachable from every PACKAGE ENTRY POINT, not merely from a direct import', () => {
+    // The stronger form of the finding, and the one that decides whether this is a
+    // live defect or a documentation problem. A module with no DIRECT importer can
+    // still be reachable transitively, so "no direct importer" alone does not
+    // establish unreachability. This closes that gap by walking the import graph
+    // from the package's own published entry points.
+    const src = join(import.meta.dirname)
+    const pkg = JSON.parse(readFileSync(join(src, '..', 'package.json'), 'utf8')) as {
+      readonly exports: Record<string, unknown>
+    }
+    // `exports` maps a subpath to `{ types, default }`; the `.default` is the
+    // built file, so the corresponding source is its basename under `src/`.
+    const entryPoints = Object.values(pkg.exports)
+      .filter((value): value is { readonly default: string } => typeof value === 'object' && value !== null && 'default' in value)
+      .map(value => value.default.replace('./lib/', '').replace(/\.js$/u, '.ts'))
+    expect(entryPoints.length, 'the package must publish entry points for this to be a real measurement').toBeGreaterThan(4)
+    const missingEntries = entryPoints.filter(name => !existsSync(join(src, name)))
+    expect(missingEntries, 'every published entry point must resolve to a real source file').toEqual([])
+
+    const production = readdirSync(src).filter(name => name.endsWith('.ts') && !name.endsWith('.test.ts'))
+    // Every relative import specifier in a production file, including `import
+    // type` and `export ... from`, because a type-only coupling still means the
+    // module is part of the graph a reader would have to reason about.
+    const specifiers = (name: string): string[] =>
+      [...readFileSync(join(src, name), 'utf8').matchAll(/from\s+'(\.[^']+)'/gu)].map(match => match[1] ?? '')
+    // The edges point the way the CODE reaches: an entry point reaches whatever it
+    // imports. Walking `importersOf` instead would answer "which modules import an
+    // entry point", which is a different question and produces a wrong YES for any
+    // module that happens to import `host.ts` — an earlier version of this test had
+    // exactly that bug and `recovery.ts` came back reachable for that reason.
+    const importsOf = (name: string): string[] =>
+      specifiers(name)
+        .filter(specifier => specifier.endsWith('.ts'))
+        .map(specifier => specifier.slice(2))
+        .filter(target => production.includes(target))
+    const closureFrom = (start: readonly string[]): Set<string> => {
+      const seen = new Set(start)
+      const queue = [...start]
+      while (queue.length > 0) {
+        for (const next of importsOf(queue.pop() ?? '')) {
+          if (!seen.has(next)) {
+            seen.add(next)
+            queue.push(next)
+          }
+        }
+      }
+      return seen
+    }
+
+    const reachable = closureFrom(entryPoints)
+    // The measurement: `recovery.ts` is in NO entry point's transitive closure.
+    // The `host.ts` control is what makes this falsifiable — it IS reachable, so
+    // the walk is capable of finding reachable modules and this is not an empty
+    // negative produced by a broken traversal.
+    expect(reachable.has('recovery.ts'), 'recovery.ts must be in no entry point\'s transitive closure').toBe(false)
+    expect(reachable.has('host.ts'), 'control: host.ts IS reachable, so the walk works').toBe(true)
+    // The same walk, for the module the epoch guard lives beside.
+    expect(reachable.has('reconcile.ts'), 'reconcile.ts is likewise unreachable from the product').toBe(false)
+  })
+
+  it('the consequence: only TESTS reach these modules, so the product never reconciles at all', () => {
+    // THE HONEST HALF, and it is stronger than "the epoch field is inert". If
+    // `recovery.ts` and `reconcile.ts` are reachable only from test files, then no
+    // production code path calls `reconcileTask`, `applyWorkerSettlement` or
+    // `relaunchPrepared`. The product therefore does not reconcile an unknown
+    // outcome — it cannot, because there is no caller.
+    //
+    // What that does and does not mean for the "never auto-replay" constraint is
+    // measured rather than asserted, and the answer is asymmetric:
+    //   - the product CANNOT auto-replay an unknown effect, because nothing in it
+    //     reaches `reconcileTask` (whose every uncertain branch returns `unknown`)
+    //     or `EffectLedger.perform` (whose only send-licensing states are proofs
+    //     about our own write ordering);
+    //   - but it also cannot REFUSE to, because refusing is a decision the absent
+    //     caller would have made. An unknown outcome is left in the record and no
+    //     path resolves it.
+    // The constraint holds by omission, not by enforcement. That distinction is
+    // the finding, and it is why "unknown effects are never replayed" must not be
+    // reported as a property the product enforces.
+    const src = join(import.meta.dirname)
+    const testFiles = readdirSync(src).filter(name => name.endsWith('.test.ts'))
+    const production = readdirSync(src).filter(name => name.endsWith('.ts') && !name.endsWith('.test.ts'))
+    const importsOf = (name: string): string[] =>
+      [...readFileSync(join(src, name), 'utf8').matchAll(/from\s+'(\.[^']+)'/gu)]
+        .map(match => (match[1] ?? '').slice(2))
+        .filter(specifier => specifier.endsWith('.ts'))
+    const importersOf = (target: string, pool: readonly string[]): string[] =>
+      pool.filter(name => name !== target && importsOf(name).includes(target))
+
+    // MEASURED: the importer sets of the three modules, split by kind.
+    const testImporters = (target: string): string[] => importersOf(target, testFiles).sort()
+    const productionImporters = (target: string): string[] => importersOf(target, production).sort()
+
+    expect(productionImporters('recovery.ts'), 'recovery.ts has NO production importer').toEqual([])
+    expect(testImporters('recovery.ts'), 'and its only importers are tests').toEqual([
+      'durability-advanced.test.ts',
+      'durability-records.test.ts',
+    ])
+    // `reconcile.ts` DOES have one production importer, and naming it honestly is
+    // the point: `durability-runner.ts` is a CLI entry executed by hand
+    // (`docs/OPERATIONS.md`), it is in no `exports` subpath and no profile mounts
+    // it. Counting that as production reachability would be the same "presence is
+    // not reachability" error this whole gate is about, so the two assertions
+    // below are deliberately separate: the importer exists, AND that importer is
+    // itself unreachable.
+    expect(productionImporters('reconcile.ts'), 'reconcile.ts\'s only production importer is the hand-run CLI').toEqual([
+      'durability-runner.ts',
+    ])
+    expect(productionImporters('durability-runner.ts'), 'and that CLI is itself in no production import graph').toEqual([])
+    expect(productionImporters('effects.ts'), 'the effect ledger has no production importer at all').toEqual([])
+    expect(productionImporters('effects.ts').length + testImporters('effects.ts').length, 'it is reachable from tests only').toBe(2)
+    expect(testImporters('effects.ts'), 'namely these two').toEqual([
+      'durability-advanced.test.ts',
+      'effects.test.ts',
+    ])
+  })
+
+  it('and no production path can even EXPRESS the check: `transition` takes no epoch', async () => {
+    // The second half of the finding, and the reason wiring this guard is not a
+    // one-line change. `WorkService.transition` is the only method that can move a
+    // task to an authoritative terminal state, and it has no epoch parameter. So
+    // the guard is not merely uncalled: the reachable write path has no place to
+    // put the comparison. This measures the consequence rather than asserting it.
+    const root = makeTempDir('t9a-inexpressible')
+    const { ctx, service } = await openService(root)
+    try {
+      const runId = 'run-t9a-inexpressible'
+      await service.createRun({
+        runId,
+        root: { session: { header: { id: 'root-t9a-inexpressible' } } } as never,
+        authorizationRef: 'auth',
+      })
+      await service.admit({
+        runId,
+        taskId: 't1',
+        childId: 'child-t9a-inexpressible',
+        assignmentDigest: 'd',
+        reservedCost: 7,
+        allowedCapabilities: ['reader'],
+      })
+      await service.transition({ runId, taskId: 't1', to: 'launching' })
+      await service.transition({ runId, taskId: 't1', to: 'accepted' })
+      // `accepted -> confirmed` is NOT a legal edge (states.ts:86-88: accepted
+      // reaches executing/settling/cancel_requested/unknown only), so the legal
+      // terminal path goes through `settling`. Using the legal path matters: an
+      // illegal one would be refused by the state machine and the test would then
+      // be measuring the wrong refusal.
+      await service.transition({ runId, taskId: 't1', to: 'settling' })
+
+      // A settlement that claims a STALE generation, offered to the reachable
+      // write path. `epoch` is not a parameter, so the field is simply ignored:
+      // the transition applies, the reservation is released and a tombstone is
+      // written. There is no refusal to observe because there is no comparison.
+      await service.transition({
+        runId,
+        taskId: 't1',
+        to: 'confirmed',
+        ...({ epoch: 0 } as object),
+      } as never)
+
+      const after = service.getRun(runId)
+      expect(after?.tasks['t1']?.state, 'the stale-epoch settlement was applied by the reachable path').toBe('confirmed')
+      expect(after?.budget.reserved, 'and it released a reservation it never held').toBe(0)
+      expect(after?.terminalTombstones).toEqual(['t1'])
+      expect(after?.epoch, 'the record epoch was never consulted and never moved').toBe(1)
+    } finally {
+      await service.close()
+      await ctx.fiber.dispose()
+    }
+  })
+
   it('a REAL SIGKILL and a real re-adoption do NOT bump the epoch, so no settlement can be stale', { timeout: 180_000 }, async () => {
     // The window the field promises to handle: host A admits work and launches a
     // child, host A dies, host B re-adopts the run. If the epoch were bumped on
@@ -1147,16 +1318,37 @@ describe('T9-B: the effect ledger across a real state rewind', () => {
       },
     }
     const attempt = await ledger.perform(broken, intent)
-    // The outcome is `undefined` and the stored record has no `status` key. The
+    // The outcome is `undefined` and the stored record has no `status` VALUE. The
     // rehearsal's R3 check is `performed.performed ? PASS : FAIL`, which is true
     // here — so it passed on a record the schema would reject at reopen.
     expect(attempt.performed).toBe(true)
     expect(attempt.outcome).toBeUndefined()
     const stored = ledger.get(identify(intent).operationId)
     expect(stored, 'the record exists').toBeDefined()
-    expect(Object.hasOwn(stored ?? {}, 'status'), 'the stored record has NO status key').toBe(false)
+    // IN MEMORY the key is present and its value is `undefined`: `send` spreads
+    // `status: result.status` where `result.status` is `undefined`. Asserting
+    // `Object.hasOwn(...) === false` here would be asserting something FALSE, and
+    // an earlier version of this test did exactly that — the defect is not a
+    // missing key in the object, it is an undefined VALUE that the medium cannot
+    // represent.
+    expect(Object.hasOwn(stored ?? {}, 'status'), 'in memory the key EXISTS, with an undefined value').toBe(true)
+    expect((stored as { status?: unknown } | undefined)?.status, 'and that value is undefined, which is the defect').toBeUndefined()
     await ledger.close()
     await ctx.fiber.dispose()
+
+    // ON DISK the key is GONE, which is the part that matters: JSON has no
+    // representation for `undefined`, so the serialized document simply omits it.
+    // This is the artifact the next generation validates, so it is the one to
+    // assert on — and it is why the reopen below is refused.
+    const persistedPath = join(root, 'dsh_daily_effects.json')
+    expect(existsSync(persistedPath), 'the effect ledger is one JSON unit file in the store root').toBe(true)
+    const persisted = JSON.parse(readFileSync(persistedPath, 'utf8')) as {
+      readonly tables?: { readonly operations?: Record<string, Record<string, unknown>> }
+    }
+    const documents = Object.values(persisted.tables?.operations ?? {})
+    expect(documents, 'exactly one operation document was persisted').toHaveLength(1)
+    expect(Object.hasOwn(documents[0] ?? {}, 'status'), 'the PERSISTED record has NO status key').toBe(false)
+    expect(Object.hasOwn(documents[0] ?? {}, 'attempts'), 'and the rest of the record is intact, so only `status` was lost').toBe(true)
 
     // And a second generation over that directory is REFUSED, because the
     // status-less document fails the domain's own schema.
@@ -1260,6 +1452,300 @@ describe('T9-B: the effect ledger across a real state rewind', () => {
       await rewound.close()
       await after.fiber.dispose()
     }
+  })
+
+  // -------------------------------------------------------------------------
+  // DELIVERABLE 2: unknown effects must never be auto-replayed
+  // -------------------------------------------------------------------------
+
+  it('a lost reply that MAY have committed is reconciled by QUERY, and the transport is never invoked twice', async () => {
+    // THE HARD CONSTRAINT, measured at the ledger. The scenario is the dangerous
+    // one: the remote DID commit and the reply was lost, so a replay would
+    // duplicate a real external effect. `perform` is called repeatedly, which is
+    // what an automatic replay would look like from outside.
+    const root = makeTempDir('t9b-unknown')
+    const ctx = await mountStorage(root)
+    const ledger = new EffectLedger(ctx)
+    await ledger.open()
+    try {
+      let sends = 0
+      let queries = 0
+      const committed = new Set<string>()
+      const lossy = {
+        kind: 't9b-lossy',
+        capabilities: { idempotencyKey: true, queryable: true },
+        async perform(_intent: EffectIntent, identity: { readonly operationId: string }) {
+          sends += 1
+          // The commit lands, THEN the reply is lost. This is the "timed out but
+          // possibly committed" shape: from the caller's side it is a throw.
+          committed.add(identity.operationId)
+          throw new Error('the reply was lost after the remote committed')
+        },
+        async query(operationId: string) {
+          queries += 1
+          return committed.has(operationId)
+            ? { status: 'confirmed' as const, resultRef: 'remote-committed' }
+            : { status: 'not_started' as const, detail: 'the remote has no record' }
+        },
+      }
+      const intent: EffectIntent = { kind: 't9b-lossy', logicalKey: 'run-t9b/lost-reply', parameters: { b: 3 } }
+
+      const first = await ledger.perform(lossy as never, intent)
+      expect(first.performed, 'the first call did invoke the transport').toBe(true)
+      expect(first.outcome, 'a thrown call is not proof the remote did nothing').toBe('unknown')
+      expect(sends).toBe(1)
+      const recorded = ledger.get(identify(intent).operationId)
+      expect(recorded?.status, 'the record rests at unknown, not at a retry-triggering state').toBe('unknown')
+
+      // The second call is the replay opportunity. It must RECONCILE, and the
+      // measurement is the transport invocation count, not the return value.
+      const second = await ledger.perform(lossy as never, intent)
+      expect(second.performed, 'the second call did NOT invoke the transport').toBe(false)
+      expect(second.outcome, 'and it established the truth from the remote instead').toBe('confirmed')
+      expect(sends, 'THE CONSTRAINT: exactly one transport invocation across both calls').toBe(1)
+      expect(queries, 'the resolution came from a query').toBe(1)
+
+      // A third call, and a bare reconcile, both stay at one send. The count is
+      // asserted after each so a regression cannot hide behind a later one.
+      await ledger.perform(lossy as never, intent)
+      expect(sends).toBe(1)
+      const bare = await ledger.reconcile(lossy as never, intent)
+      expect(bare.performed, 'reconcile has no code path to the transport at all').toBe(false)
+      expect(bare.outcome).toBe('confirmed')
+      expect(sends, 'and still exactly one invocation in total').toBe(1)
+    } finally {
+      await ledger.close()
+      await ctx.fiber.dispose()
+    }
+  })
+
+  it('the send decision table licenses a send from exactly two states, and BOTH are proofs about our own write order', () => {
+    // Exhaustive over the closed status vocabulary, so this cannot be satisfied by
+    // testing only the interesting rows. The two send-licensing states are the
+    // only ones that assert something about OUR OWN action rather than about the
+    // remote: `absent` (nothing was ever recorded) and `intent_recorded` (the
+    // `sent` marker is written BEFORE the transport call, so its absence proves
+    // the call was never made).
+    const licensed = EFFECT_RECORD_STATUSES.filter(status => sendDecision(status).send)
+    expect(licensed, 'exactly one recorded status licenses a send').toEqual(['intent_recorded'])
+    expect(sendDecision('absent').send, 'and the absent case does too').toBe(true)
+
+    // The rows that matter for the constraint: every state that COULD already
+    // have reached the remote refuses. `not_started` is the subtle one and it
+    // refuses deliberately — even a positive remote statement that nothing
+    // happened is not a licence, because resending is a new authorization.
+    for (const status of ['sent', 'unknown', 'confirmed', 'not_started'] as const) {
+      const decision = sendDecision(status)
+      expect(decision.send, `"${status}" must NOT license an automatic send`).toBe(false)
+      expect(decision.reason.length, `"${status}" must say why, in words a reader can check`).toBeGreaterThan(20)
+    }
+    // The reason for `unknown` names the guess, which is the actual defect being
+    // prevented: a resend would be a bet on whether the first one landed.
+    expect(sendDecision('unknown').reason).toMatch(/a resend would be a guess/u)
+  })
+
+  it('an adapter that can be neither keyed nor queried is NOT RUN AT ALL, rather than run and left unknown', async () => {
+    // The strongest form of the constraint. An adapter with no idempotency key and
+    // no queryable result cannot be reconciled after a lost reply, so the module
+    // refuses to invoke it in the first place. The measurement is that the
+    // transport was invoked ZERO times, and that the record says `unknown` rather
+    // than a clean failure a caller might retry.
+    const root = makeTempDir('t9b-unreconcilable')
+    const ctx = await mountStorage(root)
+    const ledger = new EffectLedger(ctx)
+    await ledger.open()
+    try {
+      let invocations = 0
+      const unreconcilable = {
+        kind: 't9b-unreconcilable',
+        capabilities: { idempotencyKey: false, queryable: false },
+        async perform() {
+          invocations += 1
+          return { status: 'confirmed' as const, resultRef: 'x' }
+        },
+        async query(): Promise<never> {
+          throw new Error('not queryable')
+        },
+      }
+      const intent: EffectIntent = { kind: 't9b-unreconcilable', logicalKey: 'run-t9b/unreconcilable', parameters: { b: 4 } }
+      const attempt = await ledger.perform(unreconcilable as never, intent)
+      expect(attempt.performed, 'nothing was performed').toBe(false)
+      expect(invocations, 'THE MEASUREMENT: the transport was never invoked').toBe(0)
+      expect(attempt.outcome, 'and the honest answer is unknown, not a clean failure').toBe('unknown')
+      expect(attempt.reason).toMatch(/not run automatically/u)
+      // Recorded as `unknown` so a later reconcile sees it. NOT as a failure,
+      // which is the distinction that stops a caller retrying it.
+      expect(ledger.get(identify(intent).operationId)?.status).toBe('unknown')
+    } finally {
+      await ledger.close()
+      await ctx.fiber.dispose()
+    }
+  })
+
+  it('the PRODUCT path does not replay either: a launch that may have succeeded is quarantined, and a second drain refuses', async () => {
+    // The same constraint at the reachable layer. `EffectLedger` has no production
+    // importer (see T9-A), so the constraint must also be measured on the path the
+    // product actually runs: `WorkService.drain`, which is what the `work` tool's
+    // `submit` action calls. The launch port here throws AFTER the request was
+    // written, so the child may exist — the exact case where a blind retry
+    // double-launches.
+    const root = makeTempDir('t9b-product-unknown')
+    const { ctx, service } = await openService(root)
+    try {
+      const runId = 'run-t9b-product-unknown'
+      await service.createRun({
+        runId,
+        root: { session: { header: { id: 'root-t9b-product-unknown' } } } as never,
+        authorizationRef: 'auth',
+      })
+      let launches = 0
+      service.setLaunchPort({
+        async launch() {
+          launches += 1
+          throw new Error('the launch timed out after the request was written')
+        },
+      })
+      const request = { taskId: 't1', childId: 'c1', prompt: 'p', reservedCost: 7 }
+      const first = await service.drain(runId, [request], new AbortController().signal)
+      expect(first[0]?.accepted).toBe(false)
+      expect(first[0]?.reason, 'reported as unknown, not as a clean failure').toBe('launch_failed_unknown')
+      expect(launches, 'the first drain did attempt the launch').toBe(1)
+
+      const quarantined = service.getRun(runId)
+      expect(quarantined?.tasks['t1']?.state, 'the task is QUARANTINED, not failed').toBe('unknown')
+      expect(quarantined?.tasks['t1']?.uncertainty).toMatch(/timed out/u)
+      expect(quarantined?.budget.reserved, 'and the reservation is HELD, because the child may exist').toBe(7)
+      expect(quarantined?.terminalTombstones, 'no tombstone was written, so the task is not closed').toEqual([])
+
+      // THE REPLAY OPPORTUNITY: the same request, drained again. A system that
+      // retried an unknown outcome would call the port a second time here.
+      const second = await service.drain(runId, [request], new AbortController().signal)
+      expect(second[0]?.accepted).toBe(false)
+      expect(second[0]?.reason, 'the refusal names the quarantined state').toMatch(/already admitted as unknown/u)
+      expect(launches, 'THE CONSTRAINT: the product did NOT replay the launch').toBe(1)
+
+      // And the state is still exactly what it was: a refused replay does not
+      // clear the quarantine or release the reservation.
+      const after = service.getRun(runId)
+      expect(after?.tasks['t1']?.state).toBe('unknown')
+      expect(after?.budget.reserved).toBe(7)
+    } finally {
+      await service.close()
+      await ctx.fiber.dispose()
+    }
+  })
+
+  // -------------------------------------------------------------------------
+  // DELIVERABLE 3: attempt_status and effect_status are SEPARATE
+  // -------------------------------------------------------------------------
+
+  it('a FAILED ATTEMPT does not imply the effect did not happen — the two statuses are recorded separately', async () => {
+    // The conflation this guards against: treating "the call failed" as "the
+    // effect did not happen". The scenario makes them provably different — the
+    // remote COMMITTED and the call still threw — so any code that derived one
+    // from the other would be wrong here and right nowhere that matters.
+    const root = makeTempDir('t9b-separate-status')
+    const ctx = await mountStorage(root)
+    const ledger = new EffectLedger(ctx)
+    await ledger.open()
+    try {
+      const committed = new Set<string>()
+      const lossy = {
+        kind: 't9b-separate',
+        capabilities: { idempotencyKey: true, queryable: true },
+        async perform(_intent: EffectIntent, identity: { readonly operationId: string }) {
+          committed.add(identity.operationId)
+          throw new Error('connection reset after the remote accepted the request')
+        },
+        async query(operationId: string) {
+          return committed.has(operationId)
+            ? { status: 'confirmed' as const, resultRef: 'the-effect-really-happened' }
+            : { status: 'not_started' as const, detail: 'no record' }
+        },
+      }
+      const intent: EffectIntent = { kind: 't9b-separate', logicalKey: 'run-t9b/separate-status', parameters: { b: 5 } }
+      const attempt = await ledger.perform(lossy as never, intent)
+
+      // ATTEMPT status: the call failed. That is a fact about the CALL.
+      expect(attempt.performed, 'the attempt did happen').toBe(true)
+      expect(attempt.outcome, 'and the attempt did not establish an outcome').toBe('unknown')
+
+      // EFFECT status: the effect COMMITTED. That is a fact about the WORLD, and
+      // it is not derivable from the attempt status above. Only a query
+      // establishes it, which is why the query exists.
+      const reconciled = await ledger.reconcile(lossy as never, intent)
+      expect(reconciled.outcome, 'THE SEPARATION: the failed attempt had in fact committed').toBe('confirmed')
+      expect(reconciled.resultRef).toBe('the-effect-really-happened')
+      expect(reconciled.performed, 'and establishing it required no second invocation').toBe(false)
+      // The record carries the EFFECT status, which is the one that governs any
+      // later decision. `attempts` records that one transport call was made,
+      // which is the separate fact the record keeps alongside it.
+      const record = ledger.get(identify(intent).operationId)
+      expect(record?.status, 'the stored status is the effect status').toBe('confirmed')
+      expect(record?.attempts, 'and the attempt count is kept as its own field').toBe(1)
+    } finally {
+      await ledger.close()
+      await ctx.fiber.dispose()
+    }
+  })
+
+  it('no `safe_to_retry` predicate exists, and the nearest predicate refuses rather than permits', () => {
+    // The task asked whether `safe_to_retry` is computed as "idempotent AND the
+    // effect definitively did not happen" and ONLY that. The measurement is that
+    // NO SUCH PREDICATE EXISTS anywhere in this repository, so the question of
+    // whether it is computed correctly does not yet arise — there is nothing to
+    // get wrong, and also nothing that can refuse on a caller's behalf.
+    //
+    // WHAT IS SEARCHED FOR IS A DEFINITION, not the string. Two earlier versions
+    // of this test were wrong in instructive ways and both are recorded here
+    // because the mistake is easy to repeat:
+    //   - v1 matched the bare string and found itself in this very test file;
+    //   - v2 excluded `*.test.ts`, which fixed that and then found this run's own
+    //     `GATES.md`, which discusses the predicate by name in prose.
+    // A prose mention computes nothing. The honest question is whether a
+    // PREDICATE is defined, so the pattern requires definition syntax, and the
+    // sanity check below proves the pattern is capable of matching a real
+    // definition — without it, this would pass for the wrong reason.
+    const definition = /(?:function\s+safe_?to_?retry|(?:const|let|var)\s+safe_?to_?retry|safe_?to_?retry\s*[:=])/iu
+    expect(definition.test('export function safeToRetry(x) { return x }'), 'the pattern must match a function definition').toBe(true)
+    expect(definition.test('const safe_to_retry = true'), 'and a const definition').toBe(true)
+    expect(definition.test('safeToRetry: false'), 'and an object-literal member').toBe(true)
+    expect(definition.test('whether `safe_to_retry` is computed as …'), 'but NOT a prose mention').toBe(false)
+
+    const repoRoot = join(import.meta.dirname, '..', '..', '..')
+    const searchRoots = ['packages', 'docs', 'profiles', 'qualification'].map(name => join(repoRoot, name))
+    const hits: string[] = []
+    // THE ONE FILE THAT MUST BE SKIPPED, and why it is not a fudge. This file
+    // contains the pattern above as a REGEX LITERAL, and that literal's own source
+    // text contains the definition shapes the pattern matches — so a walk that
+    // read this file would match itself no matter how the pattern is written. The
+    // self-exclusion is therefore structural rather than a convenience, and the
+    // `hits.length` assertion below still covers every other source file in the
+    // repository, which is where a predicate would actually be defined.
+    const selfFile = 'durability-advanced.test.ts'
+    const walk = (dir: string, depth: number): void => {
+      if (depth > 4 || !existsSync(dir)) return
+      for (const entry of readdirSync(dir, { withFileTypes: true })) {
+        if (entry.name === 'node_modules' || entry.name.startsWith('.')) continue
+        if (entry.name === selfFile) continue
+        const full = join(dir, entry.name)
+        if (entry.isDirectory()) {
+          walk(full, depth + 1)
+          continue
+        }
+        if (!/\.(?:ts|mjs|js)$/u.test(entry.name)) continue
+        if (definition.test(readFileSync(full, 'utf8'))) hits.push(full.slice(repoRoot.length + 1))
+      }
+    }
+    for (const dir of searchRoots) walk(dir, 0)
+    expect(hits, 'no `safe_to_retry` predicate is DEFINED anywhere in the product').toEqual([])
+
+    // The predicate that DOES exist is a refusal device, and the measurement is
+    // that `unknown` — the classification that would tempt a caller to retry —
+    // is refused.
+    const effectsSource = readFileSync(join(import.meta.dirname, 'effects.ts'), 'utf8')
+    expect(effectsSource, 'the module has a sanctioned-reading predicate').toMatch(/export function mayRunAutomatically/u)
+    expect(effectsSource, 'and it passes ONLY a read_only verdict').toMatch(/return verdict\.classification === 'read_only'/u)
   })
 })
 

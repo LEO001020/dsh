@@ -1,0 +1,10 @@
+# the whole file, including T9-C (owned by T2) — measured 2026-09-20, HEAD d86e180
+# command: node /d/DSH/src/dsh-src/node_modules/vitest/vitest.mjs run src/durability-advanced.test.ts --maxWorkers=2 --no-file-parallelism
+
+ × src/durability-advanced.test.ts > T9-C: FILESYSTEM gates FS-01..FS-06 > FS-05: line endings are preserved through an edit, so a CRLF file stays CRLF 37ms
+   → a write normalizes content to the file's own style: expected 'x\ny\nz\n' to be 'x\r\ny\r\nz\r\n' // Object.is equality
+ × src/durability-advanced.test.ts > T9-C: FILESYSTEM gates FS-01..FS-06 > FS-06: a RAW PYTHON mutation is visible to the verifier from the world, not from a DSH receipt 334ms
+   → expected 'mutated by raw python, no dsh tool\r\n' to be 'mutated by raw python, no dsh tool\n' // Object.is equality
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+ Test Files  1 failed (1)
+      Tests  2 failed | 30 passed (32)

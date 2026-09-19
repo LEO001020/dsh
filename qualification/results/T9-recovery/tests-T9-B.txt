@@ -1,0 +1,14 @@
+# T9-B: the effect ledger across a real state rewind — measured 2026-09-20, HEAD d86e180
+# command: node /d/DSH/src/dsh-src/node_modules/vitest/vitest.mjs run src/durability-advanced.test.ts -t T9-B --maxWorkers=2 --no-file-parallelism
+
+ ✓ src/durability-advanced.test.ts > T9-B: the effect ledger across a real state rewind > the rehearsal's fixture defect is real: `kind` instead of `status` stores a record with no status 21ms
+ ✓ src/durability-advanced.test.ts > T9-B: the effect ledger across a real state rewind > with the CORRECTED fixture the ledger opens and reconciles from the remote, never re-sending 13ms
+ ✓ src/durability-advanced.test.ts > T9-B: the effect ledger across a real state rewind > when the effect store IS inside the rewound tree, the local knowledge is SILENTLY GONE 14ms
+ ✓ src/durability-advanced.test.ts > T9-B: the effect ledger across a real state rewind > a lost reply that MAY have committed is reconciled by QUERY, and the transport is never invoked twice 10ms
+ ✓ src/durability-advanced.test.ts > T9-B: the effect ledger across a real state rewind > the send decision table licenses a send from exactly two states, and BOTH are proofs about our own write order 0ms
+ ✓ src/durability-advanced.test.ts > T9-B: the effect ledger across a real state rewind > an adapter that can be neither keyed nor queried is NOT RUN AT ALL, rather than run and left unknown 4ms
+ ✓ src/durability-advanced.test.ts > T9-B: the effect ledger across a real state rewind > the PRODUCT path does not replay either: a launch that may have succeeded is quarantined, and a second drain refuses 11ms
+ ✓ src/durability-advanced.test.ts > T9-B: the effect ledger across a real state rewind > a FAILED ATTEMPT does not imply the effect did not happen — the two statuses are recorded separately 9ms
+ ✓ src/durability-advanced.test.ts > T9-B: the effect ledger across a real state rewind > no `safe_to_retry` predicate exists, and the nearest predicate refuses rather than permits 44ms
+ Test Files  1 passed (1)
+      Tests  9 passed | 23 skipped (32)
