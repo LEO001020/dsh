@@ -1,0 +1,76 @@
+# tests.txt -- real runner output, six gate test files.
+#
+# command:
+#   cd /d/DSH/work/dsh-native-daily/packages/dsh-ipython
+#   export PATH="/d/DSH/tools/bin:/d/DSH/src/dsh-src/node_modules/.bin:$PATH"
+#   vitest run --maxWorkers=1 --no-file-parallelism
+#
+# vitest_exit=0   (54 passed / 54, 6 files)
+# Pool is 'forks' per vitest.config.ts. One vitest process; the suite keeps at
+# most one kernel alive at a time and shuts every host down in afterEach.
+#
+# ANSI escapes are stripped for readability; nothing else is edited.
+
+
+ RUN  v4.1.8 D:/DSH/work/dsh-native-daily/packages/dsh-ipython
+
+ ✓ src/requirements.test.ts > requirement 1: a real IPython shell, not a CPython fake > get_ipython() is a ZMQInteractiveShell and a magic executes 2839ms
+ ✓ src/requirements.test.ts > requirement 1: a real IPython shell, not a CPython fake > a second magic that inspects the shell state also runs 2436ms
+ ✓ src/requirements.test.ts > requirement 2: kernel transport is not plaintext > the connection file carries curve keys and the plaintext warning is absent 2787ms
+ ✓ src/requirements.test.ts > requirement 2: kernel transport is not plaintext > IPC is not available on this platform, and the start path does not pretend otherwise 2642ms
+ ✓ src/requirements.test.ts > requirement 3: the namespace persists across cells > a DataFrame and a function built in cell 1 are usable in cell 2 3312ms
+ ✓ src/requirements.test.ts > requirement 3: the namespace persists across cells > a mutation in cell 2 is visible in cell 3, so the object is genuinely shared 2826ms
+ ✓ src/requirements.test.ts > requirement 4: top-level await works without a wrapper > a bare await at cell top level returns a value 2624ms
+ ✓ src/requirements.test.ts > requirement 4: top-level await works without a wrapper > await works on a coroutine defined and called in the same cell 2852ms
+ ✓ src/requirements.test.ts > requirement 4: top-level await works without a wrapper > a coroutine created in one cell can be awaited in the next 2588ms
+ ✓ src/requirements.test.ts > requirement 5: an exception does not roll back the namespace > an assignment before a raise survives, and the error is reported clearly 2815ms
+ ✓ src/requirements.test.ts > requirement 5: an exception does not roll back the namespace > an assignment made BEFORE the failing statement survives even when a later one does not 3192ms
+ ✓ src/requirements.test.ts > requirement 6: stdin is disabled and fails fast > input() fails explainably instead of hanging 2803ms
+ ✓ src/requirements.test.ts > requirement 6: stdin is disabled and fails fast > getpass fails the same way, and the kernel is still usable afterwards 3305ms
+ ✓ src/requirements.test.ts > requirement 7: only the matching reply and idle complete a cell > a foreign shell frame during a cell does not end it 4663ms
+ ✓ src/requirements.test.ts > requirement 7: only the matching reply and idle complete a cell > a stray reply left by wait_for_ready does not satisfy the first cell 2548ms
+ ✓ src/requirements.test.ts > requirement 9: late output is classified separately, never attached to the next cell > output written after the cell went idle is classified late, not folded into the cell 5070ms
+ ✓ src/requirements.test.ts > requirement 9: late output is classified separately, never attached to the next cell > output stamped with the live cell id but arriving after its idle is still classified late 4187ms
+ ✓ src/requirements.test.ts > requirement 12: one model-facing tool named ipython > the tool declares exactly one required parameter, code 240ms
+ ✓ src/requirements.test.ts > requirement 12: one model-facing tool named ipython > no lifecycle tool name is exported or registered anywhere in the package 6ms
+ ✓ src/faults.test.ts > requirement 8: interrupt, then reuse the kernel > a CPU loop is interrupted, KeyboardInterrupt is reported, and the kernel is reusable 4045ms
+ ✓ src/faults.test.ts > requirement 8: interrupt, then reuse the kernel > an interrupt of an await-suspended cell reports unknown and resets, never a false success 12208ms
+ ✓ src/faults.test.ts > requirement 10: a flooding cell cannot OOM the host > hundreds of MB of stdout is capped, reported truncated, and spilled 5588ms
+ ✓ src/faults.test.ts > requirement 10: a flooding cell cannot OOM the host > a cell under the cap reports no truncation, so the flag is not always-on 2400ms
+ ✓ src/faults.test.ts > requirement 10: a flooding cell cannot OOM the host > a giant display payload is bounded too, not just stdout 3039ms
+ ✓ src/faults.test.ts > requirement 11: kernel death changes the generation > killing the kernel reports a NEW epoch and a lost-state notice 6230ms
+ ✓ src/faults.test.ts > requirement 11: kernel death changes the generation > after the death is reported, the replacement kernel is usable and empty 6483ms
+ ✓ src/cleanup.test.ts > process hygiene > the classifier reports nothing of ours when nothing of ours is running 3062ms
+ ✓ src/cleanup.test.ts > process hygiene > a started kernel is attributed to this package, so the classifier has teeth 4441ms
+ ✓ src/cleanup.test.ts > process hygiene > shutdown leaves none of this package's processes running 5345ms
+ ✓ src/cleanup.test.ts > process hygiene > two sequential kernels do not accumulate this package's processes 6946ms
+ ✓ src/cleanup.test.ts > process hygiene > a kernel killed out from under the host is still cleaned up by shutdown 7265ms
+ ✓ src/service.test.ts > ctx.ipython: the kernel registry > the service registers as ctx.ipython through the plugin path 10ms
+ ✓ src/service.test.ts > ctx.ipython: the kernel registry > two Sessions get two namespaces, and neither sees the other 5291ms
+ ✓ src/service.test.ts > ctx.ipython: the kernel registry > a NEW Agent object on the SAME Session reaches the SAME kernel 2537ms
+ ✓ src/service.test.ts > ctx.ipython: the kernel registry > a changed execution world is refused rather than served by the old kernel 2485ms
+ ✓ src/service.test.ts > ctx.ipython: the kernel registry > a second service registration on one context is refused, preventing split-brain 21ms
+ ✓ src/service.test.ts > ctx.ipython: the kernel registry > evict removes the kernel and reports whether one existed 2472ms
+ ✓ src/service.test.ts > ctx.ipython: the kernel registry > currentEpoch does not start a kernel, so a status read has no side effect 3ms
+ ✓ src/service.test.ts > ctx.ipython: the kernel registry > close shuts down every kernel it owns 5087ms
+ ✓ src/service.test.ts > ctx.ipython: the kernel registry > a cancelled cell is refused before it is sent, not abandoned mid-flight 6ms
+ ✓ src/smoke.test.ts > broker transport > starts a kernel with curve keys and no plaintext warning 2644ms
+ ✓ src/smoke.test.ts > broker transport > runs one cell and reports ok 2598ms
+ ✓ src/protocol.test.ts > bounded framing > round-trips a message 1ms
+ ✓ src/protocol.test.ts > bounded framing > reassembles a frame split across arbitrary chunk boundaries 2ms
+ ✓ src/protocol.test.ts > bounded framing > decodes several frames delivered in one chunk 0ms
+ ✓ src/protocol.test.ts > bounded framing > rejects an oversized frame on the DECLARED length, without buffering it 1ms
+ ✓ src/protocol.test.ts > bounded framing > refuses to encode a value that exceeds the limit 6ms
+ ✓ src/protocol.test.ts > bounded framing > stops permanently after a consumer failure instead of misaligning 1ms
+ ✓ src/protocol.test.ts > bounded framing > rejects a payload that is not valid JSON 0ms
+ ✓ src/protocol.test.ts > broker message shape > accepts a well-formed reply and preserves the id 0ms
+ ✓ src/protocol.test.ts > broker message shape > requires a non-empty id, so a reply cannot be matched to nothing 0ms
+ ✓ src/protocol.test.ts > broker message shape > accepts a late_output event and defaults missing fields rather than throwing 0ms
+ ✓ src/protocol.test.ts > broker message shape > rejects an event with no epoch, because it cannot be attributed to a generation 0ms
+ ✓ src/protocol.test.ts > broker message shape > rejects an unknown type instead of guessing 0ms
+
+ Test Files  6 passed (6)
+      Tests  54 passed (54)
+   Start at  02:29:31
+   Duration  145.48s (transform 415ms, setup 0ms, import 450ms, tests 143.96s, environment 0ms)
+

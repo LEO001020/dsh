@@ -1,0 +1,82 @@
+# Falsification: do the ECO tests actually fail when the property is broken?
+#
+# A test that cannot fail proves nothing. Each mutation below was applied to a
+# COPY of the package (see this script's header for why), the suite was run
+# there, and the live tree was never in a mutated state.
+#
+# The control run at the end is the unmutated copy.
+
+COMMAND (identical for every row, run inside the copy):
+  cd <copy> && npx vitest run src/eco.test.ts --maxWorkers=1 --no-file-parallelism
+Each row below reports the tests that FAILED, by name, under that command.
+
+=== CONTROL: the unmutated copy ===
+      Tests  36 passed (36)
+
+=== S1: the unknown-usage guard is removed ===
+#     priceAttempt stops returning early for an absent usage, so an unknown
+#     attempt reaches the priced path and is charged as if it were measured.
+#     Expected to break ECO-02.
+S1 APPLIED to D:/DSH/work/dsh-native-daily/packages/.eco-sabotage-copy/src/perf-metrics.ts
+      Tests  2 failed | 34 passed (36)
+    BROKE: src/eco.test.ts > ECO-02: a dropped connection is UNKNOWN, not zero, and it does not silently pass a budget check > keeps an attempt with no usage un
+    BROKE: src/eco.test.ts > ECO-02: a dropped connection is UNKNOWN, not zero, and it does not silently pass a budget check > refuses to compare an incomplete 
+
+=== S2: the cross-provider guard is removed, and a foreign cache-write field is accepted ===
+#     One vendor's price table is applied to another's tokens, and a
+#     cache-write count from a protocol that has no such field is priced
+#     instead of refused. Expected to break ECO-03.
+S2 APPLIED to D:/DSH/work/dsh-native-daily/packages/.eco-sabotage-copy/src/perf-metrics.ts
+      Tests  1 failed | 35 passed (36)
+    BROKE: src/eco.test.ts > ECO-03: the total covers every category and never applies one provider's pricing to another > refuses a price table belonging to a 
+
+=== S3: the token delta is read from the MONEY lines again, and the shadow spends ===
+#     The exact bug this case found in its own module: reportCostDelta
+#     computes the token delta from byLine (currency) instead of byTokens.
+#     Plus a shadow that increments its own request counter. Expected to break
+#     ECO-05 and ECO-06.
+S3 APPLIED to D:/DSH/work/dsh-native-daily/packages/.eco-sabotage-copy/src/perf-metrics.ts
+      Tests  2 failed | 34 passed (36)
+    BROKE: src/eco.test.ts > ECO-05: fewer prompt tokens can be a MORE expensive bill, and the report says so > reports the bill rising while the prompt shrinks
+    BROKE: src/eco.test.ts > ECO-06: enabling a shadow projection sends no second LLM request and re-runs no effect > leaves the real request count and the real
+
+=== S4: the cache-storage line is dropped from the total, and an unknown is marked known ===
+#     Two omissions ECO-03 and ECO-02 name: a charge line that exists but is
+#     never added, and a gap that reports itself as measured. Expected to break
+#     both.
+S4 APPLIED to D:/DSH/work/dsh-native-daily/packages/.eco-sabotage-copy/src/perf-metrics.ts
+      Tests  3 failed | 33 passed (36)
+    BROKE: src/eco.test.ts > ECO-02: a dropped connection is UNKNOWN, not zero, and it does not silently pass a budget check > keeps an attempt with no usage un
+    BROKE: src/eco.test.ts > ECO-02: a dropped connection is UNKNOWN, not zero, and it does not silently pass a budget check > refuses to compare an incomplete 
+    BROKE: src/eco.test.ts > ECO-03: the total covers every category and never applies one provider's pricing to another > sums root, children, summary/compacti
+
+=== S5: completeness ignores unknown attempts, and the price book falls back ===
+#     A total that calls itself complete with a gap in it, and an unregistered
+#     provider priced with whichever table happens to be first. Expected to
+#     break ECO-02 and ECO-03.
+S5 APPLIED to D:/DSH/work/dsh-native-daily/packages/.eco-sabotage-copy/src/perf-metrics.ts
+      Tests  3 failed | 33 passed (36)
+    BROKE: src/eco.test.ts > ECO-02: a dropped connection is UNKNOWN, not zero, and it does not silently pass a budget check > keeps an attempt with no usage un
+    BROKE: src/eco.test.ts > ECO-02: a dropped connection is UNKNOWN, not zero, and it does not silently pass a budget check > refuses to compare an incomplete 
+    BROKE: src/eco.test.ts > ECO-03: the total covers every category and never applies one provider's pricing to another > refuses to price a provider with no t
+
+=== S6: percentiles interpolate instead of reporting an observed sample ===
+#     The p95 becomes a value between two observations and the p95IsMax flag is
+#     hardcoded false, so a five-sample p95 is reported as a real tail.
+#     Expected to break the perf instrumentation case.
+S6 APPLIED to D:/DSH/work/dsh-native-daily/packages/.eco-sabotage-copy/src/perf-metrics.ts
+      Tests  3 failed | 33 passed (36)
+    BROKE: src/eco.test.ts > perf instrumentation: the meters measure, and say so when they cannot > computes percentiles from observed samples and flags a p95 
+    BROKE: src/eco.test.ts > perf instrumentation: the meters measure, and say so when they cannot > pairs open/close spans and counts the ones that did not pai
+    BROKE: src/eco.test.ts > perf: the metrics the plan names, measured or explicitly not measured > measures kernel cold start and warm cell RTT as real percen
+
+=== S7: the conservative reservation is released instead of held ===
+#     holdUnknown stops holding and retainAsUnknown releases rather than moving
+#     the amount, so an unreported charge looks free and the commitment total
+#     falls. Expected to break ECO-02's admission-refusal case.
+S7 APPLIED to D:/DSH/work/dsh-native-daily/packages/.eco-sabotage-copy/src/record.ts
+      Tests  1 failed | 35 passed (36)
+    BROKE: src/eco.test.ts > ECO-02: a dropped connection is UNKNOWN, not zero, and it does not silently pass a budget check > holds a CONSERVATIVE reservation 
+
+=== CONTROL (restored copy) ===
+      Tests  36 passed (36)

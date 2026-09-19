@@ -1,0 +1,157 @@
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.8 [39m[90mD:/DSH/work/dsh-native-daily/packages/dsh-daily-work[39m
+
+ [32m✓[39m src/history-web.test.ts[2m > [22mHIS-01: guessing another project's SessionId is REFUSED, not empty[2m > [22mrefuses a session in another workspace with a REFUSAL code, not an empty page[32m 3[2mms[22m[39m
+ [32m✓[39m src/history-web.test.ts[2m > [22mHIS-01: guessing another project's SessionId is REFUSED, not empty[2m > [22mdistinguishes a refusal from an authorized-but-absent session[32m 0[2mms[22m[39m
+ [32m✓[39m src/history-web.test.ts[2m > [22mHIS-01: guessing another project's SessionId is REFUSED, not empty[2m > [22mgives the SAME refusal for an id in another project that exists and one that does not[32m 0[2mms[22m[39m
+ [32m✓[39m src/history-web.test.ts[2m > [22mHIS-01: guessing another project's SessionId is REFUSED, not empty[2m > [22mallows the caller's own session and refuses a caller with no workspace everything else[32m 0[2mms[22m[39m
+ [32m✓[39m src/history-web.test.ts[2m > [22mHIS-01: guessing another project's SessionId is REFUSED, not empty[2m > [22mrefuses when the caller's own session changed workspace[32m 0[2mms[22m[39m
+ [32m✓[39m src/history-web.test.ts[2m > [22mHIS-01: guessing another project's SessionId is REFUSED, not empty[2m > [22mreads through ctx.get rather than ctx.sessionQuery, so a plugin without inject works[32m 65[2mms[22m[39m
+ [32m✓[39m src/history-web.test.ts[2m > [22mHIS-01: guessing another project's SessionId is REFUSED, not empty[2m > [22mreads from a PLUGIN caller, the fiber the boot failure actually hit[32m 37[2mms[22m[39m
+ [32m✓[39m src/history-web.test.ts[2m > [22mHIS-01: guessing another project's SessionId is REFUSED, not empty[2m > [22mnames the DEPLOYMENT when no session-query service is mounted[32m 2[2mms[22m[39m
+ [32m✓[39m src/history-web.test.ts[2m > [22mHIS-01: guessing another project's SessionId is REFUSED, not empty[2m > [22mmounts through the real plugin entry, exposing a service that refuses without session-query[32m 1[2mms[22m[39m
+ [32m✓[39m src/history-web.test.ts[2m > [22mHIS-01: guessing another project's SessionId is REFUSED, not empty[2m > [22mdoes not expose the raw sessionQuery service from the plane[32m 0[2mms[22m[39m
+ [32m✓[39m src/history-web.test.ts[2m > [22mHIS-02: a scan is pinned to ONE watermark while events append[2m > [22mreturns only events at or below the pinned watermark, and reads new events in a SEPARATE scan[32m 56[2mms[22m[39m
+ [32m✓[39m src/history-web.test.ts[2m > [22mHIS-02: a scan is pinned to ONE watermark while events append[2m > [22mrefuses a page size that is not a positive integer[32m 29[2mms[22m[39m
+ [32m✓[39m src/history-web.test.ts[2m > [22mHIS-02: a scan is pinned to ONE watermark while events append[2m > [22mkeeps at most ONE pinned observation per session, however often it is re-opened[32m 45[2mms[22m[39m
+ [32m✓[39m src/history-web.test.ts[2m > [22mHIS-02: a scan is pinned to ONE watermark while events append[2m > [22mreleases a scan's observation on dispose, so a cursor after teardown is refused[32m 44[2mms[22m[39m
+ [32m✓[39m src/history-web.test.ts[2m > [22mHIS-02: a scan is pinned to ONE watermark while events append[2m > [22mrefuses a cursor from a superseded generation instead of re-basing it[32m 44[2mms[22m[39m
+ [32m✓[39m src/history-web.test.ts[2m > [22mHIS-02: a scan is pinned to ONE watermark while events append[2m > [22mkeeps page order stable across a filtered multi-page traversal[32m 56[2mms[22m[39m
+ [32m✓[39m src/history-web.test.ts[2m > [22mHIS-03: an event larger than the page budget returns segments, not a breach[2m > [22mreturns segments with the FULL size and digest, and never a partial body as the event[32m 49[2mms[22m[39m
+ [32m✓[39m src/history-web.test.ts[2m > [22mHIS-03: an event larger than the page budget returns segments, not a breach[2m > [22mbounds the segment LIST as well as each segment[32m 42[2mms[22m[39m
+ [32m✓[39m src/history-web.test.ts[2m > [22mHIS-03: an event larger than the page budget returns segments, not a breach[2m > [22mreports an absent seq as an error rather than an empty event[32m 36[2mms[22m[39m
+ [32m✓[39m src/history-web.test.ts[2m > [22mHIS-03: an event larger than the page budget returns segments, not a breach[2m > [22mreads an event from the pinned observation, so an event read does not re-read the log[32m 70[2mms[22m[39m
+ [31m×[39m src/history-web.test.ts[2m > [22mHIS-03: an event larger than the page budget returns segments, not a breach[2m > [22mmeasures the BYTES a 100-page traversal reads, not only the call count[33m 621[2mms[22m[39m
+[31m   → expected 100 to be 1 // Object.is equality[39m
+ [32m✓[39m src/history-web.test.ts[2m > [22mHIS-03: an event larger than the page budget returns segments, not a breach[2m > [22mreports an event absent from the pinned scan as absent, not as an empty event[32m 34[2mms[22m[39m
+ [32m✓[39m src/history-web.test.ts[2m > [22mHIS-03: an event larger than the page budget returns segments, not a breach[2m > [22mproduces a digest that is stable across key ordering[32m 0[2mms[22m[39m
+ [31m×[39m src/history-web.test.ts[2m > [22mHIS-04: traversing 100 pages reuses ONE prepared observation[2m > [22mmeasures ONE full-log materialization for a 100-page traversal[33m 400[2mms[22m[39m
+[31m   → expected 100 to be 1 // Object.is equality[39m
+ [32m✓[39m src/history-web.test.ts[2m > [22mHIS-04: traversing 100 pages reuses ONE prepared observation[2m > [22mcounts a full-log materialization when the plane is asked for a fresh scan[32m 41[2mms[22m[39m
+ [31m×[39m src/history-web.test.ts[2m > [22mHIS-04: traversing 100 pages reuses ONE prepared observation[2m > [22mreuses the underlying prepared observation lease across scans of the same session[33m 405[2mms[22m[39m
+[31m   → expected 100 to be 1 // Object.is equality[39m
+ [32m✓[39m src/history-web.test.ts[2m > [22mHIS-05: stored / consumed / projected are three separate facts[2m > [22mclassifies DSH's own three surfaces and records consumption and projection separately[32m 38[2mms[22m[39m
+ [32m✓[39m src/history-web.test.ts[2m > [22mHIS-05: stored / consumed / projected are three separate facts[2m > [22mrefuses to record consumption for an event that was never stored[32m 0[2mms[22m[39m
+ [32m✓[39m src/history-web.test.ts[2m > [22mHIS-05: stored / consumed / projected are three separate facts[2m > [22mrefuses to record projection for an event that was never consumed[32m 0[2mms[22m[39m
+ [32m✓[39m src/history-web.test.ts[2m > [22mHIS-05: stored / consumed / projected are three separate facts[2m > [22mfilters pages by surface using session-query's own vocabulary[32m 42[2mms[22m[39m
+ [32m✓[39m src/history-web.test.ts[2m > [22mHIS-06: a superseded number keeps BOTH versions, with source and supersedes[2m > [22mkeeps the old value and the new one, with a traceable chain[32m 1[2mms[22m[39m
+ [32m✓[39m src/history-web.test.ts[2m > [22mHIS-06: a superseded number keeps BOTH versions, with source and supersedes[2m > [22mrecords the AUTHOR of each version, so inference is not promoted to evidence[32m 0[2mms[22m[39m
+ [32m✓[39m src/history-web.test.ts[2m > [22mHIS-07: a model writing "trusted"/"admin" into memory does NOT elevate policy[2m > [22mkeeps the label as data and reports the same authority a model claim always has[32m 0[2mms[22m[39m
+ [32m✓[39m src/history-web.test.ts[2m > [22mHIS-07: a model writing "trusted"/"admin" into memory does NOT elevate policy[2m > [22mgives a user statement instruction authority even with no labels at all[32m 0[2mms[22m[39m
+ [32m✓[39m src/history-web.test.ts[2m > [22mHIS-07: a model writing "trusted"/"admin" into memory does NOT elevate policy[2m > [22mreads authority from the AUTHOR field only, never from text or labels[32m 0[2mms[22m[39m
+ [32m✓[39m src/history-web.test.ts[2m > [22mHIS-08: the derived FTS index rebuilds from canonical Session/artifact only[2m > [22mdrops and rebuilds a derived index, recovering the same rows from canonical sessions[32m 1[2mms[22m[39m
+ [32m✓[39m src/history-web.test.ts[2m > [22mHIS-08: the derived FTS index rebuilds from canonical Session/artifact only[2m > [22mrebuilds the REAL SQLite FTS index after deleting its file[32m 68[2mms[22m[39m
+ [32m✓[39m src/history-web.test.ts[2m > [22mHIS-08: the derived FTS index rebuilds from canonical Session/artifact only[2m > [22mdoes not require a second history source: the index holds nothing canonical logs lack[32m 0[2mms[22m[39m
+ [32m✓[39m src/history-web.test.ts[2m > [22mECO-04: a stable prefix with dynamic state in a bounded LATER position[2m > [22mkeeps the assembled prefix identical across cells that change only budget and variables[32m 4[2mms[22m[39m
+ [32m✓[39m src/history-web.test.ts[2m > [22mECO-04: a stable prefix with dynamic state in a bounded LATER position[2m > [22mkeeps the dynamic tail inside its byte budget even with a huge variable list[32m 1[2mms[22m[39m
+ [32m✓[39m src/history-web.test.ts[2m > [22mECO-04: a stable prefix with dynamic state in a bounded LATER position[2m > [22mtruncates the tail on a code-point boundary, never mid-character[32m 0[2mms[22m[39m
+ [32m✓[39m src/history-web.test.ts[2m > [22mECO-04: a stable prefix with dynamic state in a bounded LATER position[2m > [22mchanges the prefix generation only when the SDK or policy identity changes[32m 0[2mms[22m[39m
+ [32m✓[39m src/history-web.test.ts[2m > [22mWEB-01: provider truncation is partial with a non-local recovery[2m > [22mmarks a truncated body partial, names the gap, and never claims local full recovery[32m 0[2mms[22m[39m
+ [32m✓[39m src/history-web.test.ts[2m > [22mWEB-01: provider truncation is partial with a non-local recovery[2m > [22mdoes not over-report a complete fetch as unknown, and does not claim the document is complete in the world[32m 0[2mms[22m[39m
+ [32m✓[39m src/history-web.test.ts[2m > [22mWEB-01: provider truncation is partial with a non-local recovery[2m > [22mcarries the caveat that a hash proves identity and not truth[32m 0[2mms[22m[39m
+ [32m✓[39m src/history-web.test.ts[2m > [22mWEB-02: a top-10 list is never reported as all results or an exhausted Internet[2m > [22mreports a short, uncursored list as may-be-more UNKNOWN, never as exhausted[32m 0[2mms[22m[39m
+ [32m✓[39m src/history-web.test.ts[2m > [22mWEB-02: a top-10 list is never reported as all results or an exhausted Internet[2m > [22mreports a seam-cut list as may-be-more true, still not "all results"[32m 0[2mms[22m[39m
+ [32m✓[39m src/history-web.test.ts[2m > [22mWEB-02: a top-10 list is never reported as all results or an exhausted Internet[2m > [22mroutes the real ctx.web seam and uses the seam's own truncation flag[32m 1[2mms[22m[39m
+ [32m✓[39m src/history-web.test.ts[2m > [22mWEB-03: raw and derived are separately hashed and located; a failed transform does not fabricate body text[2m > [22mhashes the raw and derived objects separately and links them[32m 0[2mms[22m[39m
+ [32m✓[39m src/history-web.test.ts[2m > [22mWEB-03: raw and derived are separately hashed and located; a failed transform does not fabricate body text[2m > [22mdoes NOT fall back to raw HTML when the conversion yields no text[32m 0[2mms[22m[39m
+ [32m✓[39m src/history-web.test.ts[2m > [22mWEB-03: raw and derived are separately hashed and located; a failed transform does not fabricate body text[2m > [22mrecords a THROWING converter as a transform gap rather than an empty body[32m 0[2mms[22m[39m
+ [32m✓[39m src/history-web.test.ts[2m > [22mWEB-03: raw and derived are separately hashed and located; a failed transform does not fabricate body text[2m > [22mputs raw and derived in SEPARATE record slots with the transform identity[32m 0[2mms[22m[39m
+ [32m✓[39m src/history-web.test.ts[2m > [22mWEB-03: raw and derived are separately hashed and located; a failed transform does not fabricate body text[2m > [22mrecords the transform gap on the record when the converter fails[32m 0[2mms[22m[39m
+ [32m✓[39m src/history-web.test.ts[2m > [22mWEB-04: a refetch with a different ETag or body creates a NEW observation[2m > [22mpreserves the old hash and time and never backfills the old entry[32m 0[2mms[22m[39m
+ [32m✓[39m src/history-web.test.ts[2m > [22mWEB-04: a refetch with a different ETag or body creates a NEW observation[2m > [22mdetects change from EITHER signal, so an unchanged body with a new ETag is still a new observation[32m 0[2mms[22m[39m
+ [32m✓[39m src/history-web.test.ts[2m > [22mWEB-04: a refetch with a different ETag or body creates a NEW observation[2m > [22moffers no lookup that returns "the current body for this url"[32m 0[2mms[22m[39m
+ [32m✓[39m src/history-web.test.ts[2m > [22mWEB-05: an HTTP server that ignores Range is not blindly concatenated[2m > [22mrefuses a 200 response to a Range request, because it is the WHOLE entity[32m 0[2mms[22m[39m
+ [32m✓[39m src/history-web.test.ts[2m > [22mWEB-05: an HTTP server that ignores Range is not blindly concatenated[2m > [22mrefuses a 206 whose Content-Range does not match the request[32m 0[2mms[22m[39m
+ [32m✓[39m src/history-web.test.ts[2m > [22mWEB-05: an HTTP server that ignores Range is not blindly concatenated[2m > [22mrefuses a 206 whose content-encoding changed between pages[32m 0[2mms[22m[39m
+ [32m✓[39m src/history-web.test.ts[2m > [22mWEB-05: an HTTP server that ignores Range is not blindly concatenated[2m > [22mrefuses a 206 whose entity tag changed[32m 0[2mms[22m[39m
+ [32m✓[39m src/history-web.test.ts[2m > [22mWEB-05: an HTTP server that ignores Range is not blindly concatenated[2m > [22maccepts a matching 206 and reports the slice it actually represents[32m 0[2mms[22m[39m
+ [32m✓[39m src/history-web.test.ts[2m > [22mWEB-05: an HTTP server that ignores Range is not blindly concatenated[2m > [22mrefuses 416 as unsatisfiable rather than as an empty range[32m 0[2mms[22m[39m
+ [32m✓[39m src/history-web.test.ts[2m > [22mWEB-05: an HTTP server that ignores Range is not blindly concatenated[2m > [22mparses Content-Range, including an unknown total, and rejects nonsense[32m 1[2mms[22m[39m
+ [32m✓[39m src/history-web.test.ts[2m > [22mWEB-05: an HTTP server that ignores Range is not blindly concatenated[2m > [22mdrives the decision against a REAL loopback server that ignores Range[32m 38[2mms[22m[39m
+ [32m✓[39m src/history-web.test.ts[2m > [22mWEB-06: a claim locates the ACTUAL passage; a snippet is not the full text[2m > [22mlocates a quote in the captured artifact with real byte offsets[32m 1[2mms[22m[39m
+ [32m✓[39m src/history-web.test.ts[2m > [22mWEB-06: a claim locates the ACTUAL passage; a snippet is not the full text[2m > [22mrefuses to locate a quote that came from a search SNIPPET[32m 0[2mms[22m[39m
+ [32m✓[39m src/history-web.test.ts[2m > [22mWEB-06: a claim locates the ACTUAL passage; a snippet is not the full text[2m > [22mreports a quote that does not occur as unsupported rather than locating approximately[32m 0[2mms[22m[39m
+ [32m✓[39m src/history-web.test.ts[2m > [22mWEB-06: a claim locates the ACTUAL passage; a snippet is not the full text[2m > [22mproduces byte offsets that survive multi-byte characters before the quote[32m 0[2mms[22m[39m
+ [32m✓[39m src/history-web.test.ts[2m > [22mWEB-07: embedded commands, skill updates and authority claims change nothing[2m > [22mrecords every injection attempt as a FINDING and leaves the text verbatim[32m 2[2mms[22m[39m
+ [32m✓[39m src/history-web.test.ts[2m > [22mWEB-07: embedded commands, skill updates and authority claims change nothing[2m > [22mleaves the trust classification and the capability set unchanged by ANY content[32m 1[2mms[22m[39m
+ [32m✓[39m src/history-web.test.ts[2m > [22mWEB-07: embedded commands, skill updates and authority claims change nothing[2m > [22mhas no field in the untrusted record that could carry authority[32m 0[2mms[22m[39m
+ [32m✓[39m src/history-web.test.ts[2m > [22mWEB-07: embedded commands, skill updates and authority claims change nothing[2m > [22muses DSH's own untrusted-content notice, verbatim[32m 12[2mms[22m[39m
+ [32m✓[39m src/history-web.test.ts[2m > [22mWEB-07: embedded commands, skill updates and authority claims change nothing[2m > [22mdetects nothing in benign content and does not modify it[32m 0[2mms[22m[39m
+ [32m✓[39m src/history-web.test.ts[2m > [22mWEB-08: PDF empty text, decode errors and compression bombs are explicit[2m > [22mdoes NOT report an empty extraction as "the content does not exist"[32m 0[2mms[22m[39m
+ [32m✓[39m src/history-web.test.ts[2m > [22mWEB-08: PDF empty text, decode errors and compression bombs are explicit[2m > [22mreports a non-PDF body as a decode error, not as empty content[32m 0[2mms[22m[39m
+ [32m✓[39m src/history-web.test.ts[2m > [22mWEB-08: PDF empty text, decode errors and compression bombs are explicit[2m > [22mreports a THROWING extractor as a decode error with the cause preserved[32m 0[2mms[22m[39m
+ [32m✓[39m src/history-web.test.ts[2m > [22mWEB-08: PDF empty text, decode errors and compression bombs are explicit[2m > [22mreports a budget stop as PARTIAL with the byte counts, not as an empty document[32m 0[2mms[22m[39m
+ [32m✓[39m src/history-web.test.ts[2m > [22mWEB-08: PDF empty text, decode errors and compression bombs are explicit[2m > [22mstops a REAL compression bomb at the budget instead of allocating it[32m 208[2mms[22m[39m
+ [32m✓[39m src/history-web.test.ts[2m > [22mWEB-08: PDF empty text, decode errors and compression bombs are explicit[2m > [22mclassifies a bomb inside a PDF as budget-exceeded through the real decompressor[32m 29[2mms[22m[39m
+ [32m✓[39m src/history-web.test.ts[2m > [22mWEB-08: PDF empty text, decode errors and compression bombs are explicit[2m > [22mreturns extracted text when there is some, with the page count[32m 0[2mms[22m[39m
+ [32m✓[39m src/history-web.test.ts[2m > [22ma content hash proves identity, never truth[2m > [22mstates the limitation on every provenance and memory record that carries a hash[32m 0[2mms[22m[39m
+ [32m✓[39m src/history-web.test.ts[2m > [22mvocabulary guards[2m > [22mhas no acquisition completeness value that means "the whole Internet"[32m 0[2mms[22m[39m
+ [32m✓[39m src/history-web.test.ts[2m > [22mvocabulary guards[2m > [22mhas no gap recovery value that means "recovered locally from nothing"[32m 0[2mms[22m[39m
+ [32m✓[39m src/history-web.test.ts[2m > [22mvocabulary guards[2m > [22mkeeps WebError codes intact when the seam reports an unavailable provider[32m 3[2mms[22m[39m
+ [32m✓[39m src/history-web.test.ts[2m > [22mvocabulary guards[2m > [22mroutes a fetch through the real ctx.web seam to a registered fixture provider[32m 3[2mms[22m[39m
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 3 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m src/history-web.test.ts[2m > [22mHIS-03: an event larger than the page budget returns segments, not a breach[2m > [22mmeasures the BYTES a 100-page traversal reads, not only the call count
+[31m[1mAssertionError[22m: expected 100 to be 1 // Object.is equality[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- 1[39m
+[31m+ 100[39m
+
+[36m [2m❯[22m src/history-web.test.ts:[2m839:22[22m[39m
+    [90m837|[39m
+    [90m838|[39m     // One read, and the bytes read are the size of ONE log rather tha…
+    [90m839|[39m     expect(logReads).toBe(1)
+    [90m   |[39m                      [31m^[39m
+    [90m840|[39m     const oneLog = bytesRead
+    [90m841|[39m     expect(oneLog).toBeGreaterThan(400_000)
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/history-web.test.ts[2m > [22mHIS-04: traversing 100 pages reuses ONE prepared observation[2m > [22mmeasures ONE full-log materialization for a 100-page traversal
+[31m[1mAssertionError[22m: expected 100 to be 1 // Object.is equality[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- 1[39m
+[31m+ 100[39m
+
+[36m [2m❯[22m src/history-web.test.ts:[2m898:27[22m[39m
+    [90m896|[39m     // THE MEASUREMENT. One observation for the whole traversal, not o…
+    [90m897|[39m     const counter = plane.replayCounter()
+    [90m898|[39m     expect(counter.total).toBe(1)
+    [90m   |[39m                           [31m^[39m
+    [90m899|[39m     expect(counter.fullLogReplays.get(id)).toBe(1)
+    [90m900|[39m     plane.dispose()
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/history-web.test.ts[2m > [22mHIS-04: traversing 100 pages reuses ONE prepared observation[2m > [22mreuses the underlying prepared observation lease across scans of the same session
+[31m[1mAssertionError[22m: expected 100 to be 1 // Object.is equality[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- 1[39m
+[31m+ 100[39m
+
+[36m [2m❯[22m src/history-web.test.ts:[2m987:40[22m[39m
+    [90m985|[39m     }
+    [90m986|[39m     expect(pages).toBe(100)
+    [90m987|[39m     expect(logReads - beforeTraversal).toBe(1)
+    [90m   |[39m                                        [31m^[39m
+    [90m988|[39m     expect(plane.replayCounter().total).toBe(1)
+    [90m989|[39m     plane.dispose()
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m3 failed[39m[22m[2m | [22m[1m[32m82 passed[39m[22m[90m (85)[39m
+[2m   Start at [22m 03:12:21
+[2m   Duration [22m 3.24s[2m (transform 389ms, setup 0ms, import 530ms, tests 2.55s, environment 0ms)[22m
+

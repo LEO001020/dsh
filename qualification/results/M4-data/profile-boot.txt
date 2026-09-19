@@ -1,0 +1,27 @@
+# M4 data-plane boot probe: a REAL composed profile boot, not a direct ctx.plugin() mount.
+#
+# Command (run from D:/DSH/src/dsh-src with DSH_HOME=D:/DSH/home/canary3):
+#   node apps/cli/lib/bin.js --profile daily-candidate 
+#     --patch D:/DSH/work/dsh-native-daily/qualification/runners/verify-data-plane.patch.yml
+#
+# READ THE EXIT CODE CAREFULLY: `boot_exit=124` is the TIMEOUT killing the web
+# host, which is a long-lived server and does not exit on its own. It is NOT a
+# boot failure. The verdict is in the VERIFY-DATA-PLANE line, which is written
+# before the timeout, and in the ABSENCE of any "startup failed" text below.
+#
+# The overlay pins `webserver.port: 0` (OS-assigned) because port 3080 is held by
+# a long-lived host on this machine; without it the boot fails for a reason that
+# has nothing to do with the data plane. Every webserver config key is restated
+# because a patch replaces the whole config object, not a deep merge.
+#
+# WHAT THIS PROVES: ctx.dailyData is present after a real profile boot, and a
+# capture through the profile's OWN ctx.fs reaches `durable` and reads back
+# byte-for-byte.
+# WHAT IT DOES NOT PROVE: that a python_exec cell can call it. That tool row lives
+# in packages/dsh-ipython (M3), which is not on this branch. The probe proves the
+# SEAM the M3 worker binds to is live in the product.
+
+VERIFY-DATA-PLANE: {"servicePresent":true,"grantRevision":1,"captureState":"durable","capturedBytes":162,"readBackMatches":true,"sessionCreated":true,"sessionId":"session-54159ad1-8b79-4b08-8fb7-a5aff2694bf4","toolCountAgentKey":26,"dataToolPresent":false,"error":null,"tools":["ask_user_question","create_goal","edit","exit_plan_mode","get_goal","glob","grep","interrupt_agent","job_kill","job_list","job_output","list_agents","present","pwsh","read","read_image","send_message","skill","subagent","subagent_fork","todo_write","update_goal","web_fetch","web_search","workflow","write"]}
+dsh web: http://127.0.0.1:4168/?token=HlEq2cgtfa2xfy40Y92drxm8UC1H5Z8V00vzebmHoRo
+dsh web: opening the default browser; pass --no-open to disable
+boot_exit=124

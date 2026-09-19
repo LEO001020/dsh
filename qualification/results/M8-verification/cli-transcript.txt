@@ -1,0 +1,133 @@
+# M8 verification CLI transcript -- real runs, real exit codes
+# command: node qualification/runners/acceptance.mjs <definition.json> [flags]
+# exit 0 = PASS, 1 = NOT PASS, 2 = unusable invocation
+
+==============================================================
+1. VER-01  a suite that collected ZERO tests, child exits 0
+==============================================================
+  ],
+  ],
+  ],
+  },
+  },
+    },
+    }
+  },
+  },
+  },
+  }
+acceptance: m8-zero-tests -> zero_tests (NOT PASS)
+  - exit code 0 matched the expected 0
+  - runner reported total=0 passed=0 failed=0 skipped=0 todo=0
+  - the runner executed zero tests, so a green exit code proves nothing
+acceptance_exit=1
+
+--- what the receipt recorded ---
+{
+ "outcome": "zero_tests",
+ "passed": false,
+ "exitCode": 0,
+ "observedTests": {
+  "total": 0,
+  "passed": 0,
+  "failed": 0,
+  "skipped": 0,
+  "todo": 0
+ },
+ "reasons": [
+  "exit code 0 matched the expected 0",
+  "runner reported total=0 passed=0 failed=0 skipped=0 todo=0",
+  "the runner executed zero tests, so a green exit code proves nothing"
+ ]
+}
+
+==============================================================
+2. VER-02  every test skipped, child exits 0
+==============================================================
+  ],
+  ],
+  ],
+  },
+  },
+    },
+    }
+  },
+  },
+  },
+  }
+acceptance: m8-all-skipped -> all_skipped (NOT PASS)
+  - exit code 0 matched the expected 0
+  - runner reported total=2 passed=0 failed=0 skipped=2 todo=0
+  - no test passed or failed: 2 skipped, 0 todo
+acceptance_exit=1
+
+--- what the receipt recorded ---
+{
+ "outcome": "all_skipped",
+ "passed": false,
+ "exitCode": 0,
+ "observedTests": {
+  "total": 2,
+  "passed": 0,
+  "failed": 0,
+  "skipped": 2,
+  "todo": 0
+ },
+ "reasons": [
+  "exit code 0 matched the expected 0",
+  "runner reported total=2 passed=0 failed=0 skipped=2 todo=0",
+  "no test passed or failed: 2 skipped, 0 todo"
+ ]
+}
+
+==============================================================
+3. VER-03  a weakened acceptance cannot authorize itself
+==============================================================
+--- the authorized digest, obtained in a SEPARATE step ---
+print-digest exit=0
+authorizedDigest=e766a1585408eb6f057779dee678f41f4153fa427277c726cb8cbc9a5fa6e5e3
+
+--- now weaken the declared threshold (passed 2 -> 1) while KEEPING that digest ---
+  "startedAt": "2026-09-19T18:15:03.551Z",
+  "finishedAt": "2026-09-19T18:15:03.551Z",
+  "durationMs": 0
+}
+acceptance: m8-all-skipped -> acceptance_definition_changed (NOT PASS)
+  - the acceptance definition digest b2fd7e91dfb6eaefd77b5a7ee8f9e380af13966e7a63f219f15b9bd85b52fa1e does not match the authorized e766a1585408eb6f057779dee678f41f4153fa427277c726cb8cbc9a5fa6e5e3; the run was refused rather than silently accepted
+acceptance_exit=1
+
+--- and the HONEST definition with the same digest still runs ---
+}
+acceptance: m8-all-skipped -> all_skipped (NOT PASS)
+  - exit code 0 matched the expected 0
+  - runner reported total=2 passed=0 failed=0 skipped=2 todo=0
+  - no test passed or failed: 2 skipped, 0 todo
+acceptance_exit=1  (NOT PASS: the suite is all-skipped -- but it RAN, it was not refused)
+
+==============================================================
+4. VER-05  a stored receipt goes STALE when the workspace changes
+==============================================================
+--- the honest receipt is FRESH while the tree is unchanged ---
+{
+  "fresh": true,
+  "reason": "the receipt still matches the candidate tree and the definition",
+  "currentDigest": "7f31c44040fa75d1f0f35dc85c32f565584b2a94a06cc0d4887c04dc33fd9b66"
+}
+check_exit=1
+# NOTE, because this line looks wrong at first read and is not: the receipt is
+# FRESH and the exit code is still 1. `--check` exits 0 only when the receipt is
+# BOTH fresh AND `passed: true`, and this receipt is an all-skipped NOT PASS.
+# Freshness is a BINDING claim (does this receipt describe this tree), never a
+# verdict. A tool that returned 0 on freshness alone would turn a stored NOT PASS
+# into a green light.
+
+--- change ONE byte of a declared input ---
+{
+  "fresh": false,
+  "reason": "the candidate tree changed since the receipt was written (receipt 7f31c44040fa75d1f0f35dc85c32f565584b2a94a06cc0d4887c04dc33fd9b66, now 1c585933f9b59476bf45d0c3091a8de4ee15bcb105f4cec6c2e81970d7922cac)",
+  "currentDigest": "1c585933f9b59476bf45d0c3091a8de4ee15bcb105f4cec6c2e81970d7922cac"
+}
+acceptance: the stored receipt does not describe the current tree; re-verify
+check_exit=1  (1 = the receipt no longer describes this tree)
+
+--- restore it, so the fixture is left as found ---

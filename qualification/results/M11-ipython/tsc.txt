@@ -1,0 +1,37 @@
+# tsc.txt -- real typecheck output, tests INCLUDED.
+#
+# command:
+#   cd /d/DSH/work/dsh-native-daily/packages/dsh-ipython
+#   tsc -p tsconfig.check.json
+#
+# tsconfig.check.json extends tsconfig.json and CLEARS its exclude, because
+# tsconfig.json excludes src/**/*.test.ts so the build never emits test code
+# into lib/. That exclusion makes 'tsc -p tsconfig.json' exit 0 with or without
+# a test file present -- a false pass for any gate whose evidence is "the tests
+# type-check". Vitest does not typecheck, so a wrong import in a test compiles
+# silently and fails at runtime, if at all.
+#
+# tsc_exit=0
+# diagnostics: 0
+#
+# The command's entire stdout/stderr is reproduced below. It is empty, which is
+# the honest rendering of "no diagnostics": a summarised "clean" would be a claim
+# about output that was never shown.
+
+--- begin tsc -p tsconfig.check.json output ---
+--- end output (0 bytes) ---
+
+# For contrast, the same package against tsconfig.json, which EXCLUDES tests:
+#
+#   tsc -p tsconfig.json --noEmit
+#   exit=0, 0 diagnostics
+
+--- begin tsc -p tsconfig.json --noEmit output ---
+--- end output (0 bytes) ---
+
+# Both exit 0. The difference is what they WOULD catch: a type error inside a
+# *.test.ts file is invisible to tsconfig.json (excluded) and visible to
+# tsconfig.check.json. So check.json is the gate; tsconfig.json is the build.
+#
+# The gate is only meaningful because the test files are real: 6 files, 54
+# tests, every one of them type-checked by the run above.

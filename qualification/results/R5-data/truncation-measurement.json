@@ -1,0 +1,54 @@
+{
+  "cap": {
+    "READ_MAX_LINE_LENGTH": 2000,
+    "READ_MAX_BYTES": 51200
+  },
+  "truncateLineSource": {
+    "line": 69,
+    "text": "function truncateLine(line: string, maxLineLength: number): string {"
+  },
+  "lineBufferCapSource": {
+    "line": 118,
+    "text": "  const lineBufferCap = request.maxLineLength + 1"
+  },
+  "canonicalAssignmentSource": {
+    "line": 157,
+    "text": "        lines: window.lines,"
+  },
+  "readToolPath": "D:/DSH/src/dsh-src/packages/fs/tool-fs/src/read.ts",
+  "readRenderPath": "D:/DSH/src/dsh-src/packages/fs/tool-fs/src/read-render.ts",
+  "stimulus": {
+    "byteLength": 102400,
+    "charLength": 102400,
+    "sha256": "8f73f6f3193b1c3f71ef6395278559fb9c01a8eac0731dfdc6e37667e7a310b2"
+  },
+  "measured": {
+    "totalLines": 1,
+    "linesReturned": 1,
+    "clippedCharLength": 2034,
+    "expectedSuffixChars": 34,
+    "hasSuffix": true,
+    "tailMarkerSurvives": false,
+    "clippedIsPrefixOfOriginal": false,
+    "interiorBytesLost": 100366,
+    "clippedSha256": "0540fcb70a6fb2f01a2386e3c5d613fed03435484413bcbc939368b61e11efcf"
+  },
+  "offset2": {
+    "threw": true,
+    "message": "offset 2 is out of range for \"long.txt\" (1 lines)"
+  },
+  "boundary": {
+    "atCapTruncated": false,
+    "oneOverCapTruncated": true,
+    "oneOverClippedLength": 2034
+  },
+  "biggerMaxBytes": {
+    "clippedCharLength": 2034,
+    "tailMarkerSurvives": false
+  },
+  "raisedMaxLineLength": {
+    "clippedCharLength": 102400,
+    "tailMarkerSurvives": true,
+    "byteForByte": true
+  }
+}

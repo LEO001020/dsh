@@ -1,0 +1,186 @@
+START=2026-09-20T03:09:21
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.8 [39m[90mD:/DSH/work/dsh-native-daily/packages/dsh-daily-work[39m
+
+ [32m✓[39m src/kernel-recovery.test.ts[2m > [22mkernel identity is not the Agent object[2m > [22mnames a slot by session + world + environment, and an incarnation by epoch[32m 2[2mms[22m[39m
+ [32m✓[39m src/kernel-recovery.test.ts[2m > [22mkernel identity is not the Agent object[2m > [22mrefuses a second registration of the same slot[32m 2[2mms[22m[39m
+ [32m✓[39m src/kernel-recovery.test.ts[2m > [22mkernel identity is not the Agent object[2m > [22mdoes not destroy a parked kernel when an activation ends, and rebinds it at the SAME epoch[32m 3[2mms[22m[39m
+ [32m✓[39m src/kernel-recovery.test.ts[2m > [22mserial per kernel, concurrent across kernels[2m > [22mruns one cell at a time on a kernel and queues rather than dispatching a second[32m 1[2mms[22m[39m
+ [32m✓[39m src/kernel-recovery.test.ts[2m > [22mserial per kernel, concurrent across kernels[2m > [22mruns cells on two kernels concurrently[32m 1[2mms[22m[39m
+ [32m✓[39m src/kernel-recovery.test.ts[2m > [22mserial per kernel, concurrent across kernels[2m > [22mbounds the queue and REFUSES past the bound rather than growing[32m 1[2mms[22m[39m
+ [32m✓[39m src/kernel-recovery.test.ts[2m > [22mlate and unattributed output is classified, never attached to the next cell[2m > [22mclassifies output arriving after a cell settled as `late` for the ORIGINATING cell[32m 2[2mms[22m[39m
+ [32m✓[39m src/kernel-recovery.test.ts[2m > [22mlate and unattributed output is classified, never attached to the next cell[2m > [22mclassifies a frame whose parent was never issued as `unattributed`, not as the running cell[32m 1[2mms[22m[39m
+ [32m✓[39m src/kernel-recovery.test.ts[2m > [22mlate and unattributed output is classified, never attached to the next cell[2m > [22mclassifies a stray shell reply as `foreign` and lets it settle nothing[32m 1[2mms[22m[39m
+ [32m✓[39m src/kernel-recovery.test.ts[2m > [22mbudgets are explicit and their breaches are reported[2m > [22mbounds kept output, reports the true total, and spills the dropped tail[32m 1[2mms[22m[39m
+ [32m✓[39m src/kernel-recovery.test.ts[2m > [22mbudgets are explicit and their breaches are reported[2m > [22mcuts a truncated stream on a character boundary rather than corrupting UTF-8[32m 0[2mms[22m[39m
+ [32m✓[39m src/kernel-recovery.test.ts[2m > [22mbudgets are explicit and their breaches are reported[2m > [22mbounds MIME separately from stdout and counts it without keeping it[32m 0[2mms[22m[39m
+ [32m✓[39m src/kernel-recovery.test.ts[2m > [22mbudgets are explicit and their breaches are reported[2m > [22mbounds IPC frames and stops keeping payloads past the bound[32m 0[2mms[22m[39m
+ [32m✓[39m src/kernel-recovery.test.ts[2m > [22mbudgets are explicit and their breaches are reported[2m > [22mbounds nested native calls per cell and states what the refusal cannot undo[32m 0[2mms[22m[39m
+ [32m✓[39m src/kernel-recovery.test.ts[2m > [22mbudgets are explicit and their breaches are reported[2m > [22mbounds data-plane bytes per cell[32m 0[2mms[22m[39m
+ [32m✓[39m src/kernel-recovery.test.ts[2m > [22mbudgets are explicit and their breaches are reported[2m > [22mbounds declared kernel RSS and process count, and says the memory is already resident[32m 0[2mms[22m[39m
+ [32m✓[39m src/kernel-recovery.test.ts[2m > [22man interrupt that does not settle becomes unknown and restarts the kernel[2m > [22mdoes not wait for the reply: the bounded grace fires and the cell becomes unknown[32m 1[2mms[22m[39m
+ [32m✓[39m src/kernel-recovery.test.ts[2m > [22man interrupt that does not settle becomes unknown and restarts the kernel[2m > [22mresolves a cell whose transport promise NEVER settles at all[32m 0[2mms[22m[39m
+ [32m✓[39m src/kernel-recovery.test.ts[2m > [22man interrupt that does not settle becomes unknown and restarts the kernel[2m > [22mescalates to process isolation on a non-interruptible C extension, and says so[32m 0[2mms[22m[39m
+ [32m✓[39m src/kernel-recovery.test.ts[2m > [22man interrupt that does not settle becomes unknown and restarts the kernel[2m > [22mreports the restart loss: the namespace is gone and the loss is named[32m 1[2mms[22m[39m
+ [31m×[39m src/kernel-recovery.test.ts[2m > [22man interrupt that does not settle becomes unknown and restarts the kernel[2m > [22mrefuses further cells on a kernel that could not be restarted[32m 7[2mms[22m[39m
+[31m   → expected true to be false // Object.is equality[39m
+ [32m✓[39m src/kernel-recovery.test.ts[2m > [22man interrupt that does not settle becomes unknown and restarts the kernel[2m > [22mstarts the grace even when the interrupt could not be dispatched at all[32m 0[2mms[22m[39m
+ [32m✓[39m src/kernel-recovery.test.ts[2m > [22man interrupt that does not settle becomes unknown and restarts the kernel[2m > [22mdoes NOT declare unknown when the cell settles inside the grace[32m 1[2mms[22m[39m
+ [32m✓[39m src/kernel-recovery.test.ts[2m > [22man interrupt that does not settle becomes unknown and restarts the kernel[2m > [22mtreats a reply without a matching idle as NOT settled[32m 0[2mms[22m[39m
+ [32m✓[39m src/kernel-recovery.test.ts[2m > [22mcontrol is not stuck behind a data stream[2m > [22mdispatches cancel while frames are still arriving, and both latencies stay visible[32m 0[2mms[22m[39m
+ [32m✓[39m src/kernel-recovery.test.ts[2m > [22mcontrol is not stuck behind a data stream[2m > [22mrefuses a second cancel for a cell that already has an interrupt in flight[32m 0[2mms[22m[39m
+ [32m✓[39m src/kernel-recovery.test.ts[2m > [22mcontrol is not stuck behind a data stream[2m > [22mrefuses to cancel a cell that is not the running one[32m 0[2mms[22m[39m
+ [31m×[39m src/kernel-recovery.test.ts[2m > [22munknown side effects stay quarantined[2m > [22mkeeps an in-flight cell with no confirmed terminal state quarantined[33m 60017[2mms[22m[39m
+[31m   → Test timed out in 60000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".[39m
+ [31m×[39m src/kernel-recovery.test.ts[2m > [22munknown side effects stay quarantined[2m > [22mdoes NOT re-execute an ambiguous call when the transport reconnects[33m 60012[2mms[22m[39m
+[31m   → Test timed out in 60000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".[39m
+ [31m×[39m src/kernel-recovery.test.ts[2m > [22munknown side effects stay quarantined[2m > [22mclears a quarantine only through an explicit, evidenced resolution[33m 60015[2mms[22m[39m
+[31m   → Test timed out in 60000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".[39m
+ [32m✓[39m src/kernel-recovery.test.ts[2m > [22munknown side effects stay quarantined[2m > [22mrefuses to resolve a cell that was never quarantined[32m 1[2mms[22m[39m
+ [32m✓[39m src/kernel-recovery.test.ts[2m > [22mreset and permission change: close admission, cancel, then a NEW epoch[2m > [22mrestarts the kernel and advances the epoch on a reset[32m 1[2mms[22m[39m
+ [31m×[39m src/kernel-recovery.test.ts[2m > [22mreset and permission change: close admission, cancel, then a NEW epoch[2m > [22mMUST restart on a read-permission-domain change, and must not carry variables across[32m 1[2mms[22m[39m
+[31m   → expected 1000 to be greater than 1000[39m
+ [32m✓[39m src/kernel-recovery.test.ts[2m > [22mreset and permission change: close admission, cancel, then a NEW epoch[2m > [22madvances the epoch and moves the slot when the execution world or environment changes[32m 0[2mms[22m[39m
+ [31m×[39m src/kernel-recovery.test.ts[2m > [22mreset and permission change: close admission, cancel, then a NEW epoch[2m > [22mcancels the running cell before replacing the process[33m 60015[2mms[22m[39m
+[31m   → Test timed out in 60000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".[39m
+ [32m✓[39m src/kernel-recovery.test.ts[2m > [22mparked kernels count against the memory budget[2m > [22mcounts parked RSS and evicts explicitly with a loss notification[32m 2[2mms[22m[39m
+ [32m✓[39m src/kernel-recovery.test.ts[2m > [22mparked kernels count against the memory budget[2m > [22mreports the parked budget even when nothing needs evicting[32m 0[2mms[22m[39m
+ [32m✓[39m src/kernel-recovery.test.ts[2m > [22mparked kernels count against the memory budget[2m > [22mrefuses to park a kernel that is running a cell[32m 1[2mms[22m[39m
+ [32m✓[39m src/kernel-recovery.test.ts[2m > [22ma cell id is not a malicious-code isolation boundary[2m > [22mstates the semantics in the DATA, and reports the Session/kernel boundary as the real one[32m 0[2mms[22m[39m
+ [32m✓[39m src/kernel-recovery.test.ts[2m > [22ma cell id is not a malicious-code isolation boundary[2m > [22mrecords an old cell reaching a later cell as a fact, not as a prevented attack[32m 0[2mms[22m[39m
+ [32m✓[39m src/kernel-recovery.test.ts[2m > [22mcheckpoint restore accepts only explicitly safe formats[2m > [22maccepts a JSON document and a real non-object .npy array[32m 8[2mms[22m[39m
+ [32m✓[39m src/kernel-recovery.test.ts[2m > [22mcheckpoint restore accepts only explicitly safe formats[2m > [22mREFUSES every pickle family format by name[32m 4[2mms[22m[39m
+ [32m✓[39m src/kernel-recovery.test.ts[2m > [22mcheckpoint restore accepts only explicitly safe formats[2m > [22mREFUSES a pickle disguised as json, on the BYTES rather than the extension[32m 4[2mms[22m[39m
+ [32m✓[39m src/kernel-recovery.test.ts[2m > [22mcheckpoint restore accepts only explicitly safe formats[2m > [22mREFUSES an object-dtype array read from the REAL .npy header[32m 3[2mms[22m[39m
+ [32m✓[39m src/kernel-recovery.test.ts[2m > [22mcheckpoint restore accepts only explicitly safe formats[2m > [22mREFUSES a truncated array whose header promises more data than the file holds[32m 3[2mms[22m[39m
+ [32m✓[39m src/kernel-recovery.test.ts[2m > [22mcheckpoint restore accepts only explicitly safe formats[2m > [22mREFUSES a checkpoint that disagrees with its own declared size[32m 5[2mms[22m[39m
+ [32m✓[39m src/kernel-recovery.test.ts[2m > [22mcheckpoint restore accepts only explicitly safe formats[2m > [22maccepts a real .npz of safe arrays and REFUSES one containing an object array[32m 7[2mms[22m[39m
+ [32m✓[39m src/kernel-recovery.test.ts[2m > [22mcheckpoint restore accepts only explicitly safe formats[2m > [22mREFUSES an archive whose declared uncompressed size is past the bomb bound[32m 4[2mms[22m[39m
+ [32m✓[39m src/kernel-recovery.test.ts[2m > [22mcheckpoint restore accepts only explicitly safe formats[2m > [22mREFUSES an archive that lies about its sizes, caught by zlib rather than by arithmetic[32m 5[2mms[22m[39m
+ [32m✓[39m src/kernel-recovery.test.ts[2m > [22mcheckpoint restore accepts only explicitly safe formats[2m > [22mREFUSES an archive whose member is not a .npy at all[32m 4[2mms[22m[39m
+ [32m✓[39m src/kernel-recovery.test.ts[2m > [22mcheckpoint restore accepts only explicitly safe formats[2m > [22maccepts Parquet and Arrow on magic-at-both-ends, and refuses a prefix-only fake[32m 6[2mms[22m[39m
+ [32m✓[39m src/kernel-recovery.test.ts[2m > [22mcheckpoint restore accepts only explicitly safe formats[2m > [22mrefuses a format M5 does not restore, naming it[32m 3[2mms[22m[39m
+ [32m✓[39m src/kernel-recovery.test.ts[2m > [22mcheckpoint restore accepts only explicitly safe formats[2m > [22mreports an unreadable entry as skipped rather than throwing[32m 2[2mms[22m[39m
+ [32m✓[39m src/kernel-recovery.test.ts[2m > [22mcheckpoint restore accepts only explicitly safe formats[2m > [22msums the accepted bytes so a caller can see the restore size[32m 4[2mms[22m[39m
+ [31m×[39m src/kernel-recovery.test.ts[2m > [22mrecovery reports state honestly and never claims full session recovery[2m > [22mreports epoch, as-of, restored, lost, environment change and unresolved effects[33m 60012[2mms[22m[39m
+[31m   → Test timed out in 60000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".[39m
+ [32m✓[39m src/kernel-recovery.test.ts[2m > [22mrecovery reports state honestly and never claims full session recovery[2m > [22mflags an environment change and refuses to pretend the data is comparable[32m 0[2mms[22m[39m
+ [32m✓[39m src/kernel-recovery.test.ts[2m > [22mrecovery reports state honestly and never claims full session recovery[2m > [22msays a restart is not full session recovery in the DATA a model reads[32m 0[2mms[22m[39m
+ [32m✓[39m src/kernel-recovery.test.ts[2m > [22mrecovery reports state honestly and never claims full session recovery[2m > [22mreports a checkpoint as-of even when nothing was restored, so staleness is visible[32m 0[2mms[22m[39m
+ [32m✓[39m src/kernel-recovery.test.ts[2m > [22mrecovery reports state honestly and never claims full session recovery[2m > [22mreports no as-of when there was no checkpoint at all[32m 0[2mms[22m[39m
+ [32m✓[39m src/kernel-recovery.test.ts[2m > [22mrefusals carry no output and shutdown releases everything[2m > [22mgives a refusal a null output, so it cannot be read as an empty cell[32m 1[2mms[22m[39m
+ [32m✓[39m src/kernel-recovery.test.ts[2m > [22mrefusals carry no output and shutdown releases everything[2m > [22mreports a transport that refuses to dispatch, and returns the kernel to idle[32m 0[2mms[22m[39m
+ [32m✓[39m src/kernel-recovery.test.ts[2m > [22mrefusals carry no output and shutdown releases everything[2m > [22mcloses every kernel and reports the count[32m 0[2mms[22m[39m
+ [32m✓[39m src/kernel-recovery.test.ts[2m > [22mrefusals carry no output and shutdown releases everything[2m > [22mreports an unknown slot rather than inventing one[32m 0[2mms[22m[39m
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 7 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m src/kernel-recovery.test.ts[2m > [22man interrupt that does not settle becomes unknown and restarts the kernel[2m > [22mrefuses further cells on a kernel that could not be restarted
+[31m[1mAssertionError[22m: expected true to be false // Object.is equality[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- false[39m
+[31m+ true[39m
+
+[36m [2m❯[22m src/kernel-recovery.test.ts:[2m823:36[22m[39m
+    [90m821|[39m     [35mconst[39m result [33m=[39m [35mawait[39m running
+    [90m822|[39m     [34mexpect[39m(result[33m.[39moutcome)[33m.[39m[34mtoBe[39m([32m'unknown'[39m)
+    [90m823|[39m     [34mexpect[39m(result[33m.[39mkernelRestarted)[33m.[39m[34mtoBe[39m([35mfalse[39m)
+    [90m   |[39m                                    [31m^[39m
+    [90m824|[39m     [34mexpect[39m(result[33m.[39muncertainty)[33m.[39m[34mtoContain[39m([32m'could not be replaced'[39m)
+    [90m825|[39m     [34mexpect[39m(r[33m.[39msupervisor[33m.[39m[34mstatus[39m(r[33m.[39mkey)[33m.[39mstate)[33m.[39m[34mtoBe[39m([32m'wedged'[39m)
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/7]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/kernel-recovery.test.ts[2m > [22munknown side effects stay quarantined[2m > [22mkeeps an in-flight cell with no confirmed terminal state quarantined
+[31m[1mError[22m: Test timed out in 60000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".[39m
+[36m [2m❯[22m src/kernel-recovery.test.ts:[2m972:3[22m[39m
+    [90m970|[39m
+    [90m971|[39m [34mdescribe[39m([32m'unknown side effects stay quarantined'[39m[33m,[39m () [33m=>[39m {
+    [90m972|[39m   it('keeps an in-flight cell with no confirmed terminal state quarant…
+    [90m   |[39m   [31m^[39m
+    [90m973|[39m     const r = rig({ budgets: { wallMs: 1_000, interruptGraceMs: 500 } …
+    [90m974|[39m     [35mawait[39m r[33m.[39m[34mregister[39m()
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/7]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/kernel-recovery.test.ts[2m > [22munknown side effects stay quarantined[2m > [22mdoes NOT re-execute an ambiguous call when the transport reconnects
+[31m[1mError[22m: Test timed out in 60000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".[39m
+[36m [2m❯[22m src/kernel-recovery.test.ts:[2m992:3[22m[39m
+    [90m990|[39m   })
+    [90m991|[39m
+    [90m992|[39m   it('does NOT re-execute an ambiguous call when the transport reconne…
+    [90m   |[39m   [31m^[39m
+    [90m993|[39m     // REC-08. The gate is the empty `reexecuted` list: a reconnect is…
+    [90m994|[39m     [90m// a connection exists, not that an effect did not happen.[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/7]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/kernel-recovery.test.ts[2m > [22munknown side effects stay quarantined[2m > [22mclears a quarantine only through an explicit, evidenced resolution
+[31m[1mError[22m: Test timed out in 60000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".[39m
+[36m [2m❯[22m src/kernel-recovery.test.ts:[2m1016:3[22m[39m
+    [90m1014|[39m   })
+    [90m1015|[39m
+    [90m1016|[39m   it('clears a quarantine only through an explicit, evidenced resoluti…
+    [90m   |[39m   [31m^[39m
+    [90m1017|[39m     const r = rig({ budgets: { wallMs: 1_000, interruptGraceMs: 500 } …
+    [90m1018|[39m     [35mawait[39m r[33m.[39m[34mregister[39m()
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/7]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/kernel-recovery.test.ts[2m > [22mreset and permission change: close admission, cancel, then a NEW epoch[2m > [22mMUST restart on a read-permission-domain change, and must not carry variables across
+[31m[1mAssertionError[22m: expected 1000 to be greater than 1000[39m
+[36m [2m❯[22m src/kernel-recovery.test.ts:[2m1092:29[22m[39m
+    [90m1090|[39m     [90m// A real teardown and a real start happened, not a token update.[39m
+    [90m1091|[39m     [34mexpect[39m(r[33m.[39mtransport[33m.[39mshutdowns)[33m.[39m[34mtoBe[39m(shutdownsBefore [33m+[39m [34m1[39m)
+    [90m1092|[39m     [34mexpect[39m(r[33m.[39mtransport[33m.[39mpid)[33m.[39m[34mtoBeGreaterThan[39m(pidBefore)
+    [90m   |[39m                             [31m^[39m
+    [90m1093|[39m     [34mexpect[39m(r[33m.[39msupervisor[33m.[39m[34mstatus[39m(r[33m.[39mkey)[33m.[39midentity[33m.[39mkernelEpoch)[33m.[39m[34mtoBe[39m([34m2[39m)
+    [90m1094|[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/7]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/kernel-recovery.test.ts[2m > [22mreset and permission change: close admission, cancel, then a NEW epoch[2m > [22mcancels the running cell before replacing the process
+[31m[1mError[22m: Test timed out in 60000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".[39m
+[36m [2m❯[22m src/kernel-recovery.test.ts:[2m1120:3[22m[39m
+    [90m1118|[39m   })
+    [90m1119|[39m
+    [90m1120|[39m   it('cancels the running cell before replacing the process', async ()…
+    [90m   |[39m   [31m^[39m
+    [90m1121|[39m     [35mconst[39m r [33m=[39m [34mrig[39m({ budgets[33m:[39m { interruptGraceMs[33m:[39m [34m300[39m } })
+    [90m1122|[39m     [35mawait[39m r[33m.[39m[34mregister[39m()
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/7]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/kernel-recovery.test.ts[2m > [22mrecovery reports state honestly and never claims full session recovery[2m > [22mreports epoch, as-of, restored, lost, environment change and unresolved effects
+[31m[1mError[22m: Test timed out in 60000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".[39m
+[36m [2m❯[22m src/kernel-recovery.test.ts:[2m1544:3[22m[39m
+    [90m1542|[39m
+    [90m1543|[39m describe('recovery reports state honestly and never claims full sessio…
+    [90m1544|[39m   it('reports epoch, as-of, restored, lost, environment change and unr…
+    [90m   |[39m   [31m^[39m
+    [90m1545|[39m     const r = rig({ budgets: { wallMs: 1_000, interruptGraceMs: 500 } …
+    [90m1546|[39m     [35mawait[39m r[33m.[39m[34mregister[39m()
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/7]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m7 failed[39m[22m[2m | [22m[1m[32m56 passed[39m[22m[90m (63)[39m
+[2m   Start at [22m 03:09:21
+[2m   Duration [22m 300.48s[2m (transform 93ms, setup 0ms, import 122ms, tests 300.17s, environment 0ms)[22m
+
+EXIT=1
+END=2026-09-20T03:14:22

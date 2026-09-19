@@ -1,0 +1,43 @@
+M7 typecheck evidence
+=====================
+
+Host: Windows 11 (10.0.26200) AMD64, Node v24.18.0
+Package: packages/dsh-daily-work
+Captured: 2026-09-20 02:05:23
+
+--- RUN 1: the M7 files in isolation, same strict flags as tsconfig.check.json ---
+$ tsc -p tsconfig.m7.json
+exit=0
+
+--- RUN 2: full tsconfig.check.json, filtered to the M7 files ---
+$ tsc -p tsconfig.check.json 2>&1 | grep -E 'history-plane|web-provenance|history-plugin|history-web'
+(no lines above = zero M7 errors)
+
+--- RUN 3: full tsconfig.check.json, exit status and attribution ---
+$ tsc -p tsconfig.check.json
+exit=2
+
+Every file with an error, and how many:
+     13 src/upg-gates.test.ts
+
+M7 files among them: 0
+
+IMPORTANT — why RUN 3's non-zero exit is NOT an M7 result:
+  This working tree is shared with other agents editing concurrently. At capture
+  time the only failing file was src/upg-gates.test.ts, an UNTRACKED file written
+  seconds before this run by another agent. M7 owns history-plane.ts,
+  web-provenance.ts, history-plugin.ts and history-web.test.ts; it does not own
+  upg-gates.test.ts and did not touch it. RUN 1 is the M7-attributable result.
+
+--- RUN 4: the BUILD config (tsconfig.json, which excludes tests) ---
+$ tsc -p tsconfig.json
+exit=0
+M7 errors in the build: 0
+Emitted artifacts:
+  lib/history-plane.js  41437 bytes
+  lib/web-provenance.js  31546 bytes
+  lib/history-plugin.js  8436 bytes
+
+--- RUN 5: the plugin entry resolves as a package export ---
+$ node -e "import('dsh-daily-work/history')"
+exports: HistoryPlane, HistoryPlaneService, apply, inject, name

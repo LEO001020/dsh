@@ -1,0 +1,86 @@
+# M6 evidence: test runs
+# Command: cd packages/dsh-daily-work && vitest run <file> --maxWorkers=1 --no-file-parallelism
+# Node: v24.18.0
+# Date: 2026-09-20T01:57:23+08:00
+# HEAD: 1d36130f0b97cc927d3750f5fb6071af19dced6e
+# Branch: ipython-native
+
+=== M6-A: src/capacity.test.ts ===
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.8 [39m[90mD:/DSH/work/dsh-native-daily/packages/dsh-daily-work[39m
+
+ [32m✓[39m src/capacity.test.ts[2m > [22mCAP-01: the hard capacity is a deployment constant of 30[2m > [22mis 30, not a config value a caller can raise[32m 1[2mms[22m[39m
+ [32m✓[39m src/capacity.test.ts[2m > [22mCAP-01: the hard capacity is a deployment constant of 30[2m > [22mREFUSES the 31st and 32nd before publication, at N=30, with synthetic occupancy[32m 1[2mms[22m[39m
+ [32m✓[39m src/capacity.test.ts[2m > [22mCAP-01: the hard capacity is a deployment constant of 30[2m > [22mcounts occupied as reserved + starting + active_assignment + stopping + unknown_quarantined[32m 0[2mms[22m[39m
+ [32m✓[39m src/capacity.test.ts[2m > [22mCAP-01: the hard capacity is a deployment constant of 30[2m > [22mfolds a task slot into its live child rather than double-counting it[32m 0[2mms[22m[39m
+ [32m✓[39m src/capacity.test.ts[2m > [22mCAP-04: an executor whose release is unconfirmed keeps its slot[2m > [22ma cancel that has only been REQUESTED still occupies[32m 0[2mms[22m[39m
+ [32m✓[39m src/capacity.test.ts[2m > [22mCAP-04: an executor whose release is unconfirmed keeps its slot[2m > [22man assignment waiting on its own tool or provider STILL occupies[32m 93[2mms[22m[39m
+ [32m✓[39m src/capacity.test.ts[2m > [22mCAP-04: an executor whose release is unconfirmed keeps its slot[2m > [22mreleases the physical slot on agent/disposed, not on a record transition[32m 33[2mms[22m[39m
+ [32m✓[39m src/capacity.test.ts[2m > [22mCAP-02: every in-process creation path shares one host quota[2m > [22mthe continuable path takes a host slot[32m 30[2mms[22m[39m
+ [32m✓[39m src/capacity.test.ts[2m > [22mCAP-02: every in-process creation path shares one host quota[2m > [22mthe ONE-SHOT path takes a host slot[32m 29[2mms[22m[39m
+ [32m✓[39m src/capacity.test.ts[2m > [22mCAP-02: every in-process creation path shares one host quota[2m > [22mthe DIRECT AgentFactory path takes a host slot[32m 12[2mms[22m[39m
+ [32m✓[39m src/capacity.test.ts[2m > [22mCAP-02: every in-process creation path shares one host quota[2m > [22mthe WORKFLOW/PTC path is covered, because it funnels through the one-shot start[32m 33[2mms[22m[39m
+ [32m✓[39m src/capacity.test.ts[2m > [22mCAP-02: every in-process creation path shares one host quota[2m > [22ma non-child session fork does NOT consume a child slot[32m 21[2mms[22m[39m
+ [32m✓[39m src/capacity.test.ts[2m > [22mCAP-02: maxDepth is an INDEPENDENT hard cap that a caller cannot lift[2m > [22ma caller passing maxDepth 99 is REFUSED[32m 30[2mms[22m[39m
+ [32m✓[39m src/capacity.test.ts[2m > [22mCAP-02: maxDepth is an INDEPENDENT hard cap that a caller cannot lift[2m > [22man OMITTED maxDepth is REFUSED too, not read as permission[32m 33[2mms[22m[39m
+ [32m✓[39m src/capacity.test.ts[2m > [22mCAP-02: maxDepth is an INDEPENDENT hard cap that a caller cannot lift[2m > [22mthe depth ceiling does not consume a capacity slot when it refuses[32m 32[2mms[22m[39m
+ [32m✓[39m src/capacity.test.ts[2m > [22mCAP-02: maxDepth is an INDEPENDENT hard cap that a caller cannot lift[2m > [22ma depth-1 child IS admitted, so the ceiling is not a blanket refusal[32m 30[2mms[22m[39m
+ [32m✓[39m src/capacity.test.ts[2m > [22mCAP-03/CAP-06: real top-up, and NO filler agents[2m > [22mone root really reaches its target of 3 with the real continuable seam[32m 47[2mms[22m[39m
+ [32m✓[39m src/capacity.test.ts[2m > [22mCAP-03/CAP-06: real top-up, and NO filler agents[2m > [22mready shortage with a high N runs only what is ready and creates NO filler agent[32m 60[2mms[22m[39m
+ [32m✓[39m src/capacity.test.ts[2m > [22mCAP-03/CAP-06: real top-up, and NO filler agents[2m > [22ma root is NOT counted in the child target and is not starved of provider budget[32m 15[2mms[22m[39m
+ [32m✓[39m src/capacity.test.ts[2m > [22mCAP-07: two roots share one host cap[2m > [22mthe gate is HOST-wide: two roots cannot each hold the full cap[32m 0[2mms[22m[39m
+ [32m✓[39m src/capacity.test.ts[2m > [22mCAP-07: two roots share one host cap[2m > [22mtwo real roots share one host ledger, and the second is refused at the boundary[32m 75[2mms[22m[39m
+ [32m✓[39m src/capacity.test.ts[2m > [22man idle historical Session is NOT active[2m > [22mdoes not occupy a slot, and its Session remains readable[32m 38[2mms[22m[39m
+ [32m✓[39m src/capacity.test.ts[2m > [22mCAP-08: raising and lowering the target keeps running children[2m > [22ma raise tops up, and a lower STOPS admissions without killing a working child[32m 143[2mms[22m[39m
+ [32m✓[39m src/capacity.test.ts[2m > [22mthe gate refuses BEFORE publication, not after[2m > [22mthe creating call rejects and the caller receives no child[32m 29[2mms[22m[39m
+ [32m✓[39m src/capacity.test.ts[2m > [22mthe gate refuses BEFORE publication, not after[2m > [22ma capacity refusal at the boundary also rejects the creating call[32m 46[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[32m25 passed[39m[22m[90m (25)[39m
+[2m   Start at [22m 01:57:24
+[2m   Duration [22m 1.84s[2m (transform 601ms, setup 0ms, import 814ms, tests 836ms, environment 0ms)[22m
+
+
+=== M6-B: src/target-setting.test.ts ===
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.8 [39m[90mD:/DSH/work/dsh-native-daily/packages/dsh-daily-work[39m
+
+ [32m✓[39m src/target-setting.test.ts[2m > [22mUI-01: the target is a real, host-persisted, live-read setting[2m > [22mregisters the daily-work namespace through the real installSection seam[32m 6[2mms[22m[39m
+ [32m✓[39m src/target-setting.test.ts[2m > [22mUI-01: the target is a real, host-persisted, live-read setting[2m > [22mreads LIVE: a write takes effect on the next read with NO restart[32m 2[2mms[22m[39m
+ [32m✓[39m src/target-setting.test.ts[2m > [22mUI-01: the target is a real, host-persisted, live-read setting[2m > [22mpersists through the provider, so a reconnect reads host state and not React state[32m 2[2mms[22m[39m
+ [32m✓[39m src/target-setting.test.ts[2m > [22mUI-01: the target is a real, host-persisted, live-read setting[2m > [22mreports the revision a UI must read before writing[32m 1[2mms[22m[39m
+ [32m✓[39m src/target-setting.test.ts[2m > [22mUI-01: the target is a real, host-persisted, live-read setting[2m > [22mfalls back to the composition entry when no settings provider is mounted[32m 1[2mms[22m[39m
+ [32m✓[39m src/target-setting.test.ts[2m > [22mUI-02: illegal N is refused at BOTH boundaries[2m > [22mthe HOST refuses zero[32m 2[2mms[22m[39m
+ [32m✓[39m src/target-setting.test.ts[2m > [22mUI-02: illegal N is refused at BOTH boundaries[2m > [22mthe HOST refuses thirty-one[32m 1[2mms[22m[39m
+ [32m✓[39m src/target-setting.test.ts[2m > [22mUI-02: illegal N is refused at BOTH boundaries[2m > [22mthe HOST refuses far above the cap[32m 1[2mms[22m[39m
+ [32m✓[39m src/target-setting.test.ts[2m > [22mUI-02: illegal N is refused at BOTH boundaries[2m > [22mthe HOST refuses fractional[32m 2[2mms[22m[39m
+ [32m✓[39m src/target-setting.test.ts[2m > [22mUI-02: illegal N is refused at BOTH boundaries[2m > [22mthe HOST refuses NaN[32m 1[2mms[22m[39m
+ [32m✓[39m src/target-setting.test.ts[2m > [22mUI-02: illegal N is refused at BOTH boundaries[2m > [22mthe HOST refuses Infinity[32m 1[2mms[22m[39m
+ [32m✓[39m src/target-setting.test.ts[2m > [22mUI-02: illegal N is refused at BOTH boundaries[2m > [22mthe HOST refuses negative[32m 1[2mms[22m[39m
+ [32m✓[39m src/target-setting.test.ts[2m > [22mUI-02: illegal N is refused at BOTH boundaries[2m > [22mthe HOST refuses a numeric string[32m 1[2mms[22m[39m
+ [32m✓[39m src/target-setting.test.ts[2m > [22mUI-02: illegal N is refused at BOTH boundaries[2m > [22mthe HOST refuses a non-numeric string[32m 1[2mms[22m[39m
+ [32m✓[39m src/target-setting.test.ts[2m > [22mUI-02: illegal N is refused at BOTH boundaries[2m > [22mthe HOST refuses null[32m 1[2mms[22m[39m
+ [32m✓[39m src/target-setting.test.ts[2m > [22mUI-02: illegal N is refused at BOTH boundaries[2m > [22mthe HOST refuses an object[32m 1[2mms[22m[39m
+ [32m✓[39m src/target-setting.test.ts[2m > [22mUI-02: illegal N is refused at BOTH boundaries[2m > [22mthe HOST refuses an array[32m 1[2mms[22m[39m
+ [32m✓[39m src/target-setting.test.ts[2m > [22mUI-02: illegal N is refused at BOTH boundaries[2m > [22mthe HOST refuses a boolean[32m 1[2mms[22m[39m
+ [32m✓[39m src/target-setting.test.ts[2m > [22mUI-02: illegal N is refused at BOTH boundaries[2m > [22mthe HOST refuses a function[32m 2[2mms[22m[39m
+ [32m✓[39m src/target-setting.test.ts[2m > [22mUI-02: illegal N is refused at BOTH boundaries[2m > [22mthe SCHEMA refuses an out-of-range value even when it bypasses the owner check[32m 3[2mms[22m[39m
+ [32m✓[39m src/target-setting.test.ts[2m > [22mUI-02: illegal N is refused at BOTH boundaries[2m > [22maccepts the boundary values 1 and 30 exactly[32m 2[2mms[22m[39m
+ [32m✓[39m src/target-setting.test.ts[2m > [22mUI-02: illegal N is refused at BOTH boundaries[2m > [22mthe owner-level check names the same range the schema does[32m 1[2mms[22m[39m
+ [32m✓[39m src/target-setting.test.ts[2m > [22mUI-02: illegal N is refused at BOTH boundaries[2m > [22mthe resolved section is re-validated by the validate hook[32m 3[2mms[22m[39m
+ [32m✓[39m src/target-setting.test.ts[2m > [22mUI-02: illegal N is refused at BOTH boundaries[2m > [22mthe UI control refuses the same inputs client-side, with the shipped parse[32m 0[2mms[22m[39m
+ [32m✓[39m src/target-setting.test.ts[2m > [22mUI-03: revision fencing makes a concurrent write an explicit stale rejection[2m > [22mtwo clients writing the SAME revision produce one success and one stale rejection[32m 4[2mms[22m[39m
+ [32m✓[39m src/target-setting.test.ts[2m > [22mUI-03: revision fencing makes a concurrent write an explicit stale rejection[2m > [22mthe stale rejection is a typed conflict, not a validation failure[32m 2[2mms[22m[39m
+ [32m✓[39m src/target-setting.test.ts[2m > [22mUI-03: revision fencing makes a concurrent write an explicit stale rejection[2m > [22mthe conflict surfaces from the settings service as SettingsConflictError[32m 2[2mms[22m[39m
+ [32m✓[39m src/target-setting.test.ts[2m > [22mUI-03: revision fencing makes a concurrent write an explicit stale rejection[2m > [22ma concurrent burst of same-revision writers yields exactly ONE success[32m 2[2mms[22m[39m
+ [32m✓[39m src/target-setting.test.ts[2m > [22mUI-03: revision fencing makes a concurrent write an explicit stale rejection[2m > [22man UNFENCED write is possible, and is what no automated caller may do[32m 1[2mms[22m[39m
+ [32m✓[39m src/target-setting.test.ts[2m > [22mUI-03: revision fencing makes a concurrent write an explicit stale rejection[2m > [22ma revision that never existed is stale, not accepted[32m 1[2mms[22m[39m
+ [32m✓[39m src/target-setting.test.ts[2m > [22mUI-04: the model cannot raise its own target or budget[2m > [22mthe work tool exposes NO parameter that could raise target or budget[32m 22[2mms[22m[39m
+ [32m✓[39m src/target-setting.test.ts[2m > [22mUI-04: the model cannot raise its own target or budget[2m > [22mthe target handle is reachable only from the host service, not from the tool[32m 1[2mms[22m[39m
+ [32m✓[39m src/target-setting.test.ts[2m > [22mCAP-08: raising and lowering N keeps running tasks, and the record follows[2m > [22ma raise is visible immediately and a lower does not kill anything[32m 2[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[32m33 passed[39m[22m[90m (33)[39m
+[2m   Start at [22m 01:57:27
+[2m   Duration [22m 615ms[2m (transform 264ms, setup 0ms, import 371ms, tests 78ms, environment 0ms)[22m
+

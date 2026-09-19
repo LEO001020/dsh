@@ -1,0 +1,34 @@
+# Source digests — M2 programmatic-call scope
+# Generated: 2026-09-20T02:18:59+08:00
+
+## Upstream DSH checkout
+path: D:/DSH/src/dsh-src
+base SHA: ddefc45fbc7f8e46dd73185e68295696d1297887
+
+## Upstream file touched by this slice: NONE
+# The scope is built entirely on the PUBLIC ToolRuntime surface.
+# Proof below: the extraction required no patch, so no patch digest exists.
+
+ptc.ts (unmodified, for reference):
+7a7c19cfdabce7bad053291614b1d727205e94601771a7b239790b3b0f0a7eab */d/DSH/src/dsh-src/packages/core/tools/src/ptc.ts
+index.ts (unmodified, for reference):
+e040cf44c7a4c1b74650cc32f67503b8881cc1d5b1f47f1cb38cf0167a9bb3da */d/DSH/src/dsh-src/packages/core/tools/src/index.ts
+
+## Upstream working-tree state (must show no modification to core/tools)
+  (empty above = core/tools is pristine)
+
+## This package's files owned by M2
+packages/dsh-daily-work/src/programmatic-scope.ts              cd5bea90a5477be520bb632ee774e0194176b31a144d78a2961641e2c4574136
+packages/dsh-daily-work/src/programmatic-scope-plugin.ts       cfe8a2c901526b0b4f011e3524b9ea3f770cfaf06f255b1c89b4c7f957bc2d18
+packages/dsh-daily-work/src/programmatic-scope.test.ts         bd1ce8a88e4e51233cfa99973c92b31de8d4155e2a91704bddf1f11e6cac4225
+qualification/runners/verify-m2-scope.mjs                      bd1a5a4e75a67e571b0ecd641b6327f059634482d32dde93e5575bf8c70197ad
+qualification/runners/verify-m2-scope.patch.yml                9ad6b41729155a93dd8e4dad0db3248166a50fbcaf34f9097f9ac3cd8c10111a
+packages/dsh-daily-work/cordis.patch.yml                       c424b86aed5079392f9d3c01d74de91cb17711520bdcff2d38dc6c0f25c9abd1
+packages/dsh-daily-work/package.json                           15eeeeed0997250a19b8fcde4407f969b821f6dc9c6f7cb45041b059f24f3e1a
+
+## Compiled output the profile resolver loads
+packages/dsh-daily-work/lib/programmatic-scope.js              09a61901377ce618a0c34c9db1117a66ddaf517392c429c34ecd25746bb556df
+packages/dsh-daily-work/lib/programmatic-scope-plugin.js       759a94a6b1d9ef08b36e191fecaac7889a9876068d8adf5acf17a546e2df8e20
+
+## Boot-probe evidence
+qualification/results/M2-scope/boot-probe.json                 cf91bd9cbfe53bf3b956f9752d2ed9661dd0286fdb756bcb81ff9d0b3156432f

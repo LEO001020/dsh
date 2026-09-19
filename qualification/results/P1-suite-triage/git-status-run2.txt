@@ -1,0 +1,131 @@
+ M README.md
+ M docs/GAPS.md
+ M docs/OPERATIONS.md
+ M packages/dsh-daily-work/cordis.patch.yml
+ M packages/dsh-daily-work/package.json
+ D packages/dsh-daily-work/sig-probe.mjs
+ M packages/dsh-daily-work/src/control-plane.test.ts
+ M packages/dsh-daily-work/src/host-plugin.ts
+ M packages/dsh-daily-work/src/host.ts
+ M packages/dsh-daily-work/src/isolation.test.ts
+ M packages/dsh-daily-work/src/security-denial.test.ts
+ M packages/dsh-daily-work/src/security.test.ts
+ M packages/dsh-daily-work/src/terminal-advanced.test.ts
+ M packages/dsh-daily-work/src/u04-paired-comparison.test.ts
+ M qualification/results/M11-ipython/interrupt.err
+ M qualification/results/M11-ipython/interrupt.json
+ M qualification/results/M11-ipython/probe-interrupt.py
+ D qualification/results/M11-ipython/probe-security.py
+ D qualification/results/M11-ipython/security.err
+ D qualification/results/M11-ipython/security.json
+ M qualification/results/M8.5-c2-real-boot/e2e-tool.json
+ M qualification/results/M9.19-control-plane/probe-scope.patch.yml
+ M qualification/results/M9.2-terminal-advanced/FINDINGS.md
+ M qualification/results/M9.2-terminal-advanced/source-digests.txt
+ M qualification/results/M9.2-terminal-advanced/tests.txt
+ M qualification/results/M9.2-terminal-advanced/tsc.txt
+ M qualification/results/M9.20-real-tasks/u03-load.json
+ M qualification/results/M9.20-real-tasks/u04-paired.json
+ M qualification/results/M9.20-real-tasks/u05-canary.json
+ M qualification/results/M9.20-real-tasks/u05-canary.mjs
+?? docs/DELETE-AUDIT.md
+?? packages/dsh-daily-work/.probe/probe1.mts
+?? packages/dsh-daily-work/src/artifacts.ts
+?? packages/dsh-daily-work/src/capacity.test.ts
+?? packages/dsh-daily-work/src/capacity.ts
+?? packages/dsh-daily-work/src/data-plane.test.ts
+?? packages/dsh-daily-work/src/data-plugin.ts
+?? packages/dsh-daily-work/src/data-service.ts
+?? packages/dsh-daily-work/src/dep-gates.test.ts
+?? packages/dsh-daily-work/src/history-plane.ts
+?? packages/dsh-daily-work/src/history-plugin.ts
+?? packages/dsh-daily-work/src/history-web.test.ts
+?? packages/dsh-daily-work/src/kernel-lifecycle.ts
+?? packages/dsh-daily-work/src/kernel-recovery.test.ts
+?? packages/dsh-daily-work/src/observations.ts
+?? packages/dsh-daily-work/src/perf-metrics.ts
+?? packages/dsh-daily-work/src/programmatic-scope-plugin.ts
+?? packages/dsh-daily-work/src/programmatic-scope.test.ts
+?? packages/dsh-daily-work/src/programmatic-scope.ts
+?? packages/dsh-daily-work/src/sec-gates.test.ts
+?? packages/dsh-daily-work/src/target-setting.test.ts
+?? packages/dsh-daily-work/src/target-setting.ts
+?? packages/dsh-daily-work/src/upg-gates.test.ts
+?? packages/dsh-daily-work/src/verification-gates.test.ts
+?? packages/dsh-daily-work/src/web-provenance.ts
+?? packages/dsh-daily-work/src/worktree-isolation.ts
+?? packages/dsh-daily-work/src/writers-plugin.ts
+?? packages/dsh-daily-work/src/zz-m5-trace.test.ts
+?? packages/dsh-daily-work/tsconfig.eco.json
+?? packages/dsh-ipython/
+?? qualification/results/M-DEP-SEC-UPG/
+?? qualification/results/M10-shrink/
+?? qualification/results/M10.0-audit-repro/pkg-map.err
+?? qualification/results/M10.0-audit-repro/pkg-map.json
+?? qualification/results/M11-ipython/FINDINGS.md
+?? qualification/results/M11-ipython/curve-authz.err
+?? qualification/results/M11-ipython/curve-authz.json
+?? qualification/results/M11-ipython/e2e-tool.json
+?? qualification/results/M11-ipython/late-attribution.err
+?? qualification/results/M11-ipython/late-attribution.json
+?? qualification/results/M11-ipython/probe-curve-authz.py
+?? qualification/results/M11-ipython/probe-late-attribution.py
+?? qualification/results/M11-ipython/source-digests.txt
+?? qualification/results/M11-ipython/tests.txt
+?? qualification/results/M11-ipython/tsc.txt
+?? qualification/results/M12-capacity/
+?? qualification/results/M2-scope/FINDINGS.md
+?? qualification/results/M2-scope/boot-probe.json
+?? qualification/results/M2-scope/source-digests.txt
+?? qualification/results/M2-scope/tests.txt
+?? qualification/results/M2-scope/tsc.txt
+?? qualification/results/M4-data/FINDINGS.md
+?? qualification/results/M4-data/probe-payload.txt
+?? qualification/results/M4-data/profile-boot.json
+?? qualification/results/M4-data/profile-boot.txt
+?? qualification/results/M4-data/source-digests.txt
+?? qualification/results/M4-data/tests.txt
+?? qualification/results/M4-data/tsc.txt
+?? qualification/results/M5-lifecycle/
+?? qualification/results/M7-history/
+?? qualification/results/M8-verification/
+?? qualification/results/M9-eco/perf.json
+?? qualification/results/M9-eco/perf_probe.py
+?? qualification/results/M9-eco/sabotage.sh
+?? qualification/results/M9-eco/sabotage.txt
+?? qualification/results/M9-eco/source-digests.txt
+?? qualification/results/M9-eco/tests.txt
+?? qualification/results/M9-eco/tsc.txt
+?? qualification/results/M9.19-control-plane/FINDINGS.md
+?? qualification/results/M9.19-control-plane/e02-scope.json
+?? qualification/results/M9.19-control-plane/source-digests.txt
+?? qualification/results/M9.19-control-plane/tests.txt
+?? qualification/results/M9.19-control-plane/tsc.txt
+?? qualification/results/M9.20-real-tasks/FINDINGS.md
+?? qualification/results/M9.20-real-tasks/source-digests.txt
+?? qualification/results/M9.20-real-tasks/tests.txt
+?? qualification/results/M9.20-real-tasks/tsc.txt
+?? qualification/results/M9.20-real-tasks/u06-rollback.json
+?? qualification/results/M9.20-real-tasks/u06-rollback.mjs
+?? qualification/results/P1-suite-triage/
+?? qualification/results/P3-security/
+?? qualification/results/P5-data/
+?? qualification/results/P7-daily-host/
+?? qualification/results/P9-history/
+?? qualification/results/R10-security/
+?? qualification/results/R11-history/
+?? qualification/results/R3-unwired/
+?? qualification/results/R4-upgrade/
+?? qualification/results/R5-data/
+?? qualification/results/R7-real-tasks/
+?? qualification/runners/verify-a12-signal-probe.mjs
+?? qualification/runners/verify-data-plane.mjs
+?? qualification/runners/verify-data-plane.patch.yml
+?? qualification/runners/verify-ipython-e2e.mjs
+?? qualification/runners/verify-ipython-e2e.patch.yml
+?? qualification/runners/verify-m2-scope.mjs
+?? qualification/runners/verify-m2-scope.patch.yml
+?? qualification/runners/verify-m7-history.mjs
+?? qualification/runners/verify-m7-history.patch.yml
+?? qualification/runners/verify-writers-mounted.mjs
+?? qualification/specs/acceptance-spec.json

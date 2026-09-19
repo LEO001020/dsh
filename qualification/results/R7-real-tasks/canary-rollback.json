@@ -1,0 +1,191 @@
+{
+  "gate": "U05+U06",
+  "kind": "REAL_CANARY_UPGRADE_AND_ROLLBACK_THROUGH_THE_REAL_INSTALL_PATH",
+  "date": "2026-09-19T19:19:24.680Z",
+  "home": "D:/DSH/home/canary11",
+  "seedHome": "D:/DSH/home/canary2",
+  "launcher": "D:/DSH/src/dsh-src/apps/cli/lib/bin.js",
+  "steps": [
+    {
+      "id": "S0",
+      "name": "a NEW canary home is created and seeded with REAL state",
+      "status": "PASS",
+      "detail": "home D:/DSH/home/canary11; seeded from D:/DSH/home/canary2: sessions, storages; 10 entries; credentials copied: none",
+      "home": "D:/DSH/home/canary11",
+      "seedHome": "D:/DSH/home/canary2",
+      "seeded": [
+        "sessions",
+        "storages"
+      ],
+      "credentialsCopied": []
+    },
+    {
+      "id": "S1",
+      "name": "the old and new artifacts are staged as separate immutable version directories",
+      "status": "PASS",
+      "detail": "old 72114d220598580e... at D:/DSH/home/canary11/versions/dsh-daily-work-0.1.0; new fcba3898462d4c04... at D:/DSH/home/canary11/versions/dsh-daily-work-0.1.1; lib payload byte-identical: true (the difference is version + patch config, stated as such)",
+      "oldDir": "D:/DSH/home/canary11/versions/dsh-daily-work-0.1.0",
+      "oldDigest": "72114d220598580e5316a5eca17c26a68b95d7e6b071cd1e1034de6865a18565",
+      "newDir": "D:/DSH/home/canary11/versions/dsh-daily-work-0.1.1",
+      "newDigest": "fcba3898462d4c04aad90d4e8638929dc12e65a239f4152285f29bbf718bdb71",
+      "libIdentical": true
+    },
+    {
+      "id": "S2",
+      "name": "the OLD artifact is installed through the real `dsh plugin` path",
+      "status": "PASS",
+      "detail": "pnpm through the launcher exited 0: + dsh-daily-work 0.1.0 <- ..\\..\\versions\\dsh-daily-work-0.1.0 |  | Done in 333ms using pnpm v11.7.0",
+      "command": "dsh plugin --profile canary11 add link:<old>"
+    },
+    {
+      "id": "S3",
+      "name": "the composed tree carries the OLD artifact's patch config",
+      "status": "PASS",
+      "detail": "--dump-config exited 0; budgetCeiling in the composed tree: 200 (old artifact states 200)",
+      "composedBudgetCeiling": 200
+    },
+    {
+      "id": "S3b",
+      "name": "a COLD consistency snapshot of the home state is taken before the upgrade",
+      "status": "PASS",
+      "detail": "snapshot at D:/DSH/home/canary11/snapshots/pre-upgrade; digest a8945b6459c04b22...; 10 entries; nothing was running, so this is a cold copy and not a live-DB copy",
+      "snapshot": "D:/DSH/home/canary11/snapshots/pre-upgrade",
+      "snapshotDigest": "a8945b6459c04b2250c1226e7817fb43d96635fceda5fb7f3f09ca1a16a8d195"
+    },
+    {
+      "id": "S5",
+      "name": "the NEW artifact is installed over the old one through the real `dsh plugin` path",
+      "status": "PASS",
+      "detail": "pnpm exited 0: + dsh-daily-work 0.1.1 <- ..\\..\\versions\\dsh-daily-work-0.1.1 |  | Done in 330ms using pnpm v11.7.0",
+      "command": "dsh plugin --profile canary11 add link:<new>"
+    },
+    {
+      "id": "S6",
+      "name": "the composed tree MOVED to the new artifact's patch config",
+      "status": "PASS",
+      "detail": "--dump-config exited 0; budgetCeiling in the composed tree: 250 (was 200); daily-work-host rows: 1",
+      "composedBudgetCeilingBefore": 200,
+      "composedBudgetCeilingAfter": 250
+    },
+    {
+      "id": "S7",
+      "name": "the NEW version boots through the real launcher and completes a real turn",
+      "status": "FAIL",
+      "detail": "exit 1; turn_end present: false; stderr: file:///D:/DSH/src/dsh-src/packages/boot/app-boot/lib/index.js:957\r\n\t\tif (template === void 0) throw new Error(`${binName}: profile ${JSON.stringify(name)} does not exist; create it with 'dsh plugin --profile ${name} add <package>'`);\r\n\t\t                               ^\r\n\r\nError: dsh: profile \"canar",
+      "launcher": "D:/DSH/src/dsh-src/apps/cli/lib/bin.js",
+      "overlay": "D:/DSH/home/canary11/overlay-keyless.yml",
+      "stdout": ""
+    },
+    {
+      "id": "S8",
+      "name": "the NEW version performed an external effect, and it is durable in the world",
+      "status": "PASS",
+      "detail": "ledger outcome undefined; transport invoked 1 time(s); the remote file D:/DSH/home/canary11/remote-world.json holds the operation: true",
+      "operationId": "eff_6b528babc489eef3800e9c31162d032f",
+      "performCount": 1,
+      "ledgerStatusBeforeRollback": null
+    },
+    {
+      "id": "S9",
+      "name": "the LOCAL record of the effect is inside the state the rollback will rewind",
+      "status": "PASS",
+      "detail": "the effect store is at D:\\DSH\\home\\canary11\\storages/dsh_daily_effects.json (present: true); the pre-upgrade snapshot contains it: false (false is correct: the snapshot predates the effect)",
+      "effectFileInState": "D:\\DSH\\home\\canary11\\storages/dsh_daily_effects.json",
+      "effectInSnapshot": false,
+      "snapshotDigest": "a8945b6459c04b2250c1226e7817fb43d96635fceda5fb7f3f09ca1a16a8d195"
+    },
+    {
+      "id": "S10",
+      "name": "the rollback reinstalls the OLD artifact through the real `dsh plugin` path",
+      "status": "PASS",
+      "detail": "pnpm exited 0: + dsh-daily-work 0.1.0 <- ..\\..\\versions\\dsh-daily-work-0.1.0 |  | Done in 336ms using pnpm v11.7.0",
+      "command": "dsh plugin --profile canary11 add link:<old>"
+    },
+    {
+      "id": "S11",
+      "name": "the composed tree is back on the OLD artifact",
+      "status": "PASS",
+      "detail": "--dump-config exited 0; budgetCeiling: 200 (upgraded was 250, old is 200)",
+      "composedBudgetCeilingRolledBack": 200
+    },
+    {
+      "id": "S12",
+      "name": "the OLD consistency snapshot is restored byte-for-byte",
+      "status": "PASS",
+      "detail": "the RESTORED HOME STATE digest e7e2e7b19a452201... equals the SNAPSHOT digest e7e2e7b19a452201... (compared across different directories by the same rule); the effect record the new version wrote is gone from the state: true",
+      "restoredDigest": "e7e2e7b19a452201c3315c3492e54ea2b11eda114a434f585aee298a3eac4545",
+      "snapshotStateDigest": "e7e2e7b19a452201c3315c3492e54ea2b11eda114a434f585aee298a3eac4545",
+      "effectRecordSurvivesRewind": false
+    },
+    {
+      "id": "S13",
+      "name": "the OLD artifact boots against the RESTORED state and completes a turn",
+      "status": "FAIL",
+      "detail": "exit 1; stderr: file:///D:/DSH/src/dsh-src/packages/boot/app-boot/lib/index.js:957\r\n\t\tif (template === void 0) throw new Error(`${binName}: profile ${JSON.stringify(name)} does not exist; create it with 'dsh plugin --profile ${name} add <package>'`);\r\n\t\t                               ^\r\n\r\nError: dsh: profile \"canar",
+      "stdout": ""
+    },
+    {
+      "id": "S14",
+      "name": "the LOCAL ledger over rewound state cannot be trusted to describe the world",
+      "status": "PASS",
+      "detail": "the ledger opened with no complaint; it holds no record of the effect, so reconciliation cannot be driven from it",
+      "ledgerOpened": true,
+      "refusal": null
+    },
+    {
+      "id": "S15",
+      "name": "the rollback reconciled the effect from the WORLD, without re-sending it",
+      "status": "PASS",
+      "detail": "transport invocations before 1, after 1; the world reports confirmed with resultRef world-1",
+      "performCountBeforeReconcile": 1,
+      "performCountAfterReconcile": 1,
+      "outcome": "confirmed",
+      "resultRef": "world-1"
+    },
+    {
+      "id": "S16",
+      "name": "a SEPARATE process still finds the effect in the world after the rollback",
+      "status": "PASS",
+      "detail": "independent read of D:/DSH/home/canary11/remote-world.json: {\"stillPresent\":true,\"resultRef\":\"world-1\"}",
+      "independentRead": {
+        "stillPresent": true,
+        "resultRef": "world-1"
+      }
+    },
+    {
+      "id": "S17",
+      "name": "the reconciliation does NOT claim the effect was undone",
+      "status": "PASS",
+      "detail": "reconciliation text: \"reconciled from the world by operationId eff_6b528babc489eef3800e9c31162d032f: the world reports confirmed\"; a reversal claim is present: false",
+      "reconciliationText": "reconciled from the world by operationId eff_6b528babc489eef3800e9c31162d032f: the world reports confirmed"
+    }
+  ],
+  "blocked": [
+    {
+      "gate": "U05-new-version",
+      "status": "BLOCKED_EXTERNAL",
+      "reason": "No newer DSH/Node/plugin release is installable. `compatibility.lock.json` pins `observed_reference.commit` at ddefc45fbc7f8e46dd73185e68295696d1297887 with `distribution_tested: false`, and `runtime_authorization.scope` is LOCAL_IMPLEMENTATION_ONLY, so no network fetch of a newer artifact is authorized. The upgrade EXECUTED here is a real artifact swap through the real install path, but the two artifacts differ in version string and patch config only; their `lib/` payload is byte-identical. What is NOT validated: that a newer release composes, boots, or preserves this extension's contract."
+    },
+    {
+      "gate": "U05/U06-live-provider",
+      "status": "BLOCKED_EXTERNAL",
+      "reason": "`compatibility.lock.json` -> `runtime_authorization.live_provider_budget_authorized: false`, with `budget_amount: null`, `currency: null`, `deadline: null`. The model route in this rehearsal is the in-tree scripted adapter (`packages/dsh-daily-work/m914-mock-llm.ts`), so no provider is contacted and nothing is billed. A live route would require the lock to name a budget: an amount, a currency and a deadline. Not validated: model quality, real latency, real token cost, or any provider-side version change."
+    },
+    {
+      "gate": "U06-real-remote",
+      "status": "BLOCKED_EXTERNAL",
+      "reason": "No outbound network is authorized, so the \"remote\" whose state must survive a rollback is a durable FILE on this machine (D:/DSH/home/canary11/remote-world.json), not a network service. Its durability across processes is real and was measured by an independent process (S16); its remoteness is not. Not validated: reconciliation against a real remote whose availability, idempotency semantics and eventual consistency are outside this machine."
+    }
+  ],
+  "summary": {
+    "pass": 16,
+    "fail": 2,
+    "blockedExternal": 3
+  },
+  "claim": "Against a real DSH_HOME seeded with real state, a real artifact is installed through the real `dsh plugin` path, the composed tree is measured before and after, the new artifact really boots and really performs a durable effect in the world, and the rollback really restores the old artifact and the old cold consistency snapshot. After the rollback the effect is still readable in the world by a separate process, and the reconciliation does not claim it was undone.",
+  "notClaimed": [
+    "that a newer DSH release was validated: no newer release is installable, and the staged \"new\" artifact differs only in version string and patch config",
+    "that a model was exercised: the route is the in-tree scripted adapter and no provider was contacted",
+    "that a real remote was reconciled: the remote is a durable local file"
+  ]
+}

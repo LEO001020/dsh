@@ -1,0 +1,64 @@
+{
+  "schema": "dsh-daily-work/acceptance-receipt@1",
+  "definitionId": "m8-all-skipped",
+  "outcome": "acceptance_definition_changed",
+  "passed": false,
+  "reasons": [
+    "the acceptance definition digest b2fd7e91dfb6eaefd77b5a7ee8f9e380af13966e7a63f219f15b9bd85b52fa1e does not match the authorized e766a1585408eb6f057779dee678f41f4153fa427277c726cb8cbc9a5fa6e5e3; the run was refused rather than silently accepted"
+  ],
+  "command": [
+    "node",
+    "D:/DSH/src/dsh-src/node_modules/vitest/vitest.mjs",
+    "run",
+    "src/skip.test.ts"
+  ],
+  "spawnedArgv": [
+    "node",
+    "D:/DSH/src/dsh-src/node_modules/vitest/vitest.mjs",
+    "run",
+    "src/skip.test.ts"
+  ],
+  "commandText": "node D:/DSH/src/dsh-src/node_modules/vitest/vitest.mjs run src/skip.test.ts",
+  "ranIn": "qualification/results/M8-verification/fixture",
+  "requestedCwd": "qualification/results/M8-verification/fixture",
+  "candidateTreeDigest": "",
+  "candidateTreeDigestScope": "snapshot",
+  "acceptanceDefinitionDigest": "b2fd7e91dfb6eaefd77b5a7ee8f9e380af13966e7a63f219f15b9bd85b52fa1e",
+  "authorizedDigest": "e766a1585408eb6f057779dee678f41f4153fa427277c726cb8cbc9a5fa6e5e3",
+  "environment": {
+    "node": "v24.18.0",
+    "platform": "win32",
+    "arch": "x64",
+    "runnerPid": 24988
+  },
+  "exit": {
+    "code": null,
+    "signal": null,
+    "timedOut": false,
+    "interrupted": false,
+    "expectedCode": 0
+  },
+  "output": {
+    "stdout": {
+      "text": "",
+      "truncated": false,
+      "totalBytes": 0
+    },
+    "stderr": {
+      "text": "",
+      "truncated": false,
+      "totalBytes": 0
+    }
+  },
+  "expectedTests": {
+    "passed": 1
+  },
+  "managedRangeEmpty": "unknown",
+  "holdReservation": false,
+  "limitations": [
+    "the acceptance command was never executed"
+  ],
+  "startedAt": "2026-09-19T18:15:03.551Z",
+  "finishedAt": "2026-09-19T18:15:03.551Z",
+  "durationMs": 0
+}

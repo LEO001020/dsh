@@ -2,39 +2,72 @@
  RUN  v4.1.8 D:/DSH/work/dsh-native-daily/packages/dsh-daily-work
 
 stdout | src/terminal-advanced.test.ts > T05: interrupt on an independent control path > T05: SIGINT resolves while the cell is running, and the cell is not a success
-[measured] T05 signalMs (cell had ~9.5s of sleep left) = 15
+[measured] T05 signalMs (cell had ~9.5s of sleep left) = 18
 [measured] T05 signalResult = {"delivered":true,"targetPgid":0}
 
 stdout | src/terminal-advanced.test.ts > T05: interrupt on an independent control path > T05: SIGINT resolves while the cell is running, and the cell is not a success
-[measured] T05 settled = stdin_read {"kind":"running"} in 2622ms
+[measured] T05 settled = stdin_read {"kind":"running"} in 2649ms
 [measured] T05 result fields = sessionStatus,truncated,viewport,waitReason
 
- ✓ src/terminal-advanced.test.ts > T05: interrupt on an independent control path > T05: SIGINT resolves while the cell is running, and the cell is not a success 3547ms
- ✓ src/terminal-advanced.test.ts > T05: interrupt on an independent control path > T05: the interrupt really stops the command, not just the wait 15891ms
- ✓ src/terminal-advanced.test.ts > T05: interrupt on an independent control path > T05: SIGINT needs a live owned session, and a dead one is refused 1442ms
+ ✓ src/terminal-advanced.test.ts > T05: interrupt on an independent control path > T05: SIGINT resolves while the cell is running, and the cell is not a success 3698ms
+ ✓ src/terminal-advanced.test.ts > T05: interrupt on an independent control path > T05: the interrupt really stops the command, not just the wait 15983ms
+ ✓ src/terminal-advanced.test.ts > T05: interrupt on an independent control path > T05: SIGINT needs a live owned session, and a dead one is refused 1013ms
 stdout | src/terminal-advanced.test.ts > T06: host loss and terminal id reuse > T06: a fresh context starts with no terminals and does not adopt a historical id
 [measured] T06 generation-1 id / generation-2 id = pty-1 / pty-1
 
- ✓ src/terminal-advanced.test.ts > T06: host loss and terminal id reuse > T06: a fresh context starts with no terminals and does not adopt a historical id 3253ms
- ✓ src/terminal-advanced.test.ts > T06: host loss and terminal id reuse > T06: a cell does not survive the host that owned it 12467ms
- ✓ src/terminal-advanced.test.ts > T06: host loss and terminal id reuse > T06: this project has no code path that could replay a historical cell 8ms
- ✓ src/terminal-advanced.test.ts > T08: error and framing > T08: a failed command is not reported as success 1780ms
+ ✓ src/terminal-advanced.test.ts > T06: host loss and terminal id reuse > T06: a fresh context starts with no terminals and does not adopt a historical id 2673ms
+ ✓ src/terminal-advanced.test.ts > T06: host loss and terminal id reuse > T06: a cell does not survive the host that owned it 11952ms
+ ✓ src/terminal-advanced.test.ts > T06: host loss and terminal id reuse > T06: this project has no code path that could replay a historical cell 6ms
+ ✓ src/terminal-advanced.test.ts > T08: error and framing > T08: a failed command is not reported as success 1389ms
 stdout | src/terminal-advanced.test.ts > T08: error and framing > T08: a forged completion marker is accepted as readiness, so framing is not proof
-[measured] T08 baseline (honest command) elapsedMs = 3062
+[measured] T08 baseline (honest command) elapsedMs = 3047
 [measured] T08 baseline waitReason = inferred_idle
-[measured] T08 forged-marker elapsedMs = 185
+[measured] T08 forged-marker elapsedMs = 173
 [measured] T08 forged waitReason = stdin_read
 
- ✓ src/terminal-advanced.test.ts > T08: error and framing > T08: a forged completion marker is accepted as readiness, so framing is not proof 17781ms
+ ✓ src/terminal-advanced.test.ts > T08: error and framing > T08: a forged completion marker is accepted as readiness, so framing is not proof 17238ms
 stdout | src/terminal-advanced.test.ts > T08: error and framing > T08: a blocking read settles as a non-success reason while the cell is still running
 [measured] T08 blocking read waitReason = inferred_idle
-[measured] T08 blocking read elapsedMs = 3118
+[measured] T08 blocking read elapsedMs = 3136
 
- ✓ src/terminal-advanced.test.ts > T08: error and framing > T08: a blocking read settles as a non-success reason while the cell is still running 6103ms
- ✓ src/terminal-advanced.test.ts > T08: error and framing > T08: the only honest exit code is the shell's own 2251ms
+ ✓ src/terminal-advanced.test.ts > T08: error and framing > T08: a blocking read settles as a non-success reason while the cell is still running 5835ms
+ ✓ src/terminal-advanced.test.ts > T08: error and framing > T08: the only honest exit code is the shell's own 1983ms
+stdout | src/terminal-advanced.test.ts > T05/T06/T08 under workspace-write confinement > the confinement arm is real: writes are enforced, not merely configured
+[measured] WW workspaceRoot = D:\DSH\work\dsh-native-daily\packages\dsh-daily-work
+
+stdout | src/terminal-advanced.test.ts > T05/T06/T08 under workspace-write confinement > the confinement arm is real: writes are enforced, not merely configured
+[measured] WW denied-write waitReason = stdin_read
+[measured] WW allowed-write waitReason = stdin_read
+
+ ✓ src/terminal-advanced.test.ts > T05/T06/T08 under workspace-write confinement > the confinement arm is real: writes are enforced, not merely configured 3569ms
+stdout | src/terminal-advanced.test.ts > T05/T06/T08 under workspace-write confinement > T05 under confinement: SIGINT is reported delivered but DOES NOT stop the cell
+[measured] WW T05 signalMs = 20
+[measured] WW T05 signalResult = {"delivered":true,"targetPgid":0}
+
+stdout | src/terminal-advanced.test.ts > T05/T06/T08 under workspace-write confinement > T05 under confinement: SIGINT is reported delivered but DOES NOT stop the cell
+[measured] WW T05 settled = inferred_idle {"kind":"running"}
+
+stdout | src/terminal-advanced.test.ts > T05/T06/T08 under workspace-write confinement > T05 under confinement: SIGINT is reported delivered but DOES NOT stop the cell
+[measured] WW T05 commandSurvivedInterrupt = true
+
+ ✓ src/terminal-advanced.test.ts > T05/T06/T08 under workspace-write confinement > T05 under confinement: SIGINT is reported delivered but DOES NOT stop the cell 13669ms
+stdout | src/terminal-advanced.test.ts > T05/T06/T08 under workspace-write confinement > T05 under confinement: kill() IS the control that stops the cell
+[measured] WW T05 kill stopped the cell = true
+
+ ✓ src/terminal-advanced.test.ts > T05/T06/T08 under workspace-write confinement > T05 under confinement: kill() IS the control that stops the cell 13410ms
+stdout | src/terminal-advanced.test.ts > T05/T06/T08 under workspace-write confinement > T06 under confinement: state does not cross a context boundary
+[measured] WW T06 reused id = pty-1
+
+ ✓ src/terminal-advanced.test.ts > T05/T06/T08 under workspace-write confinement > T06 under confinement: state does not cross a context boundary 3252ms
+stdout | src/terminal-advanced.test.ts > T05/T06/T08 under workspace-write confinement > T08 under confinement: a forged marker still settles early, and a failure is still not success
+[measured] WW T08 honest elapsedMs = 3057
+[measured] WW T08 forged elapsedMs = 169
+[measured] WW T08 forged waitReason = stdin_read
+
+ ✓ src/terminal-advanced.test.ts > T05/T06/T08 under workspace-write confinement > T08 under confinement: a forged marker still settles early, and a failure is still not success 17675ms
 
  Test Files  1 passed (1)
-      Tests  10 passed (10)
-   Start at  19:44:12
-   Duration  65.30s (transform 445ms, setup 0ms, import 593ms, tests 64.53s, environment 0ms)
+      Tests  15 passed (15)
+   Start at  20:28:52
+   Duration  114.08s (transform 405ms, setup 0ms, import 558ms, tests 113.35s, environment 0ms)
 

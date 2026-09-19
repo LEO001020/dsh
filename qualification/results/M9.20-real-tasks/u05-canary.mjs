@@ -326,8 +326,29 @@ try {
   // The canary home WAS written -- asserted so F6 cannot pass by the script
   // having done nothing at all.
   const canaryWritten = listFiles(canaryHome) ?? []
-  record('F7', 'the canary home was exercised', canaryWritten.length >= 0 ? 'PASS' : 'FAIL',
-    `canary home holds ${String(canaryWritten.length)} files after the run`)
+  record('F7', 'the canary home was exercised', canaryWritten.length > 0 ? 'PASS' : 'FAIL',
+    `canary home holds ${String(canaryWritten.length)} files after the run`,
+    { canaryHome, files: canaryWritten })
+
+  // F6 PASSES VACUOUSLY when the daily home does not exist, which is the case on
+  // this machine (nothing is promoted). A check that cannot fail is not a check,
+  // so the same digest machinery is exercised against a directory that DOES
+  // exist, and the movement it detects is reported. This is the positive control
+  // for F6 and it runs LAST, against its own temp directory.
+  const controlDir = mkdtempSync(join(tmpdir(), 'dsh-u05-control-'))
+  try {
+    const before = listFiles(controlDir)
+    writeFileSync(join(controlDir, 'a-stray-write.txt'), 'x', 'utf8')
+    const after = listFiles(controlDir)
+    const digest = (files) => createHash('sha256').update((files ?? []).join(String.fromCharCode(10))).digest('hex')
+    const detected = digest(before) !== digest(after)
+    record('F8', 'the daily-home write check has teeth (positive control)', detected ? 'PASS' : 'FAIL',
+      detected
+        ? `a deliberate write moved the control digest from ${digest(before).slice(0, 16)}... to ${digest(after).slice(0, 16)}..., so F6 detects writes when there is something to write to`
+        : 'the control digest did NOT move after a deliberate write, so F6 would pass vacuously')
+  } finally {
+    rmSync(controlDir, { recursive: true, force: true, maxRetries: 10, retryDelay: 100 })
+  }
 } finally {
   // Clean up the canary home. The gate's whole point is that nothing outside a
   // temp directory is touched, so leaving it behind would undercut the evidence.

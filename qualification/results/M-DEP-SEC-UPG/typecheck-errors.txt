@@ -1,0 +1,14 @@
+# tsc -p tsconfig.check.json (whole tree, tests included)
+# exit 0, 0 error(s) across 0 file(s)
+# run: 2026-09-19T19:17:32.515Z
+#
+# DEP-03's oracle is "all production packages AND tests compile". A non-zero
+# count below falsifies it. The list is empty when the gate holds.
+#
+# For reference: an earlier run of this same command found 30+ errors across 18
+# files that belong to concurrent work in this tree (kernel-lifecycle.ts,
+# target-setting.ts, capacity.ts, artifacts.ts, observations.ts, several test
+# files, and pinned-checkout tool-fs-search/src/direct-call.ts). None was in a
+# file this work owns. That work has since settled.
+
+(none)

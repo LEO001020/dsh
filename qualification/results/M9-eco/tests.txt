@@ -1,0 +1,45 @@
+
+ RUN  v4.1.8 D:/DSH/work/dsh-native-daily/packages/dsh-daily-work
+
+ ✓ src/eco.test.ts > ECO-01: each provider attempt is billed, and the last usage does not overwrite the rest > accounts three attempts of one step separately, with the retry visible as its own source 37ms
+ ✓ src/eco.test.ts > ECO-01: each provider attempt is billed, and the last usage does not overwrite the rest > does not double-count a retry that reuses a request id, and still counts the retries that do not 0ms
+ ✓ src/eco.test.ts > ECO-02: a dropped connection is UNKNOWN, not zero, and it does not silently pass a budget check > keeps an attempt with no usage unknown and prices it as a gap rather than a free call 1ms
+ ✓ src/eco.test.ts > ECO-02: a dropped connection is UNKNOWN, not zero, and it does not silently pass a budget check > holds a CONSERVATIVE reservation for the unknown, and admission then REFUSES on it 0ms
+ ✓ src/eco.test.ts > ECO-02: a dropped connection is UNKNOWN, not zero, and it does not silently pass a budget check > keeps the unknown-usage path structurally separate from the priced path 1ms
+ ✓ src/eco.test.ts > ECO-02: a dropped connection is UNKNOWN, not zero, and it does not silently pass a budget check > refuses to compare an incomplete total in either direction 1ms
+ ✓ src/eco.test.ts > ECO-03: the total covers every category and never applies one provider's pricing to another > sums root, children, summary/compaction, search and cache storage with nothing omitted 1ms
+ ✓ src/eco.test.ts > ECO-03: the total covers every category and never applies one provider's pricing to another > refuses to price a provider with no table, rather than borrowing another one 0ms
+ ✓ src/eco.test.ts > ECO-03: the total covers every category and never applies one provider's pricing to another > refuses a price table belonging to a different provider, and refuses a cache-write field from another protocol 0ms
+ ✓ src/eco.test.ts > ECO-03: the total covers every category and never applies one provider's pricing to another > keeps the charge-line vocabulary closed, so a typo cannot invent a line nobody checks 0ms
+ ✓ src/eco.test.ts > ECO-04: the fixed prefix is byte-identical across cells while the dynamic parts stay bounded and later > does not reorder the fixed prefix when budget and variables change 9ms
+ ✓ src/eco.test.ts > ECO-04: the fixed prefix is byte-identical across cells while the dynamic parts stay bounded and later > states that an equal prefix hash is not a cache hit, in the report the gate reads 0ms
+ ✓ src/eco.test.ts > ECO-05: fewer prompt tokens can be a MORE expensive bill, and the report says so > reports the bill rising while the prompt shrinks, and never reports only the token drop 0ms
+ ✓ src/eco.test.ts > ECO-05: fewer prompt tokens can be a MORE expensive bill, and the report says so > still reports a genuine saving as cheaper, so the flag is not stuck 0ms
+ ✓ src/eco.test.ts > ECO-06: enabling a shadow projection sends no second LLM request and re-runs no effect > leaves the real request count and the real effect count unchanged 14ms
+ ✓ src/eco.test.ts > ECO-06: enabling a shadow projection sends no second LLM request and re-runs no effect > has no reachable request or effect path, stated as a structural property 0ms
+ ✓ src/eco.test.ts > ECO-07: the stock control arm is not secretly modified, and the variables are fixed (live half BLOCKED_EXTERNAL) > the stock arm declares no plugin rows, and its files hash to the committed values 1ms
+ ✓ src/eco.test.ts > ECO-07: the stock control arm is not secretly modified, and the variables are fixed (live half BLOCKED_EXTERNAL) > re-derives the composed stock graph and matches the digest M0.5 recorded 153ms
+ ✓ src/eco.test.ts > ECO-07: the stock control arm is not secretly modified, and the variables are fixed (live half BLOCKED_EXTERNAL) > fixes the controlled variables and records that the live comparison is BLOCKED_EXTERNAL 0ms
+ ✓ src/eco.test.ts > ECO-08: repeated paired runs are reported with variance and an interval, not one trajectory (live half BLOCKED_EXTERNAL) > reports success rate with a Wilson interval that does not collapse to certainty at n=6 0ms
+ ✓ src/eco.test.ts > ECO-08: repeated paired runs are reported with variance and an interval, not one trajectory (live half BLOCKED_EXTERNAL) > describes variance and refuses to invent it from a single run 0ms
+ ✓ src/eco.test.ts > ECO-08: repeated paired runs are reported with variance and an interval, not one trajectory (live half BLOCKED_EXTERNAL) > describes a paired-run result as separate axes, and declares no winner at n<2 1ms
+ ✓ src/eco.test.ts > perf instrumentation: the meters measure, and say so when they cannot > computes percentiles from observed samples and flags a p95 that is only the max 1ms
+ ✓ src/eco.test.ts > perf instrumentation: the meters measure, and say so when they cannot > pairs open/close spans and counts the ones that did not pair 0ms
+ ✓ src/eco.test.ts > perf instrumentation: the meters measure, and say so when they cannot > measures captured versus projected bytes, with truncation attributed 0ms
+ ✓ src/eco.test.ts > perf instrumentation: the meters measure, and say so when they cannot > reports RSS and CPU as observed, and marks CPU unreported rather than zero 0ms
+ ✓ src/eco.test.ts > perf instrumentation: the meters measure, and say so when they cannot > bounds a projected JSON line, which is the real mechanism behind captured vs projected bytes 94ms
+ ✓ src/eco.test.ts > perf: the metrics the plan names, measured or explicitly not measured > measures kernel cold start and warm cell RTT as real percentiles, with the tail caveat stated 1ms
+ ✓ src/eco.test.ts > perf: the metrics the plan names, measured or explicitly not measured > measures process-helper RTT and local Python ops/sec, and keeps them apart 0ms
+ ✓ src/eco.test.ts > perf: the metrics the plan names, measured or explicitly not measured > measures RSS and CPU for a real kernel, and reports growth as growth 0ms
+ ✓ src/eco.test.ts > perf: the metrics the plan names, measured or explicitly not measured > measures the child boot-storm against a one-kernel control 0ms
+ ✓ src/eco.test.ts > perf: the metrics the plan names, measured or explicitly not measured > measures the kernel-side refill readiness, and names what a refill also waits for 0ms
+ ✓ src/eco.test.ts > perf: the metrics the plan names, measured or explicitly not measured > reports the metrics it cannot measure as NULL with a reason, never as zero 0ms
+ ✓ src/eco.test.ts > perf: the metrics the plan names, measured or explicitly not measured > measures history query latency against the real SessionQuery over a real JSONL store 70ms
+ ✓ src/eco.test.ts > perf: the metrics the plan names, measured or explicitly not measured > measures model blocked time against the real loop, which is local and not a provider latency 27ms
+ ✓ src/eco.test.ts > cleanup: the rig leaves nothing behind > has no temp directory from this file still present after teardown 0ms
+
+ Test Files  1 passed (1)
+      Tests  36 passed (36)
+   Start at  02:24:25
+   Duration  1.23s (transform 467ms, setup 0ms, import 642ms, tests 419ms, environment 0ms)
+

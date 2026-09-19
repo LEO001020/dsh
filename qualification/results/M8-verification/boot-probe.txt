@@ -1,0 +1,62 @@
+# Real-profile boot probe: is ctx.dailyWriters mounted by the COMPOSED profile?
+# date: 2026-09-19T18:21:16Z
+# host: node v24.18.0, DSH checkout D:\DSH\src\dsh-src
+
+$ export DSH_HOME='D:\DSH\home\canary5'
+$ node apps/cli/lib/bin.js --profile daily \
+      --patch 'D:\DSH\work\dsh-native-daily\qualification\results\M8-verification\writers-mounted.patch.yml'
+
+--- the resolved composition, from --dump-config, shows the row: ---
+594-  name: dsh-daily-work/tool-protocol-guards
+595:- id: daily-writers
+596-  name: dsh-daily-work/writers
+597-- id: daily-data-plane
+# The row is in the RESOLVED config, which is why the service registers. A row
+# that never reached the resolved tree is the B02/B03 failure shape.
+
+--- the probe's finding, from inside the booted profile: ---
+{
+  "serviceAtApplyTime": false,
+  "serviceSettledAfterMs": 50,
+  "serviceRegistered": true,
+  "serviceName": "dailyWriters",
+  "available": true,
+  "availableReason": "the writer path can reach the integration root C:\\Users\\hzq00\\AppData\\Local\\Temp\\dsh-writers-probe-pIO34B",
+  "rootRefusedWithoutConfig": true,
+  "workspaceCreated": true,
+  "workspacePath": "C:\\Users\\hzq00\\AppData\\Local\\Temp\\dsh-writers-probe-ws-zZHwbF\\probe-writer-workspace",
+  "branch": "writer/probe-writer",
+  "baseRevisionMatches": true,
+  "cwdBoundToWorkspace": true,
+  "secondWriterRefused": true,
+  "leaseHeldDuringUse": true,
+  "releasedCleanly": true,
+  "branchGoneAfterRelease": true,
+  "error": null
+}
+
+--- interpretation ---
+serviceRegistered: true      the cordis.patch.yml insert row ACTIVATED. A test that
+                             mounts the module directly cannot show this.
+serviceAtApplyTime: false    the probe's own row applied BEFORE the writers row.
+                             Cordis activates in service-availability order, not source
+                             order, so a single read at apply time observes a MOMENT.
+                             The retry records the SETTLED state instead. This project
+                             already reported a false "not mounted" from exactly this
+                             mistake in verify-guard.mjs, so both readings are recorded.
+serviceSettledAfterMs: 50    the graph settled within one poll.
+rootRefusedWithoutConfig     true: the service refuses to GUESS an integration root.
+                             A guessed root could operate on the wrong repository.
+workspaceCreated/branch/     a real worktree on a real branch at the exact base, all
+baseRevisionMatches: true    read back FROM GIT rather than from the returned object,
+cwdBoundToWorkspace: true    so the object cannot disagree with the tree it describes.
+secondWriterRefused: true    a second writer on the same workspace is refused.
+leaseHeldDuringUse: true     the lease is observable while it is held.
+releasedCleanly: true        the directory is gone after release.
+branchGoneAfterRelease: true nothing was left in the shared ref store.
+
+--- what this does NOT prove ---
+The probe drives the service's own API. It does not run a writer CHILD through the
+model's tool surface, because no live model call is authorized here. It proves the
+service is composed and reachable; it does not prove a model would be routed through
+it, which would need a real turn and is not claimed.

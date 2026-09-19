@@ -1,0 +1,49 @@
+# tests.txt -- real runner output, six gate test files.
+#
+# command:
+#   cd /d/DSH/work/dsh-native-daily/packages/dsh-daily-work
+#   export PATH="/d/DSH/tools/bin:/d/DSH/src/dsh-src/node_modules/.bin:$PATH"
+#   vitest run src/control-plane.test.ts src/real-tasks.test.ts #     src/u01-coding-loop.test.ts src/u02-research-loop.test.ts #     src/u03-sustained-load.test.ts src/u04-paired-comparison.test.ts
+#
+# vitest_exit=0   (28 passed / 28, 6 files)
+# Pool is `forks` with maxForks unset, per vitest.config.ts. One vitest process.
+#
+# ANSI escapes are stripped for readability; nothing else is edited.
+
+
+ RUN  v4.1.8 D:/DSH/work/dsh-native-daily/packages/dsh-daily-work
+
+ ✓ src/u02-research-loop.test.ts > U02: the audit artifact is reviewable, and states its disputes > every finding carries citations, a falsification condition, and its unknowns 2ms
+ ✓ src/u02-research-loop.test.ts > U02: the audit artifact is reviewable, and states its disputes > the spot-check re-reads every citation and finds the quote VERBATIM on the cited line 2ms
+ ✓ src/u02-research-loop.test.ts > U02: the audit artifact is reviewable, and states its disputes > the spot-check has teeth: a citation with a plausible but WRONG quote is detected 1ms
+ ✓ src/u02-research-loop.test.ts > U02: the audit artifact is reviewable, and states its disputes > the audit pins the checkout revision, so a citation cannot silently refer to different text 1ms
+ ✓ src/u02-research-loop.test.ts > U02: the audit artifact is reviewable, and states its disputes > the disputed finding names the measurement that would settle it, and does not claim to have made it 0ms
+ ✓ src/control-plane.test.ts > E02: the control-plane universe is measured, not assumed > the recorded boot probe enumerated the host scope and found no control-plane surface missing by accident 2ms
+ ✓ src/control-plane.test.ts > E02: the control-plane universe is measured, not assumed > NO control-plane surface is exposed to the model as a tool, on the real composed preset 1ms
+ ✓ src/control-plane.test.ts > E02: the control-plane universe is measured, not assumed > the model is told the loopback address, and the address alone does not admit it 1ms
+ ✓ src/control-plane.test.ts > E02: the control-plane universe is measured, not assumed > the /api Host fence refuses a DNS-rebinding Host, and the index route is NOT Host-fenced 0ms
+ ✓ src/control-plane.test.ts > E02: what the human terminal is, quoted from its own source > the terminal controller declares system-user permissions and bypasses sandbox and approval 0ms
+ ✓ src/control-plane.test.ts > E02: the scope semantics that make a naive reachability reading wrong > ctx.get resolves a service across an isolation realm, so it is a registry read and not a scope test 3ms
+ ✓ src/control-plane.test.ts > E02: the scope semantics that make a naive reachability reading wrong > the tool catalog keyed by the Agent object is the capability boundary, and it is empty here 13ms
+ ✓ src/u04-paired-comparison.test.ts > U04: paired C0/C1/C2 comparison on a controlled fixture > the three groups differ by exactly the rows the plan names, and by nothing else 20ms
+ ✓ src/u04-paired-comparison.test.ts > U04: paired C0/C1/C2 comparison on a controlled fixture > all three groups run on the same model, task and budget, and the three axes are reported SEPARATELY 117ms
+ ✓ src/u04-paired-comparison.test.ts > U04: paired C0/C1/C2 comparison on a controlled fixture > the comparison cannot declare a winner: with n=1 per group the difference is not separable from noise 1ms
+ ✓ src/real-tasks.test.ts > E12: the untrusted child is a separate process with no inherited authority > the runner hands over NO route to a host secret: no env name, no harness home, no absolute path 485ms
+ ✓ src/u03-sustained-load.test.ts > U03: sustained load — resources, cost and state, measured > a control arm establishes the one-time cost so the load arm can be read as a trend 26ms
+ ✓ src/real-tasks.test.ts > E12: the untrusted child is a separate process with no inherited authority > the runner hands the child no control-plane handle: the child gets argv, cwd, stdio and env and nothing else 445ms
+ ✓ src/real-tasks.test.ts > E12: the untrusted child is a separate process with no inherited authority > the runner adds NO network permission to the child, and the child can still reach loopback 289ms
+ ✓ src/u03-sustained-load.test.ts > U03: sustained load — resources, cost and state, measured > six load cycles of top-up with pause/resume interleaved show no per-cycle resource trend 845ms
+ ✓ src/real-tasks.test.ts > E12: a trusted runner is not a truth oracle for untrusted output > an untrusted test that forges a passing summary cannot turn a real failure into a pass 214ms
+ ✓ src/u03-sustained-load.test.ts > U03: sustained load — resources, cost and state, measured > NO STATE POLLUTION: a second run in the same process shares no task state with the first 139ms
+ ✓ src/real-tasks.test.ts > E12: a trusted runner is not a truth oracle for untrusted output > a runner that reports success while executing nothing is not a pass, even from a trusted command 199ms
+ ✓ src/real-tasks.test.ts > E12: the isolation claim in the runner header, clause by clause > the header claim is present verbatim, so a change to it is visible rather than inherited 1ms
+ ✓ src/u01-coding-loop.test.ts > U01: the coding loop closes on a real multi-file bug > the acceptance FAILS on the buggy tree and PASSES after the patch, with the acceptance frozen throughout 2143ms
+ ✓ src/u01-coding-loop.test.ts > U01: the coding loop closes on a real multi-file bug > an acceptance that is edited instead of the code is DETECTED, so a weakened oracle cannot pass 9ms
+ ✓ src/u01-coding-loop.test.ts > U01: the coding loop closes on a real multi-file bug > the bug is a REAL defect: the same predicate is consumed by counting and by admission 1ms
+ ✓ src/u03-sustained-load.test.ts > U03: sustained load — resources, cost and state, measured > the measured range is reported as a series, so a reader can judge the load rather than trust a verdict 614ms
+
+ Test Files  6 passed (6)
+      Tests  28 passed (28)
+   Start at  20:07:45
+   Duration  2.68s (transform 1.21s, setup 0ms, import 1.99s, tests 5.58s, environment 1ms)
+

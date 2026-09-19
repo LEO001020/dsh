@@ -1,0 +1,58 @@
+=== R10-SECURITY SEAM PROBE ===
+pinned checkout: D:/DSH/src/dsh-src
+node: v24.18.0  platform: win32
+
+--- 1. the sandbox seam's exported shape ---
+  SandboxMode: 'read-only' | 'workspace-write' | 'danger-full-access'
+  SandboxExecutionPolicy body: /** The file-effect mode this execution runs under. */ mode: SandboxMode /** Absolute root directory `workspace-write` may write under. */ workspaceRoot: string /** * Opaque identity of the calling session (the branded `dsh-session` * SessionId). Backends key per-session state off it (e.g. windows-a
+  SandboxPolicy body: /** The file-effect mode this execution runs under. */ mode: ConfinedSandboxMode
+  ConfinedArgv body: /** The wrapped argv (runner, profile, separator, then the caller's argv). */ argv: string[] /** How completely the selected backend enforces the policy's file effects. */ enforcement: SandboxEnforcement /** * The selected backend's denial DIALECT: the case-insensitive stderr * substrings a file eff
+  ConfinedArgv field names: ["argv","denialSignatures","enforcement","runnerFailureRules"]
+  ConfinedArgv has a network/egress field: false
+  seam states network is out of vocabulary: true
+
+--- 2. does a different `mode` change READ behaviour? (measured) ---
+  fixture: outside=C:\Users\hzq00\AppData\Local\Temp\r10-mode-X7rfSu\outside\canary.txt (sibling of workspace, so past the only boundary)
+  mode=read-only        exit=0 enforcement=partial -> READ_OK:CANARY-FAKE-R10-READ-NOT-A-CREDENTIAL
+  mode=workspace-write  exit=0 enforcement=partial -> READ_OK:CANARY-FAKE-R10-READ-NOT-A-CREDENTIAL
+  bash-sandbox short-circuits danger-full-access before confine(): true
+
+--- 3. can a read/network flag be smuggled through the runner argv? (measured) ---
+  runner parseArgs switch cases: ["--workspace","--temp","--mode","--write-sid","--temp-write-sid"]
+  unknown args fail closed: true
+  resolved runner: D:\DSH\src\dsh-src\packages\sandbox\sandbox-windows-acl\lib\runner.js (exists: true)
+  argv ["--deny-net"]             exit=127 refused=true stderr=windows-acl-run: unknown argument: --deny-net
+  argv ["--read-only-fs","/"]     exit=127 refused=true stderr=windows-acl-run: unknown argument: --read-only-fs
+  argv ["--no-network"]           exit=127 refused=true stderr=windows-acl-run: unknown argument: --no-network
+
+--- 4. is the `runnerCommand` override a usable read/egress lever? ---
+  confine() takes the override branch: true
+  the override is prefixed to bwrap-compatible profile args (so the profile is still file-effect only)
+  README: "operator assertion": true
+  README: skips functional probes: true
+  PLATFORM_CHAINS: linux: ['bwrap', 'landlock'], darwin: ['seatbelt'], // The Windows restricted-token runner (@deepseek-ai/dsh-sandbox-windows-acl): // a sole candidate, selected without a probe — its execution-time re
+  (win32 has exactly ONE candidate: windows-acl — there is no second runner to select)
+
+--- 5. does the fs seam fence reads? ---
+  own header: "Reads pass through untouched: every mode permits reading"
+  fence scope: true
+  fenced methods (overridden): ["writeText","editText"]
+  fenced READ methods: [] (empty = reads are not fenced)
+
+--- 6. is there any network-policy service in the checkout? ---
+  http-proxy policy exists: true
+  it is a CLIENT-side proxy for the harness's OWN outbound calls (not a child's):
+    "A proxy that also serves the harness's own loopback traffic": true
+  a confined child reaches the network through the OS, not through undici —
+  so an http-proxy policy cannot govern it (measured in sec-gates.test.ts SEC-03).
+
+=== PROBE COMPLETE (no credential was read; all canaries fabricated) ===
+
+CONCLUSION:
+  SEC-01: NOT closable. `mode` changes WRITE behaviour only; no read lever exists
+          in SandboxPolicy, ConfinedArgv, any runner argv, or the fs fence.
+  SEC-03: NOT closable. The seam states network is outside its vocabulary; the
+          windows-acl runner refuses unknown argv; win32 has one candidate runner;
+          `runnerCommand` can only replace the runner with ANOTHER file-effect
+          confiner (and is an unprobed operator assertion), so it cannot express
+          egress control without shipping a new OS-level artifact.

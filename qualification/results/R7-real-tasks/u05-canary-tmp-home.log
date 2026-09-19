@@ -1,0 +1,13 @@
+canary home: C:\Users\hzq00\AppData\Local\Temp\dsh-u05-canary-fYZith
+daily home (must stay untouched): D:/DSH/home/daily
+[PASS] F1 built launcher present: launcher runs; sha256 69c49c871735dc7e...
+[PASS] F2 profile resolves and includes the extension host row: --dump-config exited 0 and the composed tree names daily-work-host (388 lines)
+[PASS] F3 sandbox enforcement claim unchanged: write-only boundary claim present: true; windows-acl maps to 'partial': true
+[PASS] F4 extension typechecks against the candidate checkout: tsc --noEmit exited 0
+[PASS] F5 extension declares a bundle patch and is built: declares dsh.bundle.patch: true; patch file exists: true; lib/host-plugin.js built: true
+[PASS] F6 the daily home was not written: no daily home exists at D:/DSH/home/daily, so nothing could be written to it (file list null before and after)
+[PASS] F7 the canary home was exercised: canary home holds 3 files after the run
+[PASS] F8 the daily-home write check has teeth (positive control): a deliberate write moved the control digest from e3b0c44298fc1c14... to e6b6b67d1f32c5b5..., so F6 detects writes when there is something to write to
+
+U05 report: D:/DSH/work/dsh-native-daily/qualification/results/R7-real-tasks/u05-canary-tmp-home.json
+summary: {"pass":8,"fail":0,"notRun":0,"blockedExternal":2}

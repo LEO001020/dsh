@@ -1,0 +1,52 @@
+# sha256 of every source this case touches, taken after the final test run.
+# Verify before trusting the results in this directory: a later edit to any of
+# these invalidates the evidence here.
+
+## This case's sources
+4ce83ee5f4fd6d0e1147dfc2ad668f2f002ededf3b4e1e07df58935d30380cfa *packages/dsh-daily-work/src/perf-metrics.ts
+984c54489fe563b891ceb4ab8c532bfc25d658dac8dfc6b22803f020382d84b0 *packages/dsh-daily-work/src/eco.test.ts
+61086d17f3f4dd5532fded359e37b75da0b1b86bbcffbdd026ec3883c0ad70ef *packages/dsh-daily-work/tsconfig.eco.json
+
+## Read but NOT modified by this case
+# src/record.ts is read for holdUnknown / retainAsUnknown / UsageLedger /
+# USAGE_SOURCES. It is hashed because the sabotage harness mutates a COPY of it,
+# so this digest is what proves the LIVE file is intact. Its digest may move if
+# another case edits it -- re-check the functions named above rather than
+# assuming the digest alone means unchanged.
+96026da6bd546b10489515cabfb12fc5928467b51e76d765dcf2cfa9232bd39e *packages/dsh-daily-work/src/record.ts
+28d1f70e5d87be317b5582e7d39585a63b17210e1ab5d1289cda655c453299ed *packages/dsh-daily-work/tsconfig.check.json
+
+## UPSTREAM sources whose behaviour this case relies on and cites
+0126f8ee5c63c2ee848f732a28ed6c7e31f6adcdb43271d6cd0a6f260d0d3465 */d/DSH/src/dsh-src/packages/llm/token-meter/src/usage-projection.ts
+9d399314121785154296af650c6059bfd967a4ba6fc72299aadf8a2dce3f7ce1 */d/DSH/src/dsh-src/packages/llm/token-meter/src/index.ts
+66e8b1f96a90404d4e5ca67fc85b9e37a96bbee78ed52521e7b8fdc3f336ba32 */d/DSH/src/dsh-src/packages/llm/llm-deepseek/src/protocols/chat-completions/translate.ts
+254f4b8fe292dadc5c24df3375b01920f5e5b345be09eae4290e91e9e810c1ba */d/DSH/src/dsh-src/packages/llm/llm-deepseek/src/protocols/messages/translate.ts
+e3563cc091cc2e6b0c2bdbd4c1614339d7cbb01f747a956931b43f3256e0c640 */d/DSH/src/dsh-src/packages/llm/llm-pi-ai/src/stream.ts
+4a0c4fd5fb4ab475010651f1b1ea20fe45432cb7ee8d4ff35c0bdaf2c217bfcd */d/DSH/src/dsh-src/packages/bundle/headless/src/json-stream.ts
+d33553781ed2118aab3b249c159fae550d359627565e4714c9ea599e474b8093 */d/DSH/src/dsh-src/packages/llm/llm-retry/src/index.ts
+
+## Evidence files this case produced
+6b9afe5785b1c41f3b621dcfa23915e73693bab8572444e995f5be4b70fb8e33 *qualification/results/M9-eco/perf_probe.py
+8c4cd5c4c3ece924ece046432156807d75fa749e71d170c4ea54eedd99d16403 *qualification/results/M9-eco/perf.json
+e7575e6c0bd7ab6486c7cfd466d77a2f9ab516fe07e176afc94deb9b47b4c51a *qualification/results/M9-eco/sabotage.sh
+b2b008cdc730163ca5e50470fb94bb9ebd058bf3966a487525dabbd11e285726 *qualification/results/M9-eco/sabotage.txt
+64dc051148103715b46b0bf6bb6682f76b61746b8de5dda5ac55a23c618355b9 *qualification/results/M9-eco/tests.txt
+5ceea621fa358b2151dea0754aed96b7c5a6d0dac214f2100770fb31d7212b30 *qualification/results/M9-eco/tsc.txt
+84c1de6afa35ee08f593f36acd67ded7ef257dab9e20a0e5c3c52d522f84d247 *qualification/results/M9-eco/FINDINGS.md
+
+## Environment
+#   pinned DSH checkout: D:/DSH/src/dsh-src @ ddefc45fbc7f8e46dd73185e68295696d1297887
+#   node: v24.18.0
+#   python: Python 3.14.3
+#   platform: MINGW64_NT-10.0-26200 3.6.9-b4195d69.x86_64
+
+## Files CREATED by this case (nothing else was touched)
+#   packages/dsh-daily-work/src/perf-metrics.ts
+#   packages/dsh-daily-work/src/eco.test.ts
+#   packages/dsh-daily-work/tsconfig.eco.json   (isolated check config, this case only)
+#   qualification/results/M9-eco/{FINDINGS.md,tests.txt,tsc.txt,source-digests.txt,
+#                                   sabotage.txt,sabotage.sh,perf.json,perf_probe.py}
+
+## Files MODIFIED by this case: NONE
+#   src/host.ts, src/counting.ts, src/homelock.ts, src/effects.ts and everything
+#   in packages/dsh-ipython/ were not touched.

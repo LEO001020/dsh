@@ -1,0 +1,24 @@
+# R10-security — source digests (sha256)
+# repo commit: a1d6e6decedb4f8f2d7b218ba82a22976a0b95c2
+# pinned checkout: ddefc45fbc7f8e46dd73185e68295696d1297887
+# node: v24.18.0  platform: win32 10.0.26200
+
+## files this task owns / touched
+08f45e81a14a94fcaf0de0b68a9c882bf69f5038843a50fb44a6664987e252cb *packages/dsh-daily-work/src/sec-gates.test.ts
+619bfac3a0742578070663b98d5358c33b185080fe37653526eba5cf053c2898 *packages/dsh-daily-work/src/security.test.ts
+a8851721fd7bc4f0578b5e9ce9fbe62b7924f2277437b5ae7d65094c93f20e4f *packages/dsh-daily-work/src/security-denial.test.ts
+03e889db7fa60d3f69e11424f09034215673c6b3cb82ba94a65438906798f04e *qualification/results/R10-security/probe-seams.mjs
+e44ae06680659abe1d4cd5df563de97b2c54aa9e1bbf38136d59cf4f9df49614 *qualification/results/R10-security/FINDINGS.md
+
+## pinned-checkout files quoted in FINDINGS.md
+32f62c1966c536308428be2fa090042a37358d9af8084e7fb0d0878c68ac3b9d *packages/sandbox/sandbox/src/index.ts
+70afc069be11b1e5bbc1bccda616f7052d469e16ffe0046e9ef21fa443df3f95 *packages/sandbox/sandbox/README.md
+7af7d5d12c8e9347b4880dc939815fea9b8f7ab45d7dc80fe868e5fee4c1bdc4 *packages/sandbox/sandbox-windows-acl/src/index.ts
+f409a9fbd344c1f6a3179eef2c422ec34933f2f3865bf065506bdba88212455e *packages/sandbox/sandbox-windows-acl/src/token.ts
+542b77278d974f5f93c2a0b925468e96e52737366ed88df7d118a5af67c2eff0 *packages/sandbox/sandbox-windows-acl/src/runner.ts
+049d1dbf6561bb3a87d274e474c3b1bd0c527216f7e50eaeba57cb4696b26dd9 *packages/sandbox/sandbox-windows-acl/README.md
+f7f21872ae725111f6a043eab37b533d9c8b9712d3ff9684aeded150e6f10b37 *packages/sandbox/sandbox-local/src/index.ts
+b94dd0d0c49c8df63edcbdfe036fafb90eb0bb96e7613e73d46e27b009ae6aaa *packages/sandbox/sandbox-local/src/profiles.ts
+baba926440e3bcaf9c5f70c4e7d5478efd977d66c76e025c4deb82534ce3256b *packages/fs/fs-sandbox/src/index.ts
+73918f195eb42911fad1e39078dd5b03d785ab5ec3a8dd8ad7a517097dc8ba33 *packages/shell/bash-sandbox/src/index.ts
+4827eabf9fac440298fa38e1bdc4189bafa9a7d98852a25848d62b03ecc6aacf *packages/util/http-proxy/src/policy.ts

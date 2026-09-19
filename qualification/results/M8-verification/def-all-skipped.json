@@ -1,0 +1,9 @@
+{
+  "id": "m8-all-skipped",
+  "command": ["node", "D:/DSH/src/dsh-src/node_modules/vitest/vitest.mjs", "run", "src/skip.test.ts"],
+  "cwd": "qualification/results/M8-verification/fixture",
+  "inputs": ["src", "vitest.config.ts", "package.json"],
+  "expectTests": { "passed": 2 },
+  "testReporter": "vitest",
+  "timeoutMs": 60000
+}

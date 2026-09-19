@@ -1,0 +1,39 @@
+{
+  "connection_file_summary": {
+    "transport": "tcp",
+    "has_key": true,
+    "has_curve_publickey": true,
+    "has_curve_secretkey": true,
+    "shell_port": 8756,
+    "ip": "127.0.0.1"
+  },
+  "control_keyed_client_executes": {
+    "ok": true,
+    "seconds": 0.01,
+    "value": "ok"
+  },
+  "keyless_client": {
+    "ok": true,
+    "seconds": 1.27,
+    "value": {
+      "wait_for_ready": "RuntimeError: Kernel died before replying to kernel_info",
+      "reply_status": null,
+      "stdout": "",
+      "EXECUTED_WITHOUT_CURVE_KEYS": false
+    }
+  },
+  "raw_dealer_without_curve": {
+    "ok": true,
+    "seconds": 4.05,
+    "value": {
+      "reply": "none",
+      "error": "Again: Resource temporarily unavailable"
+    }
+  },
+  "port_tcp_reachable": {
+    "ok": true,
+    "seconds": 0.0,
+    "value": true
+  },
+  "kernel_stderr_tail": ""
+}

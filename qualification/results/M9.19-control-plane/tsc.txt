@@ -1,0 +1,23 @@
+# tsc.txt -- real type-check output for the six gate test files and the package.
+#
+# The package tsconfig.json EXCLUDES src/**/*.test.ts, so the package-wide run does
+# NOT cover the test files. Both runs are recorded rather than implying coverage.
+# The gate run uses a temporary tsconfig that extends the package one and includes
+# exactly the six files; it is removed after the run.
+
+$ cd packages/dsh-daily-work
+$ export PATH="/d/DSH/tools/bin:/d/DSH/src/dsh-src/node_modules/.bin:$PATH"
+
+$ tsc -p tsconfig.json --noEmit
+package_tsc_exit=0
+
+$ tsc -p tsconfig.gates.json --noEmit   # the six gate test files
+gates_tsc_exit=0
+
+# Note: the first gate run of this typecheck found FOUR REAL ERRORS that the vitest
+# run did not catch, because vitest transpiles without type-checking:
+#   control-plane.test.ts  artifact type was missing cordisInspectTools
+#   u04  ctx.baseUrl = new URL(...)  -> URL is not assignable to string
+#   u04  MessageSource.form 'prompt' is not a member of the closed union
+#   u04  SystemPrompt has no sections() member
+# All four are fixed; the exit codes below are from the fixed tree.

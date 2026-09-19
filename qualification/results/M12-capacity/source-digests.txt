@@ -1,0 +1,47 @@
+# M6 source digests — the exact bytes this work rests on
+# Generated: 2026-09-20T01:58:07+08:00
+# Repo HEAD: 1d36130f0b97cc927d3750f5fb6071af19dced6e  branch: ipython-native
+
+## 1. Files this milestone CREATED
+
+packages/dsh-daily-work/src/capacity.ts                        a1adc4426309eac9  533 lines
+packages/dsh-daily-work/src/capacity.test.ts                   b85e020d4fd8b5c2  884 lines
+packages/dsh-daily-work/src/target-setting.ts                  717c2b5c5a21cf0f  241 lines
+packages/dsh-daily-work/src/target-setting.test.ts             824dec8fbbfd5c19  421 lines
+
+## 2. Files this milestone EDITED (working tree, uncommitted)
+
+packages/dsh-daily-work/src/host.ts                            17c78677a23fe809  1399 lines
+packages/dsh-daily-work/src/host-plugin.ts                     c0af7d516689b303  58 lines
+packages/dsh-daily-work/src/isolation.test.ts                  7e70a6a5e34430b9  1570 lines
+
+## 3. Upstream DSH sources CITED as the API contract (read-only, unmodified)
+
+### checkout D:\DSH\src\dsh-src
+packages/settings/settings/src/index.ts                                  2591a71e8cf42a0e
+packages/subagent/subagent/src/index.ts                                  168c9c1c3237e699
+packages/subagent/subagent/src/child-agent.ts                            c5c63b89c9693207
+packages/subagent/subagent/src/depth.ts                                  52fe8c33e3becc3c
+packages/subagent/subagent/src/continuation.ts                           b9224fd93929a547
+packages/subagent/subagent/src/continuation-activation.ts                b7e407e9f25d3057
+packages/subagent/subagent/src/types.ts                                  9a1f755aece7d541
+packages/subagent/subagent/src/control-types.ts                          64eb1827b3200a46
+packages/core/agent/src/index.ts                                         adc3f85968efc1bf
+packages/core/agent/src/runtime-types.ts                                 d0ac3509febb0430
+packages/core/agent-loop/src/index.ts                                    c112ecabe3711092
+packages/core/session/src/types.ts                                       312580d4e2ab568e
+packages/workflow/workflow-ptc/src/host.ts                               60890c93aad38b8e
+packages/api/session-controller/src/commands.ts                          a28710b2368df874
+packages/subagent/tool-subagent/src/index.ts                             ed3d79d58d0e473e
+packages/settings/settings/tests/memory.ts                               c89f0d92f8223960
+packages/client/ui-settings-plugins/src/client/card-form.ts              2ca81b1339a4ab4a
+packages/client/ui-settings-plugins/src/client/subagent-limits-card-controller.ts 956ee08028aa64d8
+packages/client/ui-settings/src/client/settings-scope.ts                 4d2055147ea41915
+
+### vendored cordis (the Context/plugin/service primitives)
+packages/dsh-daily-work/node_modules/@deepseek-ai/cordis/src/reflect.ts  6847b9781044023d
+packages/dsh-daily-work/node_modules/@deepseek-ai/cordis/src/events.ts   9aff93dcfcad98ae
+packages/dsh-daily-work/node_modules/@deepseek-ai/cordis/src/utils.ts    8fe273424583d212
+
+### schemastery (schema resolution semantics)
+packages/dsh-daily-work/node_modules/@deepseek-ai/schemastery/src/index.ts cf8a4de0481969a1

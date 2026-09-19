@@ -1,0 +1,55 @@
+# UPG-08 — the daily verdict (COMPUTED from the per-gate table in upg-gates.test.ts)
+#
+# Rule (acceptance-spec.json UPG-08): any mandatory gate that is FAIL, NOT_RUN or
+# BLOCKED_EXTERNAL forces NOT_READY, with the concrete reproduction and the
+# external blocker named. This file is DERIVED from the test table; it is not typed.
+
+verdict: NOT_READY
+reason: 8 of 24 mandatory gates are not PASS
+external_blocker: UPG-07 — compatibility.lock.json runtime_authorization.live_provider_budget_authorized = false
+
+| gate | status | why | evidence |
+|---|---|---|---|
+| DEP-01 | PASS | Real first tool call cited (M0.4, M8.5); launcher identity reproduced 3/3; module graph hashed. | qualification/results/M0.4-first-toolcall/A03-first-toolcall.txt |
+| DEP-02 | PASS | New 112-case spec installed at schema_version 2; all NOT_RUN; no old PASS migrates; id spaces disjoint. | qualification/specs/acceptance-spec.json |
+| DEP-03 | PASS | The whole-tree check config exits 0 with tests included, while the build config excludes tests and exits 0 with or without them (the false pass this gate catches). Zero `any` bypass, zero deep private import. | qualification/results/M-DEP-SEC-UPG/typecheck-errors.txt |
+| DEP-04 | NOT_RUN | No SSH execution world exists on this deployment; the one-world contract is verified in the pinned checkout, and the local world is asserted. The SSH half cannot be run. | qualification/results/M-DEP-SEC-UPG/FINDINGS.md |
+| DEP-05 | PASS | A confining executor declares sandbox/sandboxPolicy in inject and cannot activate without them; terminal-bash refuses at spawn inside the confined branch; the policy default is read-only. | packages/dsh-daily-work/src/dep-gates.test.ts |
+| DEP-06 | PASS | A REAL second process is refused with HomeLockHeldError naming the holder; the A/B interleaving is reproduced and the kernel-handle fix is measured. | packages/dsh-daily-work/src/dep-gates.test.ts |
+| DEP-07 | PASS | A SIGKILLed holder frees the store with no stale-lock surgery; a live holder is refused twice before the kill (no TTL theft). | packages/dsh-daily-work/src/dep-gates.test.ts |
+| DEP-08 | PASS | An injected test-file type error makes the check config exit non-zero (TS2322 in the test file) while the build config still exits 0; removing it restores exit 0. | packages/dsh-daily-work/src/dep-gates.test.ts |
+| SEC-01 | FAIL | A confined child READS outside the workspace under both modes; HOME/DSH_HOME credential files are readable. The boundary is writes only and the seam has no read lever. | qualification/results/M9.3-security-denial/FINDINGS.md |
+| SEC-02 | PASS | No control-plane surface is in the tool catalog (23 checked, zero exposed); the registry refuses every control-plane name; loopback answers 401/403; terminalController is never mounted or called. | qualification/results/M9.19-control-plane/FINDINGS.md |
+| SEC-03 | FAIL | A confined child completes a real HTTP round trip to loopback and CONNECTS to a LAN address; DNS resolves public and private names. No OS or gateway boundary intercepts. | qualification/results/M9.3-security-denial/FINDINGS.md |
+| SEC-04 | PASS | Address policy refuses loopback/link-local/private/mapped/transition classes; a mixed answer set is refused whole; cross-origin and credentialed redirects are refused; the transport pins the validated set. | packages/dsh-daily-work/src/sec-gates.test.ts |
+| SEC-05 | PASS | A symlink escape is refused with FS_SANDBOX_DENIED at the canonical-target boundary; the outside file is byte-identical; containment compares dev/ino when spellings differ. | packages/dsh-daily-work/src/sec-gates.test.ts |
+| SEC-06 | FAIL | The run-record epoch guard exists and is tested but has NO production importer: the field is inert (G-SEAM-21). The kernel park/reset half is NOT_RUN (no kernel plane). | docs/GAPS.md#G-SEAM-21 |
+| SEC-07 | PASS | No source claims a cell id isolates malicious code; the transport limit (plaintext TCP by default) is recorded; cross-Session and host refusals hold. | qualification/results/M11-ipython/TRANSPORT-FINDINGS.md |
+| SEC-08 | NOT_RUN | No runtime role migration exists; isolation is by separate store plus the home lock, which is the mechanism this deployment has. The architecture requires a separate execution world per read-permission domain, which is not built. | docs/GAPS.md |
+| UPG-01 | PASS | The package ships built output its exports point at; every production source has a compiled counterpart; the profile links the package and declares the bundle; no absolute source path in any patch. | qualification/results/M9.17-b02-resolver/FINDINGS.md |
+| UPG-02 | PASS | A newer Session version is refused as unsupported naming both versions; an unknown non-ignorable event FAILS at finish() while the same event with ignorable:true is retained. | packages/dsh-daily-work/src/upg-gates.test.ts |
+| UPG-03 | PASS | Old and new spill locators coexist in session-scoped directories; the sweep is exact-shape and never touches a foreign directory; permissions are declared 0700/0600. | packages/dsh-daily-work/src/upg-gates.test.ts |
+| UPG-04 | PASS | A store copied to a new directory is byte-identical and reopens with the same runs; the record shape has no kernel field; the artifact primitive is content-addressed with a verified digest. | packages/dsh-daily-work/src/upg-gates.test.ts |
+| UPG-05 | PASS | A newer unit version is refused with StorageError/version-mismatch and the bytes are untouched; the rehearsal keeps the remote counter at 1 after rollback. | qualification/results/M9.20-real-tasks/u06-rollback.mjs |
+| UPG-06 | FAIL | The spill sweep IS age-based with no reference input: a still-referenced spill artifact older than the cutoff IS deleted. The content-addressed store survives only because it has no collector at all. | packages/dsh-daily-work/src/upg-gates.test.ts |
+| UPG-07 | BLOCKED_EXTERNAL | live_provider_budget_authorized: false in compatibility.lock.json; the spec says a mock result does not substitute. No live 30-provider run is attempted or faked. | compatibility.lock.json |
+| UPG-08 | NOT_RUN | This row: the verdict itself. Computed below from the table. | qualification/results/M-DEP-SEC-UPG/FINDINGS.md |
+
+## Blocking gates
+
+- DEP-04 (NOT_RUN): No SSH execution world exists on this deployment; the one-world contract is verified in the pinned checkout, and the local world is asserted. The SSH half cannot be run.
+  evidence: qualification/results/M-DEP-SEC-UPG/FINDINGS.md
+- SEC-01 (FAIL): A confined child READS outside the workspace under both modes; HOME/DSH_HOME credential files are readable. The boundary is writes only and the seam has no read lever.
+  evidence: qualification/results/M9.3-security-denial/FINDINGS.md
+- SEC-03 (FAIL): A confined child completes a real HTTP round trip to loopback and CONNECTS to a LAN address; DNS resolves public and private names. No OS or gateway boundary intercepts.
+  evidence: qualification/results/M9.3-security-denial/FINDINGS.md
+- SEC-06 (FAIL): The run-record epoch guard exists and is tested but has NO production importer: the field is inert (G-SEAM-21). The kernel park/reset half is NOT_RUN (no kernel plane).
+  evidence: docs/GAPS.md#G-SEAM-21
+- SEC-08 (NOT_RUN): No runtime role migration exists; isolation is by separate store plus the home lock, which is the mechanism this deployment has. The architecture requires a separate execution world per read-permission domain, which is not built.
+  evidence: docs/GAPS.md
+- UPG-06 (FAIL): The spill sweep IS age-based with no reference input: a still-referenced spill artifact older than the cutoff IS deleted. The content-addressed store survives only because it has no collector at all.
+  evidence: packages/dsh-daily-work/src/upg-gates.test.ts
+- UPG-07 (BLOCKED_EXTERNAL): live_provider_budget_authorized: false in compatibility.lock.json; the spec says a mock result does not substitute. No live 30-provider run is attempted or faked.
+  evidence: compatibility.lock.json
+- UPG-08 (NOT_RUN): This row: the verdict itself. Computed below from the table.
+  evidence: qualification/results/M-DEP-SEC-UPG/FINDINGS.md

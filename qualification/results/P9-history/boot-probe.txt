@@ -1,0 +1,3 @@
+M7-HISTORY: {"dailyHistoryServicePresent":true,"sessionQueryServicePresent":true,"historyAvailable":true,"createdSessionId":"session-3c09c4e5-8683-4520-9083-0d236c9f05ed","selfRead":{"eventCount":3,"exhausted":true,"watermarkSeq":2,"generation":1},"foreignReadRefused":true,"foreignRefusalCode":"HISTORY_SESSION_UNAUTHORIZED","pageTraversal":{"pages":1,"replayCount":1},"provenanceRecord":{"completeness":"partial","gapRecovery":["refetch"],"hashProves":"object identity and integrity only; not truth, and not the correctness of any conclusion"},"untrustedContent":{"trust":"untrusted-data","findingCount":2,"findingIds":["imperative-command","authority-claim"]},"error":null}
+dsh web: http://127.0.0.1:3080/?token=lfRtOeKTzaWE69jZByVNXwvguyIz6GFezhdfLALx-84
+boot_exit=127

@@ -1,0 +1,36 @@
+{
+  "probe": "M2-scope",
+  "ranAt": "2026-09-19T18:17:25.256Z",
+  "servicePresent": true,
+  "interface": [
+    "open:function",
+    "close:function",
+    "closeAll:function",
+    "openCount:function",
+    "store:object"
+  ],
+  "registeredTool": true,
+  "valueDelivery": "probe:value-route",
+  "referenceDelivery": {
+    "kind": "scope-reference",
+    "bytes": 23,
+    "recovers": true
+  },
+  "dispositions": [
+    {
+      "name": "m2_scope_probe",
+      "disposition": "settled",
+      "nested": false
+    },
+    {
+      "name": "m2_scope_probe",
+      "disposition": "settled",
+      "nested": false
+    }
+  ],
+  "errors": [],
+  "openAfterClose": 0,
+  "notices": 0,
+  "content": 0,
+  "conclusions": 0
+}

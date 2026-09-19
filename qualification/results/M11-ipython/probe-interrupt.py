@@ -82,7 +82,11 @@ try:
     time.sleep(1.5)
     t0 = time.time()
     ctrl = k.km.connect_control()
-    ctrl.send(k.km.session.msg("interrupt_request", content={}))
+    # The message must be SENT through the session, which signs it and adds the
+    # identity envelope. Handing the raw dict to `socket.send` fails with
+    # "a bytes-like object is required, not 'dict'" -- an earlier version of this
+    # probe did exactly that and its traceback is what the first run recorded.
+    k.km.session.send(ctrl, "interrupt_request", content={})
     got = None
     deadline = time.time() + 6
     while time.time() < deadline:
@@ -123,17 +127,22 @@ try:
     except Exception as exc:  # noqa: BLE001
         RESULTS.setdefault("shutdown_wedged_error", repr(exc)[:300])
     time.sleep(1.0)
+    # encoding='utf-8', errors='replace' is required, not tidiness: this console
+    # emits OEM-encoded bytes, and a strict UTF-8 decode raises inside the
+    # reader thread and leaves `stdout` as None -- which then fails with an
+    # AttributeError far from the real cause. The probe records bytes as text
+    # rather than crashing on an encoding it does not control.
     probe = subprocess.run(
         ["tasklist", "/FI", f"PID eq {pid}", "/NH"],
-        capture_output=True, text=True, check=False,
+        capture_output=True, text=True, encoding="utf-8", errors="replace", check=False,
     )
     RESULTS["reset_wedged_kernel"] = {
         "wedged": wedged,
         "shutdown_now_returned": killed,
         "shutdown_seconds": round(time.time() - t0, 2),
         "pid": pid,
-        "tasklist": probe.stdout.strip()[:200],
-        "still_present": str(pid) in probe.stdout,
+        "tasklist": (probe.stdout or "").strip()[:200],
+        "still_present": str(pid) in (probe.stdout or ""),
     }
 finally:
     k.close()

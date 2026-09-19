@@ -1,0 +1,57 @@
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.8 [39m[90mD:/DSH/work/dsh-native-daily/packages/dsh-daily-work[39m
+
+ [32m✓[39m src/verification-gates.test.ts[2m > [22mVER-01/VER-02: a green exit code over no executed test is not a pass[2m > [22mVER-01: the runner exits 0 having collected no test, and the verdict is NOT PASS[33m 710[2mms[22m[39m
+ [32m✓[39m src/verification-gates.test.ts[2m > [22mVER-01/VER-02: a green exit code over no executed test is not a pass[2m > [22mVER-02: every test skipped is NOT PASS, and the child still exited 0[33m 707[2mms[22m[39m
+ [32m✓[39m src/verification-gates.test.ts[2m > [22mVER-01/VER-02: a green exit code over no executed test is not a pass[2m > [22mVER-01/VER-02: a PASS that declared no counts is refused as evidence of real tests[32m 201[2mms[22m[39m
+ [32m✓[39m src/verification-gates.test.ts[2m > [22mVER-01/VER-02: a green exit code over no executed test is not a pass[2m > [22mVER-01: a runner that never reported at all is NOT PASS either, and is a DIFFERENT outcome[32m 202[2mms[22m[39m
+ [32m✓[39m src/verification-gates.test.ts[2m > [22mVER-03: a candidate cannot weaken the protected acceptance[2m > [22ma weakened threshold carrying the authorized digest is REFUSED, not run[32m 185[2mms[22m[39m
+ [32m✓[39m src/verification-gates.test.ts[2m > [22mVER-03: a candidate cannot weaken the protected acceptance[2m > [22mMEASURED GAP: an oracle outside `inputs` is neither covered by any digest NOR frozen[33m 720[2mms[22m[39m
+ [32m✓[39m src/verification-gates.test.ts[2m > [22mVER-03: a candidate cannot weaken the protected acceptance[2m > [22mCLOSURE: an oracle digest taken outside the candidate refuses a receipt whose oracle changed[32m 7[2mms[22m[39m
+ [32m✓[39m src/verification-gates.test.ts[2m > [22mVER-03: a candidate cannot weaken the protected acceptance[2m > [22mCLOSURE: a receipt from another machine is refused, so a verdict is bound to the environment that produced it[32m 3[2mms[22m[39m
+ [32m✓[39m src/verification-gates.test.ts[2m > [22mVER-03: a candidate cannot weaken the protected acceptance[2m > [22mCLOSURE: observedBasis re-reads the tree, so a caller cannot pass the record in as the observation[32m 9[2mms[22m[39m
+ [32m✓[39m src/verification-gates.test.ts[2m > [22mVER-03: a candidate cannot weaken the protected acceptance[2m > [22mCLOSURE: declaring the oracle as an input makes the snapshot cover it, so a live rewrite cannot reach the run[33m 897[2mms[22m[39m
+ [32m✓[39m src/verification-gates.test.ts[2m > [22mVER-03: a candidate cannot weaken the protected acceptance[2m > [22mthe oracle digest is not the candidate digest: an undeclared oracle file still moves it[32m 7[2mms[22m[39m
+ [32m✓[39m src/verification-gates.test.ts[2m > [22mVER-04: what the verification environment genuinely enforces[2m > [22mENFORCED: the untrusted candidate inherits no host credential and no DSH_* name[32m 217[2mms[22m[39m
+ [32m✓[39m src/verification-gates.test.ts[2m > [22mVER-04: what the verification environment genuinely enforces[2m > [22mNOT ENFORCED — VER-04 FAIL: the candidate CAN read a host file outside its snapshot[32m 218[2mms[22m[39m
+ [32m✓[39m src/verification-gates.test.ts[2m > [22mVER-04: what the verification environment genuinely enforces[2m > [22mNOT ENFORCED — VER-04 FAIL: the candidate CAN open a network connection[32m 251[2mms[22m[39m
+ [32m✓[39m src/verification-gates.test.ts[2m > [22mVER-04: what the verification environment genuinely enforces[2m > [22mENFORCED: the candidate gets an argv and a cwd and nothing else — no control-plane handle[32m 217[2mms[22m[39m
+ [32m✓[39m src/verification-gates.test.ts[2m > [22mVER-04: what the verification environment genuinely enforces[2m > [22mHONEST LABEL: the runner states what its digest does NOT cover[33m 446[2mms[22m[39m
+ [32m✓[39m src/verification-gates.test.ts[2m > [22mVER-05: an old verdict cannot be reused as a current completion[2m > [22mthe receipt is refused after the WORKSPACE changes[32m 219[2mms[22m[39m
+ [32m✓[39m src/verification-gates.test.ts[2m > [22mVER-05: an old verdict cannot be reused as a current completion[2m > [22mthe receipt is refused after the ORACLE changes, with the workspace untouched[32m 4[2mms[22m[39m
+ [32m✓[39m src/verification-gates.test.ts[2m > [22mVER-05: an old verdict cannot be reused as a current completion[2m > [22mthe receipt is refused after the ENVIRONMENT changes[32m 3[2mms[22m[39m
+ [32m✓[39m src/verification-gates.test.ts[2m > [22mVER-05: an old verdict cannot be reused as a current completion[2m > [22ma FRESH receipt is still checked for PASSED, so freshness is never a verdict[32m 196[2mms[22m[39m
+ [32m✓[39m src/verification-gates.test.ts[2m > [22mVER-06: A->B->A during verification, over tree AND oracle AND config[2m > [22mtwo-arm proof: the frozen copy is what is tested, and endpoint hashing cannot see the tamper[33m 5517[2mms[22m[39m
+ [32m✓[39m src/verification-gates.test.ts[2m > [22mVER-06: A->B->A during verification, over tree AND oracle AND config[2m > [22ma command that rewrites its own declared input inside the snapshot yields unknown, not pass[33m 1064[2mms[22m[39m
+ [32m✓[39m src/verification-gates.test.ts[2m > [22mVER-07: a request to complete while a background mutation is still running[2m > [22mfreezing while a writer still holds the workspace is REFUSED as in-flight[33m 1591[2mms[22m[39m
+ [32m✓[39m src/verification-gates.test.ts[2m > [22mVER-07: a request to complete while a background mutation is still running[2m > [22ma workspace still changing under the sampler is refused; only a stable one converges[33m 1820[2mms[22m[39m
+ [32m✓[39m src/verification-gates.test.ts[2m > [22mVER-07: a request to complete while a background mutation is still running[2m > [22mthe structural invariant: a refusal NEVER carries a digest[33m 1524[2mms[22m[39m
+ [32m✓[39m src/verification-gates.test.ts[2m > [22mVER-08: after a verification failure a legitimate recovery can continue[2m > [22ma failed acceptance leaves the run resumable: pause does NOT use the permanent family drain[32m 158[2mms[22m[39m
+ [32m✓[39m src/verification-gates.test.ts[2m > [22mVER-08: after a verification failure a legitimate recovery can continue[2m > [22ma failed acceptance is a RECEIPT, not a throw, so the caller can recover and retry[33m 511[2mms[22m[39m
+ [32m✓[39m src/verification-gates.test.ts[2m > [22mwriter isolation: one writer, one workspace, one lease[2m > [22mbinds the writer cwd to its own workspace, on its own branch, at the exact base[33m 1447[2mms[22m[39m
+ [32m✓[39m src/verification-gates.test.ts[2m > [22mwriter isolation: one writer, one workspace, one lease[2m > [22mgives each writer its own branch and its own paths, so two writers cannot collide[33m 3005[2mms[22m[39m
+ [32m✓[39m src/verification-gates.test.ts[2m > [22mwriter isolation: one writer, one workspace, one lease[2m > [22mREFUSES a second writer on the same workspace, in this process and on disk[33m 2882[2mms[22m[39m
+ [32m✓[39m src/verification-gates.test.ts[2m > [22mwriter isolation: one writer, one workspace, one lease[2m > [22mreleases the lease on demand, leaving no branch, directory or lock behind[33m 1944[2mms[22m[39m
+ [32m✓[39m src/verification-gates.test.ts[2m > [22mW02: a git worktree is NOT a security boundary, and the code says so[2m > [22mMEASURED: a writer inside a worktree CAN move a shared ref, write shared config, and plant a shared hook[33m 1899[2mms[22m[39m
+(node:43164) MaxListenersExceededWarning: Possible EventEmitter memory leak detected. 11 exit listeners added to [process]. MaxListeners is 10. Use emitter.setMaxListeners() to increase limit
+(Use `node --trace-warnings ...` to show where the warning was created)
+ [32m✓[39m src/verification-gates.test.ts[2m > [22mW02: a git worktree is NOT a security boundary, and the code says so[2m > [22mwhat git DOES enforce: the integration branch cannot be checked out inside a writer worktree[33m 1538[2mms[22m[39m
+ [32m✓[39m src/verification-gates.test.ts[2m > [22mW02: a git worktree is NOT a security boundary, and the code says so[2m > [22mDETECTION is the honest claim: the shared-metadata digest catches every one of those mutations[33m 3697[2mms[22m[39m
+ [32m✓[39m src/verification-gates.test.ts[2m > [22mW02: a git worktree is NOT a security boundary, and the code says so[2m > [22ma CLONE is a real boundary: a writer can mutate its own everything and the root is byte-identical[33m 3193[2mms[22m[39m
+ [32m✓[39m src/verification-gates.test.ts[2m > [22mthe root is the single integration authority, and it does not merge[2m > [22maccepts a clean candidate on the exact base, and binds the patch by digest[33m 4535[2mms[22m[39m
+ [32m✓[39m src/verification-gates.test.ts[2m > [22mthe root is the single integration authority, and it does not merge[2m > [22mREFUSES a candidate whose base is not the revision the root expected[33m 2714[2mms[22m[39m
+ [32m✓[39m src/verification-gates.test.ts[2m > [22mthe root is the single integration authority, and it does not merge[2m > [22mREFUSES a conflicting candidate and returns it to the root — there is no auto-merge[33m 3126[2mms[22m[39m
+ [32m✓[39m src/verification-gates.test.ts[2m > [22mthe root is the single integration authority, and it does not merge[2m > [22mREFUSES a candidate that changed a path outside the allowed scope[33m 2693[2mms[22m[39m
+ [32m✓[39m src/verification-gates.test.ts[2m > [22mthe root is the single integration authority, and it does not merge[2m > [22mREFUSES a candidate with no receipt, and one whose receipt claims a pass with no tests[33m 3476[2mms[22m[39m
+ [32m✓[39m src/verification-gates.test.ts[2m > [22mthe root is the single integration authority, and it does not merge[2m > [22ma writer cannot publish: the precondition takes the ref as an input, and no merge verb exists[33m 1372[2mms[22m[39m
+ [32m✓[39m src/verification-gates.test.ts[2m > [22mthe root is the single integration authority, and it does not merge[2m > [22mthe module contains no merge verb: every git subcommand it runs is read-only or workspace-lifecycle[32m 1[2mms[22m[39m
+ [32m✓[39m src/verification-gates.test.ts[2m > [22mthe writer service has a production entry point, not just a module[2m > [22mthe package declares a `writers` export that resolves to the plugin, and the plugin mounts a real service[33m 2942[2mms[22m[39m
+ [32m✓[39m src/verification-gates.test.ts[2m > [22mthe writer service has a production entry point, not just a module[2m > [22mthe plugin declares no hard `inject`, so a deployment without a subprocess provider can still boot and REPORT[32m 2[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[32m44 passed[39m[22m[90m (44)[39m
+[2m   Start at [22m 02:22:34
+[2m   Duration [22m 68.48s[2m (transform 584ms, setup 0ms, import 769ms, tests 67.54s, environment 0ms)[22m
+
+
+test_exit=0

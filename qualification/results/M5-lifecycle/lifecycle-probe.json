@@ -1,0 +1,655 @@
+{
+  "_stderr": [
+    {
+      "section": "late_output",
+      "exit": 0,
+      "stderr": ""
+    },
+    {
+      "section": "flood",
+      "exit": 0,
+      "stderr": ""
+    },
+    {
+      "section": "cancel_under_flood",
+      "exit": 0,
+      "stderr": ""
+    },
+    {
+      "section": "cpu_interrupt",
+      "exit": 0,
+      "stderr": ""
+    },
+    {
+      "section": "await_interrupt",
+      "exit": 0,
+      "stderr": ""
+    },
+    {
+      "section": "reuse_after_wedged",
+      "exit": 0,
+      "stderr": ""
+    },
+    {
+      "section": "stdin_disabled",
+      "exit": 0,
+      "stderr": ""
+    },
+    {
+      "section": "mime_payload",
+      "exit": 0,
+      "stderr": ""
+    },
+    {
+      "section": "regex_catastrophic",
+      "exit": 0,
+      "stderr": ""
+    },
+    {
+      "section": "memory_hold",
+      "exit": 0,
+      "stderr": ""
+    },
+    {
+      "section": "restart_after_restart",
+      "exit": 0,
+      "stderr": ""
+    },
+    {
+      "section": "kill_and_restart",
+      "exit": 0,
+      "stderr": ""
+    }
+  ],
+  "late_output": {
+    "ready": {
+      "ev": "ready",
+      "pid": 40812,
+      "encrypted": true,
+      "transport": "tcp",
+      "kernelName": "python3"
+    },
+    "settled": {
+      "ev": "settled",
+      "cellId": "c-late",
+      "parent": "66fe8592-0bc58dff82c8d74cce202438_38200_2",
+      "replySeen": true,
+      "idleSeen": true,
+      "status": "ok",
+      "ename": null,
+      "evalue": null,
+      "executionCount": 1,
+      "seconds": 0.075,
+      "emittedBytes": 10,
+      "totalBytes": 10,
+      "truncated": false,
+      "streamMessages": 1,
+      "mimeMessages": 0,
+      "foreignFrames": 1,
+      "timedOut": false
+    },
+    "outputs": [
+      {
+        "ev": "output",
+        "cellId": "c-late",
+        "parent": "66fe8592-0bc58dff82c8d74cce202438_38200_2",
+        "msgType": "execute_input",
+        "bytes": 0,
+        "truncated": false
+      },
+      {
+        "ev": "output",
+        "cellId": "c-late",
+        "parent": "66fe8592-0bc58dff82c8d74cce202438_38200_2",
+        "msgType": "stream",
+        "name": "stdout",
+        "text": "cell-done\n",
+        "bytes": 10,
+        "truncated": false
+      }
+    ],
+    "lateFrames": [
+      {
+        "ev": "late_frame",
+        "msgType": "stream",
+        "parent": "66fe8592-0bc58dff82c8d74cce202438_38200_2",
+        "sinceCell": "c-late",
+        "sinceParent": "66fe8592-0bc58dff82c8d74cce202438_38200_2",
+        "belongsToSettledCell": true,
+        "text": "LATE-FROM-THREAD\n",
+        "bytes": 17,
+        "name": "stdout",
+        "executionState": null
+      }
+    ],
+    "foreign": [
+      {
+        "ev": "foreign",
+        "cellId": "c-late",
+        "chan": "shell",
+        "msgType": "kernel_info_reply",
+        "parent": "66fe8592-0bc58dff82c8d74cce202438_38200_1",
+        "requested": "66fe8592-0bc58dff82c8d74cce202438_38200_2"
+      }
+    ]
+  },
+  "flood": {
+    "ready": {
+      "ev": "ready",
+      "pid": 16368,
+      "encrypted": true,
+      "transport": "tcp",
+      "kernelName": "python3"
+    },
+    "settled": {
+      "ev": "settled",
+      "cellId": "c-flood",
+      "parent": "cf915c67-242ce2968b5bcaaf9e422b84_33404_2",
+      "replySeen": true,
+      "idleSeen": true,
+      "status": "error",
+      "ename": "NameError",
+      "evalue": "name 'sys' is not defined",
+      "executionCount": 1,
+      "seconds": 0.473,
+      "emittedBytes": 0,
+      "totalBytes": 0,
+      "truncated": false,
+      "streamMessages": 0,
+      "mimeMessages": 0,
+      "foreignFrames": 1,
+      "timedOut": false
+    },
+    "outputCount": 2,
+    "outputBytesEmitted": 0,
+    "rss": {
+      "ev": "rss",
+      "self": 70131712,
+      "kernel": 80216064
+    }
+  },
+  "cancel_under_flood": {
+    "ready": {
+      "ev": "ready",
+      "pid": 38840,
+      "encrypted": true,
+      "transport": "tcp",
+      "kernelName": "python3"
+    },
+    "settled": {
+      "ev": "settled",
+      "cellId": "c-cancel",
+      "parent": "b496363a-6747c068599449b2b5dc885b_43552_2",
+      "replySeen": true,
+      "idleSeen": true,
+      "status": "error",
+      "ename": "NameError",
+      "evalue": "name 'sys' is not defined",
+      "executionCount": 1,
+      "seconds": 0.458,
+      "emittedBytes": 0,
+      "totalBytes": 0,
+      "truncated": false,
+      "streamMessages": 0,
+      "mimeMessages": 0,
+      "foreignFrames": 1,
+      "timedOut": false
+    },
+    "interruptSent": [],
+    "interruptDone": [],
+    "controlLatencySeconds": 0.458,
+    "outputCount": 2
+  },
+  "cpu_interrupt": {
+    "ready": {
+      "ev": "ready",
+      "pid": 41768,
+      "encrypted": true,
+      "transport": "tcp",
+      "kernelName": "python3"
+    },
+    "settled": {
+      "ev": "settled",
+      "cellId": "c-cpu",
+      "parent": "3d75250f-161be3e2700a50bbf37e4ee5_33072_2",
+      "replySeen": true,
+      "idleSeen": true,
+      "status": "error",
+      "ename": "KeyboardInterrupt",
+      "evalue": "",
+      "executionCount": 1,
+      "seconds": 1.641,
+      "emittedBytes": 0,
+      "totalBytes": 0,
+      "truncated": false,
+      "streamMessages": 0,
+      "mimeMessages": 0,
+      "foreignFrames": 1,
+      "timedOut": false
+    },
+    "interruptDone": [
+      {
+        "ev": "interrupt_done",
+        "cellId": "c-cpu",
+        "seconds": 0.002,
+        "error": null
+      }
+    ]
+  },
+  "await_interrupt": {
+    "ready": {
+      "ev": "ready",
+      "pid": 41664,
+      "encrypted": true,
+      "transport": "tcp",
+      "kernelName": "python3"
+    },
+    "settled": {
+      "ev": "settled",
+      "cellId": "c-await",
+      "parent": "e711ee1b-62fdde6b98ea10ee00aba84e_35996_2",
+      "replySeen": false,
+      "idleSeen": false,
+      "status": null,
+      "ename": null,
+      "evalue": null,
+      "executionCount": null,
+      "seconds": 25.157,
+      "emittedBytes": 0,
+      "totalBytes": 0,
+      "truncated": false,
+      "streamMessages": 0,
+      "mimeMessages": 0,
+      "foreignFrames": 1,
+      "timedOut": true
+    },
+    "interruptSent": [
+      {
+        "ev": "interrupt_sent",
+        "cellId": "c-await",
+        "at": 1789838775.7265716
+      }
+    ],
+    "interruptDone": [
+      {
+        "ev": "interrupt_done",
+        "cellId": "c-await",
+        "seconds": 0.001,
+        "error": null
+      }
+    ],
+    "secondInterruptDone": {
+      "ev": "interrupt_done",
+      "cellId": "c-await",
+      "seconds": 0.001,
+      "error": null
+    },
+    "aliveAfter": {
+      "ev": "alive",
+      "pid": 41664,
+      "alive": true
+    },
+    "pingAfter": {
+      "ev": "pong",
+      "id": "busy-check",
+      "at": 1789838799.2524912,
+      "busy": false
+    }
+  },
+  "reuse_after_wedged": {
+    "ready": {
+      "ev": "ready",
+      "pid": 42572,
+      "encrypted": true,
+      "transport": "tcp",
+      "kernelName": "python3"
+    },
+    "secondCellOutcome": {
+      "ev": "settled",
+      "cellId": "c-after",
+      "parent": "cf7649e8-dd3b33db18bbaf3c63887a09_42732_3",
+      "replySeen": true,
+      "idleSeen": true,
+      "status": "aborted",
+      "ename": null,
+      "evalue": null,
+      "executionCount": null,
+      "seconds": 0.598,
+      "emittedBytes": 0,
+      "totalBytes": 0,
+      "truncated": false,
+      "streamMessages": 0,
+      "mimeMessages": 0,
+      "foreignFrames": 3,
+      "timedOut": false
+    },
+    "secondCellOutput": []
+  },
+  "stdin_disabled": {
+    "ready": {
+      "ev": "ready",
+      "pid": 44732,
+      "encrypted": true,
+      "transport": "tcp",
+      "kernelName": "python3"
+    },
+    "settled": {
+      "ev": "settled",
+      "cellId": "c-stdin",
+      "parent": "7b8aea00-3a6100b570ddb92be0b63a66_40364_2",
+      "replySeen": true,
+      "idleSeen": true,
+      "status": "error",
+      "ename": "StdinNotImplementedError",
+      "evalue": "raw_input was called, but this frontend does not support input requests.",
+      "executionCount": 1,
+      "seconds": 0.552,
+      "emittedBytes": 0,
+      "totalBytes": 0,
+      "truncated": false,
+      "streamMessages": 0,
+      "mimeMessages": 0,
+      "foreignFrames": 1,
+      "timedOut": false
+    },
+    "outputs": [
+      {
+        "ev": "output",
+        "cellId": "c-stdin",
+        "parent": "7b8aea00-3a6100b570ddb92be0b63a66_40364_2",
+        "msgType": "execute_input",
+        "bytes": 0,
+        "truncated": false
+      },
+      {
+        "ev": "output",
+        "cellId": "c-stdin",
+        "parent": "7b8aea00-3a6100b570ddb92be0b63a66_40364_2",
+        "msgType": "error",
+        "ename": "StdinNotImplementedError",
+        "evalue": "raw_input was called, but this frontend does not support input requests.",
+        "tracebackLines": 5,
+        "bytes": 0,
+        "truncated": false
+      }
+    ]
+  },
+  "mime_payload": {
+    "ready": {
+      "ev": "ready",
+      "pid": 36696,
+      "encrypted": true,
+      "transport": "tcp",
+      "kernelName": "python3"
+    },
+    "settled": {
+      "ev": "settled",
+      "cellId": "c-mime",
+      "parent": "c7966f71-34a143c5a4fb2d695b0daf7d_40964_2",
+      "replySeen": true,
+      "idleSeen": true,
+      "status": "ok",
+      "ename": null,
+      "evalue": null,
+      "executionCount": 1,
+      "seconds": 0.091,
+      "emittedBytes": 0,
+      "totalBytes": 200041,
+      "truncated": false,
+      "streamMessages": 0,
+      "mimeMessages": 1,
+      "foreignFrames": 1,
+      "timedOut": false
+    },
+    "outputs": [
+      {
+        "ev": "output",
+        "cellId": "c-mime",
+        "parent": "c7966f71-34a143c5a4fb2d695b0daf7d_40964_2",
+        "msgType": "execute_input",
+        "bytes": 0,
+        "truncated": false
+      },
+      {
+        "ev": "output",
+        "cellId": "c-mime",
+        "parent": "c7966f71-34a143c5a4fb2d695b0daf7d_40964_2",
+        "msgType": "execute_result",
+        "mimeTypes": [
+          "text/html",
+          "text/plain"
+        ],
+        "mimeSizes": {
+          "text/plain": 34,
+          "text/html": 200007
+        },
+        "bytes": 200041,
+        "truncated": true
+      }
+    ]
+  },
+  "regex_catastrophic": {
+    "ready": {
+      "ev": "ready",
+      "pid": 42224,
+      "encrypted": true,
+      "transport": "tcp",
+      "kernelName": "python3"
+    },
+    "settled": {
+      "ev": "settled",
+      "cellId": "c-crec",
+      "parent": "7671ae86-40f3a3fea061a8c59e48111a_32964_1",
+      "replySeen": false,
+      "idleSeen": false,
+      "status": null,
+      "ename": null,
+      "evalue": null,
+      "executionCount": null,
+      "seconds": 12.158,
+      "emittedBytes": 0,
+      "totalBytes": 0,
+      "truncated": false,
+      "streamMessages": 0,
+      "mimeMessages": 0,
+      "foreignFrames": 0,
+      "timedOut": true
+    },
+    "interruptDone": [
+      {
+        "ev": "interrupt_done",
+        "cellId": "c-crec",
+        "seconds": 0.002,
+        "error": null
+      }
+    ]
+  },
+  "memory_hold": {
+    "ready": {
+      "ev": "ready",
+      "pid": 36992,
+      "encrypted": true,
+      "transport": "tcp",
+      "kernelName": "python3"
+    },
+    "settled": {
+      "ev": "settled",
+      "cellId": "c-mem",
+      "parent": "cef45e74-562104ed2ed12b3e3e310a90_41212_1",
+      "replySeen": true,
+      "idleSeen": true,
+      "status": "ok",
+      "ename": null,
+      "evalue": null,
+      "executionCount": 1,
+      "seconds": 0.182,
+      "emittedBytes": 20,
+      "totalBytes": 20,
+      "truncated": false,
+      "streamMessages": 1,
+      "mimeMessages": 0,
+      "foreignFrames": 0,
+      "timedOut": false
+    },
+    "rssWithBigObject": {
+      "ev": "rss",
+      "self": 70631424,
+      "kernel": 89489408
+    }
+  },
+  "restart_after_restart": {
+    "ready": {
+      "ev": "ready",
+      "pid": 36396,
+      "encrypted": true,
+      "transport": "tcp",
+      "kernelName": "python3"
+    },
+    "before": {
+      "ev": "settled",
+      "cellId": "c-r1",
+      "parent": "e0f7b727-57e059e91624db41fd56fadc_28788_1",
+      "replySeen": true,
+      "idleSeen": true,
+      "status": "ok",
+      "ename": null,
+      "evalue": null,
+      "executionCount": 1,
+      "seconds": 0.106,
+      "emittedBytes": 6,
+      "totalBytes": 6,
+      "truncated": false,
+      "streamMessages": 1,
+      "mimeMessages": 0,
+      "foreignFrames": 0,
+      "timedOut": false
+    },
+    "restart1": {
+      "ev": "restarted",
+      "pid": 35800,
+      "error": null
+    },
+    "afterRestart1": {
+      "ev": "settled",
+      "cellId": "c-r2",
+      "parent": "e0f7b727-57e059e91624db41fd56fadc_28788_3",
+      "replySeen": true,
+      "idleSeen": true,
+      "status": "ok",
+      "ename": null,
+      "evalue": null,
+      "executionCount": 1,
+      "seconds": 0.106,
+      "emittedBytes": 6,
+      "totalBytes": 6,
+      "truncated": false,
+      "streamMessages": 1,
+      "mimeMessages": 0,
+      "foreignFrames": 0,
+      "timedOut": false
+    },
+    "afterRestart1Output": [
+      {
+        "ev": "output",
+        "cellId": "c-r2",
+        "parent": "e0f7b727-57e059e91624db41fd56fadc_28788_3",
+        "msgType": "execute_input",
+        "bytes": 0,
+        "truncated": false
+      },
+      {
+        "ev": "output",
+        "cellId": "c-r2",
+        "parent": "e0f7b727-57e059e91624db41fd56fadc_28788_3",
+        "msgType": "stream",
+        "name": "stdout",
+        "text": "False\n",
+        "bytes": 6,
+        "truncated": false
+      }
+    ],
+    "restart2": {
+      "ev": "restarted",
+      "pid": 34696,
+      "error": null
+    }
+  },
+  "kill_and_restart": {
+    "ready": {
+      "ev": "ready",
+      "pid": 40836,
+      "encrypted": true,
+      "transport": "tcp",
+      "kernelName": "python3"
+    },
+    "before": {
+      "ev": "settled",
+      "cellId": "c-hold",
+      "parent": "8e8decbd-9c41a35e10b4f6a4c42ef8ae_32596_2",
+      "replySeen": true,
+      "idleSeen": true,
+      "status": "ok",
+      "ename": null,
+      "evalue": null,
+      "executionCount": 1,
+      "seconds": 0.075,
+      "emittedBytes": 9,
+      "totalBytes": 9,
+      "truncated": false,
+      "streamMessages": 1,
+      "mimeMessages": 0,
+      "foreignFrames": 1,
+      "timedOut": false
+    },
+    "killed": {
+      "ev": "killed",
+      "pid": 40836,
+      "aliveBefore": true,
+      "aliveAfter": false
+    },
+    "restarted": {
+      "ev": "restarted",
+      "pid": 43148,
+      "error": null
+    },
+    "afterSettle": {
+      "ev": "settled",
+      "cellId": "c-after-kill",
+      "parent": "8e8decbd-9c41a35e10b4f6a4c42ef8ae_32596_4",
+      "replySeen": true,
+      "idleSeen": true,
+      "status": "ok",
+      "ename": null,
+      "evalue": null,
+      "executionCount": 1,
+      "seconds": 0.124,
+      "emittedBytes": 6,
+      "totalBytes": 6,
+      "truncated": false,
+      "streamMessages": 1,
+      "mimeMessages": 0,
+      "foreignFrames": 0,
+      "timedOut": false
+    },
+    "afterOutput": [
+      {
+        "ev": "output",
+        "cellId": "c-after-kill",
+        "parent": "8e8decbd-9c41a35e10b4f6a4c42ef8ae_32596_4",
+        "msgType": "execute_input",
+        "bytes": 0,
+        "truncated": false
+      },
+      {
+        "ev": "output",
+        "cellId": "c-after-kill",
+        "parent": "8e8decbd-9c41a35e10b4f6a4c42ef8ae_32596_4",
+        "msgType": "stream",
+        "name": "stdout",
+        "text": "False\n",
+        "bytes": 6,
+        "truncated": false
+      }
+    ]
+  }
+}

@@ -1,0 +1,8 @@
+=== tsc -p tsconfig.check.json (whole src tree, tests included) ===
+tsc_exit=0
+
+=== errors in M4-owned files (empty means clean) ===
+(end)
+
+=== total error lines in the tree, and the files they are in ===
+0

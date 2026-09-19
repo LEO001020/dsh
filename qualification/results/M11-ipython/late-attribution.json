@@ -1,0 +1,49 @@
+{
+  "A_no_second_cell": {
+    "cell1_msg_id": "cff28071-94c595eed6d1b0c8173a32fb_38724_2",
+    "cell1_streams": [
+      {
+        "parent": "cff28071-94c595eed6d1b0c8173a32fb_38724_2",
+        "text": "cell1-done\n"
+      }
+    ],
+    "late_after_settle": [
+      {
+        "parent": "cff28071-94c595eed6d1b0c8173a32fb_38724_2",
+        "text": "LATE-A\n"
+      }
+    ],
+    "late_parent_equals_cell1": true
+  },
+  "B_background_during_second_cell": {
+    "cell2_msg_id": "cff28071-94c595eed6d1b0c8173a32fb_38724_3",
+    "cell2_streams": [
+      {
+        "parent": "cff28071-94c595eed6d1b0c8173a32fb_38724_3",
+        "text": "cell2-done\n"
+      }
+    ],
+    "cell3_msg_id": "cff28071-94c595eed6d1b0c8173a32fb_38724_4",
+    "cell3_streams": [
+      {
+        "parent": "cff28071-94c595eed6d1b0c8173a32fb_38724_4",
+        "text": "LATE-B\n"
+      },
+      {
+        "parent": "cff28071-94c595eed6d1b0c8173a32fb_38724_4",
+        "text": "cell3-done\n"
+      }
+    ],
+    "late_b_parent_is_cell3": true,
+    "late_b_parent_is_cell2": false,
+    "verdict": "kernel attributes the background write to the MOST RECENT parent"
+  },
+  "C_context_in_thread": {
+    "streams": [
+      {
+        "parent": "cff28071-94c595eed6d1b0c8173a32fb_38724_5",
+        "text": "thread_has_own_context: {'contextvar': 'ok'}\n"
+      }
+    ]
+  }
+}

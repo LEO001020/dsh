@@ -1,0 +1,49 @@
+# W02 -- the raw git measurements behind 'a worktree is NOT a security boundary'
+# host: node v24.18.0 / git version 2.55.0.windows.3 / MINGW64_NT-10.0-26200
+# Every command below runs with its cwd INSIDE the writer's worktree unless the
+# prompt says otherwise. Nothing here is simulated: these are the actual exit
+# codes this platform returns. Exit codes are captured WITHOUT a pipe, because
+# 'cmd | head; echo $?' reports head's status and would silently read as 0.
+
+warning: in the working copy of 'app.txt', LF will be replaced by CRLF the next time Git touches it
+root base revision: 051be8dc04ffcc986ff8e9efc12b429e2cdef74e
+writer worktree:    /tmp/w02bw-Eam6ug/wt
+root common gitdir: C:/Users/hzq00/AppData/Local/Temp/w02b-uneAYv/.git
+writer gitdir:      C:/Users/hzq00/AppData/Local/Temp/w02b-uneAYv/.git/worktrees/wt
+writer commondir:   C:/Users/hzq00/AppData/Local/Temp/w02b-uneAYv/.git
+  ^ the writer's COMMON dir IS the root's. That is the sharing being measured.
+
+=== MUTATION 1: the writer moves the INTEGRATION branch ===
+warning: in the working copy of 'app.txt', LF will be replaced by CRLF the next time Git touches it
+$ git update-ref refs/heads/main 8429bbeff5f716a867de922889d25c10c9fe70c1
+exit=0   <-- 0 means it SUCCEEDED: not denied
+integration branch now: 8429bbeff5f716a867de922889d25c10c9fe70c1
+VERDICT: the integration branch REALLY MOVED. git does not deny this.
+
+=== MUTATION 2: the writer writes the SHARED config ===
+$ git config dailywork.hostile yes
+exit=0   <-- 0 means it SUCCEEDED
+read back from the COMMON config: yes
+VERDICT: the value landed in the SHARED .git/config, not a worktree-private file.
+
+=== MUTATION 3: the writer plants a hook the ROOT will run ===
+warning: in the working copy of 'app.txt', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'rootfile.txt', LF will be replaced by CRLF the next time Git touches it
+$ (root) git commit -m 'root commit'   [a hook written by the writer now exists]
+exit=0
+stderr: SHARED-HOOK-FIRED
+VERDICT: the hook planted from the writer's directory fired for a ROOT commit.
+
+=== WHAT GIT DOES ENFORCE: one branch cannot be checked out twice ===
+$ git checkout main
+exit=128   <-- 128 means REFUSED
+fatal: 'main' is already used by worktree at 'C:/Users/hzq00/AppData/Local/Temp/w02b-uneAYv'
+VERDICT: this is the ONE protection git provides for free, and it is why each
+         writer gets its OWN branch: the writer cannot reach the state where its
+         commit lands on the integration branch by ordinary means.
+
+=== AND THE HARDER FORM, which is why the code CHECKS rather than assumes ===
+         Mutation 1 above moved the integration ref from inside the worktree.
+         Branch separation stops the ORDINARY path, not a deliberate one, so the
+         code re-reads the protected refs and refuses a publication whose ref
+         moved. Detection is the honest claim; 'the writer cannot' is false here.

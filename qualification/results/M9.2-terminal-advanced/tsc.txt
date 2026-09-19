@@ -1,6 +1,6 @@
 command: tsc -p tsconfig.check.json
-PATH: /d/DSH/tools/bin:/d/DSH/src/dsh-src/node_modules/.bin:$PATH
 cwd: packages/dsh-daily-work
+PATH: /d/DSH/tools/bin:/d/DSH/src/dsh-src/node_modules/.bin:$PATH
 
 WHY THIS CONFIG AND NOT tsconfig.json:
   tsconfig.json excludes src/**/*.test.ts (correct for the build, so test code
@@ -10,30 +10,24 @@ WHY THIS CONFIG AND NOT tsconfig.json:
   keeps identical strict flags, and clears only the exclude, so a type error in a
   test file cannot hide. This is the config that makes the evidence real.
 
-NOTE: a nonzero exit below is NOT caused by this gate's file. The errors are in
-other slices' in-flight test files. The relevant claim is the per-file one:
+  AND IT EARNED ITS KEEP: switching to it immediately surfaced 2 real type errors
+  in this gate's own file (a boolean passed where string|number was required, in
+  two measured() calls). They are fixed. That is the false pass the old config was
+  hiding, caught by the config that actually covers the file.
+
+NOTE: the nonzero exit below is NOT caused by this gate's file. The remaining
+errors are in other slices' in-flight test files. The relevant claim is per-file:
 terminal-advanced.test.ts contributes 0 errors.
 
 --- full output ---
-src/__u04dbg.test.ts(37,5): error TS2322: Type 'URL' is not assignable to type 'string'.
-src/__u04dbg.test.ts(52,120): error TS2322: Type '"prompt"' is not assignable to type '"instructions" | "catalog" | "snapshot" | "notice" | "relay" | "recall" | undefined'.
-src/__u04dbg.test.ts(56,38): error TS2339: Property 'events' does not exist on type 'Session'.
-src/__u04dbg.test.ts(58,31): error TS2339: Property 'events' does not exist on type 'Session'.
-src/control-plane.test.ts(249,21): error TS2339: Property 'cordisInspectTools' does not exist on type '{ modelToolCatalog: string[]; modelToolCount: number; controlPlaneAsModelTool: Record<string, { exposedAsTool: boolean; authority: string; }>; }'.
 src/tool-protocol.test.ts(741,24): error TS2322: Type 'Promise<unknown>' is not assignable to type 'Promise<{ action: string; }>'.
   Type 'unknown' is not assignable to type '{ action: string; }'.
 src/tool-protocol.test.ts(1010,30): error TS2345: Argument of type '() => Promise<never>' is not assignable to parameter of type '(this: Scoped<ToolRuntime>, exec: Readonly<ToolExecution>, result: Readonly<ToolExecutionResult>) => undefined'.
   Type 'Promise<never>' is not assignable to type 'undefined'.
-src/u04-paired-comparison.test.ts(252,3): error TS2322: Type 'URL' is not assignable to type 'string'.
-src/u04-paired-comparison.test.ts(292,64): error TS2322: Type '"prompt"' is not assignable to type '"instructions" | "catalog" | "snapshot" | "notice" | "relay" | "recall" | undefined'.
-src/u04-paired-comparison.test.ts(301,37): error TS2551: Property 'sections' does not exist on type 'SystemPrompt'. Did you mean 'section'?
 tsc_check_exit=2
 
 --- errors attributable to src/terminal-advanced.test.ts ---
 count=0   (0 = this gate's file is clean)
 
---- files that do have errors (other slices) ---
-src/__u04dbg.test.ts
-src/control-plane.test.ts
+--- files that do have errors (other slices, not this gate) ---
 src/tool-protocol.test.ts
-src/u04-paired-comparison.test.ts

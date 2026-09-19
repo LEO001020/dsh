@@ -1,0 +1,641 @@
+=== VALUE EXPORTS WITH NO PRODUCT-TIER CALLER ===
+(product tier = non-test src, other packages, profiles/; a .test.ts or
+ qualification/ hit is recorded separately and is NOT a product caller)
+(TYPE exports are excluded and counted in the summary: an interface has no
+ runtime existence, so "unreferenced" is not a finding about it)
+
+  artifacts.ts :: ARTIFACT_STORE_VERSION
+        product: (NONE)
+        qualification: (none)
+        tests: (none)
+  artifacts.ts :: ArtifactError
+        product: (NONE)
+        qualification: (none)
+        tests: (none)
+  artifacts.ts :: artifactRefOf
+        product: (NONE)
+        qualification: (none)
+        tests: (none)
+  artifacts.ts :: digestOfRef
+        product: (NONE)
+        qualification: (none)
+        tests: (none)
+  artifacts.ts :: CursorAuthority
+        product: (NONE)
+        qualification: (none)
+        tests: (none)
+  artifacts.ts :: InMemorySessionReferenceLog
+        product: (NONE)
+        qualification: (none)
+        tests: (none)
+  artifacts.ts :: pageUtf8ByBytes
+        product: (NONE)
+        qualification: (none)
+        tests: (none)
+  artifacts.ts :: findQuotaError
+        product: (NONE)
+        qualification: (none)
+        tests: (none)
+  artifacts.ts :: mayReExecuteAfterSaveFailure
+        product: (NONE)
+        qualification: qualification/results/M4-data/FINDINGS.md
+        tests: (none)
+  artifacts.ts :: measureRepeatedReadCost
+        product: (NONE)
+        qualification: (none)
+        tests: (none)
+  capacity.ts :: OCCUPANCY_BUCKETS
+        product: (NONE)
+        qualification: (none)
+        tests: (none)
+  capacity.ts :: ChildCapacityError
+        product: (NONE)
+        qualification: (none)
+        tests: (none)
+  capacity.ts :: isSessionBackedChild
+        product: (NONE)
+        qualification: qualification/results/M12-capacity/FINDINGS.md
+        tests: (none)
+  data-service.ts :: DATA_SCHEMA_VERSION
+        product: (NONE)
+        qualification: (none)
+        tests: (none)
+  data-service.ts :: dataReferenceSchema
+        product: (NONE)
+        qualification: (none)
+        tests: (none)
+  data-service.ts :: DEFAULT_OWNER_SCOPE
+        product: (NONE)
+        qualification: (none)
+        tests: (none)
+  data-service.ts :: DEFAULT_EXECUTION_WORLD
+        product: (NONE)
+        qualification: (none)
+        tests: (none)
+  effects.ts :: EFFECT_DOMAIN_NAME
+        product: (NONE)
+        qualification: (none)
+        tests: (none)
+  effects.ts :: EFFECT_SCHEMA_VERSION
+        product: (NONE)
+        qualification: (none)
+        tests: (none)
+  effects.ts :: EFFECT_LIMITS
+        product: (NONE)
+        qualification: qualification/results/M9.20-real-tasks/FINDINGS.md, qualification/results/M9.20-real-tasks/u06-rollback.mjs, qualification/results/M9.5-effects/FINDINGS.md
+        tests: (none)
+  effects.ts :: parameterDigestOf
+        product: (NONE)
+        qualification: (none)
+        tests: (none)
+  effects.ts :: EFFECT_RECORD_STATUSES
+        product: (NONE)
+        qualification: (none)
+        tests: (none)
+  effects.ts :: effectRecordSchema
+        product: (NONE)
+        qualification: (none)
+        tests: (none)
+  effects.ts :: effectDomainSpec
+        product: (NONE)
+        qualification: (none)
+        tests: (none)
+  effects.ts :: sendDecision
+        product: (NONE)
+        qualification: qualification/results/M9.5-effects/FINDINGS.md
+        tests: (none)
+  effects.ts :: EffectLedger
+        product: (NONE)
+        qualification: qualification/results/M9.20-real-tasks/FINDINGS.md, qualification/results/M9.20-real-tasks/u06-rollback.mjs
+        tests: (none)
+  effects.ts :: runEffectProgram
+        product: (NONE)
+        qualification: qualification/results/M10-shrink/FINDINGS.md
+        tests: (none)
+  effects.ts :: resumeEffectProgram
+        product: (NONE)
+        qualification: qualification/results/M10-shrink/FINDINGS.md, qualification/results/M9.5-effects/FINDINGS.md
+        tests: (none)
+  effects.ts :: CLASSIFIER_LIMITS
+        product: (NONE)
+        qualification: qualification/results/M9.5-effects/FINDINGS.md
+        tests: (none)
+  effects.ts :: classifyShellCommand
+        product: (NONE)
+        qualification: qualification/results/M10-shrink/FINDINGS.md
+        tests: (none)
+  effects.ts :: mayRunAutomatically
+        product: (NONE)
+        qualification: qualification/results/M10-shrink/FINDINGS.md, qualification/results/M9.5-effects/FINDINGS.md
+        tests: (none)
+  history-plane.ts :: HistoryAccessError
+        product: (NONE)
+        qualification: qualification/results/R11-history/scratch-history-plane.BAK.ts
+        tests: (none)
+  history-plane.ts :: corpusViewFromContext
+        product: (NONE)
+        qualification: qualification/results/M7-history/FINDINGS.md, qualification/results/R11-history/scratch-history-plane.BAK.ts
+        tests: (none)
+  history-plane.ts :: authorizeHistoryRead
+        product: (NONE)
+        qualification: qualification/results/P9-history/FINDINGS.md, qualification/results/R11-history/scratch-history-plane.BAK.ts
+        tests: (none)
+  history-plane.ts :: canonicalEventBytes
+        product: (NONE)
+        qualification: qualification/results/P9-history/FINDINGS.md, qualification/results/R11-history/scratch-history-plane.BAK.ts
+        tests: (none)
+  history-plane.ts :: readAuthorizedSessionLog
+        product: (NONE)
+        qualification: qualification/results/M7-history/FINDINGS.md, qualification/results/R11-history/scratch-history-plane.BAK.ts
+        tests: (none)
+  history-plane.ts :: recordConsumed
+        product: (NONE)
+        qualification: qualification/results/R11-history/scratch-history-plane.BAK.ts
+        tests: (none)
+  history-plane.ts :: recordProjected
+        product: (NONE)
+        qualification: qualification/results/R11-history/scratch-history-plane.BAK.ts
+        tests: (none)
+  history-plane.ts :: visibilityLedger
+        product: (NONE)
+        qualification: qualification/results/M7-history/FINDINGS.md, qualification/results/P9-history/FINDINGS.md, qualification/results/R11-history/scratch-history-plane.BAK.ts
+        tests: (none)
+  history-plane.ts :: visibilityReport
+        product: (NONE)
+        qualification: qualification/results/R11-history/scratch-history-plane.BAK.ts
+        tests: (none)
+  history-plane.ts :: recordMemoryVersion
+        product: (NONE)
+        qualification: qualification/results/R11-history/scratch-history-plane.BAK.ts
+        tests: (none)
+  history-plane.ts :: createMemoryDocument
+        product: (NONE)
+        qualification: qualification/results/R11-history/scratch-history-plane.BAK.ts
+        tests: (none)
+  history-plane.ts :: memoryHistory
+        product: (NONE)
+        qualification: qualification/results/R11-history/scratch-history-plane.BAK.ts
+        tests: (none)
+  history-plane.ts :: memoryChain
+        product: (NONE)
+        qualification: qualification/results/R11-history/scratch-history-plane.BAK.ts
+        tests: (none)
+  history-plane.ts :: currentMemoryVersion
+        product: (NONE)
+        qualification: qualification/results/R11-history/scratch-history-plane.BAK.ts
+        tests: (none)
+  history-plane.ts :: authorityOf
+        product: (NONE)
+        qualification: qualification/results/M7-history/FINDINGS.md, qualification/results/P9-history/FINDINGS.md, qualification/results/R11-history/scratch-history-plane.BAK.ts
+        tests: (none)
+  history-plane.ts :: assertLabelIsNotAuthority
+        product: (NONE)
+        qualification: qualification/results/R11-history/scratch-history-plane.BAK.ts
+        tests: (none)
+  history-plane.ts :: rebuildDerivedIndex
+        product: (NONE)
+        qualification: qualification/results/R11-history/scratch-history-plane.BAK.ts
+        tests: (none)
+  history-plane.ts :: createInMemoryDerivedIndex
+        product: (NONE)
+        qualification: qualification/results/R11-history/scratch-history-plane.BAK.ts
+        tests: (none)
+  history-plane.ts :: renderDynamicTail
+        product: (NONE)
+        qualification: qualification/results/R11-history/scratch-history-plane.BAK.ts
+        tests: (none)
+  history-plane.ts :: buildStablePrefix
+        product: (NONE)
+        qualification: qualification/results/R11-history/scratch-history-plane.BAK.ts
+        tests: (none)
+  history-plugin.ts :: HistoryPlaneService
+        product: (NONE)
+        qualification: qualification/results/M7-history/FINDINGS.md, qualification/results/R11-history/scratch-history-plugin.BAK.ts
+        tests: (none)
+  homelock.ts :: HomeLockHeldError
+        product: (NONE)
+        qualification: qualification/results/M-DEP-SEC-UPG/FINDINGS.md
+        tests: (none)
+  homelock.ts :: HomeLockUnsupportedError
+        product: (NONE)
+        qualification: (none)
+        tests: (none)
+  host.ts :: WORK_DOMAIN_NAME
+        product: (NONE)
+        qualification: (none)
+        tests: (none)
+  host.ts :: DEFAULT_SUBAGENT_PROVIDER
+        product: (NONE)
+        qualification: qualification/results/M12-capacity/FINDINGS.md
+        tests: (none)
+  host.ts :: workDomainSpec
+        product: (NONE)
+        qualification: (none)
+        tests: (none)
+  kernel-lifecycle.ts :: kernelSlotKey
+        product: (NONE)
+        qualification: (none)
+        tests: (none)
+  kernel-lifecycle.ts :: sameKernelSlot
+        product: (NONE)
+        qualification: (none)
+        tests: (none)
+  kernel-lifecycle.ts :: sameKernelIncarnation
+        product: (NONE)
+        qualification: (none)
+        tests: (none)
+  kernel-lifecycle.ts :: DEFAULT_BUDGETS
+        product: (NONE)
+        qualification: (none)
+        tests: (none)
+  kernel-lifecycle.ts :: REFUSED_FORMATS
+        product: (NONE)
+        qualification: (none)
+        tests: (none)
+  kernel-lifecycle.ts :: RECOVERY_SCOPE_STATEMENT
+        product: (NONE)
+        qualification: (none)
+        tests: (none)
+  kernel-lifecycle.ts :: DEFAULT_CHECKPOINT_LIMITS
+        product: (NONE)
+        qualification: (none)
+        tests: (none)
+  kernel-lifecycle.ts :: validateCheckpoint
+        product: (NONE)
+        qualification: (none)
+        tests: (none)
+  kernel-lifecycle.ts :: KernelSupervisor
+        product: (NONE)
+        qualification: (none)
+        tests: (none)
+  observations.ts :: OBSERVATION_SCHEMA_VERSION
+        product: (NONE)
+        qualification: (none)
+        tests: (none)
+  observations.ts :: OBSERVATION_GAP_STAGES
+        product: (NONE)
+        qualification: (none)
+        tests: (none)
+  observations.ts :: OBSERVATION_GAP_RECOVERIES
+        product: (NONE)
+        qualification: (none)
+        tests: (none)
+  observations.ts :: OBSERVATION_COMPLETENESS
+        product: (NONE)
+        qualification: (none)
+        tests: (none)
+  observations.ts :: observationGapSchema
+        product: (NONE)
+        qualification: (none)
+        tests: (none)
+  observations.ts :: observationSourceSchema
+        product: (NONE)
+        qualification: (none)
+        tests: (none)
+  observations.ts :: observationCapturedSchema
+        product: (NONE)
+        qualification: (none)
+        tests: (none)
+  observations.ts :: observationAcquisitionSchema
+        product: (NONE)
+        qualification: (none)
+        tests: (none)
+  observations.ts :: observationTransformSchema
+        product: (NONE)
+        qualification: (none)
+        tests: (none)
+  observations.ts :: observationAuthoritySchema
+        product: (NONE)
+        qualification: (none)
+        tests: (none)
+  observations.ts :: observationDescriptorSchema
+        product: (NONE)
+        qualification: (none)
+        tests: (none)
+  observations.ts :: HOST_AUTHORED_PATHS
+        product: (NONE)
+        qualification: (none)
+        tests: (none)
+  observations.ts :: isDeliverableAsComplete
+        product: (NONE)
+        qualification: (none)
+        tests: (none)
+  perf-metrics.ts :: CHARGE_LINES
+        product: (NONE)
+        qualification: (none)
+        tests: (none)
+  perf-metrics.ts :: priceAttempt
+        product: (NONE)
+        qualification: qualification/results/M9-eco/FINDINGS.md
+        tests: (none)
+  perf-metrics.ts :: PriceBook
+        product: (NONE)
+        qualification: qualification/results/M9-eco/FINDINGS.md
+        tests: (none)
+  perf-metrics.ts :: totalCost
+        product: (NONE)
+        qualification: qualification/results/M9-eco/FINDINGS.md
+        tests: (none)
+  perf-metrics.ts :: billedTokens
+        product: (NONE)
+        qualification: (none)
+        tests: (none)
+  perf-metrics.ts :: reportCostDelta
+        product: (NONE)
+        qualification: qualification/results/M9-eco/FINDINGS.md
+        tests: (none)
+  perf-metrics.ts :: percentileOf
+        product: (NONE)
+        qualification: (none)
+        tests: (none)
+  perf-metrics.ts :: LatencySeries
+        product: (NONE)
+        qualification: (none)
+        tests: (none)
+  perf-metrics.ts :: SpanMeter
+        product: (NONE)
+        qualification: qualification/results/M9-eco/FINDINGS.md
+        tests: (none)
+  perf-metrics.ts :: ByteLedger
+        product: (NONE)
+        qualification: (none)
+        tests: (none)
+  perf-metrics.ts :: resourceSummary
+        product: (NONE)
+        qualification: (none)
+        tests: (none)
+  perf-metrics.ts :: ShadowProjection
+        product: (NONE)
+        qualification: (none)
+        tests: (none)
+  perf-metrics.ts :: wilsonInterval
+        product: (NONE)
+        qualification: (none)
+        tests: (none)
+  perf-metrics.ts :: describeSeries
+        product: (NONE)
+        qualification: (none)
+        tests: (none)
+  programmatic-scope-plugin.ts :: ProgrammaticScopeService
+        product: (NONE)
+        qualification: qualification/results/M2-scope/FINDINGS.md
+        tests: (none)
+  programmatic-scope.ts :: isScopeReference
+        product: (NONE)
+        qualification: (none)
+        tests: (none)
+  programmatic-scope.ts :: ScopeDeliveryBudgetError
+        product: (NONE)
+        qualification: qualification/results/M2-scope/FINDINGS.md
+        tests: (none)
+  record.ts :: evidenceRefSchema
+        product: (NONE)
+        qualification: (none)
+        tests: (none)
+  record.ts :: taskRecordSchema
+        product: (NONE)
+        qualification: (none)
+        tests: (none)
+  record.ts :: outboxEntrySchema
+        product: (NONE)
+        qualification: (none)
+        tests: (none)
+  record.ts :: admissionHaltSchema
+        product: (NONE)
+        qualification: (none)
+        tests: (none)
+  record.ts :: budgetSchema
+        product: (NONE)
+        qualification: qualification/results/M9.6-cost/FINDINGS.md
+        tests: (none)
+  record.ts :: rootReserveOf
+        product: (NONE)
+        qualification: (none)
+        tests: (none)
+  record.ts :: rootSpentOf
+        product: (NONE)
+        qualification: (none)
+        tests: (none)
+  record.ts :: childHeadroom
+        product: (NONE)
+        qualification: qualification/results/M9.6-cost/FINDINGS.md
+        tests: (none)
+  record.ts :: rootAvailable
+        product: (NONE)
+        qualification: qualification/results/M12-capacity/FINDINGS.md, qualification/results/M9.12-scheduling/FINDINGS.md, qualification/results/M9.6-cost/FINDINGS.md
+        tests: (none)
+  record.ts :: RUN_PHASES
+        product: (NONE)
+        qualification: (none)
+        tests: (none)
+  record.ts :: bucketsFromTokenUsage
+        product: (NONE)
+        qualification: qualification/results/M9.6-cost/FINDINGS.md
+        tests: (none)
+  recovery.ts :: relaunchPrepared
+        product: (NONE)
+        qualification: qualification/gates.json, qualification/results/M9.15-durability-records/FINDINGS.md
+        tests: (none)
+  recovery.ts :: REFUSAL_DOMAIN_NAME
+        product: (NONE)
+        qualification: (none)
+        tests: (none)
+  recovery.ts :: refusalRecordSchema
+        product: (NONE)
+        qualification: (none)
+        tests: (none)
+  recovery.ts :: refusalDomainSpec
+        product: (NONE)
+        qualification: (none)
+        tests: (none)
+  recovery.ts :: RefusalLedger
+        product: (NONE)
+        qualification: (none)
+        tests: (none)
+  states.ts :: SLOT_HOLDING_STATES
+        product: (NONE)
+        qualification: (none)
+        tests: (none)
+  states.ts :: TERMINAL_STATES
+        product: (NONE)
+        qualification: (none)
+        tests: (none)
+  states.ts :: canTransition
+        product: (NONE)
+        qualification: (none)
+        tests: (none)
+  states.ts :: TransitionError
+        product: (NONE)
+        qualification: (none)
+        tests: (none)
+  target-setting.ts :: DAILY_WORK_NS
+        product: (NONE)
+        qualification: (none)
+        tests: (none)
+  target-setting.ts :: MIN_TARGET_ACTIVE_CHILDREN
+        product: (NONE)
+        qualification: (none)
+        tests: (none)
+  target-setting.ts :: MAX_TARGET_ACTIVE_CHILDREN
+        product: (NONE)
+        qualification: (none)
+        tests: (none)
+  target-setting.ts :: DailyWorkConfig
+        product: (NONE)
+        qualification: (none)
+        tests: (none)
+  target-setting.ts :: assertTargetActiveChildren
+        product: (NONE)
+        qualification: (none)
+        tests: (none)
+  tool-protocol-guards.ts :: isExactLiveOwner
+        product: (NONE)
+        qualification: qualification/results/M9.11-tool-protocol/FINDINGS.md
+        tests: (none)
+  tool-protocol-guards.ts :: exactOwnerDenialReason
+        product: (NONE)
+        qualification: qualification/results/M9.11-tool-protocol/FINDINGS.md
+        tests: (none)
+  verify.ts :: RECEIPT_SCHEMA
+        product: (NONE)
+        qualification: (none)
+        tests: (none)
+  verify.ts :: parseTestCounts
+        product: (NONE)
+        qualification: (none)
+        tests: (none)
+  verify.ts :: runAcceptance
+        product: (NONE)
+        qualification: qualification/results/R3-unwired/export-scan.mjs, qualification/runners/acceptance.mjs
+        tests: (none)
+  verify.ts :: runAcceptanceWithBudget
+        product: (NONE)
+        qualification: qualification/results/M9.1-acceptance-runner/FINDINGS.md
+        tests: (none)
+  verify.ts :: serializeReceipt
+        product: (NONE)
+        qualification: qualification/runners/acceptance.mjs
+        tests: (none)
+  web-provenance.ts :: acquisitionFromFetch
+        product: (NONE)
+        qualification: (none)
+        tests: (none)
+  web-provenance.ts :: describeSearchCoverage
+        product: (NONE)
+        qualification: (none)
+        tests: (none)
+  web-provenance.ts :: deriveMarkdown
+        product: (NONE)
+        qualification: (none)
+        tests: (none)
+  web-provenance.ts :: createUrlHistory
+        product: (NONE)
+        qualification: (none)
+        tests: (none)
+  web-provenance.ts :: appendFetchObservation
+        product: (NONE)
+        qualification: (none)
+        tests: (none)
+  web-provenance.ts :: observationById
+        product: (NONE)
+        qualification: (none)
+        tests: (none)
+  web-provenance.ts :: judgeRangeResponse
+        product: (NONE)
+        qualification: (none)
+        tests: (none)
+  web-provenance.ts :: parseContentRange
+        product: (NONE)
+        qualification: (none)
+        tests: (none)
+  web-provenance.ts :: locateClaim
+        product: (NONE)
+        qualification: (none)
+        tests: (none)
+  web-provenance.ts :: INJECTION_PATTERNS
+        product: (NONE)
+        qualification: (none)
+        tests: (none)
+  web-provenance.ts :: detectInjection
+        product: (NONE)
+        qualification: (none)
+        tests: (none)
+  web-provenance.ts :: capabilitiesFor
+        product: (NONE)
+        qualification: qualification/results/M7-history/FINDINGS.md, qualification/results/P9-history/FINDINGS.md
+        tests: (none)
+  web-provenance.ts :: DEFAULT_PDF_BUDGET
+        product: (NONE)
+        qualification: (none)
+        tests: (none)
+  web-provenance.ts :: inflateBounded
+        product: (NONE)
+        qualification: (none)
+        tests: (none)
+  web-provenance.ts :: extractPdfText
+        product: (NONE)
+        qualification: (none)
+        tests: (none)
+  web-provenance.ts :: hasPdfMagic
+        product: (NONE)
+        qualification: (none)
+        tests: (none)
+  web-search.ts :: canonicalSourceUrl
+        product: (NONE)
+        qualification: (none)
+        tests: (none)
+  web-search.ts :: mapHits
+        product: (NONE)
+        qualification: (none)
+        tests: (none)
+  web-search.ts :: SearchProviderError
+        product: (NONE)
+        qualification: (none)
+        tests: (none)
+  worktree-isolation.ts :: acquireWriterLease
+        product: (NONE)
+        qualification: (none)
+        tests: (none)
+  worktree-isolation.ts :: releaseWriterLease
+        product: (NONE)
+        qualification: (none)
+        tests: (none)
+  writers-plugin.ts :: WriterIsolationService
+        product: (NONE)
+        qualification: (none)
+        tests: (none)
+
+=== SUMMARY ===
+value exports scanned: 260
+with a product-tier caller: 110
+with NO product-tier caller: 150
+
+type exports (interfaces + type aliases) excluded from the list above: 221
+  of those, unreferenced by any non-test file: 127
+  (not a finding: a type has no runtime existence, and a textual search
+   cannot distinguish a type reference from a same-named local)
+
+unwired VALUE exports per module:
+  history-plane.ts: 20
+  web-provenance.ts: 16
+  effects.ts: 14
+  perf-metrics.ts: 14
+  observations.ts: 13
+  record.ts: 11
+  artifacts.ts: 10
+  kernel-lifecycle.ts: 9
+  recovery.ts: 5
+  target-setting.ts: 5
+  verify.ts: 5
+  data-service.ts: 4
+  states.ts: 4
+  capacity.ts: 3
+  host.ts: 3
+  web-search.ts: 3
+  homelock.ts: 2
+  programmatic-scope.ts: 2
+  tool-protocol-guards.ts: 2
+  worktree-isolation.ts: 2
+  history-plugin.ts: 1
+  programmatic-scope-plugin.ts: 1
+  writers-plugin.ts: 1

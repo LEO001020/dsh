@@ -1,0 +1,4 @@
+P9 re-run, 2026-09-20
+command: node /d/DSH/src/dsh-src/node_modules/typescript/bin/tsc -p tsconfig.check.json
+exit code: 0
+output: (empty -- no diagnostics)

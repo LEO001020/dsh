@@ -1,0 +1,29 @@
+# M9-eco typecheck evidence
+# cwd: D:/DSH/work/dsh-native-daily/packages/dsh-daily-work
+# host: v24.18.0 on MINGW64_NT-10.0-26200 3.6.9-b4195d69.x86_64
+
+=== run 0 (THE MEANINGFUL ONE): the two files THIS case owns ===
+# command: tsc -p tsconfig.eco.json
+# tsconfig.eco.json extends tsconfig.json, so the strict flags are identical; it
+# narrows 'include' to src/perf-metrics.ts and src/eco.test.ts. This is the run
+# whose exit code is a claim about this case's code. It exists because the
+# whole-tree config type-checks files other cases are editing concurrently.
+tsc_eco_exit=0
+
+=== run 1: the production sources (tsconfig.json, which EXCLUDES *.test.ts) ===
+tsc_prod_exit=0
+
+=== run 2: ALL of src/** including tests (tsconfig.check.json) ===
+# NOTE: a WHOLE-TREE check. Its exit code is NOT a statement about this case;
+# the per-file grep below isolates this case's contribution.
+tsc_all_exit=0
+
+=== errors attributable to THIS case's files ===
+(none)
+my_file_error_count=0
+
+=== @deepseek-ai/dsh-util-values (G-SEAM-22) from THIS package ===
+# The coordinator recorded an upstream undeclared dependency at the pinned
+# commit affecting tool-fs-search/src/direct-call.ts. Checked here rather than
+# assumed: this case's files do not hit it, and neither config reports it.
+util_values_error_count=0

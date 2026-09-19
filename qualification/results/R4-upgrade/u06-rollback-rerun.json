@@ -1,0 +1,121 @@
+{
+  "gate": "U06",
+  "kind": "ROLLBACK_REHEARSAL_OVER_A_TEMP_HOME",
+  "steps": [
+    {
+      "id": "R1",
+      "name": "the old artifact is staged as an immutable version directory",
+      "status": "PASS",
+      "detail": "63 files staged at C:\\Users\\hzq00\\AppData\\Local\\Temp\\dsh-u06-rollback-mmaOv5\\versions\\old; digest 5645e18d7e820e1f...",
+      "oldArtifact": "C:\\Users\\hzq00\\AppData\\Local\\Temp\\dsh-u06-rollback-mmaOv5\\versions\\old",
+      "oldArtifactDigest": "5645e18d7e820e1f4b0403270902ff9e7eb372ade735a86d00fec97ea7cabdfd"
+    },
+    {
+      "id": "R2",
+      "name": "the old consistency snapshot is taken while quiescent",
+      "status": "PASS",
+      "detail": "snapshot digest 52470691fcf71af6... equals the state at snapshot time: true",
+      "snapshot": "C:\\Users\\hzq00\\AppData\\Local\\Temp\\dsh-u06-rollback-mmaOv5\\snapshots\\pre-upgrade",
+      "snapshotDigest": "52470691fcf71af68fa2d80874e9646256ca31085f99b532ad344082f63ab6f5",
+      "stateDigestAtSnapshot": "52470691fcf71af68fa2d80874e9646256ca31085f99b532ad344082f63ab6f5"
+    },
+    {
+      "id": "R3",
+      "name": "the new version performed an external effect",
+      "status": "PASS",
+      "detail": "the transport was invoked 1 time(s); outcome undefined; resultRef undefined",
+      "remotePerformCount": 1
+    },
+    {
+      "id": "R4",
+      "name": "the new version migrated the state beyond what the old version reads",
+      "status": "PASS",
+      "detail": "state schemaVersion is now 2 (was 1); state digest moved from 52470691fcf71af6... to 7d135136c16ba444...",
+      "stateDigestAfterNew": "7d135136c16ba44424a9859fa20cae2448bce5132453532c583141c030cd9212",
+      "schemaVersionBefore": 1,
+      "schemaVersionAfter": 2
+    },
+    {
+      "id": "R5",
+      "name": "the old consistency snapshot is restored byte-for-byte",
+      "status": "PASS",
+      "detail": "the restored state digest equals the snapshot digest 52470691fcf71af6...",
+      "restoredDigest": "52470691fcf71af68fa2d80874e9646256ca31085f99b532ad344082f63ab6f5",
+      "snapshotDigest": "52470691fcf71af68fa2d80874e9646256ca31085f99b532ad344082f63ab6f5"
+    },
+    {
+      "id": "R6",
+      "name": "the old artifact is the one the rollback runs",
+      "status": "PASS",
+      "detail": "old version 0.1.0; new version 0.2.0-u06-fixture; distinct: true",
+      "oldVersion": "0.1.0",
+      "newVersion": "0.2.0-u06-fixture"
+    },
+    {
+      "id": "R7",
+      "name": "the restored state is one the old version can read",
+      "status": "PASS",
+      "detail": "restored schemaVersion is 1; the old version reads 1",
+      "restoredSchemaVersion": 1
+    },
+    {
+      "id": "R8a",
+      "name": "the rewound ledger refuses to read a record it no longer understands",
+      "status": "PASS",
+      "detail": "the facility refused to open: domain 'dsh_daily_effects': stored record 'eff_f668fd97f80b4033c1790267dfd69d13' in table 'operations' does not match its schema",
+      "refusal": "domain 'dsh_daily_effects': stored record 'eff_f668fd97f80b4033c1790267dfd69d13' in table 'operations' does not match its schema"
+    },
+    {
+      "id": "R8",
+      "name": "the rollback reconciled the effect WITHOUT re-sending it",
+      "status": "PASS",
+      "detail": "transport invocations before 1, after 1; the remote reports confirmed; performed by this call: false",
+      "performCountBeforeReconcile": 1,
+      "performCountAfterReconcile": 1,
+      "outcome": "confirmed",
+      "performedByCall": false,
+      "operationId": "eff_f668fd97f80b4033c1790267dfd69d13"
+    },
+    {
+      "id": "R9",
+      "name": "the external effect is STILL PRESENT in the world after the rollback",
+      "status": "PASS",
+      "detail": "the remote still holds the operation: true; its recorded resultRef is remote-1",
+      "remoteStillHoldsEffect": true,
+      "remoteCommittedKeys": [
+        "eff_f668fd97f80b4033c1790267dfd69d13"
+      ]
+    },
+    {
+      "id": "R10",
+      "name": "the reconciliation does not claim the effect was undone",
+      "status": "PASS",
+      "detail": "no reversal claim in the reconciliation text; outcome is confirmed",
+      "reconciliationText": "reconciled from the remote by operationid eff_f668fd97f80b4033c1790267dfd69d13: the remote reports confirmed"
+    },
+    {
+      "id": "R11",
+      "name": "the rehearsal states what it did not exercise",
+      "status": "PASS",
+      "detail": "the \"new version\" is a copy of the same built artifact with a bumped version string and a schema bump; no newer version exists to install. The remote is a counting in-process fake. Both are fixtures, and the rehearsal is about the PROCEDURE, not about a real upgrade.",
+      "fixtures": [
+        "new version = same built artifact, version string and schema bumped",
+        "remote = counting in-process fake"
+      ],
+      "notExercised": [
+        "no real newer version was installed or run",
+        "no real remote was contacted; the effect is a local counter",
+        "no live state store was rewound; the state is a JSON fixture"
+      ]
+    }
+  ],
+  "summary": {
+    "pass": 12,
+    "fail": 0
+  },
+  "claim": "The rollback restores the OLD artifact and the OLD consistency snapshot, reconciles the external effect the new version already produced, and reports the effect as still present in the world. Rolling back software is not reported as rolling back the world.",
+  "notClaimed": [
+    "that a real newer version was rolled back: the new version is a fixture over the same built artifact",
+    "that a real remote was reconciled: the remote is a counting in-process fake"
+  ]
+}

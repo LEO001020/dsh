@@ -1,0 +1,3 @@
+- insert:
+    - id: verify-writers-mounted
+      name: 'D:/DSH/work/dsh-native-daily/qualification/runners/verify-writers-mounted.mjs'

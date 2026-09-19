@@ -1,0 +1,6 @@
+COMMAND (production): cd packages/dsh-daily-work && tsc -p tsconfig.json --noEmit
+DATE: 2026-09-20T02:18:36+08:00
+EXIT: 0
+
+COMMAND (tests included): tsc -p tsconfig.check.json
+EXIT: 0

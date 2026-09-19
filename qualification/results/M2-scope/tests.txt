@@ -1,0 +1,65 @@
+COMMAND: cd packages/dsh-daily-work && export PATH="/d/DSH/tools/bin:/d/DSH/src/dsh-src/node_modules/.bin:$PATH" && vitest run src/programmatic-scope.test.ts --maxWorkers=1 --no-file-parallelism
+DATE: 2026-09-20T02:18:31+08:00
+EXIT: 0
+
+
+ RUN  v4.1.8 D:/DSH/work/dsh-native-daily/packages/dsh-daily-work
+
+ ✓ src/programmatic-scope.test.ts > BRG-01: the same tool through native, PTC and the scope is one pipeline > produces the SAME canonical value on all three routes 16ms
+ ✓ src/programmatic-scope.test.ts > BRG-01: the same tool through native, PTC and the scope is one pipeline > a monotonic GUARD denies the scope exactly as it denies a native call 4ms
+ ✓ src/programmatic-scope.test.ts > BRG-01: the same tool through native, PTC and the scope is one pipeline > an `ask` decision reaches the scope and a denial is not a bypass 2ms
+ ✓ src/programmatic-scope.test.ts > BRG-01: the same tool through native, PTC and the scope is one pipeline > a real ApprovalService denial reaches the scope as a denial 5ms
+ ✓ src/programmatic-scope.test.ts > BRG-01: the same tool through native, PTC and the scope is one pipeline > post-execute policy replaces the value on the scope route too 2ms
+ ✓ src/programmatic-scope.test.ts > BRG-01: the same tool through native, PTC and the scope is one pipeline > a canonical value violating the declared output schema fails on the scope route 2ms
+ ✓ src/programmatic-scope.test.ts > BRG-01: the same tool through native, PTC and the scope is one pipeline > MEASURES the scheduling difference from run_code instead of claiming identity 27ms
+ ✓ src/programmatic-scope.test.ts > BRG-01: the same tool through native, PTC and the scope is one pipeline > the scope does NOT bypass the ptc presentation collapse 3ms
+ ✓ src/programmatic-scope.test.ts > BRG-02: revoking a tool mid-scope takes effect on the next call > a tool unregistered while the scope is open fails its next call 3ms
+ ✓ src/programmatic-scope.test.ts > BRG-02: revoking a tool mid-scope takes effect on the next call > names() is a LIVE read, and revocation is visible through it 3ms
+ ✓ src/programmatic-scope.test.ts > BRG-02: revoking a tool mid-scope takes effect on the next call > a tool unregistered by its own disposer is gone from the next call 2ms
+ ✓ src/programmatic-scope.test.ts > BRG-03: value delivery returns the declared canonical type, never a reference > returns the declared T and is never an ArtifactRef 5ms
+ ✓ src/programmatic-scope.test.ts > BRG-03: value delivery returns the declared canonical type, never a reference > over-budget value delivery throws with the retained reference and does NOT re-execute 5ms
+ ✓ src/programmatic-scope.test.ts > BRG-04: reference delivery executes exactly once and references the post-policy result > runs the tool EXACTLY ONCE and returns a reference to the final value 5ms
+ ✓ src/programmatic-scope.test.ts > BRG-04: reference delivery executes exactly once and references the post-policy result > the reference carries the POST-POLICY value, not the pre-policy one 3ms
+ ✓ src/programmatic-scope.test.ts > BRG-04: reference delivery executes exactly once and references the post-policy result > value and reference delivery of the same tool are the same execution result 3ms
+ ✓ src/programmatic-scope.test.ts > BRG-05: a value policy removed is not recoverable through a reference > a post-policy BLOCK leaves no recoverable original in the store 3ms
+ ✓ src/programmatic-scope.test.ts > BRG-05: a value policy removed is not recoverable through a reference > a policy that REPLACES a sensitive value leaves only the replacement retrievable 2ms
+ ✓ src/programmatic-scope.test.ts > BRG-05: a value policy removed is not recoverable through a reference > a blocked call retains nothing even under reference delivery 2ms
+ ✓ src/programmatic-scope.test.ts > BRG-06: a wrapper never waits for a slot from the pool it already holds > MANY concurrent wrapped calls complete without exhausting the pool 7ms
+ ✓ src/programmatic-scope.test.ts > BRG-06: a wrapper never waits for a slot from the pool it already holds > re-entrancy: a nested call may itself open a nested call, many levels deep 5ms
+ ✓ src/programmatic-scope.test.ts > BRG-06: a wrapper never waits for a slot from the pool it already holds > an EXCLUSIVE tool forms a real barrier for top-level calls 84ms
+ ✓ src/programmatic-scope.test.ts > BRG-06: a wrapper never waits for a slot from the pool it already holds > a concurrency-safe tool DOES overlap, so the cap is not just serialization 32ms
+ ✓ src/programmatic-scope.test.ts > BRG-06: a wrapper never waits for a slot from the pool it already holds > the cap is respected: maxParallel 2 never runs three at once 93ms
+ ✓ src/programmatic-scope.test.ts > BRG-06: a wrapper never waits for a slot from the pool it already holds > CANCEL DRAINS: closing with calls in flight settles them and reports every disposition 62ms
+ ✓ src/programmatic-scope.test.ts > BRG-07: a close with calls still in flight never leaves work running > queued-unstarted calls are REFUSED with a recorded disposition when no handoff exists 61ms
+ ✓ src/programmatic-scope.test.ts > BRG-07: a close with calls still in flight never leaves work running > a host JOBS HANDOFF takes ownership instead of refusing, and the job id is recorded 60ms
+ ✓ src/programmatic-scope.test.ts > BRG-07: a close with calls still in flight never leaves work running > close resolves only AFTER in-flight work has settled, not before 92ms
+ ✓ src/programmatic-scope.test.ts > BRG-07: a close with calls still in flight never leaves work running > close is idempotent and reports no second disposition for any call 2ms
+ ✓ src/programmatic-scope.test.ts > BRG-07: a close with calls still in flight never leaves work running > invoking after close is refused, not silently queued 2ms
+ ✓ src/programmatic-scope.test.ts > BRG-07: a close with calls still in flight never leaves work running > the host service closes every live scope on teardown 3ms
+ ✓ src/programmatic-scope.test.ts > BRG-08: control notices keep their semantics; bulk payloads do not enter context > a security additionalContext reaches the enclosing execution, bounded 3ms
+ ✓ src/programmatic-scope.test.ts > BRG-08: control notices keep their semantics; bulk payloads do not enter context > concludeTurn is preserved from a nested success and NOT from a policy-blocked one 5ms
+ ✓ src/programmatic-scope.test.ts > BRG-08: control notices keep their semantics; bulk payloads do not enter context > a BULK image does NOT automatically enter model context; it is retained as a reference 3ms
+ ✓ src/programmatic-scope.test.ts > BRG-08: control notices keep their semantics; bulk payloads do not enter context > the control and content slots are SEPARATE: one call can fill both 3ms
+ ✓ src/programmatic-scope.test.ts > BRG-08: control notices keep their semantics; bulk payloads do not enter context > past the direct bound, notices are COALESCED into one bounded record, not dropped 4ms
+ ✓ src/programmatic-scope.test.ts > BRG-08: control notices keep their semantics; bulk payloads do not enter context > defer-images reproduces stock run_code content behaviour, for comparison 3ms
+ ✓ src/programmatic-scope.test.ts > stock run_code keeps its exact semantics (no regression from the extraction) > run_code still logs one dispatch event per sub-call and returns the curated output 4ms
+ ✓ src/programmatic-scope.test.ts > stock run_code keeps its exact semantics (no regression from the extraction) > run_code still refuses a model-direct native call under ptc mode 3ms
+ ✓ src/programmatic-scope.test.ts > stock run_code keeps its exact semantics (no regression from the extraction) > run_code still maps a pre-aborted outer signal to the canonical cancellation code 3ms
+ ✓ src/programmatic-scope.test.ts > stock run_code keeps its exact semantics (no regression from the extraction) > run_code still forwards a nested concludeTurn onto its own successful result 3ms
+ ✓ src/programmatic-scope.test.ts > stock run_code keeps its exact semantics (no regression from the extraction) > run_code still defers a nested image-bearing result onto its own result 3ms
+
+ Test Files  1 passed (1)
+      Tests  42 passed (42)
+   Start at  02:18:19
+   Duration  1.12s (transform 239ms, setup 0ms, import 306ms, tests 639ms, environment 0ms)
+
+
+# ---------------------------------------------------------------------------
+# Regression check: the shared cordis.patch.yml and package.json are also read
+# by these suites, so they are re-run after the M2 row was added.
+# ---------------------------------------------------------------------------
+COMMAND: vitest run src/plugin.test.ts --maxWorkers=1 --no-file-parallelism
+RESULT: 1 passed (1) / 9 passed (9)
+
+COMMAND: vitest run src/tool-protocol.test.ts --maxWorkers=1 --no-file-parallelism
+RESULT: 1 passed (1) / 22 passed (22)

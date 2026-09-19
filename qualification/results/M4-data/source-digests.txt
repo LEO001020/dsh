@@ -1,0 +1,35 @@
+# M4 data-plane source digests.
+#
+# Computed over the FILES THIS MILESTONE OWNS, plus the profile overlay that
+# proves the plugin row loads. A digest here is a statement about the exact
+# revision the recorded tests ran against: if a file changes, its line no
+# longer describes the run that produced tests.txt.
+#
+# UPSTREAM SOURCES the truncation finding rests on are digested separately
+# below, because the finding is about THEIR behaviour, not this package's.
+
+06e29c23632f3252d4461a7652dc6a7ce16d137fccb4cdc120a88e3e97a2b4a8 *src/artifacts.ts
+830ef68134de0a5657b332f3233399e75e4e014376396ce871a4693e11fc9015 *src/observations.ts
+36d6db9778de77b8304b3be089c522ea6650be67450d15d3a0f16c47e78b67d3 *src/data-plane.test.ts
+8d6c2692fef8301904eb4b490e0705da643530e45741bac053f753a599c372f5 *src/data-service.ts
+0ae3fc5ddba9f141e53b89a94e9be05b886c4052fc2ba231c048f375de474147 *src/data-plugin.ts
+c424b86aed5079392f9d3c01d74de91cb17711520bdcff2d38dc6c0f25c9abd1 *cordis.patch.yml
+15eeeeed0997250a19b8fcde4407f969b821f6dc9c6f7cb45041b059f24f3e1a *package.json
+07c18a417b79afd423b0daa375299fae9587d71843175feeff4a182c55f2bed4 *../../qualification/runners/verify-data-plane.mjs
+0ea3f10ddf3b2b2c3b4c5bbedbfa84c617546d83d31401d9f3e3953725b12744 *../../qualification/runners/verify-data-plane.patch.yml
+
+# Upstream DSH sources read for the truncation finding (D:/DSH/src/dsh-src):
+881c3f5da682e0df770634c2d657622b8af72099d1072efd44af9c603b4744b6 *packages/fs/tool-fs/src/read-render.ts
+6c5e290d3aa2a985fc7448558ada8d3d02332e7d624e7456b06e734a97fe3da4 *packages/fs/tool-fs/src/read.ts
+6661a5c0669931e3776f9b84a5a8887ce2b46f2694ca6855f169269c6c7bd498 *packages/fs/tool-fs-search/src/grep.ts
+7b12cf379bfbbf24792b259673d2c6fa74ab7ec9322b3590e4482f4ebc024cab *packages/fs/tool-fs-search/src/search-core.ts
+4b627d534da3cdd8c7b8e3ca68656e25c8d46563bcf3971f50231c162deb1fa6 *packages/attachment/attachment-local/src/store.ts
+4c3555aae98d69f14cd2d35e1c93c870ea15ba31c22d679a6d18cc881c555d70 *packages/spill/spill/src/index.ts
+8aaac8d7524c55823b2c2ea29dc77c2b523c24fa7959bdb4e703f80adb28bc8c *packages/util/atomic-write/src/index.ts
+
+# Pinned checkout revision:
+ddefc45fbc7f8e46dd73185e68295696d1297887
+
+# The profile-boot probe payload is a probe artifact, not evidence of a capture:
+# it exists so the probe has a real file to read through the profile's own ctx.fs.
+162 *probe-payload.txt

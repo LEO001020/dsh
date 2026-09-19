@@ -1,0 +1,51 @@
+# DEP-03: DSH peers imported by PRODUCTION sources vs declared in package.json
+#
+# The gate's oracle is "no deep private import and no `any` bypass". A
+# production import of an undeclared peer is the sibling defect: it resolves
+# here through the junction farm and can fail in a real install.
+
+imported (19):
+  @deepseek-ai/cordis
+  @deepseek-ai/dsh-agent
+  @deepseek-ai/dsh-attachment-local   <-- NOT DECLARED
+  @deepseek-ai/dsh-credentials
+  @deepseek-ai/dsh-fs   <-- NOT DECLARED
+  @deepseek-ai/dsh-llm   <-- NOT DECLARED
+  @deepseek-ai/dsh-session   <-- NOT DECLARED
+  @deepseek-ai/dsh-session-query   <-- NOT DECLARED
+  @deepseek-ai/dsh-settings   <-- NOT DECLARED
+  @deepseek-ai/dsh-storage   <-- NOT DECLARED
+  @deepseek-ai/dsh-storage-domain
+  @deepseek-ai/dsh-storage-json   <-- NOT DECLARED
+  @deepseek-ai/dsh-subagent
+  @deepseek-ai/dsh-subprocess   <-- NOT DECLARED
+  @deepseek-ai/dsh-subprocess-local   <-- NOT DECLARED
+  @deepseek-ai/dsh-tools
+  @deepseek-ai/dsh-util-values   <-- NOT DECLARED
+  @deepseek-ai/dsh-web
+  @deepseek-ai/schemastery   <-- NOT DECLARED
+
+declared (9):
+  @deepseek-ai/cordis
+  @deepseek-ai/dsh-agent
+  @deepseek-ai/dsh-credentials
+  @deepseek-ai/dsh-storage-domain
+  @deepseek-ai/dsh-subagent
+  @deepseek-ai/dsh-tool-fs-search
+  @deepseek-ai/dsh-tools
+  @deepseek-ai/dsh-web
+  typescript
+
+UNDECLARED (12):
+  @deepseek-ai/dsh-attachment-local
+  @deepseek-ai/dsh-fs
+  @deepseek-ai/dsh-llm
+  @deepseek-ai/dsh-session
+  @deepseek-ai/dsh-session-query
+  @deepseek-ai/dsh-settings
+  @deepseek-ai/dsh-storage
+  @deepseek-ai/dsh-storage-json
+  @deepseek-ai/dsh-subprocess
+  @deepseek-ai/dsh-subprocess-local
+  @deepseek-ai/dsh-util-values
+  @deepseek-ai/schemastery

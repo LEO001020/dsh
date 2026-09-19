@@ -1,0 +1,7 @@
+# P3 security gate evidence
+# run: 2026-09-20T03:05:48+08:00
+
+$ npx vitest run src/sec-gates.test.ts
+[2m Test Files [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[32m45 passed[39m[22m[90m (45)[39m
+EXIT=0

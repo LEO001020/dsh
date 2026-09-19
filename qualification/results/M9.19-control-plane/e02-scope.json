@@ -1,0 +1,113 @@
+{
+  "hostCtx": {
+    "terminalController": {
+      "present": true,
+      "ctor": "TerminalController",
+      "hasName": "terminalController"
+    },
+    "pluginManager": {
+      "present": true,
+      "ctor": "PluginManager",
+      "hasName": "pluginManager"
+    },
+    "webServer": {
+      "present": true,
+      "ctor": "WebServer",
+      "hasName": "webServer"
+    },
+    "sessionController": {
+      "present": true,
+      "ctor": "SessionController",
+      "hasName": "sessionController"
+    },
+    "credentials": {
+      "present": true,
+      "ctor": "LocalCredentialProvider",
+      "hasName": "credentials"
+    },
+    "tools": {
+      "present": true,
+      "ctor": "ToolRuntime",
+      "hasName": "tools"
+    }
+  },
+  "agentCtx": {
+    "terminalController": {
+      "present": true,
+      "ctor": "TerminalController",
+      "hasName": "terminalController"
+    },
+    "pluginManager": {
+      "present": true,
+      "ctor": "PluginManager",
+      "hasName": "pluginManager"
+    },
+    "webServer": {
+      "present": true,
+      "ctor": "WebServer",
+      "hasName": "webServer"
+    },
+    "sessionController": {
+      "present": true,
+      "ctor": "SessionController",
+      "hasName": "sessionController"
+    },
+    "credentials": {
+      "present": true,
+      "ctor": "LocalCredentialProvider",
+      "hasName": "credentials"
+    },
+    "tools": {
+      "present": true,
+      "ctor": "ToolRuntime",
+      "hasName": "tools"
+    }
+  },
+  "comparison": {
+    "terminalController": {
+      "host": "present",
+      "agent": "present",
+      "sameInstance": true
+    },
+    "pluginManager": {
+      "host": "present",
+      "agent": "present",
+      "sameInstance": true
+    },
+    "webServer": {
+      "host": "present",
+      "agent": "present",
+      "sameInstance": true
+    },
+    "sessionController": {
+      "host": "present",
+      "agent": "present",
+      "sameInstance": true
+    },
+    "credentials": {
+      "host": "present",
+      "agent": "present",
+      "sameInstance": true
+    },
+    "tools": {
+      "host": "present",
+      "agent": "present",
+      "sameInstance": true
+    }
+  },
+  "errors": [],
+  "hostCtxIdentity": {
+    "isRoot": false,
+    "fiberName": "verify-e02-scope",
+    "rootFiberName": "root",
+    "reflectSharedWithRoot": false,
+    "isolateMapsSharedWithRoot": "no isolate symbol found"
+  },
+  "agentCtxIdentity": {
+    "isRoot": false,
+    "fiberName": "scope",
+    "reflectSharedWithRoot": false,
+    "reflectSharedWithHost": false,
+    "storeSharedWithHost": true
+  }
+}

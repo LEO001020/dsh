@@ -1,0 +1,19 @@
+{
+  "serviceAtApplyTime": false,
+  "serviceSettledAfterMs": 50,
+  "serviceRegistered": true,
+  "serviceName": "dailyWriters",
+  "available": true,
+  "availableReason": "the writer path can reach the integration root C:\\Users\\hzq00\\AppData\\Local\\Temp\\dsh-writers-probe-u7aD0J",
+  "rootRefusedWithoutConfig": true,
+  "workspaceCreated": true,
+  "workspacePath": "C:\\Users\\hzq00\\AppData\\Local\\Temp\\dsh-writers-probe-ws-rzu6mJ\\probe-writer-workspace",
+  "branch": "writer/probe-writer",
+  "baseRevisionMatches": true,
+  "cwdBoundToWorkspace": true,
+  "secondWriterRefused": true,
+  "leaseHeldDuringUse": true,
+  "releasedCleanly": true,
+  "branchGoneAfterRelease": true,
+  "error": null
+}

@@ -1,0 +1,8 @@
+child_pid: 43504
+child_ready: true
+ctrl_event_sender: powershell exit=0 stdout="freed=True attached=False sent=SKIPPED_ATTACH_FAILED"
+child_exit_code: null
+child_exit_signal: null
+child_exit_timed_out: true
+child_stdout: "{\"ready\":true,\"pid\":43504}"
+catchable_signal_delivered: false

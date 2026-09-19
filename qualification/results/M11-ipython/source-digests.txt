@@ -1,0 +1,66 @@
+# source-digests.txt -- sha256 of every source that produced these results.
+#
+# Generated at the pinned checkout ddefc45fbc7f8e46dd73185e68295696d1297887, 2026-09-20.
+# Regenerated after the final edit of every file listed, so the digests describe
+# the tree the evidence in this directory was produced from.
+
+## The package under test (this agent's files)
+
+ddccaf6035df3501baa46f62c98b9ca4a9c4ca69e3a023e67344363b6a779827 *packages/dsh-ipython/src/protocol.ts
+f9703369aacfce9a8327e441ae2887cf17256ad97873a435e093b0ddab2a82be *packages/dsh-ipython/src/broker.py
+399ed75af4d5b06b32a218719434373e8020d948fcc93cb1e3d25a643b250455 *packages/dsh-ipython/src/kernel.ts
+6446326302fc4b7ef22fdf942fc1b24cb40c13724b69dc0bf2bf8e64c9b6c7e2 *packages/dsh-ipython/src/kernel-plugin.ts
+e678f64a20c67a9ee89dc8322c96cb2d3f086981f771cd1c1dfe9a47d03a314b *packages/dsh-ipython/src/host-plugin.ts
+7b90107f03cc9e835c4334aecda7ce58a1e83199e9ba723329c4ada88623add0 *packages/dsh-ipython/src/ipython-tool.ts
+bab987c217d58e8db309802eecc1df39c8314a3d303b4dade97fbdfcc0ecdb47 *packages/dsh-ipython/src/protocol.test.ts
+f8e094908d0840d3caefcc8f7e26fe9ee6b875413ad2074878984f882b2aa5b1 *packages/dsh-ipython/src/requirements.test.ts
+6a37756a14662d1672356a5d81864a9c7a72b2acf806dd115d6eea2cd23a2b82 *packages/dsh-ipython/src/faults.test.ts
+2e971913f4bff1a0f1c78254a01e980d7aa117b26278dc1203e4a960a2991499 *packages/dsh-ipython/src/service.test.ts
+fc216d4472da91de09527d3089bf134a8d7bfd857173f20ccb5b3d6074d982de *packages/dsh-ipython/src/cleanup.test.ts
+10dbc8eb97a55c5c61f90deace7b6b1a90961a80769d0291ac3c611e965faa15 *packages/dsh-ipython/src/smoke.test.ts
+c5c4e1c48ab10f46722228b9b8ac4e115409de2cbad63ea2861243f20a1cbbea *packages/dsh-ipython/cordis.patch.yml
+1f67b362f052baf349d8370343dba8f7ff213c5053661a6a7abcc7fb0f10a2b8 *packages/dsh-ipython/package.json
+31ecf4bb21ba1e97ee481cf3ea2fa45c5ef30cc5675a75424e2abf8398c8cf30 *packages/dsh-ipython/tsconfig.json
+b755148eaa0076c353cf6f38694f7864b3545af961d64f86eae207d44421c338 *packages/dsh-ipython/tsconfig.check.json
+9e5a3524e3f0bad64c619b86cdba7d0995485b5a0529c166e9ea6e665df1666b *packages/dsh-ipython/vitest.config.ts
+
+## The probes and the end-to-end runner
+
+4dc2da9f35601aee58b0ea45ad7f52d226ae582d5d6c9c074ffe95219fec3ea8 *qualification/results/M11-ipython/probe-transport.py
+5b1e2881fc8c9bda147d53fd4e7562a4284aa961b774c9bed7af486995b2624d *qualification/results/M11-ipython/probe-mechanics.py
+edec1c324829c1554cba89a4a573fd7d879f7b8be593c686b8bca5c12f949c70 *qualification/results/M11-ipython/probe-cases.py
+1382d8d35475146ed41efaae2fd041210be405290e56e86d38da828ee61a91c3 *qualification/results/M11-ipython/probe-interrupt.py
+e08d10000acdec72043563f44f9d4cd701ae57c7bf87f23cd322f25a40346d0d *qualification/results/M11-ipython/probe-security.py
+684ca07ea34282d9aaff987e4f46438f3f926639aa450b152d63b0dd569dd322 *qualification/results/M11-ipython/probe-late-attribution.py
+054c78f0fa70f37d451a9938550751e255786f2d7cf0b3c3a52032bce0781ebe *qualification/runners/verify-ipython-e2e.mjs
+9d4f8f5799caf70c23e9e64f4979403c5f89002acae861c567decaedd70d491b *qualification/runners/verify-ipython-e2e.patch.yml
+
+## DSH sources this package cites (read-only, from the pinned checkout)
+
+The signatures quoted in this package's comments resolve to these files at
+ddefc45fbc7f8e46dd73185e68295696d1297887. They are NOT part of the change.
+
+be6e4b3fa18fe633c6c83ed4f9072da5a2a203f64bf0b70c9066fd58b0e2c897 */d/DSH/src/dsh-src/packages/core/tools/src/schema.ts
+e040cf44c7a4c1b74650cc32f67503b8881cc1d5b1f47f1cb38cf0167a9bb3da */d/DSH/src/dsh-src/packages/core/tools/src/index.ts
+19e3fde571d0cd1f76e95696477a7d38677529aaf51b07c429965f2e4330065f */d/DSH/src/dsh-src/packages/subprocess/subprocess/src/index.ts
+e65166444ff791994a7198a86ac4a821e8329120bd551f342913623c87e5a715 */d/DSH/src/dsh-src/packages/subprocess/subprocess/src/types.ts
+50db21bb7ca66c69757333ac0b4e1ccf067afe40d9b451d74c71d51ea2445665 */d/DSH/src/dsh-src/packages/subprocess/subprocess/src/control.ts
+2b238998e1b63ac7ceffa20190caaaa4806a9ae275112807424d176244dfd014 */d/DSH/src/dsh-src/packages/core/agent-loop/src/agent.ts
+
+## The deployment fragment and the leak-diagnosis probes
+
+523501c0696556fd86655c0ce8f829c5e2934bcb4ce6be0f648602a4f8828dc8 *qualification/results/M11-ipython/probe-curve-authz.py
+5117b3cc9ff03f9a3187620a0eb43c1d046556408b002b221dff1a1f208afd00 *packages/dsh-ipython/.probe/leak-attributed.mts
+8fbd96e83a2e33c2cf0ea4c73de0bd8a54a6790d8c0f7c548ae6bd6244b46744 *packages/dsh-ipython/.probe/leak-diagnostic.mts
+
+## The preset template carrying the ipython-tool row (added by the supervisor)
+
+1e89d675d05a4e2a3bac19d2e8cfff6c2e6561edaa074acf286977a4668c6648 *profiles/daily-candidate/presets/daily-standard/agent.cordis.yml
+d23ac13a44afac210f533658e3301a6b74829b18dc1dbdffd8bbf0670035f41b *profiles/daily-candidate/package.json
+485289c804ca1353ff8cb0196de2c9198a43d079ff79cb607f4b4726fa96adb9 *profiles/daily-candidate/cordis.patch.yml
+
+## The end-to-end boot probe and its recorded result
+
+054c78f0fa70f37d451a9938550751e255786f2d7cf0b3c3a52032bce0781ebe *qualification/runners/verify-ipython-e2e.mjs
+9d4f8f5799caf70c23e9e64f4979403c5f89002acae861c567decaedd70d491b *qualification/runners/verify-ipython-e2e.patch.yml
+efaa2389355369e5033c2dfc6a1257be8f9d34c8a48b505c7ee77c69e4938a1c *qualification/results/M11-ipython/e2e-tool.json

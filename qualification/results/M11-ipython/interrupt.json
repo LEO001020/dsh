@@ -1,0 +1,38 @@
+{
+  "control_channel_interrupt_request": {
+    "interrupt_reply": null,
+    "seconds": 16.02,
+    "settled": false,
+    "status": null,
+    "ename": null,
+    "kernel_stderr": "[IPKernelApp] ERROR | Interrupt message not supported on Windows\r\n"
+  },
+  "reset_wedged_kernel": {
+    "wedged": true,
+    "shutdown_now_returned": true,
+    "shutdown_seconds": 1.45,
+    "pid": 44764,
+    "tasklist": "\ufffd\ufffd\u03e2: \u00fb\ufffd\ufffd\ufffd\ufffd\ufffd\u0435\ufffd\ufffd\ufffd\ufffd\ufffd\u01a5\ufffd\ufffd\u05b8\ufffd\ufffd\ufffd\ufffd\u05fc\ufffd\ufffd",
+    "still_present": false
+  },
+  "restart_after_process_kill": {
+    "pid_before_kill": 23064,
+    "restart_after_kill_ok": true,
+    "pid_after": 47260,
+    "error": null,
+    "stdout": "after-restart False\n",
+    "status": "ok"
+  },
+  "fresh_kernel_await_interrupt": {
+    "seconds": 12.14,
+    "settled": false,
+    "status": null,
+    "ename": null
+  },
+  "await_then_interrupt_with_task": {
+    "settled": false,
+    "status": null,
+    "ename": null,
+    "stdout": ""
+  }
+}

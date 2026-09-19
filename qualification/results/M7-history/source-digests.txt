@@ -1,0 +1,45 @@
+=== M7 source digests (sha256) ===
+
+-- files written by M7 --
+8219d34c029df53392fdacd21bfabfb23291068cc09df0332e2a390a45059ba6  packages/dsh-daily-work/src/history-plane.ts
+c2fa1d5dabe4277f78ee0e7c8f29f37275783a7d0ec3761e4bc5241dfe045236  packages/dsh-daily-work/src/web-provenance.ts
+8ba96bedec7cf44ef3c673dc6bc2fabdf70da7addf87571c62ab391a9cfe985b  packages/dsh-daily-work/src/history-plugin.ts
+13476d853f42738347a90e4fd883c49428e45fda922d4160ef9c4ba2679d5cc1  packages/dsh-daily-work/src/history-web.test.ts
+19432abc6e377d20f0a537e2d6696d95954bded5104e9d9cafa079a76fad6752  qualification/runners/verify-m7-history.mjs
+99110b263e216727274c6588d35bc0a8221e3fbb7463d3073971e03d83a2b59a  qualification/runners/verify-m7-history.patch.yml
+34c15b83530536da3feb54eae3661c750a7155635925932e7f5a9a2bfbc825c4  qualification/results/M7-history/boot-probe.json
+
+-- shared files M7 edited (additively; other agents also edit this tree) --
+fd8e1b1d724596cf1d71a04861fbd9a094430ed26531c01e0c8052de5754fbab  packages/dsh-daily-work/package.json
+bbfafac3f9edd030c3383f70d2b0ac66a5ff119d546a08e9931bfcfa8f94691e  packages/dsh-daily-work/cordis.patch.yml
+
+-- DSH sources M7 builds on (pinned checkout D:/DSH/src/dsh-src @ ddefc45fbc) --
+549f7f90c90efec63a5c7d69dbc65938c0f9578f85dcfc8ee25a49a43a8e83e3  packages/session-query/session-query/src/index.ts
+b3f9b33aa4a5db9d54d9c31038a182c333986ac8bd73ed46833c1effe0376337  packages/session-query/session-query/src/observation.ts
+f63d528f4e31bbf7bb79c9add03095885e87f1ecf71c6aeaee01d509639ea60a  packages/session-query/session-query/src/tracing.ts
+5f09e63f26a22c0f2d5ac1209905deb55476de503ed0c7d5ba9582ff4580e021  packages/session-query/session-query/src/corpus.ts
+07f4a5af51d1a4bee5aede654e6cf9198d97c176d8b4ea39666bf6c3fdd95acd  packages/session-query/session-query/src/documents.ts
+f81f0bd19c0ecebfd026e0d245584663621f16f93c30a7564ee97fd97e3bfabc  packages/session-query/session-query/src/types.ts
+5850ab0dd78a26843d6ff899f5bb85af4cc8745f163ff71a17586bcda5da570f  packages/session-query/session-query/src/config.ts
+e2bbc3e2e59c7a4843e9d957e99c37f323d59d224502366a1fcc17f29e196317  packages/session-query/session-query/src/cold-read.ts
+72868e4ae967fee94967df5939ee092a582249ff7b37afc4fe0cf7660d48b8d3  packages/session-query/session-query-sqlite/src/index.ts
+2cc4c7c8e50409847599a048922d55ef4ffbd1ac2309502f3a5a06420bc1a28f  packages/session-query/session-query-sqlite/src/schema.ts
+6f2f38689b945e86bf898ecd2063eeaa257c2aea27838f884fd1ee777f763e35  packages/session-query/tool-session-query/src/workspace-access.ts
+f67e74bdf163d79ec399c8f63865e9180346623ba970c60ea0d2cea76b20bd99  packages/session-query/tool-session-query/src/service-boundary.ts
+88d96d49e38c32e86597fbf1e10d3399b2f9a4ead28a5e0bfde9c883e0507cd2  packages/session/session-persistence/src/index.ts
+2fd8b5c5188ffdf5adee78a260b3dd0a9be97e5eb9fcdb5aafae5a8ed5471a31  packages/session/session-persistence/src/handle.ts
+69931beb012cde8453d46589bb83703552cb7c8e19438e67b3548042882ab861  packages/session/session-persistence-jsonl/src/index.ts
+c6ded93fde2c64e87a313f27877bbf37390e280ff90c3012ef575181e553e1fe  packages/core/session/src/index.ts
+312580d4e2ab568eeec466dbbcff5117cff84a932aeee5d10214bc6a087812eb  packages/core/session/src/types.ts
+55f2f5ff122991e84c74116a952683923c9edcbec0b4f25b53e087c82d58c043  packages/core/system-prompt/src/index.ts
+70393ce16a880977f819c590176fce963c6772f48db26bd2f2274b2d81795e02  packages/web/web/src/index.ts
+5359ed9130690d7c2fceab7079ba2c2e017b1ac5e053a06cf612cbc6b7609896  packages/web/web/src/types.ts
+f7f291e08f0650b860d23af496327468b2a4f74b4d0c5ecc95741b869d1e970d  packages/web/web-fetch-http/src/provider.ts
+7c03406490ca1eeb8c9a08cf33bd0f41b80a69e0e89032012f89fef24763e74f  packages/web/tool-web/src/fetch.ts
+3d35bb98ca3b29a393a733fd19142bf3b4a58cf61e4c70ba475def0203e89061  packages/web/tool-web/src/trust.ts
+8fe273424583d21267ef13f248840e97454d09d836a0ac08323a9482c2069263  vendor/cordis/src/utils.ts
+6847b9781044023d65aebb5896a873b9f0a3d777eaf7fa0dd2a7a408eb6b74a6  vendor/cordis/src/reflect.ts
+614205c6ce7cf1a057b8b352e96aa4fcd734c967a3d2283a126c9c61f268e3be  vendor/cordis/src/service.ts
+
+-- the dsh checkout identity --
+ddefc45fbc7f8e46dd73185e68295696d1297887  D:/DSH/src/dsh-src (HEAD)

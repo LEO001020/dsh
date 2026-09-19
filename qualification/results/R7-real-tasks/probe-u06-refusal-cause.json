@@ -1,0 +1,39 @@
+{
+  "probe": "R7-u06-refusal-cause",
+  "question": "Is the rewound-ledger refusal recorded as u06 step R8a caused by the state rewind (as u06-rollback.mjs explains) or by the malformed effect record the u06 adapter writes?",
+  "design": "Two arms, identical except for the adapter return shape. NEITHER store is rewound, so the u06 explanation predicts no refusal in either arm. A refusal in ARM A and a clean open in ARM B isolates the cause.",
+  "armA": {
+    "label": "u06-shape",
+    "attemptedPerformed": true,
+    "storedStatus": null,
+    "storedStatusType": "undefined",
+    "onDiskStatus": null,
+    "onDiskStatusType": "undefined",
+    "reopened": false,
+    "refusal": "domain 'dsh_daily_effects': stored record 'eff_5a19ae09eb43905169b9fe2a4aca4f6d' in table 'operations' does not match its schema"
+  },
+  "armB": {
+    "label": "correct-shape",
+    "attemptedOutcome": "confirmed",
+    "attemptedPerformed": true,
+    "storedStatus": "confirmed",
+    "storedStatusType": "string",
+    "onDiskStatus": "confirmed",
+    "onDiskStatusType": "string",
+    "reopened": true,
+    "refusal": null
+  },
+  "findings": {
+    "armARefusedLikeU06": true,
+    "armBClean": true,
+    "predictionHolds": true
+  },
+  "conclusion": "The refusal is caused by the ADAPTER RETURN SHAPE, not by the state rewind. u06's adapter returns { kind: \"accepted\" } where the contract (src/effects.ts:253-256) requires { status: \"confirmed\" }, so status is written as undefined and the zod enum rejects the record on the next open. u06 step R8a's narrative -- that the record \"lives in the state that was just rewound\" -- is not supported by u06-rollback.mjs's own code: its effect store is a SIBLING of the state directory and is never rewound.",
+  "u06CodeFacts": {
+    "stateRoot": "u06-rollback.mjs:143 — join(work, \"state\")",
+    "effectStore": "u06-rollback.mjs:229 — join(work, \"effect-store\"), a SIBLING of stateRoot",
+    "rewind": "u06-rollback.mjs:300-302 — rmSync + cpSync on stateRoot ONLY; effectStore is untouched",
+    "adapter": "u06-rollback.mjs remote.perform returns { kind: \"accepted\", resultRef }",
+    "contract": "src/effects.ts:253-256 — EffectPerformResult carries `status`, not `kind`"
+  }
+}

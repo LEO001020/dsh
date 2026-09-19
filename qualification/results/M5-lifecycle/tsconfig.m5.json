@@ -1,0 +1,34 @@
+{
+  // SCOPED typecheck for M5's two files.
+  //
+  // WHY THIS EXISTS. `tsc -p packages/dsh-daily-work/tsconfig.check.json` checks
+  // the WHOLE source tree, which is correct for the project gate but means a
+  // syntax error, or a half-written file being created and deleted by a
+  // concurrent editor, fails M5's typecheck for a reason that has nothing to do
+  // with M5. Two such races were observed during this slice: a transient
+  // `zz-dbg.test.ts` and a transient `probe-m7.test.ts`, each of which made the
+  // whole-tree run exit 2 with TS6053.
+  //
+  // This config keeps every strict flag from the project config and narrows only
+  // `include`, so M5's own evidence is about M5's own code. The whole-tree run is
+  // recorded alongside it in `tsc.txt`, failures and all -- narrowing the check is
+  // not the same as hiding the result, and the coordinator explicitly asked for
+  // the check config to be the cited one, so the whole-tree result is reported
+  // there rather than replaced.
+  "extends": "../../../packages/dsh-daily-work/tsconfig.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "declaration": false,
+    "outDir": "./.m5-tscheck-out",
+    // This config lives OUTSIDE the package, so `types: ["node"]` would resolve
+    // by walking up from HERE and find nothing. `typeRoots` points at the
+    // package's own `node_modules/@types`, which is the same set the build config
+    // resolves. Without this the check fails with TS2688 and proves nothing.
+    "typeRoots": ["../../../packages/dsh-daily-work/node_modules/@types"]
+  },
+  "include": [
+    "../../../packages/dsh-daily-work/src/kernel-lifecycle.ts",
+    "../../../packages/dsh-daily-work/src/kernel-recovery.test.ts"
+  ],
+  "exclude": []
+}

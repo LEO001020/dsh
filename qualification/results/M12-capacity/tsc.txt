@@ -1,0 +1,25 @@
+# M6 typecheck: tsc -p tsconfig.check.json
+# NOTE: tsconfig.check.json (not tsconfig.json) — tsconfig.json EXCLUDES
+# src/**/*.test.ts, so it exits 0 with or without the tests present, which
+# is a false pass for any gate whose evidence is 'the tests type-check'.
+# Command: cd packages/dsh-daily-work && tsc -p tsconfig.check.json
+# Date: 2026-09-20T01:57:53+08:00
+# HEAD: 1d36130f0b97cc927d3750f5fb6071af19dced6e
+# EXIT CODE: 2
+# Total error lines: 7
+# Errors in M6 files (capacity/target-setting/host/host-plugin): 0
+
+=== FULL OUTPUT ===
+../../../../src/dsh-src/packages/fs/tool-fs-search/src/direct-call.ts(5,32): error TS2307: Cannot find module '@deepseek-ai/dsh-util-values' or its corresponding type declarations.
+src/kernel-lifecycle.ts(1403,50): error TS2339: Property 'breaches' does not exist on type '{ cellId: string; parentId: string; accumulator: OutputAccumulator; startedAt: number; graceDeadline: number | undefined; abandoned: boolean; settle: (outcome: CellOutcome, settlement: CellSettlement | undefined, reason: string | undefined, uncertainty: string | undefined) => void; collect: (breach: Omit<...>) => vo...'.
+src/programmatic-scope.ts(610,11): error TS2322: Type '(FileBlock | ReasoningBlock | ImageBlock | ToolCallBlock | ToolResultBlock)[] | undefined' is not assignable to type 'JsonValue | undefined'.
+  Type '(FileBlock | ReasoningBlock | ImageBlock | ToolCallBlock | ToolResultBlock)[]' is not assignable to type 'JsonValue | undefined'.
+    Type '(FileBlock | ReasoningBlock | ImageBlock | ToolCallBlock | ToolResultBlock)[]' is not assignable to type 'JsonValue[]'.
+      Type 'FileBlock | ReasoningBlock | ImageBlock | ToolCallBlock | ToolResultBlock' is not assignable to type 'JsonValue'.
+        Type 'FileBlock' is not assignable to type 'JsonValue'.
+          Type 'FileBlock' is not assignable to type '{ [key: string]: JsonValue; }'.
+            Index signature for type 'string' is missing in type 'FileBlock'.
+src/sec-gates.test.ts(387,15): error TS2554: Expected 2 arguments, but got 1.
+src/sec-gates.test.ts(388,15): error TS2554: Expected 2 arguments, but got 1.
+src/sec-gates.test.ts(798,17): error TS2554: Expected 2 arguments, but got 1.
+src/spike6.test.ts(24,23): error TS2339: Property 'flush' does not exist on type 'Fiber'.

@@ -1,0 +1,33 @@
+# M-DEP-SEC-UPG — both typecheck configs, plus this family's own files
+#
+# cwd: /d/DSH/work/dsh-native-daily/packages/dsh-daily-work
+# node: v24.18.0
+# tsc:  Version 6.0.3
+# run:  2026-09-19T18:12:58Z
+
+=== [1] tsc -p tsconfig.json --noEmit  (EXCLUDES src/**/*.test.ts) ===
+# This is the FALSE PASS the gate exists to catch: it exits 0 with or
+# without any test file present, so its exit code is NOT evidence that
+# the tests compile. DEP-08 injects a test-file type error and shows this
+# config still exits 0 on it.
+
+EXIT=0
+
+=== [2] tsc -p tsconfig.check.json  (INCLUDES tests) ===
+# The real coverage: identical strict flags, exclude cleared.
+
+EXIT=0
+
+=== [3] this family's own three files, filtered out of run [2] ===
+# Empty output means dep-gates/sec-gates/upg-gates are clean.
+
+(no errors in this family's files)
+
+=== [4] the three runs that established DEP-03's PASS ===
+# The gate was FAIL earlier in this work (30+ errors across 18 files owned
+# by concurrent work). Re-measured three times, back to back:
+  run 1: exit=0 errors=0
+  run 2: exit=0 errors=0
+  run 3: exit=0 errors=0
+
+# finished: 2026-09-19T18:13:23Z

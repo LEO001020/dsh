@@ -41,15 +41,15 @@
     "wallTime": [
       {
         "group": "C0",
-        "mountAndCreateMs": 27
+        "mountAndCreateMs": 93
       },
       {
         "group": "C1",
-        "mountAndCreateMs": 7
+        "mountAndCreateMs": 47
       },
       {
         "group": "C2",
-        "mountAndCreateMs": 8
+        "mountAndCreateMs": 27
       }
     ]
   },
@@ -61,7 +61,7 @@
         "base_read"
       ],
       "hasWorkTool": false,
-      "promptSectionCount": 0
+      "promptSectionCount": 3
     },
     {
       "group": "C1",
@@ -71,7 +71,7 @@
         "repo_instructions"
       ],
       "hasWorkTool": false,
-      "promptSectionCount": 0
+      "promptSectionCount": 3
     },
     {
       "group": "C2",
@@ -82,7 +82,7 @@
         "work"
       ],
       "hasWorkTool": true,
-      "promptSectionCount": 0
+      "promptSectionCount": 3
     }
   ],
   "statistics": {
@@ -101,9 +101,9 @@
     },
     "wallStats": {
       "n": 3,
-      "min": 7,
-      "max": 27,
-      "mean": 14
+      "min": 27,
+      "max": 93,
+      "mean": 55.666666666666664
     },
     "winnerDeclared": false,
     "reason": "one observation per group gives no variance estimate, so no difference on any axis can be distinguished from noise. The gate forbids declaring a winner without a statistical basis and this run does not have one."

@@ -1,0 +1,11 @@
+Traceback (most recent call last):
+  File "D:\DSH\work\dsh-native-daily\qualification\runners\map-dsh-packages.py", line 16, in <module>
+    names = [line.strip() for line in pathlib.Path(sys.argv[2]).read_text().splitlines() if line.strip()]
+                                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\hzq00\AppData\Local\Programs\Python\Python314\Lib\pathlib\__init__.py", line 787, in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors, newline=newline) as f:
+         ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\hzq00\AppData\Local\Programs\Python\Python314\Lib\pathlib\__init__.py", line 771, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: 'D:\\DSH\\work\\dsh-native-daily\\qualification\\results\\M10.0-audit-repro\\needed.txt'

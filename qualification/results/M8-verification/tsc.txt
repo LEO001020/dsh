@@ -1,0 +1,16 @@
+tsc -p tsconfig.check.json (packages/dsh-daily-work)
+command: export PATH="/d/DSH/tools/bin:/d/DSH/src/dsh-src/node_modules/.bin:$PATH" && tsc -p tsconfig.check.json
+tsc_exit=0
+output: (empty -- no diagnostics)
+
+# Why the CHECK config, not the build config:
+# tsconfig.json excludes src/**/*.test.ts so the build never emits test code.
+# That exclusion is correct for the build and makes 'tsc -p tsconfig.json'
+# exit 0 with or without a test file present -- a FALSE PASS for any gate
+# whose evidence is 'the tests type-check'. tsconfig.check.json keeps the
+# identical strict flags and clears only the exclude, so it CAN see a broken
+# test file. DEP-08 is the gate about exactly this, and this file is the
+# recorded proof that the check config sees test files.
+
+# The whole package is clean, not only the files this slice added:
+# 0 errors total, including src/**/*.test.ts.

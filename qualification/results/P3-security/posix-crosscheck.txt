@@ -1,0 +1,15 @@
+# POSIX cross-check: the exact argv bwrapProfileArgs() produces, run on a real kernel
+# host: WSL2, 6.18.33.2-microsoft-standard-WSL2
+# bwrap: /usr/bin/bwrap
+# profiles.ts:17 -> ['--ro-bind', '/', '/', '--dev', '/dev', '--unshare-pid', '--proc', '/proc', '--die-with-parent']
+
+## SEC-01: a READ outside the policy root, under the read-only profile
+$ bwrap --ro-bind / / --dev /dev --unshare-pid --proc /proc --die-with-parent -- cat $BASE/outside.txt
+CANARY-FAKE-SEC01-POSIXREAD_EXIT=0
+touch: setting times of '/tmp/tmp.T5VwebwWuV/outside.txt': Read-only file system
+WRITE_EXIT=1
+
+## SEC-03: a loopback round trip from INSIDE the profile
+SEC03-POSIX-ANSWER
+ROUND_TRIP_EXIT=0
+DNS_EXIT=0

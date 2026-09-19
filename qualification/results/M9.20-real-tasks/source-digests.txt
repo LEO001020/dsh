@@ -1,0 +1,58 @@
+# source-digests.txt -- sha256 of every source that produced these results.
+#
+# Generated at the pinned checkout ddefc45fbc7f8e46dd73185e68295696d1297887, 2026-09-19.
+# Regenerated after the final edit of every file listed, so the digests describe
+# the tree the evidence in this directory was produced from.
+
+## The gate test files and the boot probes / scripts (this agent's files)
+
+cf18b98b205b08e91e3a6dc03d9a40ed4448a68d3073ff30551bddc601498de2  packages/dsh-daily-work/src/control-plane.test.ts
+2233b7d7bdf41079259c1d9f9940efa9da83b431a019391d432b29a4ce4bb372  packages/dsh-daily-work/src/real-tasks.test.ts
+8ddcd447e9eadc2b00e6211acabcc4431a58191bbb12c17d0003235a04d46b39  packages/dsh-daily-work/src/u01-coding-loop.test.ts
+451930eb9f8e92aacfd630d47a5a238aa85191f8ebc6fb34226837d80a01b578  packages/dsh-daily-work/src/u02-research-loop.test.ts
+090bc7bced891928a0a81923b1f493fbc9d8a6664c55f96d49f5f24649abcd65  packages/dsh-daily-work/src/u03-sustained-load.test.ts
+e8cafc2f61284e1409217b08f2ab91cbcdc840c79098a9b519f224281b155e6f  packages/dsh-daily-work/src/u04-paired-comparison.test.ts
+628e5c8f5e7d37f532f4b331012d8fe638a83792f8cc973ca721345e92228307  qualification/results/M9.19-control-plane/probe-control-plane.mjs
+3b9823ded2a8072c1d28179edaf56ee38322b0c01cdaf89ae921478dc42670ea  qualification/results/M9.19-control-plane/probe-scope.mjs
+384c88b9cf6576f7e1b7044d15efc46f37965afa17a2ff5d7f5f046088afa73b  qualification/results/M9.19-control-plane/probe-loopback.mjs
+f05c618a74fd14756986cbdc5a0ca2a0348f2326e1ad049560f6e9abad3a41be  qualification/results/M9.19-control-plane/probe-control-plane.patch.yml
+a88d9c3710bf0ac4dd847da79f988bed64a18630b981534adc5e7ea76abb2f83  qualification/results/M9.19-control-plane/probe-scope.patch.yml
+3a02af7cdd85acd95dd37bae94b2595899ae48caf5a4fe501cbba97d75c31d9c  qualification/results/M9.19-control-plane/probe-loopback.patch.yml
+c08a2ce2af97150a57bf84f0484173d33b2b09105486d24a5bef1922da7cfbc2  qualification/results/M9.20-real-tasks/u05-canary.mjs
+2a4f6ce38071fe8a25af7ecd741c4faae2ead45851ef10a657489a727ac8b89f  qualification/results/M9.20-real-tasks/u06-rollback.mjs
+
+## DSH sources read, quoted or executed (pinned ddefc45fbc7f8e46dd73185e68295696d1297887)
+# The E02 privilege claim and the U02 audit citations are claims about THESE files.
+
+414150966ac9bd69eb4222ad2c453f653bd009e6d8194802c43aa6d304e316c5  packages/api/terminal-controller/src/index.ts
+7af7d5d12c8e9347b4880dc939815fea9b8f7ab45d7dc80fe868e5fee4c1bdc4  packages/sandbox/sandbox-windows-acl/src/index.ts
+f7f21872ae725111f6a043eab37b533d9c8b9712d3ff9684aeded150e6f10b37  packages/sandbox/sandbox-local/src/index.ts
+168c9c1c3237e6995e2162d86aace6b4c74247a8a210f64e997b98eb0dba744f  packages/subagent/subagent/src/index.ts
+19e3fde571d0cd1f76e95696477a7d38677529aaf51b07c429965f2e4330065f  packages/subprocess/subprocess/src/index.ts
+90f6a4220979bd98d9d71f009a457a0d8af9d9608496dd5fa78dd7045871ea98  packages/client/connection/src/browser-auth.ts
+8085ac726be6b597ee61a0da1318ab956004d4d44325c941f7784feec93c0748  packages/client/connection/src/api-request-trust.ts
+c50a59fb54abf2f2e5372384002ffcbad45c0df5b6c9bc660dffb84ab7ac2afd  packages/host/webserver/src/index.ts
+a8302cd9b13b6cb1be94ebd2a51b0f42920bb09862eaa8ecf824f9a3e1c7525b  packages/bundle/web-app/src/index.ts
+2611f93e4ee418e455890f4e8977fdfea5531bd91ecf815d51f5ba1ccc06949f  packages/shell/shell-env/src/index.ts
+0934f22b2fdbc158fd2edad33ec5dd2671b5b1f727800dcaab74cee3bd7294af  packages/preset/agent-presets/presets/standard/agent.cordis.yml
+6847b9781044023d65aebb5896a873b9f0a3d777eaf7fa0dd2a7a408eb6b74a6  vendor/cordis/src/reflect.ts
+69c49c871735dc7ee81ec51f266bbec129f075fd5066e046374f4b13ab02a705  apps/cli/lib/bin.js
+
+## The subject under test for E12 (verify.ts) and its neighbours
+# verify.ts is written by another agent; its digest is recorded so a later change
+# to the subject is visible rather than silently re-scoping these results.
+
+95281a41c60b9f70ddc57a0f7754749ac203eb72706850f400a5ca661fd822ae  packages/dsh-daily-work/src/verify.ts
+c2ea21b62276a488a5e7fe9a96505af8ae74d490cee772df9dd8a7b2c1f73d86  packages/dsh-daily-work/src/host.ts
+a364a03a4ecd9b752794e04f4211625671b85dbdf5f17a0fbc5ce7ad7c9a59ce  packages/dsh-daily-work/src/counting.ts
+e7207ffd46f4aef395d6ff48a8679edca6107a90545716be179280bb49617aa0  packages/dsh-daily-work/src/states.ts
+e8945b46ce3691ee91c0103693b201326895a091de41b110ab57abd207997d58  packages/dsh-daily-work/src/effects.ts
+
+## Evidence artifacts produced
+
+6cdd54d6fa89cbd3333efc5cca35234ab7d5f58ff14684f493007252bb6b09a9  qualification/results/M9.19-control-plane/e02.json
+f93a462d9794e064f760840b961769691afb3f159b82ff883b9c5aab8c9d7a57  qualification/results/M9.19-control-plane/e02-loopback.json
+f92cccb3a31ffb3a5badeca8397735b1941efc98d59ad11de2422c79753733d5  qualification/results/M9.20-real-tasks/u03-load.json
+a7ee6b3751ae0f937f44ba270e92cf75773a65d7859a918b22f2d3c3c1675d1f  qualification/results/M9.20-real-tasks/u04-paired.json
+3d5243a877d41215c40e9808e14800feb8ac193c49d43833e098c9fe1199ab11  qualification/results/M9.20-real-tasks/u05-canary.json
+d9d313688f3d9e1fb1c6e120f2b222f2e95797a431b205853bc0652465cf1ba8  qualification/results/M9.20-real-tasks/u06-rollback.json

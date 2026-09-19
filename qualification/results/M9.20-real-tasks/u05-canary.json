@@ -20,9 +20,9 @@
       "id": "F2",
       "name": "profile resolves and includes the extension host row",
       "status": "PASS",
-      "detail": "--dump-config exited 0 and the composed tree names daily-work-host (368 lines)",
+      "detail": "--dump-config exited 0 and the composed tree names daily-work-host (388 lines)",
       "profile": "canary",
-      "profileHome": "C:\\Users\\hzq00\\AppData\\Local\\Temp\\dsh-u05-canary-N5wDJU"
+      "profileHome": "C:\\Users\\hzq00\\AppData\\Local\\Temp\\dsh-u05-canary-uEyiKo"
     },
     {
       "id": "F3",
@@ -61,7 +61,19 @@
       "id": "F7",
       "name": "the canary home was exercised",
       "status": "PASS",
-      "detail": "canary home holds 3 files after the run"
+      "detail": "canary home holds 3 files after the run",
+      "canaryHome": "C:\\Users\\hzq00\\AppData\\Local\\Temp\\dsh-u05-canary-uEyiKo",
+      "files": [
+        "LINK profiles/canary/node_modules/dsh-daily-work",
+        "profiles/canary/cordis.yml",
+        "profiles/canary/package.json"
+      ]
+    },
+    {
+      "id": "F8",
+      "name": "the daily-home write check has teeth (positive control)",
+      "status": "PASS",
+      "detail": "a deliberate write moved the control digest from e3b0c44298fc1c14... to e6b6b67d1f32c5b5..., so F6 detects writes when there is something to write to"
     }
   ],
   "blocked": [
@@ -77,7 +89,7 @@
     }
   ],
   "summary": {
-    "pass": 7,
+    "pass": 8,
     "fail": 0,
     "notRun": 0,
     "blockedExternal": 2
