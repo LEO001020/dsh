@@ -1,0 +1,90 @@
+{
+  "ok": true,
+  "checksPassed": 23,
+  "checksTotal": 23,
+  "checks": {
+    "fs service present": true,
+    "provider class is LocalFileSystem (exact constructor)": true,
+    "provider is NOT SandboxedFileSystem (instanceof)": true,
+    "SandboxedFileSystem absent from prototype chain": true,
+    "fs-sandbox row is disabled in the composed tree": true,
+    "fs-local row is ACTIVE in the composed tree": true,
+    "fs-observation-policy row is ACTIVE": true,
+    "fs/write-intent is still answered by a listener": true,
+    "fs/edit-intent is still answered by a listener (FS_NOT_OBSERVED)": true,
+    "read/write/edit round-trips through the real tools": true,
+    "stale-version write/edit is REFUSED": true,
+    "the refusal is FS_STALE_VERSION": true,
+    "the refused mutation had NO effect": true,
+    "a non-matching exact edit is REFUSED": true,
+    "the refusal is FS_EDIT_NOT_FOUND": true,
+    "the refused edit had NO effect": true,
+    "tool face is not zero": true,
+    "ipython is present in the tool face": true,
+    "no entry failed to activate": true,
+    "no activation warnings on stderr": true,
+    "the containment outcome is measured, not assumed": true,
+    "outside-workspace READ was never fenced (the control)": true,
+    "the host was killed and the port released": true
+  },
+  "composition": {
+    "installed": "5b8b2a8e5d9ae13d35c1d86833f8b96eeb84078a13027a08efc1379a6fc8afb4",
+    "repo": "5b8b2a8e5d9ae13d35c1d86833f8b96eeb84078a13027a08efc1379a6fc8afb4",
+    "isCurrent": true
+  },
+  "sandboxPolicyDefaultMode": "workspace-write",
+  "fsSandboxMode": null,
+  "containmentEffect": "ACTIVE -- the fence applied to writeText/editText before the swap",
+  "outsideWorkspaceWriteSucceeded": true,
+  "escalationFieldsAdvertised": {
+    "write": [],
+    "edit": []
+  },
+  "toolCount": 27,
+  "ipythonToolPresent": true,
+  "providerClassName": "LocalFileSystem",
+  "resolvedModuleRealpaths": {
+    "dsh-fs-local": "D:\\DSH\\src\\dsh-src\\packages\\fs\\fs-local\\lib\\index.js",
+    "dsh-fs-sandbox": "D:\\DSH\\src\\dsh-src\\packages\\fs\\fs-sandbox\\lib\\index.js"
+  },
+  "fsRows": [
+    {
+      "id": "fs-observation-policy",
+      "name": "@deepseek-ai/dsh-fs-observation-policy",
+      "disabled": false,
+      "fiberState": 2
+    },
+    {
+      "id": "fs-sandbox",
+      "name": "@deepseek-ai/dsh-fs-sandbox",
+      "disabled": true,
+      "fiberState": null
+    },
+    {
+      "id": "fs-local",
+      "name": "@deepseek-ai/dsh-fs-local",
+      "disabled": false,
+      "fiberState": 2
+    }
+  ],
+  "inactiveEntryIds": [],
+  "nonActiveEntries": [
+    {
+      "id": "verify-t2-fs",
+      "name": "file:///D:/DSH/work/dsh-native-daily/qualification/runners/verify-t2-fs.mjs",
+      "fiberState": 1,
+      "error": null
+    }
+  ],
+  "selfRowId": "verify-t2-fs",
+  "selfRowFiberState": 1,
+  "loaderInternalPresent": true,
+  "boot": {
+    "port": 11682,
+    "timedOut": false,
+    "exitCode": null,
+    "portReleased": true
+  },
+  "activationWarningLines": [],
+  "probeError": null
+}

@@ -1,0 +1,88 @@
+=== T2 CONTROL: the same probe against the PRE-SWAP composition ===
+
+home:     D:/DSH/home/t2-fs-control
+seeded_from: D:/DSH/home/t2-fs/profiles/daily (the swap run's install)
+overlay:  D:/DSH/work/dsh-native-daily/qualification/runners/verify-t2-fs-control.patch.yml
+probe_out: D:/DSH/work/dsh-native-daily/qualification/results/T2-fs/control-boot.json
+
+port: 3003
+timed_out: false
+exit_code: null
+port_released_after_kill: true
+
+result_names_this_home: true (presetRoots: D:\DSH\src\dsh-src\packages\preset\agent-presets\presets\, D:/DSH/home/t2-fs-control/profiles/daily/presets/, D:\DSH\home\t2-fs-control\.agent-presets)
+
+activation_warning_lines: []
+
+--- the swap run vs the control run ---
+{
+  "providerClassName": {
+    "swapped": "LocalFileSystem",
+    "control": "SandboxedFileSystem"
+  },
+  "fsSandboxRowDisabled": {
+    "swapped": true,
+    "control": false
+  },
+  "fsLocalRowDisabled": {
+    "swapped": null,
+    "control": null
+  },
+  "fsLocalRowActive": {
+    "swapped": true,
+    "control": false
+  },
+  "sandboxClassInPrototypeChain": {
+    "swapped": false,
+    "control": true
+  },
+  "outsideWorkspaceWriteSucceeded": {
+    "swapped": true,
+    "control": false
+  },
+  "escalationFieldsAdvertised": {
+    "swapped": {
+      "write": [],
+      "edit": []
+    },
+    "control": {
+      "write": [
+        "sandbox_permissions",
+        "justification"
+      ],
+      "edit": [
+        "sandbox_permissions",
+        "justification"
+      ]
+    }
+  },
+  "nonActiveEntries": {
+    "swapped": [
+      {
+        "id": "verify-t2-fs",
+        "name": "file:///D:/DSH/work/dsh-native-daily/qualification/runners/verify-t2-fs.mjs",
+        "fiberState": 1,
+        "error": null
+      }
+    ],
+    "control": [
+      {
+        "id": "verify-t2-fs",
+        "name": "file:///D:/DSH/work/dsh-native-daily/qualification/runners/verify-t2-fs.mjs",
+        "fiberState": 1,
+        "error": null
+      }
+    ]
+  },
+  "inactiveEntryIds": {
+    "swapped": [],
+    "control": []
+  },
+  "toolCount": {
+    "swapped": 27,
+    "control": 27
+  },
+  "inactiveEntryIdsIdentical": true,
+  "providerActuallyDiffers": true
+}
+

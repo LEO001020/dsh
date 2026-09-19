@@ -1,0 +1,84 @@
+{
+  "ok": true,
+  "purpose": "control for the T2 fs-provider swap: the same probe against the pre-swap composition",
+  "home": "D:/DSH/home/t2-fs-control",
+  "overlay": "D:/DSH/work/dsh-native-daily/qualification/runners/verify-t2-fs-control.patch.yml",
+  "compositionInstalled": "5b8b2a8e5d9ae13d35c1d86833f8b96eeb84078a13027a08efc1379a6fc8afb4",
+  "boot": {
+    "port": 3003,
+    "timedOut": false,
+    "exitCode": null,
+    "portReleased": true
+  },
+  "activationWarningLines": [],
+  "comparison": {
+    "providerClassName": {
+      "swapped": "LocalFileSystem",
+      "control": "SandboxedFileSystem"
+    },
+    "fsSandboxRowDisabled": {
+      "swapped": true,
+      "control": false
+    },
+    "fsLocalRowDisabled": {
+      "swapped": null,
+      "control": null
+    },
+    "fsLocalRowActive": {
+      "swapped": true,
+      "control": false
+    },
+    "sandboxClassInPrototypeChain": {
+      "swapped": false,
+      "control": true
+    },
+    "outsideWorkspaceWriteSucceeded": {
+      "swapped": true,
+      "control": false
+    },
+    "escalationFieldsAdvertised": {
+      "swapped": {
+        "write": [],
+        "edit": []
+      },
+      "control": {
+        "write": [
+          "sandbox_permissions",
+          "justification"
+        ],
+        "edit": [
+          "sandbox_permissions",
+          "justification"
+        ]
+      }
+    },
+    "nonActiveEntries": {
+      "swapped": [
+        {
+          "id": "verify-t2-fs",
+          "name": "file:///D:/DSH/work/dsh-native-daily/qualification/runners/verify-t2-fs.mjs",
+          "fiberState": 1,
+          "error": null
+        }
+      ],
+      "control": [
+        {
+          "id": "verify-t2-fs",
+          "name": "file:///D:/DSH/work/dsh-native-daily/qualification/runners/verify-t2-fs.mjs",
+          "fiberState": 1,
+          "error": null
+        }
+      ]
+    },
+    "inactiveEntryIds": {
+      "swapped": [],
+      "control": []
+    },
+    "toolCount": {
+      "swapped": 27,
+      "control": 27
+    },
+    "inactiveEntryIdsIdentical": true,
+    "providerActuallyDiffers": true
+  }
+}

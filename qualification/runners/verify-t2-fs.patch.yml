@@ -1,0 +1,25 @@
+# Overlay for the T2 filesystem-provider boot probe.
+#
+# Loaded ON TOP of the `daily-candidate` profile, so the probe runs inside a real
+# composed profile boot rather than a hand-mounted context. It ADDS ONE ROW and
+# changes nothing else: the provider swap under test lives in the PROFILE
+# (`profiles/daily-candidate/cordis.patch.yml`, DIFFERENCE 3), not here. A probe
+# that installed its own subject could not observe the product's composition.
+#
+# WHY THERE IS NO `webserver` ROW HERE. `boot-harness.mjs` already appends a port
+# overlay LAST, and it restates all four keys the row needs (`host`, `port`,
+# `compression`, `compressionLevel`) because a patch REPLACES the target row's
+# whole `config` object rather than merging into it. A second `webserver` patch
+# here would be a competing writer for the same row with no benefit; the harness
+# picks a genuinely free port by binding port 0, which is what keeps this probe
+# from colliding with the other agents' hosts on 3080.
+#
+# NO `sandbox-policy` ROW EITHER, and that is load-bearing rather than an
+# omission. `sandboxPolicy` is injected by seven other rows, so removing or
+# reconfiguring it here would break their readiness gates and reproduce the
+# measured `toolCount: 0` failure (FACT F). This probe measures the policy's
+# `defaultMode` as the deployment composed it, so restating the row would destroy
+# the very fact being reported.
+- insert:
+    - id: verify-t2-fs
+      name: 'D:/DSH/work/dsh-native-daily/qualification/runners/verify-t2-fs.mjs'

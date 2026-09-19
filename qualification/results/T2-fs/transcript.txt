@@ -1,0 +1,49 @@
+=== T2: filesystem provider swap, verified through a real profile boot ===
+
+home:     D:/DSH/home/t2-fs
+profile:  daily
+overlay:  D:/DSH/work/dsh-native-daily/qualification/runners/verify-t2-fs.patch.yml
+probe_out: D:/DSH/work/dsh-native-daily/qualification/results/T2-fs/boot.json
+stale_lock: no lock present
+
+composition_installed_sha256: 5b8b2a8e5d9ae13d35c1d86833f8b96eeb84078a13027a08efc1379a6fc8afb4
+composition_repo_sha256:      5b8b2a8e5d9ae13d35c1d86833f8b96eeb84078a13027a08efc1379a6fc8afb4
+composition_is_current: true
+
+boot_cwd: D:/DSH/src/dsh-src (deliberately foreign to the profile directory)
+port: 11682 (bound by the harness, not assumed)
+timed_out: false
+exit_code: null
+port_released_after_kill: true
+
+result_names_this_home: true (presetRoots: D:\DSH\src\dsh-src\packages\preset\agent-presets\presets\, D:/DSH/home/t2-fs/profiles/daily/presets/, D:\DSH\home\t2-fs\.agent-presets)
+
+activation_warning_lines: []
+probe_error: none
+
+--- checks ---
+ok   fs service present
+ok   provider class is LocalFileSystem (exact constructor)
+ok   provider is NOT SandboxedFileSystem (instanceof)
+ok   SandboxedFileSystem absent from prototype chain
+ok   fs-sandbox row is disabled in the composed tree
+ok   fs-local row is ACTIVE in the composed tree
+ok   fs-observation-policy row is ACTIVE
+ok   fs/write-intent is still answered by a listener
+ok   fs/edit-intent is still answered by a listener (FS_NOT_OBSERVED)
+ok   read/write/edit round-trips through the real tools
+ok   stale-version write/edit is REFUSED
+ok   the refusal is FS_STALE_VERSION
+ok   the refused mutation had NO effect
+ok   a non-matching exact edit is REFUSED
+ok   the refusal is FS_EDIT_NOT_FOUND
+ok   the refused edit had NO effect
+ok   tool face is not zero
+ok   ipython is present in the tool face
+ok   no entry failed to activate
+ok   no activation warnings on stderr
+ok   the containment outcome is measured, not assumed
+ok   outside-workspace READ was never fenced (the control)
+ok   the host was killed and the port released
+
+checks_passed: 23/23

@@ -1,0 +1,22 @@
+# CONTROL overlay for the T2 probe: revert DIFFERENCE 3 (the fs provider swap).
+#
+# WHY THIS FILE EXISTS. The probe's `no entry failed to activate` check reports
+# `hmr` stuck in FiberState.LOADING. The question a reader must be able to answer
+# is whether the SWAP caused that or whether it is a property of the profile (or
+# of the host) that predates the swap. Reading source cannot answer it: the swap
+# and `hmr` touch disjoint services, but "disjoint in source" is not a measurement.
+#
+# So this overlay puts the composition BACK the way it was before DIFFERENCE 3 --
+# `fs-sandbox` re-enabled, `fs-local` disabled -- and the SAME probe binary runs
+# against it. If `hmr` is still LOADING, the finding is independent of the swap.
+# If `hmr` reaches ACTIVE, the swap is implicated and that is a real regression.
+#
+# A patch REPLACES the whole key it names, so a literal `false` overrides the
+# profile's literal `true` (`vendor/include/src/index.ts:77`). No `name` is stated
+# on either row, so both are matched by id alone, and neither row carries a
+# `config` that this overlay would have to restate.
+- id: fs-sandbox
+  disabled: false
+
+- id: fs-local
+  disabled: true

@@ -1,0 +1,222 @@
+{
+  "probe": "verify-t2-fs",
+  "dshHome": "D:/DSH/home/t2-fs",
+  "bootCwd": "D:\\DSH\\src\\dsh-src",
+  "installedProfilePatch": {
+    "path": "D:/DSH/home/t2-fs/profiles/daily/cordis.patch.yml",
+    "sha256": "5b8b2a8e5d9ae13d35c1d86833f8b96eeb84078a13027a08efc1379a6fc8afb4"
+  },
+  "presetRoots": [
+    {
+      "path": "D:\\DSH\\src\\dsh-src\\packages\\preset\\agent-presets\\presets\\",
+      "trust": "system"
+    },
+    {
+      "path": "D:/DSH/home/t2-fs/profiles/daily/presets/",
+      "trust": "system"
+    },
+    {
+      "path": "D:\\DSH\\home\\t2-fs\\.agent-presets",
+      "trust": "user"
+    }
+  ],
+  "presetDefaultId": "daily-standard",
+  "error": null,
+  "fsPresent": true,
+  "providerClassName": "LocalFileSystem",
+  "providerPrototypeChain": [
+    "LocalFileSystem",
+    "FileSystem",
+    "Service"
+  ],
+  "fsWasTraceProxy": true,
+  "rawProviderClassName": "LocalFileSystem",
+  "resolvedModuleRealpaths": {
+    "dsh-fs-local": "D:\\DSH\\src\\dsh-src\\packages\\fs\\fs-local\\lib\\index.js",
+    "dsh-fs-sandbox": "D:\\DSH\\src\\dsh-src\\packages\\fs\\fs-sandbox\\lib\\index.js"
+  },
+  "providerIsExactLocalClass": true,
+  "providerIsInstanceOfLocalClass": true,
+  "providerIsInstanceOfSandboxClass": false,
+  "sandboxClassInPrototypeChain": false,
+  "providerClassesAreDistinct": true,
+  "loaderPresent": true,
+  "fsRows": [
+    {
+      "id": "fs-observation-policy",
+      "name": "@deepseek-ai/dsh-fs-observation-policy",
+      "disabled": false,
+      "fiberState": 2
+    },
+    {
+      "id": "fs-sandbox",
+      "name": "@deepseek-ai/dsh-fs-sandbox",
+      "disabled": true,
+      "fiberState": null
+    },
+    {
+      "id": "fs-local",
+      "name": "@deepseek-ai/dsh-fs-local",
+      "disabled": false,
+      "fiberState": 2
+    }
+  ],
+  "fsSandboxRowDisabled": true,
+  "fsLocalRowActive": true,
+  "fsObservationPolicyRowActive": true,
+  "fsSandboxRowFiberState": null,
+  "fsLocalRowFiberState": 2,
+  "fsObservationPolicyRowFiberState": 2,
+  "settleSamples": [
+    []
+  ],
+  "settledWithinMs": 252,
+  "nonActiveEntries": [
+    {
+      "id": "verify-t2-fs",
+      "name": "file:///D:/DSH/work/dsh-native-daily/qualification/runners/verify-t2-fs.mjs",
+      "fiberState": 1,
+      "error": null
+    }
+  ],
+  "selfRowId": "verify-t2-fs",
+  "inactiveEntryIds": [],
+  "selfRowFiberState": 1,
+  "loaderInternalPresent": true,
+  "fsSandboxMode": null,
+  "sandboxPolicyPresent": true,
+  "sandboxPolicyDefaultMode": "workspace-write",
+  "sandboxPolicyResolved": "workspace-write",
+  "sessionControllerPresent": true,
+  "sessionCreated": true,
+  "sessionId": "session-1ef81692-a083-4c41-a06f-6b203ea21cab",
+  "sessionCwd": "D:/DSH/work/dsh-native-daily/qualification/results/T2-fs/workspace",
+  "agentPresent": true,
+  "toolCount": 27,
+  "tools": [
+    "ask_user_question",
+    "create_goal",
+    "edit",
+    "exit_plan_mode",
+    "get_goal",
+    "glob",
+    "grep",
+    "interrupt_agent",
+    "ipython",
+    "job_kill",
+    "job_list",
+    "job_output",
+    "list_agents",
+    "present",
+    "read",
+    "read_image",
+    "send_message",
+    "skill",
+    "subagent",
+    "subagent_fork",
+    "todo_write",
+    "update_goal",
+    "web_fetch",
+    "web_search",
+    "work",
+    "workflow",
+    "write"
+  ],
+  "ipythonToolPresent": true,
+  "mutationToolParameters": {
+    "write": [
+      "file_path",
+      "content"
+    ],
+    "edit": [
+      "file_path",
+      "old_string",
+      "new_string",
+      "replace_all"
+    ]
+  },
+  "escalationFieldsAdvertised": {
+    "write": [],
+    "edit": []
+  },
+  "writeIntentWithNoActor": {
+    "label": "write-intent",
+    "ok": true,
+    "value": {
+      "kind": "createIfAbsent"
+    }
+  },
+  "editIntentWithNoActor": {
+    "label": "edit-intent",
+    "ok": false,
+    "error": "FsError: edit requires reading \"D:\\DSH\\work\\dsh-native-daily\\qualification\\results\\T2-fs\\workspace\\intent-probe.txt\" first",
+    "code": "FS_NOT_OBSERVED"
+  },
+  "roundTrip": {
+    "write": {
+      "isError": false,
+      "code": null,
+      "message": "<path>D:\\DSH\\work\\dsh-native-daily\\qualification\\results\\T2-fs\\workspace\\round-trip.txt</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+    },
+    "read": {
+      "isError": false,
+      "code": null,
+      "message": "<path>D:\\DSH\\work\\dsh-native-daily\\qualification\\results\\T2-fs\\workspace\\round-trip.txt</path>\n<type>file</type>\n<content>\n1: line-one\n2: line-two\n\n(End of file - total 2 lines)\n</content>"
+    },
+    "edit": {
+      "isError": false,
+      "code": null,
+      "message": "The file D:\\DSH\\work\\dsh-native-daily\\qualification\\results\\T2-fs\\workspace\\round-trip.txt has been updated successfully."
+    },
+    "contentAfterEdit": "line-one\nline-2\n",
+    "roundTripOk": true
+  },
+  "staleVersion": {
+    "read": {
+      "isError": false,
+      "code": null,
+      "message": "<path>D:\\DSH\\work\\dsh-native-daily\\qualification\\results\\T2-fs\\workspace\\round-trip.txt</path>\n<type>file</type>\n<content>\n1: line-one\n2: line-2\n\n(End of file - total 2 lines)\n</content>"
+    },
+    "outOfBandWrite": {
+      "from": "line-one\nline-2\n",
+      "to": "REPLACED OUT OF BAND by plain node:fs, a different length entirely\n"
+    },
+    "edit": {
+      "isError": true,
+      "code": "FS_STALE_VERSION",
+      "message": "cannot edit \"D:\\DSH\\work\\dsh-native-daily\\qualification\\results\\T2-fs\\workspace\\round-trip.txt\": file changed since it was read — re-read the file, then retry"
+    },
+    "refused": true,
+    "code": "FS_STALE_VERSION",
+    "codeIsStaleVersion": true,
+    "contentUnchangedAfterRefusal": true
+  },
+  "exactMatch": {
+    "read": {
+      "isError": false,
+      "code": null,
+      "message": "<path>D:\\DSH\\work\\dsh-native-daily\\qualification\\results\\T2-fs\\workspace\\round-trip.txt</path>\n<type>file</type>\n<content>\n1: REPLACED OUT OF BAND by plain node:fs, a different length entirely\n\n(End of file - total 1 lines)\n</content>"
+    },
+    "edit": {
+      "isError": true,
+      "code": "FS_EDIT_NOT_FOUND",
+      "message": "old_string was not found in \"D:\\DSH\\work\\dsh-native-daily\\qualification\\results\\T2-fs\\workspace\\round-trip.txt\""
+    },
+    "refused": true,
+    "code": "FS_EDIT_NOT_FOUND",
+    "codeIsEditNotFound": true,
+    "contentUnchangedAfterRefusal": true
+  },
+  "outsideWorkspaceWrite": {
+    "isError": false,
+    "code": null,
+    "message": "<path>D:\\DSH\\work\\dsh-native-daily\\qualification\\results\\T2-fs\\outside-workspace\\escape.txt</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+  },
+  "outsideWorkspaceWriteSucceeded": true,
+  "outsideWorkspaceFileExists": true,
+  "outsideWorkspaceRead": {
+    "isError": false,
+    "code": null,
+    "message": "<path>D:\\DSH\\work\\dsh-native-daily\\qualification\\results\\T2-fs\\outside-workspace\\pre-existing-outside.txt</path>\n<type>file</type>\n<content>\n1: pre-existing content outside the workspace\n\n(End of file - total 1 lines)\n</content>"
+  }
+}
