@@ -1,0 +1,32 @@
+{
+  "numbers": {
+    "acquired": 1048576,
+    "persisted": 1048576,
+    "consumed": 131072,
+    "modelVisible": 353
+  },
+  "falsification": {
+    "projectionArtifactBytes": 1048576,
+    "projectionBytesConsumed": 131072,
+    "wouldAConflatedProjectionBeCaught": true,
+    "claim": "a projection that echoed artifactBytes into bytesConsumed would report 1048576 for a 131072-byte walk"
+  },
+  "completenessIsNotConflatedWithExhaustion": {
+    "descriptorCompleteness": "complete-within-request",
+    "walkExhausted": false,
+    "isDeliverableAsComplete": true,
+    "note": "descriptor completeness is about the ACQUISITION; walk.exhausted is about THIS walk. They are different facts and both are reported."
+  },
+  "acquiredVsSourceSize": {
+    "sourceFileBytes": 5000,
+    "acquiredBytes": 2000,
+    "completeness": "partial",
+    "gapStages": [
+      "native-acquisition"
+    ],
+    "guardFired": true
+  },
+  "command": "cd D:/DSH/work/dsh-native-daily/packages/dsh-daily-work && node --import tsx/esm D:/DSH/work/dsh-native-daily/qualification/results/T8-data/t8-falsify-conflation.mjs",
+  "measuredAt": "2026-09-19T22:53:04.162Z",
+  "probeScriptSha256": "417479b703ade5347d0a1a3108e07b2ec342f235c9286f3a8d3b766afd5d9d21"
+}

@@ -1,0 +1,300 @@
+{
+  "probe": "t8-four-byte-classes",
+  "startedAt": "2026-09-19T22:56:05.495Z",
+  "host": {
+    "node": "v24.18.0",
+    "platform": "win32 x64",
+    "python": "C:/Users/hzq00/AppData/Local/Programs/Python/Python314/python.exe"
+  },
+  "commands": {
+    "thisProbe": "cd D:/DSH/work/dsh-native-daily/packages/dsh-daily-work && node --import tsx/esm D:/DSH/work/dsh-native-daily/qualification/results/T8-data/t8-four-byte-classes.mjs",
+    "verifier": "cd D:/DSH/work/dsh-native-daily/packages/dsh-daily-work && node --import tsx/esm D:/DSH/work/dsh-native-daily/qualification/results/T8-data/t8-verify-artifact.mjs"
+  },
+  "byteClasses": {
+    "acquiredBytes": "capture.io.sourceBytesRead -- bytes read across the SOURCE boundary during capture",
+    "persistedBytes": "store.stat(artifact).bytes -- bytes the durable object actually holds",
+    "consumedBytes": "sum of page.bytes.byteLength served to a consumer -- bytes crossing the artifact boundary",
+    "modelVisibleBytes": "UTF-8 length of JSON.stringify(projectForModel(...)) -- bytes crossing into the model context"
+  },
+  "scenarios": {
+    "S1_full_walk": {
+      "what": "a 1 MiB file captured, then fully consumed by a real CPython child; all four classes on ONE artifact",
+      "acquiredBytes": 1048576,
+      "persistedBytes": 1048576,
+      "persistedBytesOsStat": 1048576,
+      "persistedBytesStoreStatSha256": "73f1a5c65f584ae2b652b7728b382a166e403969be4cab85bb9dad4ba75f8ba0",
+      "persistedBytesOsStatSha256": "73f1a5c65f584ae2b652b7728b382a166e403969be4cab85bb9dad4ba75f8ba0",
+      "consumedBytes": 1048576,
+      "consumedBytesConsumerTally": 1048576,
+      "consumedBytesConsumerSha256": "73f1a5c65f584ae2b652b7728b382a166e403969be4cab85bb9dad4ba75f8ba0",
+      "consumedBytesPhysicalArtifactIo": 1048576,
+      "consumedBytesArtifactReads": 16,
+      "consumedBytesSourceReadDuringPaging": 0,
+      "modelVisibleBytes": 417,
+      "pagesWalked": 16,
+      "exhausted": true,
+      "artifactRef": "artifact:sha256:73f1a5c65f584ae2b652b7728b382a166e403969be4cab85bb9dad4ba75f8ba0",
+      "artifactPath": "D:\\DSH\\work\\dsh-native-daily\\qualification\\results\\T8-data\\artifacts\\objects\\73\\73f1a5c65f584ae2b652b7728b382a166e403969be4cab85bb9dad4ba75f8ba0",
+      "artifactSha256": "73f1a5c65f584ae2b652b7728b382a166e403969be4cab85bb9dad4ba75f8ba0",
+      "artifactCompleteness": "complete-within-request",
+      "ratioConsumedToModelVisible": 2515,
+      "consumerExitCode": 0,
+      "consumerStderr": ""
+    },
+    "S2_partial_walk": {
+      "what": "the SAME artifact walked only for its FIRST page: persisted must stay 1 MiB while consumed is one page",
+      "persistedBytes": 1048576,
+      "consumedBytes": 65536,
+      "consumedBytesPhysicalArtifactIo": 65536,
+      "pagesWalked": 1,
+      "exhausted": false,
+      "modelVisibleBytes": 357,
+      "projectionArtifactBytesField": 1048576,
+      "projectionBytesConsumedField": 65536,
+      "differ": true
+    },
+    "S3_short_acquisition": {
+      "what": "a 1000-byte file whose reader stops at 400 bytes: acquired must be 400, not the file size",
+      "sourceFileBytes": 1000,
+      "acquiredBytes": 400,
+      "persistedBytes": 400,
+      "completeness": "partial",
+      "gapStages": [
+        "native-acquisition"
+      ],
+      "gapRecoveries": [
+        "refetch"
+      ],
+      "gapReasonNamesMissingBytes": true,
+      "referenceState": "durable"
+    },
+    "S4_quota_refusal": {
+      "what": "a 1 MiB source against a 16 KiB quota: acquired > 0 while persisted is ABSENT (nothing published)",
+      "sourceFileBytes": 1048576,
+      "quotaBytes": 16384,
+      "acquiredBytes": 65536,
+      "persistedBytes": null,
+      "persistedIsAbsent": true,
+      "statRefused": true,
+      "statOnPlaceholderRefusedWith": "ArtifactError: not an artifact reference: artifact:unpublished:obs-t8-s4",
+      "descriptorCapturedBytes": 0,
+      "descriptorArtifactRef": "artifact:unpublished:obs-t8-s4",
+      "completeness": "partial",
+      "gapStages": [
+        "retention"
+      ],
+      "gapRecoveries": [
+        "none"
+      ],
+      "referenceState": "missing",
+      "referenceArtifact": "",
+      "logReferencedArtifacts": [],
+      "acquiredDiffersFromPersisted": true,
+      "projectionBytes": 613
+    },
+    "S5_requested_range_not_honoured": {
+      "what": "a caller asks for a 64 KiB range of a 1 MiB file: the range is RECORDED in coverage, the read is not narrowed",
+      "sourceFileBytes": 1048576,
+      "requestedRange": {
+        "offset": 0,
+        "length": 65536
+      },
+      "acquiredBytes": 1048576,
+      "persistedBytes": 1048576,
+      "coverageRecorded": {
+        "receivedBytes": 1048576,
+        "claimScope": "request",
+        "requestedRange": {
+          "offset": 0,
+          "length": 65536
+        }
+      },
+      "completeness": "complete-within-request",
+      "gaps": 0,
+      "rangeWasHonoured": false
+    },
+    "S6_shortfall_guard_bypass": {
+      "what": "the SAME 400-of-1000-byte short read as S3, but with requestedRange present: the gap disappears",
+      "sourceFileBytes": 1000,
+      "acquiredBytes": 400,
+      "persistedBytes": 400,
+      "completeness": "complete-within-request",
+      "gaps": 0,
+      "gapStages": [],
+      "coverageRecorded": {
+        "receivedBytes": 400,
+        "claimScope": "request",
+        "requestedRange": {
+          "offset": 0
+        }
+      },
+      "isDeliverableAsComplete": true,
+      "sameStimulusAsS3": true,
+      "verdictDiffersFromS3": true
+    },
+    "S7_tool_output_boundary": {
+      "what": "ONE grep: the raw stdout, the canonical set, the rendered 250 rows and the model projection are four different numbers",
+      "rawToolOutputBytes": 241330,
+      "rawCapBytes": 20000000,
+      "rawCapReached": false,
+      "canonicalMatches": 900,
+      "canonicalJsonBytes": 123083,
+      "rendererKept": 250,
+      "rendererSeen": 900,
+      "rendererTruncated": true,
+      "renderedTextBytes": 10457,
+      "renderedRowCount": 250,
+      "renderedSaysItOmitted": true,
+      "persistedBytes": 123083,
+      "consumedBytes": 123083,
+      "pagesWalked": 2,
+      "modelVisibleBytes": 370,
+      "ripgrepPath": "D:\\DSH\\src\\dsh-src\\node_modules\\.pnpm\\@vscode+ripgrep-win32-x64@1.18.0\\node_modules\\@vscode\\ripgrep-win32-x64\\bin\\rg.exe",
+      "ripgrepVersion": "ripgrep 15.0.0 (rev 3a612f88b8)",
+      "pathCharsForRawBytes": 60,
+      "rawCapGenerous": {
+        "rawBytes": 241330,
+        "parsedMatches": 900
+      },
+      "rawCapTiny": {
+        "threw": true,
+        "name": "SearchError",
+        "code": "SEARCH_RAW_OUTPUT_OVERFLOW",
+        "message": "grep produced more raw output than the subprocess seam retained within the 4096-byte cap; narrow pattern, path, or include and retry"
+      },
+      "pathLengthSweep": [
+        {
+          "pathChars": 67,
+          "rawBytes": 248546
+        },
+        {
+          "pathChars": 68,
+          "rawBytes": 249446
+        },
+        {
+          "pathChars": 69,
+          "rawBytes": 250350
+        }
+      ],
+      "rawBytesPerPathChar": 900,
+      "rawBytesIsPathDependent": true,
+      "rawBytesJitterSamePath": {
+        "samples": [
+          {
+            "rawBytes": 241328,
+            "summaryEventBytes": 273,
+            "bytesPrinted": 240740,
+            "nanosSearchDigits": 0
+          },
+          {
+            "rawBytes": 241330,
+            "summaryEventBytes": 274,
+            "bytesPrinted": 240740,
+            "nanosSearchDigits": 0
+          },
+          {
+            "rawBytes": 241330,
+            "summaryEventBytes": 274,
+            "bytesPrinted": 240740,
+            "nanosSearchDigits": 0
+          },
+          {
+            "rawBytes": 241328,
+            "summaryEventBytes": 273,
+            "bytesPrinted": 240740,
+            "nanosSearchDigits": 0
+          },
+          {
+            "rawBytes": 241330,
+            "summaryEventBytes": 274,
+            "bytesPrinted": 240740,
+            "nanosSearchDigits": 0
+          },
+          {
+            "rawBytes": 241330,
+            "summaryEventBytes": 274,
+            "bytesPrinted": 240740,
+            "nanosSearchDigits": 0
+          },
+          {
+            "rawBytes": 241328,
+            "summaryEventBytes": 273,
+            "bytesPrinted": 240740,
+            "nanosSearchDigits": 0
+          },
+          {
+            "rawBytes": 241328,
+            "summaryEventBytes": 273,
+            "bytesPrinted": 240740,
+            "nanosSearchDigits": 0
+          },
+          {
+            "rawBytes": 241330,
+            "summaryEventBytes": 274,
+            "bytesPrinted": 240740,
+            "nanosSearchDigits": 0
+          },
+          {
+            "rawBytes": 241330,
+            "summaryEventBytes": 274,
+            "bytesPrinted": 240740,
+            "nanosSearchDigits": 0
+          }
+        ],
+        "distinctRawBytes": [
+          241328,
+          241330
+        ],
+        "distinctBytesPrinted": [
+          240740
+        ],
+        "distinctSummaryEventBytes": [
+          273,
+          274
+        ],
+        "jittersOnAFixedPath": true,
+        "matchDataIsStable": true,
+        "cause": "ripgrep's own summary event carries elapsed.human / elapsed.nanos; a sub-millisecond search emits 6 nanos digits where a slower one emits 7"
+      }
+    },
+    "S8_production_service": {
+      "what": "the same four counts through the SERVICE the profile mounts, over the real storage domain",
+      "acquiredBytes": 1048576,
+      "persistedBytes": 1048576,
+      "consumedBytes": 1048576,
+      "modelVisibleBytes": 375,
+      "referenceState": "durable",
+      "grantRevision": 1,
+      "pagesWalked": 16,
+      "artifactBytesRead": 1048576,
+      "sourceBytesReadDuringPaging": 0,
+      "serviceKind": "DataPlaneService",
+      "serviceSurface": [
+        "capture",
+        "page",
+        "walk",
+        "lineIndex",
+        "readLine",
+        "readRange",
+        "resolve",
+        "reconcile"
+      ]
+    }
+  },
+  "notes": [],
+  "stimulus": {
+    "bytes": 1048576,
+    "sha256": "73f1a5c65f584ae2b652b7728b382a166e403969be4cab85bb9dad4ba75f8ba0",
+    "recipe": "the 1024-byte line \"t8\" x511 + LF, repeated 1024 times (1 MiB exactly)",
+    "lineBytes": 1024,
+    "lines": 1024
+  },
+  "supplementary": {
+    "note": "NOT one of the four byte classes; recorded so the durable record is not conflated with them",
+    "observationDescriptorBytes": 621,
+    "observationDescriptorSha256": "1b593afb2b45110d7ec6fa7161f4ff77e64d4a28ad3a478ee5ad51d577ee6fbc",
+    "transcriptBoundary": "the Session transcript byte count is the history plane's (history-plane.ts canonicalEventBytes); READ IN SOURCE, NOT MEASURED here"
+  },
+  "finishedAt": "2026-09-19T22:56:06.288Z",
+  "probeScriptSha256": "e8e716d2b5e3ef8dfd84caf4fdbd5ee00f6ff3d71efa58fcaa375ab7e70502c0"
+}

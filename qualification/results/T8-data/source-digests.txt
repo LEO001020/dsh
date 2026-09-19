@@ -1,0 +1,14 @@
+# T8-data source digests (sha256), so every claim can be traced to the exact bytes read.
+# Pinned DSH checkout D:/DSH/src/dsh-src @ ddefc45fbc7f8e46dd73185e68295696d1297887 (READ-ONLY, unmodified)
+
+# Working repo: D:/DSH/work/dsh-native-daily
+f809bd7ed21cca96e831c1630b2eb6e0aa045d51f0b27a7ac8049b1638d4ae1b *packages/dsh-daily-work/src/artifacts.ts
+7ead0000e5c785bf8c322cf4447f1a24309226dc5b3677e9e1bb1803146ca6e3 *packages/dsh-daily-work/src/observations.ts
+d029876fc93ba68b35e144d0b34a31dbdc55c07c7615fbf8b60d53955b002fd0 *packages/dsh-daily-work/src/data-service.ts
+a43d06d60eeacd388c2651d70473f7b22d06f80ba00a53047329d5940b6b9e8e *packages/dsh-daily-work/src/data-plane.test.ts
+4ce83ee5f4fd6d0e1147dfc2ad668f2f002ededf3b4e1e07df58935d30380cfa *packages/dsh-daily-work/src/perf-metrics.ts
+8219d34c029df53392fdacd21bfabfb23291068cc09df0332e2a390a45059ba6 *packages/dsh-daily-work/src/history-plane.ts
+
+# Pinned checkout files these claims depend on
+881c3f5da682e0df770634c2d657622b8af72099d1072efd44af9c603b4744b6 *packages/fs/tool-fs/src/read-render.ts
+7b12cf379bfbbf24792b259673d2c6fa74ab7ec9322b3590e4482f4ebc024cab *packages/fs/tool-fs-search/src/search-core.ts

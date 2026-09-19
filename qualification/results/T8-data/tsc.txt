@@ -1,0 +1,7 @@
+# T8-data typecheck evidence
+# Command: node /d/DSH/src/dsh-src/node_modules/typescript/bin/tsc -p tsconfig.check.json --noEmit
+# Run from packages/dsh-daily-work
+
+$ node /d/DSH/src/dsh-src/node_modules/typescript/bin/tsc -p tsconfig.check.json --noEmit
+(no output)
+exit 0

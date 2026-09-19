@@ -1,0 +1,105 @@
+
+ RUN  v4.1.8 D:/DSH/work/dsh-native-daily/packages/dsh-daily-work
+
+stdout | src/data-plane.test.ts > DAT-02 [real capture / real consumers] 512 pages of 32MiB, projection <= 8KiB > consumes 512 bounded pages totalling 32MiB with a model projection under 8KiB
+[DAT-02] artifactBytes 33554432 pages 512 bytesConsumed 33554432 projectionBytes 399 sourceBytesReadDuringCapture 0 artifactBytesReadDuringPaging 33554432 artifactReads 512
+
+ ✓ src/data-plane.test.ts > DAT-01 [real] long line: the loss is verified, then repaired by byte range > confirms the real buildWindow clips a 100KiB single line and loses its interior 3ms
+ ✓ src/data-plane.test.ts > DAT-01 [real] long line: the loss is verified, then repaired by byte range > measures the clip in the CANONICAL value by CALLING the real read tool 14ms
+ ✓ src/data-plane.test.ts > DAT-01 [real] long line: the loss is verified, then repaired by byte range > shows a raised maxLineLength recovers the line, so the loss is the CAP and not the file 0ms
+ ✓ src/data-plane.test.ts > DAT-01 [real] long line: the loss is verified, then repaired by byte range > recovers the whole 100KiB line byte-for-byte by capturing and paging the artifact 19ms
+ ✓ src/data-plane.test.ts > DAT-01 [real] long line: the loss is verified, then repaired by byte range > recovers a newline-free file as exactly one complete line 13ms
+ ✓ src/data-plane.test.ts > DAT-01 [real] long line: the loss is verified, then repaired by byte range > recovers a body larger than the 50KiB read window across many lines 14ms
+ ✓ src/data-plane.test.ts > DAT-02 [real capture / real consumers] 512 pages of 32MiB, projection <= 8KiB > consumes 512 bounded pages totalling 32MiB with a model projection under 8KiB 372ms
+stdout | src/data-plane.test.ts > DAT-02 [real capture / real consumers] 512 pages of 32MiB, projection <= 8KiB > has a REAL CPython process consume the 512 pages over a pipe, never holding them in JS
+[DAT-02-python] realCpython pages 512 bytes 33554432 sha256MatchesSource true artifactReads 512 projectionBytes 429
+
+ ✓ src/data-plane.test.ts > DAT-02 [real capture / real consumers] 512 pages of 32MiB, projection <= 8KiB > has a REAL CPython process consume the 512 pages over a pipe, never holding them in JS 613ms
+stdout | src/data-plane.test.ts > DAT-02 [real capture / real consumers] 512 pages of 32MiB, projection <= 8KiB > has the REAL `ipython` tool over a REAL ipykernel consume all 512 pages
+[DAT-02-ipykernel] realKernel pages 512 bytes 33554432 sha256MatchesSource true artifactReads 512 projectionBytes 437 cellReachedDataPlane false
+
+ ✓ src/data-plane.test.ts > DAT-02 [real capture / real consumers] 512 pages of 32MiB, projection <= 8KiB > has the REAL `ipython` tool over a REAL ipykernel consume all 512 pages 3875ms
+ ✓ src/data-plane.test.ts > DAT-03 [real] UTF-8 / CRLF / JSONL split at every page boundary > never corrupts a multibyte character at any page boundary 166ms
+ ✓ src/data-plane.test.ts > DAT-03 [real] UTF-8 / CRLF / JSONL split at every page boundary > splits CRLF and JSONL records at every page boundary without loss or duplication 8144ms
+ ✓ src/data-plane.test.ts > DAT-03 [real] UTF-8 / CRLF / JSONL split at every page boundary > keeps the line index numbering identical to the read tool for CRLF content 15ms
+ ✓ src/data-plane.test.ts > DAT-03 [real] UTF-8 / CRLF / JSONL split at every page boundary > truncates a projection on a character boundary, never splitting a surrogate 1ms
+ ✓ src/data-plane.test.ts > DAT-03 [real] UTF-8 / CRLF / JSONL split at every page boundary > states the real pager’s boundary: byte windows reassemble, they are not character-aligned 16ms
+ ✓ src/data-plane.test.ts > DAT-04 [mock provider] a repeated or backwards cursor raises pagination-stalled > raises pagination-stalled on a repeated cursor instead of looping forever 1ms
+ ✓ src/data-plane.test.ts > DAT-04 [mock provider] a repeated or backwards cursor raises pagination-stalled > raises pagination-stalled on a backwards cursor 0ms
+ ✓ src/data-plane.test.ts > DAT-04 [mock provider] a repeated or backwards cursor raises pagination-stalled > raises pagination-stalled when a not-exhausted page omits its continuation 0ms
+ ✓ src/data-plane.test.ts > DAT-04 [mock provider] a repeated or backwards cursor raises pagination-stalled > names the stalled offsets so the failure is diagnosable, not just "stalled" 0ms
+ ✓ src/data-plane.test.ts > DAT-04 [mock provider] a repeated or backwards cursor raises pagination-stalled > still lets a well-formed provider finish, so the guard is not tripped by progress 10ms
+ ✓ src/data-plane.test.ts > DAT-05 [real] a source change after page 1 cannot mix into page 2 > serves page 2 from the same captured hash after the source file is rewritten 15ms
+ ✓ src/data-plane.test.ts > DAT-05 [real] a source change after page 1 cannot mix into page 2 > refuses a cursor bound to a different artifact rather than splicing two objects 28ms
+stdout | src/data-plane.test.ts > DAT-06 [real] paging IO is O(pages), and repeated read is measured, not assumed > reports artifact IO proportional to pages read, not to the artifact size
+[DAT-06] artifactBytes 4194304 pagesRead 8 artifactBytesRead 524288 artifactReads 8 sourceBytesReadDuringPaging 0 indexBytesScanned 4194304 indexBytesRead 4194304
+
+ ✓ src/data-plane.test.ts > DAT-05 [real] a source change after page 1 cannot mix into page 2 > refuses a cursor after the owner scope is revoked, because a cursor is not authorization 14ms
+ ✓ src/data-plane.test.ts > DAT-06 [real] paging IO is O(pages), and repeated read is measured, not assumed > reports artifact IO proportional to pages read, not to the artifact size 85ms
+stdout | src/data-plane.test.ts > DAT-06 [real] paging IO is O(pages), and repeated read is measured, not assumed > measures whether repeated read with a growing offset rescans the whole file
+[DAT-06] repeated-read totalBytesScanned 944445 sourceBytes 188889 calls 5 artifactBytesReadFor5Pages 20480
+
+ ✓ src/data-plane.test.ts > DAT-06 [real] paging IO is O(pages), and repeated read is measured, not assumed > measures whether repeated read with a growing offset rescans the whole file 28ms
+stdout | src/data-plane.test.ts > DAT-07 [real ripgrep] grep canonical keeps every match within the raw cap > keeps all matches in canonical while the renderer shows 250, and marks the raw cap partial
+[DAT-07-python] canonicalCount 900 distinct 900 rendererKept 250
+[DAT-07] rawBytes 239526 rawCap 20000000 canonicalMatches 900 rendererKept 250 rendererSeen 900 rendererTruncated true
+
+ ✓ src/data-plane.test.ts > DAT-07 [real ripgrep] grep canonical keeps every match within the raw cap > keeps all matches in canonical while the renderer shows 250, and marks the raw cap partial 187ms
+stdout | src/data-plane.test.ts > DAT-08 [real] an over-quota capture fails explicitly and never falls back inline > returns a partial observation with a retention gap when the quota is exceeded
+[DAT-08] quotaBytes 16384 sourceBytes 204800 completeness partial gapStage retention projectionBytes 613
+
+ ✓ src/data-plane.test.ts > DAT-07 [real ripgrep] grep canonical keeps every match within the raw cap > marks the observation partial when the raw cap IS reached, without pretending otherwise 255ms
+ ✓ src/data-plane.test.ts > DAT-08 [real] an over-quota capture fails explicitly and never falls back inline > returns a partial observation with a retention gap when the quota is exceeded 6ms
+ ✓ src/data-plane.test.ts > DAT-08 [real] an over-quota capture fails explicitly and never falls back inline > refuses to re-execute an effect after a save failure, and keeps the outcome unknown 0ms
+ ✓ src/data-plane.test.ts > DAT-08 [real] an over-quota capture fails explicitly and never falls back inline > reports an orphan, not a delivery, when the Session reference cannot be committed 12ms
+ ✓ src/data-plane.test.ts > DAT-08 [real] an over-quota capture fails explicitly and never falls back inline > reports an integrity error, never an empty string, when a referenced object is missing 14ms
+ ✓ src/data-plane.test.ts > DAT-08 [real] an over-quota capture fails explicitly and never falls back inline > does not promise durable:true when the checkpoint fails after the reference committed 11ms
+ ✓ src/data-plane.test.ts > observation authority: host facts are not trusted from a kernel payload > refuses a kernel payload that asserts a host-authored field, naming the field 1ms
+ ✓ src/data-plane.test.ts > observation authority: host facts are not trusted from a kernel payload > refuses a forged capture before writing anything, so a bad payload cannot cause an effect 2ms
+ ✓ src/data-plane.test.ts > observation authority: host facts are not trusted from a kernel payload > records a kernel-declared transform as a claim, with the parent artifact named 8ms
+ ✓ src/data-plane.test.ts > observation authority: host facts are not trusted from a kernel payload > rejects a stale descriptor after the permission domain changes 9ms
+ ✓ src/data-plane.test.ts > observation authority: host facts are not trusted from a kernel payload > refuses a descriptor from a different owner scope than the caller 10ms
+ ✓ src/data-plane.test.ts > DataPlaneService: the production consumer the profile mounts > captures through the real storage domain and reads back byte-for-byte 15ms
+ ✓ src/data-plane.test.ts > DataPlaneService: the production consumer the profile mounts > serves pages and the long-line repair through the service, refusing a forged descriptor 14ms
+ ✓ src/data-plane.test.ts > DataPlaneService: the production consumer the profile mounts > stops serving after the permission domain changes 14ms
+ ✓ src/data-plane.test.ts > DataPlaneService: the production consumer the profile mounts > records the real artifact-root derivation, including the branch that cannot be taken 4ms
+stdout | src/data-plane.test.ts > crash consistency: a real SIGKILL between publication and the Session reference > leaves a reconcilable ORPHAN and never reports it as delivered
+[crash] signal null exitCode 1 orphans 1 integrityErrors 0 objectVerified true
+
+ ✓ src/data-plane.test.ts > crash consistency: a real SIGKILL between publication and the Session reference > leaves a reconcilable ORPHAN and never reports it as delivered 226ms
+ ✓ src/data-plane.test.ts > DATA-02 [real] the capture holds the file’s EXACT bytes, not a re-encoded decode > captures utf8-bom.txt byte-for-byte and reports the file’s own sha256 9ms
+ ✓ src/data-plane.test.ts > DATA-02 [real] the capture holds the file’s EXACT bytes, not a re-encoded decode > captures utf16le.txt byte-for-byte and reports the file’s own sha256 7ms
+ ✓ src/data-plane.test.ts > DATA-02 [real] the capture holds the file’s EXACT bytes, not a re-encoded decode > captures latin1.txt byte-for-byte and reports the file’s own sha256 8ms
+ ✓ src/data-plane.test.ts > DATA-02 [real] the capture holds the file’s EXACT bytes, not a re-encoded decode > captures nul.bin byte-for-byte and reports the file’s own sha256 7ms
+ ✓ src/data-plane.test.ts > DATA-02 [real] the capture holds the file’s EXACT bytes, not a re-encoded decode > captures crlf.txt byte-for-byte and reports the file’s own sha256 8ms
+ ✓ src/data-plane.test.ts > DATA-02 [real] the capture holds the file’s EXACT bytes, not a re-encoded decode > never lets the captured sha256 disagree with the file it names 24ms
+ ✓ src/data-plane.test.ts > DATA-06 [real] a refetch is a NEW observation, and never backfills the old one > refuses a second capture under an id that already has a committed reference 9ms
+ ✓ src/data-plane.test.ts > DATA-06 [real] a refetch is a NEW observation, and never backfills the old one > lets the refetch happen under a NEW id, so both observations coexist 10ms
+stdout | src/data-plane.test.ts > DATA-04/12 [real] the four byte-counts are separately measurable and distinct > separates acquired, persisted, consumed and model-visible bytes in one walk
+[DATA-04] acquiredBytes 4194304 persistedBytes 4194304 consumedBytes 4194304 modelVisibleBytes 394 ratio 10645
+
+ ✓ src/data-plane.test.ts > DATA-04/12 [real] the four byte-counts are separately measurable and distinct > separates acquired, persisted, consumed and model-visible bytes in one walk 56ms
+ ✓ src/data-plane.test.ts > DATA-04/12 [real] the four byte-counts are separately measurable and distinct > reports a SHORT acquisition as a smaller acquired count, not a smaller file 10ms
+ ✓ src/data-plane.test.ts > DATA-08 [real] a corrupt or truncated artifact fails loud, never as content > detects an object REPLACED in place at the same length 10ms
+ ✓ src/data-plane.test.ts > DATA-08 [real] a corrupt or truncated artifact fails loud, never as content > detects an object TRUNCATED below the bytes the reference declares 12ms
+ ✓ src/data-plane.test.ts > DATA-08 [real] a corrupt or truncated artifact fails loud, never as content > still serves an INTACT object, so the check is not vacuous 13ms
+ ✓ src/data-plane.test.ts > coverage vocabulary: six names, derived in one place > names exactly the six verdicts, and no others 0ms
+ ✓ src/data-plane.test.ts > coverage vocabulary: six names, derived in one place > maps a complete capture to full-for-requested-scope, never to "full" 0ms
+ ✓ src/data-plane.test.ts > coverage vocabulary: six names, derived in one place > maps each partial layer to its own name 0ms
+ ✓ src/data-plane.test.ts > coverage vocabulary: six names, derived in one place > reports the EARLIEST loss when several layers are named 0ms
+ ✓ src/data-plane.test.ts > coverage vocabulary: six names, derived in one place > reports a lost transport as unknown, because absence was never established 0ms
+ ✓ src/data-plane.test.ts > coverage vocabulary: six names, derived in one place > reports a small model projection as full-for-scope, not as a partial acquisition 0ms
+ ✓ src/data-plane.test.ts > DATA-04 [real] the projection is bounded by the SCHEMA, not only by truncation > refuses a descriptor whose id would make the projection unbounded 1ms
+ ✓ src/data-plane.test.ts > DATA-04 [real] the projection is bounded by the SCHEMA, not only by truncation > bounds every string a descriptor carries, so no field can blow the projection 2ms
+ ✓ src/data-plane.test.ts > cursor identity: a cursor binds its artifact and grants no authority > refuses a cursor minted for one artifact when presented against another 19ms
+ ✓ src/data-plane.test.ts > cursor identity: a cursor binds its artifact and grants no authority > refuses a cursor after the grant revision moves, so possession proves nothing 13ms
+ ✓ src/data-plane.test.ts > cursor identity: a cursor binds its artifact and grants no authority > refuses a hand-made cursor that was never minted by the host 13ms
+ ✓ src/data-plane.test.ts > cursor identity: a cursor binds its artifact and grants no authority > refuses a cursor signed with a different secret than the host’s 13ms
+ ✓ src/data-plane.test.ts > DATA-07 [real] a cursor over an immutable artifact is stable across replays > returns the same bytes for the same cursor every time it is replayed 12ms
+ ✓ src/data-plane.test.ts > DATA-07 [real] a cursor over an immutable artifact is stable across replays > advances the offset by exactly the page size on a full walk 8ms
+
+ Test Files  1 passed (1)
+      Tests  68 passed (68)
+   Start at  06:56:45
+   Duration  15.06s (transform 444ms, setup 0ms, import 427ms, tests 14.50s, environment 0ms)
+

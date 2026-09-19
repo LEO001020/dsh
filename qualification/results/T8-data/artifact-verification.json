@@ -1,0 +1,131 @@
+{
+  "verifier": "t8-verify-artifact",
+  "verifiedAt": "2026-09-19T22:56:30.970Z",
+  "host": {
+    "node": "v24.18.0",
+    "platform": "win32 x64"
+  },
+  "command": "cd D:/DSH/work/dsh-native-daily/packages/dsh-daily-work && node --import tsx/esm D:/DSH/work/dsh-native-daily/qualification/results/T8-data/t8-verify-artifact.mjs",
+  "checks": {
+    "V-01": {
+      "assertion": "the persisted object exists at the recorded path",
+      "passed": true,
+      "detail": {
+        "path": "D:\\DSH\\work\\dsh-native-daily\\qualification\\results\\T8-data\\artifacts\\objects\\73\\73f1a5c65f584ae2b652b7728b382a166e403969be4cab85bb9dad4ba75f8ba0"
+      }
+    },
+    "V-02": {
+      "assertion": "the OS reports the same byte length as the recorded persistedBytes",
+      "passed": true,
+      "detail": {
+        "osStatBytes": 1048576,
+        "recordedPersistedBytes": 1048576
+      }
+    },
+    "V-03": {
+      "assertion": "a fresh streamed sha256 over the file equals the recorded artifact digest",
+      "passed": true,
+      "detail": {
+        "streamed": "73f1a5c65f584ae2b652b7728b382a166e403969be4cab85bb9dad4ba75f8ba0",
+        "recorded": "73f1a5c65f584ae2b652b7728b382a166e403969be4cab85bb9dad4ba75f8ba0"
+      }
+    },
+    "V-04": {
+      "assertion": "the streamed byte count equals the OS byte length",
+      "passed": true,
+      "detail": {
+        "streamed": 1048576,
+        "osStat": 1048576
+      }
+    },
+    "V-05": {
+      "assertion": "a COLD product store reports the same bytes and digest for the recorded ref",
+      "passed": true,
+      "detail": {
+        "coldStoreStat": {
+          "bytes": 1048576,
+          "sha256": "73f1a5c65f584ae2b652b7728b382a166e403969be4cab85bb9dad4ba75f8ba0"
+        },
+        "recordedBytes": 1048576,
+        "recordedSha256": "73f1a5c65f584ae2b652b7728b382a166e403969be4cab85bb9dad4ba75f8ba0"
+      }
+    },
+    "V-06": {
+      "assertion": "reading the whole object through the product range API reproduces the recorded digest",
+      "passed": true,
+      "detail": {
+        "rangeReadBytes": 1048576,
+        "rangeReadSha256": "73f1a5c65f584ae2b652b7728b382a166e403969be4cab85bb9dad4ba75f8ba0",
+        "recorded": "73f1a5c65f584ae2b652b7728b382a166e403969be4cab85bb9dad4ba75f8ba0"
+      }
+    },
+    "V-07": {
+      "assertion": "the product range API accounted the read against the artifact, not the source",
+      "passed": true,
+      "detail": {
+        "artifactBytesRead": 1048576,
+        "sourceBytesRead": 0
+      }
+    },
+    "V-08": {
+      "assertion": "the recorded stimulus recipe regenerates bytes matching the recorded stimulus digest",
+      "passed": true,
+      "detail": {
+        "regeneratedBytes": 1048576,
+        "regeneratedSha256": "73f1a5c65f584ae2b652b7728b382a166e403969be4cab85bb9dad4ba75f8ba0",
+        "recordedStimulusSha256": "73f1a5c65f584ae2b652b7728b382a166e403969be4cab85bb9dad4ba75f8ba0"
+      }
+    },
+    "V-09": {
+      "assertion": "the artifact on disk IS the stimulus, byte for byte",
+      "passed": true,
+      "detail": {
+        "stimulus": "73f1a5c65f584ae2b652b7728b382a166e403969be4cab85bb9dad4ba75f8ba0",
+        "artifact": "73f1a5c65f584ae2b652b7728b382a166e403969be4cab85bb9dad4ba75f8ba0"
+      }
+    },
+    "V-10": {
+      "assertion": "the partial walk reports persisted != consumed, both non-zero and both reported",
+      "passed": true,
+      "detail": {
+        "persistedBytes": 1048576,
+        "consumedBytes": 65536,
+        "differ": true
+      }
+    },
+    "V-11": {
+      "assertion": "the out-of-process consumer tallied the same bytes and digest as the artifact",
+      "passed": true,
+      "detail": {
+        "consumerTally": 1048576,
+        "consumerSha256": "73f1a5c65f584ae2b652b7728b382a166e403969be4cab85bb9dad4ba75f8ba0",
+        "persistedBytes": 1048576,
+        "artifactSha256": "73f1a5c65f584ae2b652b7728b382a166e403969be4cab85bb9dad4ba75f8ba0"
+      }
+    }
+  },
+  "failures": [],
+  "recordedProvenance": {
+    "probeStartedAt": "2026-09-19T22:56:05.495Z",
+    "probeFinishedAt": "2026-09-19T22:56:06.288Z",
+    "probeScriptSha256": "e8e716d2b5e3ef8dfd84caf4fdbd5ee00f6ff3d71efa58fcaa375ab7e70502c0",
+    "stimulusBytes": 1048576,
+    "stimulusSha256": "73f1a5c65f584ae2b652b7728b382a166e403969be4cab85bb9dad4ba75f8ba0",
+    "stimulusRecipe": "the 1024-byte line \"t8\" x511 + LF, repeated 1024 times (1 MiB exactly)",
+    "artifactRef": "artifact:sha256:73f1a5c65f584ae2b652b7728b382a166e403969be4cab85bb9dad4ba75f8ba0",
+    "artifactPath": "D:\\DSH\\work\\dsh-native-daily\\qualification\\results\\T8-data\\artifacts\\objects\\73\\73f1a5c65f584ae2b652b7728b382a166e403969be4cab85bb9dad4ba75f8ba0",
+    "artifactSha256": "73f1a5c65f584ae2b652b7728b382a166e403969be4cab85bb9dad4ba75f8ba0",
+    "acquiredBytes": 1048576,
+    "persistedBytes": 1048576,
+    "consumedBytes": 1048576,
+    "modelVisibleBytes": 417
+  },
+  "verdict": "PASS",
+  "artifactFile": {
+    "path": "D:\\DSH\\work\\dsh-native-daily\\qualification\\results\\T8-data\\artifacts\\objects\\73\\73f1a5c65f584ae2b652b7728b382a166e403969be4cab85bb9dad4ba75f8ba0",
+    "bytes": 1048576,
+    "sha256": "73f1a5c65f584ae2b652b7728b382a166e403969be4cab85bb9dad4ba75f8ba0",
+    "streamWindows": 16,
+    "mode": "0o444"
+  }
+}

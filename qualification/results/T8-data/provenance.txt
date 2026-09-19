@@ -1,0 +1,55 @@
+# T8-data: provenance of the observation artifact
+# ===============================================
+#
+# WHAT THE ARTIFACT IS
+#   A real, immutable, content-addressed object published by the product's own
+#   `LocalArtifactStore.put` (which delegates to DSH's `publishImmutableObjectStream`
+#   from @deepseek-ai/dsh-attachment-local). It is the durable object one
+#   observation references -- not a report about one, and not a JSON summary.
+#
+#   path    D:/DSH/work/dsh-native-daily/qualification/results/T8-data/artifacts/objects/73/73f1a5c65f584ae2b652b7728b382a166e403969be4cab85bb9dad4ba75f8ba0
+#   ref     artifact:sha256:73f1a5c65f584ae2b652b7728b382a166e403969be4cab85bb9dad4ba75f8ba0
+#   bytes   1048576
+#   sha256  73f1a5c65f584ae2b652b7728b382a166e403969be4cab85bb9dad4ba75f8ba0
+#   mode    0o444 (read-only, set by the publication primitive)
+#
+# WHICH RUN PRODUCED IT
+#   probe    qualification/results/T8-data/t8-four-byte-classes.mjs
+#   sha256   e8e716d2b5e3ef8dfd84caf4fdbd5ee00f6ff3d71efa58fcaa375ab7e70502c0
+#   run log  qualification/results/T8-data/probe-run.txt
+#   result   qualification/results/T8-data/four-byte-classes.json
+#   scenario S1_full_walk (observation id obs-t8-s1, owner scope project:t8)
+#
+# WHICH INPUTS
+#   The stimulus is generated from a recorded recipe, not read from an outside
+#   file, so a reader can regenerate it and check the digest:
+#     line  = "t8" x 511 + "X" + LF   (1024 bytes exactly)
+#     file  = line repeated 1024 times (1048576 bytes exactly)
+#   stimulus bytes  1048576
+#   stimulus sha256 73f1a5c65f584ae2b652b7728b382a166e403969be4cab85bb9dad4ba75f8ba0
+#   The artifact digest EQUALS the stimulus digest, which is the point: the
+#   captured object is the source file byte for byte, not a re-encoding of it.
+#
+# HOW ITS BYTE ACCOUNTING WAS VERIFIED (not computed in-process)
+#   verification  qualification/results/T8-data/t8-verify-artifact.mjs
+#   sha256        e5f9ec093985c0e93b39e0b7780e814d34bb71bffeb7063458de2fe7857f363b
+#   run log       qualification/results/T8-data/verify-run.txt
+#   result        qualification/results/T8-data/artifact-verification.json  (verdict PASS)
+#   A FRESH process re-derived every persisted-byte fact from the file on disk:
+#     V-01..V-04  fs.statSync byte length + a streamed sha256 over 16 x 64 KiB windows
+#     V-05        a COLD product `LocalArtifactStore.stat` reproduces bytes and digest
+#     V-06/V-07   the product's `readArtifactRange` re-reads the whole object and the
+#                 IO counters attribute the read to the ARTIFACT, not the source
+#     V-08/V-09   the stimulus recipe regenerates bytes whose digest equals the
+#                 artifact's, so the content is traceable to its stated inputs
+#     V-10/V-11   the non-conflation case and the out-of-process consumer witness
+#   Three OS-level tools independently agree on the same digest and length:
+#     sha256sum  73f1a5c65f584ae2b652b7728b382a166e403969be4cab85bb9dad4ba75f8ba0
+#     certutil   73f1a5c65f584ae2b652b7728b382a166e403969be4cab85bb9dad4ba75f8ba0
+#     wc -c      1048576
+#
+# THE ARTIFACT'S OWN FOUR COUNTS (scenario S1, measured separately)
+#   acquiredBytes      1048576   capture.io.sourceBytesRead
+#   persistedBytes     1048576   store.stat(artifact).bytes AND fs.statSync on disk
+#   consumedBytes      1048576   page walk; corroborated by a real CPython child's tally
+#   modelVisibleBytes  417       UTF-8 length of the serialized projection
