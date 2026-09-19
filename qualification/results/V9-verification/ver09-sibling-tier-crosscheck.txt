@@ -1,0 +1,21 @@
+VER-09 clause 2 cross-check: explicit tier tokens in sibling gate tables
+============================================================================
+
+  V1-identity        (no GATES.md)
+  V2-composition     (no GATES.md)
+  V5-data            0 row(s) carrying both a case id and a tier token
+  V6-recovery        0 row(s) carrying both a case id and a tier token
+  V8-capacity        (no GATES.md)
+  V10-research-obs   (no GATES.md)
+
+CASE-ID / CLAIMED TIER vs THE SPEC'S DECLARED LAYER
+----------------------------------------------------------------------------
+
+  NO sibling gate table states an explicit tier token beside a case id.
+  That is not a pass: it means the tier is carried only by the spec case, which is
+  exactly what VER-09 clause 1 requires and clause 2 leaves unexercised here.
+
+NOTE ON WHAT THIS CHECK CAN AND CANNOT SEE: it is a TOKEN comparison. A table that
+describes a T2 measurement in prose without writing "T2" is invisible to it, and a
+table that writes "T2" beside a case whose layer is T1 is flagged whether or not the
+prose underneath is honest about it. It is reported as a cross-check, not a verdict.

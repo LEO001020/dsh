@@ -1,0 +1,15 @@
+{
+  "id": "v9-zero-tests",
+  "command": [
+    "node",
+    "D:/DSH/src/dsh-src/node_modules/vitest/vitest.mjs",
+    "run",
+    "src/empty.test.ts",
+    "--passWithNoTests"
+  ],
+  "cwd": "D:/DSH/work/dsh-native-daily/qualification/results/V9-verification/fixture",
+  "inputs": ["src", "vitest.config.ts", "package.json"],
+  "expectTests": { "passed": 1 },
+  "testReporter": "vitest",
+  "timeoutMs": 60000
+}

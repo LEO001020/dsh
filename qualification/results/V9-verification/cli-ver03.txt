@@ -1,0 +1,47 @@
+# V9 VER-03 — the candidate cannot weaken its own oracle
+# repo: D:/DSH/work/dsh-native-daily  branch: ipython-native  HEAD: 5d189c6
+# run at: 2026-09-20T07:44:07+08:00
+
+==============================================================
+STEP 1 (separate, reviewed step): obtain the authorized digest
+  command: node qualification/runners/acceptance.mjs <def-ver02> --print-digest
+==============================================================
+print_digest_exit=0
+authorizedDigest=5709bf93b81ff33db384f26d35595b3b4914f419192b5f714b9a285cdfcc8377
+
+==============================================================
+STEP 2: write the definition with that digest RECORDED
+==============================================================
+wrote def-ver03-authorized.json with authorizedDigest 5709bf93b81ff33db384f26d35595b3b4914f419192b5f714b9a285cdfcc8377
+wrote def-ver03-weakened.json with expectTests passed=1 and the SAME authorizedDigest
+
+==============================================================
+STEP 3: run the WEAKENED definition carrying the authorized digest
+==============================================================
+acceptance_exit=1
+acceptance: v9-weakened -> acceptance_definition_changed (NOT PASS)
+  - the acceptance definition digest 378c00d5e2abde04ff4a79fccad6e1e0803726ea3aa61451921eddccc5cc1b5a does not match the authorized 5709bf93b81ff33db384f26d35595b3b4914f419192b5f714b9a285cdfcc8377; the run was refused rather than silently accepted
+
+definitionId = "v9-weakened"
+outcome = "acceptance_definition_changed"
+passed = false
+exit = {"code": null, "signal": null, "timedOut": false, "interrupted": false, "expectedCode": 0}
+observedTests = null
+authorizedDigest = "5709bf93b81ff33db384f26d35595b3b4914f419192b5f714b9a285cdfcc8377"
+limitations = ["the acceptance command was never executed"]
+reasons = ["the acceptance definition digest 378c00d5e2abde04ff4a79fccad6e1e0803726ea3aa61451921eddccc5cc1b5a does not match the authorized 5709bf93b81ff33db384f26d35595b3b4914f419192b5f714b9a285cdfcc8377; the run was refused rather than silently accepted"]
+
+==============================================================
+STEP 4 (CONTROL): the SAME command with the digest NOT weakened still RUNS
+==============================================================
+acceptance_exit=1
+acceptance: v9-authorized -> acceptance_definition_changed (NOT PASS)
+  - the acceptance definition digest 0863dc158f93abace2dc1b6446c7a0002becf190392a6c7d5ad0c910203a2727 does not match the authorized 5709bf93b81ff33db384f26d35595b3b4914f419192b5f714b9a285cdfcc8377; the run was refused rather than silently accepted
+
+definitionId = "v9-authorized"
+outcome = "acceptance_definition_changed"
+passed = false
+exit = {"code": null, "signal": null, "timedOut": false, "interrupted": false, "expectedCode": 0}
+observedTests = null
+authorizedDigest = "5709bf93b81ff33db384f26d35595b3b4914f419192b5f714b9a285cdfcc8377"
+reasons = ["the acceptance definition digest 0863dc158f93abace2dc1b6446c7a0002becf190392a6c7d5ad0c910203a2727 does not match the authorized 5709bf93b81ff33db384f26d35595b3b4914f419192b5f714b9a285cdfcc8377; the run was refused rather than silently accepted"]

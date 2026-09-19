@@ -1,0 +1,82 @@
+VER-06 - in-flight writers are converged or isolated before freezing
+==============================================================================
+
+SPEC ORACLE, quoted:
+  "The system converges or isolates the writer before freezing, and an unresolved
+   mutation produces an unknown rather than a certification. Certifying a tree that
+   was still changing is NOT PASS."
+
+MAPPING NOTE: the spec's VER-06 is the in-flight-writer case. The TEST FILE's describe
+block labelled 'VER-07' is the one that covers it, and the block labelled 'VER-06' is the
+A-B-A case filed above. Mapping is by ORACLE (docs/GAPS.md G-SEAM-38).
+
+MEASURED OUTPUT, verbatim
+------------------------------------------------------------------------------
+
+spec VER-06 — in-flight writers converged or isolated before freezing
+========================================================================
+
+PATH 1 — a writer LEASE is still held, so the workspace is in flight by definition.
+  writerLeaseHeld(workspace)        true
+  converged                         false
+  digest                            ""   ('' = no value is offered for an unknown)
+  writerLeaseHeld (reported)        true
+  reasons                           ["a writer still holds C:\\Users\\hzq00\\AppData\\Local\\Temp\\v9-inflight-ws-lmTmXd\\v9-inflight-workspace, so the workspace is in flight; freezing it now would capture a tree that no writer has finished producing"]
+
+PATH 2 — the lease is released, but the TREE is still moving between samples.
+  writerLeaseHeld after finish()    false
+  converged                         false
+  digest                            ""
+  reasons                           ["the candidate tree changed between samples (d6b55d37e1be480ced6477acfe4130617cf113843dea3659e3440c01f28659f6 then 66121c3755a993f1839683378b56e6a36a916bbc5b498d91d3b596b40d066703), so it had not converged; an unconverged tree is not certified"]
+
+PATH 3 (the control) — the writer has stopped; the same call now CONVERGES.
+  converged                         true
+  digest                            66121c3755a993f1839683378b56e6a36a916bbc5b498d91d3b596b40d066703
+  digestInputs(definition)          66121c3755a993f1839683378b56e6a36a916bbc5b498d91d3b596b40d066703
+  digest is the RUNNER's own tree digest: true
+  samples                           ["66121c3755a993f1839683378b56e6a36a916bbc5b498d91d3b596b40d066703","66121c3755a993f1839683378b56e6a36a916bbc5b498d91d3b596b40d066703"]
+
+THE STRUCTURAL INVARIANT — a refusal NEVER carries a digest.
+  in-flight      digest='' converged=false  invariant holds=true
+  still-moving   digest='' converged=false  invariant holds=true
+  converged      digest=66121c3755a993f1... converged=true  invariant holds=true
+
+cleanup: 4 temp root(s) removed, 1 workspace(s) released
+
+------------------------------------------------------------------------------
+ORACLE CHECKED, clause by clause
+------------------------------------------------------------------------------
+
+  the system CONVERGES the writer before freezing
+      path 3: with the writer stopped, convergeBeforeFreeze returns converged=true and a
+      digest that EQUALS digestInputs(definition) -- the RUNNER's own tree digest, so the
+      converged value is directly comparable with the receipt's liveDigestAtStart. A
+      second definition of 'the candidate tree' would be free to drift from the runner's.
+  or ISOLATES it
+      path 1: a live writer LEASE refuses the freeze outright and names the workspace.
+  an unresolved mutation produces an UNKNOWN rather than a certification
+      path 2: the lease is released but the tree is still moving between samples; the
+      refusal names BOTH digests. The result is converged=false with digest=''.
+  certifying a tree that was still changing is NOT PASS
+      the STRUCTURAL INVARIANT is asserted over every path, not described: digest !== ''
+      implies converged === true. Measured for all three paths above.
+
+WHY PATH 2 IS THE LOAD-BEARING ONE: a lease is a record the writer keeps, and a writer
+that has stopped holding it may still have an in-flight write or a background process.
+The lease check alone cannot see that, so the DOUBLE SAMPLE is the only thing that can
+answer whether the TREE has stopped moving. Path 1 and path 2 refuse for DIFFERENT
+reasons and the reasons are printed separately, so neither can be mistaken for the other.
+
+IN-SUITE ARMS (packages/dsh-daily-work/src/verification-gates.test.ts, VER-07 block):
+  - 'freezing while a writer still holds the workspace is REFUSED as in-flight'
+  - 'a workspace still changing under the sampler is refused; only a stable one converges'
+  - 'the structural invariant: a refusal NEVER carries a digest'
+  Raw output: verification-gates-tests.raw.txt (51 passed / 51, TEST_EXIT=0)
+
+HONEST LIMIT: this case is about the FREEZE DECISION. It does not establish that a
+production caller invokes `convergeBeforeFreeze` before every acceptance; the call site is
+the caller's to provide. The mechanism and its refusals are measured; the policy of
+applying it is not claimed here.
+
+VERDICT: PASS
+BUILD/IDENTITY: measured under deployment identity 0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461

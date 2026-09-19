@@ -1,0 +1,94 @@
+{
+  "scope": "TIER_DISCIPLINE_IN_THE_RECORD_NOT_A_CERTIFICATION",
+  "spec": "qualification/specs/acceptance-spec.trusted-local-v1.json",
+  "spec_sha256": "e5b6a1d2481f39c52a6012ec6b48a72e4618ff713f1927b6b0d6827a24b10ce7",
+  "deployment_identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+  "live_provider_budget_authorized": false,
+  "legend_keys": [
+    "T0",
+    "T1",
+    "T2",
+    "T3",
+    "T4",
+    "T5",
+    "T6"
+  ],
+  "legend_keys_with_prose": {
+    "T0": "pure function / type level; no DSH service involved",
+    "T1": "production DSH services with a mock provider",
+    "T2": "the actual built host / profile / preset, booted",
+    "T3": "real subprocess kill and real disk recovery",
+    "T4": "real OS boundary; under trusted-local this observes behaviour, it does not establish confinement",
+    "T5": "authorized live provider driving real children (BLOCKED_EXTERNAL while live_provider_budget_authorized is false)",
+    "T6": "a real coding or research task end to end"
+  },
+  "case_count": 109,
+  "by_layer": {
+    "T0": 6,
+    "T1": 33,
+    "T2": 56,
+    "T3": 10,
+    "T4": 3,
+    "T5": 1
+  },
+  "cases_with_unknown_layer": [],
+  "cases_with_no_layer": [],
+  "t5_cases": [
+    {
+      "id": "IPY-08",
+      "status": "NOT_RUN",
+      "requirement": "a natural activation end rebinds or reports loss explicitly"
+    }
+  ],
+  "t5_inflated_passes": [],
+  "t5_expectation_met": true,
+  "receipt_binding": {
+    "path": "qualification/results/V9-verification/receipt-ver04-fresh-pass.json",
+    "sha256": "d31a74d8ee7e3ee1486d251694c5b483b65fdbfdf7cac1c78c1f537dfd4c4696",
+    "definitionId": "v9-freshness",
+    "outcome": "pass",
+    "passed": true,
+    "candidateTreeDigest": "19ef6bf9860c2d2b57fb8d563d05c30836e5cbb1c4ac26ff2537d145356e16e7",
+    "candidateTreeDigestScope": "snapshot",
+    "acceptanceDefinitionDigest": "88e50ceaeaaf25a64b69098573bc0a33a66a645ca338a7c82e80a00f3fdc4ccd",
+    "environment": {
+      "node": "v24.18.0",
+      "platform": "win32",
+      "arch": "x64",
+      "runnerPid": 26120,
+      "providerPlatform": "windows"
+    },
+    "ranIn": "C:\\Users\\hzq00\\AppData\\Local\\Temp\\dsh-acceptance-v9-freshness-9RbJKu",
+    "carriesTierField": false
+  },
+  "deployment_statement": {
+    "trust_model": "trusted-local",
+    "isolation_image_or_policy_digest": "none-trusted-local-os-user-account-is-the-execution-authority-boundary",
+    "trust_model_statement": "The OS user account is the execution authority boundary. No sandbox, no WSL, no Linux VM, no SSH execution world. Every process this deployment starts -- including the persistent IPython kernel -- runs as the invoking OS user with that user's full filesystem, network and process visibility. This deployment claims NO confinement of reads, writes, network or process visibility, and no case in qualification/specs/acceptance-spec.trusted-local-v1.json may be read as establishing one.",
+    "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461"
+  },
+  "deployment_statement_names_absence_of_confinement": true,
+  "old_gate_index": {
+    "path": "qualification/gates.json",
+    "sha256": "499c8b85483db1af2a25ed9c4cbf471e71b77bc047bf9cc7f0cb4a054c1b7a7f",
+    "rows": 104,
+    "status_counts": {
+      "PASS": 85,
+      "NOT_RUN": 10,
+      "BLOCKED_EXTERNAL": 1,
+      "FAIL": 2,
+      "NOT_APPLICABLE": 6
+    },
+    "old_ver_rows": [],
+    "id_overlap_with_new_spec": []
+  },
+  "verdict": "TIER_DISCIPLINE_HOLDS",
+  "verdict_basis": [
+    "every case's layer is a key of layer_legend (mechanical, from the file)",
+    "no T5 case is marked PASS while no live provider is authorized",
+    "the deployment's own trust_model_statement names the absence it claims",
+    "the old 104-row gate index shares no id with this spec, so no old verdict can be read as a new tier by id",
+    "the receipt carries no tier field, so the tier comes from the SPEC CASE and the identity -- which is why this audit reads both"
+  ],
+  "problems": []
+}

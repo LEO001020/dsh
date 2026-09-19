@@ -1072,8 +1072,21 @@
       "requirement": "an object published before its reference commits is an orphan, not a delivery",
       "stimulus": "Kill the host between artifact publication and the Session reference commit, then reopen the store.",
       "oracle": "The artifact is classified as an orphan that is reconcilable or eligible for grace GC, and no reader reports it as delivered. A store that presents it as a completed delivery is NOT PASS.",
-      "status": "NOT_RUN",
-      "evidence": []
+      "status": "PASS",
+      "evidence": [
+            {
+                  "path": "qualification/results/V6-recovery/GATES.md",
+                  "sha256": "46e9c908e33f08766eacc7930ba9e6ee083754495ce2c1ae829d852dc3ca6586",
+                  "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+                  "note": "Gate row REC-01, with the exact command, the measured result and the build digests. Every claim labelled [measured] or [read in source]."
+            },
+            {
+                  "path": "qualification/results/V6-recovery/tests-crash-consistency.txt",
+                  "sha256": "6372cddf9dd8f2da47181a41e5927e146986e495d9586ac8ddf080831df7c56d",
+                  "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+                  "note": "real SIGKILL between artifact publication and the Session reference commit: 1 orphan, 0 integrity errors, object verified; [crash] signal null exitCode 1 orphans 1 integrityErrors 0 objectVerified true."
+            }
+      ]
     },
     {
       "id": "REC-02",
@@ -1083,8 +1096,27 @@
       "requirement": "a bad reference is an integrity failure",
       "stimulus": "Point a durable event at a missing object and, separately, at an object whose bytes do not match the recorded hash.",
       "oracle": "Both produce an explicit integrity failure naming the reference. Returning empty content, or any success, is NOT PASS.",
-      "status": "NOT_RUN",
-      "evidence": []
+      "status": "PASS",
+      "evidence": [
+            {
+                  "path": "qualification/results/V6-recovery/GATES.md",
+                  "sha256": "46e9c908e33f08766eacc7930ba9e6ee083754495ce2c1ae829d852dc3ca6586",
+                  "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+                  "note": "Gate row REC-02, with the exact command, the measured result and the build digests. Every claim labelled [measured] or [read in source]."
+            },
+            {
+                  "path": "qualification/results/V6-recovery/tests-dat08.txt",
+                  "sha256": "cef326814b5fcea7f6000822098c8f5e5e1e5edeb0659cc833ee86a8ae48be0b",
+                  "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+                  "note": "a referenced object that is MISSING raises artifact-integrity-error, never an empty string; the same block carries the orphan arm and the no-re-execute rule. 5/5 passed."
+            },
+            {
+                  "path": "qualification/results/V6-recovery/tests-integrity.txt",
+                  "sha256": "3185282209f9a81b576e030eb368e05606df35c8b91822b79fdfcf769f9f17fc",
+                  "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+                  "note": "an object REPLACED in place at the same length and an object TRUNCATED below the declared bytes both raise artifact-integrity-error (the replaced arm's message matches /hashes to/), with an INTACT object still served as the control. 3/3 passed."
+            }
+      ]
     },
     {
       "id": "REC-03",
@@ -1094,8 +1126,27 @@
       "requirement": "a crash before admission publishes nothing",
       "stimulus": "Kill the host before a child or cell starts, then restart.",
       "oracle": "No task is published for the interrupted attempt, and a retry is performed only for operations explicitly established as not having taken effect. A retry of an ambiguous operation is NOT PASS.",
-      "status": "NOT_RUN",
-      "evidence": []
+      "status": "PASS",
+      "evidence": [
+            {
+                  "path": "qualification/results/V6-recovery/GATES.md",
+                  "sha256": "46e9c908e33f08766eacc7930ba9e6ee083754495ce2c1ae829d852dc3ca6586",
+                  "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+                  "note": "Gate row REC-03, with the exact command, the measured result and the build digests. Every claim labelled [measured] or [read in source]."
+            },
+            {
+                  "path": "qualification/results/V6-recovery/rec03-crash-before-admission.json",
+                  "sha256": "9fb0147cee74d79c70fd4ef63625c3c92562c52b9b7e14a1a677cbdf5df94d3a",
+                  "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+                  "note": "the measurement written for this case. Window arm: SIGKILL after createRun and before admit -> reopened store taskKeys [] and reserved 0, run still present. CONTROL arm (the same program WITH admit, killed at the same point): taskKeys ['t1'], reserved 7. Both children SIGKILL, liveness re-probed after the signal. Verdict PASS, 7/7 checks."
+            },
+            {
+                  "path": "qualification/results/V6-recovery/tests-durability-records.txt",
+                  "sha256": "ab80d48feb41e42bcaee69a062f4efef3e32fd0ab7f909c63c05df3530f0b154",
+                  "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+                  "note": "D03 (REAL KILL): a reservation whose launch provably never happened returns to prepared and relaunches EXACTLY ONCE under its ORIGINAL reserved childId, a second relaunch is refused, the attempt counter does not advance and the reservation is not re-taken; the sibling case shows an unknown outcome is NEVER relaunched. 25/25 passed."
+            }
+      ]
     },
     {
       "id": "REC-04",
@@ -1105,8 +1156,39 @@
       "requirement": "a lost effect reply stays unknown",
       "stimulus": "Have a remote side commit an effect while the host loses the response, then restart.",
       "oracle": "The outcome is recorded as `unknown`, the whole cell is not replayed by default, and the unresolved effect is named with what would be needed to reconcile it. Replaying the cell as if nothing had happened is NOT PASS.",
-      "status": "NOT_RUN",
-      "evidence": []
+      "status": "PASS",
+      "evidence": [
+            {
+                  "path": "qualification/results/V6-recovery/GATES.md",
+                  "sha256": "46e9c908e33f08766eacc7930ba9e6ee083754495ce2c1ae829d852dc3ca6586",
+                  "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+                  "note": "Gate row REC-04, with the exact command, the measured result and the build digests. Every claim labelled [measured] or [read in source]."
+            },
+            {
+                  "path": "qualification/results/V6-recovery/tests-T9-A-B.txt",
+                  "sha256": "1fb82e945827c887dac43b9b33f98a838cb360bc4605d6997efb30f2e2f9448b",
+                  "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+                  "note": "T9-B: a lost reply that MAY have committed is reconciled by QUERY with exactly ONE transport invocation across 2x perform + 1x reconcile; the send decision table licenses a send from exactly two states and BOTH are proofs about our own write ordering; an adapter that is neither keyable nor queryable is NOT RUN AT ALL (0 invocations, recorded unknown); the PRODUCT path quarantines a possibly-successful launch with the reservation HELD and a second drain refuses. 16 passed / 16 skipped (32)."
+            },
+            {
+                  "path": "qualification/results/V6-recovery/tests-effects.txt",
+                  "sha256": "8a295d7060718b7a885240aaccaca8af8dbb8f545a68ab09d7f5944e89e1cd04",
+                  "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+                  "note": "the same constraint at the ledger: a lost reply resolves by query rather than a second send, an unqueryable adapter never resends, and reconcile never reaches the transport in any recorded state. 48/48 passed."
+            },
+            {
+                  "path": "qualification/results/V6-recovery/tests-durability-records.txt",
+                  "sha256": "ab80d48feb41e42bcaee69a062f4efef3e32fd0ab7f909c63c05df3530f0b154",
+                  "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+                  "note": "D07 (REAL KILL): request/header is durably logged, the request is in flight at the provider and the process is killed; every fault-shaped reading (turnOutcome undefined / interrupted / error) resolves to unknown with the slot held and the credit not reclaimed. 25/25 passed."
+            },
+            {
+                  "path": "qualification/results/V6-recovery/tests-ipy12-no-replay.txt",
+                  "sha256": "27c8ab1e24fba6675d6febde3bc4ead397ae4d6ad254d3b27d5bb17183d3a577",
+                  "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+                  "note": "a cell that kills its own kernel is not re-run in the replacement: the append-only marker holds exactly one line after the replacement kernel is driven. 1/1 passed."
+            }
+      ]
     },
     {
       "id": "REC-05",
@@ -1116,8 +1198,27 @@
       "requirement": "kernel death advances the epoch and names the loss",
       "stimulus": "Kill the kernel while it holds variables, then continue the session.",
       "oracle": "The epoch advances, a lost list is visible to the reader, and the original Session survives with its history intact. A silent continuation on a fresh namespace is NOT PASS.",
-      "status": "NOT_RUN",
-      "evidence": []
+      "status": "PASS",
+      "evidence": [
+            {
+                  "path": "qualification/results/V6-recovery/GATES.md",
+                  "sha256": "46e9c908e33f08766eacc7930ba9e6ee083754495ce2c1ae829d852dc3ca6586",
+                  "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+                  "note": "Gate row REC-05, with the exact command, the measured result and the build digests. Every claim labelled [measured] or [read in source]."
+            },
+            {
+                  "path": "qualification/results/V6-recovery/tests-kernel-death.txt",
+                  "sha256": "875a5d4c1aed743e71cce77f9ccbd3779ac367680a8fbca30c6aaba5472f2f3c",
+                  "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+                  "note": "the REACHABLE arm (dsh-ipython): a real `taskkill /F` on the kernel pid yields a new epoch, volatileStateLost true, previousEpoch equal to the old epoch, a truthy reason, and a replacement kernel that is usable and empty. 2/2 passed."
+            },
+            {
+                  "path": "qualification/results/V6-recovery/tests-restart-loss.txt",
+                  "sha256": "403761370225838fe5dd03eed422f45f8d55c3fbec3cd55066d525458c64d7ea",
+                  "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+                  "note": "the supervisor arm: the unknown decision is made NODE-SIDE by the supervisor's own timer rather than by the broker, the restart loss is named, and a kernel that could not be restarted refuses further cells. 9/9 passed."
+            }
+      ]
     },
     {
       "id": "REC-06",
@@ -1127,8 +1228,21 @@
       "requirement": "a checkpoint behind the last cell reports what was skipped",
       "stimulus": "Restore from a data checkpoint older than the last executed cell.",
       "oracle": "`as-of`, `skipped` and `lost` are each reported, and complete recovery is NOT claimed. A restore that reports full success while silently dropping later state is NOT PASS.",
-      "status": "NOT_RUN",
-      "evidence": []
+      "status": "PASS",
+      "evidence": [
+            {
+                  "path": "qualification/results/V6-recovery/GATES.md",
+                  "sha256": "46e9c908e33f08766eacc7930ba9e6ee083754495ce2c1ae829d852dc3ca6586",
+                  "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+                  "note": "Gate row REC-06, with the exact command, the measured result and the build digests. Every claim labelled [measured] or [read in source]."
+            },
+            {
+                  "path": "qualification/results/V6-recovery/tests-recovery-report.txt",
+                  "sha256": "7abbb249995630d068737beba16afc0103f57e7f8f14a476c69b8ae4f22666ed",
+                  "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+                  "note": "checkpointAsOf, restored, lost, skipped, environmentChanged and unresolvedEffects are separate fields; the as-of is reported EVEN WHEN NOTHING WAS RESTORED so staleness is visible; an environment change sets environmentChanged true and says the data is not comparable; the scope statement the model reads says 'not full session recovery' and 'No past cell was replayed'. 5/5 passed. NOTE: the module carrying this (kernel-lifecycle.ts) is itself unreachable from production, so this is the MECHANISM, not a product property."
+            }
+      ]
     },
     {
       "id": "REC-07",
@@ -1138,8 +1252,21 @@
       "requirement": "a hostile checkpoint is never deserialized on the host",
       "stimulus": "Supply a checkpoint containing pickle, dill or an object dtype payload.",
       "oracle": "Automatic restore is refused, or the payload is handled only as isolated untrusted code; the host process never deserializes it. The refusal names the format. A restore that executes it in the host is NOT PASS.",
-      "status": "NOT_RUN",
-      "evidence": []
+      "status": "PASS",
+      "evidence": [
+            {
+                  "path": "qualification/results/V6-recovery/GATES.md",
+                  "sha256": "46e9c908e33f08766eacc7930ba9e6ee083754495ce2c1ae829d852dc3ca6586",
+                  "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+                  "note": "Gate row REC-07, with the exact command, the measured result and the build digests. Every claim labelled [measured] or [read in source]."
+            },
+            {
+                  "path": "qualification/results/V6-recovery/tests-hostile-checkpoint.txt",
+                  "sha256": "7097da139001ddb1dac9284466e6acb7ca041854f6950cb5bfdf4a7875ab2790",
+                  "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+                  "note": "every pickle-family format (pickle, pkl, dill, cloudpickle, joblib, torch, h5) refused BY NAME; a pickle disguised as .json refused ON ITS BYTES rather than its extension; an object-dtype array refused from the REAL .npy header; truncated arrays, self-disagreeing declared sizes, the zip-bomb bound and an archive lying about its sizes each refused; a real .npz of safe arrays accepted as the control. 14/14 passed. NOTE: kernel-lifecycle.ts is unreachable from production, so this is the MECHANISM."
+            }
+      ]
     },
     {
       "id": "REC-08",
@@ -1149,8 +1276,21 @@
       "requirement": "reconnect does not auto-re-execute an ambiguous call",
       "stimulus": "Drop the transport mid-call and reconnect.",
       "oracle": "The ambiguous call is not automatically re-executed, and resources plus logs are reconciled with the ambiguity stated. An automatic re-execution is NOT PASS.",
-      "status": "NOT_RUN",
-      "evidence": []
+      "status": "PASS",
+      "evidence": [
+            {
+                  "path": "qualification/results/V6-recovery/GATES.md",
+                  "sha256": "46e9c908e33f08766eacc7930ba9e6ee083754495ce2c1ae829d852dc3ca6586",
+                  "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+                  "note": "Gate row REC-08, with the exact command, the measured result and the build digests. Every claim labelled [measured] or [read in source]."
+            },
+            {
+                  "path": "qualification/results/V6-recovery/tests-quarantine-reconnect.txt",
+                  "sha256": "eb07cc965307795543aeb6ab57822e568e581c0180e35a8b19318624d41593cb",
+                  "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+                  "note": "onTransportReconnect() returns reexecuted [] and ambiguousCells ['ambiguous'], the transport's dispatched list is unchanged before and after, and the quarantine is STILL IN PLACE; a quarantine clears only through an explicit evidenced resolution and an empty evidence string is refused. 4/4 passed. NOTE: kernel-lifecycle.ts is unreachable from production, so this is the MECHANISM."
+            }
+      ]
     },
     {
       "id": "REC-09",
@@ -1160,8 +1300,33 @@
       "requirement": "a stale epoch cannot write authority",
       "stimulus": "After a restart, have an old worker submit a settlement carrying its old epoch.",
       "oracle": "The authoritative write is REFUSED and the attempt is retained as diagnostic evidence rather than discarded. A settlement from a superseded generation that lands is NOT PASS.",
-      "status": "NOT_RUN",
-      "evidence": []
+      "status": "FAIL",
+      "evidence": [
+            {
+                  "path": "qualification/results/V6-recovery/GATES.md",
+                  "sha256": "46e9c908e33f08766eacc7930ba9e6ee083754495ce2c1ae829d852dc3ca6586",
+                  "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+                  "note": "Gate row REC-09, with the exact command, the measured result and the build digests. Every claim labelled [measured] or [read in source]."
+            },
+            {
+                  "path": "qualification/results/V6-recovery/tests-T9-A-B.txt",
+                  "sha256": "1fb82e945827c887dac43b9b33f98a838cb360bc4605d6997efb30f2e2f9448b",
+                  "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+                  "note": "WITH the guard the stale settlement is REFUSED and the refusal is retained durably in its own domain, readable by a second generation, with the authoritative state untouched (state accepted, reserved 7, tombstones [], epoch 1). WITHOUT the guard, offered to the reachable write path WorkService.transition, the same stale settlement IS APPLIED: the task moves to confirmed, the reservation is released to 0, a tombstone is written, and the record epoch is never consulted. The guard is correct and unreachable, so the oracle 'the authoritative write is REFUSED' does not hold on any production path. 16 passed / 16 skipped (32)."
+            },
+            {
+                  "path": "qualification/results/V6-recovery/tests-durability-records.txt",
+                  "sha256": "ab80d48feb41e42bcaee69a062f4efef3e32fd0ab7f909c63c05df3530f0b154",
+                  "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+                  "note": "D10: the stale epoch is refused while the diagnostic evidence is retained, and a settlement naming a childId that is not the reserved one is refused too. 25/25 passed. This is the guard's correctness, which is why the FAIL is attributed to reachability and not to the guard's logic."
+            },
+            {
+                  "path": "qualification/results/V6-recovery/import-graph-v6.txt",
+                  "sha256": "825f8ed730e9be98cab090d649754d12aa3177c0eb783becc5a6fbf469f0434d",
+                  "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+                  "note": "the independent compiler-based scan: recovery.ts has NO non-test importer and appears under UNREACHABLE non-test modules, so no production path can reach the guard at all."
+            }
+      ]
     },
     {
       "id": "REC-10",
@@ -1171,8 +1336,27 @@
       "requirement": "the epoch guard is reachable from a production path",
       "stimulus": "Trace the guard that rejects a stale-epoch settlement from the entry point a real host uses.",
       "oracle": "The guard is reachable from at least one non-test production path, and the reachability is demonstrated by a call graph or a live boot rather than by the guard's own unit test. An epoch field that nothing reads or writes after initialisation is INERT and is NOT PASS; the record must say so instead of citing the unit test.",
-      "status": "NOT_RUN",
-      "evidence": []
+      "status": "FAIL",
+      "evidence": [
+            {
+                  "path": "qualification/results/V6-recovery/GATES.md",
+                  "sha256": "46e9c908e33f08766eacc7930ba9e6ee083754495ce2c1ae829d852dc3ca6586",
+                  "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+                  "note": "Gate row REC-10, with the exact command, the measured result and the build digests. Every claim labelled [measured] or [read in source]."
+            },
+            {
+                  "path": "qualification/results/V6-recovery/import-graph-v6.txt",
+                  "sha256": "825f8ed730e9be98cab090d649754d12aa3177c0eb783becc5a6fbf469f0434d",
+                  "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+                  "note": "TypeScript ts.preProcessFile over the package: recovery.ts has NO non-test importer and is in no entry point's transitive closure; reconcile.ts's only non-test importer is durability-runner.ts, itself unreachable; effects.ts has no non-test importer either. 26 reachable / 6 unreachable of 32 non-test modules."
+            },
+            {
+                  "path": "qualification/results/V6-recovery/tests-T9-A-B.txt",
+                  "sha256": "1fb82e945827c887dac43b9b33f98a838cb360bc4605d6997efb30f2e2f9448b",
+                  "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+                  "note": "the second, independent instrument agrees: recovery.ts is in NO entry point's transitive closure (with host.ts as the positive control that the walk works), nothing bumps or reads the record's epoch after initialRunRecord sets it to 1, a real SIGKILL plus a real re-adoption leaves the record at epoch 1, and resume() leaves it at 1. The oracle names this state explicitly: an epoch field that nothing reads or writes after initialisation is INERT and is NOT PASS. 16 passed / 16 skipped (32)."
+            }
+      ]
     },
     {
       "id": "FS-01",
@@ -1391,8 +1575,27 @@
       "requirement": "a zero-test run is not a PASS",
       "stimulus": "Run a runner that exits 0 while collecting no test at all.",
       "oracle": "The verdict is NOT PASS and the reason names the zero-test condition. The observed exit code is recorded so the reader can see that exit 0 alone would have been read as green.",
-      "status": "NOT_RUN",
-      "evidence": []
+      "status": "PASS",
+      "evidence": [
+        {
+          "path": "qualification/results/V9-verification/VER-01-zero-tests-not-a-pass.txt",
+          "sha256": "a53de5cf149b98a5014272f78baaedc26479bbbcae8d696f07ed0870e75e52d0",
+          "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+          "note": "The oracle, the exact command, the verbatim CLI output and the receipt's own fields: exit.code 0, outcome 'zero_tests', passed false, and the reason naming the zero-test condition. So exit 0 alone is demonstrably not read as green."
+        },
+        {
+          "path": "qualification/results/V9-verification/receipt-ver01-zero-tests.json",
+          "sha256": "a6a2d5d3eb703851025fbb00bde6040f4a9b0625f39b8df5432a2f4b03b0054a",
+          "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+          "note": "The real receipt the run wrote, with exit.code 0 recorded beside passed false."
+        },
+        {
+          "path": "qualification/results/V9-verification/verification-gates-tests.raw.txt",
+          "sha256": "d6094c92810002e53cadd7410ddbd6cd34a05982915376397a1b5478fb96b153",
+          "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+          "note": "In-suite arm plus its CONTROL: the same command over the same tree with the same exit 0 and NO declared counts reports outcome 'pass', so the difference between the two receipts is the classification and nothing about the process. 51 passed / 51, TEST_EXIT=0."
+        }
+      ]
     },
     {
       "id": "VER-02",
@@ -1402,8 +1605,27 @@
       "requirement": "an all-skipped run is not a PASS",
       "stimulus": "Run a suite in which every test is skipped and the runner exits 0.",
       "oracle": "The verdict is NOT PASS, the skip count is reported, and the recorded exit code shows it was 0.",
-      "status": "NOT_RUN",
-      "evidence": []
+      "status": "PASS",
+      "evidence": [
+        {
+          "path": "qualification/results/V9-verification/VER-02-all-skipped-not-a-pass.txt",
+          "sha256": "cbc0ae714ea3bee6906d5360ce416ba0266c6721415485af12bef503b06546e5",
+          "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+          "note": "Verbatim CLI output and receipt: exit.code 0, outcome 'all_skipped', passed false, observedTests {total:2, passed:0, failed:0, skipped:2, todo:0}. The skip count is reported and the exit code is shown to have been 0."
+        },
+        {
+          "path": "qualification/results/V9-verification/receipt-ver02-all-skipped.json",
+          "sha256": "eaeef46a6cf7cdc3cafac82de75ef1114e2dcf6761bc921658ab1c2df27649e2",
+          "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+          "note": "The real receipt, carrying the observed skip counts and exit.code 0."
+        },
+        {
+          "path": "qualification/results/V9-verification/verification-gates-tests.raw.txt",
+          "sha256": "d6094c92810002e53cadd7410ddbd6cd34a05982915376397a1b5478fb96b153",
+          "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+          "note": "In-suite arm asserting observedTests {passed:0, failed:0, skipped:2} AND testsAreReal().real === false, so the integration authority refuses it too. 51 passed / 51, TEST_EXIT=0."
+        }
+      ]
     },
     {
       "id": "VER-03",
@@ -1413,8 +1635,34 @@
       "requirement": "the candidate cannot weaken its own oracle",
       "stimulus": "Have the candidate attempt to modify a protected suite, a threshold, or the acceptance configuration.",
       "oracle": "The modification is either impossible or detected, and acceptance is not weakened. A silent green produced by an edited oracle is NOT PASS.",
-      "status": "NOT_RUN",
-      "evidence": []
+      "status": "PASS",
+      "evidence": [
+        {
+          "path": "qualification/results/V9-verification/VER-03-candidate-cannot-weaken-its-own-oracle.txt",
+          "sha256": "e18eacf766e00654d2657981c9c32d2f4ed99e06b89a877afff7bc20fb435898",
+          "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+          "note": "The weakened definition is DETECTED: outcome 'acceptance_definition_changed', exit.code null, limitations ['the acceptance command was never executed'], and the refusal names both digests. The corrected CONTROL shows the honest definition with the same authorized digest still RUNS."
+        },
+        {
+          "path": "qualification/results/V9-verification/cli-ver03.txt",
+          "sha256": "f7b5c8ef13a0a7ee8fe460f9a3d9b639c340c088d72a5ea4315cecef5df0ec20",
+          "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+          "note": "Raw capture, including the first control arm that changed the definition id and was refused for that reason -- kept because a control that fails for the reason it is controlling for proves nothing."
+        },
+        {
+          "path": "qualification/results/V9-verification/receipt-ver03-weakened-refused.json",
+          "sha256": "22cea3fe0951b63d90abbf5dbe7c4edd2048cfb489033515e80792dcfca11f4b",
+          "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+          "note": "The refusal receipt, showing nothing ran."
+        },
+        {
+          "path": "qualification/results/V9-verification/verification-gates-tests.raw.txt",
+          "sha256": "d6094c92810002e53cadd7410ddbd6cd34a05982915376397a1b5478fb96b153",
+          "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+          "note": "In-suite arms: the weakened threshold carrying the authorized digest is REFUSED; the undeclared-oracle gap is MEASURED; and the closure (oracleDigest + bindReceipt + observedBasis) refuses a receipt whose oracle changed. 51 passed / 51, TEST_EXIT=0."
+        }
+      ],
+      "note": "The oracle-digest closure is a MECHANISM, not an enforced policy: that any production caller passes the right oracleFiles set is NOT proven, and the runner's snapshot still does not cover an undeclared oracle."
     },
     {
       "id": "VER-04",
@@ -1424,8 +1672,34 @@
       "requirement": "a receipt does not outlive the tree it describes",
       "stimulus": "Verify a tree, then change the workspace, the environment or the oracle, and re-check the stored receipt.",
       "oracle": "The freshness check reports NOT FRESH and the old verdict is not reusable as current completion. Reusing a stale receipt is NOT PASS. NOTE: this is the NEW VER-04 and has nothing to do with the old spec's VER-04, which is out of scope and recorded in not_applicable_inherited.",
-      "status": "NOT_RUN",
-      "evidence": []
+      "status": "PASS",
+      "evidence": [
+        {
+          "path": "qualification/results/V9-verification/VER-04-receipt-does-not-outlive-its-tree.txt",
+          "sha256": "f596494fe05953891c21329db4b48c25dd83e52d6022841d6c464045bf7df777",
+          "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+          "note": "CLI end to end: fresh -> {fresh:true}, check_exit 0; after one byte of a declared input changes -> {fresh:false} with both digests named, check_exit 1 and the runner says 're-verify'. CONTROL: a FRESH receipt that is not a PASS still exits 1, so freshness is never a verdict."
+        },
+        {
+          "path": "qualification/results/V9-verification/cli-ver04-freshness.txt",
+          "sha256": "4fad2dd0363504e23bccb0c706142da7c4178c757f8a7cd5ff86f32b7542f923",
+          "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+          "note": "The verbatim capture of all arms, including what the receipt does NOT carry (no oracleDigest field: the oracle binding is a separate VerdictBinding compared by bindReceipt, by design)."
+        },
+        {
+          "path": "qualification/results/V9-verification/receipt-ver04-fresh-pass.json",
+          "sha256": "d31a74d8ee7e3ee1486d251694c5b483b65fdbfdf7cac1c78c1f537dfd4c4696",
+          "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+          "note": "The real receipt, carrying candidateTreeDigest, candidateTreeDigestScope and acceptanceDefinitionDigest."
+        },
+        {
+          "path": "qualification/results/V9-verification/verification-gates-tests.raw.txt",
+          "sha256": "d6094c92810002e53cadd7410ddbd6cd34a05982915376397a1b5478fb96b153",
+          "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+          "note": "In-suite arms for the WORKSPACE, ORACLE and ENVIRONMENT bindings independently, each moving exactly one of four real digests, with a restored tree ACCEPTING as the control. 51 passed / 51, TEST_EXIT=0."
+        }
+      ],
+      "note": "Numbering honoured: this is the NEW VER-04 (receipt freshness). The old VER-04 (host execution bypass) is out of scope and recorded in not_applicable_inherited; nothing here is evidence for it."
     },
     {
       "id": "VER-05",
@@ -1435,8 +1709,27 @@
       "requirement": "A-B-A mutation during acceptance is caught",
       "stimulus": "Change a file and change it back to its original hash while acceptance is running.",
       "oracle": "The candidate is frozen to an immutable snapshot and the verdict is bound to that snapshot, so the tampered run cannot be certified. The control arm must also be run: endpoint hash polling alone would have certified the tampered run, and that is demonstrated rather than asserted.",
-      "status": "NOT_RUN",
-      "evidence": []
+      "status": "PASS",
+      "evidence": [
+        {
+          "path": "qualification/results/V9-verification/VER-05-aba-mutation-caught.txt",
+          "sha256": "30fea27829457f04bb4574ba695bc1a58f58d3465876bc5dbb4382414f1f2b1b",
+          "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+          "note": "The printed numbers for the oracle: the frozen arm's child read revision A for input+oracle+config while the live tree went A->B->A; liveDigestAtStart == liveDigestAtEnd and liveDriftDetected false, so endpoint polling sees NOTHING; the in-place CONTROL exits 9 having seen the tampered tree, and both receipts carry the SAME start digest."
+        },
+        {
+          "path": "qualification/results/V9-verification/ver05-06-aba-and-inflight.txt",
+          "sha256": "4442d41983ab425703e017d50cd1445d98c14042728bd1ba2dfcf656edd16765",
+          "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+          "note": "The verbatim probe output, including the serialized-receipt asymmetry that makes the snapshot load-bearing rather than decorative."
+        },
+        {
+          "path": "qualification/results/V9-verification/verification-gates-tests.raw.txt",
+          "sha256": "d6094c92810002e53cadd7410ddbd6cd34a05982915376397a1b5478fb96b153",
+          "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+          "note": "In-suite two-arm proof extended to the oracle and the config, plus the case where a command rewrites its own declared input inside the snapshot and the outcome is 'unknown' with holdReservation true. 51 passed / 51, TEST_EXIT=0."
+        }
+      ]
     },
     {
       "id": "VER-06",
@@ -1446,8 +1739,28 @@
       "requirement": "in-flight writers are converged or isolated before freezing",
       "stimulus": "Complete a request while a background mutation is still active.",
       "oracle": "The system converges or isolates the writer before freezing, and an unresolved mutation produces an unknown rather than a certification. Certifying a tree that was still changing is NOT PASS.",
-      "status": "NOT_RUN",
-      "evidence": []
+      "status": "PASS",
+      "evidence": [
+        {
+          "path": "qualification/results/V9-verification/VER-06-in-flight-writers-converged.txt",
+          "sha256": "dcfb5befd2ecb6cc2ef6833a7fc35bfe1e483dfd4bd204259d4bfe598b8abe17",
+          "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+          "note": "Three measured paths: a live writer lease refuses the freeze; a released lease with a still-moving tree refuses and names BOTH sample digests; a stopped writer converges to a digest EQUAL to the runner's own digestInputs. The structural invariant digest!=='' implies converged===true holds on every path."
+        },
+        {
+          "path": "qualification/results/V9-verification/ver05-06-aba-and-inflight.txt",
+          "sha256": "4442d41983ab425703e017d50cd1445d98c14042728bd1ba2dfcf656edd16765",
+          "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+          "note": "The verbatim probe output for all three paths, with their distinct refusal reasons printed separately."
+        },
+        {
+          "path": "qualification/results/V9-verification/verification-gates-tests.raw.txt",
+          "sha256": "d6094c92810002e53cadd7410ddbd6cd34a05982915376397a1b5478fb96b153",
+          "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+          "note": "In-suite arms: 'freezing while a writer still holds the workspace is REFUSED as in-flight', the two-arm convergence case, and 'a refusal NEVER carries a digest'. 51 passed / 51, TEST_EXIT=0."
+        }
+      ],
+      "note": "Measures the freeze DECISION. That a production caller invokes convergeBeforeFreeze before every acceptance is the caller's to provide and is NOT claimed."
     },
     {
       "id": "VER-07",
@@ -1457,8 +1770,22 @@
       "requirement": "a verification failure does not permanently drain the run",
       "stimulus": "Fail verification, then legitimately resume the run with corrected work.",
       "oracle": "Legitimate recovery continues, and `pause` has not been misused as a final drain. A run that cannot continue after a recoverable failure is NOT PASS.",
-      "status": "NOT_RUN",
-      "evidence": []
+      "status": "PASS",
+      "evidence": [
+        {
+          "path": "qualification/results/V9-verification/VER-07-verification-failure-is-recoverable.txt",
+          "sha256": "341c0e71e2ce3b68c60ebd61aebcb1c4340d94943f12be0ec44c7e11c725bb44",
+          "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+          "note": "The case's five assertions read from source, driven against the REAL SubagentRuntime: pause leaves the run paused and refusing ('run_not_open'); a correction child is still admitted WHILE PAUSED; resume re-opens admission; and only the later permanent drain rejects with 'draining; the operation was not admitted' -- which is what proves the paused state was genuinely not-yet-drained."
+        },
+        {
+          "path": "qualification/results/V9-verification/verification-gates-tests.raw.txt",
+          "sha256": "d6094c92810002e53cadd7410ddbd6cd34a05982915376397a1b5478fb96b153",
+          "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+          "note": "The run that carries it: 51 passed / 51, TEST_EXIT=0, 105.62 s, single worker with --maxWorkers=1 --no-file-parallelism."
+        }
+      ],
+      "note": "Asserted for the pause/drain DISTINCTION, not for a whole recovery: it does not run a full failed -> corrected -> re-verified -> completed turn."
     },
     {
       "id": "VER-08",
@@ -1468,8 +1795,27 @@
       "requirement": "an acceptance definition cannot authorize itself",
       "stimulus": "Change an acceptance definition's threshold and re-run it without re-recording the authorized digest.",
       "oracle": "The digest check FAILS and the run is refused. Obtaining the authorized digest must be a separate step from writing the definition, so a definition cannot go green in the same breath it is edited.",
-      "status": "NOT_RUN",
-      "evidence": []
+      "status": "PASS",
+      "evidence": [
+        {
+          "path": "qualification/results/V9-verification/VER-08-acceptance-cannot-authorize-itself.txt",
+          "sha256": "6167da805b278fdda4d64902c4f3619f2b7025099d0c581946270b831e013477",
+          "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+          "note": "The digest check FAILS and the run is refused with nothing executed, and the SEPARATION OF STEPS is shown as two commands: --print-digest prints and writes nothing back, and no flag both authorizes and runs. The corrected control shows the honest definition with the same digest still runs."
+        },
+        {
+          "path": "qualification/results/V9-verification/cli-ver03-control.txt",
+          "sha256": "a3a7f19cc8743b6e89e67b1adb9405e8c97f5973ddbb1ca15ee768be6be2347c",
+          "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+          "note": "The corrected control arm with both digests printed side by side."
+        },
+        {
+          "path": "qualification/results/V9-verification/verification-gates-tests.raw.txt",
+          "sha256": "d6094c92810002e53cadd7410ddbd6cd34a05982915376397a1b5478fb96b153",
+          "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+          "note": "In-suite arm: the weakened threshold carrying the authorized digest is REFUSED, not run, while the same definition with the same digest really executes. 51 passed / 51, TEST_EXIT=0."
+        }
+      ]
     },
     {
       "id": "VER-09",
@@ -1479,8 +1825,40 @@
       "requirement": "the verification tier and its limit are stated, never implied",
       "stimulus": "Read every recorded verdict in this deployment and compare the claimed tier with the tier at which it was measured.",
       "oracle": "Each verdict names its tier from the layer legend and the artifact it is bound to; a green measured at T0/T1 is never presented as T2/T3/T5/T6. Under trusted-local the verification environment runs as the SAME OS user as the host, so the record must ALSO state that no privilege separation between the verifier and the verified exists. Presenting a same-account verification as privileged isolation is NOT PASS.",
-      "status": "NOT_RUN",
-      "evidence": []
+      "status": "PASS",
+      "evidence": [
+        {
+          "path": "qualification/results/V9-verification/VER-09-tier-and-limit-stated.txt",
+          "sha256": "bcdff99f21db67293c1b7289dc7c646cd4ecd7eeb8898a1327345a434669457c",
+          "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+          "note": "All three clauses. 109/109 cases name a tier from the layer legend; 0 T5 cases are PASS while live_provider_budget_authorized is false; the old gate index shares no id with this spec. And the SAME-ACCOUNT measurement taken from inside the verification child: child user 'hzq00' == host user 'hzq00' at a different pid, so no privilege separation exists -- stated in the deployment's own trust_model_statement rather than implied."
+        },
+        {
+          "path": "qualification/results/V9-verification/ver09-tier-audit.json",
+          "sha256": "197399316cef7304a21f533f0e88f541ba6d7c69e62bdb50b8f01a7a378aaeb9",
+          "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+          "note": "The machine-readable audit: per-case layer distribution, the T5 expectation, the receipt's binding fields, and its own scope statement -- it audits tier discipline in the record and does not judge whether an oracle was established."
+        },
+        {
+          "path": "qualification/results/V9-verification/cli-ver09-account.txt",
+          "sha256": "aadd4b617840c987d9550e9c23387638cdf8cf069af8f44d32550a86dab67c87",
+          "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+          "note": "The raw capture of the same-account probe driven through the real acceptance runner, plus what the runner DOES remove (credential-shaped and DSH_* env names, the control-plane handle) kept separate from what it does NOT (filesystem reads, egress)."
+        },
+        {
+          "path": "qualification/results/V9-verification/ver09-sibling-tier-crosscheck.txt",
+          "sha256": "2b2ada0a33c8eb7f1618b6e61e37d49504a8dc0125c01d4363abab7b68baee69",
+          "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+          "note": "The clause-2 cross-check against the other families' gate tables: ZERO explicit tier tokens beside case ids were found. Recorded as the empty result it is, with the reason it is empty, rather than folded into a green."
+        },
+        {
+          "path": "qualification/results/V9-verification/verification-gates-tests.raw.txt",
+          "sha256": "d6094c92810002e53cadd7410ddbd6cd34a05982915376397a1b5478fb96b153",
+          "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+          "note": "The in-suite cases that measure the CONSEQUENCES of the same-account limit: a candidate child read a host file outside its snapshot verbatim, and a candidate child completed a real TCP connection. 51 passed / 51, TEST_EXIT=0."
+        }
+      ],
+      "note": "An identity drift was found while filing and is reported rather than absorbed: trusted_local_acceptance_spec_sha256 pins THIS spec's digest, and this spec is also the results register every family writes into, so filing into it changes the identity. See qualification/results/V9-verification/identity-at-measurement.txt. No unilateral re-derivation was performed -- moving deployment.identity is an owner-level decision."
     },
     {
       "id": "RES-01",

@@ -1,0 +1,49 @@
+V9 — THE IDENTITY THIS SLICE MEASURED UNDER, AND A DRIFT FOUND WHILE FILING
+==============================================================================
+
+At the START of this slice (verified, 28/28 checks passed):
+  deployment.identity                                   0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461
+  inputs.trusted_local_acceptance_spec_sha256 (pinned)  e5b6a1d2481f39c52a6012ec6b48a72e4618ff713f1927b6b0d6827a24b10ce7
+  sha256 of the spec file on disk at that moment        e5b6a1d2481f39c52a6012ec6b48a72e4618ff713f1927b6b0d6827a24b10ce7
+  => MATCH. The identity recomputed from the file.
+
+Every measurement in this slice was taken under that identity.
+
+------------------------------------------------------------------------------
+DRIFT FOUND WHILE FILING (measured, not inferred):
+  sha256 of the spec file on disk NOW                   dbe6ac01efa84675386c12cec6ee5ee3340d49e17c400389556e0c47f97a1405
+  the pinned input still reads                          e5b6a1d2...
+  lock deployment.identity still reads                  0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461
+
+  recomputing the identity over the inputs AS THEY ARE NOW:
+    73445ca410cfb42ef7413e72b4419456ed5af49a7bf6dd99657092d6ef7cc431
+    differs from the recorded identity: True
+
+WHY: `trusted_local_acceptance_spec_sha256` is an identity INPUT, and this spec
+is a SHARED file that every family writes its results into. So the act of filing
+evidence into the spec changes the spec's digest, which changes the identity, which
+invalidates the identity every other family filed under. MEASURED: the file changed
+between the start of this slice and now, and 12 DATA cases now carry status+evidence
+(97 NOT_RUN, 10 PASS, 2 FAIL at the time of this reading).
+
+THE STRUCTURAL CONSEQUENCE, stated plainly: an identity pinned to the digest of a
+file that is also the results register cannot be stable across a parallel filing
+run. Either (a) the results live outside the spec (the spec's evidence entries point
+at files under qualification/results/, so they COULD), or (b) the spec digest stops
+being an identity input, or (c) filing is serialised and the identity is re-derived
+once at the end.
+
+WHAT THIS SLICE DID ABOUT IT: nothing unilateral. Moving deployment.identity is an
+owner-level decision (V1-identity's own instrument says so: 'Moving deployment.identity
+invalidates every PASS recorded against it, which is an owner-level decision'). This
+slice filed its evidence, recorded the identity it measured under, and reports the
+drift here so the owner can decide. It did NOT re-derive the identity, and it did NOT
+edit any case outside the VERIFICATION family.
+
+------------------------------------------------------------------------------
+identity.py at the moment of this reading:
+  [FAIL] new spec digest on disk matches the pinned input                                        pinned=e5b6a1d2481f39c52a6012ec6b48a72e4618ff713f1927b6b0d6827a24b10ce7 on_disk=dbe6ac01efa84675386c12cec6ee5ee3340d49e17c400389556e0c47f97a1405
+  [FAIL] no case is pre-marked PASS (every status is NOT_RUN)                                    offenders=['DATA-01', 'DATA-02', 'DATA-03', 'DATA-04', 'DATA-05', 'DATA-06', 'DATA-07', 'DATA-08', 'DATA-09', 'DATA-10', 'DATA-11', 'DATA-12']
+  [FAIL] no case ships with evidence (every evidence list is empty)                              offenders=['DATA-01', 'DATA-02', 'DATA-03', 'DATA-04', 'DATA-05', 'DATA-06', 'DATA-07', 'DATA-08', 'DATA-09', 'DATA-10', 'DATA-11', 'DATA-12']
+  [FAIL] promotion spec_sha256 matches the new spec on disk                                      promotion=e5b6a1d2481f39c52a6012ec6b48a72e4618ff713f1927b6b0d6827a24b10ce7 on_disk=dbe6ac01efa84675386c12cec6ee5ee3340d49e17c400389556e0c47f97a1405
+  4 check(s) FAILED. The identity is NOT verified.

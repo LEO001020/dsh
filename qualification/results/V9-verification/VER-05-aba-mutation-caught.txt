@@ -1,0 +1,104 @@
+VER-05 - A-B-A mutation during acceptance is caught
+==============================================================================
+
+SPEC ORACLE, quoted:
+  "The candidate is frozen to an immutable snapshot and the verdict is bound to
+   that snapshot, so the tampered run cannot be certified. The control arm must
+   also be run: endpoint hash polling alone would have certified the tampered run,
+   and that is demonstrated rather than asserted."
+
+NOTE ON THE NUMBERING, because it is a live trap in this repo (docs/GAPS.md
+G-SEAM-38): the TEST FILE's describe block is labelled 'VER-06: A->B->A ...' and the
+SPEC's VER-05 is the A-B-A case while the SPEC's VER-06 is the in-flight-writer case.
+The mapping in this slice is by ORACLE, never by label. This file is filed against the
+spec's VER-05 because the oracle above is what it measures.
+
+COMMAND (one child per arm, no loops beyond the readiness poll):
+  cd packages/dsh-daily-work
+  node D:/DSH/work/dsh-native-daily/qualification/results/V9-verification/ver05-06-aba-and-inflight.mjs
+
+MEASURED OUTPUT, verbatim
+------------------------------------------------------------------------------
+
+========================================================================
+spec VER-05 — A-B-A during acceptance: is the verdict bound to the FROZEN copy?
+========================================================================
+
+ARM 1 — the runner FREEZES a snapshot and runs the command inside it.
+  liveDigestAtStart        a43eb0bf8f64c5cccb9e0b4de33132d6b412dc23006cd5e32487096af75d3653
+  liveDigestAtEnd          a43eb0bf8f64c5cccb9e0b4de33132d6b412dc23006cd5e32487096af75d3653
+  digest of the tree as declared at freeze time: a43eb0bf8f64c5cccb9e0b4de33132d6b412dc23006cd5e32487096af75d3653
+  liveDriftDetected        false
+  exit code                0
+  stderr contains SAW_THE_TAMPERED_TREE: false
+  what the CHILD read: input="console.log(\"A\")\n" oracle="export const assertion = \"expect(total).toBe(30)\"\n" config="export default { test: { include: ['src/**/*.test.ts'] } }\n"
+  => the child saw revision A for all three, so the frozen copy is what was tested.
+  => AND endpoint hashing reports NO DRIFT (liveDriftDetected=false) even though the live tree went A->B->A underneath it.
+
+ARM 2 (the CONTROL) — the same A->B->A, verified IN PLACE.
+  snapshot                 undefined
+  candidateTreeDigestScope live
+  exit code                9   (9 = the child saw the tampered tree)
+  stderr contains SAW_THE_TAMPERED_TREE: true
+
+  THE ASYMMETRY, on the SERIALIZED artifacts a verifier would store:
+    snapshot receipt carries liveDriftDetected : true
+    snapshot receipt carries liveDigestAtEnd   : true
+    in-place receipt carries liveDriftDetected : false
+    in-place receipt carries liveDigestAtEnd   : false
+    snapshot arm candidateTreeDigest           : a43eb0bf8f64c5cccb9e0b4de33132d6b412dc23006cd5e32487096af75d3653
+    in-place arm candidateTreeDigest           : a43eb0bf8f64c5cccb9e0b4de33132d6b412dc23006cd5e32487096af75d3653
+    both equal the pre-mutation digest         : true
+
+  VERDICT: the two receipts are INDISTINGUISHABLE in their start digest while one
+  command ran against A and the other demonstrably ran against B. Endpoint hash
+  polling alone would have certified the tampered run; the SNAPSHOT is what makes
+  the frozen revision the tested revision.
+
+========================================================================
+
+------------------------------------------------------------------------------
+ORACLE CHECKED, clause by clause
+------------------------------------------------------------------------------
+
+  the candidate is FROZEN to an immutable snapshot
+      arm 1: the child ran in the snapshot directory and read revision A for input,
+      oracle AND config while the live tree went A -> B -> A underneath it.
+  the verdict is bound to that snapshot
+      the snapshot arm's receipt carries liveDigestAtStart == liveDigestAtEnd == the
+      pre-mutation digest, and liveDriftDetected == false.
+  the tampered run cannot be certified
+      arm 2 (the CONTROL) really does execute against the tampered tree: exit code 9 and
+      stderr 'SAW_THE_TAMPERED_TREE'. Its receipt carries NO liveDigestAtEnd and NO
+      liveDriftDetected field at all -- and the two receipts have the SAME start digest.
+  endpoint hash polling alone would have certified the tampered run
+      MEASURED, not asserted: liveDigestAtStart == liveDigestAtEnd and liveDriftDetected
+      == false in the snapshot arm while the tree demonstrably moved. A before/after hash
+      poll sees NOTHING; the snapshot is what makes the frozen revision the tested one.
+
+HONEST SCOPE, asserted rather than described: in the IN-PLACE arm the runner takes NO
+end digest. `liveDigestAtEnd` and `liveDriftDetected` are computed only inside the
+snapshot branch, so an in-place receipt has nothing for a later endpoint comparison to
+compare -- while still recording a start digest for a tree the command did not run
+against. That asymmetry is the finding, and it is measured on the SERIALIZED artifacts.
+
+IN-SUITE ARMS (same oracle, with the mutation extended to the ORACLE and the CONFIG):
+  - 'two-arm proof: the frozen copy is what is tested, and endpoint hashing cannot see the tamper'
+  - 'a command that rewrites its own declared input inside the snapshot yields unknown, not pass'
+      (outcome 'unknown', stableDuringRun false, holdReservation true -- an unresolved
+       mutation produces an UNKNOWN rather than a certification)
+  Raw output: verification-gates-tests.raw.txt (51 passed / 51, TEST_EXIT=0)
+
+A LOAD-DEPENDENT ORACLE WAS FOUND AND FIXED EARLIER IN THIS CASE'S HISTORY (M8):
+  the in-place arm's mutation window was anchored to a timer started BEFORE the child
+  process existed, so under CPU load the tamper was already restored before the child
+  looked and the arm exited 0 -- silently proving nothing. It is now anchored to a
+  readiness marker the child writes as its FIRST action, and the child POLLS for the
+  tampered revision. Re-proven under the load that exposed it. This slice re-ran the same
+  schedule under the current machine load and the control arm exited 9.
+  See qualification/results/M8-verification/FINDINGS.md for the original diagnosis.
+
+VERDICT: PASS
+BUILD/IDENTITY: measured under deployment identity 0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461
+  subject modules read from SOURCE by absolute file URL (no stale lib/ on this path);
+  the package lib/ was rebuilt 2026-09-20 07:37:31, newer than every non-test src/*.ts.

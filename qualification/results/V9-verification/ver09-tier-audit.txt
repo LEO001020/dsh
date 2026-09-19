@@ -1,0 +1,40 @@
+spec       qualification/specs/acceptance-spec.trusted-local-v1.json
+identity   0a0996f3944b5528...
+cases      109   layers {'T0': 6, 'T1': 33, 'T2': 56, 'T3': 10, 'T4': 3, 'T5': 1}
+legend     ['T0', 'T1', 'T2', 'T3', 'T4', 'T5', 'T6']
+live provider authorized: False
+
+T5 cases (need an authorized live provider):
+  IPY-08  NOT_RUN          a natural activation end rebinds or reports loss explicitly
+
+the artifact a verdict is bound to (one real receipt):
+  path                           qualification/results/V9-verification/receipt-ver04-fresh-pass.json
+  sha256                         d31a74d8ee7e3ee1486d251694c5b483b65fdbfdf7cac1c78c1f537dfd4c4696
+  outcome                        pass
+  passed                         True
+  candidateTreeDigest            19ef6bf9860c2d2b57fb8d563d05c30836e5cbb1c4ac26ff2537d145356e16e7
+  candidateTreeDigestScope       snapshot
+  acceptanceDefinitionDigest     88e50ceaeaaf25a64b69098573bc0a33a66a645ca338a7c82e80a00f3fdc4ccd
+  ranIn                          C:\Users\hzq00\AppData\Local\Temp\dsh-acceptance-v9-freshness-9RbJKu
+  carriesTierField               False
+
+deployment statement:
+  trust_model                            trusted-local
+  isolation_image_or_policy_digest       none-trusted-local-os-user-account-is-the-execution-authority-boundary
+  names the absence of confinement       True
+
+old gate index:
+  rows 104  status {'PASS': 85, 'NOT_RUN': 10, 'BLOCKED_EXTERNAL': 1, 'FAIL': 2, 'NOT_APPLICABLE': 6}
+  old VER rows: []
+  id overlap with this spec: []
+
+verdict: TIER_DISCIPLINE_HOLDS
+basis:
+  - every case's layer is a key of layer_legend (mechanical, from the file)
+  - no T5 case is marked PASS while no live provider is authorized
+  - the deployment's own trust_model_statement names the absence it claims
+  - the old 104-row gate index shares no id with this spec, so no old verdict can be read as a new tier by id
+  - the receipt carries no tier field, so the tier comes from the SPEC CASE and the identity -- which is why this audit reads both
+
+This audits TIER DISCIPLINE IN THE RECORD. It does not judge whether
+an oracle was established, and it does not certify the deployment.

@@ -1,0 +1,10 @@
+{
+  "id": "v9-account",
+  "command": [
+    "node",
+    "src/account.mjs"
+  ],
+  "cwd": "D:/DSH/work/dsh-native-daily/qualification/results/V9-verification/fixture-account",
+  "inputs": ["src"],
+  "timeoutMs": 30000
+}

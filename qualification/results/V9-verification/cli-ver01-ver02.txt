@@ -1,0 +1,47 @@
+# V9 VER-01/VER-02 — the acceptance runner CLI, real exit codes
+# repo: D:/DSH/work/dsh-native-daily  branch: ipython-native  HEAD: 5d189c6
+# node: v24.18.0   git: git version 2.55.0.windows.3
+# run at: 2026-09-20T07:43:58+08:00
+
+==============================================================
+VER-01  zero tests collected, child exits 0
+  command: node qualification/runners/acceptance.mjs <def> --out <receipt>
+==============================================================
+acceptance_exit=1
+acceptance: v9-zero-tests -> zero_tests (NOT PASS)
+  - exit code 0 matched the expected 0
+  - runner reported total=0 passed=0 failed=0 skipped=0 todo=0
+  - the runner executed zero tests, so a green exit code proves nothing
+
+--- the receipt the run wrote ---
+definitionId = "v9-zero-tests"
+outcome = "zero_tests"
+passed = false
+exit = {"code": 0, "signal": null, "timedOut": false, "interrupted": false, "expectedCode": 0}
+observedTests = {"total": 0, "passed": 0, "failed": 0, "skipped": 0, "todo": 0}
+expectedTests = {"passed": 1}
+testSummarySource = "vitest"
+holdReservation = false
+reasons = ["exit code 0 matched the expected 0", "runner reported total=0 passed=0 failed=0 skipped=0 todo=0", "the runner executed zero tests, so a green exit code proves nothing"]
+candidateTreeDigest = "7f31c44040fa75d1f0f35dc85c32f565584b2a94a06cc0d4887c04dc33fd9b66"
+candidateTreeDigestScope = "snapshot"
+
+==============================================================
+VER-02  every test skipped, runner exits 0
+==============================================================
+acceptance_exit=1
+acceptance: v9-all-skipped -> all_skipped (NOT PASS)
+  - exit code 0 matched the expected 0
+  - runner reported total=2 passed=0 failed=0 skipped=2 todo=0
+  - no test passed or failed: 2 skipped, 0 todo
+
+--- the receipt the run wrote ---
+definitionId = "v9-all-skipped"
+outcome = "all_skipped"
+passed = false
+exit = {"code": 0, "signal": null, "timedOut": false, "interrupted": false, "expectedCode": 0}
+observedTests = {"total": 2, "passed": 0, "failed": 0, "skipped": 2, "todo": 0}
+expectedTests = {"passed": 2}
+testSummarySource = "vitest"
+holdReservation = false
+reasons = ["exit code 0 matched the expected 0", "runner reported total=2 passed=0 failed=0 skipped=2 todo=0", "no test passed or failed: 2 skipped, 0 todo"]

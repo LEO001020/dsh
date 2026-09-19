@@ -1,0 +1,34 @@
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.8 [39m[90mD:/DSH/work/dsh-native-daily/packages/dsh-daily-work[39m
+
+ [32m✓[39m src/durability-records.test.ts[2m > [22mD01: admission is one record transform, never a cross-key transaction[2m > [22mD01 (simulated barrier): credit, task state and outbox are written by ONE update[32m 22[2mms[22m[39m
+ [32m✓[39m src/durability-records.test.ts[2m > [22mD01: admission is one record transform, never a cross-key transaction[2m > [22mD01 (simulated barrier): a refused admission leaves NO trace of either half[32m 10[2mms[22m[39m
+ [32m✓[39m src/durability-records.test.ts[2m > [22mD01: admission is one record transform, never a cross-key transaction[2m > [22mD01: the record schema has no second key, so no cross-key transaction can be claimed[32m 7[2mms[22m[39m
+ [32m✓[39m src/durability-records.test.ts[2m > [22mD03: a durable task+childId whose launch never happened[2m > [22mD03 (REAL KILL): a reservation that provably never launched returns to prepared, once[33m 450[2mms[22m[39m
+ [32m✓[39m src/durability-records.test.ts[2m > [22mD03: a durable task+childId whose launch never happened[2m > [22mD03: a task whose outcome is unknown is NEVER relaunched, even under its reserved id[32m 15[2mms[22m[39m
+ [32m✓[39m src/durability-records.test.ts[2m > [22mD03: a durable task+childId whose launch never happened[2m > [22mD03: a relaunch with a CHANGED assignment is refused rather than launched as the original[32m 9[2mms[22m[39m
+ [32m✓[39m src/durability-records.test.ts[2m > [22mD03: a durable task+childId whose launch never happened[2m > [22mD03: the record keeps the reserved childId, which is what makes this recoverable at all[32m 9[2mms[22m[39m
+ [32m✓[39m src/durability-records.test.ts[2m > [22mD04: the child was admitted but the parent never saved the result[2m > [22mD04 (REAL KILL + real registry): DUPLICATE_CHILD is produced by the real seam and is rethrown unchanged[33m 626[2mms[22m[39m
+ [32m✓[39m src/durability-records.test.ts[2m > [22mD04: the child was admitted but the parent never saved the result[2m > [22mD04: the port refuses to record a provider-allocated id that differs from the reserved one[32m 5[2mms[22m[39m
+ [32m✓[39m src/durability-records.test.ts[2m > [22mD05: pending inbox messages at the moment of the kill[2m > [22mD05 (REAL KILL): the NATIVE inbox projection restores the pending message, and nothing is injected twice[33m 581[2mms[22m[39m
+ [32m✓[39m src/durability-records.test.ts[2m > [22mD05: pending inbox messages at the moment of the kill[2m > [22mD05: the native splice vocabulary is the ONLY inbox mechanism this package uses[32m 10[2mms[22m[39m
+ [32m✓[39m src/durability-records.test.ts[2m > [22mD06: the claim was written and the request never went out[2m > [22mD06 (REAL KILL): a claimed-but-undispatched step is not treated as done[33m 578[2mms[22m[39m
+ [32m✓[39m src/durability-records.test.ts[2m > [22mD06: the claim was written and the request never went out[2m > [22mD06: when the claim cannot be distinguished from a dispatch, the answer is unknown[32m 0[2mms[22m[39m
+ [32m✓[39m src/durability-records.test.ts[2m > [22mD07: the provider received the request and the answer never came[2m > [22mD07 (REAL KILL): usage and effect stay unknown and are never assumed free or unexecuted[33m 524[2mms[22m[39m
+ [32m✓[39m src/durability-records.test.ts[2m > [22mD07: the provider received the request and the answer never came[2m > [22mD07: an unprobed task is quarantined rather than assumed free[32m 0[2mms[22m[39m
+ [32m✓[39m src/durability-records.test.ts[2m > [22mD08: the child persisted its artifact and the parent was never told[2m > [22mD08 (REAL KILL): recovery finds the result in the child Session instead of repeating the task[33m 1081[2mms[22m[39m
+ [32m✓[39m src/durability-records.test.ts[2m > [22mD09: an incomplete trailing record[2m > [22mD09 (REAL FILE DAMAGE): the upstream repair contract is used and the torn bytes are not erased by us[33m 452[2mms[22m[39m
+ [32m✓[39m src/durability-records.test.ts[2m > [22mD09: an incomplete trailing record[2m > [22mD09: a malformed record is rejected loudly rather than silently treated as current[32m 18[2mms[22m[39m
+ [32m✓[39m src/durability-records.test.ts[2m > [22mD10: an old worker submits a settlement after a restart[2m > [22mD10 (simulated barrier): the stale epoch is refused while the diagnostic evidence is retained[32m 34[2mms[22m[39m
+ [32m✓[39m src/durability-records.test.ts[2m > [22mD10: an old worker submits a settlement after a restart[2m > [22mD10: a settlement whose childId is not the reserved one is refused and retained too[32m 30[2mms[22m[39m
+ [32m✓[39m src/durability-records.test.ts[2m > [22mD10: an old worker submits a settlement after a restart[2m > [22mD10: reconciliation itself keys on the task, so the record childId is the identity that matters[32m 0[2mms[22m[39m
+ [32m✓[39m src/durability-records.test.ts[2m > [22mD11: a consumer opens the domain twice, and unload then reload[2m > [22mD11 (simulated barrier): one shared host handle, a correct close, and no hanging already-open[32m 45[2mms[22m[39m
+ [32m✓[39m src/durability-records.test.ts[2m > [22mD11: a consumer opens the domain twice, and unload then reload[2m > [22mD11: the host plugin owns the handle through its effect, so unload releases it[32m 26[2mms[22m[39m
+ [32m✓[39m src/durability-records.test.ts[2m > [22mD13: restart with the run already paused or its authorization expired[2m > [22mD13 (REAL KILL): recovery comes back EXPLICITLY PAUSED and consumes nothing[33m 395[2mms[22m[39m
+ [32m✓[39m src/durability-records.test.ts[2m > [22mD13: restart with the run already paused or its authorization expired[2m > [22mD13: an expired authorization comes back paused too, and a live one does not[32m 11[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[32m25 passed[39m[22m[90m (25)[39m
+[2m   Start at [22m 07:39:51
+[2m   Duration [22m 6.23s[2m (transform 844ms, setup 0ms, import 1.07s, tests 4.94s, environment 0ms)[22m
+

@@ -1,0 +1,70 @@
+VER-07 - a verification failure does not permanently drain the run
+==============================================================================
+
+SPEC ORACLE, quoted:
+  "Legitimate recovery continues, and `pause` has not been misused as a final
+   drain. A run that cannot continue after a recoverable failure is NOT PASS."
+
+THE MECHANISM UNDER MEASUREMENT, and why it is not a stylistic preference:
+  `pause` is a RECORD change plus a refusal to admit new work; the run stays open and
+  can be resumed. `drainContinuableDescendants` closes admission for that exact parent
+  PERMANENTLY. If a failed acceptance used the drain, a verification failure would be
+  terminal BY ACCIDENT -- the run could never be corrected. The case drives the REAL
+  continuable stack, because the permanence is a property of the real `SubagentRuntime`
+  and a stand-in could not have it.
+
+COMMAND (one file, single worker, no parallelism):
+  cd packages/dsh-daily-work
+  node /d/DSH/src/dsh-src/node_modules/vitest/vitest.mjs run src/verification-gates.test.ts \
+    --maxWorkers=1 --no-file-parallelism
+
+RAW OUTPUT: qualification/results/V9-verification/verification-gates-tests.raw.txt
+  Test Files  1 passed (1)
+  Tests       51 passed (51)
+  TEST_EXIT=0
+
+THE ASSERTIONS THE CASE MAKES, read from the source rather than from a summary
+  (packages/dsh-daily-work/src/verification-gates.test.ts, describe 'VER-08:
+   after a verification failure a legitimate recovery can continue'):
+
+  1. `pause` on a verification failure leaves the run PAUSED and refuses new admissions
+     with reason 'run_not_open' -- so the failure really does stop admission:
+         await rig.service.pause('run-ver08', 'acceptance failed: the candidate patch does not apply')
+         expect(rig.service.getRun('run-ver08')?.phase).toBe('paused')
+         expect(refused[0]?.accepted).toBe(false)
+         expect(refused[0]?.reason).toBe('run_not_open')
+
+  2. A CORRECTION CHILD can still be established while paused. This is the property a
+     permanent drain would have destroyed, and it is asserted against the real runtime:
+         const correction = await rig.ctx.subagents.startContinuable({ ... })
+         expect(String(correction.childId)).toBe('ver08-correction')
+
+  3. Resume is a real authorization edge, and after it the run admits again:
+         await rig.service.resume('run-ver08')
+         expect(rig.service.getRun('run-ver08')?.phase).toBe('open')
+         expect(admitted[0]?.accepted).toBe(true)
+
+  4. ONLY at the definite end is the permanent drain legal -- and AFTER it the same
+     parent cannot admit, which is what proves the paused state above was genuinely
+     'not yet drained' rather than a no-op:
+         await rig.ctx.subagents.drainContinuableDescendants([rig.root])
+         await expect(rig.ctx.subagents.startContinuable({ ... }))
+           .rejects.toThrow(/draining; the operation was not admitted/)
+
+  5. A failed acceptance is a RECEIPT, not a throw, so the caller can recover and retry
+     in the same process with no residual state: outcome 'fail', exit.code 4, reasons
+     non-empty, holdReservation false; the corrected re-run then PASSES.
+
+ORACLE CHECKED, clause by clause:
+  legitimate recovery continues ................... assertions 2, 3 and 5 above
+  `pause` has not been misused as a final drain ... assertion 4 above, which shows the
+      permanent drain is a DIFFERENT and LATER operation that really does close admission
+  a run that cannot continue after a recoverable failure is NOT PASS
+      the case would fail if `pause` used the drain, because assertion 2 could not pass
+
+HONEST LIMIT (recorded in M8 and repeated here): this case is asserted for the
+pause/drain DISTINCTION, not for a whole recovery. It does not run a full
+failed -> corrected -> re-verified -> completed turn.
+
+VERDICT: PASS
+BUILD/IDENTITY: measured under deployment identity 0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461

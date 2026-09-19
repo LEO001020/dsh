@@ -1,0 +1,91 @@
+# V9 VER-04 — a receipt does not outlive the tree it describes
+# repo: D:/DSH/work/dsh-native-daily  branch: ipython-native  HEAD: 6be6a4f
+# run at: 2026-09-20T07:44:45+08:00
+
+==============================================================
+ARM 1  verify a tree that really passes -> the receipt records PASS
+==============================================================
+acceptance_exit=0
+acceptance: v9-freshness -> pass (PASS)
+  - exit code 0 matched the expected 0
+  - runner reported total=1 passed=1 failed=0 skipped=0 todo=0
+  - observed counts matched the declared ones
+definitionId = "v9-freshness"
+outcome = "pass"
+passed = true
+exit = {"code": 0, "signal": null, "timedOut": false, "interrupted": false, "expectedCode": 0}
+observedTests = {"total": 1, "passed": 1, "failed": 0, "skipped": 0, "todo": 0}
+candidateTreeDigest = "19ef6bf9860c2d2b57fb8d563d05c30836e5cbb1c4ac26ff2537d145356e16e7"
+
+==============================================================
+ARM 2  re-check the stored receipt with the tree UNCHANGED
+==============================================================
+check_exit=0   (0 = fresh AND passed)
+{
+  "fresh": true,
+  "reason": "the receipt still matches the candidate tree and the definition",
+  "currentDigest": "19ef6bf9860c2d2b57fb8d563d05c30836e5cbb1c4ac26ff2537d145356e16e7"
+}
+
+==============================================================
+ARM 3  change ONE byte of a declared input, then re-check the SAME receipt
+==============================================================
+--- before ---
+import { describe, expect, it } from 'vitest'
+describe('candidate', () => {
+  it('passes for real', () => { expect(1 + 1).toBe(2) })
+})
+--- after (one test added, so the tree digest must move) ---
+import { describe, expect, it } from 'vitest'
+describe('candidate', () => {
+  it('passes for real', () => { expect(1 + 1).toBe(2) })
+  it('a second test the receipt never saw', () => { expect(2 + 2).toBe(4) })
+})
+check_exit=1   (1 = the receipt no longer describes this tree)
+{
+  "fresh": false,
+  "reason": "the candidate tree changed since the receipt was written (receipt 19ef6bf9860c2d2b57fb8d563d05c30836e5cbb1c4ac26ff2537d145356e16e7, now 9e4332f71488a6811bb59a4756a2259610d9cb3aec5774194fd0d8725454b8a2)",
+  "currentDigest": "9e4332f71488a6811bb59a4756a2259610d9cb3aec5774194fd0d8725454b8a2"
+}
+acceptance: the stored receipt does not describe the current tree; re-verify
+
+==============================================================
+ARM 4  the ORACLE changes, the candidate tree is untouched
+==============================================================
+# receiptFreshness covers the candidate tree and the definition ONLY.
+# The oracle binding lives in bindReceipt/observedBasis (worktree-isolation.ts).
+# Measured in-suite: verification-gates.test.ts VER-05 'the receipt is refused
+# after the ORACLE changes, with the workspace untouched'.
+receipt fields that name a binding: ['candidateTreeDigest', 'candidateTreeDigestScope', 'acceptanceDefinitionDigest']
+NOTE: the receipt carries NO oracleDigest field -- the oracle binding is a
+      SEPARATE record (VerdictBinding) compared by bindReceipt, by design:
+      a field inside a receipt produced by a process that runs the candidate
+      would be a weaker claim.
+
+==============================================================
+ARM 5  the environment changes -> the binding refuses (in-suite)
+==============================================================
+# bindReceipt compares environment.node/platform/arch.
+# Measured in-suite: 'CLOSURE: a receipt from another machine is refused' and
+# 'the receipt is refused after the ENVIRONMENT changes'.
+
+==============================================================
+ARM 6  CONTROL: a FRESH receipt is still checked for PASSED
+==============================================================
+# The receipt for the all-skipped fixture is perfectly FRESH and is NOT a PASS,
+# and --check exits 1. Measured here:
+check_exit=1   (1 -- fresh, but the receipt is NOT PASS)
+{
+  "fresh": true,
+  "reason": "the receipt still matches the candidate tree and the definition",
+  "currentDigest": "7f31c44040fa75d1f0f35dc85c32f565584b2a94a06cc0d4887c04dc33fd9b66"
+}
+
+--- restore the fixture so the evidence files stay reproducible ---
+restored; the receipt is FRESH again against the restored tree:
+check_exit=0
+{
+  "fresh": true,
+  "reason": "the receipt still matches the candidate tree and the definition",
+  "currentDigest": "19ef6bf9860c2d2b57fb8d563d05c30836e5cbb1c4ac26ff2537d145356e16e7"
+}

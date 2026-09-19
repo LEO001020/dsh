@@ -1,0 +1,84 @@
+{
+  "schema": "dsh-daily-work/acceptance-receipt@1",
+  "definitionId": "v9-freshness",
+  "outcome": "pass",
+  "passed": true,
+  "reasons": [
+    "exit code 0 matched the expected 0",
+    "runner reported total=1 passed=1 failed=0 skipped=0 todo=0",
+    "observed counts matched the declared ones"
+  ],
+  "command": [
+    "node",
+    "D:/DSH/src/dsh-src/node_modules/vitest/vitest.mjs",
+    "run",
+    "src/pass.test.ts"
+  ],
+  "spawnedArgv": [
+    "C:\\Program Files\\nodejs\\node.EXE",
+    "D:/DSH/src/dsh-src/node_modules/vitest/vitest.mjs",
+    "run",
+    "src/pass.test.ts"
+  ],
+  "commandText": "C:\\Program Files\\nodejs\\node.EXE D:/DSH/src/dsh-src/node_modules/vitest/vitest.mjs run src/pass.test.ts",
+  "ranIn": "C:\\Users\\hzq00\\AppData\\Local\\Temp\\dsh-acceptance-v9-freshness-9RbJKu",
+  "requestedCwd": "D:\\DSH\\work\\dsh-native-daily\\qualification\\results\\V9-verification\\fixture-fresh",
+  "candidateTreeDigest": "19ef6bf9860c2d2b57fb8d563d05c30836e5cbb1c4ac26ff2537d145356e16e7",
+  "candidateTreeDigestScope": "snapshot",
+  "acceptanceDefinitionDigest": "88e50ceaeaaf25a64b69098573bc0a33a66a645ca338a7c82e80a00f3fdc4ccd",
+  "environment": {
+    "node": "v24.18.0",
+    "platform": "win32",
+    "arch": "x64",
+    "runnerPid": 26120,
+    "providerPlatform": "windows"
+  },
+  "exit": {
+    "code": 0,
+    "signal": null,
+    "timedOut": false,
+    "interrupted": false,
+    "expectedCode": 0
+  },
+  "output": {
+    "stdout": {
+      "text": "\n\u001b[1m\u001b[30m\u001b[46m RUN \u001b[49m\u001b[39m\u001b[22m \u001b[36mv4.1.8 \u001b[39m\u001b[90mC:/Users/hzq00/AppData/Local/Temp/dsh-acceptance-v9-freshness-9RbJKu\u001b[39m\n\n \u001b[32m✓\u001b[39m src/pass.test.ts\u001b[2m > \u001b[22mcandidate\u001b[2m > \u001b[22mpasses for real\u001b[32m 1\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m   Start at \u001b[22m 07:44:46\n\u001b[2m   Duration \u001b[22m 303ms\u001b[2m (transform 18ms, setup 0ms, import 35ms, tests 3ms, environment 0ms)\u001b[22m\n\n",
+      "truncated": false,
+      "totalBytes": 503
+    },
+    "stderr": {
+      "text": "",
+      "truncated": false,
+      "totalBytes": 0
+    }
+  },
+  "observedTests": {
+    "total": 1,
+    "passed": 1,
+    "failed": 0,
+    "skipped": 0,
+    "todo": 0
+  },
+  "expectedTests": {
+    "passed": 1
+  },
+  "testSummarySource": "vitest",
+  "managedRangeEmpty": true,
+  "holdReservation": false,
+  "limitations": [],
+  "startedAt": "2026-09-19T23:44:45.544Z",
+  "finishedAt": "2026-09-19T23:44:46.650Z",
+  "durationMs": 1106,
+  "snapshot": {
+    "dir": "C:\\Users\\hzq00\\AppData\\Local\\Temp\\dsh-acceptance-v9-freshness-9RbJKu",
+    "digest": "19ef6bf9860c2d2b57fb8d563d05c30836e5cbb1c4ac26ff2537d145356e16e7",
+    "stableDuringRun": true,
+    "liveDigestAtStart": "19ef6bf9860c2d2b57fb8d563d05c30836e5cbb1c4ac26ff2537d145356e16e7",
+    "liveDigestAtEnd": "19ef6bf9860c2d2b57fb8d563d05c30836e5cbb1c4ac26ff2537d145356e16e7",
+    "liveDriftDetected": false,
+    "extraPathsCreated": 0,
+    "toolchainLinked": true,
+    "coverage": "the digest covers the declared inputs only; node_modules is a junction to the live tree and is NOT covered",
+    "retained": false
+  }
+}

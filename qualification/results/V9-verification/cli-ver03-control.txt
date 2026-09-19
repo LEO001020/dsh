@@ -1,0 +1,33 @@
+# V9 VER-03 — CORRECTED control arm
+# WHY THE FIRST ATTEMPT WAS WRONG (fixture error, mine, not the product's):
+#   def-ver03-authorized.json was written with id changed to 'v9-authorized'.
+#   acceptanceDefinitionDigest hashes the WHOLE definition minus authorizedDigest,
+#   so changing the id moves the digest and the control was refused by the SAME
+#   digest gate it was meant to be a control for. The control must keep the
+#   definition byte-identical except for the authorizedDigest field.
+
+STEP 4 (CONTROL, corrected): same definition, only authorizedDigest added
+base definition id = v9-all-skipped
+rewrote def-ver03-authorized.json: id unchanged, only authorizedDigest added
+
+acceptance_exit=1
+acceptance: v9-all-skipped -> all_skipped (NOT PASS)
+  - exit code 0 matched the expected 0
+  - runner reported total=2 passed=0 failed=0 skipped=2 todo=0
+  - no test passed or failed: 2 skipped, 0 todo
+
+definitionId = "v9-all-skipped"
+outcome = "all_skipped"
+passed = false
+exit = {"code": 0, "signal": null, "timedOut": false, "interrupted": false, "expectedCode": 0}
+observedTests = {"total": 2, "passed": 0, "failed": 0, "skipped": 2, "todo": 0}
+authorizedDigest = "5709bf93b81ff33db384f26d35595b3b4914f419192b5f714b9a285cdfcc8377"
+reasons = ["exit code 0 matched the expected 0", "runner reported total=2 passed=0 failed=0 skipped=2 todo=0", "no test passed or failed: 2 skipped, 0 todo"]
+
+--- the two digests side by side, so the refusal is attributable ---
+5709bf93b81ff33db384f26d35595b3b4914f419192b5f714b9a285cdfcc8377
+  ^ digest of the HONEST definition (id v9-all-skipped, expectTests passed=2)
+378c00d5e2abde04ff4a79fccad6e1e0803726ea3aa61451921eddccc5cc1b5a
+  ^ digest of the WEAKENED definition (expectTests passed=1)
+
+  authorizedDigest recorded in both = 5709bf93b81ff33db384f26d35595b3b4914f419192b5f714b9a285cdfcc8377

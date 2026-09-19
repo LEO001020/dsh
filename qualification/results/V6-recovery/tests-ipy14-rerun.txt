@@ -1,0 +1,47 @@
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.8 [39m[90mD:/DSH/work/dsh-native-daily/packages/dsh-ipython[39m
+
+ [2m[90m↓[39m[22m src/v3-spec-gates.test.ts[2m > [22mIPY-01: a real IPython shell, not a CPython imitation[2m > [22mget_ipython() and a magic both work IN ONE CELL through the service
+ [2m[90m↓[39m[22m src/v3-spec-gates.test.ts[2m > [22mIPY-02: the namespace persists across cells[2m > [22mcell 2 uses a DataFrame, a function and an import it does NOT define
+ [2m[90m↓[39m[22m src/v3-spec-gates.test.ts[2m > [22mIPY-03: top-level await works with no wrapper[2m > [22man asyncio task and a native tool call both settle at top level, unwrapped
+ [2m[90m↓[39m[22m src/v3-spec-gates.test.ts[2m > [22mIPY-04: an exception leaves partial state and does not claim rollback[2m > [22mthe assignment survives, the traceback is present, and the MODEL TEXT claims no rollback
+ [2m[90m↓[39m[22m src/v3-spec-gates.test.ts[2m > [22mIPY-05: stdin is disabled and fails fast[2m > [22minput() and getpass() each fail promptly and do NOT hold the execution slot
+ [2m[90m↓[39m[22m src/v3-spec-gates.test.ts[2m > [22mIPY-06: only the matching reply and idle settle a cell[2m > [22mforeign frames are ignored AND COUNTED, and a restart mid-sequence is a new epoch
+ [2m[90m↓[39m[22m src/v3-spec-gates.test.ts[2m > [22mIPY-11: the kernel cwd is the project root[2m > [22ma real project root is reported verbatim and a relative path resolves inside it
+ [2m[90m↓[39m[22m src/v3-spec-gates.test.ts[2m > [22mIPY-12: output is bounded and the loss is stated[2m > [22mthe model text says TRUNCATED, names the true total and the spill path, and the cap is recorded
+ [2m[90m↓[39m[22m src/v3-spec-gates.test.ts[2m > [22mIPY-13: late output is classified separately and never rides another cell[2m > [22mCLAUSE 1 PASSES: a post-return write is late/unattributed and never rides a later cell
+ [2m[90m↓[39m[22m src/v3-spec-gates.test.ts[2m > [22mIPY-13: late output is classified separately and never rides another cell[2m > [22mCLAUSE 2 FAILS (pinned defect): a write DURING a later cell is ATTRIBUTED, not undecidable
+[90mstdout[2m | src/v3-spec-gates.test.ts[2m > [22m[2mIPY-14: kernel death is visible and nothing is replayed[2m > [22m[2mthe model text reports a NEW epoch, the LOST state, no replay, and the Session survives
+[22m[39m[V3-MEASURED] IPY-14 {"epochBefore":1,"epochAfter":2,"pidBefore":37528,"pidAfter":30756,"pidReplaced":true,"generationReported":true,"generationReason":"the kernel process is gone; see C:\\Users\\hzq00\\AppData\\Local\\Temp\\dsh-ipython-v3-WmA6Ki\\spec-ipy-14\\kernel.err","volatileStateLost":true,"reportedAsThrow":false,"modelTextMentionsNewEpoch":true,"modelTextSaysLOST":true,"modelTextSaysNothingReplayed":true,"sessionStillRegistered":true,"survivorReadBack":"ipy14_precious present: False"}
+
+ [31m×[39m src/v3-spec-gates.test.ts[2m > [22mIPY-14: kernel death is visible and nothing is replayed[2m > [22mthe model text reports a NEW epoch, the LOST state, no replay, and the Session survives[33m 7405[2mms[22m[39m
+[31m   → expected [] to have a length of 1 but got +0[39m
+ [2m[90m↓[39m[22m src/v3-spec-gates.test.ts[2m > [22mIPY-15: the kernel transport is authenticated and frames are bounded[2m > [22mthe transport is curve-encrypted, and an over-limit frame is LOST with a count
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 1 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m src/v3-spec-gates.test.ts[2m > [22mIPY-14: kernel death is visible and nothing is replayed[2m > [22mthe model text reports a NEW epoch, the LOST state, no replay, and the Session survives
+[31m[1mAssertionError[22m: expected [] to have a length of 1 but got +0[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- 1[39m
+[31m+ 0[39m
+
+[36m [2m❯[22m src/v3-spec-gates.test.ts:[2m1051:64[22m[39m
+    [90m1049|[39m     // (6) NOTHING WAS REPLAYED: the append-only marker has exactly ON…
+    [90m1050|[39m     [35mconst[39m markerText [33m=[39m [35mawait[39m [34mreadFile[39m(replayMarker[33m,[39m [32m'utf8'[39m)
+    [90m1051|[39m     expect(markerText.split('\n').filter(line => line !== '')).toHaveL…
+    [90m   |[39m                                                                [31m^[39m
+    [90m1052|[39m
+    [90m1053|[39m     [35mawait[39m s[33m.[39m[34mclose[39m()
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m1 failed[39m[22m[2m | [22m[33m11 skipped[39m[90m (12)[39m
+[2m   Start at [22m 07:44:42
+[2m   Duration [22m 8.33s[2m (transform 508ms, setup 0ms, import 624ms, tests 7.41s, environment 0ms)[22m
+

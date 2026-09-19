@@ -1,0 +1,95 @@
+=== EXPORT ROOTS (the product's entry points) ===
+  ./data-host              -> src/data-plugin.ts
+  ./data-service           -> src/data-service.ts
+  ./history                -> src/history-plugin.ts
+  ./host                   -> src/host-plugin.ts
+  ./no-sandbox-contract    -> src/no-sandbox-contract.ts
+  ./programmatic-scope     -> src/programmatic-scope-plugin.ts
+  ./service                -> src/host.ts
+  ./tool-protocol-guards   -> src/tool-protocol-guards.ts
+  ./tools                  -> src/tools.ts
+  ./web-search             -> src/web-search-plugin.ts
+  ./writers                -> src/writers-plugin.ts
+
+=== REACHABLE non-test modules (26) ===
+  REACH src/artifacts.ts                 via=./data-host,./data-service
+        non-test importers: src/data-service.ts
+  REACH src/capacity.ts                  via=./host,./service,./tool-protocol-guards,./tools
+        non-test importers: src/host.ts, src/target-setting.ts
+  REACH src/counting.ts                  via=./host,./service,./tool-protocol-guards,./tools
+        non-test importers: src/host.ts
+  ENTRY src/data-plugin.ts               via=./data-host
+        non-test importers: (is an entry root)
+  ENTRY src/data-service.ts              via=./data-host,./data-service
+        non-test importers: src/data-plugin.ts
+  REACH src/history-plane.ts             via=./history
+        non-test importers: src/history-plugin.ts
+  ENTRY src/history-plugin.ts            via=./history
+        non-test importers: (is an entry root)
+  REACH src/homelock.ts                  via=./host,./service,./tool-protocol-guards,./tools
+        non-test importers: src/host.ts
+  ENTRY src/host-plugin.ts               via=./host
+        non-test importers: (is an entry root)
+  ENTRY src/host.ts                      via=./host,./service,./tool-protocol-guards,./tools
+        non-test importers: src/durability-runner.ts, src/host-plugin.ts, src/launch-port.ts, src/recovery.ts, src/tools.ts
+  REACH src/launch-port.ts               via=./host,./service,./tool-protocol-guards,./tools
+        non-test importers: src/host.ts
+  ENTRY src/no-sandbox-contract.ts       via=./no-sandbox-contract
+        non-test importers: (is an entry root)
+  REACH src/observations.ts              via=./data-host,./data-service
+        non-test importers: src/artifacts.ts, src/data-service.ts
+  ENTRY src/programmatic-scope-plugin.ts via=./programmatic-scope
+        non-test importers: (is an entry root)
+  REACH src/programmatic-scope.ts        via=./programmatic-scope
+        non-test importers: src/programmatic-scope-plugin.ts
+  REACH src/record.ts                    via=./host,./service,./tool-protocol-guards,./tools
+        non-test importers: src/counting.ts, src/host.ts, src/perf-metrics.ts, src/reconcile.ts, src/recovery.ts
+  REACH src/states.ts                    via=./host,./service,./tool-protocol-guards,./tools
+        non-test importers: src/counting.ts, src/host.ts, src/reconcile.ts, src/record.ts
+  REACH src/target-setting.ts            via=./host,./service,./tool-protocol-guards,./tools
+        non-test importers: src/host.ts
+  ENTRY src/tool-protocol-guards.ts      via=./tool-protocol-guards
+        non-test importers: (is an entry root)
+  ENTRY src/tools.ts                     via=./tool-protocol-guards,./tools
+        non-test importers: src/tool-protocol-guards.ts
+  REACH src/verify.ts                    via=./writers
+        non-test importers: src/worktree-isolation.ts, src/writers-plugin.ts
+  REACH src/web-provenance.ts            via=./history
+        non-test importers: src/history-plugin.ts
+  ENTRY src/web-search-plugin.ts         via=./web-search
+        non-test importers: (is an entry root)
+  REACH src/web-search.ts                via=./web-search
+        non-test importers: src/web-search-plugin.ts
+  REACH src/worktree-isolation.ts        via=./writers
+        non-test importers: src/writers-plugin.ts
+  ENTRY src/writers-plugin.ts            via=./writers
+        non-test importers: (is an entry root)
+
+=== UNREACHABLE non-test modules (6) — THE WORK QUEUE ===
+  src/durability-runner.ts
+        non-test importers: (NONE)
+        direct test importers: (NONE)
+        indirect test reachers: (NONE)
+  src/effects.ts
+        non-test importers: (NONE)
+        direct test importers: src/durability-advanced.test.ts, src/effects.test.ts
+        indirect test reachers: (NONE)
+  src/kernel-lifecycle.ts
+        non-test importers: (NONE)
+        direct test importers: src/kernel-recovery.test.ts
+        indirect test reachers: (NONE)
+  src/perf-metrics.ts
+        non-test importers: (NONE)
+        direct test importers: src/eco.test.ts
+        indirect test reachers: (NONE)
+  src/reconcile.ts
+        non-test importers: src/durability-runner.ts
+        direct test importers: src/durability-advanced.test.ts, src/durability-records.test.ts, src/lifecycle.test.ts, src/reconcile.test.ts, src/tool-protocol.test.ts, src/wire-faults.test.ts
+        indirect test reachers: (NONE)
+  src/recovery.ts
+        non-test importers: (NONE)
+        direct test importers: src/durability-advanced.test.ts, src/durability-records.test.ts
+        indirect test reachers: (NONE)
+
+TOTAL src modules: 79  non-test: 32
+REACHABLE: 26   UNREACHABLE: 6

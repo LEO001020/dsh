@@ -1,0 +1,65 @@
+========================================================================
+spec VER-05 — A-B-A during acceptance: is the verdict bound to the FROZEN copy?
+========================================================================
+
+ARM 1 — the runner FREEZES a snapshot and runs the command inside it.
+  liveDigestAtStart        a43eb0bf8f64c5cccb9e0b4de33132d6b412dc23006cd5e32487096af75d3653
+  liveDigestAtEnd          a43eb0bf8f64c5cccb9e0b4de33132d6b412dc23006cd5e32487096af75d3653
+  digest of the tree as declared at freeze time: a43eb0bf8f64c5cccb9e0b4de33132d6b412dc23006cd5e32487096af75d3653
+  liveDriftDetected        false
+  exit code                0
+  stderr contains SAW_THE_TAMPERED_TREE: false
+  what the CHILD read: input="console.log(\"A\")\n" oracle="export const assertion = \"expect(total).toBe(30)\"\n" config="export default { test: { include: ['src/**/*.test.ts'] } }\n"
+  => the child saw revision A for all three, so the frozen copy is what was tested.
+  => AND endpoint hashing reports NO DRIFT (liveDriftDetected=false) even though the live tree went A->B->A underneath it.
+
+ARM 2 (the CONTROL) — the same A->B->A, verified IN PLACE.
+  snapshot                 undefined
+  candidateTreeDigestScope live
+  exit code                9   (9 = the child saw the tampered tree)
+  stderr contains SAW_THE_TAMPERED_TREE: true
+
+  THE ASYMMETRY, on the SERIALIZED artifacts a verifier would store:
+    snapshot receipt carries liveDriftDetected : true
+    snapshot receipt carries liveDigestAtEnd   : true
+    in-place receipt carries liveDriftDetected : false
+    in-place receipt carries liveDigestAtEnd   : false
+    snapshot arm candidateTreeDigest           : a43eb0bf8f64c5cccb9e0b4de33132d6b412dc23006cd5e32487096af75d3653
+    in-place arm candidateTreeDigest           : a43eb0bf8f64c5cccb9e0b4de33132d6b412dc23006cd5e32487096af75d3653
+    both equal the pre-mutation digest         : true
+
+  VERDICT: the two receipts are INDISTINGUISHABLE in their start digest while one
+  command ran against A and the other demonstrably ran against B. Endpoint hash
+  polling alone would have certified the tampered run; the SNAPSHOT is what makes
+  the frozen revision the tested revision.
+
+========================================================================
+spec VER-06 — in-flight writers converged or isolated before freezing
+========================================================================
+
+PATH 1 — a writer LEASE is still held, so the workspace is in flight by definition.
+  writerLeaseHeld(workspace)        true
+  converged                         false
+  digest                            ""   ('' = no value is offered for an unknown)
+  writerLeaseHeld (reported)        true
+  reasons                           ["a writer still holds C:\\Users\\hzq00\\AppData\\Local\\Temp\\v9-inflight-ws-lmTmXd\\v9-inflight-workspace, so the workspace is in flight; freezing it now would capture a tree that no writer has finished producing"]
+
+PATH 2 — the lease is released, but the TREE is still moving between samples.
+  writerLeaseHeld after finish()    false
+  converged                         false
+  digest                            ""
+  reasons                           ["the candidate tree changed between samples (d6b55d37e1be480ced6477acfe4130617cf113843dea3659e3440c01f28659f6 then 66121c3755a993f1839683378b56e6a36a916bbc5b498d91d3b596b40d066703), so it had not converged; an unconverged tree is not certified"]
+
+PATH 3 (the control) — the writer has stopped; the same call now CONVERGES.
+  converged                         true
+  digest                            66121c3755a993f1839683378b56e6a36a916bbc5b498d91d3b596b40d066703
+  digestInputs(definition)          66121c3755a993f1839683378b56e6a36a916bbc5b498d91d3b596b40d066703
+  digest is the RUNNER's own tree digest: true
+  samples                           ["66121c3755a993f1839683378b56e6a36a916bbc5b498d91d3b596b40d066703","66121c3755a993f1839683378b56e6a36a916bbc5b498d91d3b596b40d066703"]
+
+THE STRUCTURAL INVARIANT — a refusal NEVER carries a digest.
+  in-flight      digest='' converged=false  invariant holds=true
+  still-moving   digest='' converged=false  invariant holds=true
+  converged      digest=66121c3755a993f1... converged=true  invariant holds=true
+
+cleanup: 4 temp root(s) removed, 1 workspace(s) released

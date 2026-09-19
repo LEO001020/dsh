@@ -1,0 +1,80 @@
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.8 [39m[90mD:/DSH/work/dsh-native-daily/packages/dsh-daily-work[39m
+
+[90mstdout[2m | src/data-plane.test.ts[2m > [22m[2mDAT-08 [real] an over-quota capture fails explicitly and never falls back inline[2m > [22m[2mreturns a partial observation with a retention gap when the quota is exceeded
+[22m[39m[DAT-08] quotaBytes [33m16384[39m sourceBytes [33m204800[39m completeness partial gapStage retention projectionBytes [33m613[39m
+
+ [2m[90m↓[39m[22m src/data-plane.test.ts[2m > [22mDAT-01 [real] long line: the loss is verified, then repaired by byte range[2m > [22mconfirms the real buildWindow clips a 100KiB single line and loses its interior
+ [2m[90m↓[39m[22m src/data-plane.test.ts[2m > [22mDAT-01 [real] long line: the loss is verified, then repaired by byte range[2m > [22mmeasures the clip in the CANONICAL value by CALLING the real read tool
+ [2m[90m↓[39m[22m src/data-plane.test.ts[2m > [22mDAT-01 [real] long line: the loss is verified, then repaired by byte range[2m > [22mshows a raised maxLineLength recovers the line, so the loss is the CAP and not the file
+ [2m[90m↓[39m[22m src/data-plane.test.ts[2m > [22mDAT-01 [real] long line: the loss is verified, then repaired by byte range[2m > [22mrecovers the whole 100KiB line byte-for-byte by capturing and paging the artifact
+ [2m[90m↓[39m[22m src/data-plane.test.ts[2m > [22mDAT-01 [real] long line: the loss is verified, then repaired by byte range[2m > [22mrecovers a newline-free file as exactly one complete line
+ [2m[90m↓[39m[22m src/data-plane.test.ts[2m > [22mDAT-01 [real] long line: the loss is verified, then repaired by byte range[2m > [22mrecovers a body larger than the 50KiB read window across many lines
+ [2m[90m↓[39m[22m src/data-plane.test.ts[2m > [22mDAT-02 [real capture / real consumers] 512 pages of 32MiB, projection <= 8KiB[2m > [22mconsumes 512 bounded pages totalling 32MiB with a model projection under 8KiB
+ [2m[90m↓[39m[22m src/data-plane.test.ts[2m > [22mDAT-02 [real capture / real consumers] 512 pages of 32MiB, projection <= 8KiB[2m > [22mhas a REAL CPython process consume the 512 pages over a pipe, never holding them in JS
+ [2m[90m↓[39m[22m src/data-plane.test.ts[2m > [22mDAT-02 [real capture / real consumers] 512 pages of 32MiB, projection <= 8KiB[2m > [22mhas the REAL `ipython` tool over a REAL ipykernel consume all 512 pages
+ [2m[90m↓[39m[22m src/data-plane.test.ts[2m > [22mDAT-03 [real] UTF-8 / CRLF / JSONL split at every page boundary[2m > [22mnever corrupts a multibyte character at any page boundary
+ [2m[90m↓[39m[22m src/data-plane.test.ts[2m > [22mDAT-03 [real] UTF-8 / CRLF / JSONL split at every page boundary[2m > [22msplits CRLF and JSONL records at every page boundary without loss or duplication
+ [2m[90m↓[39m[22m src/data-plane.test.ts[2m > [22mDAT-03 [real] UTF-8 / CRLF / JSONL split at every page boundary[2m > [22mkeeps the line index numbering identical to the read tool for CRLF content
+ [2m[90m↓[39m[22m src/data-plane.test.ts[2m > [22mDAT-03 [real] UTF-8 / CRLF / JSONL split at every page boundary[2m > [22mtruncates a projection on a character boundary, never splitting a surrogate
+ [2m[90m↓[39m[22m src/data-plane.test.ts[2m > [22mDAT-03 [real] UTF-8 / CRLF / JSONL split at every page boundary[2m > [22mstates the real pager’s boundary: byte windows reassemble, they are not character-aligned
+ [2m[90m↓[39m[22m src/data-plane.test.ts[2m > [22mDAT-04 [mock provider] a repeated or backwards cursor raises pagination-stalled[2m > [22mraises pagination-stalled on a repeated cursor instead of looping forever
+ [2m[90m↓[39m[22m src/data-plane.test.ts[2m > [22mDAT-04 [mock provider] a repeated or backwards cursor raises pagination-stalled[2m > [22mraises pagination-stalled on a backwards cursor
+ [2m[90m↓[39m[22m src/data-plane.test.ts[2m > [22mDAT-04 [mock provider] a repeated or backwards cursor raises pagination-stalled[2m > [22mraises pagination-stalled when a not-exhausted page omits its continuation
+ [2m[90m↓[39m[22m src/data-plane.test.ts[2m > [22mDAT-04 [mock provider] a repeated or backwards cursor raises pagination-stalled[2m > [22mnames the stalled offsets so the failure is diagnosable, not just "stalled"
+ [2m[90m↓[39m[22m src/data-plane.test.ts[2m > [22mDAT-04 [mock provider] a repeated or backwards cursor raises pagination-stalled[2m > [22mstill lets a well-formed provider finish, so the guard is not tripped by progress
+ [2m[90m↓[39m[22m src/data-plane.test.ts[2m > [22mDAT-05 [real] a source change after page 1 cannot mix into page 2[2m > [22mserves page 2 from the same captured hash after the source file is rewritten
+ [2m[90m↓[39m[22m src/data-plane.test.ts[2m > [22mDAT-05 [real] a source change after page 1 cannot mix into page 2[2m > [22mrefuses a cursor bound to a different artifact rather than splicing two objects
+ [2m[90m↓[39m[22m src/data-plane.test.ts[2m > [22mDAT-05 [real] a source change after page 1 cannot mix into page 2[2m > [22mrefuses a cursor after the owner scope is revoked, because a cursor is not authorization
+ [2m[90m↓[39m[22m src/data-plane.test.ts[2m > [22mDAT-06 [real] paging IO is O(pages), and repeated read is measured, not assumed[2m > [22mreports artifact IO proportional to pages read, not to the artifact size
+ [2m[90m↓[39m[22m src/data-plane.test.ts[2m > [22mDAT-06 [real] paging IO is O(pages), and repeated read is measured, not assumed[2m > [22mmeasures whether repeated read with a growing offset rescans the whole file
+ [2m[90m↓[39m[22m src/data-plane.test.ts[2m > [22mDAT-07 [real ripgrep] grep canonical keeps every match within the raw cap[2m > [22mkeeps all matches in canonical while the renderer shows 250, and marks the raw cap partial
+ [2m[90m↓[39m[22m src/data-plane.test.ts[2m > [22mDAT-07 [real ripgrep] grep canonical keeps every match within the raw cap[2m > [22mmarks the observation partial when the raw cap IS reached, without pretending otherwise
+ [32m✓[39m src/data-plane.test.ts[2m > [22mDAT-08 [real] an over-quota capture fails explicitly and never falls back inline[2m > [22mreturns a partial observation with a retention gap when the quota is exceeded[32m 35[2mms[22m[39m
+ [32m✓[39m src/data-plane.test.ts[2m > [22mDAT-08 [real] an over-quota capture fails explicitly and never falls back inline[2m > [22mrefuses to re-execute an effect after a save failure, and keeps the outcome unknown[32m 0[2mms[22m[39m
+ [32m✓[39m src/data-plane.test.ts[2m > [22mDAT-08 [real] an over-quota capture fails explicitly and never falls back inline[2m > [22mreports an orphan, not a delivery, when the Session reference cannot be committed[32m 42[2mms[22m[39m
+ [32m✓[39m src/data-plane.test.ts[2m > [22mDAT-08 [real] an over-quota capture fails explicitly and never falls back inline[2m > [22mreports an integrity error, never an empty string, when a referenced object is missing[32m 31[2mms[22m[39m
+ [32m✓[39m src/data-plane.test.ts[2m > [22mDAT-08 [real] an over-quota capture fails explicitly and never falls back inline[2m > [22mdoes not promise durable:true when the checkpoint fails after the reference committed[32m 27[2mms[22m[39m
+ [2m[90m↓[39m[22m src/data-plane.test.ts[2m > [22mobservation authority: host facts are not trusted from a kernel payload[2m > [22mrefuses a kernel payload that asserts a host-authored field, naming the field
+ [2m[90m↓[39m[22m src/data-plane.test.ts[2m > [22mobservation authority: host facts are not trusted from a kernel payload[2m > [22mrefuses a forged capture before writing anything, so a bad payload cannot cause an effect
+ [2m[90m↓[39m[22m src/data-plane.test.ts[2m > [22mobservation authority: host facts are not trusted from a kernel payload[2m > [22mrecords a kernel-declared transform as a claim, with the parent artifact named
+ [2m[90m↓[39m[22m src/data-plane.test.ts[2m > [22mobservation authority: host facts are not trusted from a kernel payload[2m > [22mrejects a stale descriptor after the permission domain changes
+ [2m[90m↓[39m[22m src/data-plane.test.ts[2m > [22mobservation authority: host facts are not trusted from a kernel payload[2m > [22mrefuses a descriptor from a different owner scope than the caller
+ [2m[90m↓[39m[22m src/data-plane.test.ts[2m > [22mDataPlaneService: the production consumer the profile mounts[2m > [22mcaptures through the real storage domain and reads back byte-for-byte
+ [2m[90m↓[39m[22m src/data-plane.test.ts[2m > [22mDataPlaneService: the production consumer the profile mounts[2m > [22mserves pages and the long-line repair through the service, refusing a forged descriptor
+ [2m[90m↓[39m[22m src/data-plane.test.ts[2m > [22mDataPlaneService: the production consumer the profile mounts[2m > [22mstops serving after the permission domain changes
+ [2m[90m↓[39m[22m src/data-plane.test.ts[2m > [22mDataPlaneService: the production consumer the profile mounts[2m > [22mrecords the real artifact-root derivation, including the branch that cannot be taken
+ [2m[90m↓[39m[22m src/data-plane.test.ts[2m > [22mcrash consistency: a real SIGKILL between publication and the Session reference[2m > [22mleaves a reconcilable ORPHAN and never reports it as delivered
+ [2m[90m↓[39m[22m src/data-plane.test.ts[2m > [22mDATA-02 [real] the capture holds the file’s EXACT bytes, not a re-encoded decode[2m > [22mcaptures utf8-bom.txt byte-for-byte and reports the file’s own sha256
+ [2m[90m↓[39m[22m src/data-plane.test.ts[2m > [22mDATA-02 [real] the capture holds the file’s EXACT bytes, not a re-encoded decode[2m > [22mcaptures utf16le.txt byte-for-byte and reports the file’s own sha256
+ [2m[90m↓[39m[22m src/data-plane.test.ts[2m > [22mDATA-02 [real] the capture holds the file’s EXACT bytes, not a re-encoded decode[2m > [22mcaptures latin1.txt byte-for-byte and reports the file’s own sha256
+ [2m[90m↓[39m[22m src/data-plane.test.ts[2m > [22mDATA-02 [real] the capture holds the file’s EXACT bytes, not a re-encoded decode[2m > [22mcaptures nul.bin byte-for-byte and reports the file’s own sha256
+ [2m[90m↓[39m[22m src/data-plane.test.ts[2m > [22mDATA-02 [real] the capture holds the file’s EXACT bytes, not a re-encoded decode[2m > [22mcaptures crlf.txt byte-for-byte and reports the file’s own sha256
+ [2m[90m↓[39m[22m src/data-plane.test.ts[2m > [22mDATA-02 [real] the capture holds the file’s EXACT bytes, not a re-encoded decode[2m > [22mnever lets the captured sha256 disagree with the file it names
+ [2m[90m↓[39m[22m src/data-plane.test.ts[2m > [22mDATA-06 [real] a refetch is a NEW observation, and never backfills the old one[2m > [22mrefuses a second capture under an id that already has a committed reference
+ [2m[90m↓[39m[22m src/data-plane.test.ts[2m > [22mDATA-06 [real] a refetch is a NEW observation, and never backfills the old one[2m > [22mlets the refetch happen under a NEW id, so both observations coexist
+ [2m[90m↓[39m[22m src/data-plane.test.ts[2m > [22mDATA-04/12 [real] the four byte-counts are separately measurable and distinct[2m > [22mseparates acquired, persisted, consumed and model-visible bytes in one walk
+ [2m[90m↓[39m[22m src/data-plane.test.ts[2m > [22mDATA-04/12 [real] the four byte-counts are separately measurable and distinct[2m > [22mreports a SHORT acquisition as a smaller acquired count, not a smaller file
+ [2m[90m↓[39m[22m src/data-plane.test.ts[2m > [22mDATA-08 [real] a corrupt or truncated artifact fails loud, never as content[2m > [22mdetects an object REPLACED in place at the same length
+ [2m[90m↓[39m[22m src/data-plane.test.ts[2m > [22mDATA-08 [real] a corrupt or truncated artifact fails loud, never as content[2m > [22mdetects an object TRUNCATED below the bytes the reference declares
+ [2m[90m↓[39m[22m src/data-plane.test.ts[2m > [22mDATA-08 [real] a corrupt or truncated artifact fails loud, never as content[2m > [22mstill serves an INTACT object, so the check is not vacuous
+ [2m[90m↓[39m[22m src/data-plane.test.ts[2m > [22mcoverage vocabulary: six names, derived in one place[2m > [22mnames exactly the six verdicts, and no others
+ [2m[90m↓[39m[22m src/data-plane.test.ts[2m > [22mcoverage vocabulary: six names, derived in one place[2m > [22mmaps a complete capture to full-for-requested-scope, never to "full"
+ [2m[90m↓[39m[22m src/data-plane.test.ts[2m > [22mcoverage vocabulary: six names, derived in one place[2m > [22mmaps each partial layer to its own name
+ [2m[90m↓[39m[22m src/data-plane.test.ts[2m > [22mcoverage vocabulary: six names, derived in one place[2m > [22mreports the EARLIEST loss when several layers are named
+ [2m[90m↓[39m[22m src/data-plane.test.ts[2m > [22mcoverage vocabulary: six names, derived in one place[2m > [22mreports a lost transport as unknown, because absence was never established
+ [2m[90m↓[39m[22m src/data-plane.test.ts[2m > [22mcoverage vocabulary: six names, derived in one place[2m > [22mreports a small model projection as full-for-scope, not as a partial acquisition
+ [2m[90m↓[39m[22m src/data-plane.test.ts[2m > [22mDATA-04 [real] the projection is bounded by the SCHEMA, not only by truncation[2m > [22mrefuses a descriptor whose id would make the projection unbounded
+ [2m[90m↓[39m[22m src/data-plane.test.ts[2m > [22mDATA-04 [real] the projection is bounded by the SCHEMA, not only by truncation[2m > [22mbounds every string a descriptor carries, so no field can blow the projection
+ [2m[90m↓[39m[22m src/data-plane.test.ts[2m > [22mcursor identity: a cursor binds its artifact and grants no authority[2m > [22mrefuses a cursor minted for one artifact when presented against another
+ [2m[90m↓[39m[22m src/data-plane.test.ts[2m > [22mcursor identity: a cursor binds its artifact and grants no authority[2m > [22mrefuses a cursor after the grant revision moves, so possession proves nothing
+ [2m[90m↓[39m[22m src/data-plane.test.ts[2m > [22mcursor identity: a cursor binds its artifact and grants no authority[2m > [22mrefuses a hand-made cursor that was never minted by the host
+ [2m[90m↓[39m[22m src/data-plane.test.ts[2m > [22mcursor identity: a cursor binds its artifact and grants no authority[2m > [22mrefuses a cursor signed with a different secret than the host’s
+ [2m[90m↓[39m[22m src/data-plane.test.ts[2m > [22mDATA-07 [real] a cursor over an immutable artifact is stable across replays[2m > [22mreturns the same bytes for the same cursor every time it is replayed
+ [2m[90m↓[39m[22m src/data-plane.test.ts[2m > [22mDATA-07 [real] a cursor over an immutable artifact is stable across replays[2m > [22madvances the offset by exactly the page size on a full walk
+
+[2m Test Files [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[32m5 passed[39m[22m[2m | [22m[33m63 skipped[39m[90m (68)[39m
+[2m   Start at [22m 07:40:19
+[2m   Duration [22m 1.38s[2m (transform 701ms, setup 0ms, import 939ms, tests 136ms, environment 0ms)[22m
+

@@ -1,0 +1,60 @@
+# V9 VER-09 — the verification tier and its limit are stated, never implied
+# repo: D:/DSH/work/dsh-native-daily  branch: ipython-native  HEAD: 580e332
+# run at: 2026-09-20T07:45:23+08:00
+
+==============================================================
+THE CLAIM UNDER MEASUREMENT
+  VER-09 oracle, second half: 'Under trusted-local the verification environment
+  runs as the SAME OS user as the host, so the record must ALSO state that no
+  privilege separation between the verifier and the verified exists.'
+
+  The in-suite cases measure the CONSEQUENCES (a candidate child read a host
+  file outside its snapshot verbatim; a candidate child completed a real TCP
+  connection). This probe measures the CAUSE, from INSIDE the child.
+==============================================================
+
+--- who is the HOST/verifier account, as the runner sees it ---
+{
+  "hostUser": "hzq00",
+  "hostUid": -1,
+  "hostGid": -1,
+  "hostPid": 8604,
+  "platform": "win32",
+  "node": "v24.18.0"
+}
+
+--- write that into the fixture so the CHILD can compare against it ---
+parent-account.txt = hzq00
+
+--- run the verification child THROUGH the real acceptance runner ---
+acceptance_exit=0
+acceptance: v9-account -> pass (PASS)
+  - exit code 0 matched the expected 0
+  - no test counts were declared, so only the exit code is claimed
+
+--- what the CHILD reported from inside the snapshot ---
+{
+  "childUser": "hzq00",
+  "childUid": -1,
+  "childGid": -1,
+  "childPid": 34616,
+  "childPpid": 28484,
+  "childGetuid": null,
+  "platform": "win32",
+  "execPath": "C:\\Program Files\\nodejs\\node.EXE",
+  "node": "v24.18.0",
+  "envDshNames": 0,
+  "parentUser": "hzq00"
+}
+
+SAME ACCOUNT?           True
+child user              hzq00
+host  user              hzq00
+child uid/gid           -1 / -1
+host  uid/gid           -1 / -1
+child ran in            C:\Users\hzq00\AppData\Local\Temp\dsh-acceptance-v9-account-9jyA0p
+snapshot dir            C:\Users\hzq00\AppData\Local\Temp\dsh-acceptance-v9-account-9jyA0p
+child pid != host pid   True (a separate PROCESS, not a separate ACCOUNT)
+DSH_* names in child    0
+
+VERDICT: privilege separation between verifier and verified = NONE

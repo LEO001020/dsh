@@ -1,0 +1,137 @@
+VER-03 — the candidate cannot weaken its own oracle
+==============================================================================
+
+SPEC ORACLE, quoted:
+  "The modification is either impossible or detected, and acceptance is not
+   weakened. A silent green produced by an edited oracle is NOT PASS."
+
+THE MECHANISM: `authorizedDigest` is obtained in a SEPARATE step (`--print-digest`),
+recorded, and then compared against the definition's own digest at run time. A
+definition cannot authorize itself in the same breath it is written. The digest is
+taken over the WHOLE definition minus `authorizedDigest` -- so a threshold, a command,
+an input list or even the id changes it.
+
+------------------------------------------------------------------------------
+MEASURED OUTPUT, both arms, verbatim
+------------------------------------------------------------------------------
+
+# V9 VER-03 — the candidate cannot weaken its own oracle
+# repo: D:/DSH/work/dsh-native-daily  branch: ipython-native  HEAD: 5d189c6
+# run at: 2026-09-20T07:44:07+08:00
+
+==============================================================
+STEP 1 (separate, reviewed step): obtain the authorized digest
+  command: node qualification/runners/acceptance.mjs <def-ver02> --print-digest
+==============================================================
+print_digest_exit=0
+authorizedDigest=5709bf93b81ff33db384f26d35595b3b4914f419192b5f714b9a285cdfcc8377
+
+==============================================================
+STEP 2: write the definition with that digest RECORDED
+==============================================================
+wrote def-ver03-authorized.json with authorizedDigest 5709bf93b81ff33db384f26d35595b3b4914f419192b5f714b9a285cdfcc8377
+wrote def-ver03-weakened.json with expectTests passed=1 and the SAME authorizedDigest
+
+==============================================================
+STEP 3: run the WEAKENED definition carrying the authorized digest
+==============================================================
+acceptance_exit=1
+acceptance: v9-weakened -> acceptance_definition_changed (NOT PASS)
+  - the acceptance definition digest 378c00d5e2abde04ff4a79fccad6e1e0803726ea3aa61451921eddccc5cc1b5a does not match the authorized 5709bf93b81ff33db384f26d35595b3b4914f419192b5f714b9a285cdfcc8377; the run was refused rather than silently accepted
+
+definitionId = "v9-weakened"
+outcome = "acceptance_definition_changed"
+passed = false
+exit = {"code": null, "signal": null, "timedOut": false, "interrupted": false, "expectedCode": 0}
+observedTests = null
+authorizedDigest = "5709bf93b81ff33db384f26d35595b3b4914f419192b5f714b9a285cdfcc8377"
+limitations = ["the acceptance command was never executed"]
+reasons = ["the acceptance definition digest 378c00d5e2abde04ff4a79fccad6e1e0803726ea3aa61451921eddccc5cc1b5a does not match the authorized 5709bf93b81ff33db384f26d35595b3b4914f419192b5f714b9a285cdfcc8377; the run was refused rather than silently accepted"]
+
+==============================================================
+STEP 4 (CONTROL): the SAME command with the digest NOT weakened still RUNS
+==============================================================
+acceptance_exit=1
+acceptance: v9-authorized -> acceptance_definition_changed (NOT PASS)
+  - the acceptance definition digest 0863dc158f93abace2dc1b6446c7a0002becf190392a6c7d5ad0c910203a2727 does not match the authorized 5709bf93b81ff33db384f26d35595b3b4914f419192b5f714b9a285cdfcc8377; the run was refused rather than silently accepted
+
+definitionId = "v9-authorized"
+outcome = "acceptance_definition_changed"
+passed = false
+exit = {"code": null, "signal": null, "timedOut": false, "interrupted": false, "expectedCode": 0}
+observedTests = null
+authorizedDigest = "5709bf93b81ff33db384f26d35595b3b4914f419192b5f714b9a285cdfcc8377"
+reasons = ["the acceptance definition digest 0863dc158f93abace2dc1b6446c7a0002becf190392a6c7d5ad0c910203a2727 does not match the authorized 5709bf93b81ff33db384f26d35595b3b4914f419192b5f714b9a285cdfcc8377; the run was refused rather than silently accepted"]
+
+------------------------------------------------------------------------------
+THE CONTROL ARM, CORRECTED, verbatim
+------------------------------------------------------------------------------
+
+# V9 VER-03 — CORRECTED control arm
+# WHY THE FIRST ATTEMPT WAS WRONG (fixture error, mine, not the product's):
+#   def-ver03-authorized.json was written with id changed to 'v9-authorized'.
+#   acceptanceDefinitionDigest hashes the WHOLE definition minus authorizedDigest,
+#   so changing the id moves the digest and the control was refused by the SAME
+#   digest gate it was meant to be a control for. The control must keep the
+#   definition byte-identical except for the authorizedDigest field.
+
+STEP 4 (CONTROL, corrected): same definition, only authorizedDigest added
+base definition id = v9-all-skipped
+rewrote def-ver03-authorized.json: id unchanged, only authorizedDigest added
+
+acceptance_exit=1
+acceptance: v9-all-skipped -> all_skipped (NOT PASS)
+  - exit code 0 matched the expected 0
+  - runner reported total=2 passed=0 failed=0 skipped=2 todo=0
+  - no test passed or failed: 2 skipped, 0 todo
+
+definitionId = "v9-all-skipped"
+outcome = "all_skipped"
+passed = false
+exit = {"code": 0, "signal": null, "timedOut": false, "interrupted": false, "expectedCode": 0}
+observedTests = {"total": 2, "passed": 0, "failed": 0, "skipped": 2, "todo": 0}
+authorizedDigest = "5709bf93b81ff33db384f26d35595b3b4914f419192b5f714b9a285cdfcc8377"
+reasons = ["exit code 0 matched the expected 0", "runner reported total=2 passed=0 failed=0 skipped=2 todo=0", "no test passed or failed: 2 skipped, 0 todo"]
+
+--- the two digests side by side, so the refusal is attributable ---
+5709bf93b81ff33db384f26d35595b3b4914f419192b5f714b9a285cdfcc8377
+  ^ digest of the HONEST definition (id v9-all-skipped, expectTests passed=2)
+378c00d5e2abde04ff4a79fccad6e1e0803726ea3aa61451921eddccc5cc1b5a
+  ^ digest of the WEAKENED definition (expectTests passed=1)
+
+  authorizedDigest recorded in both = 5709bf93b81ff33db384f26d35595b3b4914f419192b5f714b9a285cdfcc8377
+
+------------------------------------------------------------------------------
+ORACLE CHECKED, clause by clause
+------------------------------------------------------------------------------
+
+  the modification is DETECTED ....................... outcome='acceptance_definition_changed' passed=False
+  acceptance is not weakened ......................... the weakened run never executed: exit.code=None, limitations=["the acceptance command was never executed"]
+  the refusal names BOTH digests ...................... True
+  CONTROL: the honest definition with the SAME authorized digest RUNS ... outcome='all_skipped' exit.code=0
+  (the control is NOT a pass -- the fixture is an all-skipped suite, and it reports exactly that)
+
+A FIXTURE ERROR OF MINE, RECORDED BECAUSE IT IS THE SAME DEFECT CLASS THE CASE HUNTS:
+  The first control arm changed the definition's `id` while keeping the digest, and was
+  REFUSED -- correctly, because the id is part of the digested content. A control that
+  fails for the reason it is controlling for proves nothing, so it was rebuilt with the
+  definition byte-identical except for `authorizedDigest`, and re-run. The first attempt
+  and its diagnosis are preserved in cli-ver03.txt rather than deleted.
+
+IN-SUITE ARMS (same oracle, in packages/dsh-daily-work/src/verification-gates.test.ts):
+  - 'a weakened threshold carrying the authorized digest is REFUSED, not run'
+  - 'MEASURED GAP: an oracle outside `inputs` is neither covered by any digest NOR frozen'
+  - 'CLOSURE: an oracle digest taken outside the candidate refuses a receipt whose oracle changed'
+  - 'CLOSURE: a receipt from another machine is refused'
+  - 'CLOSURE: observedBasis re-reads the tree, so a caller cannot pass the record in as the observation'
+  - 'CLOSURE: declaring the oracle as an input makes the snapshot cover it'
+  Raw output: verification-gates-tests.raw.txt (51 passed / 51, TEST_EXIT=0)
+
+WHAT THIS DOES NOT ESTABLISH (stated, not smoothed over): the oracle digest is a
+MECHANISM, not an enforced policy. `oracleDigest` + `bindReceipt` detect a rewritten
+oracle and refuse the receipt; what is NOT proven is that any production caller passes
+the right `oracleFiles` set. A caller that names the wrong files, or none, gets no
+protection. The runner's own snapshot still does not cover an undeclared oracle.
+
+VERDICT: PASS
+BUILD/IDENTITY: measured under deployment identity 0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461

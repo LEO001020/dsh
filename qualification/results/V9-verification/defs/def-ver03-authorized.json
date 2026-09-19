@@ -1,0 +1,21 @@
+{
+  "id": "v9-all-skipped",
+  "command": [
+    "node",
+    "D:/DSH/src/dsh-src/node_modules/vitest/vitest.mjs",
+    "run",
+    "src/skip.test.ts"
+  ],
+  "cwd": "D:/DSH/work/dsh-native-daily/qualification/results/V9-verification/fixture",
+  "inputs": [
+    "src",
+    "vitest.config.ts",
+    "package.json"
+  ],
+  "expectTests": {
+    "passed": 2
+  },
+  "testReporter": "vitest",
+  "timeoutMs": 60000,
+  "authorizedDigest": "5709bf93b81ff33db384f26d35595b3b4914f419192b5f714b9a285cdfcc8377"
+}

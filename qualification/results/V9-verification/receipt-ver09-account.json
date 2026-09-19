@@ -1,0 +1,68 @@
+{
+  "schema": "dsh-daily-work/acceptance-receipt@1",
+  "definitionId": "v9-account",
+  "outcome": "pass",
+  "passed": true,
+  "reasons": [
+    "exit code 0 matched the expected 0",
+    "no test counts were declared, so only the exit code is claimed"
+  ],
+  "command": [
+    "node",
+    "src/account.mjs"
+  ],
+  "spawnedArgv": [
+    "C:\\Program Files\\nodejs\\node.EXE",
+    "src/account.mjs"
+  ],
+  "commandText": "C:\\Program Files\\nodejs\\node.EXE src/account.mjs",
+  "ranIn": "C:\\Users\\hzq00\\AppData\\Local\\Temp\\dsh-acceptance-v9-account-9jyA0p",
+  "requestedCwd": "D:\\DSH\\work\\dsh-native-daily\\qualification\\results\\V9-verification\\fixture-account",
+  "candidateTreeDigest": "e185df11b44de86504d85398e64a7c1bb6587742f7547b7c49e0230a4066ddef",
+  "candidateTreeDigestScope": "snapshot",
+  "acceptanceDefinitionDigest": "250e0773ae782378bb607056e6a46dab9b47c487db450eef11f01d89d11e9a54",
+  "environment": {
+    "node": "v24.18.0",
+    "platform": "win32",
+    "arch": "x64",
+    "runnerPid": 1744,
+    "providerPlatform": "windows"
+  },
+  "exit": {
+    "code": 0,
+    "signal": null,
+    "timedOut": false,
+    "interrupted": false,
+    "expectedCode": 0
+  },
+  "output": {
+    "stdout": {
+      "text": "{\n  \"childUser\": \"hzq00\",\n  \"childUid\": -1,\n  \"childGid\": -1,\n  \"childPid\": 34616,\n  \"childPpid\": 28484,\n  \"childGetuid\": null,\n  \"platform\": \"win32\",\n  \"execPath\": \"C:\\\\Program Files\\\\nodejs\\\\node.EXE\",\n  \"node\": \"v24.18.0\",\n  \"envDshNames\": 0,\n  \"parentUser\": \"hzq00\"\n}\n",
+      "truncated": false,
+      "totalBytes": 272
+    },
+    "stderr": {
+      "text": "",
+      "truncated": false,
+      "totalBytes": 0
+    }
+  },
+  "managedRangeEmpty": true,
+  "holdReservation": false,
+  "limitations": [],
+  "startedAt": "2026-09-19T23:45:24.155Z",
+  "finishedAt": "2026-09-19T23:45:24.433Z",
+  "durationMs": 278,
+  "snapshot": {
+    "dir": "C:\\Users\\hzq00\\AppData\\Local\\Temp\\dsh-acceptance-v9-account-9jyA0p",
+    "digest": "e185df11b44de86504d85398e64a7c1bb6587742f7547b7c49e0230a4066ddef",
+    "stableDuringRun": true,
+    "liveDigestAtStart": "e185df11b44de86504d85398e64a7c1bb6587742f7547b7c49e0230a4066ddef",
+    "liveDigestAtEnd": "e185df11b44de86504d85398e64a7c1bb6587742f7547b7c49e0230a4066ddef",
+    "liveDriftDetected": false,
+    "extraPathsCreated": 0,
+    "toolchainLinked": false,
+    "coverage": "the digest covers the declared inputs only; nothing else was present in the snapshot",
+    "retained": false
+  }
+}

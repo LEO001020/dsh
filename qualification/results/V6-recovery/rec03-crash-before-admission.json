@@ -1,0 +1,64 @@
+{
+  "case": "REC-03",
+  "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+  "arms": {
+    "window": {
+      "what": "SIGKILL after createRun, before admit; the admission this attempt intended was never written",
+      "childReport": {
+        "ready": true,
+        "mode": "skip",
+        "pid": 3176,
+        "taskKeys": [],
+        "reserved": 0
+      },
+      "exit": {
+        "code": null,
+        "signal": "SIGKILL"
+      },
+      "signalRequested": true,
+      "childConfirmedGone": true,
+      "reopened": {
+        "runExists": true,
+        "taskKeys": [],
+        "reserved": 0,
+        "phase": "open"
+      }
+    },
+    "control": {
+      "what": "the same program WITH admit, killed at the same point — proves the reopen can SEE a committed task",
+      "childReport": {
+        "ready": true,
+        "mode": "admit",
+        "pid": 36460,
+        "taskKeys": [
+          "t1"
+        ],
+        "reserved": 7
+      },
+      "exit": {
+        "code": null,
+        "signal": "SIGKILL"
+      },
+      "signalRequested": true,
+      "childConfirmedGone": true,
+      "reopened": {
+        "runExists": true,
+        "taskKeys": [
+          "t1"
+        ],
+        "reserved": 7,
+        "phase": "open"
+      }
+    }
+  },
+  "checks": {
+    "windowKilledAbruptly": true,
+    "windowPublishedNoTask": true,
+    "windowReservedNothing": true,
+    "windowRunStillExists": true,
+    "controlKilledAbruptly": true,
+    "controlPublishedTheTask": true,
+    "controlReservedTheCredit": true
+  },
+  "verdict": "PASS"
+}

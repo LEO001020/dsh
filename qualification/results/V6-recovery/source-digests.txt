@@ -1,0 +1,33 @@
+# V6-recovery build + source identity
+# date: 2026-09-20T07:49:35+08:00
+# HEAD: 07043f0e059ddc663c3a82e731ce79e3ed5890c6
+# branch: ipython-native
+# identity: 0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461
+# rebuild: tsc -p tsconfig.json -> exit 0
+
+## src/ (the files these cases measure)
+5edde8a5d8d79b0a138f06818a9deb3a04ccc6c22dd7bfe1ae338c967a45f440 *src/recovery.ts
+bc5cd7f06a437a07f82682241023b0b50f10043df6928d0ebde2ed92dbc85b70 *src/reconcile.ts
+e8945b46ce3691ee91c0103693b201326895a091de41b110ab57abd207997d58 *src/effects.ts
+96026da6bd546b10489515cabfb12fc5928467b51e76d765dcf2cfa9232bd39e *src/record.ts
+17c78677a23fe809e7f8613785e97c375b473965874a10fd561a381d8de40bd6 *src/host.ts
+e7207ffd46f4aef395d6ff48a8679edca6107a90545716be179280bb49617aa0 *src/states.ts
+f809bd7ed21cca96e831c1630b2eb6e0aa045d51f0b27a7ac8049b1638d4ae1b *src/artifacts.ts
+d029876fc93ba68b35e144d0b34a31dbdc55c07c7615fbf8b60d53955b002fd0 *src/data-service.ts
+b2a90624601afb906a046fe82b97a7ddc3f6f1489c56d9e511d4e4d15bca3cbd *src/kernel-lifecycle.ts
+f23c8f72216bb3b58b543c6ae265c8fe8cc31bc3dce7292bb1d635e41a2175ec *src/durability-runner.ts
+
+## lib/ (what the homes link: to)
+c8b6e996a8ec99dc2f4fd76762b67e9ac91071fd29cc67598f19543e5f14199d *lib/recovery.js
+03b4d0d29939eaf4bcecb17d0e09346be457abf97a8e14ff3c25e251d44674a9 *lib/reconcile.js
+0a496de1d5b753863c1339d80b73692bac5d8a65468a9fcd2986d441f1099e19 *lib/effects.js
+385e792444a5c34f22c6375a570c271e7973ddd3ddb89e13359dcec2205c7de9 *lib/host.js
+5de9d97a218762eec5a5bcd5c22daf304b71bce93a92f0b15da3bfe62bdabffa *lib/artifacts.js
+0c78b91587d67a1ad3d23c7a23cdae9bae9848703729a86d6a2e1228a3c55e2d *lib/kernel-lifecycle.js
+
+## test files (the instruments)
+79275f4deb13e2a5979f33e32938cf48ce0b9c2a185913c3c65f1c253f06e24f *src/durability-advanced.test.ts
+47ab17ab46a5b5e1f77db5b6377a4f63e61275ee657d0ad2f92205a383a89b6a *src/durability-records.test.ts
+a43d06d60eeacd388c2651d70473f7b22d06f80ba00a53047329d5940b6b9e8e *src/data-plane.test.ts
+03797887c64150e0794478ee955adb5670a93b1ef1a7c947992aa5b85f366547 *src/kernel-recovery.test.ts
+5ce23bcab6b17c6d0b13d6ae064c8ba4913b3e5c89d2e5009c915d658f287ece *src/effects.test.ts

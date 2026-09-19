@@ -1,0 +1,24 @@
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.8 [39m[90mD:/DSH/work/dsh-native-daily/packages/dsh-ipython[39m
+
+ [2m[90m↓[39m[22m src/lifecycle.test.ts[2m > [22mIPY-04: the Session owns kernel identity, not the Agent activation[2m > [22mtwo Agent objects on one Session reach the same kernel PROCESS, and two Sessions do not
+ [2m[90m↓[39m[22m src/lifecycle.test.ts[2m > [22mIPY-05: an activation ending does not destroy a reusable kernel[2m > [22mending an activation leaves the kernel alive, unchanged, and still bound to the Session
+ [2m[90m↓[39m[22m src/lifecycle.test.ts[2m > [22mIPY-05: an activation ending does not destroy a reusable kernel[2m > [22mevict is the explicit way to end a kernel, and it is host-only
+ [2m[90m↓[39m[22m src/lifecycle.test.ts[2m > [22mIPY-09: raw and rich output ordering is defined[2m > [22mstdout order and display order are each preserved, and they are separate sequences
+ [2m[90m↓[39m[22m src/lifecycle.test.ts[2m > [22mIPY-09: raw and rich output ordering is defined[2m > [22mstderr is its own ordered sequence, separate from stdout
+ [32m✓[39m src/lifecycle.test.ts[2m > [22mIPY-12: no automatic cell replay[2m > [22ma cell that kills its own kernel is not re-run in the replacement[33m 6917[2mms[22m[39m
+ [2m[90m↓[39m[22m src/lifecycle.test.ts[2m > [22mIPY-13: the broker is owned by the DSH subprocess seam[2m > [22mthe classifier has teeth: it reports nothing when nothing of ours runs, and finds a started kernel
+ [2m[90m↓[39m[22m src/lifecycle.test.ts[2m > [22mIPY-13: the broker is owned by the DSH subprocess seam[2m > [22mthe broker runs under the subprocess-local runner, not a bare spawn
+ [2m[90m↓[39m[22m src/lifecycle.test.ts[2m > [22mIPY-14: host-side loss is reconciled, and crash orphans are observed[2m > [22ma broker killed out from under the host is reported, and its kernel is not left stranded
+ [2m[90m↓[39m[22m src/lifecycle.test.ts[2m > [22mIPY-15: the kernel working directory is the Session's project root[2m > [22mos.getcwd() inside the kernel is the Session header cwd, per Session
+ [2m[90m↓[39m[22m src/lifecycle.test.ts[2m > [22mIPY-15: the kernel working directory is the Session's project root[2m > [22ma Session with no declared cwd falls back to the host root, never to an arbitrary directory
+ [2m[90m↓[39m[22m src/lifecycle.test.ts[2m > [22mIPY-15: the kernel working directory is the Session's project root[2m > [22mthe kernel cwd and the scratch dir are SEPARATE, and each holds what it should
+ [2m[90m↓[39m[22m src/lifecycle.test.ts[2m > [22mIPY-15: the kernel working directory is the Session's project root[2m > [22mthe scratch dir is created for a Session, and its spill/log files are bounded by the cap
+ [2m[90m↓[39m[22m src/lifecycle.test.ts[2m > [22mIPY-10: the model cannot own kernel lifecycle[2m > [22mno lifecycle surface is reachable from inside a cell, and the cap/timeout are not cell state
+ [2m[90m↓[39m[22m src/lifecycle.test.ts[2m > [22mIPY-10: the model cannot own kernel lifecycle[2m > [22ma cell that shuts down its own kernel is reported as a NEW generation with the loss stated
+
+[2m Test Files [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[32m1 passed[39m[22m[2m | [22m[33m14 skipped[39m[90m (15)[39m
+[2m   Start at [22m 07:48:01
+[2m   Duration [22m 7.48s[2m (transform 236ms, setup 0ms, import 299ms, tests 6.92s, environment 0ms)[22m
+

@@ -1,0 +1,14 @@
+{
+  "id": "v9-freshness",
+  "command": [
+    "node",
+    "D:/DSH/src/dsh-src/node_modules/vitest/vitest.mjs",
+    "run",
+    "src/pass.test.ts"
+  ],
+  "cwd": "D:/DSH/work/dsh-native-daily/qualification/results/V9-verification/fixture-fresh",
+  "inputs": ["src", "vitest.config.ts", "package.json"],
+  "expectTests": { "passed": 1 },
+  "testReporter": "vitest",
+  "timeoutMs": 60000
+}

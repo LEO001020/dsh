@@ -1,0 +1,319 @@
+VER-09 - the verification tier and its limit are stated, never implied
+==============================================================================
+
+SPEC ORACLE, quoted in full, because it has THREE clauses and the third is the one
+that gets implied rather than stated:
+  "Each verdict names its tier from the layer legend and the artifact it is bound to;
+   a green measured at T0/T1 is never presented as T2/T3/T5/T6. Under trusted-local the
+   verification environment runs as the SAME OS user as the host, so the record must
+   ALSO state that no privilege separation between the verifier and the verified exists.
+   Presenting a same-account verification as privileged isolation is NOT PASS."
+
+A LABEL COLLISION, because it decides which artifact this case is about
+(docs/GAPS.md G-SEAM-38): the TEST FILE's describe block labelled 'VER-09' is about
+stale Git expected-ref publication. The SPEC's VER-09 is the tier-honesty case. Same
+label, unrelated oracles. This file is filed against the SPEC's VER-09 and the ref-CAS
+work is NOT offered as evidence for it.
+
+==============================================================================
+CLAUSE 1 + 2 - each verdict names its tier, and no tier is inflated
+==============================================================================
+
+COMMAND:
+  python qualification/results/V9-verification/ver09-tier-audit.py
+
+MEASURED OUTPUT, verbatim:
+
+spec       qualification/specs/acceptance-spec.trusted-local-v1.json
+identity   0a0996f3944b5528...
+cases      109   layers {'T0': 6, 'T1': 33, 'T2': 56, 'T3': 10, 'T4': 3, 'T5': 1}
+legend     ['T0', 'T1', 'T2', 'T3', 'T4', 'T5', 'T6']
+live provider authorized: False
+
+T5 cases (need an authorized live provider):
+  IPY-08  NOT_RUN          a natural activation end rebinds or reports loss explicitly
+
+the artifact a verdict is bound to (one real receipt):
+  path                           qualification/results/V9-verification/receipt-ver04-fresh-pass.json
+  sha256                         d31a74d8ee7e3ee1486d251694c5b483b65fdbfdf7cac1c78c1f537dfd4c4696
+  outcome                        pass
+  passed                         True
+  candidateTreeDigest            19ef6bf9860c2d2b57fb8d563d05c30836e5cbb1c4ac26ff2537d145356e16e7
+  candidateTreeDigestScope       snapshot
+  acceptanceDefinitionDigest     88e50ceaeaaf25a64b69098573bc0a33a66a645ca338a7c82e80a00f3fdc4ccd
+  ranIn                          C:\Users\hzq00\AppData\Local\Temp\dsh-acceptance-v9-freshness-9RbJKu
+  carriesTierField               False
+
+deployment statement:
+  trust_model                            trusted-local
+  isolation_image_or_policy_digest       none-trusted-local-os-user-account-is-the-execution-authority-boundary
+  names the absence of confinement       True
+
+old gate index:
+  rows 104  status {'PASS': 85, 'NOT_RUN': 10, 'BLOCKED_EXTERNAL': 1, 'FAIL': 2, 'NOT_APPLICABLE': 6}
+  old VER rows: []
+  id overlap with this spec: []
+
+verdict: TIER_DISCIPLINE_HOLDS
+basis:
+  - every case's layer is a key of layer_legend (mechanical, from the file)
+  - no T5 case is marked PASS while no live provider is authorized
+  - the deployment's own trust_model_statement names the absence it claims
+  - the old 104-row gate index shares no id with this spec, so no old verdict can be read as a new tier by id
+  - the receipt carries no tier field, so the tier comes from the SPEC CASE and the identity -- which is why this audit reads both
+
+This audits TIER DISCIPLINE IN THE RECORD. It does not judge whether
+an oracle was established, and it does not certify the deployment.
+
+WHAT THE AUDIT READS (five named files; it walks no directory tree, per the CPU
+directive): the spec on disk, the old spec's gate index, the lock, the old spec file,
+and one real receipt.
+
+THE MECHANICAL FACTS IT ESTABLISHES:
+  cases ............................................... 109
+  layer distribution .................................. {'T0': 6, 'T1': 33, 'T2': 56, 'T3': 10, 'T4': 3, 'T5': 1}
+  legend keys ......................................... ['T0', 'T1', 'T2', 'T3', 'T4', 'T5', 'T6']
+  cases naming a layer NOT in the legend .............. []
+  T5 cases (need an authorized live provider) ......... ['IPY-08']
+  live_provider_budget_authorized ..................... False
+  T5 cases marked PASS while it is false .............. []
+  old gate index rows ................................. 104
+  old gate index statuses ............................. {'PASS': 85, 'NOT_RUN': 10, 'BLOCKED_EXTERNAL': 1, 'FAIL': 2, 'NOT_APPLICABLE': 6}
+  old ids overlapping this spec's ids ................. []
+  the receipt carries a tier field .................... False
+
+THE FINDING THAT MATTERS, stated rather than left in the numbers: the RECEIPT does not
+carry a tier field, and it should not -- a tier is a claim about how a measurement was
+taken, and a receipt is a claim about what was measured. The tier therefore comes from
+the SPEC CASE (its `layer`) and from the IDENTITY the verdict is bound to, and that is
+why this audit reads BOTH rather than trusting either alone. `cases_with_unknown_layer`
+is empty, so every one of the 109 verdicts names a tier that exists in the legend.
+
+THE OLD INDEX IS NOT A SOURCE OF TIERS: it uses A01..-style ids and shares ZERO ids
+with this spec, so no old verdict can be read as a new tier by id. That is the same
+no-inheritance rule the spec states, checked mechanically instead of asserted.
+
+==============================================================================
+CLAUSE 3 - no privilege separation between the verifier and the verified
+==============================================================================
+
+The in-suite cases measure the CONSEQUENCES of this. This probe measures the CAUSE,
+from INSIDE the verification child, through the real acceptance runner.
+
+COMMAND:
+  node qualification/runners/acceptance.mjs \
+    qualification/results/V9-verification/defs/def-ver09-account.json \
+    --out qualification/results/V9-verification/receipt-ver09-account.json
+
+MEASURED OUTPUT, verbatim:
+
+# V9 VER-09 — the verification tier and its limit are stated, never implied
+# repo: D:/DSH/work/dsh-native-daily  branch: ipython-native  HEAD: 580e332
+# run at: 2026-09-20T07:45:23+08:00
+
+==============================================================
+THE CLAIM UNDER MEASUREMENT
+  VER-09 oracle, second half: 'Under trusted-local the verification environment
+  runs as the SAME OS user as the host, so the record must ALSO state that no
+  privilege separation between the verifier and the verified exists.'
+
+  The in-suite cases measure the CONSEQUENCES (a candidate child read a host
+  file outside its snapshot verbatim; a candidate child completed a real TCP
+  connection). This probe measures the CAUSE, from INSIDE the child.
+==============================================================
+
+--- who is the HOST/verifier account, as the runner sees it ---
+{
+  "hostUser": "hzq00",
+  "hostUid": -1,
+  "hostGid": -1,
+  "hostPid": 8604,
+  "platform": "win32",
+  "node": "v24.18.0"
+}
+
+--- write that into the fixture so the CHILD can compare against it ---
+parent-account.txt = hzq00
+
+--- run the verification child THROUGH the real acceptance runner ---
+acceptance_exit=0
+acceptance: v9-account -> pass (PASS)
+  - exit code 0 matched the expected 0
+  - no test counts were declared, so only the exit code is claimed
+
+--- what the CHILD reported from inside the snapshot ---
+{
+  "childUser": "hzq00",
+  "childUid": -1,
+  "childGid": -1,
+  "childPid": 34616,
+  "childPpid": 28484,
+  "childGetuid": null,
+  "platform": "win32",
+  "execPath": "C:\\Program Files\\nodejs\\node.EXE",
+  "node": "v24.18.0",
+  "envDshNames": 0,
+  "parentUser": "hzq00"
+}
+
+SAME ACCOUNT?           True
+child user              hzq00
+host  user              hzq00
+child uid/gid           -1 / -1
+host  uid/gid           -1 / -1
+child ran in            C:\Users\hzq00\AppData\Local\Temp\dsh-acceptance-v9-account-9jyA0p
+snapshot dir            C:\Users\hzq00\AppData\Local\Temp\dsh-acceptance-v9-account-9jyA0p
+child pid != host pid   True (a separate PROCESS, not a separate ACCOUNT)
+DSH_* names in child    0
+
+VERDICT: privilege separation between verifier and verified = NONE
+
+ORACLE CHECKED, clause by clause:
+  the verification environment runs as the SAME OS user as the host
+      MEASURED: child user 'hzq00' == host user 'hzq00'. The child is a DIFFERENT PROCESS
+      (pid 34616 vs 8604) and runs in a snapshot directory, but it is the SAME ACCOUNT.
+  and the record STATES that no privilege separation exists
+      the deployment's own trust_model_statement is quoted below, and the audit checks
+      mechanically that it names the absence rather than leaving it to be inferred.
+  presenting a same-account verification as privileged isolation is NOT PASS
+      nothing in this file or in the spec's trust model does so. What the runner DOES
+      remove is named separately and NOT conflated with privilege separation:
+        ENFORCED  - credential-shaped env names and every DSH_* name are scrubbed
+                    (measured in-suite: 0 DSH_* names in the child)
+        ENFORCED  - no control-plane handle: argv, cwd and a scrubbed environment only
+        NOT ENFORCED - filesystem reads outside the snapshot (the child read a host
+                    canary file verbatim, exit 0)
+        NOT ENFORCED - network egress (the child completed a real TCP connect)
+      'low-privilege with respect to inherited credentials and control-plane handles'
+      is TRUE and is not the same claim as 'a separate privilege domain'. Only the
+      first is made.
+
+THE DEPLOYMENT'S OWN STATEMENT, quoted from compatibility.lock.json:
+  trust_model .......................... trusted-local
+  isolation_image_or_policy_digest ..... none-trusted-local-os-user-account-is-the-execution-authority-boundary
+  trust_model_statement (excerpt) ...... "DSH runs as the invoking Windows user with no
+      sandbox, no WSL, no Linux VM and no SSH execution world. Every process it starts --
+      including the IPython kernel -- runs as that same OS user with that user's full
+      filesystem, network and process visibility. This deployment therefore claims NO
+      confinement of reads, writes, network or process visibility..."
+  names the absence of confinement .... True
+
+==============================================================================
+THE ARTIFACT EACH VERDICT IS BOUND TO
+==============================================================================
+
+One real receipt, and the fields that make it a statement about a tree rather than a
+note that something once passed:
+
+  path ................................ qualification/results/V9-verification/receipt-ver04-fresh-pass.json
+  sha256 .............................. d31a74d8ee7e3ee1486d251694c5b483b65fdbfdf7cac1c78c1f537dfd4c4696
+  outcome / passed .................... 'pass' / True
+  candidateTreeDigest ................. 19ef6bf9860c2d2b57fb8d563d05c30836e5cbb1c4ac26ff2537d145356e16e7
+  candidateTreeDigestScope ............ 'snapshot'
+  acceptanceDefinitionDigest .......... 88e50ceaeaaf25a64b69098573bc0a33a66a645ca338a7c82e80a00f3fdc4ccd
+  ranIn ............................... C:\Users\hzq00\AppData\Local\Temp\dsh-acceptance-v9-freshness-9RbJKu
+
+==============================================================================
+AN IDENTITY DRIFT FOUND WHILE FILING, REPORTED RATHER THAN ABSORBED
+==============================================================================
+
+V9 — THE IDENTITY THIS SLICE MEASURED UNDER, AND A DRIFT FOUND WHILE FILING
+==============================================================================
+
+At the START of this slice (verified, 28/28 checks passed):
+  deployment.identity                                   0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461
+  inputs.trusted_local_acceptance_spec_sha256 (pinned)  e5b6a1d2481f39c52a6012ec6b48a72e4618ff713f1927b6b0d6827a24b10ce7
+  sha256 of the spec file on disk at that moment        e5b6a1d2481f39c52a6012ec6b48a72e4618ff713f1927b6b0d6827a24b10ce7
+  => MATCH. The identity recomputed from the file.
+
+Every measurement in this slice was taken under that identity.
+
+------------------------------------------------------------------------------
+DRIFT FOUND WHILE FILING (measured, not inferred):
+  sha256 of the spec file on disk NOW                   dbe6ac01efa84675386c12cec6ee5ee3340d49e17c400389556e0c47f97a1405
+  the pinned input still reads                          e5b6a1d2...
+  lock deployment.identity still reads                  0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461
+
+  recomputing the identity over the inputs AS THEY ARE NOW:
+    73445ca410cfb42ef7413e72b4419456ed5af49a7bf6dd99657092d6ef7cc431
+    differs from the recorded identity: True
+
+WHY: `trusted_local_acceptance_spec_sha256` is an identity INPUT, and this spec
+is a SHARED file that every family writes its results into. So the act of filing
+evidence into the spec changes the spec's digest, which changes the identity, which
+invalidates the identity every other family filed under. MEASURED: the file changed
+between the start of this slice and now, and 12 DATA cases now carry status+evidence
+(97 NOT_RUN, 10 PASS, 2 FAIL at the time of this reading).
+
+THE STRUCTURAL CONSEQUENCE, stated plainly: an identity pinned to the digest of a
+file that is also the results register cannot be stable across a parallel filing
+run. Either (a) the results live outside the spec (the spec's evidence entries point
+at files under qualification/results/, so they COULD), or (b) the spec digest stops
+being an identity input, or (c) filing is serialised and the identity is re-derived
+once at the end.
+
+WHAT THIS SLICE DID ABOUT IT: nothing unilateral. Moving deployment.identity is an
+owner-level decision (V1-identity's own instrument says so: 'Moving deployment.identity
+invalidates every PASS recorded against it, which is an owner-level decision'). This
+slice filed its evidence, recorded the identity it measured under, and reports the
+drift here so the owner can decide. It did NOT re-derive the identity, and it did NOT
+edit any case outside the VERIFICATION family.
+
+------------------------------------------------------------------------------
+identity.py at the moment of this reading:
+  [FAIL] new spec digest on disk matches the pinned input                                        pinned=e5b6a1d2481f39c52a6012ec6b48a72e4618ff713f1927b6b0d6827a24b10ce7 on_disk=dbe6ac01efa84675386c12cec6ee5ee3340d49e17c400389556e0c47f97a1405
+  [FAIL] no case is pre-marked PASS (every status is NOT_RUN)                                    offenders=['DATA-01', 'DATA-02', 'DATA-03', 'DATA-04', 'DATA-05', 'DATA-06', 'DATA-07', 'DATA-08', 'DATA-09', 'DATA-10', 'DATA-11', 'DATA-12']
+  [FAIL] no case ships with evidence (every evidence list is empty)                              offenders=['DATA-01', 'DATA-02', 'DATA-03', 'DATA-04', 'DATA-05', 'DATA-06', 'DATA-07', 'DATA-08', 'DATA-09', 'DATA-10', 'DATA-11', 'DATA-12']
+  [FAIL] promotion spec_sha256 matches the new spec on disk                                      promotion=e5b6a1d2481f39c52a6012ec6b48a72e4618ff713f1927b6b0d6827a24b10ce7 on_disk=dbe6ac01efa84675386c12cec6ee5ee3340d49e17c400389556e0c47f97a1405
+  4 check(s) FAILED. The identity is NOT verified.
+
+==============================================================================
+ORACLE VERDICT
+==============================================================================
+
+VERDICT: PASS
+  clause 1 (tier named from the legend) ............... 109/109, measured
+  clause 2 (no tier inflated) ......................... 0 T5 cases PASS while no live
+      provider is authorized; 0 cases with an unknown layer, measured
+  clause 3 (the limit is STATED, not implied) ......... measured from inside the child
+      (same account, different process) AND in the deployment's own statement
+
+==============================================================================
+CLAUSE 2, CROSS-CHECKED AGAINST THE OTHER FAMILIES' GATE TABLES
+==============================================================================
+
+VER-09 clause 2 cross-check: explicit tier tokens in sibling gate tables
+============================================================================
+
+  V1-identity        (no GATES.md)
+  V2-composition     (no GATES.md)
+  V5-data            0 row(s) carrying both a case id and a tier token
+  V6-recovery        0 row(s) carrying both a case id and a tier token
+  V8-capacity        (no GATES.md)
+  V10-research-obs   (no GATES.md)
+
+CASE-ID / CLAIMED TIER vs THE SPEC'S DECLARED LAYER
+----------------------------------------------------------------------------
+
+  NO sibling gate table states an explicit tier token beside a case id.
+  That is not a pass: it means the tier is carried only by the spec case, which is
+  exactly what VER-09 clause 1 requires and clause 2 leaves unexercised here.
+
+NOTE ON WHAT THIS CHECK CAN AND CANNOT SEE: it is a TOKEN comparison. A table that
+describes a T2 measurement in prose without writing "T2" is invisible to it, and a
+table that writes "T2" beside a case whose layer is T1 is flagged whether or not the
+prose underneath is honest about it. It is reported as a cross-check, not a verdict.
+
+HOW TO READ THAT EMPTY RESULT, because an empty negative is a trap this project has
+already been caught by: the check found ZERO explicit tier tokens beside case ids in
+the sibling gate tables that exist. That is NOT 'the other families are tier-honest'.
+It means the tier is carried by the SPEC CASE ALONE in those tables, which satisfies
+clause 1 and leaves clause 2 with nothing to contradict. Recorded as the empty result
+it is, with the reason it is empty, rather than as a pass.
+WHAT THIS DOES NOT ESTABLISH, stated because VER-09 is itself a case about not
+overstating: the audit is mechanical. It checks that a tier is NAMED and that no
+verdict's tier contradicts its status; it cannot check that every verdict's tier was
+honestly CHOSEN, because that is a reading of the evidence and a script that claimed to
+decide it would be a second oracle. The tier audit's own output says so.
+
+BUILD/IDENTITY: measured under deployment identity 0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461
