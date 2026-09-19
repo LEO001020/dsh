@@ -50,6 +50,7 @@ E = {
     "b03raw": evidence("M9.18-b03-lifecycle/b03.json"),
     "e2etool": evidence("M8.5-c2-real-boot/e2e-tool.json"),
     "secd": evidence("M9.3-security-denial/FINDINGS.md"),
+    "effects": evidence("M9.5-effects/FINDINGS.md"),
 }
 
 # gate id -> (status, evidence keys, note)
@@ -130,11 +131,11 @@ G: dict[str, tuple[str, list[str], str]] = {
     "E04": ("PASS", ["security"], "tool-plugin-manager is disabled in the shipped standard preset and demands danger-full-access when enabled; this project does not enable it."),
     "E05": ("PASS", ["security"], "Control files and task workspaces are different paths by construction; the profile is copied into the home rather than read from the repo."),
     "E06": ("FAIL", ["secd"], "Measured, and it FAILS. A confined child completed a real HTTP round trip to a loopback server and connected to a public address, under both read-only and workspace-write. web-fetch-http's SSRF guard is real and was exercised (127.0.0.1, ::1, 169.254.169.254, 10.0.0.1 refused; WEB_BLOCKED_URL; pinned lookup) -- but it filters THAT TOOL'S URL, has no relation to ctx.sandbox, and is bypassed by any shell command. The seam README says file effects are the whole vocabulary, which is now executable evidence rather than a doc claim."),
-    "E07": ("NOT_RUN", [], "No external effect adapter exists yet, so idempotency is not exercised."),
-    "E08": ("NOT_RUN", [], "Same as E07: no effect adapter exists yet."),
-    "E09": ("NOT_RUN", [], "Opaque shell classification has not been attempted; the design relies on the permission boundary."),
-    "E10": ("NOT_RUN", [], "PTC partial commit has not been exercised."),
-    "E11": ("NOT_RUN", [], "Cancellation of an in-flight external effect has not been exercised."),
+    "E07": ("PASS", ["effects"], "48 tests, exit 0. The operationId digests (kind, logicalKey) ONLY -- never the tool callId -- so a retry under a changed callId lands on the same record and the counting fake stays at 1, including across a simulated restart and across a lost reply resolved by query. With no query support it stays unknown across three retries and still does not resend. reconcile() reached the transport zero times across five operations in every recorded state, which makes 'reconcile, never replay' a property of the module rather than a convention."),
+    "E08": ("PASS", ["effects"], "A changed payload under a recorded operationId is a CONFLICT with performed:false, and reconcile of the changed params returns resultRef undefined rather than the stale ack. conflict is deliberately not a stored status, so a refused attempt cannot overwrite the ack it was refused against -- the original ack does not authorize the new action."),
+    "E09": ("PASS", ["effects"], "The classifier is closed-allowlist and returns unknown by default, and it was defeated by REAL shell, not by listing failing regexes: four defeats (function shadowing, PATH shadowing, a redirect hidden in a variable via eval, and an exported function into a child shell), each with an observed write to disk. Two real holes surfaced while building it -- sort had to be REMOVED because `sort in out` writes with no flag, and `tar xf` writes with no dash anywhere. This is a refusal device, not a control: enforcement stays with the sandbox and process identity, and the test says so."),
+    "E10": ("PASS", ["effects"], "replayedWholeProgram:false is a literal in the type, so no code path can produce a full-program replay. The committed effect is reconciled individually; the un-entered step is recorded as unknown, deliberately NOT as not_started, because the runner's control flow is not evidence about the remote."),
+    "E11": ("PASS", ["effects"], "CancellationReport.reverted is a literal false in the type, so no code path can report an undo. Five branches are asserted, none matching /rolled back|undone|reverted|reversed/. A cancellation after a send reports 'may have happened' and reconciles by query."),
     "E12": ("NOT_RUN", [], "Verification-code isolation has not been exercised; the verifier is not built."),
     # F - M5 verification
     "F01": ("PASS", ["n10", "t0t1"], "No completion claim is an oracle here: the record reaches confirmed only through an explicit transition, and settling is the furthest reconciliation can reach."),

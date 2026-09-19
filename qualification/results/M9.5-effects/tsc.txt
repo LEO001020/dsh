@@ -1,0 +1,3 @@
+tsc --noEmit (package dsh-daily-work, includes src/effects.ts and src/effects.test.ts)
+
+tsc_exit=0

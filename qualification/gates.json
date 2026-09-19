@@ -995,8 +995,15 @@
     "required_for": "daily_ready",
     "stimulus": "远端提交成功但响应丢失，再换tool callId重试。",
     "oracle": "相同logical operationId对账，无重复effect。",
-    "status": "NOT_RUN",
-    "note": "No external effect adapter exists yet, so idempotency is not exercised."
+    "status": "PASS",
+    "note": "48 tests, exit 0. The operationId digests (kind, logicalKey) ONLY -- never the tool callId -- so a retry under a changed callId lands on the same record and the counting fake stays at 1, including across a simulated restart and across a lost reply resolved by query. With no query support it stays unknown across three retries and still does not resend. reconcile() reached the transport zero times across five operations in every recorded state, which makes 'reconcile, never replay' a property of the module rather than a convention.",
+    "deployment_identity": "0ca14d4ee0ebea5eb85a3f72d66f48d839356f1b336c0e4f11f9a4f8ddf2ab7c",
+    "evidence": [
+      {
+        "path": "qualification/results/M9.5-effects/FINDINGS.md",
+        "sha256": "cdcc517c171f34590f2d939f617c487b6c9272359eb84f7e9a6b70a9d91f5201"
+      }
+    ]
   },
   {
     "id": "E08",
@@ -1005,8 +1012,15 @@
     "required_for": "daily_ready",
     "stimulus": "相同operationId换目标/参数。",
     "oracle": "明确冲突，不能复用原ack授权新动作。",
-    "status": "NOT_RUN",
-    "note": "Same as E07: no effect adapter exists yet."
+    "status": "PASS",
+    "note": "A changed payload under a recorded operationId is a CONFLICT with performed:false, and reconcile of the changed params returns resultRef undefined rather than the stale ack. conflict is deliberately not a stored status, so a refused attempt cannot overwrite the ack it was refused against -- the original ack does not authorize the new action.",
+    "deployment_identity": "0ca14d4ee0ebea5eb85a3f72d66f48d839356f1b336c0e4f11f9a4f8ddf2ab7c",
+    "evidence": [
+      {
+        "path": "qualification/results/M9.5-effects/FINDINGS.md",
+        "sha256": "cdcc517c171f34590f2d939f617c487b6c9272359eb84f7e9a6b70a9d91f5201"
+      }
+    ]
   },
   {
     "id": "E09",
@@ -1015,8 +1029,15 @@
     "required_for": "daily_ready",
     "stimulus": "难以静态分类的shell执行。",
     "oracle": "用权限边界限制；不宣称正则能完整判断只读。",
-    "status": "NOT_RUN",
-    "note": "Opaque shell classification has not been attempted; the design relies on the permission boundary."
+    "status": "PASS",
+    "note": "The classifier is closed-allowlist and returns unknown by default, and it was defeated by REAL shell, not by listing failing regexes: four defeats (function shadowing, PATH shadowing, a redirect hidden in a variable via eval, and an exported function into a child shell), each with an observed write to disk. Two real holes surfaced while building it -- sort had to be REMOVED because `sort in out` writes with no flag, and `tar xf` writes with no dash anywhere. This is a refusal device, not a control: enforcement stays with the sandbox and process identity, and the test says so.",
+    "deployment_identity": "0ca14d4ee0ebea5eb85a3f72d66f48d839356f1b336c0e4f11f9a4f8ddf2ab7c",
+    "evidence": [
+      {
+        "path": "qualification/results/M9.5-effects/FINDINGS.md",
+        "sha256": "cdcc517c171f34590f2d939f617c487b6c9272359eb84f7e9a6b70a9d91f5201"
+      }
+    ]
   },
   {
     "id": "E10",
@@ -1025,8 +1046,15 @@
     "required_for": "daily_ready",
     "stimulus": "程序中一次effect已发生，随后异常。",
     "oracle": "不重放整个run_code；逐具体effect处理unknown。",
-    "status": "NOT_RUN",
-    "note": "PTC partial commit has not been exercised."
+    "status": "PASS",
+    "note": "replayedWholeProgram:false is a literal in the type, so no code path can produce a full-program replay. The committed effect is reconciled individually; the un-entered step is recorded as unknown, deliberately NOT as not_started, because the runner's control flow is not evidence about the remote.",
+    "deployment_identity": "0ca14d4ee0ebea5eb85a3f72d66f48d839356f1b336c0e4f11f9a4f8ddf2ab7c",
+    "evidence": [
+      {
+        "path": "qualification/results/M9.5-effects/FINDINGS.md",
+        "sha256": "cdcc517c171f34590f2d939f617c487b6c9272359eb84f7e9a6b70a9d91f5201"
+      }
+    ]
   },
   {
     "id": "E11",
@@ -1035,8 +1063,15 @@
     "required_for": "daily_ready",
     "stimulus": "effect发出后用户取消。",
     "oracle": "告知可能已发生，按真实查询对账；不宣称cancel等于撤销。",
-    "status": "NOT_RUN",
-    "note": "Cancellation of an in-flight external effect has not been exercised."
+    "status": "PASS",
+    "note": "CancellationReport.reverted is a literal false in the type, so no code path can report an undo. Five branches are asserted, none matching /rolled back|undone|reverted|reversed/. A cancellation after a send reports 'may have happened' and reconciles by query.",
+    "deployment_identity": "0ca14d4ee0ebea5eb85a3f72d66f48d839356f1b336c0e4f11f9a4f8ddf2ab7c",
+    "evidence": [
+      {
+        "path": "qualification/results/M9.5-effects/FINDINGS.md",
+        "sha256": "cdcc517c171f34590f2d939f617c487b6c9272359eb84f7e9a6b70a9d91f5201"
+      }
+    ]
   },
   {
     "id": "E12",
