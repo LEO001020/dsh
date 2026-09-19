@@ -70,10 +70,10 @@ python <delivery>/helpers/check_plan.py \
 
 ## What is actually proven
 
-**59 of 104 gates PASS**, with the delivery package's checker reporting **zero
-structural errors** on the report. Every PASS carries at least one evidence file
-whose sha256 is recorded, and the generator refuses to emit a PASS with no
-evidence on disk. The load-bearing results:
+**68 of 104 gates PASS, 2 are honest FAILs**, with the delivery package's checker
+reporting **zero structural errors** on the report. Every PASS carries at least
+one evidence file whose sha256 is recorded, and the generator refuses to emit a
+PASS with no evidence on disk. The load-bearing results:
 
 - **Ten children are admitted through the real `ctx.subagents.startContinuable`
   seam on the production AgentLoop**, with a real Session each, and the ceiling
@@ -85,8 +85,16 @@ evidence on disk. The load-bearing results:
 - **A run survives a real SIGKILL.** The record, every task state and the exact
   reservation were recovered from a fresh process, and reconciliation returned
   `unknown` rather than relaunching anything.
-- **Cross-call state persists in a native PTY**, so persistent computation works
-  without an adapter.
+- **The extension is loaded by the real profile resolver**, and the `work` tool
+  reaches the model: a real Session on the composed `daily-standard` preset
+  reports 27 tools including `work`.
+- **Cross-call state persists in a native PTY** under `workspace-write`, so
+  persistent computation works without an adapter.
+- **The acceptance runner does not trust exit codes.** Two cases with a real
+  exit code of 0 — an all-skipped suite and a zero-test run — are still non-PASS.
+- **An A→B→A mutation during verification is caught by an immutable snapshot**,
+  and the in-place control arm proves endpoint hashing alone would have
+  certified the tampered run.
 - **The C0 capability gap is measured, not assumed**: every shipped profile
   mounts `@deepseek-ai/dsh-subagent` with no config block, so N is 8. C2's patch
   raises it to 10 and the resolved graph shows it.
@@ -98,17 +106,32 @@ Read `docs/GAPS.md` for the full list. The ones that matter most:
 - **No live paid N=10 run.** Gate C01 is `BLOCKED_EXTERNAL`:
   `live_provider_budget_authorized` is false in the lock. A key being present
   would not authorize large paid evaluation.
-- **`ctx.terminals.spawn()` does not resolve under a confined sandbox mode on
-  Windows.** It works unconfined (~740ms) and hangs under read-only or
-  workspace-write. So the persistent-computation result holds only with the
-  sandbox OFF, which is the opposite of what a daily driver wants.
-- **No OS-level credential or egress denial has been demonstrated.** Windows
-  sandboxing is documented upstream as `partial`: writes are restricted, but
-  reads, network and process visibility are not. DSH has no network egress
-  control for shells at all.
+- **Two gates FAIL, measured rather than hidden.** `E01` (credential isolation):
+  a confined child READ a canary secret outside the workspace root verbatim,
+  exit 0, under both `read-only` and `workspace-write` — the boundary is a WRITE
+  boundary, and the seam has no read lever even in principle. `E06` (network
+  egress): a confined child completed a real HTTP round trip under both modes;
+  `web_fetch`'s SSRF guard filters that tool's URL only and is bypassed by any
+  shell command. Both were previously `NOT_RUN`; measuring them moved them to
+  `FAIL`, which understates less.
+- **A second host silently destroys the first host's committed work.** Measured:
+  a real second process opens the same live store with no error, its write lands
+  durably, and then the first host's next publish erases it. Nothing upstream
+  refuses. The deployment boundary is the only protection unless `homeLockPath`
+  is configured, and it is **not** configured by default.
+- **`ctx.terminals.spawn()` does not resolve under `read-only` sandbox mode on
+  Windows.** It resolves under `workspace-write` (~0.8–1.2 s) and
+  `danger-full-access` (~740 ms). An earlier version of this README said
+  "confined" generally; that was a measurement error from probing a single mode.
+- **A caller-supplied `maxDepth` lifts the deployment depth cap.** It is an
+  absolute cap, not a ceiling, so a larger value admits deeper delegation. This
+  project's own path is unaffected — it passes deployment config and never the
+  model's value — but any direct caller can widen it.
 - **No real coding or research task has been run** under a frozen configuration,
   so there is no end-to-end quality claim.
-- **39 required gates are `NOT_RUN`.** That number is the honest headline.
+- **The remaining `NOT_RUN` gates are the honest headline.** Run
+  `python qualification/runners/build-gates.py` for the current count; it is
+  derived from evidence on disk and refuses to invent a PASS.
 
 ## Promotion decision
 
