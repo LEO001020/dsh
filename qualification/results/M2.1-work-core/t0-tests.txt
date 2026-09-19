@@ -1,0 +1,31 @@
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.8 [39m[90mD:/DSH/work/dsh-native-daily/packages/dsh-daily-work[39m
+
+ [32m✓[39m src/states.test.ts[2m > [22madmission state machine[2m > [22mcovers every declared state in the transition table[32m 2[2mms[22m[39m
+ [32m✓[39m src/states.test.ts[2m > [22madmission state machine[2m > [22mrefuses to leave a terminal state[32m 0[2mms[22m[39m
+ [32m✓[39m src/states.test.ts[2m > [22madmission state machine[2m > [22mthrows a TransitionError carrying the task id[32m 0[2mms[22m[39m
+ [32m✓[39m src/states.test.ts[2m > [22madmission state machine[2m > [22mdoes not let a requested cancel reach a released slot directly[32m 0[2mms[22m[39m
+ [32m✓[39m src/states.test.ts[2m > [22madmission state machine[2m > [22mtreats unknown as slot-holding, never as a free slot[32m 0[2mms[22m[39m
+ [32m✓[39m src/states.test.ts[2m > [22madmission state machine[2m > [22mholds a slot while settling, because the world may still change[32m 0[2mms[22m[39m
+ [32m✓[39m src/states.test.ts[2m > [22madmission state machine[2m > [22mdoes not count a confirmed or cancelled task as holding a slot[32m 0[2mms[22m[39m
+ [32m✓[39m src/states.test.ts[2m > [22mprecise counting[2m > [22mdoes not count an idle child as an active assignment[32m 0[2mms[22m[39m
+ [32m✓[39m src/states.test.ts[2m > [22mprecise counting[2m > [22mcounts a child as active only after observed real work[32m 0[2mms[22m[39m
+ [32m✓[39m src/states.test.ts[2m > [22mprecise counting[2m > [22mreports provider waiting separately from physical execution[32m 0[2mms[22m[39m
+ [32m✓[39m src/states.test.ts[2m > [22mprecise counting[2m > [22mreports tool waiting separately and inside active[32m 0[2mms[22m[39m
+ [32m✓[39m src/states.test.ts[2m > [22mprecise counting[2m > [22mkeeps stopping and unknown holding their slots so N is never pierced[32m 0[2mms[22m[39m
+ [32m✓[39m src/states.test.ts[2m > [22mprecise counting[2m > [22mkeeps a slot reserved by stopping/unknown against a larger target[32m 0[2mms[22m[39m
+ [32m✓[39m src/states.test.ts[2m > [22mprecise counting[2m > [22mnever silently lowers the target when fewer tasks are ready[32m 0[2mms[22m[39m
+ [32m✓[39m src/states.test.ts[2m > [22mprecise counting[2m > [22mnames budget as the deficit reason when the ceiling is reached[32m 0[2mms[22m[39m
+ [32m✓[39m src/states.test.ts[2m > [22mprecise counting[2m > [22madmits up to exactly the ceiling but not past it[32m 0[2mms[22m[39m
+ [32m✓[39m src/states.test.ts[2m > [22mprecise counting[2m > [22mreports budget_blocked and refuses admission from the same predicate[32m 0[2mms[22m[39m
+ [32m✓[39m src/states.test.ts[2m > [22mprecise counting[2m > [22mrefuses admission when the run is paused[32m 0[2mms[22m[39m
+ [32m✓[39m src/states.test.ts[2m > [22mprecise counting[2m > [22mreserves before admitting, so the last credit cannot be double-spent[32m 0[2mms[22m[39m
+ [32m✓[39m src/states.test.ts[2m > [22mprecise counting[2m > [22mcounts confirmed work as done without counting it as a held slot[32m 0[2mms[22m[39m
+ [32m✓[39m src/states.test.ts[2m > [22mprecise counting[2m > [22mreports deficit none when exactly filled[32m 0[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[32m21 passed[39m[22m[90m (21)[39m
+[2m   Start at [22m 11:31:22
+[2m   Duration [22m 257ms[2m (transform 42ms, setup 0ms, import 92ms, tests 6ms, environment 0ms)[22m
+
+test_exit=0

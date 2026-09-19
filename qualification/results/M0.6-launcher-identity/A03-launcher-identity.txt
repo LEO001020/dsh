@@ -1,0 +1,75 @@
+=== A03: two launchers, two distribution identities ===
+
+GATE A03 stimulus: 'send a native read+shell from the actual built entry point and from
+the source entry point that must be supported'.
+Oracle: 'receive correctly correlated tool/result; catch src/lib Symbol or duplicate
+Cordis instances; not merely --help success.'
+
+ENVIRONMENT: identical. DSH_HOME=D:\DSH\home\canary2 (fresh). Same overlay patch.
+Same task string. Same machine. Sequential runs.
+
+--- built launcher: node apps/cli/lib/bin.js ---
+exit_code: 0
+stdout: 'CLI tool round trip complete: CLI_TOOL_ROUND_TRIP'
+stderr: 'dsh: reasoning: / Inspecting the task before the tool call.'
+VERDICT: PASS - the production shell tool executed and the turn completed.
+
+--- source launcher: pnpm dsh  (== node --import tsx/esm apps/cli/src/bin.ts) ---
+exit_code: 1
+stderr: 'dsh: reasoning: / Inspecting the task before the tool call. /
+        dsh: UNKNOWN: Cannot read properties of undefined (reading \'prepare\')'
+VERDICT: FAIL - the model request is issued, the stream is consumed, then the run dies
+        at a '.prepare' access on an undefined value BEFORE the tool executes.
+
+REPRODUCIBILITY: 3/3 runs. Two different DSH_HOME values. Also reproduced by the
+in-tree suite apps/cli/tests/profiles/headless/tests/headless.expected.e2e.ts
+(10 of 16 cases fail with the same message).
+
+--- resolution comparison (NOT the cause) ---
+Both launchers resolve the overlay identically:
+  - id: cli-mock-llm
+    name: file:///D:/DSH/src/dsh-src/packages/test-support/loader-smoke/tests/fixtures/cli-mock-llm.ts
+So module RESOLUTION of the overlay agrees; the divergence is downstream.
+
+--- narrowed hypothesis (INFERRED, not yet proven) ---
+The overlay inserts a plugin whose package dir is the repo itself. The test harness
+compensates with healProfilesModuleFallback() (packages/test-support/loader-smoke/
+tests/fixtures/production-profile.ts:95-100), which materialises
+<home>/profiles/node_modules so overlay packages resolve in plain-Node mode.
+The shipped source launcher uses resolutionMode 'runtime' and only heals the
+profiles module fallback when resolutionMode === 'link'
+(apps/cli/src/profile-boot.ts, composeProfile).
+That asymmetry is consistent with a second copy of a core package being loaded from
+src while the rest loads from lib - exactly the src/lib Symbol duplication A03 targets.
+NOT YET PROVEN: I have not yet dumped the resolved module realpaths per launcher.
+
+--- consequence for this project ---
+Per the delivery plan, the built artifact is the one qualified for daily use.
+The source launcher is NOT equivalent and must be qualified separately if used at all.
+This is a concrete, reproducible difference between the two distribution identities,
+which is precisely what the plan warned about.
+
+--- NARROWING (added) ---
+Control: with the SHIPPED headless profile and NO overlay, both launchers behave
+IDENTICALLY and correctly:
+
+  source: dsh: MISSING_CREDENTIAL: llm-deepseek: no API key for provider route
+          "deepseek-official"; ...                        exit 1
+  built:  (same message)                                   exit 1
+
+So the launchers agree on the shipped composition, on credential resolution, and on
+startup failure reporting. The divergence is confined to the OVERLAY case: the overlay
+inserts a plugin by absolute path to a .ts file inside the repo.
+
+Refined statement of the finding:
+  The built launcher loads the whole graph from built lib/*.js.
+  The source launcher loads the graph from src/*.ts through tsx.
+  An overlay plugin that imports a core package can therefore bind to a different copy
+  than the one the host registered, and the failure surfaces later as an undefined
+  service access ('.prepare') rather than as an import error.
+  This is the class of defect A03 exists to catch, and it is reproducible on demand.
+
+Operational conclusion (this is what the plan requires):
+  QUALIFY AND USE THE BUILT ARTIFACT (apps/cli/lib/bin.js) for daily operation.
+  The source launcher is a development convenience with a different module identity and
+  is NOT a drop-in substitute. Any future use of it needs its own qualification.

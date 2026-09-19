@@ -1,0 +1,5 @@
+# Development-only symlink farm pointing at the pinned DSH checkout.
+# It is an artifact of this machine's layout, not part of the deliverable.
+packages/dsh-daily-work/node_modules/
+packages/dsh-daily-work/lib/
+**/.vite-temp/

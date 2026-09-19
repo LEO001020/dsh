@@ -1,0 +1,22 @@
+# C0 — the stock control group.
+#
+# This file is deliberately EMPTY of plugin rows. C0 is the exact shipped
+# `web` profile with the exact shipped `standard` agent preset. Nothing is
+# added, nothing is removed, and nothing is reconfigured.
+#
+# Why it is empty: the delivery plan requires a real control group. A control
+# group that has been quietly modified is not a control group. Any deviation
+# belongs in `daily-candidate`, not here.
+#
+# What C0 is expected NOT to be able to do (measured, not assumed):
+#   - sustain N=10 in-flight child assignments. The shipped composition mounts
+#     `@deepseek-ai/dsh-subagent` with no config block, so maxActiveSubagents is
+#     the source default 8. This is a capability gap, recorded in docs/GAPS.md,
+#     not evidence falsification.
+#
+# Do NOT add a `subagent` config row here to "make C0 pass". That would destroy
+# the control group and hide the very gap the plan asks us to measure.
+#
+# The resolved graph produced by this file is captured under
+# qualification/results/M0.5-c0-resolved-graph/ and hashed there.
+[]
