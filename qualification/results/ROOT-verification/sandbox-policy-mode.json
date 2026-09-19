@@ -1,0 +1,12 @@
+{
+ "probe": "verify-sandbox-policy-mode",
+ "sandboxPolicyPresent": true,
+ "defaultMode": "workspace-write",
+ "resolveNoArgs": {
+  "mode": "workspace-write",
+  "workspaceRoot": "C:\\Windows\\Temp"
+ },
+ "policyDescribeExposed": false,
+ "sandboxPresent": true,
+ "sandboxModeGetter": "null"
+}

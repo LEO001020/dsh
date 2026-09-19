@@ -1,0 +1,3 @@
+- insert:
+    - id: verify-sandbox-policy-mode
+      name: 'D:/DSH/work/dsh-native-daily/.probe/verify-sandbox-policy-mode.mjs'
