@@ -1,0 +1,119 @@
+{
+  "probe": "t8-raw-bytes-slope",
+  "measuredAt": "2026-09-19T22:58:21.936Z",
+  "matches": 900,
+  "samplesPerLength": 5,
+  "points": [
+    {
+      "pathChars": 64,
+      "rawBytes": [
+        245840,
+        245840,
+        245840,
+        245840,
+        245840
+      ],
+      "mode": 245840,
+      "spread": 0,
+      "bytesPrinted": [
+        245245
+      ]
+    },
+    {
+      "pathChars": 66,
+      "rawBytes": [
+        247644,
+        247644,
+        247644,
+        247644,
+        247644
+      ],
+      "mode": 247644,
+      "spread": 0,
+      "bytesPrinted": [
+        247047
+      ]
+    },
+    {
+      "pathChars": 68,
+      "rawBytes": [
+        249448,
+        249448,
+        249446,
+        249448,
+        249448
+      ],
+      "mode": 249448,
+      "spread": 2,
+      "bytesPrinted": [
+        248849
+      ]
+    },
+    {
+      "pathChars": 70,
+      "rawBytes": [
+        251252,
+        251252,
+        251252,
+        251250,
+        251252
+      ],
+      "mode": 251252,
+      "spread": 2,
+      "bytesPrinted": [
+        250651
+      ]
+    },
+    {
+      "pathChars": 72,
+      "rawBytes": [
+        253056,
+        253056,
+        253056,
+        253056,
+        253056
+      ],
+      "mode": 253056,
+      "spread": 0,
+      "bytesPrinted": [
+        252453
+      ]
+    }
+  ],
+  "slope": {
+    "deltaChars": 8,
+    "deltaBytes": 7216,
+    "bytesPerPathChar": 902,
+    "matches": 900,
+    "excessOverMatches": 2,
+    "reading": "the path appears once per match event, so the coefficient is MATCHES + a small constant"
+  },
+  "bytesPrintedRisesWithPathLength": true,
+  "bytesPrintedStableAcrossRepeats": true,
+  "bytesPrintedValuesByPathChars": [
+    {
+      "pathChars": 64,
+      "bytesPrinted": 245245
+    },
+    {
+      "pathChars": 66,
+      "bytesPrinted": 247047
+    },
+    {
+      "pathChars": 68,
+      "bytesPrinted": 248849
+    },
+    {
+      "pathChars": 70,
+      "bytesPrinted": 250651
+    },
+    {
+      "pathChars": 72,
+      "bytesPrinted": 252453
+    }
+  ],
+  "rawBytesJittersAtFixedLength": true,
+  "jitterObservation": "jitter WAS observed at a fixed path length in this run",
+  "command": "cd D:/DSH/work/dsh-native-daily/packages/dsh-daily-work && node --import tsx/esm D:/DSH/work/dsh-native-daily/qualification/results/T8-data/t8-raw-bytes-slope.mjs",
+  "probeScriptSha256": "1824c5f6a7122039b4b94001ae3a923c712d382a613398346fd53517db381e4c"
+}

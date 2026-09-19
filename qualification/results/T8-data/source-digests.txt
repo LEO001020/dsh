@@ -12,3 +12,9 @@ a43d06d60eeacd388c2651d70473f7b22d06f80ba00a53047329d5940b6b9e8e *packages/dsh-d
 # Pinned checkout files these claims depend on
 881c3f5da682e0df770634c2d657622b8af72099d1072efd44af9c603b4744b6 *packages/fs/tool-fs/src/read-render.ts
 7b12cf379bfbbf24792b259673d2c6fa74ab7ec9322b3590e4482f4ebc024cab *packages/fs/tool-fs-search/src/search-core.ts
+
+# T8-data probe scripts (the measurement instruments themselves)
+e8e716d2b5e3ef8dfd84caf4fdbd5ee00f6ff3d71efa58fcaa375ab7e70502c0 *t8-four-byte-classes.mjs
+e5f9ec093985c0e93b39e0b7780e814d34bb71bffeb7063458de2fe7857f363b *t8-verify-artifact.mjs
+417479b703ade5347d0a1a3108e07b2ec342f235c9286f3a8d3b766afd5d9d21 *t8-falsify-conflation.mjs
+1824c5f6a7122039b4b94001ae3a923c712d382a613398346fd53517db381e4c *t8-raw-bytes-slope.mjs

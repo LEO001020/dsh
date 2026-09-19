@@ -4,9 +4,9 @@
 **Pinned DSH (read-only):** `D:\DSH\src\dsh-src` @ `ddefc45fbc7f8e46dd73185e68295696d1297887`
 **Host:** Windows 11 (10.0.26200) AMD64, Node v24.18.0, CPython 3.14.3, ripgrep 15.0.0 (rev `3a612f88b8`)
 **Evidence:** `four-byte-classes.json`, `artifact-verification.json`, `falsify-conflation.json`,
-`provenance.txt`, `source-digests.txt`, `tests-data-plane.txt`, `tsc.txt`, plus the run logs
-`probe-run.txt` / `verify-run.txt` / `falsify-run.txt`, the three probe scripts, and the
-persisted object under `artifacts/`.
+`raw-bytes-slope.json`, `provenance.txt`, `source-digests.txt`, `tests-data-plane.txt`, `tsc.txt`,
+plus the run logs `probe-run.txt` / `verify-run.txt` / `falsify-run.txt` / `raw-bytes-slope-run.txt`,
+the four probe scripts, and the persisted object under `artifacts/`.
 
 ---
 
@@ -59,7 +59,7 @@ mistaken for them:**
 | **T8-11** | The typecheck baseline is kept | `cd D:/DSH/work/dsh-native-daily/packages/dsh-daily-work && node /d/DSH/src/dsh-src/node_modules/typescript/bin/tsc -p tsconfig.check.json --noEmit` | **PASS** — exit 0, no output |
 | **T8-12** | A `requestedRange` narrows what is RECORDED, not what is read | `… t8-four-byte-classes.mjs` → `S5_requested_range_not_honoured` | **FAIL** — see §3a |
 | **T8-13** | The acquired-vs-persisted shortfall guard cannot be bypassed | `… t8-four-byte-classes.mjs` → `S6_shortfall_guard_bypass` | **FAIL** — see §3b |
-| **T8-14** | A raw tool-output byte count is reproducible from the evidence that records it | `… t8-four-byte-classes.mjs` → `S7_tool_output_boundary.pathLengthSweep` and `.rawBytesJitterSamePath` | **FAIL (claim discipline)** — see §3c |
+| **T8-14** | A raw tool-output byte count is reproducible from the evidence that records it | `… t8-four-byte-classes.mjs` → `S7_tool_output_boundary`; `… t8-raw-bytes-slope.mjs` | **FAIL (claim discipline)** — see §3c |
 | **T8-15** | Production reachability through a real composed-profile boot (the `daily-data-plane` row resolving in a live host) | not run this round — `qualification/runners/verify-data-plane.mjs` boots a real host and writes to the FIXED path `qualification/results/M4-data/profile-boot.json`, which is another agent's evidence file | **BLOCKED** — see §4 |
 
 Non-PASS: 3 FAIL, 1 BLOCKED. Nothing above was made to pass by weakening an oracle,
@@ -121,33 +121,45 @@ them is off. **Not fixed here** — see §5.
 370 projected). But the **raw** figure is not reproducible, on **two independent axes**:
 
 **(i) It depends on the path.** ripgrep's `--json` stdout embeds the absolute path in every
-match event, so identical content in differently-named directories yields different raw bytes:
+match event, so identical content in differently-named directories yields different raw bytes.
+Five path lengths, 5 samples each (`raw-bytes-slope.json`):
 
-| path chars | raw bytes |
-|---|---|
-| 67 | 248,546 |
-| 68 | 249,448 |
-| 69 | 250,350 |
+| path chars | mode raw bytes | spread over 5 samples |
+|---|---|---|
+| 64 | 245,840 | 0 |
+| 66 | 247,644 | 0 |
+| 68 | 249,448 | 2 |
+| 70 | 251,252 | 2 |
+| 72 | 253,056 | 0 |
 
-That is **+902 bytes per path character** (= 900 matches + 2).
+That is **exactly +902 bytes per path character** over the 8-character span (7,216 / 8 = 902),
+which is `900 matches + 2` — the path is emitted once per match event. The coefficient is
+exact, not approximate.
 
 **(ii) It depends on the SEARCH DURATION, on a fixed path.** Ten consecutive identical
-commands over the same file gave `distinctRawBytes: [241328, 241330]` while
-`distinctBytesPrinted: [240740]` — one value. The cause is in ripgrep's own trailing `summary`
-event, which carries `elapsed.human` / `elapsed.nanos`: a sub-millisecond search emits a
-6-digit `nanos` value where a slower one emits 7, so the summary event is 273 or 274 bytes
-(`distinctSummaryEventBytes: [273, 274]`). The part that is actually the match data,
-`bytes_printed`, is constant.
+commands over one file gave `distinctRawBytes: [241328, 241330]` while `bytes_printed` was a
+single value, 240740. The slope probe reproduced the same 2-byte spread at two of its five
+path lengths (68 and 70). The cause is ripgrep's own trailing `summary` event, which carries
+`elapsed.human` / `elapsed.nanos`: a sub-millisecond search emits a 6-digit `nanos` value
+where a slower one emits 7, so the summary event is 273 or 274 bytes
+(`distinctSummaryEventBytes: [273, 274]`). The match data itself is stable across repeats at
+a fixed length (`bytesPrintedStableAcrossRepeats: true`); it rises with path length, as it
+must, because it contains the path.
 
 Together these explain the four different "raw bytes" values already in this repo's evidence
 for the *same* 900-match stimulus:
 
 | source | raw bytes | path chars | why |
 |---|---|---|---|
-| `P5-data/baseline-tests.txt` (`[DAT-07]`) | 239,526 | 57 | temp dir `m4-dat07-…` |
-| `R5-data/raw-cap-measurement.json` | 240,428 | 58 | temp dir `r5-rawcap-…` |
-| this probe `S7.rawCapGenerous` | 241,328 / 241,330 | 60 | temp dir `t8-s7-grep-…`, and the runner's stdout read |
-| this probe `S7.rawToolOutputBytes` | 241,330 | 60 | a direct `execFile`, no runner |
+| `P5-data/baseline-tests.txt` (`[DAT-07]`) | 239,526 | 58 (derived) | temp dir `m4-dat07-…` |
+| `R5-data/raw-cap-measurement.json` | 240,428 | 59 | temp dir `r5-rawcap-HC2IiA` (50 chars) + `\many.txt` |
+| this probe `S7` | 241,330 | 60 | temp dir `t8-s7-grep-…` + `\many.txt` |
+
+These three are **exactly consistent with the measured slope**, one path character apart each:
+239,526 + 902 = 240,428, and 240,428 + 902 = 241,330. The R5 path length is verifiable from
+its own JSON (`raw-cap-measurement.json.root` is 50 characters, and the probe writes
+`<root>/many.txt`), and the P5 value follows by the same step. The model accounts for every
+value; only the path differs. The jitter (ii) is a separate ±2-byte effect on top.
 
 **None of these contradict each other and none is wrong** — they are the same quantity
 measured over different paths, and two of them differ from each other only by the timing
@@ -219,10 +231,10 @@ distinguishes confirmed, newly-found, and differently-scoped.
    measured directly (`S7.ripgrepVersion`). No contradiction.
 
 2. **The `[DAT-07] rawBytes` values differ between runs** (239,526 in P5, 240,428 in R5,
-   241,330 in mine). Not a contradiction — §3c shows the value is a function of the absolute
-   path length AND of ripgrep's own timing field, and all values are far below the 20 MB cap.
-   The prior evidence records neither the path nor the tolerance, so the number is not
-   reproducible from the artifact alone. That is the finding.
+   241,330 in mine). Not a contradiction — §3c shows the three are exactly one path character
+   apart each, at +902 bytes per character, and all are far below the 20 MB cap. Neither prior
+   artifact records its path length, so the number is not reproducible from the evidence alone.
+   That is the finding, not a discrepancy in the product.
 
 3. **`R5-data/FINDINGS.md` claims "DAT-02 … projection 399 bytes (JS reducer) … 429 (Python
    pipe) … 437 (real ipykernel)" and "512 pages / 33,554,432 bytes".** I re-ran the suite and
@@ -252,7 +264,7 @@ wants added, in a form that can be pasted.
 ```markdown
 | G-T8-01 | `captureFile` records a `requestedRange` in `coverage` but never narrows the read by it, so a caller asking for 64 KiB of a 1 MiB file gets the whole file with `claimScope: "request"` and `completeness: complete-within-request`. | MEASURED: `acquiredBytes 1048576` and `persistedBytes 1048576` against `requestedRange {offset:0,length:65536}`; `rangeWasHonoured false`. `defaultReadChunks` (`artifacts.ts:1235-1247`) streams offset 0 → EOF regardless. | `qualification/results/T8-data/four-byte-classes.json` scenario `S5_requested_range_not_honoured`; `probe-run.txt`. Gate T8-12. | OPEN — a design decision (narrow the read, or drop the field), not a measurement. |
 | G-T8-02 | The acquired-vs-persisted shortfall guard is DISABLED whenever `requestedRange` is present, and because the read is not narrowed, a short read that is correctly `partial` without a range becomes `complete-within-request` with no gap when a range is named. | MEASURED, same 400-of-1000-byte short read twice: without a range → `partial`, 1 × `native-acquisition` gap, `isDeliverableAsComplete false`; with `requestedRange {offset:0}` → `complete-within-request`, 0 gaps, `isDeliverableAsComplete TRUE`. Source: `artifacts.ts:1093`. | `qualification/results/T8-data/four-byte-classes.json` scenarios `S3_short_acquisition` and `S6_shortfall_guard_bypass`. Gate T8-13. | OPEN — this is the collapse `artifacts.ts:1088` says the plane exists to prevent. |
-| G-T8-03 | A "raw tool output" byte count is not reproducible from the evidence that records it, on two independent axes: (i) ripgrep's `--json` stdout embeds the absolute path per match; (ii) its trailing `summary` event carries `elapsed.nanos`, whose decimal length varies with search duration. | MEASURED. (i) +902 bytes per path character over a 900-match sweep (248,546 / 249,448 / 250,350 at 67/68/69 path chars). (ii) ten identical commands on one path gave raw bytes {241328, 241330} while `bytes_printed` was constant at 240740 and the summary event was 273 or 274 bytes. Explains the four different values already in this repo's evidence for the same stimulus (239,526 / 240,428 / 241,328 / 241,330). | `qualification/results/T8-data/four-byte-classes.json` scenario `S7_tool_output_boundary` (`.pathLengthSweep`, `.rawBytesJitterSamePath`). Gate T8-14. | OPEN — a claim-discipline rule: quote a raw tool-output byte count with its path and a tolerance for the timing field, or do not quote it. |
+| G-T8-03 | A "raw tool output" byte count is not reproducible from the evidence that records it, on two independent axes: (i) ripgrep's `--json` stdout embeds the absolute path per match; (ii) its trailing `summary` event carries `elapsed.nanos`, whose decimal length varies with search duration. | MEASURED. (i) exactly +902 bytes per path character (7,216 bytes over an 8-character span, 5 samples per length) = 900 matches + 2. (ii) ten identical commands on one path gave raw bytes {241328, 241330} while `bytes_printed` was constant at 240740 and the summary event was 273 or 274 bytes; a second probe reproduced the 2-byte spread at 2 of 5 path lengths. Explains the four different values already in this repo's evidence for the same stimulus (239,526 / 240,428 / 241,328 / 241,330). | `qualification/results/T8-data/four-byte-classes.json` (`S7_tool_output_boundary.rawBytesJitterSamePath`) and `raw-bytes-slope.json`. Gate T8-14. | OPEN — a claim-discipline rule: quote a raw tool-output byte count with its path and a tolerance for the timing field, or do not quote it. |
 | G-T8-04 | Production reachability of the data plane through a real composed-profile boot was NOT re-measured this round. | BLOCKED: `qualification/runners/verify-data-plane.mjs:58` writes to the FIXED path `qualification/results/M4-data/profile-boot.json`, another agent's evidence file; the shared boot harness's own header calls a fixed output path "a SHARED MUTABLE RESOURCE" that "produced a false PASS earlier in this project". The in-process substitute (`DataPlaneService` over the real storage domain) is measured and PASSES, but it does not prove the `daily-data-plane` row resolves in a live boot. | Gate T8-15 in `qualification/results/T8-data/GATES.md`; prior evidence remains `M4-data/profile-boot.json`. | OPEN — needs a probe with a caller-owned output path. |
 ```
 
