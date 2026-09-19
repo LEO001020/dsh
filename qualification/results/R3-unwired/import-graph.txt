@@ -73,7 +73,7 @@
         indirect test reachers: (NONE)
   src/kernel-lifecycle.ts
         non-test importers: (NONE)
-        direct test importers: src/kernel-recovery.test.ts, src/zz-m5-trace.test.ts
+        direct test importers: src/kernel-recovery.test.ts
         indirect test reachers: (NONE)
   src/perf-metrics.ts
         non-test importers: (NONE)
@@ -88,5 +88,5 @@
         direct test importers: src/durability-records.test.ts
         indirect test reachers: (NONE)
 
-TOTAL src modules: 78  non-test: 31
+TOTAL src modules: 77  non-test: 31
 REACHABLE: 25   UNREACHABLE: 6

@@ -1,0 +1,46 @@
+=== the three physical copies of the module ID-01 flagged ===
+  A_src_store_ts
+      path   : D:\DSH\src\dsh-src\packages\attachment\attachment-local\src\store.ts
+      exists : True
+      sha256 : 4b627d534da3cdd8c7b8e3ca68656e25c8d46563bcf3971f50231c162deb1fa6
+      bytes  : 19124
+  B_lib_types_store_js
+      path   : D:\DSH\src\dsh-src\packages\attachment\attachment-local\lib\types\store.js
+      exists : True
+      sha256 : 4f51e10af1d0c455a198d0e354a3fe7e50f8b07cadbbba8c3b735bf64d60fe38
+      bytes  : 18015
+  C_lib_index_js_bundled
+      path   : D:\DSH\src\dsh-src\packages\attachment\attachment-local\lib\index.js
+      exists : True
+      sha256 : cd39685581b4573a453c6126f8ce73da0bf1257c378827ebb431d6d4064f7662
+      bytes  : 46886
+
+=== module-scope mutable state in each copy ===
+  A_src_store_ts: ['durableHomes']
+  B_lib_types_store_js: ['durableHomes']
+  C_lib_index_js_bundled: ['CompressionLimiter', 'LocalAttachmentStore', 'SharedRequest', 'durableHomes']
+
+=== is the deep-imported copy a DIFFERENT revision from the built one? ===
+  THE REVISION QUESTION IS NOT DECIDED HERE. Two hand-rolled regex
+  comparisons were tried in this file and each produced a WRONG answer in a
+  different direction (signatures vs bodies; then a mangled object literal).
+  A regex that approximates a compiler is a second compiler. The authoritative
+  answer is in `ID-01-revision-compare.txt`, which erases types with the
+  TypeScript compiler itself: SAME REVISION. The raw body comparison below is
+  retained only as a pointer to that file.
+  publishImmutableObjectStream found in A (src/store.ts)       : True
+  publishImmutableObjectStream found in B (lib/types/store.js) : True
+
+=== does the package ENTRY inline its own copy (so two instances exist)? ===
+  lib/index.js declares module state: ['CompressionLimiter', 'LocalAttachmentStore', 'SharedRequest', 'durableHomes']
+  state names shared with src/store.ts: ['durableHomes']
+  => the host holds TWO instances of this module, each with its own copy of
+     ['durableHomes']. The deep import cannot reach the entry's copy and vice versa.
+
+=== what the deep import reaches that the entry does NOT export ===
+  publishImmutableObjectStream exported by the package entry (lib/index.js): False
+  publishImmutableObjectStream declared inside the entry bundle           : True
+  => the entry bundle DECLARES the function but does not export it, which is
+     why the consumer reached into src/ for it. A built, public path exists:
+     lib/types/store.js, reachable as the declared export
+     '@deepseek-ai/dsh-attachment-local/src/*' resolves to ./src/* only.

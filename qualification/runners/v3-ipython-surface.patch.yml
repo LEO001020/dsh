@@ -1,0 +1,10 @@
+# Verification overlay for V3's IPY-09 measurement: the MODEL-FACING ipython
+# surface in a real boot of the DELIVERABLE profile.
+#
+# ONE row, and it is the PROBE ONLY. There is deliberately NO tool row: the whole
+# point of the case is what the profile's OWN composition registers. Adding a
+# tool row here would prove the tool works when a row is present while proving
+# nothing about the product -- the exact mistake recorded as G-FIX-04/G-FIX-05.
+- insert:
+    - id: v3-ipython-surface
+      name: 'D:/DSH/work/dsh-native-daily/qualification/runners/v3-ipython-surface.mjs'

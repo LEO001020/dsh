@@ -1,6 +1,6 @@
- ✓ src/web-search.test.ts > canonicalization > strips the fragment and known tracking parameters 2ms
+ ✓ src/web-search.test.ts > canonicalization > strips the fragment and known tracking parameters 1ms
  ✓ src/web-search.test.ts > canonicalization > does not lowercase the path, because that would merge distinct pages 0ms
- ✓ src/web-search.test.ts > canonicalization > does not fold a trailing slash 1ms
+ ✓ src/web-search.test.ts > canonicalization > does not fold a trailing slash 0ms
  ✓ src/web-search.test.ts > canonicalization > refuses embedded credentials 0ms
  ✓ src/web-search.test.ts > canonicalization > refuses non-http(s) schemes 0ms
  ✓ src/web-search.test.ts > canonicalization > refuses an unparseable URL rather than guessing 0ms
@@ -11,8 +11,8 @@
  ✓ src/web-search.test.ts > availability is presence, not entitlement > reports available only when the credential reference is configured 0ms
  ✓ src/web-search.test.ts > availability is presence, not entitlement > reports available when configured 0ms
  ✓ src/web-search.test.ts > availability is presence, not entitlement > never makes a network call from available() 1ms
- ✓ src/web-search.test.ts > a provider failure is never an empty result > throws SEARCH_PROVIDER_ERROR on a non-2xx answer, not an empty source list 23ms
- ✓ src/web-search.test.ts > a provider failure is never an empty result > throws SEARCH_PROVIDER_UNAVAILABLE on a transport failure 0ms
+ ✓ src/web-search.test.ts > a provider failure is never an empty result > throws SEARCH_PROVIDER_ERROR on a non-2xx answer, not an empty source list 15ms
+ ✓ src/web-search.test.ts > a provider failure is never an empty result > throws SEARCH_PROVIDER_UNAVAILABLE on a transport failure 1ms
  ✓ src/web-search.test.ts > a provider failure is never an empty result > returns an empty source list when a WORKING provider genuinely finds nothing 1ms
  ✓ src/web-search.test.ts > a provider failure is never an empty result > throws SEARCH_INVALID_QUERY for an empty query rather than returning nothing 0ms
  ✓ src/web-search.test.ts > a provider failure is never an empty result > throws SEARCH_CANCELLED when the caller signal is already aborted 0ms
@@ -21,19 +21,21 @@
  ✓ src/web-search.test.ts > successful search > reports truncated when it dropped sources to honour the bound 0ms
  ✓ src/web-search.test.ts > successful search > accepts a provider that names its list `hits` 0ms
  ✓ src/web-search.test.ts > successful search > carries a stable provider id so the registry can key it 0ms
- ✓ src/web-search.test.ts > plugin registration through the real ctx.web seam > routes ctx.web.search() to the ported provider, and stops on unload 139ms
- ✓ src/research.test.ts > R03: an incomplete read states its range and its limits > saving bytes is not the same as having read the content > records bytes_captured without parsed 2ms
- ✓ src/research.test.ts > R03: an incomplete read states its range and its limits > saving bytes is not the same as having read the content > still reports bytes_captured when the body decoded cleanly and was never parsed 1ms
+ ✓ src/web-search.test.ts > the dialect this port speaks, pinned because it is the substrate boundary > sends exactly {query, maxResults} and NO credential header 0ms
+ ✓ src/web-search.test.ts > the dialect this port speaks, pinned because it is the substrate boundary > reads `snippet`/`publishedAt` and NOT the Exa fields the production row targets 0ms
+ ✓ src/web-search.test.ts > plugin registration through the real ctx.web seam > routes ctx.web.search() to the ported provider, and stops on unload 120ms
+ ✓ src/research.test.ts > R03: an incomplete read states its range and its limits > saving bytes is not the same as having read the content > records bytes_captured without parsed 1ms
+ ✓ src/research.test.ts > R03: an incomplete read states its range and its limits > saving bytes is not the same as having read the content > still reports bytes_captured when the body decoded cleanly and was never parsed 0ms
  ✓ src/research.test.ts > R03: an incomplete read states its range and its limits > saving bytes is not the same as having read the content > does not let a parse be recorded without bytes that arrived 1ms
  ✓ src/research.test.ts > R03: an incomplete read states its range and its limits > a parse that covered part of a document records the range and is not fully parsed > records the range and withholds the parsed state 0ms
  ✓ src/research.test.ts > R03: an incomplete read states its range and its limits > a parse that covered part of a document records the range and is not fully parsed > records the parsed state only for a complete read of the whole capture 0ms
- ✓ src/research.test.ts > R03: an incomplete read states its range and its limits > a parse that covered part of a document records the range and is not fully parsed > refuses to call a truncated capture completely parsed 1ms
+ ✓ src/research.test.ts > R03: an incomplete read states its range and its limits > a parse that covered part of a document records the range and is not fully parsed > refuses to call a truncated capture completely parsed 0ms
  ✓ src/research.test.ts > R03: an incomplete read states its range and its limits > a parse that covered part of a document records the range and is not fully parsed > refuses a parse range wider than the captured bytes 0ms
- ✓ src/research.test.ts > R03: an incomplete read states its range and its limits > a failed fetch is a failure of the fetch, not a finding about the source > records a real 404 as an unusable response rather than a parsed page 7ms
- ✓ src/research.test.ts > R03: an incomplete read states its range and its limits > a failed fetch is a failure of the fetch, not a finding about the source > records a real WebError as a fetch failure carrying the provider code 2ms
- ✓ src/research.test.ts > R03: an incomplete read states its range and its limits > a failed fetch is a failure of the fetch, not a finding about the source > records a redirect that was refused as a fetch failure, not as the target being empty 1ms
+ ✓ src/research.test.ts > R03: an incomplete read states its range and its limits > a failed fetch is a failure of the fetch, not a finding about the source > records a real 404 as an unusable response rather than a parsed page 4ms
+ ✓ src/research.test.ts > R03: an incomplete read states its range and its limits > a failed fetch is a failure of the fetch, not a finding about the source > records a real WebError as a fetch failure carrying the provider code 1ms
+ ✓ src/research.test.ts > R03: an incomplete read states its range and its limits > a failed fetch is a failure of the fetch, not a finding about the source > records a redirect that was refused as a fetch failure, not as the target being empty 0ms
  ✓ src/research.test.ts > R03: an incomplete read states its range and its limits > a failed fetch is a failure of the fetch, not a finding about the source > records a final URL that differs from the requested one, so the range is attributable 1ms
- ✓ src/research.test.ts > R03: an incomplete read states its range and its limits > a failed fetch is a failure of the fetch, not a finding about the source > records an unconfigured provider as a fetch failure, never as an empty source 2ms
+ ✓ src/research.test.ts > R03: an incomplete read states its range and its limits > a failed fetch is a failure of the fetch, not a finding about the source > records an unconfigured provider as a fetch failure, never as an empty source 1ms
  ✓ src/research.test.ts > R03: an incomplete read states its range and its limits > a failed fetch is a failure of the fetch, not a finding about the source > refuses to turn a failed fetch into a negative finding 0ms
  ✓ src/research.test.ts > R03: an incomplete read states its range and its limits > a failed fetch is a failure of the fetch, not a finding about the source > refuses a negative finding from a truncated capture too 0ms
  ✓ src/research.test.ts > R03: an incomplete read states its range and its limits > a failed fetch is a failure of the fetch, not a finding about the source > allows a negative finding only after a complete read, and says so 0ms
@@ -44,6 +46,7 @@
  ✓ src/research.test.ts > R03: an incomplete read states its range and its limits > a search snippet is not full text > cannot be promoted to parsed, by any range 0ms
  ✓ src/research.test.ts > R03: an incomplete read states its range and its limits > a search snippet is not full text > may be cited without ever becoming evidence that the document was read 0ms
  ✓ src/research.test.ts > R03: an incomplete read states its range and its limits > a search snippet is not full text > cannot be presented as a read range 0ms
+ ✓ src/research.test.ts > R03: an incomplete read states its range and its limits > a search snippet is not full text > is refused by the SHIPPED locator even when the same words are in the artifact 16ms
  ✓ src/research.test.ts > R03: an incomplete read states its range and its limits > there is no automatic understood state > names exactly the six plan states and nothing else 0ms
  ✓ src/research.test.ts > R03: an incomplete read states its range and its limits > there is no automatic understood state > contains no state whose name asserts comprehension 0ms
  ✓ src/research.test.ts > R03: an incomplete read states its range and its limits > there is no automatic understood state > carries no understood field on any record, at any stage 1ms
@@ -52,13 +55,13 @@
  ✓ src/research.test.ts > R03: an incomplete read states its range and its limits > a PDF that was never decoded is not a document that was read > records the fetch seam refusing application/pdf as a fetch failure 1ms
  ✓ src/research.test.ts > R03: an incomplete read states its range and its limits > a PDF that was never decoded is not a document that was read > records a partial PDF text extraction by its range and its missing tables 0ms
  ✓ src/research.test.ts > R03: an incomplete read states its range and its limits > a PDF that was never decoded is not a document that was read > refuses to fill in a missing table from what the prose implies 0ms
- ✓ src/research.test.ts > R03: an incomplete read states its range and its limits > a search snippet substituted for full text stays a snippet > keeps a real provider source at discovered-only through the real ctx.web seam 26ms
- ✓ src/research.test.ts > R03: an incomplete read states its range and its limits > a search snippet substituted for full text stays a snippet > reports a search FAILURE as an error, never as a snippet-free empty result 2ms
- ✓ src/research.test.ts > R04: a request manifest is not inferred from the maximum session seq > a manifest built from explicit inclusion > excludes an observation that was compacted away 5ms
- ✓ src/research.test.ts > R04: a request manifest is not inferred from the maximum session seq > a manifest built from explicit inclusion > matches the real derived surface rather than a seq bound 1ms
+ ✓ src/research.test.ts > R03: an incomplete read states its range and its limits > a search snippet substituted for full text stays a snippet > keeps a real provider source at discovered-only through the real ctx.web seam 15ms
+ ✓ src/research.test.ts > R03: an incomplete read states its range and its limits > a search snippet substituted for full text stays a snippet > reports a search FAILURE as an error, never as a snippet-free empty result 1ms
+ ✓ src/research.test.ts > R04: a request manifest is not inferred from the maximum session seq > a manifest built from explicit inclusion > excludes an observation that was compacted away 2ms
+ ✓ src/research.test.ts > R04: a request manifest is not inferred from the maximum session seq > a manifest built from explicit inclusion > matches the real derived surface rather than a seq bound 0ms
  ✓ src/research.test.ts > R04: a request manifest is not inferred from the maximum session seq > a manifest built from explicit inclusion > records visible seqs that are not ascending, which no seq bound can express 1ms
- ✓ src/research.test.ts > R04: a request manifest is not inferred from the maximum session seq > a manifest built from explicit inclusion > drops the compacted observation from the model-visible text 2ms
- ✓ src/research.test.ts > R04: a request manifest is not inferred from the maximum session seq > the max-seq shortcut is wrong on a compacted history > produces a set that wrongly includes the shadowed observation 1ms
+ ✓ src/research.test.ts > R04: a request manifest is not inferred from the maximum session seq > a manifest built from explicit inclusion > drops the compacted observation from the model-visible text 1ms
+ ✓ src/research.test.ts > R04: a request manifest is not inferred from the maximum session seq > the max-seq shortcut is wrong on a compacted history > produces a set that wrongly includes the shadowed observation 0ms
  ✓ src/research.test.ts > R04: a request manifest is not inferred from the maximum session seq > the max-seq shortcut is wrong on a compacted history > disagrees with the real derivation by exactly the shadowed nodes 0ms
  ✓ src/research.test.ts > R04: a request manifest is not inferred from the maximum session seq > the max-seq shortcut is wrong on a compacted history > would report the model as having seen a tool result that compaction removed 0ms
  ✓ src/research.test.ts > R08: evidence access is scoped to authorized sessions > a read inside the allow-list succeeds > returns the real session 2ms
@@ -71,6 +74,6 @@
  ✓ src/research.test.ts > R08: evidence access is scoped to authorized sessions > nothing widens the scope implicitly > refuses to construct a scope from an empty allow-list 1ms
  ✓ src/research.test.ts > R08: evidence access is scoped to authorized sessions > nothing widens the scope implicitly > treats a wildcard entry as a literal id rather than a pattern 1ms
  ✓ src/research.test.ts > R08: evidence access is scoped to authorized sessions > nothing widens the scope implicitly > copies the allow-list, so a later mutation cannot widen a live scope 1ms
- ✓ src/research.test.ts > R08: evidence access is scoped to authorized sessions > nothing widens the scope implicitly > exposes no store, root, home or path accessor 2ms
+ ✓ src/research.test.ts > R08: evidence access is scoped to authorized sessions > nothing widens the scope implicitly > exposes no store, root, home or path accessor 1ms
  ✓ src/research.test.ts > R08: evidence access is scoped to authorized sessions > nothing widens the scope implicitly > has no constructor route that widens authority 0ms
- ✓ src/research.test.ts > R08: evidence access is scoped to authorized sessions > nothing widens the scope implicitly > takes only a session id, so there is no path argument to escape through 2ms
+ ✓ src/research.test.ts > R08: evidence access is scoped to authorized sessions > nothing widens the scope implicitly > takes only a session id, so there is no path argument to escape through 1ms

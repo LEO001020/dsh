@@ -1,0 +1,9 @@
+# V2 boot 1 -- deliverable surface, foreign cwd
+# command: node D:/DSH/work/dsh-native-daily/apps/cli/lib/bin.js --profile daily --patch D:/DSH/work/dsh-native-daily/qualification/runners/verify-deliverable-surface.patch.yml --patch <freeport>.yml --no-open
+# cwd: C:/   DSH_HOME: D:/DSH/home/v2-cmp   port: 10426   portReleased: true
+# timedOut: false   exitCode: null
+
+--- stdout ---
+dsh web: http://127.0.0.1:10426/?token=sb5I9A6BiXnR9fW0WP_5tqBTQ6s0F_7LWV_Tr0sPH8s
+
+--- stderr ---

@@ -1,0 +1,2 @@
+$ node D:/DSH/src/dsh-src/node_modules/typescript/bin/tsc -p tsconfig.check.json
+EXIT=0

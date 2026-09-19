@@ -1,5 +1,5 @@
 # R10-security — source digests (sha256)
-# repo commit: 1e0b8d6917d24d40e2f72f512a9e42a19931997c
+# repo commit: 084bb233085ed4e1b0bd81dd7cfe0aa047f3c829
 # pinned checkout: ddefc45fbc7f8e46dd73185e68295696d1297887
 # node: v24.18.0  platform: win32 10.0.26200
 
@@ -8,7 +8,8 @@
 619bfac3a0742578070663b98d5358c33b185080fe37653526eba5cf053c2898 *packages/dsh-daily-work/src/security.test.ts
 a8851721fd7bc4f0578b5e9ce9fbe62b7924f2277437b5ae7d65094c93f20e4f *packages/dsh-daily-work/src/security-denial.test.ts
 7744c6267adffa8a6e1a9b42f7239eecd0ab21136a1c2dc1f8e892f1d4f627a9 *qualification/results/R10-security/probe-seams.mjs
-09c8fb1940ef88ffcd9ae007d4f8bf883b6d8d75e71736d65edc7ad9d2be7f75 *qualification/results/R10-security/FINDINGS.md
+89748b0a133d6eec2999d8a764ee10d48d82e436564339cbd5fed5af6ddbbac9 *qualification/results/R10-security/FINDINGS.md
+37fb6fda3e2c6e0b18f210291d5243acf22e79a182118cd9964664314f5bf3b1 *qualification/results/R10-security/tsconfig.attribution.json
 
 ## pinned-checkout files quoted in FINDINGS.md
 32f62c1966c536308428be2fa090042a37358d9af8084e7fb0d0878c68ac3b9d *packages/sandbox/sandbox/src/index.ts

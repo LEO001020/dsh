@@ -1,0 +1,47 @@
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.8 [39m[90mD:/DSH/work/dsh-native-daily/packages/dsh-daily-work[39m
+
+ [32m✓[39m src/dep-gates.test.ts[2m > [22mDEP-01: the launcher is locked by identity, and a REAL tool call proves it[2m > [22mcites a REAL tool round trip, not a --help success[32m 2[2mms[22m[39m
+ [32m✓[39m src/dep-gates.test.ts[2m > [22mDEP-01: the launcher is locked by identity, and a REAL tool call proves it[2m > [22mcites a real Session on the composed preset whose catalog contains the work tool[32m 1[2mms[22m[39m
+ [32m✓[39m src/dep-gates.test.ts[2m > [22mDEP-01: the launcher is locked by identity, and a REAL tool call proves it[2m > [22mrecords that the two launchers are different identities, reproduced 3/3[32m 0[2mms[22m[39m
+ [32m✓[39m src/dep-gates.test.ts[2m > [22mDEP-01: the launcher is locked by identity, and a REAL tool call proves it[2m > [22mthe module graph is recorded as digests, and the built graph resolves to lib not src[32m 3[2mms[22m[39m
+ [32m✓[39m src/dep-gates.test.ts[2m > [22mDEP-02: the old 104-case evidence does not migrate into the new spec[2m > [22minstalls the NEW spec at schema_version 2 with exactly 112 mandatory cases, all NOT_RUN[32m 2[2mms[22m[39m
+ [32m✓[39m src/dep-gates.test.ts[2m > [22mDEP-02: the old 104-case evidence does not migrate into the new spec[2m > [22mthe installed spec is byte-identical to the audit package copy[32m 1[2mms[22m[39m
+ [32m✓[39m src/dep-gates.test.ts[2m > [22mDEP-02: the old 104-case evidence does not migrate into the new spec[2m > [22mthe OLD report still exists, still says PASS, and is NOT the new spec[32m 3[2mms[22m[39m
+ [32m✓[39m src/dep-gates.test.ts[2m > [22mDEP-02: the old 104-case evidence does not migrate into the new spec[2m > [22mnothing in the qualification tooling reads old results into the new spec[32m 4[2mms[22m[39m
+ [32m✓[39m src/dep-gates.test.ts[2m > [22mDEP-03: all production packages AND tests compile, with no private bypass[2m > [22mthe two configs differ exactly in the test exclusion, and both keep strict[32m 1[2mms[22m[39m
+ [32m✓[39m src/dep-gates.test.ts[2m > [22mDEP-03: all production packages AND tests compile, with no private bypass[2m > [22mTHIS family's own files typecheck clean under the check config[33m 4878[2mms[22m[39m
+ [32m✓[39m src/dep-gates.test.ts[2m > [22mDEP-03: all production packages AND tests compile, with no private bypass[2m > [22mthe WHOLE tree — production AND tests — compiles clean under the check config[33m 5059[2mms[22m[39m
+ [32m✓[39m src/dep-gates.test.ts[2m > [22mDEP-03: all production packages AND tests compile, with no private bypass[2m > [22mno `any` bypass and no suppression directive in any production source[32m 18[2mms[22m[39m
+ [32m✓[39m src/dep-gates.test.ts[2m > [22mDEP-03: all production packages AND tests compile, with no private bypass[2m > [22mthe package exports only public entries, each pointing at a built artifact that exists[32m 5[2mms[22m[39m
+ [32m✓[39m src/dep-gates.test.ts[2m > [22mDEP-03: all production packages AND tests compile, with no private bypass[2m > [22mno production source deep-imports a private path from a DSH peer[32m 9[2mms[22m[39m
+ [32m✓[39m src/dep-gates.test.ts[2m > [22mDEP-03: all production packages AND tests compile, with no private bypass[2m > [22mevery DSH peer a PRODUCTION source imports is resolvable, and the declared/undeclared gap is recorded[32m 13[2mms[22m[39m
+ [32m✓[39m src/dep-gates.test.ts[2m > [22mDEP-04: read / grep / process / Web resolve the SAME execution world[2m > [22mthe pinned checkout implements the one-world contract: every SSH provider shares one connection[32m 1[2mms[22m[39m
+ [32m✓[39m src/dep-gates.test.ts[2m > [22mDEP-04: read / grep / process / Web resolve the SAME execution world[2m > [22mthe filesystem seam carries the host/execution-world separation as a typed contract[32m 3[2mms[22m[39m
+ [32m✓[39m src/dep-gates.test.ts[2m > [22mDEP-04: read / grep / process / Web resolve the SAME execution world[2m > [22mon THIS deployment the mounted providers are LOCAL, so no remote world exists to be consistent with[32m 57[2mms[22m[39m
+ [32m✓[39m src/dep-gates.test.ts[2m > [22mDEP-05: a missing subprocess/sandbox provider fails EXPLICITLY, never as danger-full-access[2m > [22ma confining shell executor refuses to load without a ctx.sandbox provider[32m 38[2mms[22m[39m
+ [32m✓[39m src/dep-gates.test.ts[2m > [22mDEP-05: a missing subprocess/sandbox provider fails EXPLICITLY, never as danger-full-access[2m > [22ma composition that cannot confine does NOT silently acquire an unconfined executor[32m 5[2mms[22m[39m
+ [32m✓[39m src/dep-gates.test.ts[2m > [22mDEP-05: a missing subprocess/sandbox provider fails EXPLICITLY, never as danger-full-access[2m > [22mthe sandbox-policy default is the STRICTEST mode, so an unconfigured host is read-only[32m 1[2mms[22m[39m
+ [32m✓[39m src/dep-gates.test.ts[2m > [22mDEP-05: a missing subprocess/sandbox provider fails EXPLICITLY, never as danger-full-access[2m > [22ma provider that cannot enforce depth is refused rather than silently accepted (the same fail-closed shape)[32m 1[2mms[22m[39m
+ [32m✓[39m src/dep-gates.test.ts[2m > [22mDEP-06: exactly one host wins the store, including under the A/B interleaving[2m > [22mcites the in-process coverage: the kernel object excludes, the note does not[32m 1[2mms[22m[39m
+ [32m✓[39m src/dep-gates.test.ts[2m > [22mDEP-06: exactly one host wins the store, including under the A/B interleaving[2m > [22mcites the reproduced A/B interleaving on this machine, with the fix direction it implies[32m 1[2mms[22m[39m
+ [32m✓[39m src/dep-gates.test.ts[2m > [22mDEP-06: exactly one host wins the store, including under the A/B interleaving[2m > [22ma REAL second process is refused while the first holds the lock, over one store[33m 687[2mms[22m[39m
+ [32m✓[39m src/dep-gates.test.ts[2m > [22mDEP-07: a crashed holder releases the kernel lock, and no PID/TTL theft occurs[2m > [22mthe release mechanism is the kernel handle, not a PID probe or a TTL[32m 2[2mms[22m[39m
+ [32m✓[39m src/dep-gates.test.ts[2m > [22mDEP-07: a crashed holder releases the kernel lock, and no PID/TTL theft occurs[2m > [22mthe durability suite already kills a real holder process and confirms it is gone[32m 1[2mms[22m[39m
+ [32m✓[39m src/dep-gates.test.ts[2m > [22mDEP-07: a crashed holder releases the kernel lock, and no PID/TTL theft occurs[2m > [22ma SIGKILLed holder frees the store for the next acquirer, with no stale-lock surgery[32m 186[2mms[22m[39m
+ [32m✓[39m src/dep-gates.test.ts[2m > [22mDEP-07: a crashed holder releases the kernel lock, and no PID/TTL theft occurs[2m > [22ma stale advisory note from a dead holder does not lock out the next generation[32m 4[2mms[22m[39m
+ [32m✓[39m src/dep-gates.test.ts[2m > [22mDEP-08: the typecheck genuinely goes RED when a test file has a type error[2m > [22minjecting a type error into a TEST file fails the check config and passes the build config[33m 2589[2mms[22m[39m
+ [32m✓[39m src/dep-gates.test.ts[2m > [22mDEP-08: the typecheck genuinely goes RED when a test file has a type error[2m > [22mthe real tree is unmodified by the injection test[32m 1[2mms[22m[39m
+ [32m✓[39m src/dep-gates.test.ts[2m > [22mDEP cross-check: the qualified launcher exists and is not a source path[2m > [22mthe built launcher is present and is absolute in the source tree, not this repo[32m 1[2mms[22m[39m
+ [32m✓[39m src/dep-gates.test.ts[2m > [22mDEP cross-check: the qualified launcher exists and is not a source path[2m > [22mthe local launcher resolution fix is present as a script rather than a hand-made junction set[32m 0[2mms[22m[39m
+ [32m✓[39m src/dep-gates.test.ts[2m > [22mDEP cross-check: the qualified launcher exists and is not a source path[2m > [22mevery junction the package depends on resolves to a real directory inside the pinned checkout[32m 38[2mms[22m[39m
+ [32m✓[39m src/dep-gates.test.ts[2m > [22mDEP: the store is a single-writer resource, and the lock is what makes that true[2m > [22mthe host service takes the lock BEFORE it opens the domain[32m 14[2mms[22m[39m
+ [32m✓[39m src/dep-gates.test.ts[2m > [22mDEP: the store is a single-writer resource, and the lock is what makes that true[2m > [22man unconfigured host takes no lock, and that is stated rather than implied[32m 8[2mms[22m[39m
+ [32m✓[39m src/dep-gates.test.ts[2m > [22mDEP: the store is a single-writer resource, and the lock is what makes that true[2m > [22mthe store directory is created by the lock path, so a fresh deployment does not need a manual mkdir[32m 6[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[32m37 passed[39m[22m[90m (37)[39m
+[2m   Start at [22m 03:30:58
+[2m   Duration [22m 14.39s[2m (transform 493ms, setup 0ms, import 576ms, tests 13.64s, environment 0ms)[22m
+
+EXIT=0

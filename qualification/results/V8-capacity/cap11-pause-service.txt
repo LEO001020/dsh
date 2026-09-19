@@ -1,0 +1,31 @@
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.8 [39m[90mD:/DSH/work/dsh-native-daily/packages/dsh-daily-work[39m
+
+ [2m[90m↓[39m[22m src/host.test.ts[2m > [22mwork service: admission and reservation[2m > [22mwrites the reservation and the task in one record
+ [2m[90m↓[39m[22m src/host.test.ts[2m > [22mwork service: admission and reservation[2m > [22mrefuses admission past the budget ceiling
+ [32m✓[39m src/host.test.ts[2m > [22mwork service: admission and reservation[2m > [22mrefuses admission while the run is paused[32m 20[2mms[22m[39m
+ [2m[90m↓[39m[22m src/host.test.ts[2m > [22mwork service: admission and reservation[2m > [22mrefuses to reopen a tombstoned task
+ [2m[90m↓[39m[22m src/host.test.ts[2m > [22mwork service: admission and reservation[2m > [22mreleases the reservation on a confirmed transition but not on a requested cancel
+ [2m[90m↓[39m[22m src/host.test.ts[2m > [22mwork service: admission and reservation[2m > [22mrejects an illegal transition instead of quietly accepting it
+ [2m[90m↓[39m[22m src/host.test.ts[2m > [22mwork service: admission and reservation[2m > [22mdoes not mutate the stored record in place
+ [2m[90m↓[39m[22m src/host.test.ts[2m > [22mwork service: rolling top-up[2m > [22mlaunches up to the target and no further
+ [2m[90m↓[39m[22m src/host.test.ts[2m > [22mwork service: rolling top-up[2m > [22mleaves admission as admission: the child is accepted, not executing
+ [2m[90m↓[39m[22m src/host.test.ts[2m > [22mwork service: rolling top-up[2m > [22mreports a deficit instead of inventing work when fewer tasks are ready
+ [2m[90m↓[39m[22m src/host.test.ts[2m > [22mwork service: rolling top-up[2m > [22mtops up a single completion without waiting for the whole wave
+ [2m[90m↓[39m[22m src/host.test.ts[2m > [22mwork service: rolling top-up[2m > [22mcoalesces concurrent drains so a completion storm cannot double-launch
+ [2m[90m↓[39m[22m src/host.test.ts[2m > [22mwork service: rolling top-up[2m > [22mtreats a failed launch as unknown and does not silently retry
+ [2m[90m↓[39m[22m src/host.test.ts[2m > [22mwork service: rolling top-up[2m > [22mdoes not release a slot while a cancel is only requested
+ [2m[90m↓[39m[22m src/host.test.ts[2m > [22mwork service: rolling top-up[2m > [22mstops admitting once the run is paused, even with free slots
+ [2m[90m↓[39m[22m src/host.test.ts[2m > [22mwork service: rolling top-up[2m > [22mresumes a paused run as a new authorization edge
+ [2m[90m↓[39m[22m src/host.test.ts[2m > [22mwork service: rolling top-up[2m > [22mdoes not launch when the caller signal is already aborted
+ [2m[90m↓[39m[22m src/host.test.ts[2m > [22mwork service: rolling top-up[2m > [22mkeeps each run isolated from the others
+ [2m[90m↓[39m[22m src/host.test.ts[2m > [22mwork service: persistence[2m > [22msurvives a reopen of the same domain directory
+ [2m[90m↓[39m[22m src/host.test.ts[2m > [22mwork service: persistence[2m > [22mrejects a second open of the same domain
+ [2m[90m↓[39m[22m src/host.test.ts[2m > [22mwork service: persistence[2m > [22mrefuses writes after close
+
+[2m Test Files [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[32m1 passed[39m[22m[2m | [22m[33m20 skipped[39m[90m (21)[39m
+[2m   Start at [22m 07:57:24
+[2m   Duration [22m 777ms[2m (transform 407ms, setup 0ms, import 558ms, tests 21ms, environment 0ms)[22m
+
+EXIT_CODE=0

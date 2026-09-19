@@ -1,0 +1,15 @@
+=== does TypeScript's own type-erasure make the two copies identical? ===
+command: node <tmp> D:\DSH\src\dsh-src\packages\attachment\attachment-local\src\store.ts D:\DSH\src\dsh-src\packages\attachment\attachment-local\lib\types\store.js publishImmutableObjectStream
+
+{
+  "transpiledFunctionFound": true,
+  "builtFunctionFound": true,
+  "identicalAfterTranspile": true,
+  "transpiledBody": "{ const staged = await stageImmutableObject(root, data, signal); let target; try { target = targetFor(staged.sha256, staged.bytes); } catch (error) { await removeTemporary(staged.path); throw error; } await publishStagedObject(root, target, staged); return { sha256: staged.sha256, bytes: staged.bytes }; }",
+  "builtBody": "{ const staged = await stageImmutableObject(root, data, signal); let target; try { target = targetFor(staged.sha256, staged.bytes); } catch (error) { await removeTemporary(staged.path); throw error; } await publishStagedObject(root, target, staged); return { sha256: staged.sha256, bytes: staged.bytes }; }",
+  "transpiledBytes": 10510
+}
+
+VERDICT: the deep-imported copy and the built copy are the SAME REVISION.
+         The duplicate module instance therefore splits module state and
+         duplicates work; it does not produce divergent behaviour.

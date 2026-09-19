@@ -1,0 +1,4 @@
+  File "<string>", line 7
+    h.update(os.path.relpath(f,'packages/'+pkg).replace('\','/').encode())
+                                                              ^
+SyntaxError: unterminated string literal (detected at line 7)

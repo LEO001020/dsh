@@ -1,0 +1,104 @@
+{
+  "probe": "V2-composition boot7: home override (CMP-12) + patch semantics (CMP-07)",
+  "ranAt": "2026-09-19T23:54:05.945Z",
+  "canaryHome": "D:/DSH/home/v2-cmp-canary",
+  "controlHome": "D:/DSH/home/v2-cmp-control",
+  "inputDigests": {
+    "repoProfilePatch": "5b8b2a8e5d9ae13d35c1d86833f8b96eeb84078a13027a08efc1379a6fc8afb4",
+    "repoPreset": "16bc20e559d0c05b810876522fd468952b421a69ed2b5276a3ddd06c01053bce",
+    "surfaceOverlay": "1d081ed0dda0f6c55cbe2c57e929f8913903c931b7b42ed2c39ad844b970e5ea",
+    "surfaceProbe": "d2b9f8deaf6f8c75b109f05ff5e8c0e8711f0e699d6e4ecf465158ddaa729d44",
+    "canaryHomePatch": "c3642d3c0be2b9758936bf5cdd58aa68e501ed66152d1b6dc11c420bb5a3feb5",
+    "canaryInstalledProfilePatch": "5b8b2a8e5d9ae13d35c1d86833f8b96eeb84078a13027a08efc1379a6fc8afb4",
+    "controlInstalledProfilePatch": "5b8b2a8e5d9ae13d35c1d86833f8b96eeb84078a13027a08efc1379a6fc8afb4",
+    "controlHomePatch": null,
+    "oneKeyOverlay": "22a5a51dcbb0196c95dbf60745616495b28780de0b0440d66ef1bb5bf47547de"
+  },
+  "canary": {
+    "port": 9793,
+    "portReleased": true,
+    "timedOut": false,
+    "exitCode": null,
+    "presetDefaultId": "standard",
+    "presetRoots": [
+      {
+        "path": "D:\\DSH\\src\\dsh-src\\packages\\preset\\agent-presets\\presets\\",
+        "trust": "system"
+      },
+      {
+        "path": "D:/DSH/home/v2-cmp-canary/profiles/daily/presets/",
+        "trust": "system"
+      },
+      {
+        "path": "D:\\DSH\\home\\v2-cmp-canary\\.agent-presets",
+        "trust": "user"
+      }
+    ],
+    "presetsListed": [
+      "standard",
+      "ptc",
+      "minimal",
+      "cordis",
+      "daily-standard"
+    ],
+    "toolCountAgentKey": 26,
+    "ipythonToolPresent": false,
+    "workToolPresent": false,
+    "probeError": null,
+    "overrideVisible": true
+  },
+  "control": {
+    "port": 9862,
+    "portReleased": true,
+    "timedOut": false,
+    "exitCode": null,
+    "presetDefaultId": "daily-standard",
+    "presetRoots": [
+      {
+        "path": "D:\\DSH\\src\\dsh-src\\packages\\preset\\agent-presets\\presets\\",
+        "trust": "system"
+      },
+      {
+        "path": "D:/DSH/home/v2-cmp-control/profiles/daily/presets/",
+        "trust": "system"
+      },
+      {
+        "path": "D:\\DSH\\home\\v2-cmp-control\\.agent-presets",
+        "trust": "user"
+      }
+    ],
+    "presetsListed": [
+      "standard",
+      "ptc",
+      "minimal",
+      "cordis",
+      "daily-standard"
+    ],
+    "toolCountAgentKey": 27,
+    "ipythonToolPresent": true,
+    "workToolPresent": true,
+    "probeError": null,
+    "overrideVisible": false
+  },
+  "patchSemantics": {
+    "exitCode": 0,
+    "subagentBlock": [
+      "- id: subagent",
+      "  name: '@deepseek-ai/dsh-subagent'",
+      "  config:",
+      "    maxActiveSubagents: 10",
+      "# == @deepseek-ai/dsh-base",
+      "- id: subagent-spawn-in-process",
+      "  name: '@deepseek-ai/dsh-subagent-spawn-in-process'",
+      "  config:",
+      "    providerName: spawn",
+      "- id: subagent-fork-in-process",
+      "  name: '@deepseek-ai/dsh-subagent-fork-in-process'",
+      "  config:"
+    ],
+    "subagentRowHasMaxActiveSubagents": true,
+    "subagentRowLostMaxDepth": true,
+    "maxDepthElsewhereInDump": 1,
+    "scopingNote": "The row-scoped assertion. A whole-file /maxDepth/ test reads FALSE-positive because daily-work-host legitimately carries its own maxDepth: 1; recorded in maxDepthElsewhereInDump."
+  }
+}

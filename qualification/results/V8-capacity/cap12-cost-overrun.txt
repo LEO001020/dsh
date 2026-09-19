@@ -1,0 +1,53 @@
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.8 [39m[90mD:/DSH/work/dsh-native-daily/packages/dsh-daily-work[39m
+
+ [2m[90m↓[39m[22m src/cost.test.ts[2m > [22mC05: the root keeps its own reserved credit[2m > [22mcarves the reserve out of the ceiling at run creation, not out of thin air
+ [2m[90m↓[39m[22m src/cost.test.ts[2m > [22mC05: the root keeps its own reserved credit[2m > [22mrefuses a reserve that exceeds the ceiling rather than silently clamping it
+ [2m[90m↓[39m[22m src/cost.test.ts[2m > [22mC05: the root keeps its own reserved credit[2m > [22mTHE INVARIANT: children may commit the whole child ceiling and not one unit more
+ [2m[90m↓[39m[22m src/cost.test.ts[2m > [22mC05: the root keeps its own reserved credit[2m > [22mstill admits a child with the ceiling fully committed by other children, and refuses one unit more
+ [2m[90m↓[39m[22m src/cost.test.ts[2m > [22mC05: the root keeps its own reserved credit[2m > [22mREFUSES the child admission that would eat into the root reserve
+ [2m[90m↓[39m[22m src/cost.test.ts[2m > [22mC05: the root keeps its own reserved credit[2m > [22mkeeps the root reserve available while ten children saturate the child ceiling
+ [2m[90m↓[39m[22m src/cost.test.ts[2m > [22mC05: the root keeps its own reserved credit[2m > [22mdoes not let a root spend consume child headroom, or a child consume the reserve
+ [2m[90m↓[39m[22m src/cost.test.ts[2m > [22mC05: the root keeps its own reserved credit[2m > [22mrecords a root spend that outruns the reserve in full and halts, rather than trimming it
+ [2m[90m↓[39m[22m src/cost.test.ts[2m > [22mC05: the root keeps its own reserved credit[2m > [22mderives a default reserve when none is given, so a run is never born without one
+ [2m[90m↓[39m[22m src/cost.test.ts[2m > [22mC05: the root keeps its own reserved credit[2m > [22mleaves the target fact unchanged when the budget blocks admission
+ [2m[90m↓[39m[22m src/cost.test.ts[2m > [22mC05: the root keeps its own reserved credit[2m > [22magrees with the pure counting predicate, so the gate and its reason cannot drift
+ [32m✓[39m src/cost.test.ts[2m > [22mC11: actual spend exceeding the reservation[2m > [22mrecords the overage in full, pauses admission, and hides nothing[32m 32[2mms[22m[39m
+ [32m✓[39m src/cost.test.ts[2m > [22mC11: actual spend exceeding the reservation[2m > [22mrefuses the direct admit path while halted, not only the drain path[32m 11[2mms[22m[39m
+ [32m✓[39m src/cost.test.ts[2m > [22mC11: actual spend exceeding the reservation[2m > [22mstays halted even after a later in-budget spend, because a halt is not an arithmetic state[32m 14[2mms[22m[39m
+ [32m✓[39m src/cost.test.ts[2m > [22mC11: actual spend exceeding the reservation[2m > [22mclears the halt only through an explicit human authorization, and keeps the bill[32m 16[2mms[22m[39m
+ [32m✓[39m src/cost.test.ts[2m > [22mC11: actual spend exceeding the reservation[2m > [22maccumulates overage across several overspends instead of keeping only the last[32m 11[2mms[22m[39m
+ [32m✓[39m src/cost.test.ts[2m > [22mC11: actual spend exceeding the reservation[2m > [22mdoes not count a spend that came in UNDER its reservation as an overage[32m 9[2mms[22m[39m
+ [32m✓[39m src/cost.test.ts[2m > [22mC11: actual spend exceeding the reservation[2m > [22mmeasures the overage against the TASK STORED reservation, not a caller-supplied one[32m 12[2mms[22m[39m
+ [32m✓[39m src/cost.test.ts[2m > [22mC11: actual spend exceeding the reservation[2m > [22mTHE UNKNOWN PATH: a request whose usage never arrived keeps a conservative reservation[32m 11[2mms[22m[39m
+ [32m✓[39m src/cost.test.ts[2m > [22mC11: actual spend exceeding the reservation[2m > [22mholds an auxiliary request that was never reserved as an unknown, which can only tighten admission[32m 9[2mms[22m[39m
+ [32m✓[39m src/cost.test.ts[2m > [22mC11: actual spend exceeding the reservation[2m > [22mclamps an unknown retention to the task reservation, so one task cannot eat a sibling reservation[32m 14[2mms[22m[39m
+ [32m✓[39m src/cost.test.ts[2m > [22mC11: actual spend exceeding the reservation[2m > [22msurvives a domain reopen with the overage, the halt and the reserve intact[32m 16[2mms[22m[39m
+ [32m✓[39m src/cost.test.ts[2m > [22mC11: actual spend exceeding the reservation[2m > [22mapplies the overage rule as a pure function, so the boundary is checkable by hand[32m 3[2mms[22m[39m
+ [32m✓[39m src/cost.test.ts[2m > [22mC11: actual spend exceeding the reservation[2m > [22mdoes not release a reservation when a spend is only REPORTED, and still records the cost[32m 12[2mms[22m[39m
+ [32m✓[39m src/cost.test.ts[2m > [22mC11: actual spend exceeding the reservation[2m > [22mrefuses to release a reservation that has no task to retire[32m 8[2mms[22m[39m
+ [32m✓[39m src/cost.test.ts[2m > [22mC11: actual spend exceeding the reservation[2m > [22mrefuses a negative cost rather than accepting it as a credit[32m 8[2mms[22m[39m
+ [32m✓[39m src/cost.test.ts[2m > [22mC11: actual spend exceeding the reservation[2m > [22mreports an overage halt as the deficit reason, not as a plain budget block[32m 3[2mms[22m[39m
+ [32m✓[39m src/cost.test.ts[2m > [22mC11: actual spend exceeding the reservation[2m > [22mkeeps unknownReserved from being zeroed by the pure retention helper[32m 3[2mms[22m[39m
+ [2m[90m↓[39m[22m src/cost.test.ts[2m > [22mR06: every attempt is accounted for[2m > [22mkeeps an attempt with no usage reported UNKNOWN, not zero
+ [2m[90m↓[39m[22m src/cost.test.ts[2m > [22mR06: every attempt is accounted for[2m > [22mcounts a retry as a SEPARATE attempt rather than folding it into the first
+ [2m[90m↓[39m[22m src/cost.test.ts[2m > [22mR06: every attempt is accounted for[2m > [22mreports a separate unknownCount so a reader can see the gap
+ [2m[90m↓[39m[22m src/cost.test.ts[2m > [22mR06: every attempt is accounted for[2m > [22mnever double-counts: a retry that reuses a request id is not summed twice
+ [2m[90m↓[39m[22m src/cost.test.ts[2m > [22mR06: every attempt is accounted for[2m > [22mrefuses a repeated attempt id, and counts the refusal
+ [2m[90m↓[39m[22m src/cost.test.ts[2m > [22mR06: every attempt is accounted for[2m > [22mlets a later report RESOLVE an unknown without counting the request twice
+ [2m[90m↓[39m[22m src/cost.test.ts[2m > [22mR06: every attempt is accounted for[2m > [22mcovers root, descendants, retries, compaction, summary and search as distinct sources
+ [2m[90m↓[39m[22m src/cost.test.ts[2m > [22mR06: every attempt is accounted for[2m > [22mkeeps DSH token buckets disjoint rather than collapsing them into one number
+ [2m[90m↓[39m[22m src/cost.test.ts[2m > [22mR06: every attempt is accounted for[2m > [22mdefaults absent optional cache fields to zero WITHOUT treating a missing report as zero
+ [2m[90m↓[39m[22m src/cost.test.ts[2m > [22mR06: every attempt is accounted for[2m > [22mdoes not treat a cost-only attempt as a token unknown that blocks completeness
+ [2m[90m↓[39m[22m src/cost.test.ts[2m > [22mR06: every attempt is accounted for[2m > [22msums buckets across attempts without dropping the cache split
+ [2m[90m↓[39m[22m src/cost.test.ts[2m > [22mR06: every attempt is accounted for[2m > [22mexposes every row, so a reader can check the total rather than trust it
+ [2m[90m↓[39m[22m src/cost.test.ts[2m > [22mR06: every attempt is accounted for[2m > [22mreports an empty ledger as complete with no attempts, rather than as a pass
+ [2m[90m↓[39m[22m src/cost.test.ts[2m > [22mcost accounting: the budget report a reader sees[2m > [22mreports every quantity separately, with the overage inside spent rather than beside it
+ [2m[90m↓[39m[22m src/cost.test.ts[2m > [22mcost accounting: the budget report a reader sees[2m > [22mdefaults the reserve fields to zero on a record written before the reserve existed
+
+[2m Test Files [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[32m17 passed[39m[22m[2m | [22m[33m26 skipped[39m[90m (43)[39m
+[2m   Start at [22m 07:57:29
+[2m   Duration [22m 946ms[2m (transform 421ms, setup 0ms, import 572ms, tests 194ms, environment 0ms)[22m
+
+EXIT_CODE=0

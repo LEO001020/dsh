@@ -1,0 +1,69 @@
+=== A12 addendum: what the REAL BUILT LAUNCHER does at shutdown (win32) ===
+
+APPENDED by gate A12 (P7-daily-host). The A03 record above is untouched.
+
+SCOPE OF THIS ADDENDUM
+
+A03 established that the built launcher (`node apps/cli/lib/bin.js`) is the
+qualified artifact and that the source launcher is not equivalent. A12 measured
+that same built artifact across a full lifecycle and found a platform-level fact
+about its STOP path that belongs with the launcher's identity, because it is a
+property of the launcher's own signal wiring rather than of the Web profile.
+
+WHAT THE LAUNCHER REGISTERS
+
+  apps/cli/src/profile-boot.ts
+    process.on('SIGTERM', () => { interrupt(0) })     // supervisor stop -> exit 0
+    process.on('SIGINT',  () => { interrupt(130) })   // user interrupt  -> exit 130
+
+  createProcessShutdown (apps/cli/src/process-shutdown.ts) arms a 5s grace
+  (PROCESS_SHUTDOWN_TIMEOUT_MS) and force-exits if disposal does not quiesce.
+
+No SIGBREAK handler is registered anywhere in apps/ or packages/.
+
+WHAT win32 CAN ACTUALLY DELIVER (measured, not assumed)
+
+Probe: qualification/runners/verify-a12-signal-probe.mjs
+Evidence: qualification/results/P7-daily-host/signal-probe.txt
+
+Each row starts a throwaway Node child that installs SIGINT/SIGBREAK/SIGTERM/
+SIGHUP handlers and logs which one FIRED. A row counts as catchable only when
+the child's own log records a caught signal -- a child that merely disappears
+proves the process died, not that a handler ran.
+
+  A  child.kill('SIGTERM')                      caught=[]        catchable=false
+  B  process.kill(pid, 'SIGINT')                caught=[]        catchable=false
+  C  CTRL_C_EVENT on the child's own console    caught=[]        catchable=false
+  D  CTRL_BREAK_EVENT on the child's console    caught=[SIGBREAK] catchable=TRUE
+  E  CTRL_C_EVENT through a cmd.exe group root  caught=[]        catchable=false
+
+A and B confirm the recorded A12 note: Node's kill APIs on win32 terminate the
+target (exitSignal SIGTERM / exitCode 1) WITHOUT running the handler. C and E
+show CTRL_C is not delivered here -- a CREATE_NEW_CONSOLE process is a process-
+group root, and CTRL_C is disabled for a group root; routing it through a
+cmd.exe root did not change that. D is the single catchable route, and Node
+surfaces CTRL_BREAK_EVENT as SIGBREAK.
+
+CONSEQUENCE FOR THE BUILT LAUNCHER
+
+The only catchable stop event this platform can deliver is SIGBREAK, and the
+launcher does not handle SIGBREAK. So `node apps/cli/lib/bin.js` has NO
+product-reachable graceful-stop route on win32: SIGTERM/SIGINT cannot arrive
+catchably, and the event that can arrive has no handler.
+
+This is NOT a defect introduced by this implementation and NOT a claim that the
+launcher is broken. It is the reason the launcher's shutdown cannot be measured
+by sending it a signal on this platform, and it is why A12's shutdown
+measurement drives the launcher's own `ctx.appExit` callback instead
+(qualification/runners/verify-a12-shutdown-route.mjs). The measured result, on
+the production dispose path, is exit code 0 in ~0.3s with no port, process, or
+data leftover -- see qualification/results/P7-daily-host/FINDINGS.md.
+
+ON THE RECORDED A03 SHUTDOWN NOTE
+
+The recorded M9.14 A12 transcript said "on win32 child.kill() terminates rather
+than delivering a catchable signal, so the launcher SIGTERM handler did not run
+and no exit code was observed". That note is CONFIRMED here (rows A and B), and
+this addendum adds the missing half: no alternative catchable route reaches the
+launcher's handlers either, so the limitation is the launcher's signal wiring on
+this platform, not merely the driver's choice of API.

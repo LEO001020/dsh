@@ -1,0 +1,166 @@
+{
+  "probe": "V2-composition failure arms",
+  "ranAt": "2026-09-19T23:52:11.538Z",
+  "inputDigests": {
+    "installedProfilePatch": "5b8b2a8e5d9ae13d35c1d86833f8b96eeb84078a13027a08efc1379a6fc8afb4",
+    "repoProfilePatch": "5b8b2a8e5d9ae13d35c1d86833f8b96eeb84078a13027a08efc1379a6fc8afb4",
+    "installedPreset": "16bc20e559d0c05b810876522fd468952b421a69ed2b5276a3ddd06c01053bce",
+    "repoPreset": "16bc20e559d0c05b810876522fd468952b421a69ed2b5276a3ddd06c01053bce",
+    "cwdRelativeOverlay": "83bf0a8b5d8b7fbe66707521d5c993b0c8317cd5ad371ab0c974ed99ed04183b",
+    "sandboxRemovedOverlay": "63c1dabb4842af7b9eecdbde10c70afc7fad89f5a67ffed1f715fe3c275b9d00",
+    "surfaceProbe": "d2b9f8deaf6f8c75b109f05ff5e8c0e8711f0e699d6e4ecf465158ddaa729d44",
+    "surfaceOverlay": "1d081ed0dda0f6c55cbe2c57e929f8913903c931b7b42ed2c39ad844b970e5ea"
+  },
+  "arms": [
+    {
+      "arm": "CMP-05 failure direction: cwd-relative preset root",
+      "cwd": "D:/DSH/src/dsh-src",
+      "port": 4593,
+      "portReleased": true,
+      "timedOut": false,
+      "exitCode": null,
+      "failureLines": [],
+      "result": {
+        "profileBooted": true,
+        "profileName": "daily-candidate (installed as \"daily\")",
+        "presetDefaultId": "daily-standard",
+        "presetRoots": [
+          {
+            "path": "D:\\DSH\\src\\dsh-src\\packages\\preset\\agent-presets\\presets\\",
+            "trust": "system"
+          },
+          {
+            "path": "./presets",
+            "trust": "system"
+          },
+          {
+            "path": "D:\\DSH\\home\\v2-cmp\\.agent-presets",
+            "trust": "user"
+          }
+        ],
+        "kernelServicePresent": true,
+        "workServicePresent": true,
+        "dataServicePresent": true,
+        "historyServicePresent": true,
+        "programmaticScopePresent": true,
+        "sessionCreated": false,
+        "sessionId": null,
+        "toolCountAgentKey": 0,
+        "toolCountContextKey": 0,
+        "ipythonToolPresent": false,
+        "ipythonParameterNames": null,
+        "ipythonIsOnlyParameter": false,
+        "workToolPresent": false,
+        "forbiddenLifecycleTools": [],
+        "tools": [],
+        "error": "RemoteError: agent-presets: preset \"daily-standard\" not found (available: standard, ptc, minimal, cordis)",
+        "presetsListed": [
+          {
+            "id": "standard",
+            "trust": "system",
+            "broken": null
+          },
+          {
+            "id": "ptc",
+            "trust": "system",
+            "broken": null
+          },
+          {
+            "id": "minimal",
+            "trust": "system",
+            "broken": null
+          },
+          {
+            "id": "cordis",
+            "trust": "system",
+            "broken": null
+          }
+        ]
+      },
+      "presetNotFound": true,
+      "toolCountZero": true,
+      "ipythonAbsent": true
+    },
+    {
+      "arm": "CMP-03 failure direction: sandbox provider rows removed",
+      "cwd": "D:/DSH/src/dsh-src",
+      "port": 4618,
+      "portReleased": true,
+      "timedOut": false,
+      "exitCode": null,
+      "failureLines": [
+        "dsh: warning: 4 entries did not activate",
+        "ptc-runtime (@deepseek-ai/dsh-ptc-runtime-node): pending (waiting for services: sandbox, sandboxPolicy)",
+        "terminal-controller (@deepseek-ai/dsh-api-terminal-controller): pending (waiting for service: sandboxPolicy)",
+        "workspace-files (@deepseek-ai/dsh-api-workspace-files): pending (waiting for service: sandboxPolicy)",
+        "ui-deliverables (@deepseek-ai/dsh-client-ui-deliverables): pending (waiting for services: workspaceFiles, sandboxPolicy)"
+      ],
+      "result": {
+        "profileBooted": true,
+        "profileName": "daily-candidate (installed as \"daily\")",
+        "presetDefaultId": "daily-standard",
+        "presetRoots": [
+          {
+            "path": "D:\\DSH\\src\\dsh-src\\packages\\preset\\agent-presets\\presets\\",
+            "trust": "system"
+          },
+          {
+            "path": "D:/DSH/home/v2-cmp/profiles/daily/presets/",
+            "trust": "system"
+          },
+          {
+            "path": "D:\\DSH\\home\\v2-cmp\\.agent-presets",
+            "trust": "user"
+          }
+        ],
+        "kernelServicePresent": true,
+        "workServicePresent": true,
+        "dataServicePresent": true,
+        "historyServicePresent": true,
+        "programmaticScopePresent": true,
+        "sessionCreated": false,
+        "sessionId": null,
+        "toolCountAgentKey": 0,
+        "toolCountContextKey": 0,
+        "ipythonToolPresent": false,
+        "ipythonParameterNames": null,
+        "ipythonIsOnlyParameter": false,
+        "workToolPresent": false,
+        "forbiddenLifecycleTools": [],
+        "tools": [],
+        "error": "RemoteError: agent-presets: preset \"daily-standard\" failed to mount: 2 row(s) did not activate:\nworkflow-ptc (@deepseek-ai/dsh-workflow-ptc): waiting for ptcRuntime, sandboxPolicy\ntool-workflow (@deepseek-ai/dsh-tool-workflow): waiting for workflowEngine (D:\\DSH\\home\\v2-cmp\\profiles\\daily\\presets\\daily-standard\\agent.cordis.yml)",
+        "presetsListed": [
+          {
+            "id": "standard",
+            "trust": "system",
+            "broken": null
+          },
+          {
+            "id": "ptc",
+            "trust": "system",
+            "broken": null
+          },
+          {
+            "id": "minimal",
+            "trust": "system",
+            "broken": null
+          },
+          {
+            "id": "cordis",
+            "trust": "system",
+            "broken": null
+          },
+          {
+            "id": "daily-standard",
+            "trust": "system",
+            "broken": null
+          }
+        ]
+      },
+      "explicitFailure": true,
+      "namesTheMissingProvider": true,
+      "toolCountZero": true,
+      "probeError": "RemoteError: agent-presets: preset \"daily-standard\" failed to mount: 2 row(s) did not activate:\nworkflow-ptc (@deepseek-ai/dsh-workflow-ptc): waiting for ptcRuntime, sandboxPolicy\ntool-workflow (@deepseek-ai/dsh-tool-workflow): waiting for workflowEngine (D:\\DSH\\home\\v2-cmp\\profiles\\daily\\presets\\daily-standard\\agent.cordis.yml)"
+    }
+  ]
+}

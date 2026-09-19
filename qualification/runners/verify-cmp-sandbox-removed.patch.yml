@@ -1,0 +1,33 @@
+# CMP-03 FAILURE ARM: the sandbox provider rows REMOVED.
+#
+# This overlay exists to measure the direction the oracle names:
+#
+#   "With the provider missing, the loader FAILS with an explicit error naming
+#    the missing provider and does NOT boot with an unwrapped argv or an implicit
+#    danger-full-access."
+#
+# It disables `sandbox` (the provider: `@deepseek-ai/dsh-sandbox-local`) and
+# `sandbox-policy` (the service seven rows inject). Both are disabled rather than
+# deleted because a patch cannot delete a row -- `applyEntryPatches` assigns over
+# keys, and a disabled row is not reported as inactive
+# (`packages/boot/app-boot/src/index.ts:774`), so this reproduces "the provider
+# is missing" while keeping the comparison to the normal boot a ONE-VARIABLE
+# difference.
+#
+# WHAT THIS IS EXPECTED TO PRODUCE, from the recorded FACT F
+# (`docs/decisions/AUDIT-REQUEST-nosandbox.md`): seven entries go `pending`,
+# `shell`/`fs`/`ptcRuntime` never publish, `mountPreset` throws, and the model's
+# tool face goes to ZERO. The measurement here is whether the failure is
+# EXPLICIT and NAMES the missing provider -- not whether it fails, which is
+# already known.
+#
+# NO `name` IS STATED on either row, so each is matched by id alone. Naming the
+# module would make a mismatch skip the whole patch silently
+# (`vendor/include/src/index.ts:115-118`), and a patch that silently did nothing
+# would produce a boot that LOOKS healthy and would be misread as "removing the
+# provider is harmless".
+- id: sandbox
+  disabled: true
+
+- id: sandbox-policy
+  disabled: true

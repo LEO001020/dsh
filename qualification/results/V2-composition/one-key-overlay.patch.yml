@@ -1,0 +1,8 @@
+# CMP-07 failure-direction overlay: patch exactly ONE key of a multi-key row.
+# The documented rule is that this REPLACES the whole `config` object
+# (`vendor/include/src/index.ts:120-123`), so `maxDepth` must be ABSENT from the
+# resolved row. If it survived, the dialect would be a deep merge and the
+# project's whole "restate every key" discipline would be unnecessary.
+- id: subagent
+  config:
+    maxActiveSubagents: 10

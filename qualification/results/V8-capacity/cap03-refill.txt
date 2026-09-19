@@ -1,0 +1,29 @@
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.8 [39m[90mD:/DSH/work/dsh-native-daily/packages/dsh-daily-work[39m
+
+[90mstdout[2m | src/scheduling.test.ts[2m > [22m[2mC02: a single completion refills without waiting for the wave[2m > [22m[2madmits one replacement as soon as one child settles, with nine still running
+[22m[39mC02 refill timeline (measured; no SLO is asserted):
+    +0ms release child-0
+    +12ms child-0 ended and left the registry
+    +13ms slot freed by confirmation
+    +36ms child-500 admitted (+23ms)
+    +36ms replacement reached a model request
+C02 measured refill latency, confirmation -> replacement admitted: 23ms
+C02 measured replacement latency, admitted -> first model request: 0ms
+
+ [2m[90m↓[39m[22m src/scheduling.test.ts[2m > [22mC01: ten distinct children carry real work, root excluded[2m > [22mruns ten distinct children from twenty submitted tasks with target N=10
+ [2m[90m↓[39m[22m src/scheduling.test.ts[2m > [22mC01: ten distinct children carry real work, root excluded[2m > [22mdoes not count the root own settlement-driven turn as one of the ten children
+ [32m✓[39m src/scheduling.test.ts[2m > [22mC02: a single completion refills without waiting for the wave[2m > [22madmits one replacement as soon as one child settles, with nine still running[32m 300[2mms[22m[39m
+ [2m[90m↓[39m[22m src/scheduling.test.ts[2m > [22mC03: a completion storm neither double-launches nor misses a refill[2m > [22mserializes concurrent drains and admits exactly one child per freed slot
+ [2m[90m↓[39m[22m src/scheduling.test.ts[2m > [22mC04: an insufficient ready supply is reported, never padded with placeholders[2m > [22mcreates exactly three real children and reports a seven-slot deficit
+ [2m[90m↓[39m[22m src/scheduling.test.ts[2m > [22mC07: a cancel that has not finished keeps the slot occupied[2m > [22mholds the slot while an interrupted child is still running, and refuses the premature refill
+ [2m[90m↓[39m[22m src/scheduling.test.ts[2m > [22mC07: a cancel that has not finished keeps the slot occupied[2m > [22mkeeps an unknown-outcome task occupying its slot against a full target
+ [2m[90m↓[39m[22m src/scheduling.test.ts[2m > [22mC09: provider limits are reported, never disguised as execution[2m > [22ma sustained 429 through the real wire keeps the target at 10 and reports a block
+ [2m[90m↓[39m[22m src/scheduling.test.ts[2m > [22mC09: provider limits are reported, never disguised as execution[2m > [22man exhausted child budget blocks with a real reason and does not lower the target
+
+[2m Test Files [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[32m1 passed[39m[22m[2m | [22m[33m8 skipped[39m[90m (9)[39m
+[2m   Start at [22m 07:58:19
+[2m   Duration [22m 1.43s[2m (transform 685ms, setup 0ms, import 905ms, tests 301ms, environment 0ms)[22m
+
+EXIT_CODE=0

@@ -1,0 +1,30 @@
+=== ID-01 module graph, read back from the booted host ===
+resolution lines      : 724
+distinct specifiers   : 223
+from BUILT (lib/*.js) : 221
+from SOURCE (.ts)     : 1
+under packages\*\lib\  : 213
+under vendor\*\lib\    : 7
+
+=== the specifiers that resolved to a SOURCE file ===
+  @deepseek-ai/dsh-attachment-local/src/store.ts
+      -> D:\DSH\src\dsh-src\packages\attachment\attachment-local\src\store.ts
+      occurrences: 1
+
+=== every resolution under the checkout's vendor/ tree ===
+  @deepseek-ai/cordis -> D:\DSH\src\dsh-src\vendor\cordis\lib\index.js
+  @deepseek-ai/cordis-plugin-group -> D:\DSH\src\dsh-src\vendor\group\lib\index.js
+  @deepseek-ai/cordis-plugin-include -> D:\DSH\src\dsh-src\vendor\include\lib\index.js
+  @deepseek-ai/cordis-plugin-loader -> D:\DSH\src\dsh-src\vendor\loader\lib\index.js
+  @deepseek-ai/cordis-plugin-timer -> D:\DSH\src\dsh-src\vendor\timer\lib\index.js
+  @deepseek-ai/cosmokit -> D:\DSH\src\dsh-src\vendor\cosmokit\lib\index.js
+  @deepseek-ai/schemastery -> D:\DSH\src\dsh-src\vendor\schemastery\lib\index.mjs
+
+=== the parents of the SOURCE resolutions, from the raw jsonl ===
+  specifier  = @deepseek-ai/dsh-attachment-local/src/store.ts
+  parentURL  = file:///D:/DSH/work/dsh-native-daily/packages/dsh-daily-work/lib/artifacts.js
+  atMs       = 1378
+
+=== the specifiers NOT under packages/ or vendor/ ===
+  @deepseek-ai/dsh-web-frontend/package.json -> D:\DSH\src\dsh-src\apps\web\package.json (OTHER)
+  @deepseek-ai/libreoffice-kit -> D:\DSH\src\dsh-src\node_modules\.pnpm\@deepseek-ai+libreoffice-kit@0.0.1\node_modules\@deepseek-ai\libreoffice-kit\lib\index.js (BUILT)

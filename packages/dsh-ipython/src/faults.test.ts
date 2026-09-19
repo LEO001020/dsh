@@ -20,7 +20,7 @@
 import { Context } from '@deepseek-ai/cordis'
 import Subprocess from '@deepseek-ai/dsh-subprocess-local'
 import type { Agent } from '@deepseek-ai/dsh-agent'
-import { mkdtemp, rm, stat } from 'node:fs/promises'
+import { mkdtemp, readFile, rm, stat } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -371,10 +371,40 @@ describe('IPY-07: restart replaces the kernel and preserves its working director
     const epochBefore = before.epoch
     expect(s.currentEpoch(agent)).toBe(epochBefore)
 
-    const epochAfter = await s.restart(agent)
+    // DIAGNOSTIC, and it changes nothing about the assertions below. Measured
+    // 2026-09-20: this test passes in isolation (4.7 s) but FAILS with
+    // `BROKER_FAILURE: RuntimeError: Kernel didn't respond in 60 seconds` when the
+    // preceding `a cell under the cap` test ran first. The broker's own log is
+    // therefore captured on failure, because the reason is what matters and the
+    // scratch directory is removed by `afterEach`.
+    const scratch = join(root, 'restart')
+    let epochAfter: number
+    try {
+      epochAfter = await s.restart(agent)
+    } catch (error) {
+      const out = await readFile(join(scratch, 'kernel.out'), 'utf8').catch(() => '(no kernel.out)')
+      const err = await readFile(join(scratch, 'kernel.err'), 'utf8').catch(() => '(no kernel.err)')
+      console.log('[T6-DIAG] IPY-07-restart FAILED; scratch=' + scratch.replace(/\\/g, '/'))
+      console.log('[T6-DIAG] kernel.out:\n' + out.slice(-4000))
+      console.log('[T6-DIAG] kernel.err:\n' + err.slice(-4000))
+      throw error
+    }
     const after = await s.status(agent)
     expect(after).toBeDefined()
     if (after === undefined) throw new Error('no status after the restart')
+
+    // The measured values are printed rather than only asserted, so the gate's
+    // record is the run's own output and not a number copied from a comment.
+    console.log('[T6-MEASURED] IPY-07-restart ' + JSON.stringify({
+      epochBefore,
+      epochAfter,
+      pidBefore: before.pid,
+      pidAfter: after.pid,
+      alive: after.alive,
+      kernelCwd: after.kernelCwd,
+      kernelCwdEnforced: after.kernelCwdEnforced,
+      sessionCwd: project,
+    }))
 
     // (1) A restart is a NEW GENERATION, always -- it is not a no-op.
     expect(epochAfter).toBeGreaterThan(epochBefore)
@@ -447,6 +477,18 @@ describe('IPY-12: the cap bounds the cell projection, and a direct fd-1 write is
     // What actually happened: the bytes landed in the kernel's log file.
     const sizeAfter = (await stat(logPath)).size
     expect(sizeAfter - sizeBefore).toBe(5_000_000)
+
+    // The boundary is printed so the writeup's numbers are the run's own output.
+    console.log('[T6-MEASURED] IPY-12-fd1-boundary ' + JSON.stringify({
+      cap,
+      reportedStdoutTotalBytes: result.stdout.totalBytes,
+      reportedTruncated: result.stdout.truncated,
+      reportedSpillPath: result.stdout.spillPath ?? null,
+      kernelOutBytesBefore: sizeBefore,
+      kernelOutBytesAfter: sizeAfter,
+      kernelOutGrowth: sizeAfter - sizeBefore,
+      kernelOutPath: logPath.replace(/\\/g, '/'),
+    }))
 
     // The bound that IS enforced is on IOPub, which is what the cap governs. A
     // normal print flood through the cap is asserted in the requirement-10 tests

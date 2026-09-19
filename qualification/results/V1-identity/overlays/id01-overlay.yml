@@ -1,0 +1,76 @@
+# ID-01 overlay: the model route is redirected to a KEYLESS local adapter so the
+# first tool call can be driven without a live provider.
+#
+# NO PAID API BUDGET IS CONSUMED. compatibility.lock.json carries
+# runtime_authorization.live_provider_budget_authorized: false, so every run that
+# uses this file is a CONTROLLED LOCAL ROUTE, not a provider measurement. It
+# proves the tool / transport / identity chain; it does not prove a provider
+# integration. Anything measured through this file must say so wherever it is
+# cited.
+#
+# WHAT THIS OVERLAY DOES NOT DO, and the oracle turns on it: it INSERTS NO TOOL
+# ROW. The only inserted rows are the mock route adapter and the probe. So the
+# catalog the probe reads is the catalog the PRODUCT composes, which is the
+# difference between "the tool works" and "the product carries the tool".
+#
+# THE PROBE AND THE ADAPTER ARE T17's, REFERENCED BY ABSOLUTE PATH AND NOT
+# COPIED. They are proven instruments for exactly this question and copying them
+# would create two revisions of one instrument -- the divergence this project
+# keeps recording (R3 vs T9 on the import graph). Their sha256 is recorded in the
+# verdict artifact instead, so a later edit to either is visible as a hash
+# mismatch rather than as a silent change of instrument.
+#
+# WRITTEN WITH FORWARD SLASHES ON PURPOSE. This is the G-FIX-11 defect class:
+# `\apps\` in a backslash path became BEL (0x07) and `\bin.js` became backspace
+# (0x08) once a shell/Python escape pass was applied, and the MANGLED value is
+# what got hashed. Forward slashes have no escape to lose.
+
+# `llm-deepseek` is disabled so a missing DEEPSEEK_API_KEY cannot be mistaken for
+# a result. Left mounted, the run would fail at the route and a reader could not
+# tell "the tool chain is broken" from "there is no key".
+- id: llm-deepseek
+  disabled: true
+
+# The headless runner takes provider/model from `agentDefaultModel`, not from the
+# agent-loop row, so this is the row that must move. The provider is `t17-mock`
+# rather than the shipped fixture's `cli-mock` because the shipped fixture's
+# first call names `pwsh`, which this composition deliberately disables -- its
+# call is refused with UNKNOWN_TOOL and can never satisfy ID-01's oracle.
+- id: agent-default-model
+  config:
+    provider: t17-mock
+    model: t17-mock
+
+# The persisted Session is the resume evidence, so it goes to a path this driver
+# owns (supplied through T17_SESSION_ROOT) rather than to the process cwd.
+# `compression: none` so the JSONL is readable without a zstd step.
+- id: session-persistence-jsonl
+  config:
+    root: !!js process.env.T17_SESSION_ROOT
+    compression: none
+
+# Repo instruction discovery would read whatever cwd this runs in, making the
+# request shape a function of the caller's directory instead of the composition.
+- id: agent-instructions
+  disabled: true
+
+# THE MOCK ADAPTER. Without this row the route named above is declared by
+# `agent-default-model` but SERVED by nothing, and the first prompt is refused
+# with `no adapter serves provider "t17-mock"` -- a composition error that would
+# look like a tool-path failure.
+- insert:
+    - id: t17-first-call-adapter
+      name: 'D:/DSH/work/dsh-native-daily/qualification/results/T17-identity/first-call-adapter.mjs'
+
+# THE PROBE ITSELF, inserted LAST so every row it measures has already been
+# declared by the composition under test. It adds no tool row and no service: it
+# reads what the tree registered and writes one JSON file to T17_PROBE_OUT.
+#
+# THE MODULE GRAPH RECORDER IS NOT HERE, DELIBERATELY. It cannot be a plugin row:
+# it must be installed BEFORE the first module resolution, and a plugin's `apply`
+# runs long after the tree has begun loading. It is injected through
+# NODE_OPTIONS=--import by the driver, which is the only point early enough to
+# observe every resolution including the launcher's own.
+- insert:
+    - id: t17-identity-probe
+      name: 'D:/DSH/work/dsh-native-daily/qualification/results/T17-identity/probe-plugin.mjs'

@@ -1,0 +1,39 @@
+# Overlay for the R3 unwired-capability boot probe.
+#
+# Loaded ON TOP of the `daily-candidate` profile, so the probe runs inside a real
+# composed profile boot rather than a hand-mounted context.
+#
+# ONE row: the probe itself. The `daily-work-host` row is NOT restated here,
+# unlike `verify-data-plane.patch.yml`, and the difference is deliberate:
+#
+#   - That probe restates `daily-data-plane` because the installed profile
+#     carries a COPY of the package's `cordis.patch.yml`, and a stale copy would
+#     make the probe report a false absence -- a measurement error about the
+#     probe, not a finding about the product.
+#   - This probe is measuring the SERVICE AS THE PROFILE INSTALLED IT, so
+#     restating the row would REPLACE the installed row's config and change the
+#     very thing under test. A probe that installs its own subject cannot
+#     observe the product. If the row is missing from the installed bundle, the
+#     probe must say so -- that absence IS the finding.
+#
+# The `webserver` override is a PROBE-ENVIRONMENT fact, not a product change:
+# port 3080 is held by a long-lived host on this machine, and without the
+# override the composed profile fails to boot for a reason that has nothing to
+# do with the work service. Port 0 asks the OS for a free port.
+#
+# EVERY key is restated because a patch replaces the target row's whole `config`
+# object -- it is not a deep merge (`vendor/include/src/index.ts:120-123`). This
+# is TRAP 4 in `docs/OPERATIONS.md`, and it bit the data-plane probe on its first
+# run: overriding only `port` dropped `host` and the boot failed schema
+# validation.
+- id: webserver
+  config:
+    host: '127.0.0.1'
+    port: 0
+    compression: gzip
+    compressionLevel: 1
+    compressionThresholdBytes: 1024
+
+- insert:
+    - id: verify-unwired
+      name: 'D:/DSH/work/dsh-native-daily/qualification/runners/verify-unwired.mjs'

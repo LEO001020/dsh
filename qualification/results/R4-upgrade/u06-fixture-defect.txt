@@ -1,0 +1,5 @@
+A outcome: undefined | resultRef: undefined
+A stored record has status key: false
+B outcome: confirmed | resultRef: remote-1
+B reopen: OPENED
+B reconcile: confirmed | performed: false

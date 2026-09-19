@@ -628,6 +628,16 @@ describe('IPY-14: host-side loss is reconciled, and crash orphans are observed',
     await sleep(1500)
     const kernelSurvivedBroker = alive(kernelPid)
 
+    // OBSERVED and printed: what the platform actually did to the kernel when its
+    // broker died, which is the crash-orphan question.
+    console.log('[T6-MEASURED] IPY-14-crash-orphan ' + JSON.stringify({
+      brokerPid,
+      kernelPid,
+      unexpectedExitReported: h.unexpectedExit ?? null,
+      kernelSurvivedBroker,
+      kernelAliveAfterBrokerKilled: kernelSurvivedBroker,
+    }))
+
     // RECONCILIATION, part 2: shutdown() must leave nothing of ours behind,
     // whichever way the measurement above went.
     await h.shutdown()
@@ -683,6 +693,14 @@ describe('IPY-15: the kernel working directory is the Session\'s project root', 
 
     const expectedA = projectA.replace(/\\/g, '/').toLowerCase().replace(/\/+$/, '')
     const expectedB = projectB.replace(/\\/g, '/').toLowerCase().replace(/\/+$/, '')
+
+    // Printed, so the writeup quotes this run rather than a comment.
+    console.log('[T6-MEASURED] IPY-15-kernel-cwd ' + JSON.stringify({
+      kernelCwdReportedByCell: cwdA,
+      sessionCwdRequested: expectedA,
+      secondSessionCwd: cwdB,
+      secondSessionRequested: expectedB,
+    }))
 
     // The assertion is equality with the SESSION's cwd, not "some directory under
     // the configured kernel root": a kernel confined to a scratch directory is
@@ -779,6 +797,20 @@ describe('IPY-15: the kernel working directory is the Session\'s project root', 
     const envSpill = norm(field('ENV_SPILL'))
     const projectNorm = norm(project)
     const scratchNorm = norm(join(root, 'session-cwd-scratch'))
+
+    // Printed, so the separation gate's four values are the run's own output.
+    console.log('[T6-MEASURED] IPY-15-cwd-vs-scratch ' + JSON.stringify({
+      kernelOsGetcwd: cwd,
+      kernelEnvKernelCwd: envCwd,
+      kernelEnvKernelDir: envDir,
+      kernelEnvSpillDir: envSpill,
+      sessionProjectRoot: projectNorm,
+      hostScratchDir: scratchNorm,
+      cwdEqualsSessionRoot: cwd === projectNorm,
+      dirEqualsScratch: envDir === scratchNorm,
+      spillEqualsScratch: envSpill === scratchNorm,
+      scratchDiffersFromCwd: envDir !== cwd,
+    }))
 
     // (1) The kernel's cwd is the Session's project root -- what the cell sees.
     expect(cwd).toBe(projectNorm)
@@ -935,6 +967,11 @@ describe('IPY-10: the model cannot own kernel lifecycle', () => {
     const match = /IPY10:(\{.*\})/.exec(result.stdout.text)
     expect(match, 'the cell did not report its lifecycle surface').not.toBeNull()
     const observed = JSON.parse(match?.[1] ?? '{}') as Record<string, unknown>
+
+    // The NEGATIVE result is the finding, so it is printed rather than only
+    // asserted: an empty lifecycle surface is what keeps the model from leaking or
+    // destroying a kernel.
+    console.log('[T6-MEASURED] IPY-10-lifecycle-surface ' + JSON.stringify(observed))
 
     // (1) Nothing host-side is reachable. `get_ipython`/`__IPYTHON__` are the
     //     IPython shell's own names and are expected; anything else would be a

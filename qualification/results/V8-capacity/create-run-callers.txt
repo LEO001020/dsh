@@ -1,0 +1,51 @@
+# V8: createRun callers, re-verified at HEAD c3b9dba (the G-SEAM-31 check)
+# Command: grep -rn "createRun" over the repo, bounded to named directories (never a drive root)
+# Excludes *.test.ts on purpose: a test caller is not a production caller.
+
+## 1. Production source, excluding tests:
+  packages/dsh-daily-work/src/\durability-runner.ts:63:  await service.createRun({
+  packages/dsh-daily-work/src/\host.ts:150:   * `daily-work` settings namespace (`src/target-setting.ts`); `createRun` reads
+  packages/dsh-daily-work/src/\host.ts:210: * This is a default, not a policy: `createRun` accepts an explicit value, and
+  packages/dsh-daily-work/src/\host.ts:371:   * WHY IT IS BOUND HERE, AT createRun. The port needs the exact live root
+  packages/dsh-daily-work/src/\host.ts:372:   * Agent, and `createRun` is the only place that object is in hand. Binding it
+  packages/dsh-daily-work/src/\host.ts:503:  async createRun(input: {
+  packages/dsh-daily-work/src/\programmatic-scope.ts:8: * `createRunCodeTool`'s `execute`, reachable only by running a `run_code`
+
+## 2. Runners and probes (instrumentation, not product):
+  qualification/runners/\build-gates.py
+  qualification/runners/\v6-rec03-crash-before-admission.mjs
+  qualification/runners/\verify-c2-service.mjs
+  qualification/runners/\verify-cmp-composition.mjs
+  qualification/runners/\verify-t10-capacity.mjs
+  qualification/results/V8-capacity/\create-run-callers.txt
+  qualification/results/T10-capacity/\create-run-callers.txt
+  qualification/results/T10-capacity/\run-prod-capacity.mjs
+  qualification/runners/\verify-unwired.mjs
+  qualification/results/T10-capacity/\GATE-TABLE.md
+
+## 3. Is durability-runner.ts (the only non-test caller) in any production import graph?
+  Its importers, whole repo, excluding itself:
+    packages/dsh-daily-work/src/\durability-runner.ts:16: *   node --import tsx src/durability-runner.ts child  <storeDir> <reportPath>
+    packages/dsh-daily-work/src/\durability-runner.ts:17: *   node --import tsx src/durability-runner.ts parent <storeDir> <reportPath>
+    packages/dsh-daily-work/src/\durability-runner.ts:259:  process.stderr.write('usage: durability-runner.ts <child|parent> [storeDir] [reportPath]\n')
+    packages/dsh-daily-work/src/\durability-advanced.test.ts:997:    // the point: `durability-runner.ts` is a CLI entry executed by hand
+    packages/dsh-daily-work/src/\durability-advanced.test.ts:1004:      'durability-runner.ts',
+    packages/dsh-daily-work/src/\durability-advanced.test.ts:1006:    expect(productionImporters('durability-runner.ts'), 'and that CLI is itself in no production import graph').toEqual([])
+  (nothing above = it is imported by nobody)
+
+## 4. The model-facing door, and what it does with no run:
+  130:        const runId = findRunFor(service, agent)
+  131-        if (runId === undefined) {
+  132-          throw new Error('this session has no active run; a run is created by user authorization')
+  133-        }
+
+## 5. The work tool's action enum (there is no create action):
+  80:          enum: ['status', 'submit', 'finish'],
+
+## 6. Verdict, as the grep establishes it:
+  ONE non-test caller of createRun exists in the whole repository:
+    packages/dsh-daily-work/src/durability-runner.ts:63
+  durability-runner.ts has NO importer (section 3), so it is a hand-run CLI and
+  is itself in no production import graph.
+  Therefore: NO production path creates a run, and the model-facing `work` tool
+  throws before it can admit anything.

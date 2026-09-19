@@ -1,0 +1,199 @@
+{
+  "probe": "V2-composition CMP-14: launcher args redacted and identity-bound",
+  "ranAt": "2026-09-19T23:56:55.515Z",
+  "lockPath": "compatibility.lock.json",
+  "lockSha256": "d382460b23a78ee0657b10971aeb8bc6a9b6be4beab82b26a40814c4e9208d11",
+  "recorded": {
+    "launcher_args_redacted": "--profile daily-candidate",
+    "host_profile_digest": "5b8b2a8e5d9ae13d35c1d86833f8b96eeb84078a13027a08efc1379a6fc8afb4",
+    "launcher_realpath": "D:\\DSH\\src\\dsh-src\\apps\\cli\\lib\\bin.js",
+    "artifact_sha256": "69c49c871735dc7ee81ec51f266bbec129f075fd5066e046374f4b13ab02a705",
+    "deploymentIdentity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461"
+  },
+  "parsedProfileName": "daily-candidate",
+  "resolutions": [
+    {
+      "home": "D:/DSH/home/v2-cmp",
+      "installName": "daily",
+      "path": "D:/DSH/home/v2-cmp/profiles/daily/cordis.patch.yml",
+      "sha256": "5b8b2a8e5d9ae13d35c1d86833f8b96eeb84078a13027a08efc1379a6fc8afb4",
+      "matchesPin": true
+    },
+    {
+      "home": "D:/DSH/home/v2-cmp-canary",
+      "installName": "daily",
+      "path": "D:/DSH/home/v2-cmp-canary/profiles/daily/cordis.patch.yml",
+      "sha256": "5b8b2a8e5d9ae13d35c1d86833f8b96eeb84078a13027a08efc1379a6fc8afb4",
+      "matchesPin": true
+    },
+    {
+      "home": "D:/DSH/home/v2-cmp-control",
+      "installName": "daily",
+      "path": "D:/DSH/home/v2-cmp-control/profiles/daily/cordis.patch.yml",
+      "sha256": "5b8b2a8e5d9ae13d35c1d86833f8b96eeb84078a13027a08efc1379a6fc8afb4",
+      "matchesPin": true
+    },
+    {
+      "home": "D:/DSH/home/t2-fs",
+      "installName": "daily",
+      "path": "D:/DSH/home/t2-fs/profiles/daily/cordis.patch.yml",
+      "sha256": "5b8b2a8e5d9ae13d35c1d86833f8b96eeb84078a13027a08efc1379a6fc8afb4",
+      "matchesPin": true
+    },
+    {
+      "home": "D:/DSH/home/t3-shell",
+      "installName": "daily",
+      "path": "D:/DSH/home/t3-shell/profiles/daily/cordis.patch.yml",
+      "sha256": "5b8b2a8e5d9ae13d35c1d86833f8b96eeb84078a13027a08efc1379a6fc8afb4",
+      "matchesPin": true
+    },
+    {
+      "home": "D:/DSH/home/t4-preset",
+      "installName": "daily",
+      "path": "D:/DSH/home/t4-preset/profiles/daily/cordis.patch.yml",
+      "sha256": "59f23346955d24063a923b1a205bbcb40c541e054e6fd04dbdde4218eaa2ab7f",
+      "matchesPin": false
+    },
+    {
+      "home": "D:/DSH/home/root-m12-fresh",
+      "installName": "daily",
+      "path": "D:/DSH/home/root-m12-fresh/profiles/daily/cordis.patch.yml",
+      "sha256": "5b8b2a8e5d9ae13d35c1d86833f8b96eeb84078a13027a08efc1379a6fc8afb4",
+      "matchesPin": true
+    },
+    {
+      "home": "D:/DSH/home/canary12",
+      "installName": "daily-candidate",
+      "path": "D:/DSH/home/canary12/profiles/daily-candidate/cordis.patch.yml",
+      "sha256": "c9992160f9838f3bcdec19e62d6d6c7413305174f00a4fcab8eae1f797e906a8",
+      "matchesPin": false
+    },
+    {
+      "home": "D:/DSH/home/canary3",
+      "installName": "daily-candidate",
+      "path": "D:/DSH/home/canary3/profiles/daily-candidate/cordis.patch.yml",
+      "sha256": "547a59b2d1661bb4c0666e8bad46eafb4c9f4b771436c0bcf8e6b09873d5a7b1",
+      "matchesPin": false
+    },
+    {
+      "home": "D:/DSH/home/canary5",
+      "installName": "daily-candidate",
+      "path": "D:/DSH/home/canary5/profiles/daily-candidate/cordis.patch.yml",
+      "sha256": "ef189a8c27db6d63930aa3046a3040482e952eafcb7487c644d508e8d461f027",
+      "matchesPin": false
+    },
+    {
+      "home": "D:/DSH/home/canary5",
+      "installName": "daily",
+      "path": "D:/DSH/home/canary5/profiles/daily/cordis.patch.yml",
+      "sha256": "8747273f6a7ea437bdc2f6f54140f6fcb99c73dfd3fc1d041f9d5c1a615ef5b6",
+      "matchesPin": false
+    },
+    {
+      "home": "D:/DSH/home/r9-final",
+      "installName": "daily",
+      "path": "D:/DSH/home/r9-final/profiles/daily/cordis.patch.yml",
+      "sha256": "59f23346955d24063a923b1a205bbcb40c541e054e6fd04dbdde4218eaa2ab7f",
+      "matchesPin": false
+    },
+    {
+      "home": "D:/DSH/home/r9-fresh2",
+      "installName": "daily",
+      "path": "D:/DSH/home/r9-fresh2/profiles/daily/cordis.patch.yml",
+      "sha256": "59f23346955d24063a923b1a205bbcb40c541e054e6fd04dbdde4218eaa2ab7f",
+      "matchesPin": false
+    }
+  ],
+  "repoPatch": {
+    "path": "D:/DSH/work/dsh-native-daily/profiles/daily-candidate/cordis.patch.yml",
+    "sha256": "5b8b2a8e5d9ae13d35c1d86833f8b96eeb84078a13027a08efc1379a6fc8afb4"
+  },
+  "redactionSourceHits": [],
+  "credentialShapes": [
+    "sk- API key prefix",
+    "bearer token",
+    "long hex/base64 secret",
+    "env-style key assignment",
+    "exa/other api key query param"
+  ],
+  "recordedCredentialHits": [],
+  "syntheticRawControl": {
+    "value": "--profile daily --patch C:/secrets/overlay.yml --web-token eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJkYWlseSJ9 --api-key sk-EXAMPLEKEYFORTESTINGONLY1234567890",
+    "hits": [
+      "sk- API key prefix",
+      "bearer token",
+      "long hex/base64 secret"
+    ],
+    "label": "CONSTRUCTED control, not captured"
+  },
+  "checks": [
+    {
+      "caseId": "CMP-14",
+      "label": "the recorded args name a profile",
+      "ok": true,
+      "detail": "--profile daily-candidate"
+    },
+    {
+      "caseId": "CMP-14",
+      "label": "the recorded form is the redacted form (no --patch path, no token flag)",
+      "ok": true,
+      "detail": "--profile daily-candidate"
+    },
+    {
+      "caseId": "CMP-14",
+      "label": "the recorded args contain NO credential-shaped material",
+      "ok": true,
+      "detail": "[]"
+    },
+    {
+      "caseId": "CMP-14",
+      "label": "the credential test is capable of FAILING (the raw control trips it)",
+      "ok": true,
+      "detail": "raw control trips: [\"sk- API key prefix\",\"bearer token\",\"long hex/base64 secret\"]"
+    },
+    {
+      "caseId": "CMP-14",
+      "label": "the profile NAMED in the recorded args is the profile whose patch digest is the pin",
+      "ok": true,
+      "detail": "{\"named\":\"daily-candidate\",\"patchPath\":\"D:/DSH/work/dsh-native-daily/profiles/daily-candidate/cordis.patch.yml\",\"patchSha256\":\"5b8b2a8e5d9ae13d35c1d86833f8b96eeb84078a13027a08efc1379a6fc8afb4\",\"pinned\":\"5b8b2a8e5d9ae13d35c1d86833f8b96eeb84078a13027a08efc1379a6fc8afb4\",\"equal\":true}"
+    },
+    {
+      "caseId": "CMP-14",
+      "label": "NO launcher-side redaction function exists (the field is hand-authored)",
+      "ok": true,
+      "detail": "redaction-shaped lines in apps/cli/src: 0 -- []"
+    }
+  ],
+  "findings": [
+    {
+      "id": "CMP-14-F1",
+      "subject": "the recorded launcher args name the profile by REPOSITORY directory, not by install name",
+      "measured": {
+        "recordedProfileName": "daily-candidate",
+        "homesWithThatDirectory": [
+          {
+            "home": "D:/DSH/home/canary12",
+            "sha256": "c9992160f9838f3bcdec19e62d6d6c7413305174f00a4fcab8eae1f797e906a8",
+            "matchesPin": false
+          },
+          {
+            "home": "D:/DSH/home/canary3",
+            "sha256": "547a59b2d1661bb4c0666e8bad46eafb4c9f4b771436c0bcf8e6b09873d5a7b1",
+            "matchesPin": false
+          },
+          {
+            "home": "D:/DSH/home/canary5",
+            "sha256": "ef189a8c27db6d63930aa3046a3040482e952eafcb7487c644d508e8d461f027",
+            "matchesPin": false
+          }
+        ],
+        "homesWhereItMatchesThePinUnderThatName": 0,
+        "homesWhereThePinMatchesUnderTheInstallNameDaily": 6
+      },
+      "whyItIsNotAFail": "the oracle requires the args to name the profile whose patch digest is the pin; they do, and the pin was taken over that profile's patch file. Whether the string is also a valid INSTALL name is not what this case asserts.",
+      "whyItIsStillWorthRecording": "read as an install name the string selects a DIFFERENT, stale patch in three homes on this machine, so an operator copying the recorded args verbatim into a boot would not necessarily get the pinned composition."
+    }
+  ],
+  "failures": [],
+  "ok": true
+}

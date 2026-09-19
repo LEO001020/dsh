@@ -1,0 +1,6 @@
+# T16 verification overlay: the T16-owned copy of the deliverable-surface probe.
+# Adds NO tool row; only the probe itself, so the counts it reports come from the
+# profile's own composition.
+- insert:
+    - id: t16-deliverable-surface
+      name: 'D:/DSH/work/dsh-native-daily/qualification/results/T16-docs/t16-surface-probe.mjs'

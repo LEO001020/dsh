@@ -1,0 +1,226 @@
+{
+  "ok": false,
+  "checksPassed": 38,
+  "checksTotal": 39,
+  "failedChecks": [
+    "FS-06: the store object's ABSOLUTE path IS reachable by the tool (no confinement claimed)"
+  ],
+  "checks": {
+    "the tool face is not zero (FACT F did not occur)": true,
+    "no entry failed to activate": true,
+    "the ipython tool is on the real surface": true,
+    "FS-01: a write OUTSIDE the workspace succeeds under the deployed mode": true,
+    "FS-01: the file really exists outside the workspace": true,
+    "FS-01: the deployment records that the mounted backend does NOT confine (fsSandboxMode undefined)": true,
+    "FS-01: the escalation fields are ABSENT from the write/edit schemas (no fence to escalate past)": true,
+    "FS-01: the deployment states in its own words that no write confinement is claimed": true,
+    "FS-01: the spec itself lists filesystem write confinement as NOT claimed": true,
+    "FS-02: a read OUTSIDE the workspace through the NATIVE tool succeeds": true,
+    "FS-02: the same read through a PYTHON cell succeeds": true,
+    "FS-02: both routes reach the SAME BYTES (digest compared)": true,
+    "FS-03: the native `read` tool resolves the path to the canary": true,
+    "FS-03: the native `grep` tool resolves the path to the canary": true,
+    "FS-03: a SPAWNED process resolves the path to the same digest": true,
+    "FS-03: a PYTHON cell resolves the path to the same digest": true,
+    "FS-03: all four routes reached the same file in one world": true,
+    "FS-04: the symlink vector was attempted and its outcome recorded": true,
+    "FS-04: the hardlink vector was attempted and its outcome recorded": true,
+    "FS-04: the cross-boundary rename vector was attempted and its outcome recorded": true,
+    "FS-04: the rename did NOT corrupt content (digest before == digest after)": true,
+    "FS-04: the native tool read the moved file at its NEW path and saw the real content": true,
+    "FS-04: the symlink vector actually reached the mutation (its refusal, if any, is NOT FS_NOT_OBSERVED)": true,
+    "FS-04: the hardlink vector actually reached the mutation (its refusal, if any, is NOT FS_NOT_OBSERVED)": true,
+    "FS-05: read with offset/limit returns EXACTLY the requested window": true,
+    "FS-05: an exact unique replacement applies once": true,
+    "FS-05: the exact edit produced the expected content": true,
+    "FS-05: an AMBIGUOUS replacement is REFUSED, not guessed": true,
+    "FS-05: the refused ambiguous edit changed nothing": true,
+    "FS-05: an absent literal is refused with its own code": true,
+    "FS-05: the refused absent-literal edit changed nothing": true,
+    "FS-06: the artifact store is present and reports its own root": true,
+    "FS-06: the store root RESOLVES OUTSIDE the session workspace": true,
+    "FS-06: the store root is RELATIVE, and the record names what it resolves against": true,
+    "FS-06: a published object's address IS its content digest": true,
+    "FS-06: a workspace file with the artifact's own name does NOT change the store object": true,
+    "FS-06: the store reports its own verdict on the object after the same-name write": true,
+    "FS-06: the relative store path and the session-relative path are DIFFERENT files (recorded as a finding)": true,
+    "FS-06: the store object's ABSOLUTE path IS reachable by the tool (no confinement claimed)": false
+  },
+  "composition": {
+    "installed": "5b8b2a8e5d9ae13d35c1d86833f8b96eeb84078a13027a08efc1379a6fc8afb4",
+    "repo": "5b8b2a8e5d9ae13d35c1d86833f8b96eeb84078a13027a08efc1379a6fc8afb4",
+    "isCurrent": true
+  },
+  "build": {
+    "dsh-daily-work": {
+      "fileCount": 32,
+      "digest": "a9a8369abe7aed0036703e6aab3fc4ccbfdca57a7829eb662e71d22a036130e4",
+      "libNewerThanSrc": true,
+      "stale": []
+    },
+    "dsh-ipython": {
+      "fileCount": 8,
+      "digest": "04057fcad447751f5e1917550a64398cc7d63e7db47b3c5fe8a3c396a526bfc5",
+      "libNewerThanSrc": true,
+      "stale": []
+    }
+  },
+  "install": {
+    "exitCode": 0,
+    "replacedExisting": true
+  },
+  "fs01": {
+    "outsideWriteSucceeded": true,
+    "disclosed": {
+      "fsSandboxMode": null,
+      "fsProvider": "LocalFileSystem",
+      "sandboxPolicyDefaultMode": "workspace-write",
+      "modeSource": "unobservable",
+      "shellSandboxMode": null,
+      "shellProvider": "PwshLocalExecutor",
+      "shellMounted": true,
+      "ptcSandboxMode": "workspace-write",
+      "ptcMounted": true
+    },
+    "disclosureContradiction": {
+      "fsClaimsNoConfinement": true,
+      "policyDefaultStillConfines": true,
+      "policyDefault": "workspace-write"
+    },
+    "contractOk": false,
+    "contractViolations": [
+      "sandboxPolicy.defaultMode",
+      "ptcRuntime.sandboxMode"
+    ]
+  },
+  "fs02": {
+    "nativeReadSucceeded": true,
+    "pythonReadOk": true,
+    "bothRoutesReachedSameBytes": true,
+    "outsideReadDigest": "dbe5b6653550debf47ccdb6762e97aaa3db164753d6fdc42a673b00b531c21a2"
+  },
+  "fs03": {
+    "readToolSawCanary": true,
+    "grepToolSawCanary": true,
+    "shellSawSameDigest": true,
+    "pythonSawSameDigest": true,
+    "allFourReachedSameFile": true,
+    "expectedDigest": "71154cc230443be8bcfaa52fb933901ff06396ea936d948a578b8c10ab0671cb",
+    "executionWorld": "local",
+    "shellProvider": "PwshLocalExecutor"
+  },
+  "fs04": {
+    "symlink": {
+      "created": true,
+      "refused": false,
+      "writeEscapedWorkspace": true,
+      "verdict": "NOT REFUSED -- FINDING: a symlink in the workspace escapes it; the write followed the link and mutated the target outside"
+    },
+    "hardlink": {
+      "created": true,
+      "refused": false,
+      "writeEscapedWorkspace": false,
+      "verdict": "NOT REFUSED -- FINDING: a hardlink shares the inode, so a write inside the workspace mutates the outside file"
+    },
+    "rename": {
+      "refused": false,
+      "contentIntact": true,
+      "nativeReadSawMovedContent": true,
+      "verdict": "NOT REFUSED -- FINDING: raw Python renames across the workspace boundary; content is INTACT (digest equal), so this is disclosure, not corruption"
+    }
+  },
+  "fs05": {
+    "windowIsExact": true,
+    "windowLineNumbersPresent": [
+      "100:",
+      "101:",
+      "102:",
+      "103:",
+      "104:"
+    ],
+    "exactEditContent": "alpha BETA gamma\n",
+    "ambiguousRefused": true,
+    "ambiguousCode": "FS_AMBIGUOUS_EDIT",
+    "missingCode": "FS_EDIT_NOT_FOUND"
+  },
+  "fs06": {
+    "storeRoot": "data-artifacts",
+    "storeRootIsRelative": true,
+    "storeRootResolved": "D:\\DSH\\src\\dsh-src\\data-artifacts",
+    "storeRootResolvedAgainst": "D:\\DSH\\src\\dsh-src",
+    "storeRootIsInsideWorkspace": false,
+    "artifact": "artifact:sha256:07d894c4eb826e7b334398df3bdab18545111646cc121b6bed98d566b1e5fc53",
+    "artifactDigestMatchesContent": true,
+    "sameNameWorkspaceFile": "D:/DSH/work/dsh-native-daily/qualification/results/V7-fs/workspace/07d894c4eb826e7b334398df3bdab18545111646cc121b6bed98d566b1e5fc53",
+    "storeBytesUnchanged": true,
+    "objectOnDiskUnchanged": true,
+    "objectOnDisk": "D:\\DSH\\src\\dsh-src\\data-artifacts\\objects\\07\\07d894c4eb826e7b334398df3bdab18545111646cc121b6bed98d566b1e5fc53",
+    "relativeWriteTargetAsSeenByTool": "D:/DSH/work/dsh-native-daily/qualification/results/V7-fs/workspace/data-artifacts/objects/07/07d894c4eb826e7b334398df3bdab18545111646cc121b6bed98d566b1e5fc53",
+    "sameRelativeNameTwoFiles": true,
+    "storeObjectUntouchedByRelativeWrite": true,
+    "directObjectWriteSucceeded": false,
+    "objectWasTampered": false,
+    "storeReadAfterTamper": {
+      "label": "store.openRange",
+      "ok": true,
+      "value": "V7-FS06 store-owned artifact payload -- this must survive a work"
+    },
+    "reconcile": {
+      "label": "store.reconcile",
+      "ok": true,
+      "value": {
+        "orphans": [
+          "artifact:sha256:07d894c4eb826e7b334398df3bdab18545111646cc121b6bed98d566b1e5fc53",
+          "artifact:sha256:150f662de432382d21003d7ba23053663e76f94c0d79cbe4ac27ef0a54b21184"
+        ],
+        "integrityErrors": []
+      }
+    }
+  },
+  "toolFace": {
+    "count": 27,
+    "names": [
+      "ask_user_question",
+      "create_goal",
+      "edit",
+      "exit_plan_mode",
+      "get_goal",
+      "glob",
+      "grep",
+      "interrupt_agent",
+      "ipython",
+      "job_kill",
+      "job_list",
+      "job_output",
+      "list_agents",
+      "present",
+      "read",
+      "read_image",
+      "send_message",
+      "skill",
+      "subagent",
+      "subagent_fork",
+      "todo_write",
+      "update_goal",
+      "web_fetch",
+      "web_search",
+      "work",
+      "workflow",
+      "write"
+    ],
+    "ipythonPresent": true,
+    "pwshPresent": false
+  },
+  "escalationFieldsAdvertised": {
+    "write": [],
+    "edit": []
+  },
+  "boot": {
+    "port": 2991,
+    "timedOut": false,
+    "exitCode": null,
+    "portReleased": true
+  },
+  "activationWarningLines": [],
+  "probeError": null
+}

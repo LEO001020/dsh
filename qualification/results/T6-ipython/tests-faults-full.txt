@@ -1,0 +1,50 @@
+
+ RUN  v4.1.8 D:/DSH/work/dsh-native-daily/packages/dsh-ipython
+
+ ✓ src/faults.test.ts > requirement 8: interrupt, then reuse the kernel > a CPU loop is interrupted, KeyboardInterrupt is reported, and the kernel is reusable 5143ms
+ ✓ src/faults.test.ts > requirement 8: interrupt, then reuse the kernel > an interrupt of an await-suspended cell reports unknown and resets, never a false success 12884ms
+ ✓ src/faults.test.ts > requirement 10: a flooding cell cannot OOM the host > hundreds of MB of stdout is capped, reported truncated, and spilled 7065ms
+ ✓ src/faults.test.ts > requirement 10: a flooding cell cannot OOM the host > a cell under the cap reports no truncation, so the flag is not always-on 3299ms
+ ✓ src/faults.test.ts > requirement 10: a flooding cell cannot OOM the host > a giant display payload is bounded too, not just stdout 3266ms
+ ✓ src/faults.test.ts > requirement 11: kernel death changes the generation > killing the kernel reports a NEW epoch and a lost-state notice 7109ms
+ ✓ src/faults.test.ts > requirement 11: kernel death changes the generation > after the death is reported, the replacement kernel is usable and empty 6938ms
+ ✓ src/faults.test.ts > IPY-07: a cell that overruns the budget is classified, and its state loss is stated > a timeout reports unknown with a NEW epoch and a replaced kernel, never a false success 11283ms
+ ✓ src/faults.test.ts > IPY-07: a cell that overruns the budget is classified, and its state loss is stated > the replacement kernel after a timeout is genuinely usable 10614ms
+stdout | src/faults.test.ts > IPY-07: restart replaces the kernel and preserves its working directory > restart advances the epoch, replaces the process, loses the namespace, and keeps the cwd
+[T6-DIAG] IPY-07-restart FAILED; scratch=C:/Users/hzq00/AppData/Local/Temp/dsh-ipython-fault-l4yrW6/restart
+[T6-DIAG] kernel.out:
+
+[T6-DIAG] kernel.err:
+
+
+ × src/faults.test.ts > IPY-07: restart replaces the kernel and preserves its working directory > restart advances the epoch, replaces the process, loses the namespace, and keeps the cwd 64080ms
+   → BROKER_FAILURE: RuntimeError: Kernel didn't respond in 60 seconds
+stdout | src/faults.test.ts > IPY-12: the cap bounds the cell projection, and a direct fd-1 write is a measured boundary > stdout written through the cell's own fd 1 is NOT capped, and is recorded as such
+[T6-MEASURED] IPY-12-fd1-boundary {"cap":4096,"reportedStdoutTotalBytes":10,"reportedTruncated":false,"reportedSpillPath":null,"kernelOutBytesBefore":0,"kernelOutBytesAfter":5000000,"kernelOutGrowth":5000000,"kernelOutPath":"C:/Users/hzq00/AppData/Local/Temp/dsh-ipython-fault-sWT5UF/kernel.out"}
+
+ ✓ src/faults.test.ts > IPY-12: the cap bounds the cell projection, and a direct fd-1 write is a measured boundary > stdout written through the cell's own fd 1 is NOT capped, and is recorded as such 3595ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/faults.test.ts > IPY-07: restart replaces the kernel and preserves its working directory > restart advances the epoch, replaces the process, loses the namespace, and keeps the cwd
+KernelTransportError: BROKER_FAILURE: RuntimeError: Kernel didn't respond in 60 seconds
+ ❯ KernelHost.onMessage src/kernel.ts:340:25
+    338|     clearTimeout(pending.timer)
+    339|     if (message.ok) pending.resolve(message.result)
+    340|     else pending.reject(new KernelTransportError(`${message.error.code…
+       |                         ^
+    341|   }
+    342|
+ ❯ FrameDecoder.onFrame src/kernel.ts:258:23
+ ❯ FrameDecoder.drain src/protocol.ts:137:12
+ ❯ FrameDecoder.push src/protocol.ts:105:12
+ ❯ Socket.<anonymous> src/kernel.ts:261:65
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 10 passed (11)
+   Start at  07:45:28
+   Duration  135.81s (transform 229ms, setup 0ms, import 288ms, tests 135.28s, environment 0ms)
+

@@ -1,0 +1,68 @@
+# A12 overlay: point the daily composition at the IN-TREE mock adapter and give
+# the launcher a reachable route to its own bounded shutdown.
+#
+# WHY THIS FILE EXISTS
+#
+# The recorded A12 result stops at `MISSING_CREDENTIAL`. Two separate gaps sit
+# behind that, and they need different fixes.
+#
+# 1. NO MODEL TURN. `DEEPSEEK_API_KEY` is absent from every layer the credentials
+#    provider reads, so `session/prompt` cannot reach a provider. The mock route
+#    below removes that dependency for THIS RUN ONLY: the real DeepSeek adapter is
+#    pointed at the in-tree mock server's OpenAI-compatible endpoint
+#    (packages/test-support/llm-mock-server). The route is a controlled LOCAL one
+#    -- a real HTTP request over a real socket through the real adapter -- NOT a
+#    live provider, and every claim it supports is labelled that way in FINDINGS.
+#
+# 2. NO MEASURED SHUTDOWN. `apps/cli/src/profile-boot.ts` installs handlers for
+#    SIGTERM (exit 0) and SIGINT (exit 130) only. On win32 `child.kill()` calls
+#    TerminateProcess for both, so neither handler ever runs and no exit code is
+#    observable -- which is why the recorded result makes no clean-shutdown claim.
+#    A signal matrix run on this machine established that the only catchable
+#    console event deliverable to a child here is CTRL_BREAK_EVENT, surfacing as
+#    SIGBREAK, which the launcher does not handle; the Web profile has no
+#    in-product exit command either.
+#
+#    The `a12-shutdown-route` row is therefore a QUALIFICATION INSTRUMENT, not a
+#    product change. It calls the launcher's own `ctx.appExit` -- the same bounded
+#    exit callback the product's own `exitOnStdinEnd` uses -- behind the REAL
+#    browser-trust fence (`ctx.connection.requestRejection`), so the PRODUCTION
+#    shutdown path runs (refuse admissions, stop owned work, release storage,
+#    unwind the context, then exit) rather than a process kill. It is loaded only
+#    by this gate's own `--patch` overlay and is not part of the delivered profile.
+#
+# It does not touch credentials, does not weaken the fence, and does not disable
+# the work extension. `--patch` overlays apply AFTER the profile layer, which is
+# the documented way to add a row without editing the profile.
+
+# ── 1. the mock-driven route ────────────────────────────────────────────────
+# The real adapter is kept; only its endpoint moves. `apiKeyEnv` names the
+# credential reference the adapter resolves per request, so the mock's token
+# travels the REAL credential path rather than around it.
+- id: llm-deepseek
+  config:
+    protocol: chat-completions
+    baseURL: http://127.0.0.1:19411
+    apiKeyEnv: A12_MOCK_KEY
+
+# The default route the Web host offers a new Session.
+- id: agent-default-model
+  config:
+    provider: deepseek-official
+    model: deepseek-flash
+
+# The session-title LLM is a SECOND, independent consumer of the same model
+# route: it issues its own request for the first prompt's title. Leaving it
+# enabled makes the mock's FIFO sequence depend on which consumer wins the race,
+# so a two-entry script could be consumed by the title generator and the turn
+# would then read the wrong behavior. This is the same reason the product's own
+# Web e2e scaffold disables the row (`apps/web/tests/scaffold.ts`), and it is a
+# qualification-instrument choice: the turn path is what is under test, not the
+# title path. The deterministic fallback title is still produced.
+- id: session-title-llm
+  disabled: true
+
+# ── 2. the shutdown instrument ──────────────────────────────────────────────
+- insert:
+    - id: a12-shutdown-route
+      name: 'D:/DSH/work/dsh-native-daily/qualification/runners/verify-a12-shutdown-route.mjs'

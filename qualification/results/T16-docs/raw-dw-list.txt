@@ -1,0 +1,1105 @@
+src/terminal-advanced.test.ts > T05: interrupt on an independent control path > T05: SIGINT resolves while the cell is running, and the cell is not a success
+src/terminal-advanced.test.ts > T05: interrupt on an independent control path > T05: the interrupt really stops the command, not just the wait
+src/terminal-advanced.test.ts > T05: interrupt on an independent control path > T05: SIGINT needs a live owned session, and a dead one is refused
+src/terminal-advanced.test.ts > T06: host loss and terminal id reuse > T06: a fresh context starts with no terminals and does not adopt a historical id
+src/terminal-advanced.test.ts > T06: host loss and terminal id reuse > T06: a cell does not survive the host that owned it
+src/terminal-advanced.test.ts > T06: host loss and terminal id reuse > T06: this project has no code path that could replay a historical cell
+src/terminal-advanced.test.ts > T08: error and framing > T08: a failed command is not reported as success
+src/terminal-advanced.test.ts > T08: error and framing > T08: a forged completion marker is accepted as readiness, so framing is not proof
+src/terminal-advanced.test.ts > T08: error and framing > T08: a blocking read settles as a non-success reason while the cell is still running
+src/terminal-advanced.test.ts > T08: error and framing > T08: the only honest exit code is the shell's own
+src/terminal-advanced.test.ts > T05/T06/T08 under workspace-write confinement > the confinement arm is real: writes are enforced, not merely configured
+src/terminal-advanced.test.ts > T05/T06/T08 under workspace-write confinement > T05 under confinement: SIGINT is reported delivered but DOES NOT stop the cell
+src/terminal-advanced.test.ts > T05/T06/T08 under workspace-write confinement > T05 under confinement: kill() IS the control that stops the cell
+src/terminal-advanced.test.ts > T05/T06/T08 under workspace-write confinement > T06 under confinement: state does not cross a context boundary
+src/terminal-advanced.test.ts > T05/T06/T08 under workspace-write confinement > T08 under confinement: a forged marker still settles early, and a failure is still not success
+src/research-chain.test.ts > R01: independent retrieval -> original fetch -> complete relevant range -> citation > LINK 1 (controlled fake): a real search request reaches the endpoint and its sources become citations
+src/research-chain.test.ts > R01: independent retrieval -> original fetch -> complete relevant range -> citation > LINK 1c: a provider that is MOUNTED but NOT SELECTED is not the provider a search reaches
+src/research-chain.test.ts > R01: independent retrieval -> original fetch -> complete relevant range -> citation > LINK 1b: the CONTROLLED FAKE is a dialect the configured live endpoint does not speak
+src/research-chain.test.ts > R01: independent retrieval -> original fetch -> complete relevant range -> citation > LINK 2 (real network, loopback origin): fetch retrieves the original and the model sees a bounded range
+src/research-chain.test.ts > R01: independent retrieval -> original fetch -> complete relevant range -> citation > LINK 3 (real network, loopback origin): a truncated range is labelled as a range, and the model is told to fetch narrower
+src/research-chain.test.ts > R01: independent retrieval -> original fetch -> complete relevant range -> citation > LINK 3b (real network, loopback origin): a DECLARED byte-cap overrun is a REFUSAL, not a truncated range
+src/research-chain.test.ts > R01: independent retrieval -> original fetch -> complete relevant range -> citation > LINK 3c: the SAME byte cap that refuses a declared overrun TRUNCATES an undeclared one
+src/research-chain.test.ts > R01: independent retrieval -> original fetch -> complete relevant range -> citation > LINK 4: every step carries a REAL source and a version, and an unsourced row is dropped rather than cited
+src/research-chain.test.ts > R01: independent retrieval -> original fetch -> complete relevant range -> citation > LINK 4c: the loopback origin is reached through the SUPPORTED resolver seam, not a bypassed guard
+src/research-chain.test.ts > R01: independent retrieval -> original fetch -> complete relevant range -> citation > LINK 4b: a SEARCH SNIPPET substituted for full text stays a snippet, through the real ctx.web seam
+src/research-chain.test.ts > R01: independent retrieval -> original fetch -> complete relevant range -> citation > FAILURE, not emptiness: a fetch with no provider mounted is an explicit refusal, not an empty body
+src/research-chain.test.ts > R01: independent retrieval -> original fetch -> complete relevant range -> citation > FAILURE, not emptiness: a missing key is an explicit refusal, and no request is attempted
+src/research-chain.test.ts > R01: independent retrieval -> original fetch -> complete relevant range -> citation > FAILURE, not emptiness: a provider that answers HTTP 500 is an ERROR, never "No results found."
+src/research-chain.test.ts > R01: independent retrieval -> original fetch -> complete relevant range -> citation > FAILURE, not emptiness: an unreachable endpoint is an ERROR, and the code distinguishes it from a 500
+src/research-chain.test.ts > R01: independent retrieval -> original fetch -> complete relevant range -> citation > FAILURE, not emptiness: a genuinely empty result from a WORKING provider IS "No results found."
+src/research-chain.test.ts > R01: independent retrieval -> original fetch -> complete relevant range -> citation > FAILURE, not emptiness: a fetch that is refused is an ERROR, never an empty body
+src/research-chain.test.ts > R01: independent retrieval -> original fetch -> complete relevant range -> citation > FAILURE, not emptiness: a PDF is REFUSED at the content-type boundary, which is why R02 exists
+src/research-chain.test.ts > R02: saving bytes is bytes_captured, and no transition makes it understood > a stored PDF is bytes_captured and is NOT any reading tier
+src/research-chain.test.ts > R02: saving bytes is bytes_captured, and no transition makes it understood > the vocabulary cannot express primary_read or understood at all
+src/research-chain.test.ts > R02: saving bytes is bytes_captured, and no transition makes it understood > no automatic promotion: a capture leaves the tier at bytes_captured however many times it runs
+src/research-chain.test.ts > R02: saving bytes is bytes_captured, and no transition makes it understood > a skipped step is refused: bytes_captured cannot jump to range_presented_to_model
+src/research-chain.test.ts > R02: saving bytes is bytes_captured, and no transition makes it understood > a backwards step is refused: a reading tier cannot return to bytes_captured
+src/research-chain.test.ts > R02: saving bytes is bytes_captured, and no transition makes it understood > a transition with no stated observation is refused
+src/research-chain.test.ts > R02: saving bytes is bytes_captured, and no transition makes it understood > the whole ladder, when it is walked honestly, ends at support_checked and never at understood
+src/research-chain.test.ts > R02: saving bytes is bytes_captured, and no transition makes it understood > a parse that does not state its coverage is refused, and no later rung can rewrite it
+src/research-chain.test.ts > R05: observation-then-sampling, distinguishable in a controlled case > ordering A -- SAME RESPONSE: the dependent call is emitted before the observation result exists
+src/research-chain.test.ts > R05: observation-then-sampling, distinguishable in a controlled case > ordering A holds for EXCLUSIVE tools too, where the calls are serialized but still share one response
+src/research-chain.test.ts > R05: observation-then-sampling, distinguishable in a controlled case > ordering B -- OBSERVED THEN SAMPLED: the dependent parameters first appear in a request that already carried the result
+src/research-chain.test.ts > R05: observation-then-sampling, distinguishable in a controlled case > the two orderings are DISTINGUISHABLE by a response-level predicate, and the naive seq predicate is shown wrong
+src/research-chain.test.ts > R05: observation-then-sampling, distinguishable in a controlled case > NOT A GENERAL PROVER: the predicate cannot see a dependency that the ordering does not express
+src/research-chain.test.ts > R07: prompt stability, measured on the request rather than estimated > (a) unrelated dynamic state: a session/title change moves no byte of the next request except the new turn
+src/research-chain.test.ts > R07: prompt stability, measured on the request rather than estimated > (b) tool ORDER: registration order is invisible on the wire; a configured order is visible in it
+src/research-chain.test.ts > R07: prompt stability, measured on the request rather than estimated > (b) tool ORDER, mid-session: a changed tool set is logged as a header CHANGE and the new list reaches the wire
+src/research-chain.test.ts > R07: prompt stability, measured on the request rather than estimated > the cumulative-surface estimate is NOT a substitute for the wire fact: they can be made to disagree, and the wire wins
+src/research-chain.test.ts > R07: prompt stability, measured on the request rather than estimated > an unchanged request is dispatched without a new header event, so "no change" is itself a wire-observable fact
+src/verification-gates.test.ts > VER-01/VER-02: a green exit code over no executed test is not a pass > VER-01: the runner exits 0 having collected no test, and the verdict is NOT PASS
+src/verification-gates.test.ts > VER-01/VER-02: a green exit code over no executed test is not a pass > VER-02: every test skipped is NOT PASS, and the child still exited 0
+src/verification-gates.test.ts > VER-01/VER-02: a green exit code over no executed test is not a pass > VER-01/VER-02: a PASS that declared no counts is refused as evidence of real tests
+src/verification-gates.test.ts > VER-01/VER-02: a green exit code over no executed test is not a pass > VER-01: a runner that never reported at all is NOT PASS either, and is a DIFFERENT outcome
+src/verification-gates.test.ts > VER-03: a candidate cannot weaken the protected acceptance > a weakened threshold carrying the authorized digest is REFUSED, not run
+src/verification-gates.test.ts > VER-03: a candidate cannot weaken the protected acceptance > MEASURED GAP: an oracle outside `inputs` is neither covered by any digest NOR frozen
+src/verification-gates.test.ts > VER-03: a candidate cannot weaken the protected acceptance > CLOSURE: an oracle digest taken outside the candidate refuses a receipt whose oracle changed
+src/verification-gates.test.ts > VER-03: a candidate cannot weaken the protected acceptance > CLOSURE: a receipt from another machine is refused, so a verdict is bound to the environment that produced it
+src/verification-gates.test.ts > VER-03: a candidate cannot weaken the protected acceptance > CLOSURE: observedBasis re-reads the tree, so a caller cannot pass the record in as the observation
+src/verification-gates.test.ts > VER-03: a candidate cannot weaken the protected acceptance > CLOSURE: declaring the oracle as an input makes the snapshot cover it, so a live rewrite cannot reach the run
+src/verification-gates.test.ts > VER-03: a candidate cannot weaken the protected acceptance > the oracle digest is not the candidate digest: an undeclared oracle file still moves it
+src/verification-gates.test.ts > VER-04: what the verification environment genuinely enforces > ENFORCED: the untrusted candidate inherits no host credential and no DSH_* name
+src/verification-gates.test.ts > VER-04: what the verification environment genuinely enforces > NOT ENFORCED — VER-04 FAIL: the candidate CAN read a host file outside its snapshot
+src/verification-gates.test.ts > VER-04: what the verification environment genuinely enforces > NOT ENFORCED — VER-04 FAIL: the candidate CAN open a network connection
+src/verification-gates.test.ts > VER-04: what the verification environment genuinely enforces > ENFORCED: the candidate gets an argv and a cwd and nothing else — no control-plane handle
+src/verification-gates.test.ts > VER-04: what the verification environment genuinely enforces > HONEST LABEL: the runner states what its digest does NOT cover
+src/verification-gates.test.ts > VER-05: an old verdict cannot be reused as a current completion > the receipt is refused after the WORKSPACE changes
+src/verification-gates.test.ts > VER-05: an old verdict cannot be reused as a current completion > the receipt is refused after the ORACLE changes, with the workspace untouched
+src/verification-gates.test.ts > VER-05: an old verdict cannot be reused as a current completion > the three bindings are INDEPENDENT: each refuses alone, with the other two still matching
+src/verification-gates.test.ts > VER-05: an old verdict cannot be reused as a current completion > the receipt is refused after the ENVIRONMENT changes
+src/verification-gates.test.ts > VER-05: an old verdict cannot be reused as a current completion > a FRESH receipt is still checked for PASSED, so freshness is never a verdict
+src/verification-gates.test.ts > VER-06: A->B->A during verification, over tree AND oracle AND config > two-arm proof: the frozen copy is what is tested, and endpoint hashing cannot see the tamper
+src/verification-gates.test.ts > VER-06: A->B->A during verification, over tree AND oracle AND config > a command that rewrites its own declared input inside the snapshot yields unknown, not pass
+src/verification-gates.test.ts > VER-07: a request to complete while a background mutation is still running > freezing while a writer still holds the workspace is REFUSED as in-flight
+src/verification-gates.test.ts > VER-07: a request to complete while a background mutation is still running > a workspace still changing under the sampler is refused; only a stable one converges
+src/verification-gates.test.ts > VER-07: a request to complete while a background mutation is still running > the structural invariant: a refusal NEVER carries a digest
+src/verification-gates.test.ts > VER-08: after a verification failure a legitimate recovery can continue > a failed acceptance leaves the run resumable: pause does NOT use the permanent family drain
+src/verification-gates.test.ts > VER-08: after a verification failure a legitimate recovery can continue > a failed acceptance is a RECEIPT, not a throw, so the caller can recover and retry
+src/verification-gates.test.ts > writer concurrency isolation: one writer, one workspace, one lease > binds the writer cwd to its own workspace, on its own branch, at the exact base
+src/verification-gates.test.ts > writer concurrency isolation: one writer, one workspace, one lease > gives each writer its own branch and its own paths, so two writers cannot collide
+src/verification-gates.test.ts > writer concurrency isolation: one writer, one workspace, one lease > REFUSES a second writer on the same workspace, in this process and on disk
+src/verification-gates.test.ts > writer concurrency isolation: one writer, one workspace, one lease > releases the lease on demand, leaving no branch, directory or lock behind
+src/verification-gates.test.ts > W02: a concurrency-isolated worktree is NOT a security boundary, and the code says so > MEASURED: a writer inside a worktree CAN move a shared ref, write shared config, and plant a shared hook
+src/verification-gates.test.ts > W02: a concurrency-isolated worktree is NOT a security boundary, and the code says so > what git DOES enforce: the integration branch cannot be checked out inside a writer worktree
+src/verification-gates.test.ts > W02: a concurrency-isolated worktree is NOT a security boundary, and the code says so > DETECTION is the honest claim: the shared-metadata digest catches every one of those mutations
+src/verification-gates.test.ts > W02: a concurrency-isolated worktree is NOT a security boundary, and the code says so > a CLONE is a real boundary: a writer can mutate its own everything and the root is byte-identical
+src/verification-gates.test.ts > the root is the single integration authority, and it does not merge > accepts a clean candidate on the exact base, and binds the patch by digest
+src/verification-gates.test.ts > the root is the single integration authority, and it does not merge > REFUSES a candidate whose base is not the revision the root expected
+src/verification-gates.test.ts > the root is the single integration authority, and it does not merge > REFUSES a conflicting candidate and returns it to the root — there is no auto-merge
+src/verification-gates.test.ts > the root is the single integration authority, and it does not merge > REFUSES a candidate that changed a path outside the allowed scope
+src/verification-gates.test.ts > the root is the single integration authority, and it does not merge > REFUSES a candidate with no receipt, and one whose receipt claims a pass with no tests
+src/verification-gates.test.ts > the root is the single integration authority, and it does not merge > a writer cannot publish: the precondition takes the ref as an input, and no merge verb exists
+src/verification-gates.test.ts > the root is the single integration authority, and it does not merge > the module contains no merge verb: every git subcommand it runs is read-only or workspace-lifecycle
+src/verification-gates.test.ts > the writer service has a production entry point, not just a module > the package declares a `writers` export that resolves to the plugin, and the plugin mounts a real service
+src/verification-gates.test.ts > the writer service has a production entry point, not just a module > the plugin declares no hard `inject`, so a deployment without a subprocess provider can still boot and REPORT
+src/verify.test.ts > F01: only a real runner is an oracle > a real command that passes yields PASS with the real exit code recorded
+src/verify.test.ts > F01: only a real runner is an oracle > a real command that fails yields FAIL, and the failure is visible in the receipt
+src/verify.test.ts > F01: only a real runner is an oracle > a command that does not exist is NOT a pass
+src/verify.test.ts > F01: only a real runner is an oracle > a command that times out is NOT a pass and is classified as a timeout
+src/verify.test.ts > F01: only a real runner is an oracle > an external stop is reported as interrupted, never as a pass
+src/verify.test.ts > F02: no tests, skipped tests and a runner that never ran are all non-PASS > a suite that is entirely skipped is NOT a pass, despite exit code 0
+src/verify.test.ts > F02: no tests, skipped tests and a runner that never ran are all non-PASS > a runner that executed zero tests is NOT a pass, despite exit code 0
+src/verify.test.ts > F02: no tests, skipped tests and a runner that never ran are all non-PASS > a runner that never reports a summary is NOT a pass, despite exit code 0
+src/verify.test.ts > F02: no tests, skipped tests and a runner that never ran are all non-PASS > a declared count that does not match the observed count is NOT a pass
+src/verify.test.ts > F02: no tests, skipped tests and a runner that never ran are all non-PASS > a definition with an empty command is refused rather than run
+src/verify.test.ts > F03/F04: the receipt is bound to a snapshot of the inputs > the receipt digest changes when the input tree changes
+src/verify.test.ts > F03/F04: the receipt is bound to a snapshot of the inputs > the acceptance-definition digest changes when a threshold is weakened
+src/verify.test.ts > F03/F04: the receipt is bound to a snapshot of the inputs > an unauthorized change to the acceptance definition refuses the run
+src/verify.test.ts > F03/F04: the receipt is bound to a snapshot of the inputs > an A->B->A mutation during verification cannot fool the runner
+src/verify.test.ts > F03/F04: the receipt is bound to a snapshot of the inputs > a snapshot that moves under the run yields unknown, not pass
+src/verify.test.ts > F03/F04: the receipt is bound to a snapshot of the inputs > verifying in place is allowed but the receipt says it is limited
+src/verify.test.ts > F03/F04: the receipt is bound to a snapshot of the inputs > the snapshot is removed afterwards unless the caller asks to keep it
+src/verify.test.ts > the untrusted child does not inherit host privilege > a credential-shaped variable in the runner is not visible to the acceptance command
+src/verify.test.ts > F07: the retry budget is bounded and ends blocked > a candidate defect is not retried at all
+src/verify.test.ts > F07: the retry budget is bounded and ends blocked > an environment-shaped failure stops as blocked once the budget is spent
+src/verify.test.ts > F08: the integration ref is accepted only by exact expected-ref CAS > a moved ref refuses the publication, and an unchanged ref accepts it
+src/verify.test.ts > the receipt is machine-readable and self-describing > serializes to JSON that records every required binding
+src/verify.test.ts > the receipt is machine-readable and self-describing > bounds the output it retains while recording how much there was
+src/verify.test.ts > the receipt is machine-readable and self-describing > refuses an input that escapes cwd instead of silently covering less
+src/verify.test.ts > summary parsing matches what the real runners print > reads vitest counts through its ANSI colouring
+src/verify.test.ts > summary parsing matches what the real runners print > reads a mixed vitest summary
+src/verify.test.ts > summary parsing matches what the real runners print > reads vitest "no tests" as a real zero rather than as unparsed
+src/verify.test.ts > summary parsing matches what the real runners print > reports no counts when there is no summary line at all
+src/verify.test.ts > summary parsing matches what the real runners print > reads the node:test spec summary
+src/verify.test.ts > summary parsing matches what the real runners print > reads a node:test run in which every case was skipped
+src/data-plane.test.ts > DAT-01 [real] long line: the loss is verified, then repaired by byte range > confirms the real buildWindow clips a 100KiB single line and loses its interior
+src/data-plane.test.ts > DAT-01 [real] long line: the loss is verified, then repaired by byte range > measures the clip in the CANONICAL value by CALLING the real read tool
+src/data-plane.test.ts > DAT-01 [real] long line: the loss is verified, then repaired by byte range > shows a raised maxLineLength recovers the line, so the loss is the CAP and not the file
+src/data-plane.test.ts > DAT-01 [real] long line: the loss is verified, then repaired by byte range > recovers the whole 100KiB line byte-for-byte by capturing and paging the artifact
+src/data-plane.test.ts > DAT-01 [real] long line: the loss is verified, then repaired by byte range > recovers a newline-free file as exactly one complete line
+src/data-plane.test.ts > DAT-01 [real] long line: the loss is verified, then repaired by byte range > recovers a body larger than the 50KiB read window across many lines
+src/data-plane.test.ts > DAT-02 [real capture / real consumers] 512 pages of 32MiB, projection <= 8KiB > consumes 512 bounded pages totalling 32MiB with a model projection under 8KiB
+src/data-plane.test.ts > DAT-02 [real capture / real consumers] 512 pages of 32MiB, projection <= 8KiB > has a REAL CPython process consume the 512 pages over a pipe, never holding them in JS
+src/data-plane.test.ts > DAT-02 [real capture / real consumers] 512 pages of 32MiB, projection <= 8KiB > has the REAL `ipython` tool over a REAL ipykernel consume all 512 pages
+src/data-plane.test.ts > DAT-03 [real] UTF-8 / CRLF / JSONL split at every page boundary > never corrupts a multibyte character at any page boundary
+src/data-plane.test.ts > DAT-03 [real] UTF-8 / CRLF / JSONL split at every page boundary > splits CRLF and JSONL records at every page boundary without loss or duplication
+src/data-plane.test.ts > DAT-03 [real] UTF-8 / CRLF / JSONL split at every page boundary > keeps the line index numbering identical to the read tool for CRLF content
+src/data-plane.test.ts > DAT-03 [real] UTF-8 / CRLF / JSONL split at every page boundary > truncates a projection on a character boundary, never splitting a surrogate
+src/data-plane.test.ts > DAT-03 [real] UTF-8 / CRLF / JSONL split at every page boundary > states the real pager’s boundary: byte windows reassemble, they are not character-aligned
+src/data-plane.test.ts > DAT-04 [mock provider] a repeated or backwards cursor raises pagination-stalled > raises pagination-stalled on a repeated cursor instead of looping forever
+src/data-plane.test.ts > DAT-04 [mock provider] a repeated or backwards cursor raises pagination-stalled > raises pagination-stalled on a backwards cursor
+src/data-plane.test.ts > DAT-04 [mock provider] a repeated or backwards cursor raises pagination-stalled > raises pagination-stalled when a not-exhausted page omits its continuation
+src/data-plane.test.ts > DAT-04 [mock provider] a repeated or backwards cursor raises pagination-stalled > names the stalled offsets so the failure is diagnosable, not just "stalled"
+src/data-plane.test.ts > DAT-04 [mock provider] a repeated or backwards cursor raises pagination-stalled > still lets a well-formed provider finish, so the guard is not tripped by progress
+src/data-plane.test.ts > DAT-05 [real] a source change after page 1 cannot mix into page 2 > serves page 2 from the same captured hash after the source file is rewritten
+src/data-plane.test.ts > DAT-05 [real] a source change after page 1 cannot mix into page 2 > refuses a cursor bound to a different artifact rather than splicing two objects
+src/data-plane.test.ts > DAT-05 [real] a source change after page 1 cannot mix into page 2 > refuses a cursor after the owner scope is revoked, because a cursor is not authorization
+src/data-plane.test.ts > DAT-06 [real] paging IO is O(pages), and repeated read is measured, not assumed > reports artifact IO proportional to pages read, not to the artifact size
+src/data-plane.test.ts > DAT-06 [real] paging IO is O(pages), and repeated read is measured, not assumed > measures whether repeated read with a growing offset rescans the whole file
+src/data-plane.test.ts > DAT-07 [real ripgrep] grep canonical keeps every match within the raw cap > keeps all matches in canonical while the renderer shows 250, and marks the raw cap partial
+src/data-plane.test.ts > DAT-07 [real ripgrep] grep canonical keeps every match within the raw cap > marks the observation partial when the raw cap IS reached, without pretending otherwise
+src/data-plane.test.ts > DAT-08 [real] an over-quota capture fails explicitly and never falls back inline > returns a partial observation with a retention gap when the quota is exceeded
+src/data-plane.test.ts > DAT-08 [real] an over-quota capture fails explicitly and never falls back inline > refuses to re-execute an effect after a save failure, and keeps the outcome unknown
+src/data-plane.test.ts > DAT-08 [real] an over-quota capture fails explicitly and never falls back inline > reports an orphan, not a delivery, when the Session reference cannot be committed
+src/data-plane.test.ts > DAT-08 [real] an over-quota capture fails explicitly and never falls back inline > reports an integrity error, never an empty string, when a referenced object is missing
+src/data-plane.test.ts > DAT-08 [real] an over-quota capture fails explicitly and never falls back inline > does not promise durable:true when the checkpoint fails after the reference committed
+src/data-plane.test.ts > observation authority: host facts are not trusted from a kernel payload > refuses a kernel payload that asserts a host-authored field, naming the field
+src/data-plane.test.ts > observation authority: host facts are not trusted from a kernel payload > refuses a forged capture before writing anything, so a bad payload cannot cause an effect
+src/data-plane.test.ts > observation authority: host facts are not trusted from a kernel payload > records a kernel-declared transform as a claim, with the parent artifact named
+src/data-plane.test.ts > observation authority: host facts are not trusted from a kernel payload > rejects a stale descriptor after the permission domain changes
+src/data-plane.test.ts > observation authority: host facts are not trusted from a kernel payload > refuses a descriptor from a different owner scope than the caller
+src/data-plane.test.ts > DataPlaneService: the production consumer the profile mounts > captures through the real storage domain and reads back byte-for-byte
+src/data-plane.test.ts > DataPlaneService: the production consumer the profile mounts > serves pages and the long-line repair through the service, refusing a forged descriptor
+src/data-plane.test.ts > DataPlaneService: the production consumer the profile mounts > stops serving after the permission domain changes
+src/data-plane.test.ts > DataPlaneService: the production consumer the profile mounts > records the real artifact-root derivation, including the branch that cannot be taken
+src/data-plane.test.ts > crash consistency: a real SIGKILL between publication and the Session reference > leaves a reconcilable ORPHAN and never reports it as delivered
+src/sec-gates.test.ts > SEC-01: host HOME / DSH_HOME / proc are unreachable from BOTH paths > a confined child READS a file outside the workspace root — the measured non-denial, re-asserted
+src/sec-gates.test.ts > SEC-01: host HOME / DSH_HOME / proc are unreachable from BOTH paths > the WRITE boundary does hold, so the limit is read-specific rather than a dead sandbox
+src/sec-gates.test.ts > SEC-01: host HOME / DSH_HOME / proc are unreachable from BOTH paths > the sandbox seam has NO read lever, so the limit is structural rather than a misconfiguration
+src/sec-gates.test.ts > SEC-01: host HOME / DSH_HOME / proc are unreachable from BOTH paths > the credential-name scrub is real, and is NOT credential isolation
+src/sec-gates.test.ts > SEC-01: host HOME / DSH_HOME / proc are unreachable from BOTH paths > the gate is recorded as a FAIL, and the record names the reason
+src/sec-gates.test.ts > SEC-01: host HOME / DSH_HOME / proc are unreachable from BOTH paths > a host HOME / DSH_HOME canary is readable from a confined child — the same finding, aimed at the gate's own subject
+src/sec-gates.test.ts > SEC-01: host HOME / DSH_HOME / proc are unreachable from BOTH paths > the SAME non-boundary holds on the POSIX backend: the bwrap profile reads outside the policy root
+src/sec-gates.test.ts > SEC-01: host HOME / DSH_HOME / proc are unreachable from BOTH paths > CLOSABILITY: every candidate read lever is measured and none restricts a read
+src/sec-gates.test.ts > SEC-02: the kernel cannot reach the human terminal, the plugin manager or an admin RPC > the terminal controller is the system-user human terminal, quoted from its own source
+src/sec-gates.test.ts > SEC-02: the kernel cannot reach the human terminal, the plugin manager or an admin RPC > this project mounts no terminalController, so no model-facing path can reach it
+src/sec-gates.test.ts > SEC-02: the kernel cannot reach the human terminal, the plugin manager or an admin RPC > the measured control-plane result: no surface is exposed as a tool, and the loopback entry point refuses
+src/sec-gates.test.ts > SEC-02: the kernel cannot reach the human terminal, the plugin manager or an admin RPC > the tool registry refuses an unknown name before any pipeline runs
+src/sec-gates.test.ts > SEC-02: the kernel cannot reach the human terminal, the plugin manager or an admin RPC > the plugin manager is disabled in the shipped composition, and demands full access when enabled
+src/sec-gates.test.ts > SEC-03: DNS / IPv4 / IPv6 / LAN / cloud-metadata egress is NOT blocked > a confined child completes a real HTTP round trip to a loopback server — the measured non-denial
+src/sec-gates.test.ts > SEC-03: DNS / IPv4 / IPv6 / LAN / cloud-metadata egress is NOT blocked > a confined child resolves DNS and reaches LAN, IPv6 and cloud-metadata destinations
+src/sec-gates.test.ts > SEC-03: DNS / IPv4 / IPv6 / LAN / cloud-metadata egress is NOT blocked > the sandbox runner argv carries only file-effect arguments, so no network restriction is expressed
+src/sec-gates.test.ts > SEC-03: DNS / IPv4 / IPv6 / LAN / cloud-metadata egress is NOT blocked > the only egress-adjacent control is a TOOL-level URL filter, and a confined shell really does bypass it
+src/sec-gates.test.ts > SEC-03: DNS / IPv4 / IPv6 / LAN / cloud-metadata egress is NOT blocked > the POSIX backend has no egress boundary either: the bwrap profile carries no network namespace
+src/sec-gates.test.ts > SEC-03: DNS / IPv4 / IPv6 / LAN / cloud-metadata egress is NOT blocked > CLOSABILITY: no public seam can express egress policy — the runner override cannot carry one
+src/sec-gates.test.ts > SEC-04: the web tool refuses private destinations on every hop and forwards no credentials > the address policy refuses loopback, link-local, private, unspecified and transition addresses
+src/sec-gates.test.ts > SEC-04: the web tool refuses private destinations on every hop and forwards no credentials > a DNS answer set with ANY non-public member is refused WHOLE — the rebinding defence
+src/sec-gates.test.ts > SEC-04: the web tool refuses private destinations on every hop and forwards no credentials > the transport PINS the validated address set, so a re-resolve cannot reach a private address
+src/sec-gates.test.ts > SEC-04: the web tool refuses private destinations on every hop and forwards no credentials > a real same-origin redirect is followed; a cross-origin one is REFUSED
+src/sec-gates.test.ts > SEC-04: the web tool refuses private destinations on every hop and forwards no credentials > a request carries no ambient credential, and the tool filter does not claim to be egress control
+src/sec-gates.test.ts > SEC-05: a symlink escape is refused at the HANDLE boundary, not by a string prefix > a symlink pointing outside the workspace is REFUSED on write, and the outside file is untouched
+src/sec-gates.test.ts > SEC-05: a symlink escape is refused at the HANDLE boundary, not by a string prefix > the hardlink vector through the fs seam: the fence does not refuse, and the atomic write severs the link
+src/sec-gates.test.ts > SEC-05: a symlink escape is refused at the HANDLE boundary, not by a string prefix > the fence RE-CANONICALIZES before delegating, so the checked identity is the mutated one
+src/sec-gates.test.ts > SEC-05: a symlink escape is refused at the HANDLE boundary, not by a string prefix > containment compares FILESYSTEM IDENTITY when spellings differ, not only text
+src/sec-gates.test.ts > SEC-06: park invalidates old RPC; reset invalidates old references and tool requests > the epoch guard exists and is tested, and the tests are the ONLY callers
+src/sec-gates.test.ts > SEC-06: park invalidates old RPC; reset invalidates old references and tool requests > the reachability claim is verified here rather than inherited from the GAPS entry
+src/sec-gates.test.ts > SEC-06: park invalidates old RPC; reset invalidates old references and tool requests > the field's own comment now says it is NOT enforced, which is the corrected claim
+src/sec-gates.test.ts > SEC-06: park invalidates old RPC; reset invalidates old references and tool requests > host.ts claims a per-await epoch and owner re-check that its code does not perform
+src/sec-gates.test.ts > SEC-06: park invalidates old RPC; reset invalidates old references and tool requests > the kernel park/reset half is NOT_RUN, and the reason is a measurement
+src/sec-gates.test.ts > SEC-07: an old background task in a new cell is NOT isolated, and that is the honest statement > no source in this project claims a cell id isolates malicious code
+src/sec-gates.test.ts > SEC-07: an old background task in a new cell is NOT isolated, and that is the honest statement > the architecture document states the same-kernel limit rather than hiding it
+src/sec-gates.test.ts > SEC-07: an old background task in a new cell is NOT isolated, and that is the honest statement > the privileges that DO hold across a cell boundary are the cross-Session and host refusals
+src/sec-gates.test.ts > SEC-07: an old background task in a new cell is NOT isolated, and that is the honest statement > the kernel's transport is a real limit and is recorded: plaintext TCP by default, CurveZMQ only when asked
+src/sec-gates.test.ts > SEC-07: an old background task in a new cell is NOT isolated, and that is the honest statement > the kernel-process "OS identity" is a pid, not a confinement: the spawn is unconfined
+src/sec-gates.test.ts > SEC-08: a read-permission-domain or project change forces a NEW epoch, never a reused kernel > the architecture requires a separate execution world per read-permission domain
+src/sec-gates.test.ts > SEC-08: a read-permission-domain or project change forces a NEW epoch, never a reused kernel > this project isolates a domain by a SEPARATE STORE, which is the mechanism it actually has
+src/sec-gates.test.ts > SEC-08: a read-permission-domain or project change forces a NEW epoch, never a reused kernel > no secret variable survives a domain change, because no secret is ever placed in configuration
+src/sec-gates.test.ts > SEC-08: a read-permission-domain or project change forces a NEW epoch, never a reused kernel > a credential-shaped name cannot cross a process boundary, which bounds the blast radius of a role change
+src/sec-gates.test.ts > SEC-08: a read-permission-domain or project change forces a NEW epoch, never a reused kernel > the kernel half of the oracle HOLDS on the live plane: a changed execution world is refused
+src/sec-gates.test.ts > SEC-08: a read-permission-domain or project change forces a NEW epoch, never a reused kernel > the MIGRATION half exists but has no runtime: it is a designed mechanism in an unreachable module
+src/sec-gates.test.ts > SEC-08: a read-permission-domain or project change forces a NEW epoch, never a reused kernel > the gate is NOT_RUN, and the reason is that the mechanism exists but no second execution world does
+src/sec-gates.test.ts > SEC cross-check: the two honest FAILs are the project's own record, not this file's opinion > docs/GAPS.md and the M9.3 findings both carry the FAILs
+src/sec-gates.test.ts > SEC cross-check: the two honest FAILs are the project's own record, not this file's opinion > the security fixture uses only fabricated canary values, and never reads a real credential
+src/profile-config.test.ts > A04: a profile patch replaces the row config, it does not merge into it > drops the unmentioned key instead of merging it, and the dump proves which happened
+src/profile-config.test.ts > A04: a profile patch replaces the row config, it does not merge into it > reports the replacement as an INVALID row at mount, which is the loud failure a silent merge would have hidden
+src/profile-config.test.ts > A04: a profile patch replaces the row config, it does not merge into it > applies a whole-value replacement from the HOME layer too, with the home layer ranked above the profile layer
+src/profile-config.test.ts > A04: a profile patch replaces the row config, it does not merge into it > never silently accepts a patch that names no existing row
+src/profile-config.test.ts > A05: a home overlay that changes model/preset is visible, and the baseline home is clean > shows the override in the graph, attributes the row to the home layer, and differs from the clean home
+src/profile-config.test.ts > A05: a home overlay that changes model/preset is visible, and the baseline home is clean > omits the home layer entirely under --dump-default-config, which is why that flag is the stock baseline
+src/profile-config.test.ts > A05: a home overlay that changes model/preset is visible, and the baseline home is clean > refuses to combine --dump-default-config with --patch, so the baseline cannot be quietly overlayed
+src/profile-config.test.ts > A08: the C2 difference from C0 is exactly the two documented changes > changes exactly two rows and deletes none
+src/profile-config.test.ts > A08: the C2 difference from C0 is exactly the two documented changes > never deletes a stock component while still calling the result stock
+src/profile-config.test.ts > A08: the C2 difference from C0 is exactly the two documented changes > compares the Goal, fork and compaction rows and finds them identical between C0 and C2
+src/profile-config.test.ts > A08: the C2 difference from C0 is exactly the two documented changes > records the measured C0 capability gap the C2 change exists to close
+src/profile-config.test.ts > A09: model route and search provider are separate capabilities with separate status > verifies the machine is really in the state the gate describes: model key usable, search key absent
+src/profile-config.test.ts > A09: model route and search provider are separate capabilities with separate status > turns an unusable search provider into WEB_PROVIDER_CONFIGURED_UNAVAILABLE, never into an empty result
+src/profile-config.test.ts > A09: model route and search provider are separate capabilities with separate status > never renders a failed search as `No results found.` — the tool text that would fabricate a negative finding
+src/profile-config.test.ts > A09: model route and search provider are separate capabilities with separate status > reports presence, not entitlement, from the ported provider — and never probes from available()
+src/profile-config.test.ts > A09: model route and search provider are separate capabilities with separate status > drives the SHIPPED DeepSeek search provider to the credential boundary — the provider the daily profile actually mounts
+src/profile-config.test.ts > A10: the headless CLI stream is interaction; the persisted Session is evidence > baseline: a normally-completing turn exits 0 and the CLI stream and the Session agree
+src/profile-config.test.ts > A10: the headless CLI stream is interaction; the persisted Session is evidence > large output: the CLI stream is BOUNDED and flags it, while the Session keeps the full result
+src/profile-config.test.ts > A10: the headless CLI stream is interaction; the persisted Session is evidence > business failure inside a normally-completing turn: exit 0 is NOT business success
+src/profile-config.test.ts > A10: the headless CLI stream is interaction; the persisted Session is evidence > reports a genuine turn-level failure as a non-zero exit, so the two failure kinds are distinguishable
+src/profile-config.test.ts > A12: the real daily Web host starts, serves, and owns a Session lifecycle > recorded the real Web host transcript, and it shows a bind, a trust fence and a Session
+src/profile-config.test.ts > A12: the real daily Web host starts, serves, and owns a Session lifecycle > proves the boundary is a CREDENTIAL boundary, not a composition failure
+src/profile-config.test.ts > A12: the real daily Web host starts, serves, and owns a Session lifecycle > is not substituted by a headless or testkit run — the host evidence names the Web profile
+src/profile-config.test.ts > A12: the real daily Web host starts, serves, and owns a Session lifecycle > booted the DAILY composition, not a bare web profile — the resolved graph carries both C2 changes
+src/profile-config.test.ts > A12: the real daily Web host starts, serves, and owns a Session lifecycle > regenerated dumps are consistent with the live resolution, so the recorded evidence is not stale
+src/profile-isolation.test.ts > A06 preset layering: two presets in parallel Sessions > gives each Session its own composed tool set
+src/profile-isolation.test.ts > A06 preset layering: two presets in parallel Sessions > registers a host-level service once, not once per preset
+src/profile-isolation.test.ts > A06 preset layering: two presets in parallel Sessions > keeps a value written while serving preset A out of preset B
+src/profile-isolation.test.ts > A06 preset layering: two presets in parallel Sessions > shares one module instance between two presets naming the SAME file
+src/profile-isolation.test.ts > A06 preset layering: two presets in parallel Sessions > gives each Session its own Jobs registry and compaction engine when the presets isolate them
+src/profile-isolation.test.ts > A07 preset identity: precedence and resolution > lets an earlier root shadow a later root with the same id
+src/profile-isolation.test.ts > A07 preset identity: precedence and resolution > discovers a user preset with a unique id alongside the shipped ones
+src/profile-isolation.test.ts > A07 preset identity: precedence and resolution > refuses a user directory that tries to claim a shipped preset id through the real roster
+src/profile-isolation.test.ts > A07 preset identity: precedence and resolution > throws on an unknown id instead of falling back to the default
+src/profile-isolation.test.ts > A07 preset identity: precedence and resolution > refuses to compose a Session on an unknown preset rather than composing nothing
+src/profile-isolation.test.ts > A07 preset identity: precedence and resolution > does not treat a same-mtime same-size edit as a new generation
+src/profile-isolation.test.ts > A07 preset identity: precedence and resolution > keeps a Session on the generation it joined while a later Session gets a new one
+src/profile-isolation.test.ts > A07 preset identity: precedence and resolution > refuses a preset whose composition names a plugin that cannot be resolved
+src/profile-isolation.test.ts > A07 preset identity: precedence and resolution > refuses to mount a shipped preset when the host plane its rows inject is absent
+src/profile-isolation.test.ts > A11 bad session resume: the real built launcher refuses > is the launcher this project qualified, and it is present
+src/profile-isolation.test.ts > A11 bad session resume: the real built launcher refuses > refuses --session-id for a Session that does not exist
+src/profile-isolation.test.ts > A11 bad session resume: the real built launcher refuses > creates no Session when the requested id does not exist
+src/profile-isolation.test.ts > A11 bad session resume: the real built launcher refuses > refuses an unknown profile by name
+src/profile-isolation.test.ts > A11 bad session resume: the real built launcher refuses > refuses an unknown profile BEFORE creating any profile directory
+src/profile-isolation.test.ts > A11 bad session resume: the real built launcher refuses > refuses to resume a Session recorded in a different working directory
+src/profile-isolation.test.ts > A11 bad session resume: the real built launcher refuses > proceeds past the session check to the credential check when the resume is valid
+src/profile-isolation.test.ts > the real launcher composes the preset roster into its profile graph > mounts the agent-presets row in the web profile
+src/profile-isolation.test.ts > the real launcher composes the preset roster into its profile graph > omits the user patch layer from --dump-default-config and includes it in --dump-config
+src/profile-isolation.test.ts > the real launcher composes the preset roster into its profile graph > requires --profile rather than guessing one
+src/profile-isolation.test.ts > the shipped roster the launcher actually mounts > holds the four shipped presets and no more
+src/profile-isolation.test.ts > the shipped roster the launcher actually mounts > keeps every shipped composition a real composition, not a truncated file
+src/profile-isolation.test.ts > the shipped roster the launcher actually mounts > rejects a directory name that could escape the preset root
+src/scheduling.test.ts > C01: ten distinct children carry real work, root excluded > runs ten distinct children from twenty submitted tasks with target N=10
+src/scheduling.test.ts > C01: ten distinct children carry real work, root excluded > does not count the root own settlement-driven turn as one of the ten children
+src/scheduling.test.ts > C02: a single completion refills without waiting for the wave > admits one replacement as soon as one child settles, with nine still running
+src/scheduling.test.ts > C03: a completion storm neither double-launches nor misses a refill > serializes concurrent drains and admits exactly one child per freed slot
+src/scheduling.test.ts > C04: an insufficient ready supply is reported, never padded with placeholders > creates exactly three real children and reports a seven-slot deficit
+src/scheduling.test.ts > C07: a cancel that has not finished keeps the slot occupied > holds the slot while an interrupted child is still running, and refuses the premature refill
+src/scheduling.test.ts > C07: a cancel that has not finished keeps the slot occupied > keeps an unknown-outcome task occupying its slot against a full target
+src/scheduling.test.ts > C09: provider limits are reported, never disguised as execution > a sustained 429 through the real wire keeps the target at 10 and reports a block
+src/scheduling.test.ts > C09: provider limits are reported, never disguised as execution > an exhausted child budget blocks with a real reason and does not lower the target
+src/dep-gates.test.ts > DEP-01: the launcher is locked by identity, and a REAL tool call proves it > cites a REAL tool round trip, not a --help success
+src/dep-gates.test.ts > DEP-01: the launcher is locked by identity, and a REAL tool call proves it > cites a real Session on the composed preset whose catalog contains the work tool
+src/dep-gates.test.ts > DEP-01: the launcher is locked by identity, and a REAL tool call proves it > records that the two launchers are different identities, reproduced 3/3
+src/dep-gates.test.ts > DEP-01: the launcher is locked by identity, and a REAL tool call proves it > the module graph is recorded as digests, and the built graph resolves to lib not src
+src/dep-gates.test.ts > DEP-02: the old 104-case evidence does not migrate into the new spec > installs the NEW spec at schema_version 2 with exactly 112 mandatory cases, all NOT_RUN
+src/dep-gates.test.ts > DEP-02: the old 104-case evidence does not migrate into the new spec > the installed spec is byte-identical to the audit package copy
+src/dep-gates.test.ts > DEP-02: the old 104-case evidence does not migrate into the new spec > the OLD report still exists, still says PASS, and is NOT the new spec
+src/dep-gates.test.ts > DEP-02: the old 104-case evidence does not migrate into the new spec > nothing in the qualification tooling reads old results into the new spec
+src/dep-gates.test.ts > DEP-03: all production packages AND tests compile, with no private bypass > the two configs differ exactly in the test exclusion, and both keep strict
+src/dep-gates.test.ts > DEP-03: all production packages AND tests compile, with no private bypass > THIS family's own files typecheck clean under the check config
+src/dep-gates.test.ts > DEP-03: all production packages AND tests compile, with no private bypass > the WHOLE tree — production AND tests — compiles clean under the check config
+src/dep-gates.test.ts > DEP-03: all production packages AND tests compile, with no private bypass > no `any` bypass and no suppression directive in any production source
+src/dep-gates.test.ts > DEP-03: all production packages AND tests compile, with no private bypass > the package exports only public entries, each pointing at a built artifact that exists
+src/dep-gates.test.ts > DEP-03: all production packages AND tests compile, with no private bypass > no production source deep-imports a private path from a DSH peer
+src/dep-gates.test.ts > DEP-03: all production packages AND tests compile, with no private bypass > every DSH peer a PRODUCTION source imports is resolvable, and the declared/undeclared gap is recorded
+src/dep-gates.test.ts > DEP-04: read / grep / process / Web resolve the SAME execution world > the pinned checkout implements the one-world contract: every SSH provider shares one connection
+src/dep-gates.test.ts > DEP-04: read / grep / process / Web resolve the SAME execution world > the filesystem seam carries the host/execution-world separation as a typed contract
+src/dep-gates.test.ts > DEP-04: read / grep / process / Web resolve the SAME execution world > on THIS deployment the mounted providers are LOCAL, so no remote world exists to be consistent with
+src/dep-gates.test.ts > DEP-05: a missing subprocess/sandbox provider fails EXPLICITLY, never as danger-full-access > a confining shell executor refuses to load without a ctx.sandbox provider
+src/dep-gates.test.ts > DEP-05: a missing subprocess/sandbox provider fails EXPLICITLY, never as danger-full-access > a composition that cannot confine does NOT silently acquire an unconfined executor
+src/dep-gates.test.ts > DEP-05: a missing subprocess/sandbox provider fails EXPLICITLY, never as danger-full-access > the sandbox-policy default is the STRICTEST mode, so an unconfigured host is read-only
+src/dep-gates.test.ts > DEP-05: a missing subprocess/sandbox provider fails EXPLICITLY, never as danger-full-access > a provider that cannot enforce depth is refused rather than silently accepted (the same fail-closed shape)
+src/dep-gates.test.ts > DEP-06: exactly one host wins the store, including under the A/B interleaving > cites the in-process coverage: the kernel object excludes, the note does not
+src/dep-gates.test.ts > DEP-06: exactly one host wins the store, including under the A/B interleaving > cites the reproduced A/B interleaving on this machine, with the fix direction it implies
+src/dep-gates.test.ts > DEP-06: exactly one host wins the store, including under the A/B interleaving > a REAL second process is refused while the first holds the lock, over one store
+src/dep-gates.test.ts > DEP-07: a crashed holder releases the kernel lock, and no PID/TTL theft occurs > the release mechanism is the kernel handle, not a PID probe or a TTL
+src/dep-gates.test.ts > DEP-07: a crashed holder releases the kernel lock, and no PID/TTL theft occurs > the durability suite already kills a real holder process and confirms it is gone
+src/dep-gates.test.ts > DEP-07: a crashed holder releases the kernel lock, and no PID/TTL theft occurs > a SIGKILLed holder frees the store for the next acquirer, with no stale-lock surgery
+src/dep-gates.test.ts > DEP-07: a crashed holder releases the kernel lock, and no PID/TTL theft occurs > a stale advisory note from a dead holder does not lock out the next generation
+src/dep-gates.test.ts > DEP-08: the typecheck genuinely goes RED when a test file has a type error > injecting a type error into a TEST file fails the check config and passes the build config
+src/dep-gates.test.ts > DEP-08: the typecheck genuinely goes RED when a test file has a type error > the real tree is unmodified by the injection test
+src/dep-gates.test.ts > DEP cross-check: the qualified launcher exists and is not a source path > the built launcher is present and is absolute in the source tree, not this repo
+src/dep-gates.test.ts > DEP cross-check: the qualified launcher exists and is not a source path > the local launcher resolution fix is present as a script rather than a hand-made junction set
+src/dep-gates.test.ts > DEP cross-check: the qualified launcher exists and is not a source path > every junction the package depends on resolves to a real directory inside the pinned checkout
+src/dep-gates.test.ts > DEP: the store is a single-writer resource, and the lock is what makes that true > the host service takes the lock BEFORE it opens the domain
+src/dep-gates.test.ts > DEP: the store is a single-writer resource, and the lock is what makes that true > an unconfigured host takes no lock, and that is stated rather than implied
+src/dep-gates.test.ts > DEP: the store is a single-writer resource, and the lock is what makes that true > the store directory is created by the lock path, so a fresh deployment does not need a manual mkdir
+src/security-denial.test.ts > E01: credential isolation at the real OS boundary > reports the enforcement the Windows ACL rung actually achieves, and its denial dialect
+src/security-denial.test.ts > E01: credential isolation at the real OS boundary > THE LIMITATION: a READ of the canary secret OUTSIDE the workspace SUCCEEDS under every confined mode
+src/security-denial.test.ts > E01: credential isolation at the real OS boundary > the boundary that DOES hold is writes: outside is denied in both modes, inside only under workspace-write
+src/security-denial.test.ts > E01: credential isolation at the real OS boundary > THE SECOND LIMITATION: a hard link inside the workspace writes THROUGH to the outside name
+src/security-denial.test.ts > E01: credential isolation at the real OS boundary > the ONE credential control that exists is an environment-name scrub in the subprocess seam, not the sandbox
+src/security-denial.test.ts > E01: credential isolation at the real OS boundary > the sandbox vocabulary cannot express a credential or read policy — it is file-effect only
+src/security-denial.test.ts > E01: credential isolation at the real OS boundary > mounts no terminalController, so no test here can reach the human Web terminal
+src/security-denial.test.ts > E03: a sandbox-mode change is refused while a PTY is live > refuses the change, and the refusal is TOTAL: no event is logged and the resolved mode is unchanged
+src/security-denial.test.ts > E03: a sandbox-mode change is refused while a PTY is live > fences only the owner with the live PTY: an unrelated session may change mode at will
+src/security-denial.test.ts > E03: a sandbox-mode change is refused while a PTY is live > closes the other half of the oracle: the widened capability is gone from the PTY the moment it is closed
+src/security-denial.test.ts > E03: a sandbox-mode change is refused while a PTY is live > THE LIMITATION: under read-only no PTY can reach readiness, so there is nothing to fence there
+src/security-denial.test.ts > E06: network egress from a confined command > THE FINDING: a confined child completes a real HTTP request to a loopback server
+src/security-denial.test.ts > E06: network egress from a confined command > a confined child also reaches a PUBLIC address: the loopback result is not an artefact of the local server
+src/security-denial.test.ts > E06: network egress from a confined command > the ONLY egress-adjacent control in DSH is web-fetch-http's SSRF guard, and it constrains the fetch TOOL, not a shell
+src/security-denial.test.ts > E06: network egress from a confined command > the sandbox seam has no egress vocabulary to enforce: its wrap carries no network fact
+src/security-denial.test.ts > the canary fixture is fabricated and self-consistent > ships the marker inside the workspace and the secret outside it
+src/security-denial.test.ts > the canary fixture is fabricated and self-consistent > stages a copy rather than using the fixture in place, so no standing ACE lands on this repository
+src/terminal.test.ts > M6: native terminal capability on this machine > T01: the terminal registry and a shell backend are really mounted
+src/terminal.test.ts > M6: native terminal capability on this machine > T02: spawn takes type/name/cwd and has no command field
+src/terminal.test.ts > M6: native terminal capability on this machine > T03: state persists across separate sends on the same PTY
+src/terminal.test.ts > M6: native terminal capability on this machine > T03: a different owner cannot read the first owner terminal
+src/terminal.test.ts > M6: native terminal capability on this machine > T04: a send result is a WAIT REASON, never a completion signal
+src/terminal.test.ts > M6: native terminal capability on this machine > T04: a quiet command settles as a heuristic, not as a proven completion
+src/terminal.test.ts > M6: native terminal capability on this machine > T07: read is a bounded scrollback view, not a full log cursor
+src/terminal.test.ts > M6: native terminal capability on this machine > T09: killing a terminal releases it, and a later kill of the same id is refused
+src/terminal.test.ts > M6: native terminal capability on this machine > T09: disposing an owner leaves no live terminal behind
+src/isolation.test.ts > C12: every nesting path is either accounted for or explicitly refused > refuses a grandchild through the continuable path, and names the depth that refused it
+src/isolation.test.ts > C12: every nesting path is either accounted for or explicitly refused > refuses the grandchild even when the CALLER supplies a larger maxDepth
+src/isolation.test.ts > C12: every nesting path is either accounted for or explicitly refused > omitting maxDepth does NOT lift the deployment cap
+src/isolation.test.ts > C12: every nesting path is either accounted for or explicitly refused > records the deployment depth on the run, so the record itself carries the cap
+src/isolation.test.ts > C12: every nesting path is either accounted for or explicitly refused > refuses a grandchild through the ONE-SHOT path too, so the fork/spawn providers are covered
+src/isolation.test.ts > C12: every nesting path is either accounted for or explicitly refused > a provider that cannot enforce depth is REFUSED the request rather than accepting and ignoring it
+src/isolation.test.ts > C12: every nesting path is either accounted for or explicitly refused > the model-facing delegation tool exposes no parameter that can lift a limit
+src/isolation.test.ts > C12: every nesting path is either accounted for or explicitly refused > a model-supplied toolFilter cannot lift the deployment tool restriction on the child
+src/isolation.test.ts > C12: every nesting path is either accounted for or explicitly refused > a toolFilter naming an unknown tool fails loudly rather than silently admitting everything
+src/isolation.test.ts > C12: every nesting path is either accounted for or explicitly refused > accounts for the workflow/PTC path: it delegates through the SAME service, so it is depth-capped too
+src/isolation.test.ts > C12: every nesting path is either accounted for or explicitly refused > the shipped delegation tool DOES carry the deployment cap, unlike the workflow path
+src/isolation.test.ts > C13: depth, per-run limits and the family pool are three separate scopes > gives a second root its own pool, so one family filling up does not block another
+src/isolation.test.ts > C13: depth, per-run limits and the family pool are three separate scopes > keeps two runs in one host separate in tasks, budget and pause state
+src/isolation.test.ts > C13: depth, per-run limits and the family pool are three separate scopes > carries the deployment maxDepth on the run AND on every launch, so neither can be omitted
+src/isolation.test.ts > C13: depth, per-run limits and the family pool are three separate scopes > does not mistake the family pool for a global pool when a child holds the slot
+src/isolation.test.ts > C13: depth, per-run limits and the family pool are three separate scopes > the work service counts each run from its own record, never from a shared counter
+src/isolation.test.ts > C14: an active Goal and a managed run cannot both drive one root > disarms only this run, leaving the objective, revision and phase intact
+src/isolation.test.ts > C14: an active Goal and a managed run cannot both drive one root > produces no double-continuation loop: the disarmed driver stops queueing rounds
+src/isolation.test.ts > C14: an active Goal and a managed run cannot both drive one root > leaves another Session with an active Goal completely alone
+src/isolation.test.ts > C14: an active Goal and a managed run cannot both drive one root > rejects a model resume built on a STALE revision, and accepts one built on the current revision
+src/isolation.test.ts > C14: an active Goal and a managed run cannot both drive one root > a later human-authorized resume is still possible, so the handover is not deletion
+src/isolation.test.ts > C14: an active Goal and a managed run cannot both drive one root > is a complete, honest no-op when the profile mounts no Goal service
+src/isolation.test.ts > C15: notifications are bounded and no result ref is lost > coalesces concurrent drains for one run so a storm cannot double-admit
+src/isolation.test.ts > C15: notifications are bounded and no result ref is lost > does not lose a result ref when many tasks are admitted in one drain
+src/isolation.test.ts > C15: notifications are bounded and no result ref is lost > a refused launch in a batch does not cost the batch its other results
+src/isolation.test.ts > C15: notifications are bounded and no result ref is lost > names budget_blocked when the run-level budget really is exhausted
+src/isolation.test.ts > C15: notifications are bounded and no result ref is lost > does not wake the root on a timer: an idle run issues no model calls of its own
+src/isolation.test.ts > C16: an idle root is not a finished task > proves whenIdle() reports driver quiescence, not task success
+src/isolation.test.ts > C16: an idle root is not a finished task > does not terminate the host or the run when the root goes idle with children running
+src/isolation.test.ts > C16: an idle root is not a finished task > makes a later result observable in a NATIVE model step of the root
+src/isolation.test.ts > C16: an idle root is not a finished task > never counts an admitted-but-unobserved child as an active worker
+src/isolation.test.ts > C17: a failed acceptance can continue, and the family is NOT yet drained > beginClosing stops new admissions while leaving the family open
+src/isolation.test.ts > C17: a failed acceptance can continue, and the family is NOT yet drained > has NOT called the permanent family drain, so a correction child can still settle
+src/isolation.test.ts > C17: a failed acceptance can continue, and the family is NOT yet drained > a resume after closing is refused, and a resume after a pause is a real authorization edge
+src/isolation.test.ts > C17: a failed acceptance can continue, and the family is NOT yet drained > keeps the reservation held when a launch fails, so a correction cannot double-spend the slot
+src/isolation.test.ts > C18: after a definite completion, the drain is final and explicit > refuses a new child on the exact drained parent, with a named reason
+src/isolation.test.ts > C18: after a definite completion, the drain is final and explicit > does not revive the parent by flipping a private flag: the refusal is stable across attempts
+src/isolation.test.ts > C18: after a definite completion, the drain is final and explicit > leaves an unrelated parent fully admitted, so the close is scoped and not global
+src/isolation.test.ts > C18: after a definite completion, the drain is final and explicit > routes subsequent work through a NEW run lifecycle rather than reviving the closed one
+src/concurrency.test.ts > mandatory concurrency: N=10 rolling top-up on the production loop > admits exactly ten children through the real startContinuable seam
+src/concurrency.test.ts > mandatory concurrency: N=10 rolling top-up on the production loop > does not admit an eleventh child while ten hold their slots
+src/concurrency.test.ts > mandatory concurrency: N=10 rolling top-up on the production loop > tops up one completion immediately without waiting for the wave
+src/concurrency.test.ts > mandatory concurrency: N=10 rolling top-up on the production loop > reports a deficit and invents no work when only three tasks are ready
+src/concurrency.test.ts > mandatory concurrency: N=10 rolling top-up on the production loop > refuses admission past the real capacity even when the record would allow it
+src/concurrency.test.ts > mandatory concurrency: N=10 rolling top-up on the production loop > keeps the root separate from the ten children
+src/concurrency.test.ts > mandatory concurrency: N=10 rolling top-up on the production loop > refuses to launch grandchildren because maxDepth is 1
+src/concurrency.test.ts > mandatory concurrency: N=10 rolling top-up on the production loop > coalesces concurrent drains so a completion storm cannot double-admit
+src/concurrency.test.ts > mandatory concurrency: N=10 rolling top-up on the production loop > stops admitting once the user pauses, with free slots remaining
+src/history-web.test.ts > HIS-01: guessing another project's SessionId is REFUSED, not empty > refuses a session in another workspace with a REFUSAL code, not an empty page
+src/history-web.test.ts > HIS-01: guessing another project's SessionId is REFUSED, not empty > distinguishes a refusal from an authorized-but-absent session
+src/history-web.test.ts > HIS-01: guessing another project's SessionId is REFUSED, not empty > gives the SAME refusal for an id in another project that exists and one that does not
+src/history-web.test.ts > HIS-01: guessing another project's SessionId is REFUSED, not empty > allows the caller's own session and refuses a caller with no workspace everything else
+src/history-web.test.ts > HIS-01: guessing another project's SessionId is REFUSED, not empty > refuses when the caller's own session changed workspace
+src/history-web.test.ts > HIS-01: guessing another project's SessionId is REFUSED, not empty > reads through ctx.get rather than ctx.sessionQuery, so a plugin without inject works
+src/history-web.test.ts > HIS-01: guessing another project's SessionId is REFUSED, not empty > reads from a PLUGIN caller, the fiber the boot failure actually hit
+src/history-web.test.ts > HIS-01: guessing another project's SessionId is REFUSED, not empty > names the DEPLOYMENT when no session-query service is mounted
+src/history-web.test.ts > HIS-01: guessing another project's SessionId is REFUSED, not empty > mounts through the real plugin entry, exposing a service that refuses without session-query
+src/history-web.test.ts > HIS-01: guessing another project's SessionId is REFUSED, not empty > does not expose the raw sessionQuery service from the plane
+src/history-web.test.ts > HIS-02: a scan is pinned to ONE watermark while events append > returns only events at or below the pinned watermark, and reads new events in a SEPARATE scan
+src/history-web.test.ts > HIS-02: a scan is pinned to ONE watermark while events append > refuses a page size that is not a positive integer
+src/history-web.test.ts > HIS-02: a scan is pinned to ONE watermark while events append > keeps at most ONE pinned observation per session, however often it is re-opened
+src/history-web.test.ts > HIS-02: a scan is pinned to ONE watermark while events append > releases a scan's observation on dispose, so a cursor after teardown is refused
+src/history-web.test.ts > HIS-02: a scan is pinned to ONE watermark while events append > refuses a cursor from a superseded generation instead of re-basing it
+src/history-web.test.ts > HIS-02: a scan is pinned to ONE watermark while events append > keeps page order stable across a filtered multi-page traversal
+src/history-web.test.ts > HIS-03: an event larger than the page budget returns segments, not a breach > returns segments with the FULL size and digest, and never a partial body as the event
+src/history-web.test.ts > HIS-03: an event larger than the page budget returns segments, not a breach > bounds the segment LIST as well as each segment
+src/history-web.test.ts > HIS-03: an event larger than the page budget returns segments, not a breach > reports an absent seq as an error rather than an empty event
+src/history-web.test.ts > HIS-03: an event larger than the page budget returns segments, not a breach > reads an event from the pinned observation, so an event read does not re-read the log
+src/history-web.test.ts > HIS-03: an event larger than the page budget returns segments, not a breach > measures the BYTES a 100-page traversal reads, not only the call count
+src/history-web.test.ts > HIS-03: an event larger than the page budget returns segments, not a breach > reports an event absent from the pinned scan as absent, not as an empty event
+src/history-web.test.ts > HIS-03: an event larger than the page budget returns segments, not a breach > produces a digest that is stable across key ordering
+src/history-web.test.ts > HIS-04: traversing 100 pages reuses ONE prepared observation > measures ONE full-log materialization for a 100-page traversal
+src/history-web.test.ts > HIS-04: traversing 100 pages reuses ONE prepared observation > counts a full-log materialization when the plane is asked for a fresh scan
+src/history-web.test.ts > HIS-04: traversing 100 pages reuses ONE prepared observation > reuses the underlying prepared observation lease across scans of the same session
+src/history-web.test.ts > HIS-05: stored / consumed / projected are three separate facts > classifies DSH's own three surfaces and records consumption and projection separately
+src/history-web.test.ts > HIS-05: stored / consumed / projected are three separate facts > refuses to record consumption for an event that was never stored
+src/history-web.test.ts > HIS-05: stored / consumed / projected are three separate facts > refuses to record projection for an event that was never consumed
+src/history-web.test.ts > HIS-05: stored / consumed / projected are three separate facts > filters pages by surface using session-query's own vocabulary
+src/history-web.test.ts > HIS-06: a superseded number keeps BOTH versions, with source and supersedes > keeps the old value and the new one, with a traceable chain
+src/history-web.test.ts > HIS-06: a superseded number keeps BOTH versions, with source and supersedes > records the AUTHOR of each version, so inference is not promoted to evidence
+src/history-web.test.ts > HIS-07: a model writing "trusted"/"admin" into memory does NOT elevate policy > keeps the label as data and reports the same authority a model claim always has
+src/history-web.test.ts > HIS-07: a model writing "trusted"/"admin" into memory does NOT elevate policy > gives a user statement instruction authority even with no labels at all
+src/history-web.test.ts > HIS-07: a model writing "trusted"/"admin" into memory does NOT elevate policy > reads authority from the AUTHOR field only, never from text or labels
+src/history-web.test.ts > HIS-08: the derived FTS index rebuilds from canonical Session/artifact only > drops and rebuilds a derived index, recovering the same rows from canonical sessions
+src/history-web.test.ts > HIS-08: the derived FTS index rebuilds from canonical Session/artifact only > rebuilds the REAL SQLite FTS index after deleting its file
+src/history-web.test.ts > HIS-08: the derived FTS index rebuilds from canonical Session/artifact only > does not require a second history source: the index holds nothing canonical logs lack
+src/history-web.test.ts > ECO-04: a stable prefix with dynamic state in a bounded LATER position > keeps the assembled prefix identical across cells that change only budget and variables
+src/history-web.test.ts > ECO-04: a stable prefix with dynamic state in a bounded LATER position > keeps the dynamic tail inside its byte budget even with a huge variable list
+src/history-web.test.ts > ECO-04: a stable prefix with dynamic state in a bounded LATER position > truncates the tail on a code-point boundary, never mid-character
+src/history-web.test.ts > ECO-04: a stable prefix with dynamic state in a bounded LATER position > changes the prefix generation only when the SDK or policy identity changes
+src/history-web.test.ts > WEB-01: provider truncation is partial with a non-local recovery > marks a truncated body partial, names the gap, and never claims local full recovery
+src/history-web.test.ts > WEB-01: provider truncation is partial with a non-local recovery > does not over-report a complete fetch as unknown, and does not claim the document is complete in the world
+src/history-web.test.ts > WEB-01: provider truncation is partial with a non-local recovery > carries the caveat that a hash proves identity and not truth
+src/history-web.test.ts > WEB-02: a top-10 list is never reported as all results or an exhausted Internet > reports a short, uncursored list as may-be-more UNKNOWN, never as exhausted
+src/history-web.test.ts > WEB-02: a top-10 list is never reported as all results or an exhausted Internet > reports a seam-cut list as may-be-more true, still not "all results"
+src/history-web.test.ts > WEB-02: a top-10 list is never reported as all results or an exhausted Internet > routes the real ctx.web seam and uses the seam's own truncation flag
+src/history-web.test.ts > WEB-03: raw and derived are separately hashed and located; a failed transform does not fabricate body text > hashes the raw and derived objects separately and links them
+src/history-web.test.ts > WEB-03: raw and derived are separately hashed and located; a failed transform does not fabricate body text > does NOT fall back to raw HTML when the conversion yields no text
+src/history-web.test.ts > WEB-03: raw and derived are separately hashed and located; a failed transform does not fabricate body text > records a THROWING converter as a transform gap rather than an empty body
+src/history-web.test.ts > WEB-03: raw and derived are separately hashed and located; a failed transform does not fabricate body text > puts raw and derived in SEPARATE record slots with the transform identity
+src/history-web.test.ts > WEB-03: raw and derived are separately hashed and located; a failed transform does not fabricate body text > records the transform gap on the record when the converter fails
+src/history-web.test.ts > WEB-04: a refetch with a different ETag or body creates a NEW observation > preserves the old hash and time and never backfills the old entry
+src/history-web.test.ts > WEB-04: a refetch with a different ETag or body creates a NEW observation > detects change from EITHER signal, so an unchanged body with a new ETag is still a new observation
+src/history-web.test.ts > WEB-04: a refetch with a different ETag or body creates a NEW observation > offers no lookup that returns "the current body for this url"
+src/history-web.test.ts > WEB-05: an HTTP server that ignores Range is not blindly concatenated > refuses a 200 response to a Range request, because it is the WHOLE entity
+src/history-web.test.ts > WEB-05: an HTTP server that ignores Range is not blindly concatenated > refuses a 206 whose Content-Range does not match the request
+src/history-web.test.ts > WEB-05: an HTTP server that ignores Range is not blindly concatenated > refuses a 206 whose content-encoding changed between pages
+src/history-web.test.ts > WEB-05: an HTTP server that ignores Range is not blindly concatenated > refuses a 206 whose entity tag changed
+src/history-web.test.ts > WEB-05: an HTTP server that ignores Range is not blindly concatenated > accepts a matching 206 and reports the slice it actually represents
+src/history-web.test.ts > WEB-05: an HTTP server that ignores Range is not blindly concatenated > refuses 416 as unsatisfiable rather than as an empty range
+src/history-web.test.ts > WEB-05: an HTTP server that ignores Range is not blindly concatenated > parses Content-Range, including an unknown total, and rejects nonsense
+src/history-web.test.ts > WEB-05: an HTTP server that ignores Range is not blindly concatenated > drives the decision against a REAL loopback server that ignores Range
+src/history-web.test.ts > WEB-06: a claim locates the ACTUAL passage; a snippet is not the full text > locates a quote in the captured artifact with real byte offsets
+src/history-web.test.ts > WEB-06: a claim locates the ACTUAL passage; a snippet is not the full text > refuses to locate a quote that came from a search SNIPPET
+src/history-web.test.ts > WEB-06: a claim locates the ACTUAL passage; a snippet is not the full text > reports a quote that does not occur as unsupported rather than locating approximately
+src/history-web.test.ts > WEB-06: a claim locates the ACTUAL passage; a snippet is not the full text > produces byte offsets that survive multi-byte characters before the quote
+src/history-web.test.ts > WEB-07: embedded commands, skill updates and authority claims change nothing > records every injection attempt as a FINDING and leaves the text verbatim
+src/history-web.test.ts > WEB-07: embedded commands, skill updates and authority claims change nothing > leaves the trust classification and the capability set unchanged by ANY content
+src/history-web.test.ts > WEB-07: embedded commands, skill updates and authority claims change nothing > has no field in the untrusted record that could carry authority
+src/history-web.test.ts > WEB-07: embedded commands, skill updates and authority claims change nothing > uses DSH's own untrusted-content notice, verbatim
+src/history-web.test.ts > WEB-07: embedded commands, skill updates and authority claims change nothing > detects nothing in benign content and does not modify it
+src/history-web.test.ts > WEB-08: PDF empty text, decode errors and compression bombs are explicit > does NOT report an empty extraction as "the content does not exist"
+src/history-web.test.ts > WEB-08: PDF empty text, decode errors and compression bombs are explicit > reports a non-PDF body as a decode error, not as empty content
+src/history-web.test.ts > WEB-08: PDF empty text, decode errors and compression bombs are explicit > reports a THROWING extractor as a decode error with the cause preserved
+src/history-web.test.ts > WEB-08: PDF empty text, decode errors and compression bombs are explicit > reports a budget stop as PARTIAL with the byte counts, not as an empty document
+src/history-web.test.ts > WEB-08: PDF empty text, decode errors and compression bombs are explicit > stops a REAL compression bomb at the budget instead of allocating it
+src/history-web.test.ts > WEB-08: PDF empty text, decode errors and compression bombs are explicit > classifies a bomb inside a PDF as budget-exceeded through the real decompressor
+src/history-web.test.ts > WEB-08: PDF empty text, decode errors and compression bombs are explicit > returns extracted text when there is some, with the page count
+src/history-web.test.ts > a content hash proves identity, never truth > states the limitation on every provenance and memory record that carries a hash
+src/history-web.test.ts > vocabulary guards > has no acquisition completeness value that means "the whole Internet"
+src/history-web.test.ts > vocabulary guards > has no gap recovery value that means "recovered locally from nothing"
+src/history-web.test.ts > vocabulary guards > keeps WebError codes intact when the seam reports an unavailable provider
+src/history-web.test.ts > vocabulary guards > routes a fetch through the real ctx.web seam to a registered fixture provider
+src/effects.test.ts > operation identity > is stable across a changed transport callId
+src/effects.test.ts > operation identity > is stable across parameter key order, so a rebuilt retry is the same operation
+src/effects.test.ts > operation identity > keeps the operationId when the payload changes, so the change is a conflict and not a new operation
+src/effects.test.ts > operation identity > refuses to identify an operation with no logical key
+src/effects.test.ts > operation identity > refuses to canonicalize values whose digest would be ambiguous
+src/effects.test.ts > operation identity > digests the canonical form, not the source text
+src/effects.test.ts > the send decision table > licenses a send from exactly two states, and both are proofs about our own write ordering
+src/effects.test.ts > the send decision table > never licenses a send from a state that could already have reached the remote
+src/effects.test.ts > E07: operation idempotency > performs the effect ONCE when the same logical operation is retried with a new callId
+src/effects.test.ts > E07: operation idempotency > survives a restart: a fresh ledger over the same medium reconciles instead of resending
+src/effects.test.ts > E07: operation idempotency > records a lost reply as unknown, and resolves it by QUERY rather than by a second send
+src/effects.test.ts > E07: operation idempotency > leaves the outcome unknown when the adapter cannot be queried, and still does not resend
+src/effects.test.ts > E07: operation idempotency > does not run an adapter with neither an idempotency key nor a queryable result
+src/effects.test.ts > E07: operation idempotency > sends after a crash that provably preceded the transport call
+src/effects.test.ts > E07: operation idempotency > reconcile never reaches the transport, whatever the recorded state
+src/effects.test.ts > E08: operation parameter conflict > refuses the changed action and does not send it
+src/effects.test.ts > E08: operation parameter conflict > does not let the original acknowledgement authorize the new action
+src/effects.test.ts > E08: operation parameter conflict > leaves the recorded authorization fields untouched and audits the refusal
+src/effects.test.ts > E08: operation parameter conflict > still reconciles the ORIGINAL parameters after a conflict
+src/effects.test.ts > E08: operation parameter conflict > refuses to overwrite a recorded intent through recordIntent
+src/effects.test.ts > E09: opaque shell classification > classifies only a closed allowlist of plain commands as read_only
+src/effects.test.ts > E09: opaque shell classification > returns unknown, never read_only, for anything it cannot classify
+src/effects.test.ts > E09: opaque shell classification > treats any shell metacharacter as making the text a program rather than a command
+src/effects.test.ts > E09: opaque shell classification > refuses a reading command whose flag writes
+src/effects.test.ts > E09: opaque shell classification > reports mutating for commands that write in their normal use
+src/effects.test.ts > E09: opaque shell classification > refuses a path-qualified executable, because the name then proves nothing
+src/effects.test.ts > E09: opaque shell classification > exposes its own limits as part of the interface
+src/effects.test.ts > E09: opaque shell classification > adversarial: the same text that is classified read_only really does write > requires a real shell, because a regex failure is not the same evidence as an observed write
+src/effects.test.ts > E09: opaque shell classification > adversarial: the same text that is classified read_only really does write > a shell function bound to a read-only name writes, while the text still classifies as read_only
+src/effects.test.ts > E09: opaque shell classification > adversarial: the same text that is classified read_only really does write > a PATH-shadowed executable writes, while the text still classifies as read_only
+src/effects.test.ts > E09: opaque shell classification > adversarial: the same text that is classified read_only really does write > a redirect hidden in a variable writes, while the inner text classifies as read_only
+src/effects.test.ts > E09: opaque shell classification > adversarial: the same text that is classified read_only really does write > an exported function writes in a child shell, while the text still classifies as read_only
+src/effects.test.ts > E09: opaque shell classification > adversarial: the same text that is classified read_only really does write > demonstrates all four defeats in one sandbox, so the gate has a single checkable list
+src/effects.test.ts > E10: partial PTC-style program commit > does not replay the program; it reconciles the committed effect and quarantines the rest
+src/effects.test.ts > E10: partial PTC-style program commit > resumes by reconciling each step individually, with no transport invocation at all
+src/effects.test.ts > E10: partial PTC-style program commit > reconciles a lost reply inside the program instead of re-running the program
+src/effects.test.ts > E10: partial PTC-style program commit > leaves a program step unknown when the adapter cannot be queried
+src/effects.test.ts > E10: partial PTC-style program commit > reports a fully completed program as completed, so a real failure is distinguishable
+src/effects.test.ts > E11: cancellation does not roll back > reports "may have happened" and reconciles by query when the effect was sent and the remote cannot confirm
+src/effects.test.ts > E11: cancellation does not roll back > reports the committed outcome when the query confirms it, rather than the cancellation the user asked for
+src/effects.test.ts > E11: cancellation does not roll back > reports an already-confirmed effect as committed, and says cancelling does not undo it
+src/effects.test.ts > E11: cancellation does not roll back > reports not_started when the remote positively says nothing happened, and still not as an undo
+src/effects.test.ts > E11: cancellation does not roll back > does not treat a cancellation of an unrecorded operation as proof it never happened
+src/effects.test.ts > E11: cancellation does not roll back > refuses to cancel an operation whose parameters differ from the recorded ones
+src/effects.test.ts > E11: cancellation does not roll back > never reports a cancellation as an undo, in any branch
+src/effects.test.ts > the ledger record > keeps the intent durable before the transport is invoked
+src/effects.test.ts > the ledger record > records every transport call id it saw, as an audit trail and not as identity
+src/effects.test.ts > the ledger record > is a separate storage domain from the run record
+src/durability-advanced.test.ts > D02: a second host over one live store > measures what upstream actually does: no refusal, and silent loss of the loser's writes
+src/durability-advanced.test.ts > D02: a second host over one live store > refuses the second host once the deployment-boundary guard is configured
+src/durability-advanced.test.ts > D02: a second host over one live store > releases the claim on a clean close, so the next generation is not locked out
+src/durability-advanced.test.ts > D02: a second host over one live store > does not refuse a store because its advisory note is unreadable
+src/durability-advanced.test.ts > D12: a record version this build does not accept > rejects a v2-shaped run record at open instead of reading it as current
+src/durability-advanced.test.ts > D12: a record version this build does not accept > rejects a malformed record rather than dropping it
+src/durability-advanced.test.ts > D12: a record version this build does not accept > rejects a foreign unit version and a non-JSON medium, each with its own code
+src/durability-advanced.test.ts > D12: a record version this build does not accept > opens the same directory normally once the record matches the current schema
+src/durability-advanced.test.ts > D14: OS processes that outlive a hard kill > measures that a detached grandchild survives, and that recovery does not read that as cleanup
+src/durability-advanced.test.ts > D14: OS processes that outlive a hard kill > does not treat a missing pid as proof that a process is gone
+src/durability-records.test.ts > D01: admission is one record transform, never a cross-key transaction > D01 (simulated barrier): credit, task state and outbox are written by ONE update
+src/durability-records.test.ts > D01: admission is one record transform, never a cross-key transaction > D01 (simulated barrier): a refused admission leaves NO trace of either half
+src/durability-records.test.ts > D01: admission is one record transform, never a cross-key transaction > D01: the record schema has no second key, so no cross-key transaction can be claimed
+src/durability-records.test.ts > D03: a durable task+childId whose launch never happened > D03 (REAL KILL): a reservation that provably never launched returns to prepared, once
+src/durability-records.test.ts > D03: a durable task+childId whose launch never happened > D03: a task whose outcome is unknown is NEVER relaunched, even under its reserved id
+src/durability-records.test.ts > D03: a durable task+childId whose launch never happened > D03: a relaunch with a CHANGED assignment is refused rather than launched as the original
+src/durability-records.test.ts > D03: a durable task+childId whose launch never happened > D03: the record keeps the reserved childId, which is what makes this recoverable at all
+src/durability-records.test.ts > D04: the child was admitted but the parent never saved the result > D04 (REAL KILL + real registry): DUPLICATE_CHILD is produced by the real seam and is rethrown unchanged
+src/durability-records.test.ts > D04: the child was admitted but the parent never saved the result > D04: the port refuses to record a provider-allocated id that differs from the reserved one
+src/durability-records.test.ts > D05: pending inbox messages at the moment of the kill > D05 (REAL KILL): the NATIVE inbox projection restores the pending message, and nothing is injected twice
+src/durability-records.test.ts > D05: pending inbox messages at the moment of the kill > D05: the native splice vocabulary is the ONLY inbox mechanism this package uses
+src/durability-records.test.ts > D06: the claim was written and the request never went out > D06 (REAL KILL): a claimed-but-undispatched step is not treated as done
+src/durability-records.test.ts > D06: the claim was written and the request never went out > D06: when the claim cannot be distinguished from a dispatch, the answer is unknown
+src/durability-records.test.ts > D07: the provider received the request and the answer never came > D07 (REAL KILL): usage and effect stay unknown and are never assumed free or unexecuted
+src/durability-records.test.ts > D07: the provider received the request and the answer never came > D07: an unprobed task is quarantined rather than assumed free
+src/durability-records.test.ts > D08: the child persisted its artifact and the parent was never told > D08 (REAL KILL): recovery finds the result in the child Session instead of repeating the task
+src/durability-records.test.ts > D09: an incomplete trailing record > D09 (REAL FILE DAMAGE): the upstream repair contract is used and the torn bytes are not erased by us
+src/durability-records.test.ts > D09: an incomplete trailing record > D09: a malformed record is rejected loudly rather than silently treated as current
+src/durability-records.test.ts > D10: an old worker submits a settlement after a restart > D10 (simulated barrier): the stale epoch is refused while the diagnostic evidence is retained
+src/durability-records.test.ts > D10: an old worker submits a settlement after a restart > D10: a settlement whose childId is not the reserved one is refused and retained too
+src/durability-records.test.ts > D10: an old worker submits a settlement after a restart > D10: reconciliation itself keys on the task, so the record childId is the identity that matters
+src/durability-records.test.ts > D11: a consumer opens the domain twice, and unload then reload > D11 (simulated barrier): one shared host handle, a correct close, and no hanging already-open
+src/durability-records.test.ts > D11: a consumer opens the domain twice, and unload then reload > D11: the host plugin owns the handle through its effect, so unload releases it
+src/durability-records.test.ts > D13: restart with the run already paused or its authorization expired > D13 (REAL KILL): recovery comes back EXPLICITLY PAUSED and consumes nothing
+src/durability-records.test.ts > D13: restart with the run already paused or its authorization expired > D13: an expired authorization comes back paused too, and a live one does not
+src/tool-protocol.test.ts > B04: the same SessionId resumed as a new Agent must not let the old object write > a resume publishes a DIFFERENT object under the SAME id, which is the whole hazard
+src/tool-protocol.test.ts > B04: the same SessionId resumed as a new Agent must not let the old object write > refuses a stale owner at the guard, and the live owner still works
+src/tool-protocol.test.ts > B04: the same SessionId resumed as a new Agent must not let the old object write > the guard is load-bearing: without it the stale object IS accepted
+src/tool-protocol.test.ts > B04: the same SessionId resumed as a new Agent must not let the old object write > the registry identity test is the discipline the terminal and jobs services use
+src/tool-protocol.test.ts > B04: the same SessionId resumed as a new Agent must not let the old object write > the run epoch is inert, so identity is the only enforceable check
+src/tool-protocol.test.ts > B05: two roots on the same preset must be fully isolated > the preset is ONE standing mount, so the tool definition object is shared
+src/tool-protocol.test.ts > B05: two roots on the same preset must be fully isolated > interleaved calls keep tasks, budget and cancellation per run
+src/tool-protocol.test.ts > B05: two roots on the same preset must be fully isolated > a run is found by the calling agent, not by whichever run was touched last
+src/tool-protocol.test.ts > B05: two roots on the same preset must be fully isolated > a session with no run is refused rather than handed another session run
+src/tool-protocol.test.ts > B06: native and PTC must produce the SAME canonical value > both routes return one identical canonical JSON value for the same call
+src/tool-protocol.test.ts > B06: native and PTC must produce the SAME canonical value > the model text is a projection of the value, not a second source of truth
+src/tool-protocol.test.ts > B06: native and PTC must produce the SAME canonical value > rejects a value that is not lossless JSON, rather than coercing it
+src/tool-protocol.test.ts > B06: native and PTC must produce the SAME canonical value > rejects an undeclared field, so no unvalidated field can reach a caller
+src/tool-protocol.test.ts > B06: native and PTC must produce the SAME canonical value > declares a closed output schema, which is what makes the field list enforceable
+src/tool-protocol.test.ts > B07: a guard cannot be widened by a later listener, and async is not a guard > a later pre-execute listener cannot turn the guard denial into an allow
+src/tool-protocol.test.ts > B07: a guard cannot be widened by a later listener, and async is not a guard > an async function is NOT accepted as a guard return value
+src/tool-protocol.test.ts > B07: a guard cannot be widened by a later listener, and async is not a guard > a throwing guard fails the call closed rather than falling through to allow
+src/tool-protocol.test.ts > B07: a guard cannot be widened by a later listener, and async is not a guard > the tool surface offers no parameter that widens its own authority
+src/tool-protocol.test.ts > B08: a failing tools/result observer must not hide or rewrite the outcome > the observer failure is contained: the caller still gets the real outcome
+src/tool-protocol.test.ts > B08: a failing tools/result observer must not hide or rewrite the outcome > the durable intent is written BEFORE the observation, so the record is the authority
+src/tool-protocol.test.ts > B08: a failing tools/result observer must not hide or rewrite the outcome > a run whose outcome is unknown is resolved through the project reconcile path, not a rollback claim
+src/tool-protocol.test.ts > B08: a failing tools/result observer must not hide or rewrite the outcome > a failed observation cannot make a refused admission look accepted
+src/cost.test.ts > C05: the root keeps its own reserved credit > carves the reserve out of the ceiling at run creation, not out of thin air
+src/cost.test.ts > C05: the root keeps its own reserved credit > refuses a reserve that exceeds the ceiling rather than silently clamping it
+src/cost.test.ts > C05: the root keeps its own reserved credit > THE INVARIANT: children may commit the whole child ceiling and not one unit more
+src/cost.test.ts > C05: the root keeps its own reserved credit > still admits a child with the ceiling fully committed by other children, and refuses one unit more
+src/cost.test.ts > C05: the root keeps its own reserved credit > REFUSES the child admission that would eat into the root reserve
+src/cost.test.ts > C05: the root keeps its own reserved credit > keeps the root reserve available while ten children saturate the child ceiling
+src/cost.test.ts > C05: the root keeps its own reserved credit > does not let a root spend consume child headroom, or a child consume the reserve
+src/cost.test.ts > C05: the root keeps its own reserved credit > records a root spend that outruns the reserve in full and halts, rather than trimming it
+src/cost.test.ts > C05: the root keeps its own reserved credit > derives a default reserve when none is given, so a run is never born without one
+src/cost.test.ts > C05: the root keeps its own reserved credit > leaves the target fact unchanged when the budget blocks admission
+src/cost.test.ts > C05: the root keeps its own reserved credit > agrees with the pure counting predicate, so the gate and its reason cannot drift
+src/cost.test.ts > C11: actual spend exceeding the reservation > records the overage in full, pauses admission, and hides nothing
+src/cost.test.ts > C11: actual spend exceeding the reservation > refuses the direct admit path while halted, not only the drain path
+src/cost.test.ts > C11: actual spend exceeding the reservation > stays halted even after a later in-budget spend, because a halt is not an arithmetic state
+src/cost.test.ts > C11: actual spend exceeding the reservation > clears the halt only through an explicit human authorization, and keeps the bill
+src/cost.test.ts > C11: actual spend exceeding the reservation > accumulates overage across several overspends instead of keeping only the last
+src/cost.test.ts > C11: actual spend exceeding the reservation > does not count a spend that came in UNDER its reservation as an overage
+src/cost.test.ts > C11: actual spend exceeding the reservation > measures the overage against the TASK STORED reservation, not a caller-supplied one
+src/cost.test.ts > C11: actual spend exceeding the reservation > THE UNKNOWN PATH: a request whose usage never arrived keeps a conservative reservation
+src/cost.test.ts > C11: actual spend exceeding the reservation > holds an auxiliary request that was never reserved as an unknown, which can only tighten admission
+src/cost.test.ts > C11: actual spend exceeding the reservation > clamps an unknown retention to the task reservation, so one task cannot eat a sibling reservation
+src/cost.test.ts > C11: actual spend exceeding the reservation > survives a domain reopen with the overage, the halt and the reserve intact
+src/cost.test.ts > C11: actual spend exceeding the reservation > applies the overage rule as a pure function, so the boundary is checkable by hand
+src/cost.test.ts > C11: actual spend exceeding the reservation > does not release a reservation when a spend is only REPORTED, and still records the cost
+src/cost.test.ts > C11: actual spend exceeding the reservation > refuses to release a reservation that has no task to retire
+src/cost.test.ts > C11: actual spend exceeding the reservation > refuses a negative cost rather than accepting it as a credit
+src/cost.test.ts > C11: actual spend exceeding the reservation > reports an overage halt as the deficit reason, not as a plain budget block
+src/cost.test.ts > C11: actual spend exceeding the reservation > keeps unknownReserved from being zeroed by the pure retention helper
+src/cost.test.ts > R06: every attempt is accounted for > keeps an attempt with no usage reported UNKNOWN, not zero
+src/cost.test.ts > R06: every attempt is accounted for > counts a retry as a SEPARATE attempt rather than folding it into the first
+src/cost.test.ts > R06: every attempt is accounted for > reports a separate unknownCount so a reader can see the gap
+src/cost.test.ts > R06: every attempt is accounted for > never double-counts: a retry that reuses a request id is not summed twice
+src/cost.test.ts > R06: every attempt is accounted for > refuses a repeated attempt id, and counts the refusal
+src/cost.test.ts > R06: every attempt is accounted for > lets a later report RESOLVE an unknown without counting the request twice
+src/cost.test.ts > R06: every attempt is accounted for > covers root, descendants, retries, compaction, summary and search as distinct sources
+src/cost.test.ts > R06: every attempt is accounted for > keeps DSH token buckets disjoint rather than collapsing them into one number
+src/cost.test.ts > R06: every attempt is accounted for > defaults absent optional cache fields to zero WITHOUT treating a missing report as zero
+src/cost.test.ts > R06: every attempt is accounted for > does not treat a cost-only attempt as a token unknown that blocks completeness
+src/cost.test.ts > R06: every attempt is accounted for > sums buckets across attempts without dropping the cache split
+src/cost.test.ts > R06: every attempt is accounted for > exposes every row, so a reader can check the total rather than trust it
+src/cost.test.ts > R06: every attempt is accounted for > reports an empty ledger as complete with no attempts, rather than as a pass
+src/cost.test.ts > cost accounting: the budget report a reader sees > reports every quantity separately, with the overage inside spent rather than beside it
+src/cost.test.ts > cost accounting: the budget report a reader sees > defaults the reserve fields to zero on a record written before the reserve existed
+src/u03-sustained-load.test.ts > U03: sustained load — resources, cost and state, measured > a control arm establishes the one-time cost so the load arm can be read as a trend
+src/u03-sustained-load.test.ts > U03: sustained load — resources, cost and state, measured > six load cycles of top-up with pause/resume interleaved show no per-cycle resource trend
+src/u03-sustained-load.test.ts > U03: sustained load — resources, cost and state, measured > NO STATE POLLUTION: a second run in the same process shares no task state with the first
+src/u03-sustained-load.test.ts > U03: sustained load — resources, cost and state, measured > the measured range is reported as a series, so a reader can judge the load rather than trust a verdict
+src/u01-coding-loop.test.ts > U01: the coding loop closes on a real multi-file bug > the acceptance FAILS on the buggy tree and PASSES after the patch, with the acceptance frozen throughout
+src/u01-coding-loop.test.ts > U01: the coding loop closes on a real multi-file bug > an acceptance that is edited instead of the code is DETECTED, so a weakened oracle cannot pass
+src/u01-coding-loop.test.ts > U01: the coding loop closes on a real multi-file bug > the bug is a REAL defect: the same predicate is consumed by counting and by admission
+src/real-tasks.test.ts > E12: the untrusted child is a separate process with no inherited authority > the runner hands over NO route to a host secret: no env name, no harness home, no absolute path
+src/real-tasks.test.ts > E12: the untrusted child is a separate process with no inherited authority > the runner hands the child no control-plane handle: the child gets argv, cwd, stdio and env and nothing else
+src/real-tasks.test.ts > E12: the untrusted child is a separate process with no inherited authority > the runner adds NO network permission to the child, and the child can still reach loopback
+src/real-tasks.test.ts > E12: a trusted runner is not a truth oracle for untrusted output > an untrusted test that forges a passing summary cannot turn a real failure into a pass
+src/real-tasks.test.ts > E12: a trusted runner is not a truth oracle for untrusted output > a runner that reports success while executing nothing is not a pass, even from a trusted command
+src/real-tasks.test.ts > E12: the isolation claim in the runner header, clause by clause > the header claim is present verbatim, so a change to it is visible rather than inherited
+src/capacity.test.ts > CAP-01: the hard capacity is a deployment constant of 30 > is 30, not a config value a caller can raise
+src/capacity.test.ts > CAP-01: the hard capacity is a deployment constant of 30 > REFUSES the 31st and 32nd before publication, at N=30, with synthetic occupancy
+src/capacity.test.ts > CAP-01: the hard capacity is a deployment constant of 30 > counts occupied as reserved + starting + active_assignment + stopping + unknown_quarantined
+src/capacity.test.ts > CAP-01: the hard capacity is a deployment constant of 30 > folds a task slot into its live child rather than double-counting it
+src/capacity.test.ts > CAP-04: an executor whose release is unconfirmed keeps its slot > a cancel that has only been REQUESTED still occupies
+src/capacity.test.ts > CAP-04: an executor whose release is unconfirmed keeps its slot > an assignment waiting on its own tool or provider STILL occupies
+src/capacity.test.ts > CAP-04: an executor whose release is unconfirmed keeps its slot > releases the physical slot on agent/disposed, not on a record transition
+src/capacity.test.ts > CAP-02: every in-process creation path shares one host quota > the continuable path takes a host slot
+src/capacity.test.ts > CAP-02: every in-process creation path shares one host quota > the ONE-SHOT path takes a host slot
+src/capacity.test.ts > CAP-02: every in-process creation path shares one host quota > the DIRECT AgentFactory path takes a host slot
+src/capacity.test.ts > CAP-02: every in-process creation path shares one host quota > the WORKFLOW/PTC path is covered, because it funnels through the one-shot start
+src/capacity.test.ts > CAP-02: every in-process creation path shares one host quota > a non-child session fork does NOT consume a child slot
+src/capacity.test.ts > CAP-02: maxDepth is an INDEPENDENT hard cap that a caller cannot lift > a caller passing maxDepth 99 is REFUSED
+src/capacity.test.ts > CAP-02: maxDepth is an INDEPENDENT hard cap that a caller cannot lift > an OMITTED maxDepth is REFUSED too, not read as permission
+src/capacity.test.ts > CAP-02: maxDepth is an INDEPENDENT hard cap that a caller cannot lift > the depth ceiling does not consume a capacity slot when it refuses
+src/capacity.test.ts > CAP-02: maxDepth is an INDEPENDENT hard cap that a caller cannot lift > a depth-1 child IS admitted, so the ceiling is not a blanket refusal
+src/capacity.test.ts > CAP-03/CAP-06: real top-up, and NO filler agents > one root really reaches its target of 3 with the real continuable seam
+src/capacity.test.ts > CAP-03/CAP-06: real top-up, and NO filler agents > ready shortage with a high N runs only what is ready and creates NO filler agent
+src/capacity.test.ts > CAP-03/CAP-06: real top-up, and NO filler agents > a root is NOT counted in the child target and is not starved of provider budget
+src/capacity.test.ts > CAP-07: two roots share one host cap > the gate is HOST-wide: two roots cannot each hold the full cap
+src/capacity.test.ts > CAP-07: two roots share one host cap > two real roots share one host ledger, and the second is refused at the boundary
+src/capacity.test.ts > an idle historical Session is NOT active > does not occupy a slot, and its Session remains readable
+src/capacity.test.ts > CAP-08: raising and lowering the target keeps running children > a raise tops up, and a lower STOPS admissions without killing a working child
+src/capacity.test.ts > the gate refuses BEFORE publication, not after > the creating call rejects and the caller receives no child
+src/capacity.test.ts > the gate refuses BEFORE publication, not after > a capacity refusal at the boundary also rejects the creating call
+src/lifecycle.test.ts > C08: a teardown failure must not look like a clean finish > records a stopReason on every real end event, and never a diagnostic
+src/lifecycle.test.ts > C08: a teardown failure must not look like a clean finish > does not release a slot on the strength of an end event alone
+src/lifecycle.test.ts > C08: a teardown failure must not look like a clean finish > routes a teardown failure to unknown, holding the reservation
+src/lifecycle.test.ts > C08: a teardown failure must not look like a clean finish > holds the slot when a cancel is requested but the child may still be alive
+src/lifecycle.test.ts > C17/C18: pause is resumable, drain is final > a pause keeps admission closed but does NOT close the parent
+src/lifecycle.test.ts > C17/C18: pause is resumable, drain is final > a real drain closes admission for that exact parent, permanently
+src/lifecycle.test.ts > C17/C18: pause is resumable, drain is final > closing a run stops new admissions without draining the family
+src/host.test.ts > work service: admission and reservation > writes the reservation and the task in one record
+src/host.test.ts > work service: admission and reservation > refuses admission past the budget ceiling
+src/host.test.ts > work service: admission and reservation > refuses admission while the run is paused
+src/host.test.ts > work service: admission and reservation > refuses to reopen a tombstoned task
+src/host.test.ts > work service: admission and reservation > releases the reservation on a confirmed transition but not on a requested cancel
+src/host.test.ts > work service: admission and reservation > rejects an illegal transition instead of quietly accepting it
+src/host.test.ts > work service: admission and reservation > does not mutate the stored record in place
+src/host.test.ts > work service: rolling top-up > launches up to the target and no further
+src/host.test.ts > work service: rolling top-up > leaves admission as admission: the child is accepted, not executing
+src/host.test.ts > work service: rolling top-up > reports a deficit instead of inventing work when fewer tasks are ready
+src/host.test.ts > work service: rolling top-up > tops up a single completion without waiting for the whole wave
+src/host.test.ts > work service: rolling top-up > coalesces concurrent drains so a completion storm cannot double-launch
+src/host.test.ts > work service: rolling top-up > treats a failed launch as unknown and does not silently retry
+src/host.test.ts > work service: rolling top-up > does not release a slot while a cancel is only requested
+src/host.test.ts > work service: rolling top-up > stops admitting once the run is paused, even with free slots
+src/host.test.ts > work service: rolling top-up > resumes a paused run as a new authorization edge
+src/host.test.ts > work service: rolling top-up > does not launch when the caller signal is already aborted
+src/host.test.ts > work service: rolling top-up > keeps each run isolated from the others
+src/host.test.ts > work service: persistence > survives a reopen of the same domain directory
+src/host.test.ts > work service: persistence > rejects a second open of the same domain
+src/host.test.ts > work service: persistence > refuses writes after close
+src/upg-gates.test.ts > UPG-01: the candidate profile installs from a BUILT package, with no source absolute path > the package ships built output that the declared exports point at
+src/upg-gates.test.ts > UPG-01: the candidate profile installs from a BUILT package, with no source absolute path > the installed profile depends on the package by LINK, and resolves to a built artifact
+src/upg-gates.test.ts > UPG-01: the candidate profile installs from a BUILT package, with no source absolute path > the profile patch contains no absolute SOURCE path, so the install does not depend on this checkout layout
+src/upg-gates.test.ts > UPG-01: the candidate profile installs from a BUILT package, with no source absolute path > cites the measured resolver result: exactly ONE built copy of each peer, no src/lib mix
+src/upg-gates.test.ts > UPG-01: the candidate profile installs from a BUILT package, with no source absolute path > the compiled package imports and exposes its declared surface at runtime
+src/upg-gates.test.ts > UPG-02: an old Session carrying new compute/observation records migrates by version or is REFUSED > a Session from a NEWER build is refused as `unsupported`, naming both versions
+src/upg-gates.test.ts > UPG-02: an old Session carrying new compute/observation records migrates by version or is REFUSED > an unknown event type with NO `ignorable` marker FAILS the restore — it is not dropped silently
+src/upg-gates.test.ts > UPG-02: an old Session carrying new compute/observation records migrates by version or is REFUSED > the SAME unknown event with `ignorable: true` is retained — the compatibility mechanism, measured
+src/upg-gates.test.ts > UPG-02: an old Session carrying new compute/observation records migrates by version or is REFUSED > the marker is the ONLY admission path, and the seam says why a name registry was rejected
+src/upg-gates.test.ts > UPG-02: an old Session carrying new compute/observation records migrates by version or is REFUSED > the v2 -> v3 migration refuses an UNCLASSIFIED event rather than passing it through
+src/upg-gates.test.ts > UPG-02: an old Session carrying new compute/observation records migrates by version or is REFUSED > this project's OWN store has the same discipline: a record version it does not accept is refused
+src/upg-gates.test.ts > UPG-03: old spill locators coexist with new refs, with explicit permissions and lifecycle > a spill locator is session-scoped, so a new session cannot adopt an old one's files
+src/upg-gates.test.ts > UPG-03: old spill locators coexist with new refs, with explicit permissions and lifecycle > the directory name is a hash of the session id, so the locator is stable across restarts
+src/upg-gates.test.ts > UPG-03: old spill locators coexist with new refs, with explicit permissions and lifecycle > the sweep deletes only EXPIRED files inside EXACT-shaped session directories
+src/upg-gates.test.ts > UPG-03: old spill locators coexist with new refs, with explicit permissions and lifecycle > the exact-shape boundary is observed: every near-miss name and a session-shaped SYMLINK survive
+src/upg-gates.test.ts > UPG-03: old spill locators coexist with new refs, with explicit permissions and lifecycle > the exact-shape rules are in the source, so a prefix-based regression is visible
+src/upg-gates.test.ts > UPG-03: old spill locators coexist with new refs, with explicit permissions and lifecycle > the permissions are explicit: an owner-only directory holding owner-only files
+src/upg-gates.test.ts > UPG-03: old spill locators coexist with new refs, with explicit permissions and lifecycle > the spill service is mounted by the shipped profile, so locators are not a test-only concept
+src/upg-gates.test.ts > UPG-04: a backup restores on a new host with verifiable identity, and kernel state is NOT in it > a store backed up and restored in a new location is byte-identical and reopens with the same runs
+src/upg-gates.test.ts > UPG-04: a backup restores on a new host with verifiable identity, and kernel state is NOT in it > the backup does NOT carry kernel volatile state, and that is a property of the record shape
+src/upg-gates.test.ts > UPG-04: a backup restores on a new host with verifiable identity, and kernel state is NOT in it > the config is backed up as a NAME, never as a secret value
+src/upg-gates.test.ts > UPG-04: a backup restores on a new host with verifiable identity, and kernel state is NOT in it > the artifact half has a real content-addressed primitive with a verified digest
+src/upg-gates.test.ts > UPG-04: a backup restores on a new host with verifiable identity, and kernel state is NOT in it > the backup rehearsals this project already ran are cited, not re-invented
+src/upg-gates.test.ts > UPG-05: rolling back the runtime does not roll back the external world > the rehearsal exists, and its three clauses are the gate's three clauses
+src/upg-gates.test.ts > UPG-05: rolling back the runtime does not roll back the external world > the rehearsal's OWN REPORT carries the counter, and states that the remote is a fake
+src/upg-gates.test.ts > UPG-05: rolling back the runtime does not roll back the external world > the rehearsal names what is real and what is a fixture, including that no newer version exists to install
+src/upg-gates.test.ts > UPG-05: rolling back the runtime does not roll back the external world > this project's store REFUSES a version it does not accept, and leaves the bytes untouched
+src/upg-gates.test.ts > UPG-05: rolling back the runtime does not roll back the external world > the effect ledger treats a rolled-back send as UNKNOWN rather than reversing it
+src/upg-gates.test.ts > UPG-05: rolling back the runtime does not roll back the external world > the ledger's own header states the limit of what a reconciliation can promise
+src/upg-gates.test.ts > UPG-05: rolling back the runtime does not roll back the external world > a REAL two-version rollback: v1 writes, v2 migrates, and v1 cannot read what v2 wrote
+src/upg-gates.test.ts > UPG-06: an artifact still referenced by a Session, fork or active lease is NOT collected > the spill sweep is AGE-based with NO reference tracking — the gate's property does NOT hold there
+src/upg-gates.test.ts > UPG-06: an artifact still referenced by a Session, fork or active lease is NOT collected > the spill sweep's only lever is the age cutoff: the same live artifact survives a cutoff it is younger than
+src/upg-gates.test.ts > UPG-06: an artifact still referenced by a Session, fork or active lease is NOT collected > the spill seam has no reference contract at all, and its own docs say so
+src/upg-gates.test.ts > UPG-06: an artifact still referenced by a Session, fork or active lease is NOT collected > the content-addressed store HAS a correct reference-aware collector — and no production caller
+src/upg-gates.test.ts > UPG-06: an artifact still referenced by a Session, fork or active lease is NOT collected > the reference-aware collector has NO production caller — measured by an import-graph scan
+src/upg-gates.test.ts > UPG-06: an artifact still referenced by a Session, fork or active lease is NOT collected > the content-addressed artifact store survives every startup sweep this deployment has
+src/upg-gates.test.ts > UPG-06: an artifact still referenced by a Session, fork or active lease is NOT collected > the run record holds the reference, so a live reference is a durable fact and not process state
+src/upg-gates.test.ts > UPG-07: real 30-provider run — BLOCKED_EXTERNAL, with the exact reason > the budget lock records `live_provider_budget_authorized: false`
+src/upg-gates.test.ts > UPG-07: real 30-provider run — BLOCKED_EXTERNAL, with the exact reason > the GAPS record carries the block and says a key does not authorize the run
+src/upg-gates.test.ts > UPG-07: real 30-provider run — BLOCKED_EXTERNAL, with the exact reason > the mock-based N=10 result exists and is recorded as a DIFFERENT fact
+src/upg-gates.test.ts > UPG-07: real 30-provider run — BLOCKED_EXTERNAL, with the exact reason > no live provider credential is present in this process, which is the block in its concrete form
+src/upg-gates.test.ts > UPG-07: real 30-provider run — BLOCKED_EXTERNAL, with the exact reason > the gate's status is BLOCKED_EXTERNAL, and the verdict records it as NOT_READY
+src/upg-gates.test.ts > UPG-08: the daily verdict, COMPUTED from the per-gate results > the verdict is NOT_READY, and it is computed from the table rather than typed
+src/upg-gates.test.ts > UPG-08: the daily verdict, COMPUTED from the per-gate results > every row carries an evidence path that exists
+src/upg-gates.test.ts > UPG-08: the daily verdict, COMPUTED from the per-gate results > the counts per family and per status are what the report says they are
+src/upg-gates.test.ts > UPG-08: the daily verdict, COMPUTED from the per-gate results > the honest FAILs are the four the platform and the code actually produce
+src/upg-gates.test.ts > UPG-08: the daily verdict, COMPUTED from the per-gate results > the external blocker is named exactly, with its source file
+src/upg-gates.test.ts > UPG-08: the daily verdict, COMPUTED from the per-gate results > writes the verdict to evidence, so it survives this process
+src/upg-gates.test.ts > UPG cross-check: the store schema version and domain name are pinned > the domain name and schema version are constants, and a change is a cutover
+src/upg-gates.test.ts > UPG cross-check: the store schema version and domain name are pinned > the unit file name follows from the domain name, so a rename is a new store rather than a silent reuse
+src/signal.test.ts > B09(a): an abort BEFORE publication creates no ghost > a drain handed an already-aborted signal launches NOTHING and returns no outcomes
+src/signal.test.ts > B09(a): an abort BEFORE publication creates no ghost > a producer that refuses a pre-aborted call never reaches JobRegistry.start, so no job id exists
+src/signal.test.ts > B09(a): an abort BEFORE publication creates no ghost > a registry preflight rejection allocates no id and never runs the producer
+src/signal.test.ts > B09(b): a CALLER abort after publication ends the waiting, not the work > aborting mid-drain stops further launches and rolls NOTHING back into a free state
+src/signal.test.ts > B09(b): a CALLER abort after publication ends the waiting, not the work > aborting a caller WAIT rejects the wait only; the published work survives and still settles
+src/signal.test.ts > B09(b): a CALLER abort after publication ends the waiting, not the work > the EXACT caller signal object reaches the port and the provider — never a substitute
+src/signal.test.ts > B09(c): the real OWNER stops, and the product contract stops the work > disposing the exact live owner cancels its job and holds the slot until the producer settles
+src/signal.test.ts > B09(c): the real OWNER stops, and the product contract stops the work > service teardown cancels and AWAITS the producer instead of dropping the record
+src/signal.test.ts > F06: agent/turn-stopping is a serial terminal checkpoint > is declared serial with {agent, turn, signal} and no next, and dispatches that way
+src/signal.test.ts > F06: agent/turn-stopping is a serial terminal checkpoint > hands a real listener the real turn signal, and aborting it produces a clean aborted turn
+src/signal.test.ts > F06: agent/turn-stopping is a serial terminal checkpoint > a throwing listener produces an explicit error turn, not a correction round
+src/signal.test.ts > F06: agent/turn-stopping is a serial terminal checkpoint > awaiting the agent OWN whenIdle inside the listener deadlocks — and the source shows why
+src/signal.test.ts > F06: agent/turn-stopping is a serial terminal checkpoint > this project registers no turn-stopping hook of its own
+src/signal.test.ts > F06: agent/turn-stopping is a serial terminal checkpoint > records, honestly, that the daily profile DOES inherit one stock listener
+src/wire-faults.test.ts > C09: provider rate limiting is reported, never disguised > the mock server really answers 429 with a Retry-After
+src/wire-faults.test.ts > C09: provider rate limiting is reported, never disguised > the mock server really answers 5xx and auth errors
+src/wire-faults.test.ts > C09: provider rate limiting is reported, never disguised > a 429 keeps the target fact unchanged and reports a deficit
+src/wire-faults.test.ts > C09: provider rate limiting is reported, never disguised > an exhausted script fails loudly rather than silently succeeding
+src/wire-faults.test.ts > D07: a lost reply leaves the outcome unknown > the mock server can really drop a stream mid-flight
+src/wire-faults.test.ts > D07: a lost reply leaves the outcome unknown > the mock server accepts a request and never completes it
+src/wire-faults.test.ts > D07: a lost reply leaves the outcome unknown > records a request that produced no reply as unknown, holding the reservation
+src/wire-faults.test.ts > D07: a lost reply leaves the outcome unknown > does not treat a transport failure as evidence about the world
+src/eco.test.ts > ECO-01: each provider attempt is billed, and the last usage does not overwrite the rest > accounts three attempts of one step separately, with the retry visible as its own source
+src/eco.test.ts > ECO-01: each provider attempt is billed, and the last usage does not overwrite the rest > does not double-count a retry that reuses a request id, and still counts the retries that do not
+src/eco.test.ts > ECO-02: a dropped connection is UNKNOWN, not zero, and it does not silently pass a budget check > keeps an attempt with no usage unknown and prices it as a gap rather than a free call
+src/eco.test.ts > ECO-02: a dropped connection is UNKNOWN, not zero, and it does not silently pass a budget check > holds a CONSERVATIVE reservation for the unknown, and admission then REFUSES on it
+src/eco.test.ts > ECO-02: a dropped connection is UNKNOWN, not zero, and it does not silently pass a budget check > keeps the unknown-usage path structurally separate from the priced path
+src/eco.test.ts > ECO-02: a dropped connection is UNKNOWN, not zero, and it does not silently pass a budget check > refuses to compare an incomplete total in either direction
+src/eco.test.ts > ECO-03: the total covers every category and never applies one provider's pricing to another > sums root, children, summary/compaction, search and cache storage with nothing omitted
+src/eco.test.ts > ECO-03: the total covers every category and never applies one provider's pricing to another > refuses to price a provider with no table, rather than borrowing another one
+src/eco.test.ts > ECO-03: the total covers every category and never applies one provider's pricing to another > refuses a price table belonging to a different provider, and refuses a cache-write field from another protocol
+src/eco.test.ts > ECO-03: the total covers every category and never applies one provider's pricing to another > keeps the charge-line vocabulary closed, so a typo cannot invent a line nobody checks
+src/eco.test.ts > ECO-04: the fixed prefix is byte-identical across cells while the dynamic parts stay bounded and later > does not reorder the fixed prefix when budget and variables change
+src/eco.test.ts > ECO-04: the fixed prefix is byte-identical across cells while the dynamic parts stay bounded and later > states that an equal prefix hash is not a cache hit, in the report the gate reads
+src/eco.test.ts > ECO-05: fewer prompt tokens can be a MORE expensive bill, and the report says so > reports the bill rising while the prompt shrinks, and never reports only the token drop
+src/eco.test.ts > ECO-05: fewer prompt tokens can be a MORE expensive bill, and the report says so > still reports a genuine saving as cheaper, so the flag is not stuck
+src/eco.test.ts > ECO-06: enabling a shadow projection sends no second LLM request and re-runs no effect > leaves the real request count and the real effect count unchanged
+src/eco.test.ts > ECO-06: enabling a shadow projection sends no second LLM request and re-runs no effect > has no reachable request or effect path, stated as a structural property
+src/eco.test.ts > ECO-07: the stock control arm is not secretly modified, and the variables are fixed (live half BLOCKED_EXTERNAL) > the stock arm declares no plugin rows, and its files hash to the committed values
+src/eco.test.ts > ECO-07: the stock control arm is not secretly modified, and the variables are fixed (live half BLOCKED_EXTERNAL) > re-derives the composed stock graph and matches the digest M0.5 recorded
+src/eco.test.ts > ECO-07: the stock control arm is not secretly modified, and the variables are fixed (live half BLOCKED_EXTERNAL) > fixes the controlled variables and records that the live comparison is BLOCKED_EXTERNAL
+src/eco.test.ts > ECO-08: repeated paired runs are reported with variance and an interval, not one trajectory (live half BLOCKED_EXTERNAL) > reports success rate with a Wilson interval that does not collapse to certainty at n=6
+src/eco.test.ts > ECO-08: repeated paired runs are reported with variance and an interval, not one trajectory (live half BLOCKED_EXTERNAL) > describes variance and refuses to invent it from a single run
+src/eco.test.ts > ECO-08: repeated paired runs are reported with variance and an interval, not one trajectory (live half BLOCKED_EXTERNAL) > describes a paired-run result as separate axes, and declares no winner at n<2
+src/eco.test.ts > perf instrumentation: the meters measure, and say so when they cannot > computes percentiles from observed samples and flags a p95 that is only the max
+src/eco.test.ts > perf instrumentation: the meters measure, and say so when they cannot > pairs open/close spans and counts the ones that did not pair
+src/eco.test.ts > perf instrumentation: the meters measure, and say so when they cannot > measures captured versus projected bytes, with truncation attributed
+src/eco.test.ts > perf instrumentation: the meters measure, and say so when they cannot > reports RSS and CPU as observed, and marks CPU unreported rather than zero
+src/eco.test.ts > perf instrumentation: the meters measure, and say so when they cannot > bounds a projected JSON line, which is the real mechanism behind captured vs projected bytes
+src/eco.test.ts > perf: the metrics the plan names, measured or explicitly not measured > measures kernel cold start and warm cell RTT as real percentiles, with the tail caveat stated
+src/eco.test.ts > perf: the metrics the plan names, measured or explicitly not measured > measures process-helper RTT and local Python ops/sec, and keeps them apart
+src/eco.test.ts > perf: the metrics the plan names, measured or explicitly not measured > measures RSS and CPU for a real kernel, and reports growth as growth
+src/eco.test.ts > perf: the metrics the plan names, measured or explicitly not measured > measures the child boot-storm against a one-kernel control
+src/eco.test.ts > perf: the metrics the plan names, measured or explicitly not measured > measures the kernel-side refill readiness, and names what a refill also waits for
+src/eco.test.ts > perf: the metrics the plan names, measured or explicitly not measured > reports the metrics it cannot measure as NULL with a reason, never as zero
+src/eco.test.ts > perf: the metrics the plan names, measured or explicitly not measured > measures history query latency against the real SessionQuery over a real JSONL store
+src/eco.test.ts > perf: the metrics the plan names, measured or explicitly not measured > measures model blocked time against the real loop, which is local and not a provider latency
+src/eco.test.ts > cleanup: the rig leaves nothing behind > has no temp directory from this file still present after teardown
+src/programmatic-scope.test.ts > BRG-01: the same tool through native, PTC and the scope is one pipeline > produces the SAME canonical value on all three routes
+src/programmatic-scope.test.ts > BRG-01: the same tool through native, PTC and the scope is one pipeline > a monotonic GUARD denies the scope exactly as it denies a native call
+src/programmatic-scope.test.ts > BRG-01: the same tool through native, PTC and the scope is one pipeline > an `ask` decision reaches the scope and a denial is not a bypass
+src/programmatic-scope.test.ts > BRG-01: the same tool through native, PTC and the scope is one pipeline > a real ApprovalService denial reaches the scope as a denial
+src/programmatic-scope.test.ts > BRG-01: the same tool through native, PTC and the scope is one pipeline > post-execute policy replaces the value on the scope route too
+src/programmatic-scope.test.ts > BRG-01: the same tool through native, PTC and the scope is one pipeline > a canonical value violating the declared output schema fails on the scope route
+src/programmatic-scope.test.ts > BRG-01: the same tool through native, PTC and the scope is one pipeline > MEASURES the scheduling difference from run_code instead of claiming identity
+src/programmatic-scope.test.ts > BRG-01: the same tool through native, PTC and the scope is one pipeline > the scope does NOT bypass the ptc presentation collapse
+src/programmatic-scope.test.ts > BRG-02: revoking a tool mid-scope takes effect on the next call > a tool unregistered while the scope is open fails its next call
+src/programmatic-scope.test.ts > BRG-02: revoking a tool mid-scope takes effect on the next call > names() is a LIVE read, and revocation is visible through it
+src/programmatic-scope.test.ts > BRG-02: revoking a tool mid-scope takes effect on the next call > a tool unregistered by its own disposer is gone from the next call
+src/programmatic-scope.test.ts > BRG-03: value delivery returns the declared canonical type, never a reference > returns the declared T and is never an ArtifactRef
+src/programmatic-scope.test.ts > BRG-03: value delivery returns the declared canonical type, never a reference > over-budget value delivery throws with the retained reference and does NOT re-execute
+src/programmatic-scope.test.ts > BRG-04: reference delivery executes exactly once and references the post-policy result > runs the tool EXACTLY ONCE and returns a reference to the final value
+src/programmatic-scope.test.ts > BRG-04: reference delivery executes exactly once and references the post-policy result > the reference carries the POST-POLICY value, not the pre-policy one
+src/programmatic-scope.test.ts > BRG-04: reference delivery executes exactly once and references the post-policy result > value and reference delivery of the same tool are the same execution result
+src/programmatic-scope.test.ts > BRG-05: a value policy removed is not recoverable through a reference > a post-policy BLOCK leaves no recoverable original in the store
+src/programmatic-scope.test.ts > BRG-05: a value policy removed is not recoverable through a reference > a policy that REPLACES a sensitive value leaves only the replacement retrievable
+src/programmatic-scope.test.ts > BRG-05: a value policy removed is not recoverable through a reference > a blocked call retains nothing even under reference delivery
+src/programmatic-scope.test.ts > BRG-06: a wrapper never waits for a slot from the pool it already holds > MANY concurrent wrapped calls complete without exhausting the pool
+src/programmatic-scope.test.ts > BRG-06: a wrapper never waits for a slot from the pool it already holds > re-entrancy: a nested call may itself open a nested call, many levels deep
+src/programmatic-scope.test.ts > BRG-06: a wrapper never waits for a slot from the pool it already holds > an EXCLUSIVE tool forms a real barrier for top-level calls
+src/programmatic-scope.test.ts > BRG-06: a wrapper never waits for a slot from the pool it already holds > a concurrency-safe tool DOES overlap, so the cap is not just serialization
+src/programmatic-scope.test.ts > BRG-06: a wrapper never waits for a slot from the pool it already holds > the cap is respected: maxParallel 2 never runs three at once
+src/programmatic-scope.test.ts > BRG-06: a wrapper never waits for a slot from the pool it already holds > CANCEL DRAINS: closing with calls in flight settles them and reports every disposition
+src/programmatic-scope.test.ts > BRG-07: a close with calls still in flight never leaves work running > queued-unstarted calls are REFUSED with a recorded disposition when no handoff exists
+src/programmatic-scope.test.ts > BRG-07: a close with calls still in flight never leaves work running > a host JOBS HANDOFF takes ownership instead of refusing, and the job id is recorded
+src/programmatic-scope.test.ts > BRG-07: a close with calls still in flight never leaves work running > close resolves only AFTER in-flight work has settled, not before
+src/programmatic-scope.test.ts > BRG-07: a close with calls still in flight never leaves work running > close is idempotent and reports no second disposition for any call
+src/programmatic-scope.test.ts > BRG-07: a close with calls still in flight never leaves work running > invoking after close is refused, not silently queued
+src/programmatic-scope.test.ts > BRG-07: a close with calls still in flight never leaves work running > the host service closes every live scope on teardown
+src/programmatic-scope.test.ts > BRG-08: control notices keep their semantics; bulk payloads do not enter context > a security additionalContext reaches the enclosing execution, bounded
+src/programmatic-scope.test.ts > BRG-08: control notices keep their semantics; bulk payloads do not enter context > concludeTurn is preserved from a nested success and NOT from a policy-blocked one
+src/programmatic-scope.test.ts > BRG-08: control notices keep their semantics; bulk payloads do not enter context > a BULK image does NOT automatically enter model context; it is retained as a reference
+src/programmatic-scope.test.ts > BRG-08: control notices keep their semantics; bulk payloads do not enter context > the control and content slots are SEPARATE: one call can fill both
+src/programmatic-scope.test.ts > BRG-08: control notices keep their semantics; bulk payloads do not enter context > past the direct bound, notices are COALESCED into one bounded record, not dropped
+src/programmatic-scope.test.ts > BRG-08: control notices keep their semantics; bulk payloads do not enter context > defer-images reproduces stock run_code content behaviour, for comparison
+src/programmatic-scope.test.ts > stock run_code keeps its exact semantics (no regression from the extraction) > run_code still logs one dispatch event per sub-call and returns the curated output
+src/programmatic-scope.test.ts > stock run_code keeps its exact semantics (no regression from the extraction) > run_code still refuses a model-direct native call under ptc mode
+src/programmatic-scope.test.ts > stock run_code keeps its exact semantics (no regression from the extraction) > run_code still maps a pre-aborted outer signal to the canonical cancellation code
+src/programmatic-scope.test.ts > stock run_code keeps its exact semantics (no regression from the extraction) > run_code still forwards a nested concludeTurn onto its own successful result
+src/programmatic-scope.test.ts > stock run_code keeps its exact semantics (no regression from the extraction) > run_code still defers a nested image-bearing result onto its own result
+src/plugin.test.ts > host plugin mounting > loads through the real plugin pipeline and provides the service
+src/plugin.test.ts > host plugin mounting > releases the domain handle on unload and can be loaded again
+src/plugin.test.ts > host plugin mounting > keeps the persisted record across a plugin reload
+src/plugin.test.ts > host plugin mounting > refuses a second service registration in the same scope
+src/plugin.test.ts > tool consumer mounting > registers the work tool exactly once
+src/plugin.test.ts > tool consumer mounting > removes the tool when the consumer unloads
+src/plugin.test.ts > tool consumer mounting > does not register twice when loaded, unloaded and loaded again
+src/plugin.test.ts > tool consumer mounting > exposes one definition whose parameters are stable and typed
+src/plugin.test.ts > tool consumer mounting > publishes the work tool through the system prompt tool provider
+src/production-port.test.ts > the production launch port is installed by the product, not by a test > reaches the real startContinuable seam with NO test-installed port
+src/production-port.test.ts > the production launch port is installed by the product, not by a test > still reports no-launch-port when the subagent runtime is genuinely absent
+src/homelock.test.ts > M1: the home lock excludes a second holder > refuses a second acquire while the first is held, naming the holder
+src/homelock.test.ts > M1: the home lock excludes a second holder > releases on release, so the next generation is not locked out
+src/homelock.test.ts > M1: the home lock excludes a second holder > is idempotent on release
+src/homelock.test.ts > M1: the home lock excludes a second holder > excludes by RESOLVED path, so two spellings of one directory collide
+src/homelock.test.ts > M1: the home lock excludes a second holder > does not treat an unreadable advisory note as a free lock
+src/homelock.test.ts > M1: the home lock excludes a second holder > leaves a stale note behind without granting access on that basis
+src/homelock.test.ts > M1: the real WorkService takes the lock through its own open path > refuses a second host over the same lock, then allows one after a clean close
+src/u04-paired-comparison.test.ts > U04: paired C0/C1/C2 comparison on a controlled fixture > the three groups differ by exactly the rows the plan names, and by nothing else
+src/u04-paired-comparison.test.ts > U04: paired C0/C1/C2 comparison on a controlled fixture > all three groups run on the same model, task and budget, and the three axes are reported SEPARATELY
+src/u04-paired-comparison.test.ts > U04: paired C0/C1/C2 comparison on a controlled fixture > the comparison cannot declare a winner: with n=1 per group the difference is not separable from noise
+src/goal.test.ts > C14: one continuation owner per root > is a complete, honest no-op when the profile mounts no Goal service
+src/goal.test.ts > C14: one continuation owner per root > is a no-op when the root has no current goal
+src/goal.test.ts > C14: one continuation owner per root > preserves the durable objective and the revision while removing continuation
+src/goal.test.ts > C14: one continuation owner per root > leaves the objective readable after the handover
+src/goal.test.ts > C14: one continuation owner per root > does not disturb another root
+src/goal.test.ts > C14: one continuation owner per root > is idempotent: taking continuation twice leaves the same state
+src/goal.test.ts > C14: one continuation owner per root > a later resume is possible, so the handover is reversible by a human
+src/kernel-recovery.test.ts > kernel identity is not the Agent object > names a slot by session + world + environment, and an incarnation by epoch
+src/kernel-recovery.test.ts > kernel identity is not the Agent object > refuses a second registration of the same slot
+src/kernel-recovery.test.ts > kernel identity is not the Agent object > does not destroy a parked kernel when an activation ends, and rebinds it at the SAME epoch
+src/kernel-recovery.test.ts > serial per kernel, concurrent across kernels > runs one cell at a time on a kernel and queues rather than dispatching a second
+src/kernel-recovery.test.ts > serial per kernel, concurrent across kernels > runs cells on two kernels concurrently
+src/kernel-recovery.test.ts > serial per kernel, concurrent across kernels > bounds the queue and REFUSES past the bound rather than growing
+src/kernel-recovery.test.ts > late and unattributed output is classified, never attached to the next cell > classifies output arriving after a cell settled as `late` for the ORIGINATING cell
+src/kernel-recovery.test.ts > late and unattributed output is classified, never attached to the next cell > classifies a frame whose parent was never issued as `unattributed`, not as the running cell
+src/kernel-recovery.test.ts > late and unattributed output is classified, never attached to the next cell > classifies a stray shell reply as `foreign` and lets it settle nothing
+src/kernel-recovery.test.ts > budgets are explicit and their breaches are reported > bounds kept output, reports the true total, and spills the dropped tail
+src/kernel-recovery.test.ts > budgets are explicit and their breaches are reported > cuts a truncated stream on a character boundary rather than corrupting UTF-8
+src/kernel-recovery.test.ts > budgets are explicit and their breaches are reported > bounds MIME separately from stdout and counts it without keeping it
+src/kernel-recovery.test.ts > budgets are explicit and their breaches are reported > bounds IPC frames and stops keeping payloads past the bound
+src/kernel-recovery.test.ts > budgets are explicit and their breaches are reported > bounds nested native calls per cell and states what the refusal cannot undo
+src/kernel-recovery.test.ts > budgets are explicit and their breaches are reported > bounds data-plane bytes per cell
+src/kernel-recovery.test.ts > budgets are explicit and their breaches are reported > bounds declared kernel RSS and process count, and says the memory is already resident
+src/kernel-recovery.test.ts > an interrupt that does not settle becomes unknown and restarts the kernel > does not wait for the reply: the bounded grace fires and the cell becomes unknown
+src/kernel-recovery.test.ts > an interrupt that does not settle becomes unknown and restarts the kernel > resolves a cell whose transport promise NEVER settles at all
+src/kernel-recovery.test.ts > an interrupt that does not settle becomes unknown and restarts the kernel > escalates to process isolation on a non-interruptible C extension, and says so
+src/kernel-recovery.test.ts > an interrupt that does not settle becomes unknown and restarts the kernel > reports the restart loss: the namespace is gone and the loss is named
+src/kernel-recovery.test.ts > an interrupt that does not settle becomes unknown and restarts the kernel > refuses further cells on a kernel that could not be restarted
+src/kernel-recovery.test.ts > an interrupt that does not settle becomes unknown and restarts the kernel > starts the grace even when the interrupt could not be dispatched at all
+src/kernel-recovery.test.ts > an interrupt that does not settle becomes unknown and restarts the kernel > does NOT declare unknown when the cell settles inside the grace
+src/kernel-recovery.test.ts > an interrupt that does not settle becomes unknown and restarts the kernel > treats a reply without a matching idle as NOT settled
+src/kernel-recovery.test.ts > an interrupt that does not settle becomes unknown and restarts the kernel > the `unknown` decision is NODE-SIDE: it is made by the supervisor's own timer, not by the broker
+src/kernel-recovery.test.ts > control is not stuck behind a data stream > dispatches cancel while frames are still arriving, and both latencies stay visible
+src/kernel-recovery.test.ts > control is not stuck behind a data stream > refuses a second cancel for a cell that already has an interrupt in flight
+src/kernel-recovery.test.ts > control is not stuck behind a data stream > refuses to cancel a cell that is not the running one
+src/kernel-recovery.test.ts > unknown side effects stay quarantined > keeps an in-flight cell with no confirmed terminal state quarantined
+src/kernel-recovery.test.ts > unknown side effects stay quarantined > does NOT re-execute an ambiguous call when the transport reconnects
+src/kernel-recovery.test.ts > unknown side effects stay quarantined > clears a quarantine only through an explicit, evidenced resolution
+src/kernel-recovery.test.ts > unknown side effects stay quarantined > refuses to resolve a cell that was never quarantined
+src/kernel-recovery.test.ts > reset and permission change: close admission, cancel, then a NEW epoch > restarts the kernel and advances the epoch on a reset
+src/kernel-recovery.test.ts > reset and permission change: close admission, cancel, then a NEW epoch > MUST restart on a read-permission-domain change, and must not carry variables across
+src/kernel-recovery.test.ts > reset and permission change: close admission, cancel, then a NEW epoch > advances the epoch and moves the slot when the execution world or environment changes
+src/kernel-recovery.test.ts > reset and permission change: close admission, cancel, then a NEW epoch > cancels the running cell before replacing the process
+src/kernel-recovery.test.ts > parked kernels count against the memory budget > counts parked RSS and evicts explicitly with a loss notification
+src/kernel-recovery.test.ts > parked kernels count against the memory budget > reports the parked budget even when nothing needs evicting
+src/kernel-recovery.test.ts > parked kernels count against the memory budget > refuses to park a kernel that is running a cell
+src/kernel-recovery.test.ts > a cell id is not a malicious-code isolation boundary > states the semantics in the DATA, and reports the Session/kernel boundary as the real one
+src/kernel-recovery.test.ts > a cell id is not a malicious-code isolation boundary > records an old cell reaching a later cell as a fact, not as a prevented attack
+src/kernel-recovery.test.ts > checkpoint restore accepts only explicitly safe formats > accepts a JSON document and a real non-object .npy array
+src/kernel-recovery.test.ts > checkpoint restore accepts only explicitly safe formats > REFUSES every pickle family format by name
+src/kernel-recovery.test.ts > checkpoint restore accepts only explicitly safe formats > REFUSES a pickle disguised as json, on the BYTES rather than the extension
+src/kernel-recovery.test.ts > checkpoint restore accepts only explicitly safe formats > REFUSES an object-dtype array read from the REAL .npy header
+src/kernel-recovery.test.ts > checkpoint restore accepts only explicitly safe formats > REFUSES a truncated array whose header promises more data than the file holds
+src/kernel-recovery.test.ts > checkpoint restore accepts only explicitly safe formats > REFUSES a checkpoint that disagrees with its own declared size
+src/kernel-recovery.test.ts > checkpoint restore accepts only explicitly safe formats > accepts a real .npz of safe arrays and REFUSES one containing an object array
+src/kernel-recovery.test.ts > checkpoint restore accepts only explicitly safe formats > REFUSES an archive whose declared uncompressed size is past the bomb bound
+src/kernel-recovery.test.ts > checkpoint restore accepts only explicitly safe formats > REFUSES an archive that lies about its sizes, caught by zlib rather than by arithmetic
+src/kernel-recovery.test.ts > checkpoint restore accepts only explicitly safe formats > REFUSES an archive whose member is not a .npy at all
+src/kernel-recovery.test.ts > checkpoint restore accepts only explicitly safe formats > accepts Parquet and Arrow on magic-at-both-ends, and refuses a prefix-only fake
+src/kernel-recovery.test.ts > checkpoint restore accepts only explicitly safe formats > refuses a format M5 does not restore, naming it
+src/kernel-recovery.test.ts > checkpoint restore accepts only explicitly safe formats > reports an unreadable entry as skipped rather than throwing
+src/kernel-recovery.test.ts > checkpoint restore accepts only explicitly safe formats > sums the accepted bytes so a caller can see the restore size
+src/kernel-recovery.test.ts > recovery reports state honestly and never claims full session recovery > reports epoch, as-of, restored, lost, environment change and unresolved effects
+src/kernel-recovery.test.ts > recovery reports state honestly and never claims full session recovery > flags an environment change and refuses to pretend the data is comparable
+src/kernel-recovery.test.ts > recovery reports state honestly and never claims full session recovery > says a restart is not full session recovery in the DATA a model reads
+src/kernel-recovery.test.ts > recovery reports state honestly and never claims full session recovery > reports a checkpoint as-of even when nothing was restored, so staleness is visible
+src/kernel-recovery.test.ts > recovery reports state honestly and never claims full session recovery > reports no as-of when there was no checkpoint at all
+src/kernel-recovery.test.ts > refusals carry no output and shutdown releases everything > gives a refusal a null output, so it cannot be read as an empty cell
+src/kernel-recovery.test.ts > refusals carry no output and shutdown releases everything > reports a transport that refuses to dispatch, and returns the kernel to idle
+src/kernel-recovery.test.ts > refusals carry no output and shutdown releases everything > closes every kernel and reports the count
+src/kernel-recovery.test.ts > refusals carry no output and shutdown releases everything > reports an unknown slot rather than inventing one
+src/research.test.ts > R03: an incomplete read states its range and its limits > saving bytes is not the same as having read the content > records bytes_captured without parsed
+src/research.test.ts > R03: an incomplete read states its range and its limits > saving bytes is not the same as having read the content > still reports bytes_captured when the body decoded cleanly and was never parsed
+src/research.test.ts > R03: an incomplete read states its range and its limits > saving bytes is not the same as having read the content > does not let a parse be recorded without bytes that arrived
+src/research.test.ts > R03: an incomplete read states its range and its limits > a parse that covered part of a document records the range and is not fully parsed > records the range and withholds the parsed state
+src/research.test.ts > R03: an incomplete read states its range and its limits > a parse that covered part of a document records the range and is not fully parsed > records the parsed state only for a complete read of the whole capture
+src/research.test.ts > R03: an incomplete read states its range and its limits > a parse that covered part of a document records the range and is not fully parsed > refuses to call a truncated capture completely parsed
+src/research.test.ts > R03: an incomplete read states its range and its limits > a parse that covered part of a document records the range and is not fully parsed > refuses a parse range wider than the captured bytes
+src/research.test.ts > R03: an incomplete read states its range and its limits > a failed fetch is a failure of the fetch, not a finding about the source > records a real 404 as an unusable response rather than a parsed page
+src/research.test.ts > R03: an incomplete read states its range and its limits > a failed fetch is a failure of the fetch, not a finding about the source > records a real WebError as a fetch failure carrying the provider code
+src/research.test.ts > R03: an incomplete read states its range and its limits > a failed fetch is a failure of the fetch, not a finding about the source > records a redirect that was refused as a fetch failure, not as the target being empty
+src/research.test.ts > R03: an incomplete read states its range and its limits > a failed fetch is a failure of the fetch, not a finding about the source > records a final URL that differs from the requested one, so the range is attributable
+src/research.test.ts > R03: an incomplete read states its range and its limits > a failed fetch is a failure of the fetch, not a finding about the source > records an unconfigured provider as a fetch failure, never as an empty source
+src/research.test.ts > R03: an incomplete read states its range and its limits > a failed fetch is a failure of the fetch, not a finding about the source > refuses to turn a failed fetch into a negative finding
+src/research.test.ts > R03: an incomplete read states its range and its limits > a failed fetch is a failure of the fetch, not a finding about the source > refuses a negative finding from a truncated capture too
+src/research.test.ts > R03: an incomplete read states its range and its limits > a failed fetch is a failure of the fetch, not a finding about the source > allows a negative finding only after a complete read, and says so
+src/research.test.ts > R03: an incomplete read states its range and its limits > a failed fetch is a failure of the fetch, not a finding about the source > records a truncated capture and a partial failure as different states
+src/research.test.ts > R03: an incomplete read states its range and its limits > a failed fetch is a failure of the fetch, not a finding about the source > describes a fetch failure without ever describing the source contents
+src/research.test.ts > R03: an incomplete read states its range and its limits > a failed fetch is a failure of the fetch, not a finding about the source > describes a 404 by its status, not by absence
+src/research.test.ts > R03: an incomplete read states its range and its limits > a search snippet is not full text > records a snippet as discovered only, with no bytes and no parse
+src/research.test.ts > R03: an incomplete read states its range and its limits > a search snippet is not full text > cannot be promoted to parsed, by any range
+src/research.test.ts > R03: an incomplete read states its range and its limits > a search snippet is not full text > may be cited without ever becoming evidence that the document was read
+src/research.test.ts > R03: an incomplete read states its range and its limits > a search snippet is not full text > cannot be presented as a read range
+src/research.test.ts > R03: an incomplete read states its range and its limits > a search snippet is not full text > is refused by the SHIPPED locator even when the same words are in the artifact
+src/research.test.ts > R03: an incomplete read states its range and its limits > there is no automatic understood state > names exactly the six plan states and nothing else
+src/research.test.ts > R03: an incomplete read states its range and its limits > there is no automatic understood state > contains no state whose name asserts comprehension
+src/research.test.ts > R03: an incomplete read states its range and its limits > there is no automatic understood state > carries no understood field on any record, at any stage
+src/research.test.ts > R03: an incomplete read states its range and its limits > there is no automatic understood state > reaches the support-check state only through an explicit call
+src/research.test.ts > R03: an incomplete read states its range and its limits > there is no automatic understood state > refuses a citation that no presented range supports
+src/research.test.ts > R03: an incomplete read states its range and its limits > a PDF that was never decoded is not a document that was read > records the fetch seam refusing application/pdf as a fetch failure
+src/research.test.ts > R03: an incomplete read states its range and its limits > a PDF that was never decoded is not a document that was read > records a partial PDF text extraction by its range and its missing tables
+src/research.test.ts > R03: an incomplete read states its range and its limits > a PDF that was never decoded is not a document that was read > refuses to fill in a missing table from what the prose implies
+src/research.test.ts > R03: an incomplete read states its range and its limits > a search snippet substituted for full text stays a snippet > keeps a real provider source at discovered-only through the real ctx.web seam
+src/research.test.ts > R03: an incomplete read states its range and its limits > a search snippet substituted for full text stays a snippet > reports a search FAILURE as an error, never as a snippet-free empty result
+src/research.test.ts > R04: a request manifest is not inferred from the maximum session seq > a manifest built from explicit inclusion > excludes an observation that was compacted away
+src/research.test.ts > R04: a request manifest is not inferred from the maximum session seq > a manifest built from explicit inclusion > matches the real derived surface rather than a seq bound
+src/research.test.ts > R04: a request manifest is not inferred from the maximum session seq > a manifest built from explicit inclusion > records visible seqs that are not ascending, which no seq bound can express
+src/research.test.ts > R04: a request manifest is not inferred from the maximum session seq > a manifest built from explicit inclusion > drops the compacted observation from the model-visible text
+src/research.test.ts > R04: a request manifest is not inferred from the maximum session seq > the max-seq shortcut is wrong on a compacted history > produces a set that wrongly includes the shadowed observation
+src/research.test.ts > R04: a request manifest is not inferred from the maximum session seq > the max-seq shortcut is wrong on a compacted history > disagrees with the real derivation by exactly the shadowed nodes
+src/research.test.ts > R04: a request manifest is not inferred from the maximum session seq > the max-seq shortcut is wrong on a compacted history > would report the model as having seen a tool result that compaction removed
+src/research.test.ts > R08: evidence access is scoped to authorized sessions > a read inside the allow-list succeeds > returns the real session
+src/research.test.ts > R08: evidence access is scoped to authorized sessions > a read inside the allow-list succeeds > lists only the authorized ids, in allow-list order
+src/research.test.ts > R08: evidence access is scoped to authorized sessions > a read outside the allow-list is refused, not empty > throws rather than returning undefined for a session that really exists
+src/research.test.ts > R08: evidence access is scoped to authorized sessions > a read outside the allow-list is refused, not empty > carries the real unauthorized code, not a not-found code
+src/research.test.ts > R08: evidence access is scoped to authorized sessions > a read outside the allow-list is refused, not empty > names the refusal and the authorized set, so the error is actionable
+src/research.test.ts > R08: evidence access is scoped to authorized sessions > a read outside the allow-list is refused, not empty > keeps a genuine not-found distinguishable from a refusal
+src/research.test.ts > R08: evidence access is scoped to authorized sessions > a read outside the allow-list is refused, not empty > does not let list() stand in for a refused read
+src/research.test.ts > R08: evidence access is scoped to authorized sessions > nothing widens the scope implicitly > refuses to construct a scope from an empty allow-list
+src/research.test.ts > R08: evidence access is scoped to authorized sessions > nothing widens the scope implicitly > treats a wildcard entry as a literal id rather than a pattern
+src/research.test.ts > R08: evidence access is scoped to authorized sessions > nothing widens the scope implicitly > copies the allow-list, so a later mutation cannot widen a live scope
+src/research.test.ts > R08: evidence access is scoped to authorized sessions > nothing widens the scope implicitly > exposes no store, root, home or path accessor
+src/research.test.ts > R08: evidence access is scoped to authorized sessions > nothing widens the scope implicitly > has no constructor route that widens authority
+src/research.test.ts > R08: evidence access is scoped to authorized sessions > nothing widens the scope implicitly > takes only a session id, so there is no path argument to escape through
+src/reconcile.test.ts > reconcileTask: the five positions > D03: a reservation that provably never launched returns to prepared
+src/reconcile.test.ts > reconcileTask: the five positions > D03/D04: a reserved id with no trace is unknown, not relaunchable
+src/reconcile.test.ts > reconcileTask: the five positions > D05: a pending prompt is left to native Inbox recovery
+src/reconcile.test.ts > reconcileTask: the five positions > D06: claim with no request confirmation is unknown
+src/reconcile.test.ts > reconcileTask: the five positions > D07: a request with no terminal turn is unknown, never retried
+src/reconcile.test.ts > reconcileTask: the five positions > D07: an interrupted turn is unknown, not safely redoable
+src/reconcile.test.ts > reconcileTask: the five positions > D09: a turn that ended in error is unknown, not failed-and-retryable
+src/reconcile.test.ts > reconcileTask: the five positions > D08: a completed turn with a result ref goes to settling, not confirmed
+src/reconcile.test.ts > reconcileTask: the five positions > a completed turn with no result ref is settling, not confirmed
+src/reconcile.test.ts > reconcileTask: the five positions > never releases a slot from reconciliation alone
+src/reconcile.test.ts > reconcileRun > quarantines any task with no gathered evidence
+src/reconcile.test.ts > reconcileRun > returns decisions in a stable order so a report is diffable
+src/reconcile.test.ts > reconcileRun > resolves a mixed run per task without letting one decision leak into another
+src/reconcile.test.ts > recoveryPhase: restart does not re-authorize > D13: resumes paused when the run was never authorized to survive a restart
+src/reconcile.test.ts > recoveryPhase: restart does not re-authorize > D13: resumes paused when the authorization has expired
+src/reconcile.test.ts > recoveryPhase: restart does not re-authorize > resumes open only with a live authorization
+src/reconcile.test.ts > recoveryPhase: restart does not re-authorize > treats an authorization expiring exactly now as expired
+src/reconcile.test.ts > PRODUCT PATH: a launched child never leaves `accepted` > the production stack launches a real child and the record stops at accepted
+src/target-setting.test.ts > UI-01: the target is a real, host-persisted, live-read setting > registers the daily-work namespace through the real installSection seam
+src/target-setting.test.ts > UI-01: the target is a real, host-persisted, live-read setting > reads LIVE: a write takes effect on the next read with NO restart
+src/target-setting.test.ts > UI-01: the target is a real, host-persisted, live-read setting > persists through the provider, so a reconnect reads host state and not React state
+src/target-setting.test.ts > UI-01: the target is a real, host-persisted, live-read setting > reports the revision a UI must read before writing
+src/target-setting.test.ts > UI-01: the target is a real, host-persisted, live-read setting > falls back to the composition entry when no settings provider is mounted
+src/target-setting.test.ts > UI-02: illegal N is refused at BOTH boundaries > the HOST refuses zero
+src/target-setting.test.ts > UI-02: illegal N is refused at BOTH boundaries > the HOST refuses thirty-one
+src/target-setting.test.ts > UI-02: illegal N is refused at BOTH boundaries > the HOST refuses far above the cap
+src/target-setting.test.ts > UI-02: illegal N is refused at BOTH boundaries > the HOST refuses fractional
+src/target-setting.test.ts > UI-02: illegal N is refused at BOTH boundaries > the HOST refuses NaN
+src/target-setting.test.ts > UI-02: illegal N is refused at BOTH boundaries > the HOST refuses Infinity
+src/target-setting.test.ts > UI-02: illegal N is refused at BOTH boundaries > the HOST refuses negative
+src/target-setting.test.ts > UI-02: illegal N is refused at BOTH boundaries > the HOST refuses a numeric string
+src/target-setting.test.ts > UI-02: illegal N is refused at BOTH boundaries > the HOST refuses a non-numeric string
+src/target-setting.test.ts > UI-02: illegal N is refused at BOTH boundaries > the HOST refuses null
+src/target-setting.test.ts > UI-02: illegal N is refused at BOTH boundaries > the HOST refuses an object
+src/target-setting.test.ts > UI-02: illegal N is refused at BOTH boundaries > the HOST refuses an array
+src/target-setting.test.ts > UI-02: illegal N is refused at BOTH boundaries > the HOST refuses a boolean
+src/target-setting.test.ts > UI-02: illegal N is refused at BOTH boundaries > the HOST refuses a function
+src/target-setting.test.ts > UI-02: illegal N is refused at BOTH boundaries > the SCHEMA refuses an out-of-range value even when it bypasses the owner check
+src/target-setting.test.ts > UI-02: illegal N is refused at BOTH boundaries > accepts the boundary values 1 and 30 exactly
+src/target-setting.test.ts > UI-02: illegal N is refused at BOTH boundaries > the owner-level check names the same range the schema does
+src/target-setting.test.ts > UI-02: illegal N is refused at BOTH boundaries > the resolved section is re-validated by the validate hook
+src/target-setting.test.ts > UI-02: illegal N is refused at BOTH boundaries > the UI control refuses the same inputs client-side, with the shipped parse
+src/target-setting.test.ts > UI-03: revision fencing makes a concurrent write an explicit stale rejection > two clients writing the SAME revision produce one success and one stale rejection
+src/target-setting.test.ts > UI-03: revision fencing makes a concurrent write an explicit stale rejection > the stale rejection is a typed conflict, not a validation failure
+src/target-setting.test.ts > UI-03: revision fencing makes a concurrent write an explicit stale rejection > the conflict surfaces from the settings service as SettingsConflictError
+src/target-setting.test.ts > UI-03: revision fencing makes a concurrent write an explicit stale rejection > a concurrent burst of same-revision writers yields exactly ONE success
+src/target-setting.test.ts > UI-03: revision fencing makes a concurrent write an explicit stale rejection > an UNFENCED write is possible, and is what no automated caller may do
+src/target-setting.test.ts > UI-03: revision fencing makes a concurrent write an explicit stale rejection > a revision that never existed is stale, not accepted
+src/target-setting.test.ts > UI-04: the model cannot raise its own target or budget > the work tool exposes NO parameter that could raise target or budget
+src/target-setting.test.ts > UI-04: the model cannot raise its own target or budget > the target handle is reachable only from the host service, not from the tool
+src/target-setting.test.ts > CAP-08: raising and lowering N keeps running tasks, and the record follows > a raise is visible immediately and a lower does not kill anything
+src/web-search.test.ts > canonicalization > strips the fragment and known tracking parameters
+src/web-search.test.ts > canonicalization > does not lowercase the path, because that would merge distinct pages
+src/web-search.test.ts > canonicalization > does not fold a trailing slash
+src/web-search.test.ts > canonicalization > refuses embedded credentials
+src/web-search.test.ts > canonicalization > refuses non-http(s) schemes
+src/web-search.test.ts > canonicalization > refuses an unparseable URL rather than guessing
+src/web-search.test.ts > mapHits > drops rows with no usable URL instead of emitting a citation to nothing
+src/web-search.test.ts > mapHits > deduplicates by canonical URL
+src/web-search.test.ts > mapHits > honours the result bound
+src/web-search.test.ts > mapHits > omits absent optional fields rather than emitting empty strings
+src/web-search.test.ts > availability is presence, not entitlement > reports available only when the credential reference is configured
+src/web-search.test.ts > availability is presence, not entitlement > reports available when configured
+src/web-search.test.ts > availability is presence, not entitlement > never makes a network call from available()
+src/web-search.test.ts > a provider failure is never an empty result > throws SEARCH_PROVIDER_ERROR on a non-2xx answer, not an empty source list
+src/web-search.test.ts > a provider failure is never an empty result > throws SEARCH_PROVIDER_UNAVAILABLE on a transport failure
+src/web-search.test.ts > a provider failure is never an empty result > returns an empty source list when a WORKING provider genuinely finds nothing
+src/web-search.test.ts > a provider failure is never an empty result > throws SEARCH_INVALID_QUERY for an empty query rather than returning nothing
+src/web-search.test.ts > a provider failure is never an empty result > throws SEARCH_CANCELLED when the caller signal is already aborted
+src/web-search.test.ts > successful search > maps a provider payload into citeable sources
+src/web-search.test.ts > successful search > sends the query and the bound to the provider
+src/web-search.test.ts > successful search > reports truncated when it dropped sources to honour the bound
+src/web-search.test.ts > successful search > accepts a provider that names its list `hits`
+src/web-search.test.ts > successful search > carries a stable provider id so the registry can key it
+src/web-search.test.ts > the dialect this port speaks, pinned because it is the substrate boundary > sends exactly {query, maxResults} and NO credential header
+src/web-search.test.ts > the dialect this port speaks, pinned because it is the substrate boundary > reads `snippet`/`publishedAt` and NOT the Exa fields the production row targets
+src/web-search.test.ts > plugin registration through the real ctx.web seam > routes ctx.web.search() to the ported provider, and stops on unload
+src/security.test.ts > the tool surface this project adds > adds exactly one tool, and it is not a terminal or plugin-manager tool
+src/security.test.ts > the tool surface this project adds > declares no tool whose name collides with a reserved transport name
+src/security.test.ts > the work tool cannot widen its own authority > exposes no parameter that changes N, the budget or permissions
+src/security.test.ts > the work tool cannot widen its own authority > cannot be given a capability the host did not configure
+src/security.test.ts > the search provider cannot claim an entitlement it did not observe > reports unavailable when no credential store is mounted
+src/security.test.ts > the search provider cannot claim an entitlement it did not observe > mounts without a credential store rather than failing the whole host
+src/control-plane.test.ts > E02: the control-plane universe is measured, not assumed > the recorded boot probe enumerated the host scope and found no control-plane surface missing by accident
+src/control-plane.test.ts > E02: the control-plane universe is measured, not assumed > NO control-plane surface is exposed to the model as a tool, on the real composed preset
+src/control-plane.test.ts > E02: the control-plane universe is measured, not assumed > the model is told the loopback address, and the address alone does not admit it
+src/control-plane.test.ts > E02: the control-plane universe is measured, not assumed > the /api Host fence refuses a DNS-rebinding Host, and the index route is NOT Host-fenced
+src/control-plane.test.ts > E02: what the human terminal is, quoted from its own source > the terminal controller declares system-user permissions and bypasses sandbox and approval
+src/control-plane.test.ts > E02: the scope semantics that make a naive reachability reading wrong > ctx.get resolves a service across an isolation realm, so it is a registry read and not a scope test
+src/control-plane.test.ts > E02: the scope semantics that make a naive reachability reading wrong > the tool catalog keyed by the Agent object is the capability boundary, and it is empty here
+src/u02-research-loop.test.ts > U02: the audit artifact is reviewable, and states its disputes > every finding carries citations, a falsification condition, and its unknowns
+src/u02-research-loop.test.ts > U02: the audit artifact is reviewable, and states its disputes > the spot-check re-reads every citation and finds the quote VERBATIM on the cited line
+src/u02-research-loop.test.ts > U02: the audit artifact is reviewable, and states its disputes > the spot-check has teeth: a citation with a plausible but WRONG quote is detected
+src/u02-research-loop.test.ts > U02: the audit artifact is reviewable, and states its disputes > the audit pins the checkout revision, so a citation cannot silently refer to different text
+src/u02-research-loop.test.ts > U02: the audit artifact is reviewable, and states its disputes > the disputed finding names the measurement that would settle it, and does not claim to have made it
+src/launch-port.test.ts > continuable launch port > passes the reserved childId through so recovery stays reconcilable
+src/launch-port.test.ts > continuable launch port > sends the prompt as ContentBlock[], not a bare string
+src/launch-port.test.ts > continuable launch port > carries maxDepth so children cannot open unbilled grandchildren
+src/launch-port.test.ts > continuable launch port > uses the task id as the child creation label
+src/launch-port.test.ts > continuable launch port > forwards the abort signal so a cancelled admission can be aborted
+src/launch-port.test.ts > continuable launch port > resolves at admission and does not wait for the child to work
+src/launch-port.test.ts > continuable launch port > rethrows DUPLICATE_CHILD unchanged so it cannot become a fresh-UUID retry
+src/launch-port.test.ts > continuable launch port > rethrows an unknown failure so the caller can quarantine rather than retry
+src/launch-port.test.ts > continuable launch port > refuses to record a child id the provider allocated instead of the reserved one
+src/launch-port.test.ts > continuable launch port > omits agentOptions entirely when no child route is configured
+src/states.test.ts > admission state machine > covers every declared state in the transition table
+src/states.test.ts > admission state machine > refuses to leave a terminal state
+src/states.test.ts > admission state machine > throws a TransitionError carrying the task id
+src/states.test.ts > admission state machine > does not let a requested cancel reach a released slot directly
+src/states.test.ts > admission state machine > treats unknown as slot-holding, never as a free slot
+src/states.test.ts > admission state machine > holds a slot while settling, because the world may still change
+src/states.test.ts > admission state machine > does not count a confirmed or cancelled task as holding a slot
+src/states.test.ts > precise counting > does not count an idle child as an active assignment
+src/states.test.ts > precise counting > counts a child as active only after observed real work
+src/states.test.ts > precise counting > reports provider waiting separately from physical execution
+src/states.test.ts > precise counting > reports tool waiting separately and inside active
+src/states.test.ts > precise counting > keeps stopping and unknown holding their slots so N is never pierced
+src/states.test.ts > precise counting > keeps a slot reserved by stopping/unknown against a larger target
+src/states.test.ts > precise counting > never silently lowers the target when fewer tasks are ready
+src/states.test.ts > precise counting > names budget as the deficit reason when the ceiling is reached
+src/states.test.ts > precise counting > admits up to exactly the ceiling but not past it
+src/states.test.ts > precise counting > reports budget_blocked and refuses admission from the same predicate
+src/states.test.ts > precise counting > refuses admission when the run is paused
+src/states.test.ts > precise counting > reserves before admitting, so the last credit cannot be double-spent
+src/states.test.ts > precise counting > counts confirmed work as done without counting it as a held slot
+src/states.test.ts > precise counting > reports deficit none when exactly filled

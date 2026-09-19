@@ -1,0 +1,102 @@
+=== V7: FILESYSTEM family (spec FS-01..FS-06), verified through a real profile boot ===
+
+home:      D:/DSH/home/v7-fs
+profile:   daily
+overlay:   D:/DSH/work/dsh-native-daily/qualification/runners/v7-fs.patch.yml
+probe_out: D:/DSH/work/dsh-native-daily/qualification/results/V7-fs/boot.json
+
+build dsh-daily-work: 32 lib files, sha256=a9a8369abe7aed0036703e6aab3fc4ccbfdca57a7829eb662e71d22a036130e4
+  libNewerThanSrc: true
+build dsh-ipython: 8 lib files, sha256=04057fcad447751f5e1917550a64398cc7d63e7db47b3c5fe8a3c396a526bfc5
+  libNewerThanSrc: true
+
+profile installed: D:/DSH/work/dsh-native-daily/profiles/daily-candidate -> D:/DSH/home/v7-fs/profiles/daily (replaced an existing copy: true)
+plugin install: exit=0
+
+composition_installed_sha256: 5b8b2a8e5d9ae13d35c1d86833f8b96eeb84078a13027a08efc1379a6fc8afb4
+composition_repo_sha256:      5b8b2a8e5d9ae13d35c1d86833f8b96eeb84078a13027a08efc1379a6fc8afb4
+composition_is_current: true
+stale_lock: no lock present
+
+boot_cwd: D:/DSH/src/dsh-src (deliberately foreign to the profile directory)
+port: 2991 (bound by the harness, not assumed)
+timed_out: false
+exit_code: null
+port_released_after_kill: true
+
+result_names_this_home: true (presetRoots: D:\DSH\src\dsh-src\packages\preset\agent-presets\presets\, D:/DSH/home/v7-fs/profiles/daily/presets/, D:\DSH\home\v7-fs\.agent-presets)
+
+activation_warning_lines: []
+probe_error: none
+
+--- checks ---
+ok   the tool face is not zero (FACT F did not occur)
+ok   no entry failed to activate
+ok   the ipython tool is on the real surface
+ok   FS-01: a write OUTSIDE the workspace succeeds under the deployed mode
+ok   FS-01: the file really exists outside the workspace
+ok   FS-01: the deployment records that the mounted backend does NOT confine (fsSandboxMode undefined)
+ok   FS-01: the escalation fields are ABSENT from the write/edit schemas (no fence to escalate past)
+ok   FS-01: the deployment states in its own words that no write confinement is claimed
+ok   FS-01: the spec itself lists filesystem write confinement as NOT claimed
+ok   FS-02: a read OUTSIDE the workspace through the NATIVE tool succeeds
+ok   FS-02: the same read through a PYTHON cell succeeds
+ok   FS-02: both routes reach the SAME BYTES (digest compared)
+ok   FS-03: the native `read` tool resolves the path to the canary
+ok   FS-03: the native `grep` tool resolves the path to the canary
+ok   FS-03: a SPAWNED process resolves the path to the same digest
+ok   FS-03: a PYTHON cell resolves the path to the same digest
+ok   FS-03: all four routes reached the same file in one world
+ok   FS-04: the symlink vector was attempted and its outcome recorded
+ok   FS-04: the hardlink vector was attempted and its outcome recorded
+ok   FS-04: the cross-boundary rename vector was attempted and its outcome recorded
+ok   FS-04: the rename did NOT corrupt content (digest before == digest after)
+ok   FS-04: the native tool read the moved file at its NEW path and saw the real content
+ok   FS-04: the symlink vector actually reached the mutation (its refusal, if any, is NOT FS_NOT_OBSERVED)
+ok   FS-04: the hardlink vector actually reached the mutation (its refusal, if any, is NOT FS_NOT_OBSERVED)
+ok   FS-05: read with offset/limit returns EXACTLY the requested window
+ok   FS-05: an exact unique replacement applies once
+ok   FS-05: the exact edit produced the expected content
+ok   FS-05: an AMBIGUOUS replacement is REFUSED, not guessed
+ok   FS-05: the refused ambiguous edit changed nothing
+ok   FS-05: an absent literal is refused with its own code
+ok   FS-05: the refused absent-literal edit changed nothing
+ok   FS-06: the artifact store is present and reports its own root
+ok   FS-06: the store root RESOLVES OUTSIDE the session workspace
+ok   FS-06: the store root is RELATIVE, and the record names what it resolves against
+ok   FS-06: a published object's address IS its content digest
+ok   FS-06: a workspace file with the artifact's own name does NOT change the store object
+ok   FS-06: the store reports its own verdict on the object after the same-name write
+ok   FS-06: the relative store path and the session-relative path are DIFFERENT files (recorded as a finding)
+FAIL FS-06: the store object's ABSOLUTE path IS reachable by the tool (no confinement claimed)
+
+checks_passed: 38/39
+
+--- FS-04 vectors, recorded per vector (a non-refusal is a FINDING, not a green) ---
+  symlink   refused=false verdict=NOT REFUSED -- FINDING: a symlink in the workspace escapes it; the write followed the link and mutated the target outside
+  hardlink  refused=false verdict=NOT REFUSED -- FINDING: a hardlink shares the inode, so a write inside the workspace mutates the outside file
+  rename    refused=false verdict=NOT REFUSED -- FINDING: raw Python renames across the workspace boundary; content is INTACT (digest equal), so this is disclosure, not corruption
+
+--- FS-01 disclosure, both halves ---
+  write outside the workspace succeeded: true
+  fsSandboxMode (undefined = the backend does not confine): null
+  sandboxPolicy.defaultMode: workspace-write
+  modeSource: unobservable
+  CONTRADICTION CHECK: fsClaimsNoConfinement=true policyDefaultStillConfines=true
+
+--- FS-06 artifact store ---
+  storeRoot (as configured): data-artifacts
+  storeRootIsRelative: true -- resolved against D:\DSH\src\dsh-src
+  storeRootResolved: D:\DSH\src\dsh-src\data-artifacts
+  ownerScope: project:daily executionWorld: local
+  artifact: artifact:sha256:07d894c4eb826e7b334398df3bdab18545111646cc121b6bed98d566b1e5fc53
+  THE DIVERGENCE -- one relative name, two files:
+    sameRelativeNameTwoFiles: true
+    the tool resolved the relative path to: D:/DSH/work/dsh-native-daily/qualification/results/V7-fs/workspace/data-artifacts/objects/07/07d894c4eb826e7b334398df3bdab18545111646cc121b6bed98d566b1e5fc53
+    the store's object is at:               D:\DSH\src\dsh-src\data-artifacts\objects\07\07d894c4eb826e7b334398df3bdab18545111646cc121b6bed98d566b1e5fc53
+    store object untouched by the relative write: true
+  the ABSOLUTE store object path through the tool succeeded: false
+  the object on disk WAS tampered by the absolute write: false
+  the store's own read after tampering: {"label":"store.openRange","ok":true,"value":"V7-FS06 store-owned artifact payload -- this must survive a work"}
+  the store's own reconcile: {"label":"store.reconcile","ok":true,"value":{"orphans":["artifact:sha256:07d894c4eb826e7b334398df3bdab18545111646cc121b6bed98d566b1e5fc53","artifact:sha256:150f662de432382d21003d7ba23053663e76f94c0d79cbe4ac27ef0a54b21184"],"integrityErrors":[]}}
+

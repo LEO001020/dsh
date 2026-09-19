@@ -1,0 +1,9 @@
+# V2 boot 2 -- filesystem provider + sandbox policy (CMP-02)
+# cwd: D:/DSH/src/dsh-src   DSH_HOME: D:/DSH/home/v2-cmp   port: 4796   portReleased: true
+# timedOut: false   exitCode: null
+
+--- stdout ---
+VERIFY-T2-FS: {"out":"D:/DSH/work/dsh-native-daily/qualification/results/V2-composition/boot2-fs.json","provider":"LocalFileSystem","error":null}
+dsh web: http://127.0.0.1:4796/?token=6jUCWj-x1xmPFrx7CskEqlRTcrLnSSnVpYC31x0u8cs
+
+--- stderr ---

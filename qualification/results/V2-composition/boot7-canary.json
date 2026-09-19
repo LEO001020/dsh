@@ -1,0 +1,89 @@
+{
+  "profileBooted": true,
+  "profileName": "daily-candidate (installed as \"daily\")",
+  "presetDefaultId": "standard",
+  "presetRoots": [
+    {
+      "path": "D:\\DSH\\src\\dsh-src\\packages\\preset\\agent-presets\\presets\\",
+      "trust": "system"
+    },
+    {
+      "path": "D:/DSH/home/v2-cmp-canary/profiles/daily/presets/",
+      "trust": "system"
+    },
+    {
+      "path": "D:\\DSH\\home\\v2-cmp-canary\\.agent-presets",
+      "trust": "user"
+    }
+  ],
+  "kernelServicePresent": true,
+  "workServicePresent": true,
+  "dataServicePresent": true,
+  "historyServicePresent": true,
+  "programmaticScopePresent": true,
+  "sessionCreated": true,
+  "sessionId": "session-53fc749c-de50-4ed8-bf74-85122ca0e3f2",
+  "toolCountAgentKey": 26,
+  "toolCountContextKey": 0,
+  "ipythonToolPresent": false,
+  "ipythonParameterNames": null,
+  "ipythonIsOnlyParameter": false,
+  "workToolPresent": false,
+  "forbiddenLifecycleTools": [],
+  "tools": [
+    "ask_user_question",
+    "create_goal",
+    "edit",
+    "exit_plan_mode",
+    "get_goal",
+    "glob",
+    "grep",
+    "interrupt_agent",
+    "job_kill",
+    "job_list",
+    "job_output",
+    "list_agents",
+    "present",
+    "pwsh",
+    "read",
+    "read_image",
+    "send_message",
+    "skill",
+    "subagent",
+    "subagent_fork",
+    "todo_write",
+    "update_goal",
+    "web_fetch",
+    "web_search",
+    "workflow",
+    "write"
+  ],
+  "error": null,
+  "presetsListed": [
+    {
+      "id": "standard",
+      "trust": "system",
+      "broken": null
+    },
+    {
+      "id": "ptc",
+      "trust": "system",
+      "broken": null
+    },
+    {
+      "id": "minimal",
+      "trust": "system",
+      "broken": null
+    },
+    {
+      "id": "cordis",
+      "trust": "system",
+      "broken": null
+    },
+    {
+      "id": "daily-standard",
+      "trust": "system",
+      "broken": null
+    }
+  ]
+}

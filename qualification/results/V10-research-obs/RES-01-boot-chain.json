@@ -1,0 +1,70 @@
+{
+  "driver": "v10-res01-chain",
+  "home": "D:/DSH/home/v10-research-obs",
+  "launcher": "D:/DSH/src/dsh-src/apps/cli/lib/bin.js",
+  "profile": "daily",
+  "repoProfilePatchSha256": "5b8b2a8e5d9ae13d35c1d86833f8b96eeb84078a13027a08efc1379a6fc8afb4",
+  "installedProfilePatchSha256": "5b8b2a8e5d9ae13d35c1d86833f8b96eeb84078a13027a08efc1379a6fc8afb4",
+  "installedProfilePatchIsTheRepositoryOne": true,
+  "buildDigests": {
+    "dsh-daily-work": {
+      "fileCount": 32,
+      "digest": "a9a8369abe7aed0036703e6aab3fc4ccbfdca57a7829eb662e71d22a036130e4"
+    },
+    "dsh-ipython": {
+      "fileCount": 8,
+      "digest": "04057fcad447751f5e1917550a64398cc7d63e7db47b3c5fe8a3c396a526bfc5"
+    }
+  },
+  "boot": {
+    "port": 2481,
+    "portReleased": true,
+    "timedOut": false,
+    "exitCode": null
+  },
+  "probeWritten": false,
+  "probeReadError": "D:/DSH/work/dsh-native-daily/qualification/results/V10-research-obs/runs/res01/res01-boot.json does not describe the home this caller booted.\n  expected home: D:/DSH/home/v10-research-obs\n  roots observed: \nA probe writing to a fixed path is a SHARED MUTABLE RESOURCE. Another agent may have overwritten it. Do not report this result as yours.",
+  "probeNamesTheBootedHome": false,
+  "selection": {
+    "composedEntryCount": 174,
+    "webRow": {
+      "id": "web",
+      "name": "@deepseek-ai/dsh-web",
+      "config": {
+        "searchProvider": "deepseek-official",
+        "fetchProvider": "http"
+      }
+    },
+    "portedRow": {
+      "id": "daily-web-search",
+      "name": "dsh-daily-work/web-search",
+      "config": {
+        "id": "daily-search",
+        "endpoint": "https://api.exa.ai/search",
+        "apiKeyEnv": "EXA_API_KEY",
+        "maxResults": 60
+      }
+    },
+    "deepseekProviderRows": [
+      {
+        "id": "web-search-deepseek",
+        "name": "@deepseek-ai/dsh-web-search-deepseek",
+        "config": {
+          "apiKeyEnv": "DEEPSEEK_API_KEY"
+        }
+      }
+    ],
+    "fetchProviderRows": [
+      {
+        "id": "web-fetch-http",
+        "name": "@deepseek-ai/dsh-web-fetch-http",
+        "config": null
+      }
+    ],
+    "selectedProviderId": "deepseek-official",
+    "portedProviderId": "daily-search",
+    "selectionNamesThePortedProvider": false
+  },
+  "selectionError": null,
+  "probeResult": null
+}

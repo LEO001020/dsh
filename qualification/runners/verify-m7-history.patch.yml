@@ -1,0 +1,14 @@
+# Verification overlay: probe whether the M7 history + provenance service is
+# actually live in the resolved host, and whether its loaded plane serves an
+# authorized read and REFUSES a foreign one.
+#
+# This runs inside the REAL profile tree, so it proves the extension mounts
+# through the profile resolver rather than through a test harness. A direct
+# `ctx.plugin()` mount in a test would NOT be sufficient evidence: that is the
+# over-claim this project has already retracted.
+#
+# It composes ON TOP of the daily profile, so the `daily-history` row under test
+# is the one `packages/dsh-daily-work/cordis.patch.yml` contributes.
+- insert:
+    - id: m7-history-verify
+      name: 'D:/DSH/work/dsh-native-daily/qualification/runners/verify-m7-history.mjs'

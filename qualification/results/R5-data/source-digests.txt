@@ -1,0 +1,14 @@
+# R5-data source digests (sha256, first 16 hex)
+# repo HEAD 0751e9df75a3ca8e7df850706d528a6cbbb00532 (branch ipython-native, NOT committed)
+# pinned checkout ddefc45fbc7f8e46dd73185e68295696d1297887 (unmodified)
+# node v24.18.0 / CPython 3.14.3 / ipykernel 7.3.0 / ripgrep 1.18.0
+# final, after all edits and the last green run
+
+ab323affa20702b0  packages/dsh-daily-work/src/artifacts.ts
+830ef68134de0a56  packages/dsh-daily-work/src/observations.ts
+d029876fc93ba68b  packages/dsh-daily-work/src/data-service.ts
+0ae3fc5ddba9f141  packages/dsh-daily-work/src/data-plugin.ts
+40f1c03cda69146f  packages/dsh-daily-work/src/data-plane.test.ts
+0f7c7dfce7101508  qualification/runners/verify-data-plane.mjs
+0ea3f10ddf3b2b2c  qualification/runners/verify-data-plane.patch.yml
+4251f6a5a2e5a0a1  qualification/results/R5-data/FINDINGS.md

@@ -1,0 +1,34 @@
+{
+  "scope": "ID05_MUTATION_ARM",
+  "package": "packages/dsh-daily-work",
+  "config": "tsconfig.check.json",
+  "target_file": "packages/dsh-daily-work/src/dep-gates.test.ts",
+  "mutation": "append one type error: const id05InjectedTypeError: number = 'this is not a number'",
+  "pre_mutation_sha256": "e089c7b4347b16c70f737687129fbbbcebcfcb3f31a2e57c903f7b3a397122aa",
+  "mutated_sha256": "35e73cee0691162caf672fffcafc9942658dfd5f2486fb5d4d1d08baec2f9a33",
+  "injected_line_number": 1314,
+  "mutation_landed": true,
+  "mutation_compile": {
+    "exit_code": 2,
+    "stdout": "src/dep-gates.test.ts(1314,7): error TS2322: Type 'string' is not assignable to type 'number'.\n",
+    "stderr": ""
+  },
+  "restored_sha256": "e089c7b4347b16c70f737687129fbbbcebcfcb3f31a2e57c903f7b3a397122aa",
+  "restore_is_byte_exact": true,
+  "mutation_exit_code": 2,
+  "error_reported_at_the_injected_line": true,
+  "error_code_is_type_mismatch": true,
+  "oracle_established": true
+}
+
+mutation landed          : True
+mutation compile exit    : 2
+error at injected line   : True (line 1314)
+error is TS2322          : True
+restore byte-exact       : True
+oracle established       : True
+
+--- the compile's own output, verbatim ---
+src/dep-gates.test.ts(1314,7): error TS2322: Type 'string' is not assignable to type 'number'.
+
+

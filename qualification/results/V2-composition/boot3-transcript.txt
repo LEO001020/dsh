@@ -1,0 +1,9 @@
+# V2 boot 3 -- shell/permission plane (CMP-01, CMP-06)
+# cwd: D:/DSH/src/dsh-src   DSH_HOME: D:/DSH/home/v2-cmp   port: 4668   portReleased: true
+# timedOut: false   exitCode: null
+
+--- stdout ---
+dsh web: http://127.0.0.1:4668/?token=rZNwuh2XlQdd83NAJ8Oj2tMSbeQv4Q0w62SDzgJVjKw
+VERIFY-T3-SHELL: {"activationWarningCount":0,"inactiveEntryIds":[],"postAuditActivationWarningCount":0,"postAuditInactiveEntryIds":[],"postAuditProbeRowState":2,"postAuditRan":true,"postAuditTimedOut":false,"permissionPresetsAbsent":true,"shellSandboxMode":null,"toolCount":27,"allAssertionsPass":true,"verdict":{"activationWarningsZero":true,"postAuditCheckpointReached":true,"midApplyActivationWarningsZero":true,"permissionPresetsAbsent":true,"shellSandboxModeUndefined":true,"ipythonPresent":true,"nativeFsToolsPresent":true,"toolCountNonZero":true,"pwshAbsenceIsIntentional":true,"modelShellRowNotPending":true,"ipythonReplacesPwsh":true,"noProbeError":true},"error":null}
+
+--- stderr ---

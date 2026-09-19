@@ -1,0 +1,70 @@
+# ID-06 raw evidence: git state of the pinned checkout
+# checkout: D:/DSH/src/dsh-src
+# captured: 2026-09-20T07:40:26+08:00
+# tool: git 2.55.0.windows.3
+
+## stimulus command 1: git rev-parse HEAD
+$ git rev-parse HEAD
+ddefc45fbc7f8e46dd73185e68295696d1297887
+
+## stimulus command 2: git status --porcelain
+$ git status --porcelain
+ M packages/deliverables/workspace-changes/src/index.ts
+?? DSHhomem914/
+?? data-artifacts/
+(exit=0)
+
+## oracle field 1: HEAD equals ddefc45fbc7f8e46dd73185e68295696d1297887
+HEAD: MATCH (ddefc45fbc7f8e46dd73185e68295696d1297887)
+
+## oracle field 2: the working tree is clean
+working tree: NOT CLEAN
+
+## characterisation of each entry
+$ git diff --exit-code   # content comparison over tracked files
+exit=0  (0 = no content change)
+
+$ git diff --cached --name-only   # staged changes
+(end staged; empty = nothing staged)
+
+$ git diff --numstat
+warning: in the working copy of 'packages/deliverables/workspace-changes/src/index.ts', CRLF will be replaced by LF the next time Git touches it
+(end numstat; empty = no content delta)
+
+$ git status --porcelain=v2
+1 .M N... 100644 100644 100644 c05787d931870defacfdfcb4feca85f4ae733d8e c05787d931870defacfdfcb4feca85f4ae733d8e packages/deliverables/workspace-changes/src/index.ts
+? DSHhomem914/
+? data-artifacts/
+
+$ git ls-files --debug packages/deliverables/workspace-changes/src/index.ts
+packages/deliverables/workspace-changes/src/index.ts
+  ctime: 1789785717:474320000
+  mtime: 1789785717:474320000
+  dev: 0	ino: 0
+  uid: 0	gid: 0
+  size: 7086	flags: 0
+
+$ stat -c 'mtime=%y size=%s' packages/deliverables/workspace-changes/src/index.ts
+mtime=2026-09-19 19:19:47.523704400 +0800 size=7251
+
+$ git hash-object <worktree file>   (clean filter applied)
+c05787d931870defacfdfcb4feca85f4ae733d8e
+$ git rev-parse HEAD:<path>          (blob in HEAD)
+c05787d931870defacfdfcb4feca85f4ae733d8e
+(identical blob ids => the tracked entry is a line-ending/stat artifact, NOT a content change)
+
+$ git ls-files -o --exclude-standard   (untracked files)
+DSHhomem914/.anonymous-user-id
+DSHhomem914/profiles/sdk/cordis.patch.yml
+DSHhomem914/profiles/sdk/cordis.yml
+DSHhomem914/profiles/sdk/package.json
+DSHhomem914/profiles/sdk/pnpm-workspace.yaml
+DSHhomem914/sessions/--D-DSH-src-dsh-src--/m914-sdk-boundary/session.v3.jsonl.zstd
+DSHhomem914/sessions/--D-DSH-src-dsh-src--/m914-sdk/session.v3.jsonl.zstd
+DSHhomem914/storages/session_projcache/sessions/m914-sdk-boundary.json
+DSHhomem914/storages/session_projcache/sessions/m914-sdk.json
+data-artifacts/objects/15/150f662de432382d21003d7ba23053663e76f94c0d79cbe4ac27ef0a54b21184
+count: 10
+
+## tracked entries flagged modified: 1
+## untracked paths: 10 files under 2 top-level dirs

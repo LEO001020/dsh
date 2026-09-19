@@ -1,0 +1,35 @@
+lock:      D:\DSH\work\dsh-native-daily\compatibility.lock.json
+identity:  0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461
+
+A. identity recomputed over the STORED inputs
+   computed = 0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461
+   recorded = 0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461
+   verdict  = MATCH
+
+B. identity recomputed over inputs RE-DERIVED FROM DISK
+   [ok  ] artifact_sha256                       pinned=69c49c871735dc7e… disk=69c49c871735dc7e…
+   [ok  ] dependency_lock_sha256                pinned=72523ca50bd34e3e… disk=72523ca50bd34e3e…
+   [ok  ] host_profile_digest                   pinned=5b8b2a8e5d9ae13d… disk=5b8b2a8e5d9ae13d…
+   [ok  ] trusted_local_acceptance_spec_sha256  pinned=e5b6a1d2481f39c5… disk=e5b6a1d2481f39c5…
+   [ok  ] acceptance_spec_sha256                pinned=2fe95835425eb98e… disk=2fe95835425eb98e…
+   computed = 0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461
+   recorded = 0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461
+   verdict  = MATCH
+   stale    = none
+
+ID-02 arm 2: change one byte of one input
+   host_profile_digest: 5b8b2a8e5d9ae13d… -> 0b8b2a8e5d9ae13d…
+   identity differs = True
+
+ID-04: mutate one character of the spec file, then restore
+   mutation: TRUSTED_LOCAL_ACCEPTANCE_SPEC_NOT_A_DSH_ARTIFACT -> TRUSTED_LOCAL_ACCEPTANCE_SPEC_NOT_A_DSH_ARTIFACU (one character)
+   before: stored pin matches file  = True
+           derived identity matches = True
+   during: stored pin matches file  = False
+           derived identity matches = False
+   detection 1 (stored pin went stale)          = True
+   detection 2 (re-derived identity moved)      = True
+   restore byte-exact                           = True
+   restored sha256 = e5b6a1d2481f39c52a6012ec6b48a72e4618ff713f1927b6b0d6827a24b10ce7
+
+This is arithmetic over files. It does not certify the deployment.

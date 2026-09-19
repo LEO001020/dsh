@@ -1,0 +1,10 @@
+# tsc evidence for R5-data
+# Both configs exit 0 with no diagnostics.
+
+$ node /d/DSH/src/dsh-src/node_modules/typescript/bin/tsc -p tsconfig.json --noEmit
+(no output)
+exit 0
+
+$ node /d/DSH/src/dsh-src/node_modules/typescript/bin/tsc -p tsconfig.check.json
+(no output)
+exit 0

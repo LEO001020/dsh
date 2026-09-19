@@ -1,0 +1,102 @@
+=== A12: the real daily Web host, full lifecycle ===
+
+launcher: D:/DSH/src/dsh-src/apps/cli/lib/bin.js
+profile: daily-candidate
+home: D:/DSH/home/canary12
+overlay: D:/DSH/work/dsh-native-daily/qualification/runners/verify-a12-nomock.patch.yml
+port: 18912
+port_listening_before_boot: false
+boot_command: node --profile daily-candidate --patch D:/DSH/work/dsh-native-daily/qualification/runners/verify-a12-nomock.patch.yml -- --no-open --port 18912
+boot_cwd: D:/DSH/src/dsh-src
+
+boot_ready_line_ms: 2172
+url_line: http://127.0.0.1:18912/?token=<redacted>
+url_line_shape: http://127.0.0.1:<port>/?token=<redacted>
+boot_stdout_has_url: true
+port_listening_after_boot: true
+unauthenticated_api_status: 401
+unauthenticated_api_body: "unauthorized"
+token_exchange_status: 303
+token_exchange_sets_cookie: true
+authenticated_root_status: 200
+authenticated_root_is_app_shell: true
+model_catalog_ok: true
+model_catalog_default: {"provider":"deepseek-official","model":"deepseek-flash"}
+model_catalog_routable_providers: ["deepseek-official"]
+session_create_ok: true
+session_created_id: session-8fd4ac5f-9ac6-490f-8fc2-0c78a0e373ba
+session_created_preset: daily-standard
+session_list_ok: true
+session_list_found_created: true
+session_list_item_running: false
+session_list_item_cwd: D:/DSH/work/dsh-native-daily
+session_list_item_preset: daily-standard
+session_list_item_permissions: workspace-write
+
+--- model turn (controlled local route) ---
+model_turn_attempted: true (to establish the CREDENTIAL boundary)
+credentials_file_exists: true
+credentials_file_record_keys: ["client-connection/browser-session","kind","payload","version","secret"]
+credentials_file_has_refs_section: false
+cwd_env_exists: false
+home_env_exists: false
+deepseek_api_key_in_process_env: false
+deepseek_api_key_in_invocation_env: false
+boundary_prompt_rpc_ok: true
+boundary_prompt_value: {"accepted":true}
+boundary_missing_credential_seen_in_session_log: true
+boundary_message: "MISSING_CREDENTIAL"
+credential_boundary: DEEPSEEK_API_KEY not configured
+
+--- launcher stdout ---
+dsh web: http://127.0.0.1:18912/?token=<redacted>
+--- launcher stderr ---
+
+
+--- shutdown ---
+shutdown_trigger: POST http://127.0.0.1:18912/a12/shutdown (launcher ctx.appExit via the gate instrument route)
+shutdown_trigger_is_product_route: false
+shutdown_path_is_production: true (ctx.appExit runs the launcher's own bounded dispose)
+pids_before_shutdown: [45876]
+shutdown_route_status: socket-closed-before-response
+shutdown_route_body: "fetch failed"
+process_exited: true
+shutdown_ms: 351
+exit_code: 0
+exit_signal: null
+
+--- leftovers ---
+port_listening_after_shutdown: false
+pids_after_shutdown: []
+descendant_process_left_behind: false
+home_storages_dir_exists: true
+home_storages_file_count: 2
+  storage_file: \storages\session_projcache\sessions\session-8fd4ac5f-9ac6-490f-8fc2-0c78a0e373ba.json size=4876
+  storage_file: \storages\workspace.json size=199
+temp_matches_total_after_shutdown: 433
+temp_entries_CREATED_during_this_run: ["dsh-spill-CVeygu"]
+temp_entry_left_behind_by_this_host: true
+  temp_created_dsh-spill-CVeygu: files=0 bytes=0
+
+--- restart ---
+restart_port_reused: 18912
+restart_ready_line_ms: 2164
+restart_boot_succeeded: true
+restart_url_line: http://127.0.0.1:18912/?token=<redacted>
+restart_port_listening: true
+restart_unauthenticated_api_status: 401
+restart_token_exchange_status: 303
+restart_session_list_ok: true
+restart_sees_session_from_first_boot: true
+restart_shutdown_route_status: socket-closed-before-response (fetch failed)
+restart_process_exited: true
+restart_exit_code: 0
+restart_port_listening_after_shutdown: false
+
+--- restart launcher stderr ---
+
+
+mock_server_closed: false
+final_owned_pids: []
+final_port_listening: false
+final_mock_port_listening: false

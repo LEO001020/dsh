@@ -1,8 +1,60 @@
-child_pid: 43504
-child_ready: true
-ctrl_event_sender: powershell exit=0 stdout="freed=True attached=False sent=SKIPPED_ATTACH_FAILED"
-child_exit_code: null
-child_exit_signal: null
-child_exit_timed_out: true
-child_stdout: "{\"ready\":true,\"pid\":43504}"
-catchable_signal_delivered: false
+=== A12 signal-delivery matrix: can win32 deliver a CATCHABLE stop event? ===
+
+child_under_test: a throwaway Node process installing SIGINT/SIGBREAK/SIGTERM/SIGHUP handlers
+launcher_handlers_for_reference: apps/cli/src/profile-boot.ts registers SIGTERM and SIGINT ONLY
+
+A_nodeKillSigterm_delivery: child.kill('SIGTERM') returned true
+A_nodeKillSigterm_signals_caught_by_handler: []
+A_nodeKillSigterm_catchable: false
+A_nodeKillSigterm_child_exit_code: null
+A_nodeKillSigterm_child_exit_signal: SIGTERM
+
+B_processKillSigint_delivery: process.kill(12968, 'SIGINT') did not throw
+B_processKillSigint_signals_caught_by_handler: []
+B_processKillSigint_catchable: false
+B_processKillSigint_child_exit_code: 1
+B_processKillSigint_child_exit_signal: null
+
+C_ctrlC_on_own_console_child_ready: true
+C_ctrlC_on_own_console_sender: C_ctrlC_on_own_console|rootPid=15212|attached=True|sent=True
+C_ctrlC_on_own_console_signals_caught_by_handler: []
+C_ctrlC_on_own_console_catchable: false
+
+D_ctrlBreak_on_own_console_child_ready: true
+D_ctrlBreak_on_own_console_sender: 
+D_ctrlBreak_on_own_console_signals_caught_by_handler: ["SIGBREAK"]
+D_ctrlBreak_on_own_console_catchable: true
+
+E_ctrlC_through_cmd_root_child_ready: true
+E_ctrlC_through_cmd_root_sender: E_ctrlC_through_cmd_root|rootPid=39512|attached=True|sent=True
+E_ctrlC_through_cmd_root_signals_caught_by_handler: []
+E_ctrlC_through_cmd_root_catchable: false
+
+B2_processKillSigint_signals_caught_by_handler: []
+B2_processKillSigint_catchable: false
+B2_processKillSigint_child_exit_code: 1
+
+--- summary ---
+A_child_kill_SIGTERM_catchable: false
+B_process_kill_SIGINT_catchable: false
+C_CTRL_C_on_own_console_catchable: false
+D_CTRL_BREAK_on_own_console_catchable: true
+E_CTRL_C_through_cmd_root_catchable: false
+
+--- what this means for A12 ---
+any_catchable_console_event_available_on_win32: true
+The ONE catchable route is CTRL_BREAK_EVENT, which Node surfaces as SIGBREAK.
+The launcher registers handlers for SIGTERM and SIGINT only, so even that
+route does not reach its bounded shutdown: SIGTERM/SIGINT cannot be delivered
+catchably here (child.kill and process.kill both terminate without running the
+handler), and SIGBREAK has no handler. The Web profile also mounts no
+in-product exit command: exitOnStdinEnd is bound by the acp and sdk apps only,
+and a piped stdin that is never resumed does not emit end.
+
+Consequence: the host shutdown CANNOT be triggered through any product-
+reachable stop route on this platform. The shutdown measurement therefore uses
+an instrument route that calls the launcher own ctx.appExit -- the same
+callback the product uses -- behind the real trust fence. See
+verify-a12-shutdown-route.mjs and FINDINGS.md for how that is labelled.
+
+probe_children_left_behind: none

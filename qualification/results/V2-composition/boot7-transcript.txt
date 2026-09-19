@@ -1,0 +1,6 @@
+canary_install: {"status":0,"stdout":"Already up to date\n\ndependencies:\n+ dsh-daily-work 0.1.0 <- ..\\..\\..\\..\\work\\dsh-native-daily\\packages\\dsh-daily-work\n+ dsh-ipython 0.1.0 <- ..\\..\\..\\..\\work\\dsh-native-daily\\packages\\dsh-ipython\n\nDone in 339ms using pnpm v11.24.0\n","stderr":""}
+control_install: {"status":0,"stdout":"Already up to date\n\ndependencies:\n+ dsh-daily-work 0.1.0 <- ..\\..\\..\\..\\work\\dsh-native-daily\\packages\\dsh-daily-work\n+ dsh-ipython 0.1.0 <- ..\\..\\..\\..\\work\\dsh-native-daily\\packages\\dsh-ipython\n\nDone in 368ms using pnpm v11.24.0\n","stderr":""}
+control_has_home_patch: false
+CANARY presetDefaultId=standard toolCount=26
+CONTROL presetDefaultId=daily-standard toolCount=27
+DUMP exit=0 maxActiveSubagents=true maxDepthPresent=true

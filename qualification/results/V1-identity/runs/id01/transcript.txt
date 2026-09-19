@@ -1,0 +1,14 @@
+=== ID-01: built launcher, real module graph, first successful tool call ===
+repo:      D:/DSH/work/dsh-native-daily
+home:      D:/DSH/home/v1-identity
+launcher:  D:/DSH/src/dsh-src/apps/cli/lib/bin.js
+probe out: D:/DSH/work/dsh-native-daily/qualification/results/V1-identity/runs/id01/boot.json
+graph out: D:/DSH/work/dsh-native-daily/qualification/results/V1-identity/runs/id01/graph.jsonl
+rebuild packages/dsh-daily-work: exit=0 in 1963ms
+rebuild packages/dsh-ipython: exit=0 in 984ms
+build dsh-daily-work: lib newest=2026-09-19T23:54:30.866Z src newest=2026-09-19T23:54:27.839Z libNewerThanSrc=true files=32 digest=a9a8369abe7aed00...
+build dsh-ipython: lib newest=2026-09-19T23:54:31.857Z src newest=2026-09-19T23:52:55.554Z libNewerThanSrc=true files=8 digest=04057fcad447751f...
+profile installed: repo patch 5b8b2a8e5d9ae13d... installed 5b8b2a8e5d9ae13d... equal=true
+plugin install: exit=0
+
+port: 14057  portReleased: true  timedOut: false  exitCode: null

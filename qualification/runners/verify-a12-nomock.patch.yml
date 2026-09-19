@@ -1,0 +1,26 @@
+# A12 overlay (NO-MOCK baseline): the shutdown instrument only.
+#
+# WHY THIS VARIANT EXISTS
+#
+# The recorded A12 result stopped at `MISSING_CREDENTIAL`: `DEEPSEEK_API_KEY` is
+# absent from every layer the credentials provider reads, so a prompt reaches the
+# route and fails there. That is a CREDENTIAL boundary, and it is worth
+# re-establishing on this host so the difference between "no key" and "no model
+# path" stays visible.
+#
+# The mock variant (`verify-a12.patch.yml`) redirects the provider endpoint, which
+# changes WHAT the failure would be: with the endpoint pointed at a local server,
+# an absent key produces a connection or auth failure, not `MISSING_CREDENTIAL`.
+# So the no-credential claim must be measured on the STOCK provider route, with
+# only the shutdown instrument added. Booting the mock overlay and calling the
+# result "the credential boundary" would be a different claim wearing the same
+# name.
+#
+# The instrument itself is unchanged and is documented in `verify-a12.patch.yml`
+# and `verify-a12-shutdown-route.mjs`: it calls the launcher's own `ctx.appExit`
+# behind the REAL browser-trust fence, so the production shutdown path runs while
+# only the trigger is the gate's.
+
+- insert:
+    - id: a12-shutdown-route
+      name: 'D:/DSH/work/dsh-native-daily/qualification/runners/verify-a12-shutdown-route.mjs'

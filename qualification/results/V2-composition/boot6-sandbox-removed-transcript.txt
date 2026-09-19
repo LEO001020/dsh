@@ -1,0 +1,13 @@
+# V2 boot 6 arm 2 -- sandbox provider rows REMOVED
+# cwd: D:/DSH/src/dsh-src   DSH_HOME: D:/DSH/home/v2-cmp   port: 4618   portReleased: true
+# timedOut: false   exitCode: null
+
+--- stdout ---
+dsh web: http://127.0.0.1:4618/?token=J4Ey9C0Hulbl89W1kqShvw0QL8hHTdGTrMbSFHoerro
+
+--- stderr ---
+dsh: warning: 4 entries did not activate
+ptc-runtime (@deepseek-ai/dsh-ptc-runtime-node): pending (waiting for services: sandbox, sandboxPolicy)
+terminal-controller (@deepseek-ai/dsh-api-terminal-controller): pending (waiting for service: sandboxPolicy)
+workspace-files (@deepseek-ai/dsh-api-workspace-files): pending (waiting for service: sandboxPolicy)
+ui-deliverables (@deepseek-ai/dsh-client-ui-deliverables): pending (waiting for services: workspaceFiles, sandboxPolicy)

@@ -1,0 +1,24 @@
+# Overlay for the V2 COMPOSITION probe (boot 4).
+#
+# ONE row, and it is the PROBE ONLY. There is deliberately NO tool row here.
+#
+# An overlay that inserted a tool row would make every catalog measurement below
+# a measurement of the OVERLAY rather than of the profile -- the G-FIX-04 /
+# G-FIX-05 / G-FIX-12 defect class this project has recorded five times. So the
+# catalogs, the row registration counts and the sandbox/approval reads are all
+# produced by the profile's OWN composition: its bundles plus its `agent-presets`
+# root.
+#
+# NO `webserver` ROW. `boot-harness.mjs` appends its own port overlay LAST and
+# restates all four keys the row needs, because a patch REPLACES the target row's
+# whole `config` object rather than merging into it. A second `webserver` patch
+# here would be a competing writer for one row.
+#
+# NO `sandbox`, `sandbox-policy`, `approval` OR `subagent` ROW EITHER, and that is
+# load-bearing rather than an omission. Each is the SUBJECT of a case in this
+# family. Restating any of them here would make the probe measure its own row
+# instead of the profile's -- the weaker-oracle mistake this project already
+# recorded as G-FIX-12.
+- insert:
+    - id: verify-cmp-composition
+      name: 'D:/DSH/work/dsh-native-daily/qualification/runners/verify-cmp-composition.mjs'

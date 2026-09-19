@@ -1,0 +1,8 @@
+# V2 boot 5 arm 1 -- CWD-RELATIVE preset root, foreign cwd
+# cwd: D:/DSH/src/dsh-src   DSH_HOME: D:/DSH/home/v2-cmp   port: 4593   portReleased: true
+# timedOut: false   exitCode: null
+
+--- stdout ---
+dsh web: http://127.0.0.1:4593/?token=lMM3UDphGSFpKhHgsED2ezr93b7YlVeFM77wOGCoy6w
+
+--- stderr ---

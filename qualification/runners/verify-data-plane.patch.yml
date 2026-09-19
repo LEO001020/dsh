@@ -1,0 +1,49 @@
+# Overlay for the M4 data-plane boot probe.
+#
+# Loaded ON TOP of the daily-candidate profile, so the probe runs inside a real
+# composed profile boot rather than a hand-mounted context.
+#
+# TWO rows, for two different reasons:
+#
+#   1. `daily-data-plane` mounts the data-plane service. It is stated HERE as well
+#      as in the package's own `cordis.patch.yml` because the installed profile
+#      under DSH_HOME carries a COPY of that file, and a stale copy would make the
+#      probe report a false absence -- which is a measurement error about the
+#      probe, not a finding about the product. Restating it makes the probe's
+#      result depend on the package being built, not on the profile copy's age.
+#
+#   2. `verify-data-plane` runs the probe itself.
+#
+# The `fs` service comes from the base bundle; `storageDomain` too, which is what
+# lets the data-plane row resolve its `inject`.
+#
+# The `webserver` override is a PROBE-ENVIRONMENT fact, not a product change: port
+# 3080 is held by a long-lived host on this machine, and without the override the
+# composed profile fails to boot for a reason that has nothing to do with the data
+# plane. Port 0 asks the OS for a free port, so the probe boots on any machine.
+# Stated here rather than silently worked around, because a boot that failed for an
+# unrelated reason would make every assertion below vacuous.
+#
+# EVERY key is restated because a patch replaces the target row's whole `config`
+# object -- it is not a deep merge (`vendor/include/src/index.ts:120-123`). This is
+# TRAP 4 in `docs/OPERATIONS.md`, and it bit this probe on its first run: overriding
+# only `port` dropped `host` and the boot failed schema validation.
+- id: webserver
+  config:
+    host: '127.0.0.1'
+    port: 0
+    compression: gzip
+    compressionLevel: 1
+    compressionThresholdBytes: 1024
+
+- insert:
+    - id: daily-data-plane
+      name: dsh-daily-work/data-host
+      config:
+        ownerScope: project:daily
+        executionWorld: local
+        pageBytes: 65536
+        quotaBytes: 268435456
+
+    - id: verify-data-plane
+      name: 'D:/DSH/work/dsh-native-daily/qualification/runners/verify-data-plane.mjs'

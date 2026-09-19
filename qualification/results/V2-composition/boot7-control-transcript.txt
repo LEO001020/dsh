@@ -1,0 +1,8 @@
+# V2 boot 7 arm B -- CONTROL home with NO home-level patch
+# cwd: D:/DSH/src/dsh-src   DSH_HOME: D:/DSH/home/v2-cmp-control   port: 9862   portReleased: true
+# timedOut: false   exitCode: null
+
+--- stdout ---
+dsh web: http://127.0.0.1:9862/?token=LQt03j1PGgw4jyglcAOBiWVqPQqUAmZU4h-28zhi2Qs
+
+--- stderr ---

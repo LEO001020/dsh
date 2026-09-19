@@ -1,0 +1,52 @@
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.8 [39m[90mD:/DSH/work/dsh-native-daily/packages/dsh-daily-work[39m
+
+ [2m[90m↓[39m[22m src/capacity.test.ts[2m > [22mCAP-01: the hard capacity is a deployment constant of 30[2m > [22mis 30, not a config value a caller can raise
+ [2m[90m↓[39m[22m src/capacity.test.ts[2m > [22mCAP-01: the hard capacity is a deployment constant of 30[2m > [22mREFUSES the 31st and 32nd before publication, at N=30, with synthetic occupancy
+ [2m[90m↓[39m[22m src/capacity.test.ts[2m > [22mCAP-01: the hard capacity is a deployment constant of 30[2m > [22mcounts occupied as reserved + starting + active_assignment + stopping + unknown_quarantined
+ [2m[90m↓[39m[22m src/capacity.test.ts[2m > [22mCAP-01: the hard capacity is a deployment constant of 30[2m > [22mDROPPING ANY ONE BUCKET from the formula changes `occupied`, so a test can catch it
+ [2m[90m↓[39m[22m src/capacity.test.ts[2m > [22mCAP-01: the hard capacity is a deployment constant of 30[2m > [22mfolds a task slot into its live child rather than double-counting it
+ [2m[90m↓[39m[22m src/capacity.test.ts[2m > [22mCAP-01: the hard capacity is a deployment constant of 30[2m > [22ma QUARANTINED executor with NO live child still occupies, and is never released early
+ [2m[90m↓[39m[22m src/capacity.test.ts[2m > [22mCAP-04: an executor whose release is unconfirmed keeps its slot[2m > [22ma cancel that has only been REQUESTED still occupies
+ [2m[90m↓[39m[22m src/capacity.test.ts[2m > [22mCAP-04: an executor whose release is unconfirmed keeps its slot[2m > [22man assignment waiting on its own tool or provider STILL occupies
+ [2m[90m↓[39m[22m src/capacity.test.ts[2m > [22mCAP-04: an executor whose release is unconfirmed keeps its slot[2m > [22mreleases the physical slot on agent/disposed, not on a record transition
+ [2m[90m↓[39m[22m src/capacity.test.ts[2m > [22mCAP-02: every in-process creation path shares one host quota[2m > [22mthe continuable path takes a host slot
+ [2m[90m↓[39m[22m src/capacity.test.ts[2m > [22mCAP-02: every in-process creation path shares one host quota[2m > [22mthe ONE-SHOT path takes a host slot
+ [2m[90m↓[39m[22m src/capacity.test.ts[2m > [22mCAP-02: every in-process creation path shares one host quota[2m > [22mthe DIRECT AgentFactory path takes a host slot
+ [2m[90m↓[39m[22m src/capacity.test.ts[2m > [22mCAP-02: every in-process creation path shares one host quota[2m > [22mthe WORKFLOW/PTC path is covered, because it funnels through the one-shot start
+ [2m[90m↓[39m[22m src/capacity.test.ts[2m > [22mCAP-02: every in-process creation path shares one host quota[2m > [22ma non-child session fork does NOT consume a child slot
+ [2m[90m↓[39m[22m src/capacity.test.ts[2m > [22mCAP-02: maxDepth is an INDEPENDENT hard cap that a caller cannot lift[2m > [22ma caller passing maxDepth 99 is REFUSED
+ [2m[90m↓[39m[22m src/capacity.test.ts[2m > [22mCAP-02: maxDepth is an INDEPENDENT hard cap that a caller cannot lift[2m > [22man OMITTED maxDepth is REFUSED too, not read as permission
+ [2m[90m↓[39m[22m src/capacity.test.ts[2m > [22mCAP-02: maxDepth is an INDEPENDENT hard cap that a caller cannot lift[2m > [22mthe depth ceiling does not consume a capacity slot when it refuses
+ [2m[90m↓[39m[22m src/capacity.test.ts[2m > [22mCAP-02: maxDepth is an INDEPENDENT hard cap that a caller cannot lift[2m > [22ma depth-1 child IS admitted, so the ceiling is not a blanket refusal
+ [2m[90m↓[39m[22m src/capacity.test.ts[2m > [22mCAP-03/CAP-06: real top-up, and NO filler agents[2m > [22mone root really reaches its target of 3 with the real continuable seam
+ [2m[90m↓[39m[22m src/capacity.test.ts[2m > [22mCAP-03/CAP-06: real top-up, and NO filler agents[2m > [22mready shortage with a high N runs only what is ready and creates NO filler agent
+ [2m[90m↓[39m[22m src/capacity.test.ts[2m > [22mCAP-03/CAP-06: real top-up, and NO filler agents[2m > [22ma root is NOT counted in the child target and is not starved of provider budget
+ [2m[90m↓[39m[22m src/capacity.test.ts[2m > [22mCAP-07: two roots share one host cap[2m > [22mthe gate is HOST-wide: two roots cannot each hold the full cap
+ [32m✓[39m src/capacity.test.ts[2m > [22mCAP-07: two roots share one host cap[2m > [22mtwo real roots share one host ledger, and the second is refused at the boundary[32m 226[2mms[22m[39m
+ [2m[90m↓[39m[22m src/capacity.test.ts[2m > [22man idle historical Session is NOT active[2m > [22mdoes not occupy a slot, and its Session remains readable
+ [2m[90m↓[39m[22m src/capacity.test.ts[2m > [22mCAP-08: raising and lowering the target keeps running children[2m > [22ma raise tops up, and a lower STOPS admissions without killing a working child
+ [2m[90m↓[39m[22m src/capacity.test.ts[2m > [22mthe gate refuses BEFORE publication, not after[2m > [22mthe creating call rejects and the caller receives no child
+ [2m[90m↓[39m[22m src/capacity.test.ts[2m > [22mthe gate refuses BEFORE publication, not after[2m > [22ma capacity refusal at the boundary also rejects the creating call
+ [2m[90m↓[39m[22m src/capacity.test.ts[2m > [22mCAP-04/CAP-05: rolling refill at N=3, on a controlled local provider route[2m > [22mONE completion refills while TWO siblings are still ACTIVE (N=3)
+ [2m[90m↓[39m[22m src/capacity.test.ts[2m > [22mCAP-04/CAP-05: rolling refill at N=3, on a controlled local provider route[2m > [22mTHREE sequential single completions each refill, with siblings held open (N=3)
+ [2m[90m↓[39m[22m src/capacity.test.ts[2m > [22mCAP-04/CAP-05: rolling refill at N=3, on a controlled local provider route[2m > [22mCAP-06 KNOWN-BROKEN: two freed slots must admit exactly two, not three
+ [2m[90m↓[39m[22m src/capacity.test.ts[2m > [22mCAP-05 falsification: a WAVE policy produces no refill under the same measurement[2m > [22mdeclines while a sibling is active, where the rolling path admits (N=3)
+ [2m[90m↓[39m[22m src/capacity.test.ts[2m > [22mCAP-07/CAP-08: a stopping or quarantined executor holds capacity[2m > [22mCAP-07: a slot is NOT released on `cancel requested`, only on quiescence
+ [2m[90m↓[39m[22m src/capacity.test.ts[2m > [22mCAP-07/CAP-08: a stopping or quarantined executor holds capacity[2m > [22mCAP-08: a quarantined executor holds capacity, and a live one is counted ONCE
+ [2m[90m↓[39m[22m src/capacity.test.ts[2m > [22mCAP-07/CAP-08: a stopping or quarantined executor holds capacity[2m > [22ma reservation admits the child it reserved, at exactly capacity
+ [2m[90m↓[39m[22m src/capacity.test.ts[2m > [22mCAP-09/CAP-10/CAP-11: deficit, a lower that cancels nothing, root headroom[2m > [22mCAP-09: a ready shortage at N=30 with 2 ready creates exactly 2 REAL children
+ [2m[90m↓[39m[22m src/capacity.test.ts[2m > [22mCAP-09/CAP-10/CAP-11: deficit, a lower that cancels nothing, root headroom[2m > [22mCAP-10: lowering N stops new admission WITHOUT fabricating cancellations
+ [2m[90m↓[39m[22m src/capacity.test.ts[2m > [22mCAP-09/CAP-10/CAP-11: deficit, a lower that cancels nothing, root headroom[2m > [22mCAP-11: the root is not counted in N and keeps its own provider headroom
+ [2m[90m↓[39m[22m src/capacity.test.ts[2m > [22mT10: the mandatory N=10 arm at the deployment numbers[2m > [22mthe ADMIT/REFUSE BOUNDARY at target 10 and hard cap 30, with the root excluded
+ [2m[90m↓[39m[22m src/capacity.test.ts[2m > [22mT10: the mandatory N=10 arm at the deployment numbers[2m > [22mthe root EXCLUSION is the classifier, not the mount order
+ [2m[90m↓[39m[22m src/capacity.test.ts[2m > [22mT10: the mandatory N=10 arm at the deployment numbers[2m > [22mREAL N=10: ten children in flight, the 11th refused, and the root holds no slot
+ [2m[90m↓[39m[22m src/capacity.test.ts[2m > [22mT10: the mandatory N=10 arm at the deployment numbers[2m > [22mREAL N=10 ROLLING REFILL: one completion admits exactly one more, back to ten
+ [2m[90m↓[39m[22m src/capacity.test.ts[2m > [22mT10: the mandatory N=10 arm at the deployment numbers[2m > [22mthe ROOT keeps its own inference budget while ten children are in flight
+
+[2m Test Files [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[32m1 passed[39m[22m[2m | [22m[33m41 skipped[39m[90m (42)[39m
+[2m   Start at [22m 07:57:59
+[2m   Duration [22m 1.44s[2m (transform 768ms, setup 0ms, import 998ms, tests 228ms, environment 0ms)[22m
+
+EXIT_CODE=0

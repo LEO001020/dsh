@@ -1,0 +1,26 @@
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.8 [39m[90mD:/DSH/work/dsh-native-daily/packages/dsh-daily-work[39m
+
+ [32m✓[39m src/capacity-v8-probe.test.ts[2m > [22mV8/CAP-02: the COLD RESUME path draws on the same host quota[2m > [22ma resumed child is classified as a child and TAKES a host slot[32m 88[2mms[22m[39m
+[90mstdout[2m | src/capacity-v8-probe.test.ts[2m > [22m[2mV8/CAP-09: the last cost credit is reserved atomically under contention[2m > [22m[2mthree concurrent launches against ONE free credit admit exactly one
+[22m[39mV8/CAP-09 measured: accepted=1 refused=2 reserved=100 childCeiling=100 reasons=["budget_blocked","budget_blocked"]
+
+[90mstdout[2m | src/capacity-v8-probe.test.ts[2m > [22m[2mV8/CAP-10: a completion storm must not overshoot the target[2m > [22m[2mMEASURES THE KNOWN DEFECT: three concurrent drains against TWO free slots
+[22m[39mV8/CAP-10 measured: freedSlots=2 concurrentRequests=3 admitted=3 heldAgainstTarget3=4 acceptedIds=["child-70","child-71","child-72"] deficitAfter=0
+
+ [32m✓[39m src/capacity-v8-probe.test.ts[2m > [22mV8/CAP-09: the last cost credit is reserved atomically under contention[2m > [22mthree concurrent launches against ONE free credit admit exactly one[32m 37[2mms[22m[39m
+ [32m✓[39m src/capacity-v8-probe.test.ts[2m > [22mV8/CAP-10: a completion storm must not overshoot the target[2m > [22mMEASURES THE KNOWN DEFECT: three concurrent drains against TWO free slots[32m 69[2mms[22m[39m
+[90mstdout[2m | src/capacity-v8-probe.test.ts[2m > [22m[2mV8/CAP-13: the depth ceiling and the host cap name themselves separately[2m > [22m[2ma depth refusal and a capacity refusal are DISTINGUISHABLE, and the family pool is a third thing
+[22m[39mV8/CAP-13 depth refusal: errorName=ChildCapacityError wrappedByRuntime=false causeName=undefined causeCode=none message="dailyWork: refusing child \"v8-grandchild\" at delegation depth 2; the deployment ceiling is 1. A caller-supplied maxDepth cannot raise this: the depth is read from the child's own durable header."
+
+[90mstdout[2m | src/capacity-v8-probe.test.ts[2m > [22m[2mV8/CAP-13: the depth ceiling and the host cap name themselves separately[2m > [22m[2ma depth refusal and a capacity refusal are DISTINGUISHABLE, and the family pool is a third thing
+[22m[39mV8/CAP-13 measured: poolRefusal="subagent limit reached (active child limit: 4); wait for an existing child to finish or complete this work with the current agents" hostRefusals={"HOST_CAPACITY_REACHED":0,"DEPTH_CEILING_EXCEEDED":1} hostOccupied=4 poolLimit=4 hostLimit=30
+
+ [32m✓[39m src/capacity-v8-probe.test.ts[2m > [22mV8/CAP-13: the depth ceiling and the host cap name themselves separately[2m > [22ma depth refusal and a capacity refusal are DISTINGUISHABLE, and the family pool is a third thing[32m 94[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[32m3 passed[39m[22m[2m | [22m[36m1 expected fail[39m[90m (4)[39m
+[2m   Start at [22m 07:55:21
+[2m   Duration [22m 1.45s[2m (transform 736ms, setup 0ms, import 961ms, tests 289ms, environment 0ms)[22m
+
+EXIT_CODE=0

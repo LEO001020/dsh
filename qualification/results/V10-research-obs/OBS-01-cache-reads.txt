@@ -1,0 +1,36 @@
+=== OBS-01: observation cache hit rate, measured ===
+N (observations of one unchanged session) = 6
+preparedSessionCacheSize                  = 32  (ABOVE N, so eviction is not the reason)
+repo                                      = D:/DSH/work/dsh-native-daily
+
+revision before observations: 1900922907:161285161655714906:5734:1789861896207557100:1789861896209884000
+revision after  observations: 1900922907:161285161655714906:5734:1789861896207557100:1789861896209884000
+revision stable across calls: true
+
+ctx.get('sessionPersistence') === ctx.get('sessionPersistence') : false
+  first  call -> constructor: CountingJsonl  proxyTargetSameAsSecond: true
+  second call -> constructor: CountingJsonl
+  both are Proxies over ONE stable target (the escape the fix would use): true
+
+observations issued:            6
+lease.source for every read:    ["prepared","prepared","prepared","prepared","prepared","prepared"]
+FULL LOG READS OBSERVED:        6
+a cache HIT would have produced: 1
+
+RESULT: DEFECT CONFIRMED -- the cache never hit. 6 full log reads for 6 observations of ONE unchanged session with cacheSize 32 > N 6. A working cache would have produced 1.
+
+CAUSE (measured above, not inferred): the revision half of the key MATCHES (revision stable: true),
+and the identity half CANNOT match, because ctx.get(name) returns a fresh traceable Proxy on every
+call, so `cached.persistence !== persistence` is always true.
+  key: packages/session-query/session-query/src/observation.ts:209
+       if (cached === undefined || cached.persistence !== persistence || cached.revision !== revision) return undefined
+  proxy: vendor/cordis/src/utils.ts:165-175 (createTraceable -> new Proxy(value, ...))
+  entry: vendor/cordis/src/reflect.ts (ctx.get -> getTraceable)
+  escape: proxy[Symbol.for("cordis.original")] is the STABLE target, measured identical above
+
+CONSUMER EXPOSURE, measured separately in this slice: the history plane does NOT rely on this cache
+(it pins its own observation), which is why a 100-page traversal costs ONE log read. See
+qualification/results/V10-research-obs/OBS-04-100page-traversal.txt and the HIS-04 block of
+qualification/results/V10-research-obs/OBS-history-web.txt.
+
+temp dirs removed: true / true

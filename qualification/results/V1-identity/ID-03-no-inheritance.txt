@@ -1,0 +1,58 @@
+=== ID-03: no verdict migrates from the old specs ===
+identity under test: 0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461
+
+new spec   : 109 cases  statuses={'FAIL': 4, 'NOT_RUN': 78, 'PASS': 27}
+old spec   : 112 cases
+old gates  : 104 cases
+
+--- 1. by ID ---
+  ids shared with the old spec  : 38 ids: ['CAP-01', 'CAP-02', 'CAP-03', 'CAP-04', 'CAP-05', 'CAP-06', 'CAP-07', 'CAP-08', 'IPY-01', 'IPY-02', 'IPY-03', 'IPY-04', 'IPY-05', 'IPY-06', 'IPY-07', 'IPY-08', 'REC-01', 'REC-02', 'REC-03', 'REC-04', 'REC-05', 'REC-06', 'REC-07', 'REC-08', 'RES-01', 'RES-02', 'RES-03', 'RES-04', 'RES-05', 'RES-06', 'VER-01', 'VER-02', 'VER-03', 'VER-04', 'VER-05', 'VER-06', 'VER-07', 'VER-08']
+  ids shared with old gates.json: []
+
+  CLAUSE A (literal): 'zero old case ids appear with a status other than NOT_RUN'
+    shared ids NOT at NOT_RUN : 16
+      REC-01: new=PASS  old_spec_status=NOT_RUN  own_evidence=2
+      REC-02: new=PASS  old_spec_status=NOT_RUN  own_evidence=3
+      REC-03: new=PASS  old_spec_status=NOT_RUN  own_evidence=3
+      REC-04: new=PASS  old_spec_status=NOT_RUN  own_evidence=5
+      REC-05: new=PASS  old_spec_status=NOT_RUN  own_evidence=3
+      REC-06: new=PASS  old_spec_status=NOT_RUN  own_evidence=2
+      REC-07: new=PASS  old_spec_status=NOT_RUN  own_evidence=2
+      REC-08: new=PASS  old_spec_status=NOT_RUN  own_evidence=2
+      VER-01: new=PASS  old_spec_status=NOT_RUN  own_evidence=3
+      VER-02: new=PASS  old_spec_status=NOT_RUN  own_evidence=3
+      VER-03: new=PASS  old_spec_status=NOT_RUN  own_evidence=4
+      VER-04: new=PASS  old_spec_status=NOT_RUN  own_evidence=4
+      VER-05: new=PASS  old_spec_status=NOT_RUN  own_evidence=3
+      VER-06: new=PASS  old_spec_status=NOT_RUN  own_evidence=3
+      VER-07: new=PASS  old_spec_status=NOT_RUN  own_evidence=2
+      VER-08: new=PASS  old_spec_status=NOT_RUN  own_evidence=3
+    NOT the decision: enforced literally this would make 38 of this spec's own
+    cases unpassable, including VER-01, whose oracle REQUIRES a measurement.
+    The spec's reading_notes and no_inheritance_rule state the operative test.
+
+  CLAUSE B (operative): 'a PASS that arrives without its own evidence file under
+    this identity is NOT PASS'
+    inherited verdicts (non-NOT_RUN with no evidence) : none
+    NOT_RUN carrying evidence                         : none
+
+--- 2. by requirement name ---
+  NOT DECIDABLE as a string comparison: the old spec's requirement fields are
+  Chinese ('硬30并发', '零测试') and this spec's are English, so every shared id
+  differs as a string. What IS decided is whether the spec DOCUMENTS a re-issued
+  numbering, per family.
+    families documenting a re-issued numbering : ['VER']
+    families sharing ids WITHOUT such a warning: ['CAP', 'IPY', 'REC', 'RES']
+    (a reader comparing CAP/IPY/REC/RES ids across the two files must NOT assume
+     the numbering was carried over unchanged; the spec does not say it was)
+
+--- 3. by evidence path ---
+  distinct evidence paths in the old artifacts: 36
+  carried across into the new file            : none
+
+--- 4. by identity on each evidence entry ---
+  evidence filed under a non-current identity: none
+
+cases in the new file carrying evidence: ['DATA-01', 'DATA-02', 'DATA-03', 'DATA-04', 'DATA-05', 'DATA-06', 'DATA-07', 'DATA-08', 'DATA-09', 'DATA-10', 'DATA-11', 'DATA-12', 'REC-01', 'REC-02', 'REC-03', 'REC-04', 'REC-05', 'REC-06', 'REC-07', 'REC-08', 'REC-09', 'REC-10', 'VER-01', 'VER-02', 'VER-03', 'VER-04', 'VER-05', 'VER-06', 'VER-07', 'VER-08', 'VER-09']
+
+VERDICT: PASS -- no verdict was carried: every shared id's status is backed by its own local evidence, no old evidence path reappears, and every entry is under this identity.

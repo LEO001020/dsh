@@ -1,0 +1,29 @@
+# CMP-05 FAILURE ARM: a CWD-RELATIVE preset root.
+#
+# This overlay exists to measure the DIRECTION THE ORACLE NAMES, not to fix
+# anything. CMP-05's oracle is:
+#
+#   "In the anchored case the preset `daily-standard` resolves and the resolved
+#    root is absolute and derived from the profile's own directory. In the
+#    cwd-relative case the preset is NOT found and the tool count is 0. The
+#    failure direction is recorded, not just the success direction."
+#
+# So this file rewrites the `agent-presets` row's single root to `./presets`,
+# which is the form the profile used BEFORE the `ctx.baseUrl` fix (see
+# `docs/GAPS.md` G-FIX-12: "`./presets` resolves only when the operator happens
+# to be standing in the profile directory"). Booted from a FOREIGN cwd, that form
+# must fail to find `daily-standard`.
+#
+# EVERY OTHER KEY IS RESTATED, and that is the documented dialect rule rather
+# than tidiness: a patch REPLACES the target row's whole `config` object, it is
+# not a deep merge (`vendor/include/src/index.ts:120-123`). Dropping
+# `includeShippedRoot` or `includeUserRoot` here would silently change a second
+# variable in a one-variable experiment.
+- id: agent-presets
+  config:
+    default: daily-standard
+    roots:
+      - path: ./presets
+        trust: system
+    includeShippedRoot: true
+    includeUserRoot: true

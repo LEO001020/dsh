@@ -1,0 +1,13 @@
+# Verification overlay: probe the ipython surface inside a REAL profile boot.
+#
+# Two rows, because the two halves live on different planes:
+#   - the probe itself, at host level (it injects sessionController + ipython);
+#   - the `ipython` TOOL row, at AGENT level, because a tool is agent-scoped and
+#     a host-level tool row publishes into the root realm where no agent's scope
+#     sees it.
+- insert:
+    - id: ipython-tool
+      name: dsh-ipython/tool
+- insert:
+    - id: verify-ipython-e2e
+      name: 'D:/DSH/work/dsh-native-daily/qualification/runners/verify-ipython-e2e.mjs'

@@ -1,0 +1,94 @@
+
+ RUN  v4.1.8 D:/DSH/work/dsh-native-daily/packages/dsh-daily-work
+
+ ✓ src/history-web.test.ts > HIS-01: guessing another project's SessionId is REFUSED, not empty > refuses a session in another workspace with a REFUSAL code, not an empty page 3ms
+ ✓ src/history-web.test.ts > HIS-01: guessing another project's SessionId is REFUSED, not empty > distinguishes a refusal from an authorized-but-absent session 0ms
+ ✓ src/history-web.test.ts > HIS-01: guessing another project's SessionId is REFUSED, not empty > gives the SAME refusal for an id in another project that exists and one that does not 0ms
+ ✓ src/history-web.test.ts > HIS-01: guessing another project's SessionId is REFUSED, not empty > allows the caller's own session and refuses a caller with no workspace everything else 0ms
+ ✓ src/history-web.test.ts > HIS-01: guessing another project's SessionId is REFUSED, not empty > refuses when the caller's own session changed workspace 0ms
+ ✓ src/history-web.test.ts > HIS-01: guessing another project's SessionId is REFUSED, not empty > reads through ctx.get rather than ctx.sessionQuery, so a plugin without inject works 69ms
+ ✓ src/history-web.test.ts > HIS-01: guessing another project's SessionId is REFUSED, not empty > reads from a PLUGIN caller, the fiber the boot failure actually hit 33ms
+ ✓ src/history-web.test.ts > HIS-01: guessing another project's SessionId is REFUSED, not empty > names the DEPLOYMENT when no session-query service is mounted 2ms
+ ✓ src/history-web.test.ts > HIS-01: guessing another project's SessionId is REFUSED, not empty > mounts through the real plugin entry, exposing a service that refuses without session-query 1ms
+ ✓ src/history-web.test.ts > HIS-01: guessing another project's SessionId is REFUSED, not empty > does not expose the raw sessionQuery service from the plane 0ms
+ ✓ src/history-web.test.ts > HIS-02: a scan is pinned to ONE watermark while events append > returns only events at or below the pinned watermark, and reads new events in a SEPARATE scan 46ms
+ ✓ src/history-web.test.ts > HIS-02: a scan is pinned to ONE watermark while events append > refuses a page size that is not a positive integer 26ms
+ ✓ src/history-web.test.ts > HIS-02: a scan is pinned to ONE watermark while events append > keeps at most ONE pinned observation per session, however often it is re-opened 39ms
+ ✓ src/history-web.test.ts > HIS-02: a scan is pinned to ONE watermark while events append > releases a scan's observation on dispose, so a cursor after teardown is refused 33ms
+ ✓ src/history-web.test.ts > HIS-02: a scan is pinned to ONE watermark while events append > refuses a cursor from a superseded generation instead of re-basing it 32ms
+ ✓ src/history-web.test.ts > HIS-02: a scan is pinned to ONE watermark while events append > keeps page order stable across a filtered multi-page traversal 37ms
+ ✓ src/history-web.test.ts > HIS-03: an event larger than the page budget returns segments, not a breach > returns segments with the FULL size and digest, and never a partial body as the event 41ms
+ ✓ src/history-web.test.ts > HIS-03: an event larger than the page budget returns segments, not a breach > bounds the segment LIST as well as each segment 38ms
+ ✓ src/history-web.test.ts > HIS-03: an event larger than the page budget returns segments, not a breach > reports an absent seq as an error rather than an empty event 37ms
+ ✓ src/history-web.test.ts > HIS-03: an event larger than the page budget returns segments, not a breach > reads an event from the pinned observation, so an event read does not re-read the log 60ms
+ ✓ src/history-web.test.ts > HIS-03: an event larger than the page budget returns segments, not a breach > measures the BYTES a 100-page traversal reads, not only the call count 188ms
+ ✓ src/history-web.test.ts > HIS-03: an event larger than the page budget returns segments, not a breach > reports an event absent from the pinned scan as absent, not as an empty event 39ms
+ ✓ src/history-web.test.ts > HIS-03: an event larger than the page budget returns segments, not a breach > produces a digest that is stable across key ordering 0ms
+ ✓ src/history-web.test.ts > HIS-04: traversing 100 pages reuses ONE prepared observation > measures ONE full-log materialization for a 100-page traversal 198ms
+ ✓ src/history-web.test.ts > HIS-04: traversing 100 pages reuses ONE prepared observation > counts a full-log materialization when the plane is asked for a fresh scan 58ms
+ ✓ src/history-web.test.ts > HIS-04: traversing 100 pages reuses ONE prepared observation > reuses the underlying prepared observation lease across scans of the same session 178ms
+ ✓ src/history-web.test.ts > HIS-05: stored / consumed / projected are three separate facts > classifies DSH's own three surfaces and records consumption and projection separately 37ms
+ ✓ src/history-web.test.ts > HIS-05: stored / consumed / projected are three separate facts > refuses to record consumption for an event that was never stored 0ms
+ ✓ src/history-web.test.ts > HIS-05: stored / consumed / projected are three separate facts > refuses to record projection for an event that was never consumed 0ms
+ ✓ src/history-web.test.ts > HIS-05: stored / consumed / projected are three separate facts > filters pages by surface using session-query's own vocabulary 42ms
+ ✓ src/history-web.test.ts > HIS-06: a superseded number keeps BOTH versions, with source and supersedes > keeps the old value and the new one, with a traceable chain 1ms
+ ✓ src/history-web.test.ts > HIS-06: a superseded number keeps BOTH versions, with source and supersedes > records the AUTHOR of each version, so inference is not promoted to evidence 0ms
+ ✓ src/history-web.test.ts > HIS-07: a model writing "trusted"/"admin" into memory does NOT elevate policy > keeps the label as data and reports the same authority a model claim always has 0ms
+ ✓ src/history-web.test.ts > HIS-07: a model writing "trusted"/"admin" into memory does NOT elevate policy > gives a user statement instruction authority even with no labels at all 0ms
+ ✓ src/history-web.test.ts > HIS-07: a model writing "trusted"/"admin" into memory does NOT elevate policy > reads authority from the AUTHOR field only, never from text or labels 0ms
+ ✓ src/history-web.test.ts > HIS-08: the derived FTS index rebuilds from canonical Session/artifact only > drops and rebuilds a derived index, recovering the same rows from canonical sessions 1ms
+ ✓ src/history-web.test.ts > HIS-08: the derived FTS index rebuilds from canonical Session/artifact only > rebuilds the REAL SQLite FTS index after deleting its file 87ms
+ ✓ src/history-web.test.ts > HIS-08: the derived FTS index rebuilds from canonical Session/artifact only > does not require a second history source: the index holds nothing canonical logs lack 1ms
+ ✓ src/history-web.test.ts > ECO-04: a stable prefix with dynamic state in a bounded LATER position > keeps the assembled prefix identical across cells that change only budget and variables 5ms
+ ✓ src/history-web.test.ts > ECO-04: a stable prefix with dynamic state in a bounded LATER position > keeps the dynamic tail inside its byte budget even with a huge variable list 1ms
+ ✓ src/history-web.test.ts > ECO-04: a stable prefix with dynamic state in a bounded LATER position > truncates the tail on a code-point boundary, never mid-character 0ms
+ ✓ src/history-web.test.ts > ECO-04: a stable prefix with dynamic state in a bounded LATER position > changes the prefix generation only when the SDK or policy identity changes 0ms
+ ✓ src/history-web.test.ts > WEB-01: provider truncation is partial with a non-local recovery > marks a truncated body partial, names the gap, and never claims local full recovery 0ms
+ ✓ src/history-web.test.ts > WEB-01: provider truncation is partial with a non-local recovery > does not over-report a complete fetch as unknown, and does not claim the document is complete in the world 0ms
+ ✓ src/history-web.test.ts > WEB-01: provider truncation is partial with a non-local recovery > carries the caveat that a hash proves identity and not truth 0ms
+ ✓ src/history-web.test.ts > WEB-02: a top-10 list is never reported as all results or an exhausted Internet > reports a short, uncursored list as may-be-more UNKNOWN, never as exhausted 0ms
+ ✓ src/history-web.test.ts > WEB-02: a top-10 list is never reported as all results or an exhausted Internet > reports a seam-cut list as may-be-more true, still not "all results" 0ms
+ ✓ src/history-web.test.ts > WEB-02: a top-10 list is never reported as all results or an exhausted Internet > routes the real ctx.web seam and uses the seam's own truncation flag 2ms
+ ✓ src/history-web.test.ts > WEB-03: raw and derived are separately hashed and located; a failed transform does not fabricate body text > hashes the raw and derived objects separately and links them 0ms
+ ✓ src/history-web.test.ts > WEB-03: raw and derived are separately hashed and located; a failed transform does not fabricate body text > does NOT fall back to raw HTML when the conversion yields no text 0ms
+ ✓ src/history-web.test.ts > WEB-03: raw and derived are separately hashed and located; a failed transform does not fabricate body text > records a THROWING converter as a transform gap rather than an empty body 0ms
+ ✓ src/history-web.test.ts > WEB-03: raw and derived are separately hashed and located; a failed transform does not fabricate body text > puts raw and derived in SEPARATE record slots with the transform identity 0ms
+ ✓ src/history-web.test.ts > WEB-03: raw and derived are separately hashed and located; a failed transform does not fabricate body text > records the transform gap on the record when the converter fails 0ms
+ ✓ src/history-web.test.ts > WEB-04: a refetch with a different ETag or body creates a NEW observation > preserves the old hash and time and never backfills the old entry 1ms
+ ✓ src/history-web.test.ts > WEB-04: a refetch with a different ETag or body creates a NEW observation > detects change from EITHER signal, so an unchanged body with a new ETag is still a new observation 0ms
+ ✓ src/history-web.test.ts > WEB-04: a refetch with a different ETag or body creates a NEW observation > offers no lookup that returns "the current body for this url" 0ms
+ ✓ src/history-web.test.ts > WEB-05: an HTTP server that ignores Range is not blindly concatenated > refuses a 200 response to a Range request, because it is the WHOLE entity 0ms
+ ✓ src/history-web.test.ts > WEB-05: an HTTP server that ignores Range is not blindly concatenated > refuses a 206 whose Content-Range does not match the request 0ms
+ ✓ src/history-web.test.ts > WEB-05: an HTTP server that ignores Range is not blindly concatenated > refuses a 206 whose content-encoding changed between pages 0ms
+ ✓ src/history-web.test.ts > WEB-05: an HTTP server that ignores Range is not blindly concatenated > refuses a 206 whose entity tag changed 0ms
+ ✓ src/history-web.test.ts > WEB-05: an HTTP server that ignores Range is not blindly concatenated > accepts a matching 206 and reports the slice it actually represents 0ms
+ ✓ src/history-web.test.ts > WEB-05: an HTTP server that ignores Range is not blindly concatenated > refuses 416 as unsatisfiable rather than as an empty range 0ms
+ ✓ src/history-web.test.ts > WEB-05: an HTTP server that ignores Range is not blindly concatenated > parses Content-Range, including an unknown total, and rejects nonsense 0ms
+ ✓ src/history-web.test.ts > WEB-05: an HTTP server that ignores Range is not blindly concatenated > drives the decision against a REAL loopback server that ignores Range 39ms
+ ✓ src/history-web.test.ts > WEB-06: a claim locates the ACTUAL passage; a snippet is not the full text > locates a quote in the captured artifact with real byte offsets 0ms
+ ✓ src/history-web.test.ts > WEB-06: a claim locates the ACTUAL passage; a snippet is not the full text > refuses to locate a quote that came from a search SNIPPET 0ms
+ ✓ src/history-web.test.ts > WEB-06: a claim locates the ACTUAL passage; a snippet is not the full text > reports a quote that does not occur as unsupported rather than locating approximately 0ms
+ ✓ src/history-web.test.ts > WEB-06: a claim locates the ACTUAL passage; a snippet is not the full text > produces byte offsets that survive multi-byte characters before the quote 0ms
+ ✓ src/history-web.test.ts > WEB-07: embedded commands, skill updates and authority claims change nothing > records every injection attempt as a FINDING and leaves the text verbatim 1ms
+ ✓ src/history-web.test.ts > WEB-07: embedded commands, skill updates and authority claims change nothing > leaves the trust classification and the capability set unchanged by ANY content 1ms
+ ✓ src/history-web.test.ts > WEB-07: embedded commands, skill updates and authority claims change nothing > has no field in the untrusted record that could carry authority 0ms
+ ✓ src/history-web.test.ts > WEB-07: embedded commands, skill updates and authority claims change nothing > uses DSH's own untrusted-content notice, verbatim 13ms
+ ✓ src/history-web.test.ts > WEB-07: embedded commands, skill updates and authority claims change nothing > detects nothing in benign content and does not modify it 0ms
+ ✓ src/history-web.test.ts > WEB-08: PDF empty text, decode errors and compression bombs are explicit > does NOT report an empty extraction as "the content does not exist" 1ms
+ ✓ src/history-web.test.ts > WEB-08: PDF empty text, decode errors and compression bombs are explicit > reports a non-PDF body as a decode error, not as empty content 0ms
+ ✓ src/history-web.test.ts > WEB-08: PDF empty text, decode errors and compression bombs are explicit > reports a THROWING extractor as a decode error with the cause preserved 0ms
+ ✓ src/history-web.test.ts > WEB-08: PDF empty text, decode errors and compression bombs are explicit > reports a budget stop as PARTIAL with the byte counts, not as an empty document 0ms
+ ✓ src/history-web.test.ts > WEB-08: PDF empty text, decode errors and compression bombs are explicit > stops a REAL compression bomb at the budget instead of allocating it 163ms
+ ✓ src/history-web.test.ts > WEB-08: PDF empty text, decode errors and compression bombs are explicit > classifies a bomb inside a PDF as budget-exceeded through the real decompressor 18ms
+ ✓ src/history-web.test.ts > WEB-08: PDF empty text, decode errors and compression bombs are explicit > returns extracted text when there is some, with the page count 0ms
+ ✓ src/history-web.test.ts > a content hash proves identity, never truth > states the limitation on every provenance and memory record that carries a hash 0ms
+ ✓ src/history-web.test.ts > vocabulary guards > has no acquisition completeness value that means "the whole Internet" 0ms
+ ✓ src/history-web.test.ts > vocabulary guards > has no gap recovery value that means "recovered locally from nothing" 0ms
+ ✓ src/history-web.test.ts > vocabulary guards > keeps WebError codes intact when the seam reports an unavailable provider 2ms
+ ✓ src/history-web.test.ts > vocabulary guards > routes a fetch through the real ctx.web seam to a registered fixture provider 3ms
+
+ Test Files  1 passed (1)
+      Tests  85 passed (85)
+   Start at  07:52:42
+   Duration  2.39s (transform 461ms, setup 0ms, import 614ms, tests 1.59s, environment 0ms)
+

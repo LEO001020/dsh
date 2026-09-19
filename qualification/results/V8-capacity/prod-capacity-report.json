@@ -1,0 +1,115 @@
+{
+  "probe": "V8-capacity production reachability (re-measurement under identity 0a0996f3)",
+  "instrument": "D:/DSH/work/dsh-native-daily/qualification/runners/verify-t10-capacity.mjs",
+  "instrumentSha256": "e618a7f3c244dffdfa4eb016b91a27d725105875dba82f2398f199a128c29272",
+  "ranAt": "2026-09-19T23:50:43.743Z",
+  "deploymentIdentity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+  "boot": {
+    "port": 2338,
+    "portReleased": true,
+    "timedOut": false,
+    "exitCode": null
+  },
+  "checks": [
+    {
+      "label": "the probe produced no error",
+      "ok": true,
+      "detail": "null"
+    },
+    {
+      "label": "the daily-work service is mounted",
+      "ok": true,
+      "detail": "true"
+    },
+    {
+      "label": "a real Session was created",
+      "ok": true,
+      "detail": "\"session-5a33d104-2d01-403e-bb80-de4c9016a243\""
+    },
+    {
+      "label": "the ledger limit is the deployment constant 30",
+      "ok": true,
+      "detail": "30"
+    },
+    {
+      "label": "the ledger was empty before any child (no run needed)",
+      "ok": true,
+      "detail": "{\"capacity\":30,\"liveChildren\":0,\"unbackedReservations\":0,\"unknownQuarantined\":0,\"occupied\":0,\"highWater\":0,\"refusals\":{\"HOST_CAPACITY_REACHED\":0,\"DEPTH_CEILING_EXCEEDED\":0}}"
+    },
+    {
+      "label": "a real child was created through the model-facing seam",
+      "ok": true,
+      "detail": "childId=\"30f9397d-112c-498a-ba9f-393d65804feb\" error=null"
+    },
+    {
+      "label": "THE GUARD IS LIVE: the ledger recorded the child (delta 0 -> 1)",
+      "ok": true,
+      "detail": "before=0 after=1 delta=1"
+    },
+    {
+      "label": "the model-facing `work` tool is present in the preset",
+      "ok": true,
+      "detail": "true"
+    },
+    {
+      "label": "G-SEAM-31 REPRODUCED: the `work` tool cannot find a run, because nothing creates one",
+      "ok": true,
+      "detail": "runReachable=false error=\"this session has no active run; a run is created by user authorization\""
+    },
+    {
+      "label": "the composed subagent row carries maxActiveSubagents 10",
+      "ok": true,
+      "detail": "{\"maxActiveSubagents\":10,\"maxDepth\":1}"
+    },
+    {
+      "label": "the ledger reached the boundary of 30",
+      "ok": true,
+      "detail": "30"
+    },
+    {
+      "label": "THE CAP IS BINDING IN PRODUCTION: a real creation call was REFUSED at 30",
+      "ok": true,
+      "detail": "refused=true error=\"dailyWork: refusing a child agent — the host already holds 30 children and the hard capacity is 30. This is a deployment constant; a UI target N is bounded by it, not able to change it.\""
+    },
+    {
+      "label": "the refusal names the deployment constant",
+      "ok": true,
+      "detail": "\"dailyWork: refusing a child agent — the host already holds 30 children and the hard capacity is 30. This is a deployment constant; a UI target N is bounded by it, not able to change it.\""
+    },
+    {
+      "label": "the refusal never raised occupancy above 30",
+      "ok": true,
+      "detail": "occupied=30 highWater=30"
+    },
+    {
+      "label": "releasing the filler returns the ledger to its pre-boundary state",
+      "ok": true,
+      "detail": "after=1 before-boundary=1"
+    },
+    {
+      "label": "the probe leaked no slot: only its own child remains after the release",
+      "ok": true,
+      "detail": "{\"capacity\":30,\"liveChildren\":1,\"unbackedReservations\":0,\"unknownQuarantined\":0,\"occupied\":1,\"highWater\":30,\"refusals\":{\"HOST_CAPACITY_REACHED\":1,\"DEPTH_CEILING_EXCEEDED\":0}}"
+    },
+    {
+      "label": "G-SEAM-19 CLOSED IN PRODUCT: a one-shot child TAKES a host slot",
+      "ok": true,
+      "detail": "started=true error=null liveChildren=2"
+    },
+    {
+      "label": "the artifact names the home this caller booted (readResult guard)",
+      "ok": true,
+      "detail": "[\"D:\\\\DSH\\\\src\\\\dsh-src\\\\packages\\\\preset\\\\agent-presets\\\\presets\\\\\",\"D:/DSH/home/t10-capacity/profiles/daily/presets/\",\"D:\\\\DSH\\\\home\\\\t10-capacity\\\\.agent-presets\"]"
+    },
+    {
+      "label": "the artifact names the probe that produced it",
+      "ok": true,
+      "detail": "D:/DSH/work/dsh-native-daily/qualification/runners/verify-t10-capacity.mjs"
+    }
+  ],
+  "passed": 19,
+  "total": 19,
+  "verdict": "PASS",
+  "failures": [],
+  "artifact": "D:/DSH/work/dsh-native-daily/qualification/results/V8-capacity/prod-capacity.json"
+}

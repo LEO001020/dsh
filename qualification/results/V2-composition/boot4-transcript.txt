@@ -1,0 +1,8 @@
+# V2 boot 4 -- composition probe (CMP-02/03/06/07/08/09/10)
+# cwd: D:/DSH/src/dsh-src   DSH_HOME: D:/DSH/home/v2-cmp   port: 2482   portReleased: true
+# timedOut: false   exitCode: null
+
+--- stdout ---
+dsh web: http://127.0.0.1:2482/?token=fmW-_G_3unl3DOWKyB64xUQh49TzkcD7tmQbYyw8DJ8
+
+--- stderr ---

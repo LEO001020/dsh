@@ -1,0 +1,23 @@
+{
+  "artifactBytes": 33554432,
+  "artifactSha256": "aed0b46542e96ae4bb1d8acbc7e4cfdf80e180cf9e2209d5cc92a5f962657191",
+  "q1_ipythonTool": {
+    "isError": false,
+    "outcome": "ok",
+    "sawRealKernel": true,
+    "text": "outcome: ok\nkernel epoch: 1\n--- stdout ---\nREAL_KERNEL (3, 14) ipykernel.zmqshell\n"
+  },
+  "q2_cellReach": {
+    "isError": false,
+    "text": "outcome: ok\nkernel epoch: 1\n--- stdout ---\n{\"reachable\": [\"import data FAILED: ModuleNotFoundError\"]}\n"
+  },
+  "q3_realKernelWalk": {
+    "elapsedMs": 622,
+    "isError": false,
+    "text": "outcome: ok\nkernel epoch: 1\n--- stdout ---\n{\"pages\": 512, \"bytes\": 33554432, \"sha256\": \"aed0b46542e96ae4bb1d8acbc7e4cfdf80e180cf9e2209d5cc92a5f962657191\"}\n",
+    "artifactBytesRead": 33554432,
+    "artifactReads": 512,
+    "digestMatchesSource": true
+  },
+  "projectionBytes": 381
+}

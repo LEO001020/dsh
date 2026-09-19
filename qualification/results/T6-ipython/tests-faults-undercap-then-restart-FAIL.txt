@@ -1,0 +1,41 @@
+
+ RUN  v4.1.8 D:/DSH/work/dsh-native-daily/packages/dsh-ipython
+
+ ↓ src/faults.test.ts > requirement 8: interrupt, then reuse the kernel > a CPU loop is interrupted, KeyboardInterrupt is reported, and the kernel is reusable
+ ↓ src/faults.test.ts > requirement 8: interrupt, then reuse the kernel > an interrupt of an await-suspended cell reports unknown and resets, never a false success
+ ↓ src/faults.test.ts > requirement 10: a flooding cell cannot OOM the host > hundreds of MB of stdout is capped, reported truncated, and spilled
+ ✓ src/faults.test.ts > requirement 10: a flooding cell cannot OOM the host > a cell under the cap reports no truncation, so the flag is not always-on 3085ms
+ ↓ src/faults.test.ts > requirement 10: a flooding cell cannot OOM the host > a giant display payload is bounded too, not just stdout
+ ↓ src/faults.test.ts > requirement 11: kernel death changes the generation > killing the kernel reports a NEW epoch and a lost-state notice
+ ↓ src/faults.test.ts > requirement 11: kernel death changes the generation > after the death is reported, the replacement kernel is usable and empty
+ ↓ src/faults.test.ts > IPY-07: a cell that overruns the budget is classified, and its state loss is stated > a timeout reports unknown with a NEW epoch and a replaced kernel, never a false success
+ ↓ src/faults.test.ts > IPY-07: a cell that overruns the budget is classified, and its state loss is stated > the replacement kernel after a timeout is genuinely usable
+ × src/faults.test.ts > IPY-07: restart replaces the kernel and preserves its working directory > restart advances the epoch, replaces the process, loses the namespace, and keeps the cwd 63986ms
+   → BROKER_FAILURE: RuntimeError: Kernel didn't respond in 60 seconds
+ ↓ src/faults.test.ts > IPY-12: the cap bounds the cell projection, and a direct fd-1 write is a measured boundary > stdout written through the cell's own fd 1 is NOT capped, and is recorded as such
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/faults.test.ts > IPY-07: restart replaces the kernel and preserves its working directory > restart advances the epoch, replaces the process, loses the namespace, and keeps the cwd
+KernelTransportError: BROKER_FAILURE: RuntimeError: Kernel didn't respond in 60 seconds
+ ❯ KernelHost.onMessage src/kernel.ts:340:25
+    338|     clearTimeout(pending.timer)
+    339|     if (message.ok) pending.resolve(message.result)
+    340|     else pending.reject(new KernelTransportError(`${message.error.code…
+       |                         ^
+    341|   }
+    342|
+ ❯ FrameDecoder.onFrame src/kernel.ts:258:23
+ ❯ FrameDecoder.drain src/protocol.ts:137:12
+ ❯ FrameDecoder.push src/protocol.ts:105:12
+ ❯ Socket.<anonymous> src/kernel.ts:261:65
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 1 passed | 9 skipped (11)
+   Start at  07:31:13
+   Duration  67.50s (transform 188ms, setup 0ms, import 236ms, tests 67.07s, environment 0ms)
+
+EXIT=1

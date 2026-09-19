@@ -1,0 +1,15 @@
+a4b9600d3287c81d6006c41f9b370a1e70d1f95121eb89d1549e75b80a788156 *packages/dsh-daily-work/src/capacity.ts
+7027d3db2b65d0a9e5a29010f987161461b584cbfa65568942749f217362e34d *packages/dsh-daily-work/src/capacity.test.ts
+6556791ede9b6e85549a9a68617e0ed592d6f55cdd153a98b0aeaa98e9ff955c *packages/dsh-daily-work/src/capacity-v8-probe.test.ts
+17c78677a23fe809e7f8613785e97c375b473965874a10fd561a381d8de40bd6 *packages/dsh-daily-work/src/host.ts
+c0af7d516689b3037dc79805a4bf8a59332264443a17029a2ec9fff8104cc5c6 *packages/dsh-daily-work/src/host-plugin.ts
+a364a03a4ecd9b752794e04f4211625671b85dbdf5f17a0fbc5ce7ad7c9a59ce *packages/dsh-daily-work/src/counting.ts
+d04bb64850331c13f7d215d9ce6e3806037eb16c99b30a7bce82a5fe797227d6 *packages/dsh-daily-work/src/tools.ts
+de70463a211cd47e55ac95928f63a374d8e8c669401c4f3b35aee32ede584fff *packages/dsh-daily-work/src/launch-port.ts
+717c2b5c5a21cf0f000e1288355315863e0c26dbf019ed6d7e330a89856143ef *packages/dsh-daily-work/src/target-setting.ts
+e7207ffd46f4aef395d6ff48a8679edca6107a90545716be179280bb49617aa0 *packages/dsh-daily-work/src/states.ts
+57dce19482761d827f87ae3187f96cfa0786f9a45e727c63f2454062cea1b373 *packages/dsh-daily-work/cordis.patch.yml
+5b8b2a8e5d9ae13d35c1d86833f8b96eeb84078a13027a08efc1379a6fc8afb4 *profiles/daily-candidate/cordis.patch.yml
+16bc20e559d0c05b810876522fd468952b421a69ed2b5276a3ddd06c01053bce *profiles/daily-candidate/presets/daily-standard/agent.cordis.yml
+e618a7f3c244dffdfa4eb016b91a27d725105875dba82f2398f199a128c29272 *qualification/runners/verify-t10-capacity.mjs
+bbf008f92ec9465fef61098fe7a316323b02936a90199558105333234ba9a0f0 *qualification/results/V8-capacity/run-v8-capacity-boot.mjs

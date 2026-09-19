@@ -1,0 +1,24 @@
+{
+  "root": "C:\\Users\\hzq00\\AppData\\Local\\Temp\\r5-rawcap-HC2IiA",
+  "rgPath": "D:\\DSH\\src\\dsh-src\\node_modules\\.pnpm\\@vscode+ripgrep-win32-x64@1.18.0\\node_modules\\@vscode\\ripgrep-win32-x64\\bin\\rg.exe",
+  "rawCapConstant": 20000000,
+  "generousCap": {
+    "rawBytes": 240428,
+    "noMatches": false,
+    "parsedMatches": 900
+  },
+  "tinyCap": {
+    "threw": true,
+    "name": "SearchError",
+    "code": "SEARCH_RAW_OUTPUT_OVERFLOW",
+    "message": "grep produced more raw output than the subprocess seam retained within the 4096-byte cap; narrow pattern, path, or include and retry"
+  },
+  "renderer": {
+    "maxMatches": 250,
+    "seen": 900,
+    "kept": 250,
+    "truncated": true,
+    "canonicalCount": 900,
+    "renderedLines": 250
+  }
+}

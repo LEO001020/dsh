@@ -1,0 +1,16 @@
+# sha256 of the sources that produced the R4-upgrade result
+# run: 2026-09-20T03:31:10+08:00
+bb77a1083051cac7fb696333f4ed17ef7388c2cea0596939eeffb5c481275ced  packages/dsh-daily-work/src/upg-gates.test.ts
+ffb08d33a05bb3f9a5be8e0a678fa605cb1d2abd456af01a1cab3ed1f1d8afe1  packages/dsh-daily-work/src/durability-advanced.test.ts
+47ab17ab46a5b5e1f77db5b6377a4f63e61275ee657d0ad2f92205a383a89b6a  packages/dsh-daily-work/src/durability-records.test.ts
+f23c8f72216bb3b58b543c6ae265c8fe8cc31bc3dce7292bb1d635e41a2175ec  packages/dsh-daily-work/src/durability-runner.ts
+2a4f6ce38071fe8a25af7ecd741c4faae2ead45851ef10a657489a727ac8b89f  qualification/results/M9.20-real-tasks/u06-rollback.mjs
+ab323affa20702b0cf77d365cdf61c0cc4439f21968acadc1b07426e908458bb  packages/dsh-daily-work/src/artifacts.ts
+8d6c2692fef8301904eb4b490e0705da643530e45741bac053f753a599c372f5  packages/dsh-daily-work/src/data-service.ts
+e8945b46ce3691ee91c0103693b201326895a091de41b110ab57abd207997d58  packages/dsh-daily-work/src/effects.ts
+
+# pinned checkout (read-only, must not change)
+f0f1a1d33318a838608660f464c83ced3ea40a02c0e61960c6fdf459dbf0f234  D:/DSH/src/dsh-src/packages/spill/spill-local/src/cleanup.ts
+f275c81bdc8cd95717a0c6296e75af5164fa8b94222b3fffcda3defad867ee4f  D:/DSH/src/dsh-src/packages/spill/spill-local/src/index.ts
+7419ddd28ad0f03d039ff5a91a2ab88bcb9f9bf4a6e9033de27617ce7fc5b9a6  D:/DSH/src/dsh-src/packages/storage/storage-json/src/format.ts
+f08d0e7932b1bba40546d63f780359c12a81ebcba080d8b439a6eb960cf355cd  D:/DSH/src/dsh-src/packages/storage/storage-domain/src/spec.ts

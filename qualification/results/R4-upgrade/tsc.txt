@@ -1,0 +1,6 @@
+# tsc -p tsconfig.json --noEmit  (build config; tests excluded by design)
+# run: 2026-09-20T03:30:58+08:00
+# exit: 0
+
+# tsc -p tsconfig.check.json  (whole tree, tests INCLUDED)
+# exit: 0
