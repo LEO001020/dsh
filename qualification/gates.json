@@ -66,12 +66,20 @@
     "stimulus": "只改同row一个字段，观测其余必需config。",
     "oracle": "生成完整row config，dump/运行值与预期一致，无误以deep-merge丢配置。",
     "status": "PASS",
-    "note": "The C2 patch restates the whole subagent config; the dump shows both keys present, proving whole-value replacement was handled.",
+    "note": "The mechanism is vendor/include/src/index.ts:120-123: `target[key] = value`, no recursion -- so a patch REPLACES the row whole config. Measured with a FALSIFYING case rather than a happy path: patching only `openAt` on session-query-sqlite DROPS `path` entirely, and because `path` is .required() in that row own schema, the row does not activate at all (`1 entry did not activate ... $.path missing required value`). So the wrong mental model does not produce a subtly different graph; it produces a tree that will not mount. Five mutations were run against this test and each turned the intended assertion red.",
     "deployment_identity": "0ca14d4ee0ebea5eb85a3f72d66f48d839356f1b336c0e4f11f9a4f8ddf2ab7c",
     "evidence": [
       {
         "path": "qualification/results/M3.1-c2-profile/dump-config-daily-candidate.yml",
         "sha256": "23f763d1bf2af8ba3210473d6743bc39ac0185bdefd661861935414a01e5af6b"
+      },
+      {
+        "path": "qualification/results/M9.14-profile-config/FINDINGS.md",
+        "sha256": "300197b41e7fd2d5b2b870cc67b9f27d15eedb4267de684d7557fac1a7321b23"
+      },
+      {
+        "path": "qualification/results/M9.14-profile-config/runs/falsification.txt",
+        "sha256": "0e5d2a6000603195d7c53b68ee835df2b000528d69fb35d47236bc2c2f91d278"
       }
     ]
   },
@@ -83,12 +91,16 @@
     "stimulus": "canary home放入会改变model/preset的home patch。",
     "oracle": "最终resolved graph明确显示覆盖；C0使用无污染独立home。",
     "status": "PASS",
-    "note": "C0 dumps were taken with --dump-default-config, which omits the home layer by construction, so no home-patch contamination is possible.",
+    "note": "Layer order measured as bundles -> profile -> HOME -> --patch, with a home replacement OUTRANKING the profile own layer under the same whole-value semantics. --dump-default-config omits BOTH the profile and home layers, which is exactly why it is the stock baseline, and the launcher REFUSES to combine it with --patch -- so the baseline cannot be contaminated by construction.",
     "deployment_identity": "0ca14d4ee0ebea5eb85a3f72d66f48d839356f1b336c0e4f11f9a4f8ddf2ab7c",
     "evidence": [
       {
         "path": "qualification/results/M0.5-c0-resolved-graph/C0-resolved-graph.md",
         "sha256": "980d4fbe72cfb63d593205948bb2851547901d4916c3808d78782924fa09c36a"
+      },
+      {
+        "path": "qualification/results/M9.14-profile-config/FINDINGS.md",
+        "sha256": "300197b41e7fd2d5b2b870cc67b9f27d15eedb4267de684d7557fac1a7321b23"
       }
     ]
   },
@@ -138,7 +150,7 @@
     "stimulus": "C0与C2工具表、Goal/fork/compaction配置比较。",
     "oracle": "全部差异可归因；未删除stock组件后仍称stock。",
     "status": "PASS",
-    "note": "C0 and C2 tool and provider rows were compared from real dumps; every difference is attributable to the two documented changes.",
+    "note": "Measured from real dumps: C0 -> C2 is 163 vs 164 rows. The `subagent` row gains {maxActiveSubagents:10, maxDepth:1} and `daily-work-host` is INSERTED. NOTHING is removed, and the Goal (5), fork (2) and compaction (4) families are byte-identical -- so no stock component was deleted while the result was still called stock.",
     "deployment_identity": "0ca14d4ee0ebea5eb85a3f72d66f48d839356f1b336c0e4f11f9a4f8ddf2ab7c",
     "evidence": [
       {
@@ -148,6 +160,10 @@
       {
         "path": "qualification/results/M3.1-c2-profile/dump-config-daily-candidate.yml",
         "sha256": "23f763d1bf2af8ba3210473d6743bc39ac0185bdefd661861935414a01e5af6b"
+      },
+      {
+        "path": "qualification/results/M9.14-profile-config/FINDINGS.md",
+        "sha256": "300197b41e7fd2d5b2b870cc67b9f27d15eedb4267de684d7557fac1a7321b23"
       }
     ]
   },
@@ -159,12 +175,16 @@
     "stimulus": "root模型key可用但web_search provider key缺失。",
     "oracle": "两条能力分别报状态，不把模型回答冒充搜索。",
     "status": "PASS",
-    "note": "The search provider reports presence separately from the model route and reports unavailable rather than substituting model memory.",
+    "note": "The sharpest finding is that TWO DIFFERENT THINGS both look like `search unavailable`. The shipped DeepSeekSearchProvider.available() tests PRESENCE OF A RESOLVER, not a key -- so with no key it returns TRUE, and the failure appears only at the request as WEB_PROVIDER_CREDENTIAL_MISSING with nothing sent to the wire. Separately, ctx.web selection throws WEB_PROVIDER_CONFIGURED_UNAVAILABLE rather than returning {sources: []}. IMPORTANT CORRECTION: the daily profile mounts the SHIPPED provider, not this repo ported one -- so an A09 result must not be read as evidence about the ported provider.",
     "deployment_identity": "0ca14d4ee0ebea5eb85a3f72d66f48d839356f1b336c0e4f11f9a4f8ddf2ab7c",
     "evidence": [
       {
         "path": "qualification/results/M7.1-web-search-port/PORT-NOTES.md",
         "sha256": "79ca0b1e5740c994500b5e18f22f9a18b951c99a8fccabad1aea80fe93416dda"
+      },
+      {
+        "path": "qualification/results/M9.14-profile-config/FINDINGS.md",
+        "sha256": "300197b41e7fd2d5b2b870cc67b9f27d15eedb4267de684d7557fac1a7321b23"
       }
     ]
   },
@@ -176,12 +196,16 @@
     "stimulus": "JSON截断、大输出、业务失败但正常turn结束。",
     "oracle": "CLI事件用于交互，原Session用于证据；exit0不被判业务成功。",
     "status": "PASS",
-    "note": "Headless JSON is treated as an interactive stream; the persisted Session is the evidence, and exit 0 is not read as business success.",
+    "note": "Both halves measured. The CLI stream is BOUNDED while the Session is not: a ~1 MiB tool result was projected to exactly 8192 chars with truncated:true, while the persisted Session held 50000 (`final` is deliberately unbounded). And exit 0 is about the TURN, not the work: a shell exiting 3 produced turn/end completed, isError false, and CLI exit 0 -- with the complement asserted, since a real turn error exits 1.",
     "deployment_identity": "0ca14d4ee0ebea5eb85a3f72d66f48d839356f1b336c0e4f11f9a4f8ddf2ab7c",
     "evidence": [
       {
         "path": "qualification/results/M0.4-first-toolcall/A03-first-toolcall.txt",
         "sha256": "c25e3c7100835f3731f789a76198a0c5650643d2acec3aa8d7e4c70441fecedd"
+      },
+      {
+        "path": "qualification/results/M9.14-profile-config/FINDINGS.md",
+        "sha256": "300197b41e7fd2d5b2b870cc67b9f27d15eedb4267de684d7557fac1a7321b23"
       }
     ]
   },
@@ -210,7 +234,7 @@
     "stimulus": "与最终Web/SDK profile一致的启动、工具、Session生命周期。",
     "oracle": "不以headless或testkit结果替代最终host运行。",
     "status": "NOT_RUN",
-    "note": "No long-lived Web host has been driven end to end on this machine yet."
+    "note": "PARTIAL: PARTIAL, booted to the CREDENTIAL boundary. PROVEN: the real launcher bound a real port; the fence returned 401 unauthenticated; the token URL -> cookie -> 200 app shell worked; a real session/create + session/list round trip succeeded; modelCatalog shows the route; and the booted profile graph carries both C2 changes. NOT PROVEN: no model turn ran, because DEEPSEEK_API_KEY is absent from every source the credentials provider layers. The boundary was confirmed to be CREDENTIAL and not composition, via the SDK profile: it booted, reached turn/start with a real tool catalog, then stopped at MISSING_CREDENTIAL. No clean-shutdown claim is made: on win32 child.kill terminates rather than delivering a signal."
   },
   {
     "id": "B01",

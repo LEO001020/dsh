@@ -29,7 +29,28 @@
   config:
     # The user's chosen N. Root is NOT counted in this number.
     maxActiveSubagents: 10
-    # 1 = direct children only. Grandchildren would escape the same metering.
+    # 1 = direct children only, for the paths this setting actually reaches.
+    #
+    # MEASURED LIMIT, corrected after an over-claim: `maxDepth` is a
+    # CALLER-SUPPLIED CAP, and an OMITTED cap is NOT a refusal. From a depth-1
+    # child, `maxDepth: 1` refuses, but `maxDepth: 99` AND an omitted `maxDepth`
+    # BOTH create a depth-2 child. So this setting bounds only callers that pass
+    # it.
+    #
+    # What DSH itself enforces is depth ACCOUNTING from the parent's persisted
+    # header (`delegationDepthOf` is a monotone floor), so no caller can delegate
+    # lower than its own depth. That is real, but it is not a policy ceiling.
+    #
+    # This project's own limit is a SECOND, INDEPENDENT gate: `maxDepth` is
+    # written into every RunRecord from HOST config, never from a request, and
+    # `src/launch-port.ts` hard-codes `maxDepth: deps.maxDepth`, so the omission
+    # path is unreachable through this project.
+    #
+    # NOT COVERED, and stated rather than implied: the workflow/PTC path.
+    # `packages/workflow/workflow-ptc/src/host.ts` `startChild` calls
+    # `subagents.start()` with NO `maxDepth`, so a workflow launched from a
+    # depth-1 child creates a depth-2 child. Our launches are bounded; a
+    # workflow's are not. See docs/GAPS.md G-SEAM-18.
     maxDepth: 1
 
 # ---------------------------------------------------------------------------

@@ -60,7 +60,7 @@
  */
 import { execFileSync, spawnSync } from 'node:child_process'
 import { createHash } from 'node:crypto'
-import { cpSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs'
+import { existsSync, lstatSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join, relative } from 'node:path'
 
@@ -102,6 +102,14 @@ function record(id, name, status, detail, extra = {}) {
  * contents: the question is whether the canary WROTE anything, and a new or
  * removed file answers that directly, while a content digest would also move for
  * a reason unrelated to this run.
+ *
+ * SYMLINKS AND JUNCTIONS ARE NOT FOLLOWED, and the `lstat` is what makes that
+ * true. A first version used `statSync`, which follows a junction -- and the
+ * canary profile's `node_modules/dsh-daily-work` link points at the extension
+ * package, whose own `node_modules` junctions back into the DSH checkout. The
+ * walk therefore descended a cycle and died with ENOENT on a path that only
+ * exists while the recursion is in flight. A link is recorded as an entry and
+ * never entered, which is also the honest reading: a link is not content.
  */
 function listFiles(root) {
   if (!existsSync(root)) return null
@@ -109,8 +117,21 @@ function listFiles(root) {
   const walk = (dir) => {
     for (const entry of readdirSync(dir)) {
       const full = join(dir, entry)
-      if (statSync(full).isDirectory()) walk(full)
-      else files.push(relative(root, full).replace(/\\/g, '/'))
+      let stats
+      try {
+        stats = lstatSync(full)
+      } catch {
+        // A racing removal is not a write by this run; skipping keeps the digest
+        // a statement about what is there rather than about what was there.
+        continue
+      }
+      if (stats.isSymbolicLink()) {
+        files.push(`LINK ${relative(root, full).replace(/\\/g, '/')}`)
+      } else if (stats.isDirectory()) {
+        walk(full)
+      } else {
+        files.push(relative(root, full).replace(/\\/g, '/'))
+      }
     }
   }
   walk(root)
@@ -133,6 +154,7 @@ function run(argv, options = {}) {
     env: { ...process.env, ...(options.env ?? {}) },
     cwd: options.cwd,
     maxBuffer: 32 * 1024 * 1024,
+    ...(options.shell === true ? { shell: true } : {}),
   })
   return {
     ok: outcome.status === 0,
@@ -177,17 +199,53 @@ try {
   // -------------------------------------------------------------------------
   // F2 -- the profile resolves. `--dump-config` composes the tree WITHOUT
   // booting the app, so it answers "what would mount" with no provider.
+  //
+  // THE CANARY BUILDS ITS OWN PROFILE. `--profile daily` reads the DAILY home,
+  // which this gate must not touch, so the first version of this script failed
+  // with `profile "daily" does not exist` -- correctly, and for the right
+  // reason. A canary that borrowed the daily profile would be reading and
+  // potentially writing the home the gate forbids touching. So the profile is
+  // created HERE, inside the temp home, by installing the extension under test.
   // -------------------------------------------------------------------------
-  const dump = run([process.execPath, LAUNCHER, '--profile', 'daily', '--dump-config'], {
+  const profileDir = join(canaryHome, 'profiles', 'canary')
+  writeFileSync(join(profileDir, 'package.json'), `${JSON.stringify({
+    name: 'dsh-profile-canary',
+    private: true,
+    dependencies: { 'dsh-daily-work': `link:${PACKAGE_ROOT.replace(/\\/g, '/')}` },
+    dsh: { profile: { bundles: ['@deepseek-ai/dsh-base', 'dsh-daily-work'] } },
+  }, null, 2)}\n`, 'utf8')
+  writeFileSync(join(profileDir, 'cordis.yml'), '[]\n', 'utf8')
+  // The bundle must be RESOLVABLE from the profile directory. A `link:` entry in
+  // package.json is NOT enough: `resolveBundleDir` looks for
+  // `<anchor>/node_modules/<package>/package.json` (`app-boot/lib/index.js:880-905`),
+  // so the link has to exist ON DISK. On Windows a directory JUNCTION is used
+  // because creating a symlink needs a privilege this process does not have; the
+  // resolver follows either. A failure here is REPORTED rather than swallowed,
+  // because a missing link produces `cannot resolve profile bundle` at F2 and a
+  // reader would otherwise have to guess which step was at fault.
+  const linkPath = join(profileDir, 'node_modules', 'dsh-daily-work')
+  mkdirSync(join(profileDir, 'node_modules'), { recursive: true })
+  try {
+    symlinkSync(PACKAGE_ROOT.replace(/\\/g, '/'), linkPath, process.platform === 'win32' ? 'junction' : 'dir')
+  } catch (error) {
+    if (error?.code !== 'EEXIST') {
+      record('F0', 'the extension is linkable into the canary profile', 'FAIL',
+        `could not link ${PACKAGE_ROOT} into ${linkPath}: ${String(error)}`)
+    }
+  }
+
+  const dump = run([process.execPath, LAUNCHER, '--profile', 'canary', '--dump-config'], {
     env: { DSH_HOME: canaryHome },
     timeoutMs: 180_000,
   })
   if (dump.ok && dump.stdout.includes('daily-work-host')) {
     record('F2', 'profile resolves and includes the extension host row', 'PASS',
-      `--dump-config exited 0 and the composed tree names daily-work-host (${String(dump.stdout.split('\n').length)} lines)`)
+      `--dump-config exited 0 and the composed tree names daily-work-host (${String(dump.stdout.split('\n').length)} lines)`,
+      { profile: 'canary', profileHome: canaryHome })
   } else {
     record('F2', 'profile resolves and includes the extension host row', 'FAIL',
-      `--dump-config exited ${String(dump.status)}; daily-work-host present: ${String(dump.stdout.includes('daily-work-host'))}; stderr: ${dump.stderr.slice(0, 300)}`)
+      `--dump-config exited ${String(dump.status)}; daily-work-host present: ${String(dump.stdout.includes('daily-work-host'))}; stderr: ${dump.stderr.slice(0, 400)}`,
+      { profile: 'canary', profileHome: canaryHome })
   }
 
   // -------------------------------------------------------------------------
@@ -195,17 +253,24 @@ try {
   // finding depends on. Read from the built source of the backend, because a
   // version bump could change it and the E01/E06 records would then be stale.
   // -------------------------------------------------------------------------
+  // TWO FILES, because the two facts live in different packages. An earlier
+  // version of this gate looked for the `enforcement: 'partial'` literal in the
+  // WINDOWS-ACL backend and reported FAIL -- a false failure caused by reading
+  // the wrong file. The boundary CLAIM is in the backend's header; the
+  // enforcement VALUE is a static table in the SELECTOR
+  // (`sandbox-local/src/index.ts:177-187`). Both are checked, each where it is.
   const aclIndex = join(DSH_SRC, 'packages/sandbox/sandbox-windows-acl/src/index.ts')
-  if (!existsSync(aclIndex)) {
-    record('F3', 'sandbox enforcement claim readable', 'NOT_RUN', `${aclIndex} does not exist in this checkout`)
+  const localIndex = join(DSH_SRC, 'packages/sandbox/sandbox-local/src/index.ts')
+  if (!existsSync(aclIndex) || !existsSync(localIndex)) {
+    record('F3', 'sandbox enforcement claim readable', 'NOT_RUN',
+      `missing: ${[aclIndex, localIndex].filter(path => !existsSync(path)).join(', ')}`)
   } else {
-    const text = readFileSync(aclIndex, 'utf8')
-    const hasBoundaryClaim = text.includes('writes are restricted; reads, network, and process visibility are NOT')
-    const hasPartial = /enforcement:\s*'partial'/.test(text)
+    const aclText = readFileSync(aclIndex, 'utf8')
+    const localText = readFileSync(localIndex, 'utf8')
+    const hasBoundaryClaim = aclText.includes('writes are restricted; reads, network, and process visibility are NOT')
+    const hasPartial = /'windows-acl':\s*'partial'/.test(localText)
     record('F3', 'sandbox enforcement claim unchanged', hasBoundaryClaim && hasPartial ? 'PASS' : 'FAIL',
-      hasBoundaryClaim
-        ? `the write-only boundary claim is present; enforcement 'partial' literal present: ${String(hasPartial)}`
-        : 'the write-only boundary claim is ABSENT -- the E01/E06 findings must be re-measured before they are cited',
+      `write-only boundary claim present: ${String(hasBoundaryClaim)}; windows-acl maps to 'partial': ${String(hasPartial)}`,
       { boundaryClaimPresent: hasBoundaryClaim, partialLiteralPresent: hasPartial })
   }
 
@@ -213,9 +278,20 @@ try {
   // F4 -- the extension's own tests, from a clean build. This is the gate that
   // would catch a candidate version breaking the extension's contract.
   // -------------------------------------------------------------------------
-  const tsc = run([process.execPath, join(PACKAGE_ROOT, 'node_modules/typescript/bin/tsc'), '-p', 'tsconfig.json', '--noEmit'], {
+  // `tsc` is resolved from PATH, which the run command in docs/OPERATIONS.md
+  // sets. An earlier version pointed at `node_modules/typescript/bin/tsc` and got
+  // `Cannot find module`: the package's `typescript` is a junction to the pinned
+  // checkout's copy, and its bin layout is not a package-relative file. The PATH
+  // shim is how every other gate in this project invokes it.
+  // On Windows the `.bin/tsc` shim is a POSIX shell script (the same trap the
+  // U01 fixture hit), so the `.CMD` sibling is spawned instead. Choosing by
+  // platform rather than by trial keeps the failure mode explicit: a missing
+  // `.CMD` reports "exited null" with an ENOENT, not a silent pass.
+  const tscBin = join(DSH_SRC, 'node_modules/.bin', process.platform === 'win32' ? 'tsc.CMD' : 'tsc')
+  const tsc = run([tscBin, '-p', 'tsconfig.json', '--noEmit'], {
     cwd: PACKAGE_ROOT,
     timeoutMs: 300_000,
+    shell: process.platform === 'win32',
   })
   record('F4', 'extension typechecks against the candidate checkout', tsc.ok ? 'PASS' : 'FAIL',
     tsc.ok ? 'tsc --noEmit exited 0' : `tsc exited ${String(tsc.status)}: ${tsc.stdout.slice(0, 400)}`)

@@ -24,6 +24,21 @@ booted, bound, fenced, and driven through a real Session lifecycle, but **no
 model turn was run**, because no credential source on this machine supplies
 `DEEPSEEK_API_KEY`. See "A12" below for exactly what was and was not proven.
 
+### Recommendation for `qualification/gates.json`
+
+That file is owned by the gate-report generator, so it is **not edited here**.
+For the record, the entries as of this slice are weaker than the evidence now
+available, and one is stale:
+
+| Gate | Recorded | Should be | Why |
+|---|---|---|---|
+| A04 | PASS, evidence = `M3.1` dump | PASS, add `M9.14` | `M3.1` shows the row is complete; it never shows the merge hypothesis is WRONG. `M9.14` asserts both, plus the invalid-row consequence. |
+| A05 | PASS, note reasons about `--dump-default-config` | PASS, add `M9.14` | The recorded note argues the baseline is clean; `M9.14` injects a real home patch and shows it in the graph with attribution. |
+| A08 | PASS, evidence = `M0.5` + `M3.1` | PASS, add `M9.14` | `M9.14` diffs the two graphs row-by-row and reports zero unattributed differences, including the Goal/fork/compaction families the gate names. |
+| A09 | PASS, evidence = `M7.1` | PASS, add `M9.14` | `M7.1` covers this repo's ported provider. The daily profile mounts the SHIPPED one; `M9.14` drives that, and separates `available()` (presence of a resolver) from the request-time `WEB_PROVIDER_CREDENTIAL_MISSING`. |
+| A10 | PASS, evidence = `M0.4` | PASS, add `M9.14` | `M0.4` is a keyless smoke. `M9.14` measures the three boundary cases the gate names (truncation, large output, business failure in a completed turn). |
+| A12 | **NOT_RUN** | **NOT_RUN**, note updated | Still not closable, but the blocker is now precisely known: the host boots, serves, fences, and creates Sessions; only the model turn is missing, and it is missing because `DEEPSEEK_API_KEY` is unconfigured. The current note ("No long-lived Web host has been driven end to end") understates what is now proven and overstates what is unknown. |
+
 ## What the real launcher and config resolver actually do
 
 ### 1. A patch replaces the target row's WHOLE `config`. It is not a merge.

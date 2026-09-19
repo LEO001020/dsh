@@ -19,22 +19,24 @@
     {
       "id": "F2",
       "name": "profile resolves and includes the extension host row",
-      "status": "FAIL",
-      "detail": "--dump-config exited 1; daily-work-host present: false; stderr: file:///D:/DSH/src/dsh-src/packages/boot/app-boot/lib/index.js:957\r\n\t\tif (template === void 0) throw new Error(`${binName}: profile ${JSON.stringify(name)} does not exist; create it with 'dsh plugin --profile ${name} add <package>'`);\r\n\t\t                               ^\r\n\r\nError: dsh: profile \"daily"
+      "status": "PASS",
+      "detail": "--dump-config exited 0 and the composed tree names daily-work-host (368 lines)",
+      "profile": "canary",
+      "profileHome": "C:\\Users\\hzq00\\AppData\\Local\\Temp\\dsh-u05-canary-N5wDJU"
     },
     {
       "id": "F3",
       "name": "sandbox enforcement claim unchanged",
-      "status": "FAIL",
-      "detail": "the write-only boundary claim is present; enforcement 'partial' literal present: false",
+      "status": "PASS",
+      "detail": "write-only boundary claim present: true; windows-acl maps to 'partial': true",
       "boundaryClaimPresent": true,
-      "partialLiteralPresent": false
+      "partialLiteralPresent": true
     },
     {
       "id": "F4",
       "name": "extension typechecks against the candidate checkout",
-      "status": "FAIL",
-      "detail": "tsc exited 1: "
+      "status": "PASS",
+      "detail": "tsc --noEmit exited 0"
     },
     {
       "id": "F5",
@@ -59,7 +61,7 @@
       "id": "F7",
       "name": "the canary home was exercised",
       "status": "PASS",
-      "detail": "canary home holds 0 files after the run"
+      "detail": "canary home holds 3 files after the run"
     }
   ],
   "blocked": [
@@ -75,8 +77,8 @@
     }
   ],
   "summary": {
-    "pass": 4,
-    "fail": 3,
+    "pass": 7,
+    "fail": 0,
     "notRun": 0,
     "blockedExternal": 2
   }
