@@ -35,10 +35,17 @@
 # The headless runner takes provider/model from `agentDefaultModel`
 # (packages/bundle/headless/src/index.ts: `defaultModel.currentSelection()`),
 # NOT from the agent-loop row, so this is the row that must move.
+#
+# THE PROVIDER IS `t17-mock`, NOT `cli-mock`. The shipped fixture's first call is
+# `pwsh`, which this composition deliberately disables, so its call is refused
+# with `UNKNOWN_TOOL` and can never satisfy "the first tool call actually
+# succeeds". The gate's own adapter (`first-call-adapter.mjs`) serves `t17-mock`
+# and calls a tool the composition carries. Both adapters are mounted; only the
+# route named here is the one the Session's default selection resolves.
 - id: agent-default-model
   config:
-    provider: cli-mock
-    model: cli-mock
+    provider: t17-mock
+    model: t17-mock
 
 # The persisted Session is the RESUME evidence, so it goes to a path this gate
 # owns (supplied through T17_SESSION_ROOT) rather than to the process cwd.
@@ -53,6 +60,26 @@
 # request shape a function of the caller's directory instead of the composition.
 - id: agent-instructions
   disabled: true
+
+# THE MOCK ADAPTER ITSELF. Without this row the route `cli-mock` names is
+# declared by `agent-default-model` above but SERVED by nothing, and the first
+# prompt is refused with `no adapter serves provider "cli-mock"` -- a
+# composition error that would look like a tool-path failure. `routeServed` is
+# `ctx.llm.listProviders().some(entry => entry.id === provider)`
+# (packages/api/session-controller/src/commands.ts:657-659), so the adapter must
+# be registered before the prompt is admitted.
+- insert:
+    - id: cli-mock-llm
+      name: 'D:/DSH/src/dsh-src/packages/test-support/loader-smoke/tests/fixtures/cli-mock-llm.ts'
+
+# THE GATE'S OWN FIRST-CALL ADAPTER. It serves `t17-mock` and its first call
+# names a tool this composition actually carries, so the identity oracle ("the
+# first tool call actually succeeds") is answerable. It lives under this gate's
+# results directory rather than in the pinned checkout, because ID-06 asserts the
+# checkout is unmodified and editing its fixture would break that.
+- insert:
+    - id: t17-first-call-adapter
+      name: 'D:/DSH/work/dsh-native-daily/qualification/results/T17-identity/first-call-adapter.mjs'
 
 # THE PROBE ITSELF. Inserted LAST so every row it measures has already been
 # declared by the composition under test. It adds no tool row and no service:

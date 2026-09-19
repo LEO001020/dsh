@@ -1,0 +1,521 @@
+{
+  "driver": "run-t17-identity",
+  "ranAt": "2026-09-19T23:10:06.295Z",
+  "home": "D:/DSH/home/t17-identity",
+  "profileName": "daily",
+  "profileSource": "D:/DSH/work/dsh-native-daily/profiles/daily-candidate",
+  "overlay": "D:/DSH/work/dsh-native-daily/qualification/results/T17-identity/overlays/smoke-overlay.yml",
+  "launcher": "D:/DSH/src/dsh-src/apps/cli/lib/bin.js",
+  "launcherSha256": "69c49c871735dc7ee81ec51f266bbec129f075fd5066e046374f4b13ab02a705",
+  "bootCwd": "C:/Windows/Temp",
+  "port": 2428,
+  "portReleased": true,
+  "timedOut": false,
+  "exitCode": null,
+  "rebuilds": [
+    {
+      "package": "packages/dsh-daily-work",
+      "exitCode": 0,
+      "ms": 1712,
+      "error": null
+    },
+    {
+      "package": "packages/dsh-ipython",
+      "exitCode": 0,
+      "ms": 796,
+      "error": null
+    }
+  ],
+  "buildDigests": {
+    "dsh-daily-work": {
+      "fileCount": 32,
+      "digest": "a9a8369abe7aed0036703e6aab3fc4ccbfdca57a7829eb662e71d22a036130e4"
+    },
+    "dsh-ipython": {
+      "fileCount": 8,
+      "digest": "04057fcad447751f5e1917550a64398cc7d63e7db47b3c5fe8a3c396a526bfc5"
+    }
+  },
+  "pluginInstall": {
+    "exitCode": 0,
+    "stdoutTail": "Already up to date\n\ndependencies:\n+ dsh-daily-work 0.1.0 <- ..\\..\\..\\..\\work\\dsh-native-daily\\packages\\dsh-daily-work\n+ dsh-ipython 0.1.0 <- ..\\..\\..\\..\\work\\dsh-native-daily\\packages\\dsh-ipython\n\nDone in 361ms using pnpm v11.24.0\n",
+    "error": null
+  },
+  "profilePatchDigests": {
+    "repo": "5b8b2a8e5d9ae13d35c1d86833f8b96eeb84078a13027a08efc1379a6fc8afb4",
+    "installed": "5b8b2a8e5d9ae13d35c1d86833f8b96eeb84078a13027a08efc1379a6fc8afb4"
+  },
+  "probeReadError": null,
+  "probe": {
+    "probe": "t17-identity-probe",
+    "schemaVersion": 2,
+    "dshHome": "D:/DSH/home/t17-identity",
+    "sessionRoot": "D:/DSH/work/dsh-native-daily/qualification/results/T17-identity/runs/built-launcher/sessions",
+    "launcher": "D:/DSH/src/dsh-src/apps/cli/lib/bin.js",
+    "launcherArgs": "--profile daily",
+    "nodeVersion": "v24.18.0",
+    "execPath": "C:\\Program Files\\nodejs\\node.exe",
+    "execArgv": [],
+    "hasTsxOnExecArgv": false,
+    "cwd": "C:\\Windows\\Temp",
+    "installedProfilePatch": {
+      "home": "D:/DSH/home/t17-identity",
+      "profileName": "daily",
+      "installedPatchPath": "D:/DSH/home/t17-identity/profiles/daily/cordis.patch.yml",
+      "installedPatchSha256": "5b8b2a8e5d9ae13d35c1d86833f8b96eeb84078a13027a08efc1379a6fc8afb4",
+      "installedPatchReadError": null,
+      "repoPatchPath": "D:/DSH/work/dsh-native-daily/profiles/daily-candidate/cordis.patch.yml",
+      "repoPatchSha256": "5b8b2a8e5d9ae13d35c1d86833f8b96eeb84078a13027a08efc1379a6fc8afb4",
+      "installedMatchesRepo": true
+    },
+    "presetRoots": [
+      {
+        "path": "D:\\DSH\\src\\dsh-src\\packages\\preset\\agent-presets\\presets\\",
+        "trust": "system"
+      },
+      {
+        "path": "D:/DSH/home/t17-identity/profiles/daily/presets/",
+        "trust": "system"
+      },
+      {
+        "path": "D:\\DSH\\home\\t17-identity\\.agent-presets",
+        "trust": "user"
+      }
+    ],
+    "peers": [
+      {
+        "package": "@deepseek-ai/cordis",
+        "class": "Context",
+        "service": null,
+        "builtEntry": "D:/DSH/src/dsh-src/vendor/cordis/lib/index.js",
+        "sourceEntry": "D:/DSH/src/dsh-src/vendor/cordis/src/index.ts",
+        "builtRealpath": "D:\\DSH\\src\\dsh-src\\vendor\\cordis\\lib\\index.js",
+        "sourceRealpath": null,
+        "hostInstanceSource": "D:/DSH/src/dsh-src/vendor/cordis/lib/index.js",
+        "hostInstanceLandedOn": "BUILT",
+        "discriminationEvidence": "the file it names is a lib/*.js",
+        "hostInstanceConstructor": "Context",
+        "version": "4.0.2",
+        "versionManifest": "D:/DSH/src/dsh-src/vendor/cordis/package.json",
+        "versionError": null,
+        "builtMatch": true,
+        "sourceMatch": null,
+        "notes": []
+      },
+      {
+        "package": "@deepseek-ai/dsh-tools",
+        "class": "ToolRuntime",
+        "service": "tools",
+        "builtEntry": "D:/DSH/src/dsh-src/packages/core/tools/lib/index.js",
+        "sourceEntry": "D:/DSH/src/dsh-src/packages/core/tools/src/index.ts",
+        "builtRealpath": "D:\\DSH\\src\\dsh-src\\packages\\core\\tools\\lib\\index.js",
+        "sourceRealpath": null,
+        "hostInstanceSource": "D:/DSH/src/dsh-src/packages/core/tools/lib/index.js",
+        "hostInstanceLandedOn": "BUILT",
+        "discriminationEvidence": "the file it names is a lib/*.js",
+        "hostInstanceConstructor": "ToolRuntime",
+        "version": "0.1.6-alpha.2",
+        "versionManifest": "D:/DSH/src/dsh-src/packages/core/tools/package.json",
+        "versionError": null,
+        "builtMatch": true,
+        "sourceMatch": null,
+        "notes": []
+      },
+      {
+        "package": "@deepseek-ai/dsh-agent-loop",
+        "class": "AgentLoop",
+        "service": "agentLoop",
+        "builtEntry": "D:/DSH/src/dsh-src/packages/core/agent-loop/lib/index.js",
+        "sourceEntry": "D:/DSH/src/dsh-src/packages/core/agent-loop/src/index.ts",
+        "builtRealpath": "D:\\DSH\\src\\dsh-src\\packages\\core\\agent-loop\\lib\\index.js",
+        "sourceRealpath": null,
+        "hostInstanceSource": "D:/DSH/src/dsh-src/packages/core/agent-loop/lib/index.js",
+        "hostInstanceLandedOn": "BUILT",
+        "discriminationEvidence": "the file it names is a lib/*.js",
+        "hostInstanceConstructor": "AgentLoop",
+        "version": "0.1.6-alpha.2",
+        "versionManifest": "D:/DSH/src/dsh-src/packages/core/agent-loop/package.json",
+        "versionError": null,
+        "builtMatch": true,
+        "sourceMatch": null,
+        "notes": []
+      },
+      {
+        "package": "@deepseek-ai/dsh-agent",
+        "class": "AgentRegistry",
+        "service": "agents",
+        "builtEntry": "D:/DSH/src/dsh-src/packages/core/agent/lib/index.js",
+        "sourceEntry": "D:/DSH/src/dsh-src/packages/core/agent/src/index.ts",
+        "builtRealpath": "D:\\DSH\\src\\dsh-src\\packages\\core\\agent\\lib\\index.js",
+        "sourceRealpath": null,
+        "hostInstanceSource": "D:/DSH/src/dsh-src/packages/core/agent/lib/index.js",
+        "hostInstanceLandedOn": "BUILT",
+        "discriminationEvidence": "the file it names is a lib/*.js",
+        "hostInstanceConstructor": "AgentRegistry",
+        "version": "0.1.6-alpha.2",
+        "versionManifest": "D:/DSH/src/dsh-src/packages/core/agent/package.json",
+        "versionError": null,
+        "builtMatch": true,
+        "sourceMatch": null,
+        "notes": []
+      },
+      {
+        "package": "@deepseek-ai/dsh-session",
+        "class": "SessionStore",
+        "service": "sessions",
+        "builtEntry": "D:/DSH/src/dsh-src/packages/core/session/lib/index.js",
+        "sourceEntry": "D:/DSH/src/dsh-src/packages/core/session/src/index.ts",
+        "builtRealpath": "D:\\DSH\\src\\dsh-src\\packages\\core\\session\\lib\\index.js",
+        "sourceRealpath": null,
+        "hostInstanceSource": "D:/DSH/src/dsh-src/packages/core/session/lib/index.js",
+        "hostInstanceLandedOn": "BUILT",
+        "discriminationEvidence": "the file it names is a lib/*.js",
+        "hostInstanceConstructor": "SessionStore",
+        "version": "0.1.6-alpha.2",
+        "versionManifest": "D:/DSH/src/dsh-src/packages/core/session/package.json",
+        "versionError": null,
+        "builtMatch": true,
+        "sourceMatch": null,
+        "notes": []
+      },
+      {
+        "package": "@deepseek-ai/dsh-subagent",
+        "class": "SubagentRuntime",
+        "service": "subagents",
+        "builtEntry": "D:/DSH/src/dsh-src/packages/subagent/subagent/lib/index.js",
+        "sourceEntry": "D:/DSH/src/dsh-src/packages/subagent/subagent/src/index.ts",
+        "builtRealpath": "D:\\DSH\\src\\dsh-src\\packages\\subagent\\subagent\\lib\\index.js",
+        "sourceRealpath": null,
+        "hostInstanceSource": "D:/DSH/src/dsh-src/packages/subagent/subagent/lib/index.js",
+        "hostInstanceLandedOn": "BUILT",
+        "discriminationEvidence": "the file it names is a lib/*.js",
+        "hostInstanceConstructor": "SubagentRuntime",
+        "version": "0.1.6-alpha.2",
+        "versionManifest": "D:/DSH/src/dsh-src/packages/subagent/subagent/package.json",
+        "versionError": null,
+        "builtMatch": true,
+        "sourceMatch": null,
+        "notes": []
+      }
+    ],
+    "singletonVerdict": {
+      "peersChecked": 6,
+      "hostInstancesFromBuiltEntry": 6,
+      "hostInstancesFromSourceEntry": 0,
+      "hostInstancesFromNeitherCandidate": [],
+      "mixedSourceAndBuilt": false,
+      "pass": true
+    },
+    "settle": {
+      "method": "poll loader.entries() for non-ACTIVE non-disabled entries, excluding this probe row",
+      "excludedOwnRowId": "t17-identity-probe",
+      "timeoutMs": 30000,
+      "settled": true,
+      "waitedMs": 392,
+      "entryCount": 180,
+      "stillMoving": [],
+      "note": "loader.await() is NOT used: it waits on this probe's own fiber inertia and would deadlock."
+    },
+    "launcherIdentity": {
+      "what": "the running launcher module, and what the recorded identity digest covers",
+      "lockPath": "D:/DSH/work/dsh-native-daily/compatibility.lock.json",
+      "lockReadError": null,
+      "identityRecorded": "549732b5d8cad4e86d3df7c55dbf090598753a8fa015e8207ff6f851e376d813",
+      "identityRecomputed": "549732b5d8cad4e86d3df7c55dbf090598753a8fa015e8207ff6f851e376d813",
+      "identityRecomputes": true,
+      "runningArgv1": "D:\\DSH\\src\\dsh-src\\apps\\cli\\lib\\bin.js",
+      "runningArgv1Realpath": "D:\\DSH\\src\\dsh-src\\apps\\cli\\lib\\bin.js",
+      "lockedRealpath": "D:\\DSH\\src\\dsh-src\\apps\\cli\\lib\\bin.js",
+      "lockedRealpathControlChars": [],
+      "runningMatchesLockedRealpath": true,
+      "launcherSha256": "69c49c871735dc7ee81ec51f266bbec129f075fd5066e046374f4b13ab02a705",
+      "lockedArtifactSha256": "69c49c871735dc7ee81ec51f266bbec129f075fd5066e046374f4b13ab02a705",
+      "launcherSha256MatchesLockedArtifact": true,
+      "inputCoverage": {
+        "host_profile_digest": {
+          "pinned": "59f23346955d24063a923b1a205bbcb40c541e054e6fd04dbdde4218eaa2ab7f",
+          "onDiskPath": "D:/DSH/work/dsh-native-daily/profiles/daily-candidate/cordis.patch.yml",
+          "onDiskSha256": "5b8b2a8e5d9ae13d35c1d86833f8b96eeb84078a13027a08efc1379a6fc8afb4",
+          "onDiskError": null,
+          "matches": false
+        },
+        "agent_preset_digest": {
+          "pinned": "0934f22b2fdbc158fd2edad33ec5dd2671b5b1f727800dcaab74cee3bd7294af",
+          "onDiskPath": "D:/DSH/src/dsh-src/packages/preset/agent-presets/presets/standard/agent.cordis.yml",
+          "onDiskSha256": "0934f22b2fdbc158fd2edad33ec5dd2671b5b1f727800dcaab74cee3bd7294af",
+          "onDiskError": null,
+          "matches": true
+        },
+        "acceptance_spec_sha256": {
+          "pinned": "2fe95835425eb98eb3bac9eead17985df5bf951669460c8d7a87b8887afb1e0b",
+          "onDiskPath": "D:/DSH/work/dsh-native-daily/qualification/specs/acceptance-spec.json",
+          "onDiskSha256": "2fe95835425eb98eb3bac9eead17985df5bf951669460c8d7a87b8887afb1e0b",
+          "onDiskError": null,
+          "matches": true
+        },
+        "trusted_local_acceptance_spec_sha256": {
+          "pinned": "e5b6a1d2481f39c52a6012ec6b48a72e4618ff713f1927b6b0d6827a24b10ce7",
+          "onDiskPath": "D:/DSH/work/dsh-native-daily/qualification/specs/acceptance-spec.trusted-local-v1.json",
+          "onDiskSha256": "e5b6a1d2481f39c52a6012ec6b48a72e4618ff713f1927b6b0d6827a24b10ce7",
+          "onDiskError": null,
+          "matches": true
+        },
+        "dependency_lock_sha256": {
+          "pinned": "72523ca50bd34e3e21d07c82e1cedfdb91b17e1bcd83006c645e8dc6e0786fe0",
+          "onDiskPath": "D:/DSH/src/dsh-src/pnpm-lock.yaml",
+          "onDiskSha256": "72523ca50bd34e3e21d07c82e1cedfdb91b17e1bcd83006c645e8dc6e0786fe0",
+          "onDiskError": null,
+          "matches": true
+        },
+        "artifact_sha256": {
+          "pinned": "69c49c871735dc7ee81ec51f266bbec129f075fd5066e046374f4b13ab02a705",
+          "onDiskPath": "D:/DSH/src/dsh-src/apps/cli/lib/bin.js",
+          "onDiskSha256": "69c49c871735dc7ee81ec51f266bbec129f075fd5066e046374f4b13ab02a705",
+          "onDiskError": null,
+          "matches": true
+        }
+      },
+      "identityAlgorithm": "sha256(UTF8(json.dumps(inputs, sort_keys=True, separators=(',', ':'), ensure_ascii=True)))",
+      "identityCanonicalByteLength": 1528,
+      "launcherSha256Error": null
+    },
+    "symbolIdentity": {
+      "symbol": "TOOL_RUNTIME_SCHEDULER",
+      "declaredAt": "packages/core/tools/src/index.ts:463 (built: packages/core/tools/lib/index.js)",
+      "declarationKind": "Symbol",
+      "declarationKindEvidence": "Symbol('@deepseek-ai/dsh-tools.scheduler')",
+      "libSymbolIsSameAsSrcSymbol": false,
+      "hostInstanceHasLibSymbol": true,
+      "hostInstanceHasSrcSymbol": false,
+      "hostInstanceSchedulerUsable": true,
+      "hostInstanceSchedulerMethods": [
+        "prepare",
+        "dispatch",
+        "finalize",
+        "finish"
+      ],
+      "notes": [],
+      "hostInstanceWasTraceProxy": true
+    },
+    "toolCatalog": {
+      "source": "ctx.tools.schemas() with no scope key (the host/global layer)",
+      "toolCount": 0,
+      "tools": []
+    },
+    "firstToolCall": {
+      "sessionCreated": true,
+      "sessionId": "session-7cff2aa6-cc9b-49eb-a9f0-f8893aa1e439",
+      "sessionCwd": "D:/DSH/work/dsh-native-daily/qualification/results/T17-identity/runs/built-launcher/workspace",
+      "agentPreset": "daily-standard",
+      "agentPresent": true,
+      "toolCountAgentKey": 27,
+      "toolsInHeaderOrder": [
+        "work",
+        "read",
+        "write",
+        "edit",
+        "glob",
+        "grep",
+        "job_output",
+        "job_list",
+        "job_kill",
+        "skill",
+        "ask_user_question",
+        "web_search",
+        "web_fetch",
+        "present",
+        "ipython",
+        "read_image",
+        "send_message",
+        "interrupt_agent",
+        "list_agents",
+        "todo_write",
+        "workflow",
+        "get_goal",
+        "create_goal",
+        "update_goal",
+        "exit_plan_mode",
+        "subagent_fork",
+        "subagent"
+      ],
+      "firstToolOffered": "work",
+      "toolCountContextKey": 0,
+      "promptAccepted": true,
+      "promptRejection": null,
+      "turnCompleted": true,
+      "turnWaitMs": 1280,
+      "turnTimedOut": false,
+      "toolCallRequested": {
+        "name": "read",
+        "callId": "t17-first-call"
+      },
+      "toolResultSeen": true,
+      "toolResultIsError": false,
+      "toolResultText": "<path>D:\\DSH\\work\\dsh-native-daily\\qualification\\results\\T17-identity\\runs\\built-launcher\\first-call-input.txt</path>\n<type>file</type>\n<content>\n1: T17_FIRST_TOOL_CALL_ROUND_TRIP\n\n(End of file - total 1 lines)\n</content>",
+      "toolResultErrorCode": null,
+      "firstCallSucceeded": true,
+      "expectedToolName": "read",
+      "expectedFilePath": "D:/DSH/work/dsh-native-daily/qualification/results/T17-identity/runs/built-launcher/first-call-input.txt",
+      "turnEndReason": "completed",
+      "turnEndErrorMessage": null,
+      "turnEndErrorCode": null,
+      "schedulerPrepareError": null,
+      "identityDefectSymptom": "absent -- the turn did not die on a scheduler symbol index",
+      "notes": [],
+      "eventCount": 22
+    },
+    "errors": [],
+    "presetDefaultId": "daily-standard"
+  },
+  "checks": [
+    {
+      "label": "the probe wrote its result",
+      "ok": true,
+      "detail": "probe present: true"
+    },
+    {
+      "label": "the result names the home this driver booted",
+      "ok": true,
+      "detail": "roots: [\"D:\\\\DSH\\\\src\\\\dsh-src\\\\packages\\\\preset\\\\agent-presets\\\\presets\\\\\",\"D:/DSH/home/t17-identity/profiles/daily/presets/\",\"D:\\\\DSH\\\\home\\\\t17-identity\\\\.agent-presets\"]"
+    },
+    {
+      "label": "the probe recorded no error",
+      "ok": true,
+      "detail": "[]"
+    },
+    {
+      "label": "the installed profile patch is the repository one",
+      "ok": true,
+      "detail": "installed 5b8b2a8e5d9ae13d35c1d86833f8b96eeb84078a13027a08efc1379a6fc8afb4 vs repo 5b8b2a8e5d9ae13d35c1d86833f8b96eeb84078a13027a08efc1379a6fc8afb4"
+    },
+    {
+      "label": "the probe confirms the installed copy matched the repository",
+      "ok": true,
+      "detail": "{\"home\":\"D:/DSH/home/t17-identity\",\"profileName\":\"daily\",\"installedPatchPath\":\"D:/DSH/home/t17-identity/profiles/daily/cordis.patch.yml\",\"installedPatchSha256\":\"5b8b2a8e5d9ae13d35c1d86833f8b96eeb84078a13027a08efc1379a6fc8afb4\",\"installedPatchReadError\":null,\"repoPatchPath\":\"D:/DSH/work/dsh-native-daily/profiles/daily-candidate/cordis.patch.yml\",\"repoPatchSha256\":\"5b8b2a8e5d9ae13d35c1d86833f8b96eeb84078a13027a08efc1379a6fc8afb4\",\"installedMatchesRepo\":true}"
+    },
+    {
+      "label": "the loader tree settled before the probe sampled it",
+      "ok": true,
+      "detail": "settled=true waitedMs=392 stillMoving=[]"
+    },
+    {
+      "label": "the host was killed and the port released",
+      "ok": true,
+      "detail": "portReleased: true"
+    },
+    {
+      "label": "the boot did not time out",
+      "ok": true,
+      "detail": "timedOut: false"
+    },
+    {
+      "label": "every shared package resolved to ONE physical copy",
+      "ok": true,
+      "detail": "{\"peersChecked\":6,\"hostInstancesFromBuiltEntry\":6,\"hostInstancesFromSourceEntry\":0,\"hostInstancesFromNeitherCandidate\":[],\"mixedSourceAndBuilt\":false,\"pass\":true}"
+    },
+    {
+      "label": "no shared package came from a third copy",
+      "ok": true,
+      "detail": "[]"
+    },
+    {
+      "label": "the tree does not mix src and lib",
+      "ok": true,
+      "detail": "fromBuilt=6 fromSource=0"
+    },
+    {
+      "label": "the scheduler symbol is declared with Symbol(), not Symbol.for()",
+      "ok": true,
+      "detail": "declarationKind=\"Symbol\" evidence=\"Symbol('@deepseek-ai/dsh-tools.scheduler')\""
+    },
+    {
+      "label": "the host's ToolRuntime answers the LIB copy of the scheduler symbol",
+      "ok": true,
+      "detail": "hostInstanceHasLibSymbol: true"
+    },
+    {
+      "label": "the host's ToolRuntime does NOT answer the SRC copy of the scheduler symbol",
+      "ok": true,
+      "detail": "hostInstanceHasSrcSymbol: false"
+    },
+    {
+      "label": "the scheduler object carries all four methods",
+      "ok": true,
+      "detail": "[\"prepare\",\"dispatch\",\"finalize\",\"finish\"]"
+    },
+    {
+      "label": "a real Session was created for the first-tool-call measurement",
+      "ok": true,
+      "detail": "sessionId: \"session-7cff2aa6-cc9b-49eb-a9f0-f8893aa1e439\""
+    },
+    {
+      "label": "the model is offered a non-empty catalog",
+      "ok": true,
+      "detail": "toolCountAgentKey: 27 firstTool: \"work\""
+    },
+    {
+      "label": "the agent-keyed view is non-empty while the context-keyed view is empty (G-FIX-06)",
+      "ok": true,
+      "detail": "agentKey=27 contextKey=0"
+    },
+    {
+      "label": "the prompt was admitted",
+      "ok": true,
+      "detail": "promptAccepted: true rejection: null"
+    },
+    {
+      "label": "the turn completed rather than hanging",
+      "ok": true,
+      "detail": "turnTimedOut: false waitedMs: 1280"
+    },
+    {
+      "label": "the first call named the tool the adapter asked for",
+      "ok": true,
+      "detail": "toolCallRequested: {\"name\":\"read\",\"callId\":\"t17-first-call\"}"
+    },
+    {
+      "label": "the first tool call SUCCEEDED",
+      "ok": true,
+      "detail": "isError=false errorCode=null text=\"<path>D:\\\\DSH\\\\work\\\\dsh-native-daily\\\\qualification\\\\results\\\\T17-identity\\\\runs\\\\built-launcher\\\\first-call-input.txt</path>\\n<type>file</type>\\n<content>\\n1: T17_FIRST_TOOL_CALL_ROUND_TRIP\\n\\n(End of file - total 1 lines)\\n</content>\""
+    },
+    {
+      "label": "the tool result carries the file's own text, so the call reached a real tool body",
+      "ok": true,
+      "detail": "expected substring \"T17_FIRST_TOOL_CALL_ROUND_TRIP\" in \"<path>D:\\\\DSH\\\\work\\\\dsh-native-daily\\\\qualification\\\\results\\\\T17-identity\\\\runs\\\\built-launcher\\\\first-call-input.txt</path>\\n<type>file</type>\\n<content>\\n1: T17_FIRST_TOOL_CALL_ROUND_TRIP\\n\\n(End of file - total 1 lines)\\n</content>\""
+    },
+    {
+      "label": "the turn did NOT die on the module-identity symptom",
+      "ok": true,
+      "detail": "turnEndReason=\"completed\" error=null code=null"
+    },
+    {
+      "label": "the recorded launcher_realpath carries no control characters",
+      "ok": true,
+      "detail": "[]"
+    },
+    {
+      "label": "the launcher on disk matches the recorded artifact_sha256",
+      "ok": true,
+      "detail": "onDisk=\"69c49c871735dc7ee81ec51f266bbec129f075fd5066e046374f4b13ab02a705\" pinned=\"69c49c871735dc7ee81ec51f266bbec129f075fd5066e046374f4b13ab02a705\""
+    },
+    {
+      "label": "the running process IS the launcher the lock names",
+      "ok": true,
+      "detail": "argv1=\"D:\\\\DSH\\\\src\\\\dsh-src\\\\apps\\\\cli\\\\lib\\\\bin.js\" locked=\"D:\\\\DSH\\\\src\\\\dsh-src\\\\apps\\\\cli\\\\lib\\\\bin.js\""
+    },
+    {
+      "label": "the recorded identity recomputes from its inputs under the declared algorithm",
+      "ok": true,
+      "detail": "recorded=\"549732b5d8cad4e86d3df7c55dbf090598753a8fa015e8207ff6f851e376d813\" recomputed=\"549732b5d8cad4e86d3df7c55dbf090598753a8fa015e8207ff6f851e376d813\" algorithm=\"sha256(UTF8(json.dumps(inputs, sort_keys=True, separators=(',', ':'), ensure_ascii=True)))\""
+    },
+    {
+      "label": "every file-named identity input still matches the file on disk",
+      "ok": false,
+      "detail": "stale or unreadable: [\"host_profile_digest\"]; rows: {\"host_profile_digest\":{\"pinned\":\"59f23346955d24063a923b1a205bbcb40c541e054e6fd04dbdde4218eaa2ab7f\",\"onDiskPath\":\"D:/DSH/work/dsh-native-daily/profiles/daily-candidate/cordis.patch.yml\",\"onDiskSha256\":\"5b8b2a8e5d9ae13d35c1d86833f8b96eeb84078a13027a08efc1379a6fc8afb4\",\"onDiskError\":null,\"matches\":false},\"agent_preset_digest\":{\"pinned\":\"0934f22b2fdbc158fd2edad33ec5dd2671b5b1f727800dcaab74cee3bd7294af\",\"onDiskPath\":\"D:/DSH/src/dsh-src/packages/preset/agent-presets/presets/standard/agent.cordis.yml\",\"onDiskSha256\":\"0934f22b2fdbc158fd2edad33ec5dd2671b5b1f727800dcaab74cee3bd7294af\",\"onDiskError\":null,\"matches\":true},\"acceptance_spec_sha256\":{\"pinned\":\"2fe95835425eb98eb3bac9eead17985df5bf951669460c8d7a87b8887afb1e0b\",\"onDiskPath\":\"D:/DSH/work/dsh-native-daily/qualification/specs/acceptance-spec.json\",\"onDiskSha256\":\"2fe95835425eb98eb3bac9eead17985df5bf951669460c8d7a87b8887afb1e0b\",\"onDiskError\":null,\"matches\":true},\"trusted_local_acceptance_spec_sha256\":{\"pinned\":\"e5b6a1d2481f39c52a6012ec6b48a72e4618ff713f1927b6b0d6827a24b10ce7\",\"onDiskPath\":\"D:/DSH/work/dsh-native-daily/qualification/specs/acceptance-spec.trusted-local-v1.json\",\"onDiskSha256\":\"e5b6a1d2481f39c52a6012ec6b48a72e4618ff713f1927b6b0d6827a24b10ce7\",\"onDiskError\":null,\"matches\":true},\"dependency_lock_sha256\":{\"pinned\":\"72523ca50bd34e3e21d07c82e1cedfdb91b17e1bcd83006c645e8dc6e0786fe0\",\"onDiskPath\":\"D:/DSH/src/dsh-src/pnpm-lock.yaml\",\"onDiskSha256\":\"72523ca50bd34e3e21d07c82e1cedfdb91b17e1bcd83006c645e8dc6e0786fe0\",\"onDiskError\":null,\"matches\":true},\"artifact_sha256\":{\"pinned\":\"69c49c871735dc7ee81ec51f266bbec129f075fd5066e046374f4b13ab02a705\",\"onDiskPath\":\"D:/DSH/src/dsh-src/apps/cli/lib/bin.js\",\"onDiskSha256\":\"69c49c871735dc7ee81ec51f266bbec129f075fd5066e046374f4b13ab02a705\",\"onDiskError\":null,\"matches\":true}}"
+    }
+  ],
+  "failures": [
+    "every file-named identity input still matches the file on disk -- observed: stale or unreadable: [\"host_profile_digest\"]; rows: {\"host_profile_digest\":{\"pinned\":\"59f23346955d24063a923b1a205bbcb40c541e054e6fd04dbdde4218eaa2ab7f\",\"onDiskPath\":\"D:/DSH/work/dsh-native-daily/profiles/daily-candidate/cordis.patch.yml\",\"onDiskSha256\":\"5b8b2a8e5d9ae13d35c1d86833f8b96eeb84078a13027a08efc1379a6fc8afb4\",\"onDiskError\":null,\"matches\":false},\"agent_preset_digest\":{\"pinned\":\"0934f22b2fdbc158fd2edad33ec5dd2671b5b1f727800dcaab74cee3bd7294af\",\"onDiskPath\":\"D:/DSH/src/dsh-src/packages/preset/agent-presets/presets/standard/agent.cordis.yml\",\"onDiskSha256\":\"0934f22b2fdbc158fd2edad33ec5dd2671b5b1f727800dcaab74cee3bd7294af\",\"onDiskError\":null,\"matches\":true},\"acceptance_spec_sha256\":{\"pinned\":\"2fe95835425eb98eb3bac9eead17985df5bf951669460c8d7a87b8887afb1e0b\",\"onDiskPath\":\"D:/DSH/work/dsh-native-daily/qualification/specs/acceptance-spec.json\",\"onDiskSha256\":\"2fe95835425eb98eb3bac9eead17985df5bf951669460c8d7a87b8887afb1e0b\",\"onDiskError\":null,\"matches\":true},\"trusted_local_acceptance_spec_sha256\":{\"pinned\":\"e5b6a1d2481f39c52a6012ec6b48a72e4618ff713f1927b6b0d6827a24b10ce7\",\"onDiskPath\":\"D:/DSH/work/dsh-native-daily/qualification/specs/acceptance-spec.trusted-local-v1.json\",\"onDiskSha256\":\"e5b6a1d2481f39c52a6012ec6b48a72e4618ff713f1927b6b0d6827a24b10ce7\",\"onDiskError\":null,\"matches\":true},\"dependency_lock_sha256\":{\"pinned\":\"72523ca50bd34e3e21d07c82e1cedfdb91b17e1bcd83006c645e8dc6e0786fe0\",\"onDiskPath\":\"D:/DSH/src/dsh-src/pnpm-lock.yaml\",\"onDiskSha256\":\"72523ca50bd34e3e21d07c82e1cedfdb91b17e1bcd83006c645e8dc6e0786fe0\",\"onDiskError\":null,\"matches\":true},\"artifact_sha256\":{\"pinned\":\"69c49c871735dc7ee81ec51f266bbec129f075fd5066e046374f4b13ab02a705\",\"onDiskPath\":\"D:/DSH/src/dsh-src/apps/cli/lib/bin.js\",\"onDiskSha256\":\"69c49c871735dc7ee81ec51f266bbec129f075fd5066e046374f4b13ab02a705\",\"onDiskError\":null,\"matches\":true}}"
+  ],
+  "verdict": "FAIL"
+}

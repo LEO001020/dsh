@@ -505,6 +505,46 @@ async function probePeer(ctx, entry) {
   return record
 }
 
+/**
+ * The INSTALLED profile patch this boot actually read, and its digest.
+ *
+ * WHY THIS IS IN THE ARTIFACT. Every home installs the extension packages through
+ * a `link:`, so a probe that boots an installed profile executes the BUILT
+ * artifact, never the repository source. The installed profile patch is a COPY
+ * that can drift from the repository file it came from -- and a sibling agent
+ * measured a stale build as a product defect exactly this way today. Recording
+ * the digest of the installed copy, next to the digest of the repository source,
+ * makes the drift visible instead of invisible.
+ *
+ * The profile directory is derived from `DSH_HOME`, which the harness sets, so
+ * this names the home the caller booted rather than a guessed path.
+ * @returns the installed-profile record.
+ */
+function probeInstalledProfile() {
+  const home = process.env.DSH_HOME ?? null
+  const profileName = process.env.T17_PROFILE_NAME ?? 'daily'
+  const record = {
+    home,
+    profileName,
+    installedPatchPath: home === null ? null : `${home}/profiles/${profileName}/cordis.patch.yml`,
+    installedPatchSha256: null,
+    installedPatchReadError: null,
+    repoPatchPath: `${REPO}/profiles/daily-candidate/cordis.patch.yml`,
+    repoPatchSha256: null,
+    installedMatchesRepo: null,
+  }
+  if (record.installedPatchPath !== null) {
+    const installed = sha256File(record.installedPatchPath)
+    record.installedPatchSha256 = installed.digest
+    record.installedPatchReadError = installed.error
+  }
+  const repo = sha256File(record.repoPatchPath)
+  record.repoPatchSha256 = repo.digest
+  record.installedMatchesRepo =
+    record.installedPatchSha256 !== null && record.installedPatchSha256 === record.repoPatchSha256
+  return record
+}
+
 /** realpath, falling back to the raw path with a recorded reason rather than dropping the row. */
 function safeRealpath(path) {
   try {
@@ -514,7 +554,310 @@ function safeRealpath(path) {
   }
 }
 
-/** Mount the probe. Injects nothing, so it activates regardless of which sibling rows mounted. */
+/**
+ * `FiberState.ACTIVE` (`vendor/cordis/src/fiber.ts:147-155`).
+ *
+ * Declared before its first use so the constant is initialised by the time any
+ * function reads it; a module-level `const` read from inside a function that runs
+ * after module evaluation would work either way, but ordering it this way makes
+ * the dependency visible.
+ */
+const FIBER_ACTIVE = 2
+
+/**
+ * Wait, with a DEADLINE, until every loader entry other than this probe's own is
+ * settled (ACTIVE, or disabled, or genuinely FAILED).
+ *
+ * WHY NOT `loader.await()`. The obvious call is a DEADLOCK, and it is worth
+ * writing down because it looks correct:
+ *
+ *   `EntryTree.await()` loops while `getTasks()` is non-empty, and `getTasks()`
+ *   maps every entry to `entry._initTask || entry.fiber?.inertia`
+ *   (`vendor/loader/src/config/tree.ts:36-49`). A fiber's `inertia` is the
+ *   promise of its CURRENT lifecycle job (`vendor/cordis/src/fiber.ts:629-635`),
+ *   and while a plugin's `apply` is running that job IS the call to `apply`. So
+ *   from inside `apply`, the probe's own fiber contributes a pending task that
+ *   cannot settle until `apply` returns -- and `await()` would spin forever
+ *   waiting on itself.
+ *
+ * The wait is also BOUNDED. A row that legitimately never activates (a preset
+ * row waiting on a service the host does not mount) would otherwise hang the
+ * boot, and a hung boot produces no artifact at all -- which reads as "no
+ * finding" instead of "the tree did not settle".
+ * @param ctx - the live host context.
+ * @param timeoutMs - how long to wait before recording that it did not settle.
+ * @returns the settle record, including which entries were still moving.
+ */
+async function waitForSettle(ctx, timeoutMs) {
+  const record = {
+    method: 'poll loader.entries() for non-ACTIVE non-disabled entries, excluding this probe row',
+    excludedOwnRowId: name,
+    timeoutMs,
+    settled: false,
+    waitedMs: 0,
+    entryCount: null,
+    stillMoving: [],
+    note: 'loader.await() is NOT used: it waits on this probe\'s own fiber inertia and would deadlock.',
+  }
+  const loader = ctx.get('loader')
+  if (loader === undefined) {
+    record.stillMoving.push('ctx.loader is absent; the tree cannot be observed')
+    return record
+  }
+  const started = Date.now()
+  while (Date.now() - started < timeoutMs) {
+    let moving = []
+    let total = 0
+    for (const entry of loader.entries()) {
+      total += 1
+      if (entry.options.id === name) continue
+      let disabled = false
+      try {
+        disabled = entry.disabled === true
+      } catch {
+        // A throwing `disabled` expression is an entry failure; treat it as
+        // settled so it is reported as such rather than waiting on it.
+        continue
+      }
+      if (disabled) continue
+      const state = entry.fiber?.state ?? null
+      if (state !== FIBER_ACTIVE) moving.push({ id: entry.options.id, state })
+    }
+    record.entryCount = total
+    record.stillMoving = moving
+    if (moving.length === 0) {
+      record.settled = true
+      break
+    }
+    await new Promise(resolve => setTimeout(resolve, 100))
+  }
+  record.waitedMs = Date.now() - started
+  return record
+}
+
+/**
+ * THE FIRST TOOL CALL, measured on a real Session.
+ *
+ * Two separate facts, deliberately not collapsed:
+ *
+ *   1. WHAT THE MODEL IS OFFERED. The catalog for a real Session, in the order
+ *      the request header carries it (NOT sorted -- the first entry is what the
+ *      model reads first, and sorting would destroy that). Both scope keys are
+ *      read: the agent object (correct) and `agent.ctx` (the G-FIX-06 false
+ *      negative, kept as a contrast so the right key stays falsifiable).
+ *
+ *   2. WHETHER THE DISPATCH PATH ACTUALLY WORKS. The catalog is a projection;
+ *      a call is a dispatch, and dispatch is where the per-module-instance
+ *      `Symbol` is indexed. So a real turn is driven through the real adapter
+ *      and the resulting session events are read back.
+ *
+ * WHY DRIVING THE SHIPPED MOCK ADAPTER IS STILL THE RIGHT EXPERIMENT even
+ * though it asks for a tool this composition disables. The mock's first call is
+ * `pwsh` on win32, and the daily preset sets `tool-pwsh: disabled: true`. The
+ * dispatch path indexes `ctx.tools[TOOL_RUNTIME_SCHEDULER]` BEFORE it resolves
+ * the tool name (`packages/core/agent-loop/src/tool-calls.ts:165-170`), so the
+ * two possible outcomes are MUTUALLY EXCLUSIVE and each names its own cause:
+ *
+ *   - `Cannot read properties of undefined (reading 'prepare')` -> the identity
+ *     defect this gate exists to catch (the symbol came from another copy);
+ *   - `UNKNOWN_TOOL` / a denial naming `pwsh` -> the symbol was RIGHT and the
+ *     tool is simply not in this composition.
+ *
+ * A run that reports only "the tool call failed" could not tell those apart,
+ * which is why the exact error text is recorded rather than a boolean.
+ * @param ctx - the live host context.
+ * @returns the measured first-tool-call record.
+ */
+async function probeFirstToolCall(ctx) {
+  const record = {
+    sessionCreated: false,
+    sessionId: null,
+    sessionCwd: null,
+    agentPreset: null,
+    agentPresent: false,
+    // Fact 1: what the model is offered.
+    toolCountAgentKey: 0,
+    toolsInHeaderOrder: [],
+    firstToolOffered: null,
+    toolCountContextKey: null,
+    // Fact 2: the real turn.
+    promptAccepted: false,
+    promptRejection: null,
+    turnCompleted: false,
+    turnWaitMs: null,
+    turnTimedOut: false,
+    // The first call the model made, and what came back.
+    toolCallRequested: null,
+    toolResultSeen: false,
+    toolResultIsError: null,
+    toolResultText: null,
+    toolResultErrorCode: null,
+    firstCallSucceeded: null,
+    // The exact tool the adapter asked for and the file it named, so a reader
+    // can tell a successful call from a call that succeeded on the wrong thing.
+    expectedToolName: 'read',
+    expectedFilePath: process.env.T17_FIRST_CALL_FILE ?? null,
+    turnEndReason: null,
+    turnEndErrorMessage: null,
+    turnEndErrorCode: null,
+    // The discriminator.
+    schedulerPrepareError: null,
+    identityDefectSymptom: null,
+    notes: [],
+  }
+
+  const sc = ctx.get('sessionController')
+  const tools = ctx.get('tools')
+  const agents = ctx.get('agents')
+  if (sc === undefined || tools === undefined || agents === undefined) {
+    record.notes.push(`missing service(s): ${[
+      sc === undefined ? 'sessionController' : null,
+      tools === undefined ? 'tools' : null,
+      agents === undefined ? 'agents' : null,
+    ].filter(Boolean).join(', ')}`)
+    return record
+  }
+
+  const cwd = process.env.T17_SESSION_CWD ?? REPO
+  const created = await sc.create({ cwd })
+  record.sessionId = created?.sessionId ?? created?.id ?? null
+  record.sessionCreated = record.sessionId !== null
+  record.sessionCwd = cwd
+  record.agentPreset = created?.agentPreset ?? null
+  if (!record.sessionCreated) {
+    record.notes.push('the session controller returned no session id')
+    return record
+  }
+
+  const agent = agents.get(record.sessionId)
+  record.agentPresent = agent !== undefined
+  if (agent === undefined) {
+    record.notes.push('the created session has no live agent in this process')
+    return record
+  }
+
+  // Fact 1. Header order, not sorted: the first entry is what the model reads
+  // first. The sorted list is derivable by the reader; the order is not.
+  const schemas = tools.schemas(agent)
+  record.toolsInHeaderOrder = schemas.map(schema => schema.name)
+  record.toolCountAgentKey = record.toolsInHeaderOrder.length
+  record.firstToolOffered = record.toolsInHeaderOrder[0] ?? null
+  try {
+    record.toolCountContextKey = tools.schemas(agent.ctx).length
+  } catch (error) {
+    record.notes.push(`the agent.ctx-keyed view threw: ${error instanceof Error ? error.message.split('\n')[0] : String(error)}`)
+  }
+
+  // Fact 2. A real turn. `whenIdle()` is the agent's own completion signal
+  // (`packages/core/agent-loop/src/agent.ts:211`), raced against a deadline so a
+  // stuck turn cannot hang the boot.
+  //
+  // THE SECOND ARGUMENT IS REQUIRED, and omitting it is a probe bug that LOOKS
+  // like a product failure. `SessionController.prompt(request, signal)` calls
+  // `signal.throwIfAborted()` as its first statement
+  // (`packages/api/session-controller/src/index.ts:348`), so an omitted signal
+  // throws `Cannot read properties of undefined (reading 'throwIfAborted')` --
+  // an error that names neither the probe nor the product. An earlier run of
+  // this probe recorded exactly that, which is why the signal is passed
+  // explicitly and the failure is written down here.
+  const deadlineMs = Number(process.env.T17_TURN_TIMEOUT_MS ?? 45_000)
+  const turnAbort = new AbortController()
+  try {
+    await sc.prompt({
+      requestId: `t17-${Date.now().toString(36)}`,
+      sessionId: record.sessionId,
+      mode: 'queue',
+      content: [{ type: 'text', text: 'probe' }],
+    }, turnAbort.signal)
+    record.promptAccepted = true
+  } catch (error) {
+    record.promptRejection = error instanceof Error ? error.message.split('\n')[0] : String(error)
+    record.notes.push(`prompt rejected: ${record.promptRejection}`)
+  }
+
+  if (record.promptAccepted && typeof agent.whenIdle === 'function') {
+    const started = Date.now()
+    let timedOut = false
+    await Promise.race([
+      agent.whenIdle(),
+      new Promise(resolve => setTimeout(() => { timedOut = true; resolve() }, deadlineMs)),
+    ])
+    record.turnWaitMs = Date.now() - started
+    record.turnTimedOut = timedOut
+    record.turnCompleted = !timedOut
+  }
+
+  // Read the turn's own durable record rather than trusting the wait: the log is
+  // what the deployment persisted, and it survives the wait being wrong.
+  try {
+    const session = ctx.get('sessions')?.get(record.sessionId)
+    if (session === undefined) {
+      record.notes.push('the session is not in the SessionStore; the turn record cannot be read')
+    } else {
+      const events = session.snapshotEvents()
+      for (const event of events) {
+        if (event.type === 'tool/call') {
+          record.toolCallRequested ??= { name: event.data?.name ?? null, callId: event.data?.callId ?? null }
+        }
+        if (event.type === 'tool/result') {
+          record.toolResultSeen = true
+          const message = event.data?.message ?? null
+          record.toolResultIsError = event.data?.error !== undefined && event.data?.error !== null
+          record.toolResultErrorCode = event.data?.error?.code ?? null
+          // The model-facing text, so a reader can see WHAT came back rather
+          // than only that something did.
+          const blocks = Array.isArray(message?.content) ? message.content : []
+          const texts = []
+          for (const block of blocks) {
+            if (block?.type !== 'tool-result') continue
+            for (const inner of Array.isArray(block.content) ? block.content : []) {
+              if (inner?.type === 'text' && typeof inner.text === 'string') texts.push(inner.text)
+            }
+          }
+          record.toolResultText = texts.join('\n')
+        }
+        if (event.type === 'turn/end') {
+          const reason = event.data?.reason ?? null
+          record.turnEndReason = reason?.kind ?? null
+          record.turnEndErrorMessage = reason?.error?.message ?? null
+          record.turnEndErrorCode = reason?.error?.code ?? null
+        }
+      }
+      record.eventCount = events.length
+    }
+  } catch (error) {
+    record.notes.push(`the session log read failed: ${error instanceof Error ? error.message.split('\n')[0] : String(error)}`)
+  }
+
+  // THE DISCRIMINATOR, stated explicitly so a reader does not have to infer it.
+  const message = record.turnEndErrorMessage ?? ''
+  record.identityDefectSymptom = message.includes("reading 'prepare'")
+    ? 'PRESENT -- the turn died indexing the scheduler symbol, which is the module-identity defect'
+    : 'absent -- the turn did not die on a scheduler symbol index'
+
+  // DID THE FIRST CALL ACTUALLY SUCCEED? Both halves are required: the call must
+  // have named the tool the adapter asked for, AND the result must not be an
+  // error. A `tool/result` that is an error is a call that REACHED the tool
+  // pipeline and was refused there, which is a different fact from a call that
+  // never dispatched -- so the two are recorded separately rather than collapsed
+  // into one boolean.
+  record.firstCallSucceeded =
+    record.toolResultSeen === true
+    && record.toolResultIsError === false
+    && record.toolCallRequested?.name === record.expectedToolName
+  return record
+}
+
+/**
+ * Mount the probe. Injects nothing, so it activates regardless of which sibling rows mounted.
+ *
+ * INJECTING NOTHING IS LOAD-BEARING. `inject` is a READINESS GATE, not a
+ * declaration of interest: a probe that injects a service it wants to ASSERT is
+ * present never runs when the service is missing, so the failure reports as "no
+ * artifact" instead of "absent". Every service here is read through `ctx.get`,
+ * which returns `undefined` honestly, and a missing service lands in the
+ * artifact as a recorded fact.
+ */
 export function apply(ctx) {
   const outPath = process.env.T17_PROBE_OUT
   const exit = ctx.get('appExit')
@@ -536,12 +879,32 @@ export function apply(ctx) {
       execArgv: process.execArgv,
       hasTsxOnExecArgv: process.execArgv.some(a => String(a).includes('tsx')),
       cwd: process.cwd(),
+      // The digest of the INSTALLED profile patch this boot actually read, so a
+      // reader can tell which composition produced this artifact. An installed
+      // copy can drift from the repository source it was copied from, and that
+      // drift would otherwise be invisible.
+      installedProfilePatch: probeInstalledProfile(),
+      // The preset ROOTS, read from the live roster. This is what `readResult()`
+      // in `qualification/runners/boot-harness.mjs` asserts against to prove the
+      // artifact describes the home the caller booted. A probe writing to a fixed
+      // path is a SHARED MUTABLE RESOURCE -- two agents cannot tell whose result
+      // it holds, and that produced a false PASS in this project once already.
+      presetRoots: [],
       peers: [],
       singletonVerdict: null,
+      settle: null,
+      // Whether the module the host mounted is the one the deployment identity
+      // names, and whether the recorded digest covers the inputs on disk NOW.
+      launcherIdentity: null,
+      // The `Symbol()`-per-module-instance fact the root cause turns on.
+      symbolIdentity: null,
       // What the model would be offered, read from the real registry rather than
       // from a config dump. `--dump-config` does not execute plugins, so it
       // cannot show this.
       toolCatalog: null,
+      // The first tool the model can actually call on a fresh Session, and the
+      // turn that drives it through the real dispatch path.
+      firstToolCall: null,
       errors: [],
     }
 
@@ -553,8 +916,24 @@ export function apply(ctx) {
       // Wait for the whole tree to mount before asking what it registered.
       // Sibling rows mount concurrently; a probe that samples too early records
       // "no service registered" for a service that mounts a moment later, which
-      // reads as a singleton failure and is only a race.
-      await ctx.get('loader')?.await()
+      // reads as a singleton failure and is only a race. The wait is BOUNDED and
+      // does NOT use `loader.await()` -- see `waitForSettle` for why that call
+      // deadlocks when made from inside a plugin's own `apply`.
+      result.settle = await waitForSettle(ctx, Number(process.env.T17_SETTLE_TIMEOUT_MS ?? 30_000))
+
+      // The roster's own view of its roots. Read FIRST because it is what binds
+      // this artifact to the home that was booted, and a result that cannot be
+      // bound to a home must not be reported at all.
+      const roster = ctx.get('agentPresets')
+      if (roster !== undefined) {
+        result.presetDefaultId = roster.defaultId ?? null
+        result.presetRoots = (roster.roots ?? []).map(root => ({
+          path: String(root.path),
+          trust: String(root.trust),
+        }))
+      } else {
+        result.errors.push('ctx.agentPresets is absent: the boot cannot be bound to its home')
+      }
 
       for (const entry of PEERS) {
         result.peers.push(await probePeer(ctx, entry))

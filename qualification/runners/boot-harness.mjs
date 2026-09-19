@@ -69,12 +69,17 @@ export function portPatch(port, path) {
 /**
  * Boot a real DSH host and wait for the probe to write `outPath`.
  *
+ * @param options.env - extra environment variables for the child. Merged OVER
+ *   the inherited environment, so a caller can set `T17_PROBE_OUT`,
+ *   `T17_SESSION_ROOT` and friends without restating the whole environment --
+ *   and without a shell in between, which is the G-FIX-11 defect class (a
+ *   backslash path that loses an escape to a shell/Python pass).
  * @returns {{ port:number, exitCode:number|null, stdout:string, stderr:string, timedOut:boolean }}
  */
 export async function bootAndWait(options) {
   const {
     home, profile, patches = [], outPath, cwd = process.cwd(),
-    timeoutMs = 90_000, settleMs = 900, port,
+    timeoutMs = 90_000, settleMs = 900, port, env = {},
   } = options
 
   const chosen = port ?? await freePort()
@@ -95,7 +100,11 @@ export async function bootAndWait(options) {
     // DSH_PROBE_OUT lets a probe that supports it write to THIS caller's file
     // rather than a fixed shared path. Probes that ignore it still work; the
     // caller just has to point outPath at wherever that probe writes.
-    env: { ...process.env, DSH_HOME: home, DSH_PROBE_OUT: outPath },
+    //
+    // The caller's `env` is spread LAST so it wins over the defaults here: a
+    // driver that names its own probe-out variable (T17_PROBE_OUT) must not be
+    // silently overridden by this harness's generic one.
+    env: { ...process.env, DSH_HOME: home, DSH_PROBE_OUT: outPath, ...env },
     stdio: ['ignore', 'pipe', 'pipe'],
   })
   let stdout = '', stderr = ''

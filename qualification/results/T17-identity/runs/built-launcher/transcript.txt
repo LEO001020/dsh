@@ -1,0 +1,15 @@
+=== T17 IDENTITY: the running host's module identity ===
+repo:     D:/DSH/work/dsh-native-daily
+checkout: D:/DSH/src/dsh-src
+home:     D:/DSH/home/t17-identity
+launcher: D:/DSH/src/dsh-src/apps/cli/lib/bin.js
+probe_out:D:/DSH/work/dsh-native-daily/qualification/results/T17-identity/runs/built-launcher/boot.json
+rebuild packages/dsh-daily-work: exit=0 in 1712ms
+rebuild packages/dsh-ipython: exit=0 in 796ms
+profile installed: D:/DSH/work/dsh-native-daily/profiles/daily-candidate -> D:/DSH/home/t17-identity/profiles/daily (replaced an existing copy: true)
+repo profile patch      sha256: 5b8b2a8e5d9ae13d35c1d86833f8b96eeb84078a13027a08efc1379a6fc8afb4
+installed profile patch sha256: 5b8b2a8e5d9ae13d35c1d86833f8b96eeb84078a13027a08efc1379a6fc8afb4
+plugin install: exit=0
+
+port: 2428  portReleased: true  timedOut: false  exitCode: null
+boot cwd: C:/Windows/Temp

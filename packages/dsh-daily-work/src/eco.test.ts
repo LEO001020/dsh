@@ -1277,8 +1277,43 @@ describe('ECO-07: the stock control arm is not secretly modified, and the variab
   const STOCK_PROFILE_DIR = join(REPO, 'profiles/stock-canary')
   /** M0.5's recorded digest of the composed stock `web` graph. */
   const M05_DUMP_SHA256 = 'b64151b308f3cbb0f5efe57b04c35bfddda641e249300ee28148391f07e1af01'
-  /** M0.5's recorded digest of the daily-candidate profile patch. */
-  const DAILY_PATCH_SHA256 = '59f23346955d24063a923b1a205bbcb40c541e054e6fd04dbdde4218eaa2ab7f'
+  /**
+   * The digest of the C2 arm's profile patch — the composition under test.
+   *
+   * PROVENANCE CORRECTED, and the correction matters more than the value.
+   * This constant was labelled "M0.5's recorded digest of the daily-candidate
+   * profile patch", which is FALSE: M0.5 recorded digests of the three SHIPPED
+   * profile dumps only (`qualification/results/M0.5-c0-resolved-graph/
+   * C0-resolved-graph.md` — `b64151b3…` for web, `f89b4e81…` for headless,
+   * `d8929cea…` for sdk). `grep 59f23346 qualification/results/M0.5-*` returns
+   * nothing. The value was in fact derived at `084bb23` ("fix my own baseUrl
+   * preset-root bug"), where the patch was last edited. So the pin has always
+   * meant "the digest of the C2 arm as of the last profile edit", and a wrong
+   * comment made it read like a historical M0.5 record that must never move.
+   *
+   * WHY IT MOVED AGAIN, and why that is the gate working rather than the gate
+   * being loosened. The C2 arm legitimately gained three rows — `fs-local`
+   * replacing `fs-sandbox`, `pwsh-local` replacing `pwsh-sandbox`, and the
+   * permission plane turned off with `approval: policy: never`. That is
+   * DIFFERENCE 3/4/5/6 of the trusted-local, no-sandbox architecture decision
+   * (`docs/decisions/2026-09-20-windows-nosandbox-rebuild.md`, and the plan's
+   * own §D5 step: "同步 eco.test.ts 里 pin 的 profile digest（否则 ECO-07 会红）").
+   * Re-derived 2026-09-20 with the mechanism re-measured, not merely re-hashed:
+   *   - the composed graph still activates with ZERO warnings, and the mounted
+   *     `ctx.fs` is `LocalFileSystem` while `SandboxedFileSystem` is absent from
+   *     the prototype chain (`qualification/results/T2-fs/VERDICT.json`);
+   *   - `pwsh-local` is ACTIVE, `pwsh-sandbox` disabled, `permission` and
+   *     `ui-permission` disabled, `approval` ACTIVE with `policy: never`, and
+   *     the model's catalog is 27 tools with `ipython` present
+   *     (`qualification/results/T3-shell/boot.json`).
+   * The STOCK arm is untouched by all of this and is still asserted above: its
+   * patch is the literal empty array and its bundles are the two shipped ones.
+   *
+   * THE STALENESS IS THE POINT OF THIS TEST, so the pin is kept as a literal
+   * rather than computed. A digest that were recomputed at runtime would agree
+   * with whatever the file happened to contain and would catch nothing.
+   */
+  const DAILY_PATCH_SHA256 = '5b8b2a8e5d9ae13d35c1d86833f8b96eeb84078a13027a08efc1379a6fc8afb4'
 
   it('the stock arm declares no plugin rows, and its files hash to the committed values', () => {
     // "A control group that has been quietly modified is not a control group."
@@ -1300,8 +1335,10 @@ describe('ECO-07: the stock control arm is not secretly modified, and the variab
       .filter(line => line.length > 0 && !line.startsWith('#'))
     expect(activeLines).toEqual(['[]'])
 
-    // The daily-candidate patch is the arm under test and must still be the
-    // digest M0.5 recorded, so the comparison's C2 side is the one the plan names.
+    // The daily-candidate patch is the arm under test. The pin is a LITERAL, so
+    // this assertion fails the moment that file changes and the change has to be
+    // re-derived and justified rather than absorbed. See DAILY_PATCH_SHA256 above
+    // for where the value comes from and why it moved on 2026-09-20.
     expect(digestOf(join(REPO, 'profiles/daily-candidate/cordis.patch.yml'))).toBe(DAILY_PATCH_SHA256)
 
     // The stock profile's package.json names exactly the shipped bundles and no
