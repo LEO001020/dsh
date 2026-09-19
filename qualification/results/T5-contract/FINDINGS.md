@@ -11,6 +11,18 @@ measured against a stale `lib/`.
 `[read in source]` = the claim comes from reading a file, and is NOT evidence for
 a gate on its own.
 
+**A note on the commits, because it affects how this work should be read.** Both
+halves of this task were swept into OTHER agents' commits by concurrent broad
+`git add` operations — T5's files landed in `d346222` ("G-SEAM-35: parallel agents
+in one worktree damaged each other's git state") and in `cfdff75` ("G-SEAM-36: the
+kernel restart defect"). Neither message describes this work, and the message T5
+wrote for it was lost in the race. Nothing was lost from the FILES — every
+deliverable is verified present at HEAD by grep (`[measured]`) — but a reader
+following the history will not find this task's reasoning in the log. It is here
+instead. This is instance 5 of the failure G-SEAM-35 records, and it is recorded
+rather than repaired, because rewriting two other agents' commits mid-run would
+be a worse hazard than a misattributed one.
+
 ---
 
 ## 1. The three failing tests, and which side was wrong
