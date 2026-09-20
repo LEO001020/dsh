@@ -47,10 +47,16 @@ import { writeFileSync } from 'node:fs'
 export const name = 'v10-res01-chain'
 export const inject = ['web', 'tools', 'sessionController']
 
-const OUT = process.env.DSH_PROBE_OUT
-  ?? 'D:/DSH/work/dsh-native-daily/qualification/results/V10-research-obs/res01-boot.json'
+import { fileURLToPath } from 'node:url'
+import { dirname, join } from 'node:path'
 
-const REPO = 'D:/DSH/work/dsh-native-daily'
+/** The repository root of the tree THIS FILE was loaded from. */
+const REPO_ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..').replace(/\\/g, '/')
+
+const OUT = process.env.DSH_PROBE_OUT
+  ?? join(REPO_ROOT, 'qualification/results/V10-research-obs/res01-boot.json')
+
+const REPO = REPO_ROOT
 /** The built lib the profile loads through its `link:` install -- not `src/`. */
 const LIB = `file:///${REPO}/packages/dsh-daily-work/lib`
 
@@ -100,7 +106,7 @@ export async function apply(ctx) {
     // `UNKNOWN_TOOL` -- G-FIX-06, and the reason the first version of this probe
     // recorded a tool refusal that had nothing to do with address policy.
     const sessionController = ctx.get('sessionController')
-    const created = await sessionController.create({ cwd: 'D:/DSH/work/dsh-native-daily' })
+    const created = await sessionController.create({ cwd: REPO_ROOT })
     const sessionId = created?.sessionId ?? created?.id ?? null
     const agent = ctx.get('agents')?.get(sessionId)
     finding.sessionId = sessionId

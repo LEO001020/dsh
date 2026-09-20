@@ -14,18 +14,33 @@
  * false PASS earlier in this project (G-FIX-13).
  */
 import { bootAndWait, readResult, sleep } from './boot-harness.mjs'
+import { materialiseOverlay } from './overlay.mjs'
+
+import { fileURLToPath } from 'node:url'
+import { dirname, join } from 'node:path'
+
+/** The repository root of the tree THIS FILE was loaded from. */
+const REPO_ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..').replace(/\\/g, '/')
 
 const HOME = 'D:/DSH/home/v3-ipython'
-const OUT = 'D:/DSH/work/dsh-native-daily/qualification/results/V3-ipython/IPY-09-tool-surface.json'
+const OUT = join(REPO_ROOT, 'qualification/results/V3-ipython/IPY-09-tool-surface.json')
 const PROFILE = 'daily'
-const PATCH = 'D:/DSH/work/dsh-native-daily/qualification/runners/v3-ipython-surface.patch.yml'
+// The overlay is MATERIALISED here with this tree's own probe path. The committed
+// file is a TEMPLATE: a cordis `name:` is a MODULE SPECIFIER, and an absolute one is
+// imported as-is, so a committed literal would make any other checkout's boot execute
+// THIS probe while measuring its own composition. See `overlay.mjs`.
+const PATCH = materialiseOverlay(
+  join(REPO_ROOT, 'qualification/runners/v3-ipython-surface.patch.yml'),
+  join(REPO_ROOT, 'qualification/results/V3-ipython/v3-ipython-surface.materialised.patch.yml'),
+  join(REPO_ROOT, 'qualification/runners/v3-ipython-surface.mjs'),
+)
 
 const boot = await bootAndWait({
   home: HOME,
   profile: PROFILE,
   patches: [PATCH],
   outPath: OUT,
-  cwd: 'D:/DSH/work/dsh-native-daily',
+  cwd: REPO_ROOT,
   timeoutMs: 180_000,
 })
 

@@ -14,6 +14,21 @@
 # EVERY key is restated because a patch replaces the target row's whole `config`
 # object; it is not a deep merge (`vendor/include/src/index.ts:120-123`). Overriding
 # only `port` drops `host` and the boot fails schema validation.
+#
+# THE PROBE ROW IS A PLACEHOLDER, rewritten at run time by
+# `r7-cursor-realm-driver.mjs` to this tree's own probe file.
+#
+# WHY. It used to be the literal
+# `D:/DSH/work/wt-r7/qualification/runners/r7-cursor-realm-probe.mjs`. A cordis
+# row's `name:` is a MODULE SPECIFIER, and the loader turns an absolute one into a
+# `file://` URL and imports exactly that file
+# (`packages/boot/app-boot/src/index.ts:521`,
+# `vendor/loader/src/config/tree.ts:122-126`). So a boot from ANY tree other than
+# `wt-r7` executed another writer's probe while believing it measured its own
+# composition -- cross-tree CODE EXECUTION, not merely a cross-tree read. A
+# relative `name:` is not a substitute: the loader resolves it against the PROFILE
+# directory, not against this file. The driver REFUSES to run when this row is
+# missing (`materialiseOverlay` throws), so the placeholder cannot be dropped.
 - id: webserver
   config:
     host: '127.0.0.1'
@@ -32,4 +47,9 @@
         quotaBytes: 268435456
 
     - id: r7-cursor-realm-probe
-      name: 'D:/DSH/work/wt-r7/qualification/runners/r7-cursor-realm-probe.mjs'
+      name: 'REWRITTEN-AT-RUN-TIME/r7-cursor-realm-probe.mjs'
+# TO RUN THIS OVERLAY, materialise it with the running tree's own probe:
+#   import { materialiseOverlay } from './overlay.mjs'
+#   materialiseOverlay('<this file>', '<your results dir>/x.patch.yml', '<your probe>.mjs')
+# Running it AS-IS fails loudly with an unresolvable module, which is deliberate:
+# a loud failure beats silently executing another checkout's probe.

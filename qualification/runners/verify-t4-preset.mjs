@@ -64,8 +64,14 @@ export const name = 'verify-t4-preset'
 // lands in the artifact as `false` rather than as silence.
 export const inject = ['sessionController']
 
+import { fileURLToPath } from 'node:url'
+import { dirname, join } from 'node:path'
+
+/** The repository root of the tree THIS FILE was loaded from. */
+const REPO_ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..').replace(/\\/g, '/')
+
 const OUT = process.env.DSH_PROBE_OUT
-  ?? 'D:/DSH/work/dsh-native-daily/qualification/results/T4-preset/boot.json'
+  ?? join(REPO_ROOT, 'qualification/results/T4-preset/boot.json')
 
 /**
  * The tool names each row in `daily-standard/agent.cordis.yml` registers.
@@ -290,7 +296,7 @@ export async function apply(ctx) {
     if (sc === undefined) {
       finding.error = 'ctx.sessionController is absent: the probe cannot create the Session it measures'
     } else {
-      const created = await sc.create({ cwd: 'D:/DSH/work/dsh-native-daily' })
+      const created = await sc.create({ cwd: REPO_ROOT })
       finding.sessionId = created?.sessionId ?? created?.id ?? null
       finding.sessionCreated = finding.sessionId !== null
       finding.agentPreset = created?.agentPreset ?? null

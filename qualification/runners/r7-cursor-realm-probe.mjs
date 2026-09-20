@@ -42,10 +42,16 @@ export const name = 'r7-cursor-realm-probe'
 // genuinely live. Gating on the service under test is the CORRECT use, and the
 // negative case stays visible (the boot prints the row under "Plugins waiting for
 // services" if it never resolves).
+import { fileURLToPath } from 'node:url'
+import { dirname, join } from 'node:path'
+
+/** The repository root of the tree THIS FILE was loaded from. */
+const REPO_ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..').replace(/\\/g, '/')
+
 export const inject = ['dailyData']
 
 /** The caller's own output path, so this result cannot be another agent's. */
-const OUT = process.env['R7_PROBE_OUT'] ?? 'D:/DSH/work/wt-r7/qualification/results/R7-cursor-realm/product-boot.json'
+const OUT = process.env['R7_PROBE_OUT'] ?? join(REPO_ROOT, 'qualification/results/R7-cursor-realm/product-boot.json')
 
 export async function apply(ctx) {
   const finding = {
@@ -79,7 +85,7 @@ export async function apply(ctx) {
     const fs = ctx.get('fs')
     if (fs === undefined) throw new Error('ctx.fs is absent; the profile mounted no filesystem')
 
-    const probeDir = 'D:/DSH/work/wt-r7/qualification/results/R7-cursor-realm'
+    const probeDir = join(REPO_ROOT, 'qualification/results/R7-cursor-realm')
     mkdirSync(probeDir, { recursive: true })
     const payloadPath = `${probeDir}/probe-payload.bin`
     const payload = Buffer.from('R7-REALM-PROBE-' + 'z'.repeat(400), 'utf8')

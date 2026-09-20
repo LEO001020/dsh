@@ -32,10 +32,16 @@ import { writeFileSync } from 'node:fs'
 export const name = 'v10-obs-plane'
 export const inject = ['sessionController']
 
-const OUT = process.env.DSH_PROBE_OUT
-  ?? 'D:/DSH/work/dsh-native-daily/qualification/results/V10-research-obs/obs-plane-boot.json'
+import { fileURLToPath } from 'node:url'
+import { dirname, join } from 'node:path'
 
-const REPO = 'D:/DSH/work/dsh-native-daily'
+/** The repository root of the tree THIS FILE was loaded from. */
+const REPO_ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..').replace(/\\/g, '/')
+
+const OUT = process.env.DSH_PROBE_OUT
+  ?? join(REPO_ROOT, 'qualification/results/V10-research-obs/obs-plane-boot.json')
+
+const REPO = REPO_ROOT
 const LIB = `file:///${REPO}/packages/dsh-daily-work/lib`
 
 export async function apply(ctx) {
@@ -69,9 +75,9 @@ export async function apply(ctx) {
 
       // A REAL Session through the real controller: this is the CALLER, so the
       // authorization path the plane re-checks on every read is exercised.
-      const created = await ctx.get('sessionController').create({ cwd: 'D:/DSH/work/dsh-native-daily' })
+      const created = await ctx.get('sessionController').create({ cwd: REPO_ROOT })
       const callerSessionId = created?.sessionId ?? created?.id ?? null
-      const cwd = 'D:/DSH/work/dsh-native-daily'
+      const cwd = REPO_ROOT
       finding.sessionId = callerSessionId
 
       // The TARGET is a SEPARATE stored session, written through the real

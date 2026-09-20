@@ -49,8 +49,14 @@ import { writeFileSync } from 'node:fs'
 export const name = 'verify-t10-capacity'
 export const inject = ['sessionController']
 
+import { fileURLToPath } from 'node:url'
+import { dirname, join } from 'node:path'
+
+/** The repository root of the tree THIS FILE was loaded from. */
+const REPO_ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..').replace(/\\/g, '/')
+
 const OUT = process.env.DSH_PROBE_OUT
-  ?? 'D:/DSH/work/dsh-native-daily/qualification/results/T10-capacity/prod-capacity.json'
+  ?? join(REPO_ROOT, 'qualification/results/T10-capacity/prod-capacity.json')
 
 export async function apply(ctx) {
   const finding = {
@@ -142,7 +148,7 @@ export async function apply(ctx) {
     const sessions = ctx.get('sessionController')
     let agent
     if (sessions !== undefined) {
-      const created = await sessions.create({ cwd: 'D:/DSH/work/dsh-native-daily' })
+      const created = await sessions.create({ cwd: REPO_ROOT })
       finding.sessionId = String(created.sessionId)
       finding.agentPreset = created.agentPreset ?? null
       // The preset ROOTS are recorded BEFORE anything else can throw, because

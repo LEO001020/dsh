@@ -26,7 +26,32 @@ import { createRequire } from 'node:module'
 export const name = 'verify-b02'
 export const inject = ['tools', 'storageDomain', 'agents', 'dailyWork', 'agentPresets']
 
-const OUT = 'D:/DSH/work/dsh-native-daily/qualification/results/M9.17-b02-resolver/b02.json'
+// ---------------------------------------------------------------------------
+// THE OUTPUT PATH IS DERIVED FROM THIS FILE'S OWN LOCATION, not hardcoded.
+//
+// It used to be the literal `'D:/DSH/work/dsh-native-daily/qualification/results/M9.17-b02-resolver/b02.json'`.
+// That is a cross-tree WRITE: a writer running this probe from a git worktree
+// (which the multi-agent discipline requires) deposited its finding into the MAIN
+// tree, and the artifact it landed on is the one a verdict READS. It is invisible
+// as a diff because the finding is a small JSON object that looks the same from
+// either tree, so the overwrite reads as "the value is what it always was" rather
+// than "another tree wrote here". This is the write-side hazard of `G-SEAM-61`
+// and the same class as `G-SEAM-66`.
+//
+// `import.meta.url` is `.../qualification/runners/verify-b02.mjs`, so two levels up is the
+// repository root of WHICHEVER tree is running -- verified for a worktree, where
+// it resolves to that worktree rather than to the main checkout. The finding
+// therefore lands in that tree's evidence directory, beside the run record it
+// describes. `B02_OUT` still overrides for an explicit target.
+// ---------------------------------------------------------------------------
+import { fileURLToPath } from 'node:url'
+import { dirname, join } from 'node:path'
+
+/** The repository root of the tree THIS FILE was loaded from. */
+const REPO_ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..')
+
+const OUT = process.env.B02_OUT ?? join(REPO_ROOT, 'qualification/results/M9.17-b02-resolver/b02.json')
+
 
 /**
  * Resolve from the extension package, not from this runner. The profile's own
@@ -34,7 +59,7 @@ const OUT = 'D:/DSH/work/dsh-native-daily/qualification/results/M9.17-b02-resolv
  * source tree, so a probe-local resolution root finds nothing and would report a
  * false "unresolvable" for every peer.
  */
-const EXTENSION = 'D:/DSH/work/dsh-native-daily/packages/dsh-daily-work/package.json'
+const EXTENSION = join(REPO_ROOT, 'packages/dsh-daily-work/package.json')
 const require = createRequire(EXTENSION)
 
 /**

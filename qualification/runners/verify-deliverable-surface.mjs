@@ -41,8 +41,14 @@ export const inject = ['sessionController', 'ipython']
 // earlier in this project (G-FIX-13). So a caller can set DSH_PROBE_OUT to get
 // its own file, and `boot-harness.mjs`'s readResult() then asserts the result
 // names the home that caller booted.
+import { fileURLToPath } from 'node:url'
+import { dirname, join } from 'node:path'
+
+/** The repository root of the tree THIS FILE was loaded from. */
+const REPO_ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..').replace(/\\/g, '/')
+
 const OUT = process.env.DSH_PROBE_OUT
-  ?? 'D:/DSH/work/dsh-native-daily/qualification/results/M12-deliverable-surface/surface.json'
+  ?? join(REPO_ROOT, 'qualification/results/M12-deliverable-surface/surface.json')
 
 export async function apply(ctx) {
   const finding = {
@@ -90,7 +96,7 @@ export async function apply(ctx) {
     //     The agent is looked up from the registry by session id -- the same
     //     access path the working `verify-ipython-e2e.mjs` probe uses.
     const sc = ctx.get('sessionController')
-    const created = await sc.create({ cwd: 'D:/DSH/work/dsh-native-daily' })
+    const created = await sc.create({ cwd: REPO_ROOT })
     finding.sessionId = created?.sessionId ?? created?.id ?? null
     finding.sessionCreated = finding.sessionId !== null
 

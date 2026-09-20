@@ -41,7 +41,8 @@ import { dirname, resolve, relative, join } from 'node:path'
 import { createRequire } from 'node:module'
 
 const arg = process.argv[2] ?? 'packages/dsh-daily-work'
-const pkgRoot = resolve('D:/DSH/work/dsh-native-daily', arg)
+const REPO_ROOT = resolve(import.meta.dirname, '..', '..')
+const pkgRoot = resolve(REPO_ROOT, arg)
 if (!existsSync(pkgRoot)) {
   console.error(`no such package directory: ${pkgRoot}`)
   process.exit(2)

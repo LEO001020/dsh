@@ -23,17 +23,52 @@ import { createHash } from 'node:crypto'
 import { createServer } from 'node:net'
 import { spawn } from 'node:child_process'
 import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { fileURLToPath } from 'node:url'
+import { dirname, join } from 'node:path'
 
-const REPO = 'D:/DSH/work/wt-r0'
+/** The repository root of the tree THIS FILE was loaded from. */
+const REPO_ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..').replace(/\\/g, '/')
+
+const REPO = REPO_ROOT
 const HOME = 'D:/DSH/home/r0'
 const PROFILE = 'daily'
 const LAUNCHER = 'D:/DSH/src/dsh-src/apps/cli/lib/bin.js'
-const OVERLAY = `${REPO}/qualification/runners/v2-identity.patch.yml`
+const OVERLAY_SRC = `${REPO}/qualification/runners/v2-identity.patch.yml`
 const PROBE_SRC = `${REPO}/qualification/runners/v2-identity-probe.mjs`
 const RESULT_DIR = `${REPO}/qualification/results/trusted-local-v2-identity`
 const OUT = `${RESULT_DIR}/probe.json`
 const TRANSCRIPT = `${RESULT_DIR}/transcript.txt`
 const PORT_PATCH = `${RESULT_DIR}/port.patch.yml`
+/**
+ * The overlay is MATERIALISED INTO THIS TREE at run time, with the probe row
+ * rewritten to name THIS tree's probe file.
+ *
+ * WHY IT IS NOT THE COMMITTED FILE ANY MORE. The committed overlay carries the
+ * literal `D:/DSH/work/wt-r0/qualification/runners/v2-identity-probe.mjs`, and a
+ * cordis row's `name:` is a MODULE SPECIFIER: the loader turns an absolute one
+ * into a `file://` URL and imports exactly that file
+ * (`packages/boot/app-boot/src/index.ts:521`, `vendor/loader/src/config/tree.ts:122-126`).
+ * So a boot from any tree other than `wt-r0` executed ANOTHER writer's probe while
+ * believing it measured its own composition -- cross-tree CODE EXECUTION, not
+ * merely a cross-tree read. A relative `name:` is not a substitute: the loader
+ * resolves it against the PROFILE directory, not against this file.
+ *
+ * The driver already asserts below that "the overlay names THIS worktree's
+ * probe". Materialising it is what makes that assertion true by construction
+ * rather than by a literal someone has to remember to edit.
+ */
+const OVERLAY = `${RESULT_DIR}/v2-identity.patch.yml`
+function materialiseOverlay() {
+  const text = readFileSync(OVERLAY_SRC, 'utf8')
+  const own = PROBE_SRC.replace(/\\/g, '/')
+  const rewritten = text.replace(/^(\s*name:\s*)'[^']*v2-identity-probe\.mjs'/mu, `$1'${own}'`)
+  if (rewritten === text) {
+    throw new Error(`run-v2-identity: the overlay names no v2-identity-probe.mjs row to rewrite: ${OVERLAY_SRC}`)
+  }
+  mkdirSync(RESULT_DIR, { recursive: true })
+  writeFileSync(OVERLAY, rewritten, 'utf8')
+  return OVERLAY
+}
 
 // The home this driver booted. `readResult`-style ownership is asserted below
 // against this value, so a probe writing to a shared path cannot be read as ours.
@@ -72,6 +107,7 @@ async function isPortFree(port) {
 }
 
 mkdirSync(RESULT_DIR, { recursive: true })
+materialiseOverlay()
 
 // A patch REPLACES the whole `config` object, so every key the webserver row
 // carries is restated here. Overriding only `port` drops `host` and the loader

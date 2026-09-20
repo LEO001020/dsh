@@ -7,4 +7,18 @@
 # nothing about the product -- the exact mistake recorded as G-FIX-04/G-FIX-05.
 - insert:
     - id: v3-ipython-surface
-      name: 'D:/DSH/work/dsh-native-daily/qualification/runners/v3-ipython-surface.mjs'
+      name: 'REWRITTEN-AT-RUN-TIME/qualification/runners/v3-ipython-surface.mjs'
+
+# THIS FILE IS A TEMPLATE, NOT A RUNNABLE OVERLAY. The probe row's `name:` is a
+# PLACEHOLDER rewritten at run time to the RUNNING tree's own probe file. A cordis
+# `name:` is a MODULE SPECIFIER and an absolute one is imported as-is
+# (`packages/boot/app-boot/src/index.ts:521`,
+# `vendor/loader/src/config/tree.ts:122-126`), so a committed literal makes any
+# other checkout's boot EXECUTE the main tree's probe -- cross-tree code execution.
+# A relative `name:` is not a substitute: the loader resolves it against the
+# PROFILE directory, not this file. See `qualification/runners/overlay.mjs`.
+# TO RUN THIS OVERLAY, materialise it with the running tree's own probe:
+#   import { materialiseOverlay } from './overlay.mjs'
+#   materialiseOverlay('<this file>', '<your results dir>/x.patch.yml', '<your probe>.mjs')
+# Running it AS-IS fails loudly with an unresolvable module, which is deliberate:
+# a loud failure beats silently executing another checkout's probe.

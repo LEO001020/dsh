@@ -23,6 +23,7 @@
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { bootAndWait, readResult, sleep } from './boot-harness.mjs'
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
 // <repo>/qualification/runners -> <repo>
@@ -32,7 +33,37 @@ const HOME = process.env.R5_DSH_HOME ?? 'D:/DSH/home/r5'
 const PROFILE = process.env.R5_PROFILE ?? 'daily'
 const OUT = process.env.R5_OUT
   ?? resolve(REPO, 'qualification', 'results', 'R5-bridge', 'composition-tier.json')
-const PATCH = resolve(REPO, 'qualification', 'runners', 'r5-bridge-product.patch.yml')
+const PATCH_SRC = resolve(HERE, 'r5-bridge-product.patch.yml')
+/**
+ * The overlay is MATERIALISED INTO THIS TREE at run time, with the probe row
+ * rewritten to name THIS tree's probe file.
+ *
+ * WHY IT IS NOT THE COMMITTED FILE ANY MORE. The committed overlay carries the
+ * literal `D:/DSH/work/wt-r5/qualification/runners/r5-bridge-product.mjs`, and a
+ * cordis row's `name:` is a MODULE SPECIFIER: the loader turns an absolute one
+ * into a `file://` URL and imports exactly that file
+ * (`packages/boot/app-boot/src/index.ts:521`, `vendor/loader/src/config/tree.ts:122-126`).
+ * So a boot from any tree other than `wt-r5` executed ANOTHER writer's probe
+ * while believing it measured its own composition -- cross-tree CODE EXECUTION,
+ * not merely a cross-tree read. A relative `name:` is not a substitute: the
+ * loader resolves it against the PROFILE directory, not against this file.
+ *
+ * Materialising the overlay beside this driver's own result keeps the row a
+ * specifier the loader understands while making the file it names this tree's.
+ */
+const PATCH = resolve(REPO, 'qualification', 'results', 'R5-bridge', 'r5-bridge-product.patch.yml')
+function materialiseOverlay() {
+  const text = readFileSync(PATCH_SRC, 'utf8')
+  const own = resolve(HERE, 'r5-bridge-product.mjs').replace(/\\/g, '/')
+  const rewritten = text.replace(/^(\s*name:\s*)'[^']*r5-bridge-product\.mjs'/mu, `$1'${own}'`)
+  if (rewritten === text) {
+    throw new Error(`r5-bridge-driver: the overlay names no r5-bridge-product.mjs row to rewrite: ${PATCH_SRC}`)
+  }
+  mkdirSync(dirname(PATCH), { recursive: true })
+  writeFileSync(PATCH, rewritten, 'utf8')
+  return PATCH
+}
+materialiseOverlay()
 
 const boot = await bootAndWait({
   home: HOME,
