@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
   "kind": "TRUSTED_LOCAL_V2_VERDICTS_NOT_A_DSH_ARTIFACT",
-  "qualification_contract_identity": "082d7f630a450752b1fab921a09875426eb560faf6ba9fdb2963ee7e9a392cb2",
-  "runtime_deployment_identity": "ca78aae897cbbbd8dd3db38aefac82dff5200d67098b2c835c74076530903dd7",
+  "qualification_contract_identity": "88834ae45ad7fd561f3f371fce693212cc4cdfaa6fa23d80d8a78e3ebaef2a1a",
+  "runtime_deployment_identity": "8efdbd93550a92027c17f7c14e9d62782a28127b10714cb3fc02955b8578f656",
   "acceptance_definition_digest": "115aa092d0279c005d6f83d0412c1e00d374b60f803dd10f56eaba878ed664e1",
   "verdict_vocabulary": [
     "NOT_RUN",
