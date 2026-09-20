@@ -85,27 +85,86 @@ if ($missing.Count -gt 0) {
 #
 #     src/host.ts(28,19): error TS2307: Cannot find module 'zod'
 #
-# The set is DERIVED from what the sources actually import rather than listed
-# here, for the same reason the @deepseek-ai set is: a hand-maintained list is
-# what made the previous script wrong. Only `zod` and `vitest` are expected; any
-# other bare name is REPORTED and left unresolved, because silently linking an
-# arbitrary package would hide a real missing declaration.
+# THE REGEX HAD A BLIND SPOT, and a writer found it rather than working around it
+# silently. The first version matched only STATIC specifiers (`from 'x'`,
+# `import('x')`). Two real dependencies are not spelled that way:
+#
+#   homelock.ts:126   const specifier = 'koffi'; await import(specifier)
+#                     -- a PRODUCTION import (the lazily loaded Win32 FFI backing
+#                     the deployment-boundary lock), held in a VARIABLE so
+#                     TypeScript does not try to resolve a module that only
+#                     exists in the pinned checkout at runtime.
+#   data-plane.test.ts:2136   import.meta.resolve('tsx/esm')
+#   dep-gates.test.ts:914     '--import', 'tsx/esm'  (an argv string)
+#
+# So a fresh worktree could not run homelock.test.ts, dep-gates.test.ts,
+# data-plane.test.ts, durability-advanced.test.ts, durability-records.test.ts or
+# target-setting.test.ts -- and `durability-records` failed 7/25 and
+# `production-port` 2/2. The set below therefore ALSO scans for the quoted
+# forms, and any bare name it finds is reported if unresolved.
+#
+# The set is DERIVED rather than listed, for the same reason the @deepseek-ai set
+# is: a hand-maintained list is what made the previous script wrong.
 $bare = @{}
 Get-ChildItem -Path (Join-Path $pkg 'src') -Filter *.ts -File |
     ForEach-Object {
         $text = Get-Content -Raw $_.FullName
-        # Static `from 'x'`, side-effect `import 'x'`, and dynamic `import('x')`.
-        foreach ($m in [regex]::Matches($text, "(?:from|import)\s*\(?\s*'([^']+)'")) {
-            $spec = $m.Groups[1].Value
-            if ($spec.StartsWith('.') -or $spec.StartsWith('/')) { continue }
-            if ($spec.StartsWith('@deepseek-ai/')) { continue }
-            if ($spec.StartsWith('node:')) { continue }
-            $root = if ($spec.StartsWith('@')) { ($spec -split '/')[0..1] -join '/' } else { ($spec -split '/')[0] }
-            # A specifier that is really prose or a template fragment cannot be a
-            # package name; require the npm charset.
-            if ($root -match '^(@[a-z0-9-]+/)?[a-z0-9][a-z0-9._-]*$') { $bare[$root] = $true }
+        # (a) static `from 'x'`, side-effect `import 'x'`, and dynamic `import('x')`
+        # (b) `import.meta.resolve('x')` -- a resolution, not an import
+        #
+        # WHY THESE TWO FORMS ONLY, and not a broader scan for quoted specifiers.
+        # The first version of this script scanned only (a), and it missed TWO real
+        # dependencies that are not spelled that way:
+        #
+        #   homelock.ts:126        const specifier = 'koffi'; await import(specifier)
+        #                          -- a PRODUCTION import (the lazily loaded Win32
+        #                          FFI backing the deployment-boundary lock), held in
+        #                          a variable so TypeScript does not try to resolve a
+        #                          module that only exists in the pinned checkout.
+        #   dep-gates.test.ts:914  '--import', 'tsx/esm'  (an argv string)
+        #
+        # Two attempts were made to catch those by pattern, and BOTH WERE MEASURED
+        # AND REJECTED. A "any quoted string" pattern linked 24 non-packages
+        # (`0.0.0.0`, `acceptance-spec.json`, `aaa1111`). A narrower
+        # "assignment-form" pattern still matched every `const x = 'literal'` in a
+        # test file and produced ~130 unresolved names. The reason is structural:
+        # this package's tests are full of quoted run ids, store names and
+        # fixtures that are indistinguishable from package names by shape alone.
+        #
+        # So the derived set stays NARROW and CORRECT, and the two names a pattern
+        # cannot see are listed explicitly below WITH their citations. An explicit
+        # list with a reason is honest; a clever pattern that over-matches is not.
+        $patterns = @(
+            "(?:from|import)\s*\(?\s*'([^']+)'",
+            "import\.meta\.resolve\(\s*'([^']+)'"
+        )
+        foreach ($pattern in $patterns) {
+            foreach ($m in [regex]::Matches($text, $pattern)) {
+                $spec = $m.Groups[1].Value
+                if ($spec.StartsWith('.') -or $spec.StartsWith('/')) { continue }
+                if ($spec.StartsWith('@deepseek-ai/')) { continue }
+                if ($spec.StartsWith('node:')) { continue }
+                $root = if ($spec.StartsWith('@')) { ($spec -split '/')[0..1] -join '/' } else { ($spec -split '/')[0] }
+                # A specifier that is really prose or a template fragment cannot be
+                # a package name; require the npm charset.
+                if ($root -match '^(@[a-z0-9-]+/)?[a-z0-9][a-z0-9._-]*$') { $bare[$root] = $true }
+            }
         }
     }
+
+# THE TWO NAMES A PATTERN CANNOT SEE, each with its citation. These are not
+# guesses: each was found by a writer whose suite failed without it, and each is
+# a REAL dependency of this package. Removing one reintroduces a broken install.
+#
+#   koffi  PRODUCTION. homelock.ts:126 holds the specifier in a variable
+#          (`const specifier = 'koffi'`) precisely so TypeScript does not resolve
+#          it, then `await import(specifier)`. It backs the deployment-boundary
+#          lock; without it `production-port` fails 2/2 with
+#          HomeLockUnsupportedError.
+#   tsx    TEST + PROBE. data-plane.test.ts:2136 `import.meta.resolve('tsx/esm')`
+#          and dep-gates.test.ts:914 passes 'tsx/esm' as an argv value. Without it
+#          `durability-records` fails 7/25 with "Cannot find package 'tsx'".
+foreach ($required in 'koffi', 'tsx') { $bare[$required] = $true }
 
 $bareLinked = 0; $bareMissing = @()
 foreach ($n in ($bare.Keys | Sort-Object)) {
