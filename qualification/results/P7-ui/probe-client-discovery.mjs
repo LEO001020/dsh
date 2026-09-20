@@ -107,4 +107,66 @@ out.conclusion = {
   'any browser card exists for the daily-work namespace': false,
 }
 
+// ---------------------------------------------------------------------------
+// CONTROL ARM: what would declaring `dsh.client` WITHOUT a committed bundle do?
+//
+// This is the arm that decides whether adding the declaration is a fix or a
+// regression, so it is measured rather than reasoned about. Three pinned
+// mechanisms, driven in order:
+//
+//   1. `parseDshClient` accepts the declaration.
+//   2. `clientExportOf` THROWS when the declaration exists but package.json has
+//      no `./client` export (index.ts:803-806).
+//   3. `readArtifact` throws MissingClientBundleError when the export exists but
+//      the file does not (index.ts:928), and the constructor's activation pass
+//      aggregates those into one loud throw that FAILS the `modules` fiber
+//      (index.ts:552-557).
+//
+// So a declaration with no buildable bundle does not degrade the card -- it
+// fails the client-module fiber the whole browser surface depends on. That is
+// why this slice does NOT declare one.
+// ---------------------------------------------------------------------------
+const control = {}
+{
+  const withDecl = {
+    name: 'dsh-daily-work',
+    dsh: { client: { inject: ['@deepseek-ai/dsh-api-remotes'], platform: 'web' } },
+    // NO `exports["./client"]` -- the state a package is in before its bundle
+    // build is wired.
+    exports: { '.': { default: './lib/host-plugin.js' } },
+  }
+  control['1. parseDshClient accepts the declaration'] =
+    parseDshClient(withDecl.name, withDecl.dsh.client) !== undefined
+  // `clientExportOf` RETURNS UNDEFINED here rather than throwing -- the throw is
+  // one level up, in `resolveMeta` (index.ts:803-806):
+  //   const clientRel = clientExportOf(packageName, pkg.exports)
+  //   if (clientRel === undefined) throw new Error(
+  //     `client-modules: ${packageName} declares dsh.client but exports no "./client" bundle`)
+  // The first version of this probe labelled the throw as coming from
+  // `clientExportOf` and measured `false`; corrected after reading the call site.
+  const withoutExport = clientExportOf(withDecl.name, withDecl.exports)
+  control['2. clientExportOf returns undefined without exports["./client"]'] =
+    withoutExport === undefined
+  control['2. so resolveMeta (index.ts:803-806) throws "declares dsh.client but exports no ./client bundle"'] =
+    withoutExport === undefined
+  // The throw does happen for a malformed export value, which is the other arm of
+  // the same guard. Asserted so the distinction above is measured, not assumed.
+  try {
+    clientExportOf(withDecl.name, { './client': { default: 42 } })
+    control['2b. clientExportOf throws on a non-string default'] = false
+  } catch (error) {
+    control['2b. clientExportOf throws on a non-string default'] =
+      /must be a string or an object with a string default/u.test(error.message)
+  }
+  // And with the export present but the file absent, `readArtifact` is what
+  // throws. Measured with a path that certainly does not exist.
+  const declaredPath = join(REPO, 'packages', 'dsh-daily-work', 'lib', 'client.js')
+  control['3. the declared bundle path exists today'] = existsSync(declaredPath)
+  control['3. lib/ is gitignored, so it is absent in a fresh clone'] =
+    /packages\/\*\/lib\//u.test(readFileSync(join(REPO, '.gitignore'), 'utf8'))
+  control['consequence'] =
+    'declaring dsh.client without a committed, buildable client bundle would fail the modules fiber the browser surface depends on'
+}
+out.control = control
+
 console.log(JSON.stringify(out, null, 2))
