@@ -1,0 +1,121 @@
+### python helpers/doctor.py  (AFTER the lock update)
+$ python helpers/doctor.py
+[ok  ] identity recomputes from inputs          533c8cb08b2ccd7f...
+[ok  ] host_profile_digest                        0e8e370e06375ad4...  (profiles/daily-candidate/cordis.patch.yml)
+[ok  ] agent_preset_digest                        05f7a029739692db...  (profiles/daily-candidate/presets/daily-standard/agent.cordis.yml)
+[ok  ] acceptance_spec_sha256                     2fe95835425eb98e...  (qualification/specs/acceptance-spec.json)
+[ok  ] trusted_local_acceptance_spec_sha256       e5b6a1d2481f39c5...  (qualification/specs/frozen/acceptance-spec.trusted-local-v1.as-authored.json)
+[ok  ] launcher_realpath                          exists and matches artifact_sha256
+[ok  ] live ledger case ids match the frozen spec   109 ids, 109 filed
+
+[info] promotion decision                        NOT_READY
+[info] spec                                      qualification/specs/acceptance-spec.trusted-local-v1.json
+
+doctor: every recorded input matches the tree.
+This is a metadata check. It does not boot anything and is not a qualification.
+EXIT=0
+
+### python helpers/rederive-identity.py  (AFTER)
+$ python helpers/rederive-identity.py
+recorded identity  : 533c8cb08b2ccd7f94b8e0231ca9ea62918107dc6e8733471d23ca57c8d8a6fb
+recomputed identity: 533c8cb08b2ccd7f94b8e0231ca9ea62918107dc6e8733471d23ca57c8d8a6fb
+
+no file-derived input moved. The identity is unchanged by this tree.
+
+To adopt the new identity, edit deployment.inputs and deployment.identity in
+compatibility.lock.json deliberately, then run helpers/doctor.py.
+EXIT=0
+
+### python qualification/runners/verify-spec.py  (AFTER)
+$ python qualification/runners/verify-spec.py --summary
+identity 533c8cb08b2ccd7f...  total 109
+  CACHE/OBSERVABILITY    PASS=6
+  COMPOSITION            FAIL=2, PASS=12
+  CONCURRENCY            FAIL=1, PASS=12
+  DATA                   FAIL=2, PASS=10
+  FILESYSTEM             PASS=6
+  IDENTITY               FAIL=3, PASS=3
+  IPYTHON                BLOCKED_EXTERNAL=1, FAIL=2, PASS=12
+  NATIVE BRIDGE          FAIL=1, PASS=11
+  RECOVERY               FAIL=2, PASS=8
+  RESEARCH               PASS=6
+  VERIFICATION           PASS=9
+  BLOCKED_EXTERNAL=1, FAIL=13, PASS=95
+EXIT=0
+
+READ THE EXIT CODE CAREFULLY -- it is a trap for a careless reader.
+`--summary` exits 0 and prints the SAME 95/13/1 tally as before the identity move,
+because the summary path does not run the per-entry checks. The full path does:
+
+  $ python qualification/runners/verify-spec.py            EXIT=1   (317 problems)
+  $ python qualification/runners/verify-spec.py --summary  EXIT=0   (tally only)
+
+The status TALLY is unchanged because this slice changed no verdict. What changed is
+the evidence binding: the full run reports 317 problems where it previously reported 3,
+and 314 of them read "evidence was filed under identity 0a0996f3944b5528... but the
+lock's identity is 533c8cb08b2ccd7f...". A reader who ran only `--summary` would
+conclude nothing had changed -- the "a green light appeared once" failure mode. The full
+invocation is the one that counts here.
+
+### python helpers/doctor.py  (BEFORE the lock update, measured by restoring HEAD's lock)
+$ git checkout -- compatibility.lock.json   # HEAD's lock, identity 0a0996f3944b5528...
+$ python helpers/doctor.py
+[ok  ] identity recomputes from inputs          0a0996f3944b5528...
+[FAIL] host_profile_digest                        pinned=5b8b2a8e5d9ae13d... disk=0e8e370e06375ad4...  (profiles/daily-candidate/cordis.patch.yml)
+[FAIL] agent_preset_digest                        pinned=16bc20e559d0c05b... disk=05f7a029739692db...  (profiles/daily-candidate/presets/daily-standard/agent.cordis.yml)
+[ok  ] acceptance_spec_sha256                     2fe95835425eb98e...  (qualification/specs/acceptance-spec.json)
+[ok  ] trusted_local_acceptance_spec_sha256       e5b6a1d2481f39c5...  (qualification/specs/frozen/acceptance-spec.trusted-local-v1.as-authored.json)
+[ok  ] launcher_realpath                          exists and matches artifact_sha256
+[ok  ] live ledger case ids match the frozen spec   109 ids, 109 filed
+
+[info] promotion decision                        NOT_READY
+[info] spec                                      qualification/specs/acceptance-spec.trusted-local-v1.json
+
+doctor: 2 problem(s). The tree moved and the identity did not:
+  - host_profile_digest is STALE: pinned 5b8b2a8e5d9ae13d... but profiles/daily-candidate/cordis.patch.yml hashes to 0e8e370e06375ad4...
+  - agent_preset_digest is STALE: pinned 16bc20e559d0c05b... but profiles/daily-candidate/presets/daily-standard/agent.cordis.yml hashes to 05f7a029739692db...
+EXIT=1
+
+NOTE WHAT THE FIRST LINE SAYS, because it is the exact shape of this project's most
+repeated defect: `[ok] identity recomputes from inputs`. The OLD lock WAS internally
+consistent -- `identity_digest(inputs) == recorded identity` held. It was consistent and
+WRONG, because two of the inputs it hashed no longer described the files on disk. An
+identity recomputation check alone cannot catch this; only a check that compares each
+pinned value against the file it names can, which is what the two `[FAIL]` lines are.
+
+### python qualification/runners/verify-spec.py  (BEFORE, full path)
+$ python qualification/runners/verify-spec.py
+identity  0a0996f3944b5528...
+cases     109
+  BLOCKED_EXTERNAL=1, FAIL=13, PASS=95
+
+verify-spec: 3 problem(s).   EXIT=1
+  - CMP-07: evidence qualification/results/V2-composition/boot7-home-override.json hashes to 688110f3026079d2... but the case records 6ace8eb92aa62029...
+  - CMP-12: evidence qualification/results/V2-composition/boot7-home-override.json hashes to 688110f3026079d2... but the case records 6ace8eb92aa62029...
+  - VER-09: evidence qualification/results/V9-verification/ver09-tier-audit.json hashes to 56aaddf1df64def5... but the case records 197399316cef7304...
+
+So BEFORE this slice: 3 problems, all three the pre-existing line-ending/hash issue.
+AFTER this slice: 317 problems, 314 of them the identity move and the same 3 still there.
+
+### NEGATIVE CONTROL: the gate can actually go red
+
+A green check that cannot fail is not evidence. The lock's `host_profile_digest` was
+temporarily reverted to the OLD value `5b8b2a8e…` and `doctor.py` re-run:
+
+$ python helpers/doctor.py
+[FAIL] identity recomputes from inputs          recorded=533c8cb08b2ccd7f... computed=429ed3f453432eaf...
+[FAIL] host_profile_digest                        pinned=5b8b2a8e5d9ae13d... disk=0e8e370e06375ad4...  (profiles/daily-candidate/cordis.patch.yml)
+[ok  ] agent_preset_digest                        05f7a029739692db...
+...
+doctor: 2 problem(s). The tree moved and the identity did not:
+  - identity does NOT recompute: recorded 533c8cb08b2ccd7f... computed 429ed3f453432eaf...
+  - host_profile_digest is STALE: pinned 5b8b2a8e5d9ae13d... but profiles/daily-candidate/cordis.patch.yml hashes to 0e8e370e06375ad4...
+EXIT=1
+
+The lock was then restored and verified by sha256:
+  bb040999465b740374d8820e2fac8107549cc7222abb71c9bb58628e0a82b435
+  $ python helpers/doctor.py --quiet  ->  doctor: every recorded input matches the tree.  EXIT=0
+
+So both directions are measured: the corrected lock passes, and the stale value fails.
+Note the control also shows the two checks are INDEPENDENT -- reverting one digest broke
+both the recomputation and the per-input comparison, and `doctor.py` named both.
