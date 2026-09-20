@@ -97,7 +97,10 @@ worse than a red test, so the reversion is stated rather than assumed.
 2. They do not show the **product** evicts a kernel. Mutation 2 was run against the
    service-level gate; the product path is measured separately and its own limit is
    stated in `BEFORE-AFTER.md`.
-3. They do not establish that the probe cannot hang — the timeout arm is exercised
-   by the "cannot be probed" test, which takes the *error* path, not the *timeout*
-   path. Forcing a real timeout needs a deliberately sleeping interpreter and was
-   not run; it is an UNRESOLVED UNKNOWN in the report.
+3. They do not establish that the probe cannot hang. That is measured SEPARATELY
+   and really: a sleeping `sitecustomize.py` on `PYTHONPATH` hangs a real CPython
+   before it runs `-c` source, and the service returns
+   `KernelTransportError: the environment probe did not finish within 2000 ms` at
+   2118 ms elapsed (standalone) / 2439 ms (as the test arm). That arm is the
+   TIMER path, which the "cannot be probed" test does not reach -- that one takes
+   the ERROR path. Both paths are now covered.

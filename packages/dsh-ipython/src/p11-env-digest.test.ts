@@ -302,6 +302,46 @@ describe('V5 §18 ENV-DIGEST: the environment digest follows a real environment 
     expect(second.manifest).toEqual(first.manifest)
   }, 300_000)
 
+  it('a RESPELLING of the interpreter path does not move the digest', async () => {
+    // THE OTHER DIRECTION OF THE ORACLE, and the arm the OLD digest failed.
+    // `sha256(pythonExecutable + ...)` hashed the CONFIG STRING, so spellings of
+    // one file could produce different identities -- a user who typed backslashes
+    // where the profile had forward slashes got a different kernel slot for the
+    // same interpreter. The new digest is not immune by luck: it hashes
+    // `sys_executable_realpath` as the INTERPRETER reports it, so the configured
+    // spelling never reaches the hash.
+    //
+    // Measured values on this host, all four identical:
+    //   forward   C:/Users/.../Python314/python.exe             -> dc82c4e868cf82a7
+    //   backslash C:\Users\...\Python314\python.exe             -> dc82c4e868cf82a7
+    //   upper     C:/USERS/HZQ00/.../PYTHON.EXE                 -> dc82c4e868cf82a7
+    //   dotdot    C:/Users/.../Python314/../Python314/python.exe -> dc82c4e868cf82a7
+    //
+    // This is NOT the same claim as the `pythonw.exe` case, which the independent
+    // verifier P11b measured as MOVING: `pythonw.exe` is a DIFFERENT FILE, and
+    // `realpath` does not and should not claim two distinct files are one. That
+    // one is a spec question for root; this one is a defect, and it is closed.
+    const spellings: Array<[string, string]> = [
+      ['forward', PYTHON],
+      ['backslash', PYTHON.replace(/\//gu, '\\')],
+      ['upper', PYTHON.toUpperCase()],
+      ['dotdot', PYTHON.replace(/([\\/])python\.exe$/iu, '$1..$1Python314$1python.exe')],
+    ]
+    const s = makeService()
+    const digests: Array<[string, string]> = []
+    for (const [label, spelling] of spellings) {
+      s.reconfigure({ pythonExecutable: spelling, brokerScript: BROKER, root })
+      digests.push([label, (await s.environmentStatus()).digest])
+    }
+    const distinct = new Set(digests.map(([, digest]) => digest))
+    // Reported as a pair list, so a failure names WHICH spelling diverged rather
+    // than only that the set had more than one member.
+    expect(distinct.size, `spellings produced different digests: ${JSON.stringify(digests)}`).toBe(1)
+    // And the spelling really did vary -- a loop that silently passed the same
+    // string four times would satisfy the assertion above for the wrong reason.
+    expect(new Set(spellings.map(([, spelling]) => spelling)).size).toBe(4)
+  }, 300_000)
+
   it('an interpreter that cannot be probed FAILS LOUD rather than digesting a partial manifest', async () => {
     // The bound and the failure arm, which V5 §11.2's "bounded probe" requirement
     // is about. `broker.py` is a real file that is not a Python interpreter, so the

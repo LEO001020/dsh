@@ -100,3 +100,41 @@ has no `environmentStatus()`" — because the boot loaded a `lib/` compiled befo
 the change. That is the stale-artifact trap this project has already filed twice
 (G-SEAM-29, G-SEAM-36). The probe now reports which surface it found rather than
 inferring one, but the rebuild is the caller's responsibility.
+
+## The `pythonw.exe` arm — a spec consequence, escalated rather than decided
+
+The independent verifier P11b measured a case that does NOT collapse, and it is
+worth stating precisely because a careless reader could take it for a defect.
+
+`pythonw.exe` and `python.exe` in the same directory are two different
+executables, so `sys_executable_realpath` differs, so the digests differ
+(`dc82c4e8…` vs `ccb6f823…`, P11b's `after-arm-probe.json`). The manifest diff
+names exactly one field: `sys_executable_realpath`. All four package versions and
+all three file hashes are byte-identical.
+
+**This is a consequence of a field V5 §11.2 MANDATES, not a missed
+normalisation.** `os.path.realpath` resolves symlinks, junctions and spelling; it
+does not — and must not — claim two distinct files in one directory are one file.
+P11b's framing is right and the escalation to root is right.
+
+MY ENGINEERING JUDGEMENT, offered as `INFERENCE` and NOT implemented, because
+acting on it would change a spec-mandated input without a ruling:
+
+- For an IPython **kernel**, `pythonw.exe` versus `python.exe` is a genuinely
+  meaningful difference rather than a spelling one. `pythonw` is the
+  console-less subsystem binary, so a kernel started under it has no console —
+  which is exactly the kind of fact that can change how the broker's stdout and
+  stderr behave. Treating them as two environments is therefore defensible on the
+  merits, not merely forced by the field name.
+- The arm P11b calls "does not hold" was measured against a *different*
+  acceptance property (G-SEAM-80's "arm 2 must not move"). Under the OLD digest
+  that property was violated for a real defect: the old digest hashed a CONFIG
+  STRING, so a user could respell one path and get a different identity. That
+  defect is fixed — P11b measures the respelling arm as PASS/stable now.
+- P11b also grepped the tree and found nothing shipped sets `pythonw`, so the arm
+  is currently unreachable in production.
+
+So the honest status is: **the property "a respelling of one file must not move
+the digest" HOLDS; the property "`pythonw` and `python` must collapse" does not
+hold and was never claimed by this slice.** Whether it should hold is root's
+ruling, and I have not pre-empted it.
