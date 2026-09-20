@@ -1,0 +1,152 @@
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.8 [39m[90mD:/DSH/work/wt-p10/packages/dsh-ipython[39m
+
+ [31m×[39m src/p10-ledger-durable.test.ts[2m > [22mLEDGER-DURABLE: a requested durable ledger that cannot open refuses READY[2m > [22mrefuses when the deployment has NO storage facility and durability was not opted out of[33m 3252[2mms[22m[39m
+[31m   → promise resolved "{ outcome: 'ok', …(5) }" instead of rejecting[39m
+ [31m×[39m src/p10-ledger-durable.test.ts[2m > [22mLEDGER-DURABLE: a requested durable ledger that cannot open refuses READY[2m > [22mrefuses when the storage facility is present but the ledger domain cannot open[33m 3469[2mms[22m[39m
+[31m   → promise resolved "{ outcome: 'ok', …(5) }" instead of rejecting[39m
+ [31m×[39m src/p10-ledger-durable.test.ts[2m > [22mLEDGER-DURABLE: a requested durable ledger that cannot open refuses READY[2m > [22mrefuses without publishing READY: no kernel, no bridge, and no entry left behind[33m 3228[2mms[22m[39m
+[31m   → promise resolved "{ outcome: 'ok', …(5) }" instead of rejecting[39m
+ [32m✓[39m src/p10-ledger-durable.test.ts[2m > [22mLEDGER-DURABLE: an explicit development configuration still works[2m > [22mruns a cell with durableLedger: false and reports non-durability rather than claiming it[33m 3034[2mms[22m[39m
+ [32m✓[39m src/p10-ledger-durable.test.ts[2m > [22mLEDGER-DURABLE: the control arm, without which the refusals prove nothing[2m > [22mruns a cell on the durable default and reports durability, with no opt-out needed[33m 3154[2mms[22m[39m
+ [31m×[39m src/p10-ledger-durable.test.ts[2m > [22mLEDGER-DURABLE: the control arm, without which the refusals prove nothing[2m > [22mgives a SECOND session in the same process a durable ledger too[33m 6003[2mms[22m[39m
+[31m   → expected false to be true // Object.is equality[39m
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 4 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m src/p10-ledger-durable.test.ts[2m > [22mLEDGER-DURABLE: a requested durable ledger that cannot open refuses READY[2m > [22mrefuses when the deployment has NO storage facility and durability was not opted out of
+[31m[1mAssertionError[22m: promise resolved "{ outcome: 'ok', …(5) }" instead of rejecting[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- Error {[39m
+[32m-   "message": "rejected promise",[39m
+[31m+ {[39m
+[31m+   "display": [],[39m
+[31m+   "epoch": 1,[39m
+[31m+   "foreignFrames": 1,[39m
+[31m+   "outcome": "ok",[39m
+[31m+   "stderr": {[39m
+[31m+     "droppedFrames": 0,[39m
+[31m+     "text": "",[39m
+[31m+     "totalBytes": 0,[39m
+[31m+     "truncated": false,[39m
+[31m+   },[39m
+[31m+   "stdout": {[39m
+[31m+     "droppedFrames": 0,[39m
+[31m+     "text": "",[39m
+[31m+     "totalBytes": 0,[39m
+[31m+     "truncated": false,[39m
+[31m+   },[39m
+[2m  }[22m
+
+[36m [2m❯[22m src/p10-ledger-durable.test.ts:[2m106:80[22m[39m
+    [90m104|[39m     // BEFORE THE FIX this resolves and returns a kernel backed by an …
+    [90m105|[39m     [90m// ledger, which is the silent degradation the slice is about.[39m
+    [90m106|[39m     await expect(service.runCell(agentFor('ledger-required-nostorage')…
+    [90m   |[39m                                                                                [31m^[39m
+    [90m107|[39m       [33m.[39mrejects[33m.[39m[34mtoThrow[39m([36m/ledger/iu[39m)
+    [90m108|[39m   }[33m,[39m [34m180_000[39m)
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/p10-ledger-durable.test.ts[2m > [22mLEDGER-DURABLE: a requested durable ledger that cannot open refuses READY[2m > [22mrefuses when the storage facility is present but the ledger domain cannot open
+[31m[1mAssertionError[22m: promise resolved "{ outcome: 'ok', …(5) }" instead of rejecting[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- Error {[39m
+[32m-   "message": "rejected promise",[39m
+[31m+ {[39m
+[31m+   "display": [],[39m
+[31m+   "epoch": 1,[39m
+[31m+   "foreignFrames": 1,[39m
+[31m+   "outcome": "ok",[39m
+[31m+   "stderr": {[39m
+[31m+     "droppedFrames": 0,[39m
+[31m+     "text": "",[39m
+[31m+     "totalBytes": 0,[39m
+[31m+     "truncated": false,[39m
+[31m+   },[39m
+[31m+   "stdout": {[39m
+[31m+     "droppedFrames": 0,[39m
+[31m+     "text": "",[39m
+[31m+     "totalBytes": 0,[39m
+[31m+     "truncated": false,[39m
+[31m+   },[39m
+[2m  }[22m
+
+[36m [2m❯[22m src/p10-ledger-durable.test.ts:[2m128:81[22m[39m
+    [90m126|[39m     })
+    [90m127|[39m
+    [90m128|[39m     await expect(service.runCell(agentFor('ledger-required-domainfail'…
+    [90m   |[39m                                                                                 [31m^[39m
+    [90m129|[39m       [33m.[39mrejects[33m.[39m[34mtoThrow[39m([36m/ledger/iu[39m)
+    [90m130|[39m   }[33m,[39m [34m180_000[39m)
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/p10-ledger-durable.test.ts[2m > [22mLEDGER-DURABLE: a requested durable ledger that cannot open refuses READY[2m > [22mrefuses without publishing READY: no kernel, no bridge, and no entry left behind
+[31m[1mAssertionError[22m: promise resolved "{ outcome: 'ok', …(5) }" instead of rejecting[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- Error {[39m
+[32m-   "message": "rejected promise",[39m
+[31m+ {[39m
+[31m+   "display": [],[39m
+[31m+   "epoch": 1,[39m
+[31m+   "foreignFrames": 1,[39m
+[31m+   "outcome": "ok",[39m
+[31m+   "stderr": {[39m
+[31m+     "droppedFrames": 0,[39m
+[31m+     "text": "",[39m
+[31m+     "totalBytes": 0,[39m
+[31m+     "truncated": false,[39m
+[31m+   },[39m
+[31m+   "stdout": {[39m
+[31m+     "droppedFrames": 0,[39m
+[31m+     "text": "",[39m
+[31m+     "totalBytes": 0,[39m
+[31m+     "truncated": false,[39m
+[31m+   },[39m
+[2m  }[22m
+
+[36m [2m❯[22m src/p10-ledger-durable.test.ts:[2m144:48[22m[39m
+    [90m142|[39m     [35mconst[39m agent [33m=[39m [34magentFor[39m([32m'ledger-required-nopublish'[39m)
+    [90m143|[39m
+    [90m144|[39m     await expect(service.runCell(agent, 'pass')).rejects.toThrow(/ledg…
+    [90m   |[39m                                                [31m^[39m
+    [90m145|[39m
+    [90m146|[39m     [34mexpect[39m(service[33m.[39m[34mhasKernel[39m(agent))[33m.[39m[34mtoBe[39m([35mfalse[39m)
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/4]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/p10-ledger-durable.test.ts[2m > [22mLEDGER-DURABLE: the control arm, without which the refusals prove nothing[2m > [22mgives a SECOND session in the same process a durable ledger too
+[31m[1mAssertionError[22m: expected false to be true // Object.is equality[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- true[39m
+[31m+ false[39m
+
+[36m [2m❯[22m src/p10-ledger-durable.test.ts:[2m226:45[22m[39m
+    [90m224|[39m
+    [90m225|[39m     [34mexpect[39m(service[33m.[39m[34mledgerIsDurable[39m(first))[33m.[39m[34mtoBe[39m([35mtrue[39m)
+    [90m226|[39m     [34mexpect[39m(service[33m.[39m[34mledgerIsDurable[39m(second))[33m.[39m[34mtoBe[39m([35mtrue[39m)
+    [90m   |[39m                                             [31m^[39m
+    [90m227|[39m   }[33m,[39m [34m240_000[39m)
+    [90m228|[39m })
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/4]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m4 failed[39m[22m[2m | [22m[1m[32m2 passed[39m[22m[90m (6)[39m
+[2m   Start at [22m 20:54:52
+[2m   Duration [22m 22.82s[2m (transform 370ms, setup 0ms, import 507ms, tests 22.14s, environment 0ms)[22m
+
