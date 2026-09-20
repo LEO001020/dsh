@@ -250,70 +250,6 @@
 # `workflows` is different — nothing outside an agent reads it — so every row
 # that reaches it shares one entry-local realm here, and a consumer left
 # outside would resolve a host registry this preset does not populate.
-#
-# ── THE MODEL HAS NO CREATION SURFACE HERE. ONLY THE QUEUE DOES. ────────────
-#
-# V5 §8 (P0): the four rows that let the MODEL create a child directly are
-# DISABLED below — `tool-subagent` (`subagent`), `tool-subagent-fork`
-# (`subagent_fork`), `workflow-ptc` and `tool-workflow` (`workflow`). The
-# model's only route to a new child is the `work` tool, which goes through
-# `WorkService` and is therefore subject to the run's target, budget and
-# admission accounting.
-#
-# WHY THE HOST-WIDE HARD-30 GATE DOES NOT MAKE THIS REDUNDANT. The gate in
-# `packages/dsh-daily-work/src/capacity.ts` is a PHYSICAL SAFETY LINE: it
-# guarantees total in-process children <= 30 by refusing the 31st creation on
-# `agent/created`. It does not make the run's accounting truthful. With the
-# four rows above live, the model could call `subagent(...)` directly and the
-# run would report `occupied = 10` while the harness held 17 children — the
-# target, the budget and the READY arithmetic would describe something other
-# than the process. A truthful queue needs the queue to be the only door; a cap
-# is not a substitute for that.
-#
-# WHY `disabled: true` RATHER THAN DELETING THE ROWS. Two measured reasons.
-# (1) `mountPreset` is all-or-nothing: `inactiveRows` collects every enabled row
-# whose `inject` is unresolved and the mount THROWS if the list is non-empty
-# (agent-presets/src/mount.ts:394-396). A row deleted from a pair whose partner
-# injects what it provides therefore takes the WHOLE preset down and the tool
-# face goes to zero — measured in this repo as `toolCountAgentKey: 0` with
-# `pwsh`, `ipython` and `work` all absent (docs/decisions/
-# AUDIT-REQUEST-nosandbox.md Fact F). (2) The upstream composition's own rule is
-# that a row must stay DECLARED while disabled, so a row cannot silently
-# reappear if the composition is ever reordered (`packages/bundle/web-app/
-# cordis.patch.yml`, quoted in `profile-config.test.ts`). `disabled` is skipped
-# by `inactiveRows` before the inject check (`mount.ts:307`), so it is both the
-# safer and the conventional form.
-#
-# THE PAIRING IS LOAD-BEARING AND IS NOT A STYLE CHOICE. `tool-workflow` injects
-# `workflowEngine`, which in this preset is provided by `workflow-ptc`
-# (`packages/workflow/workflow-ptc/src/index.ts:103` injects
-# `['subagents', 'ptcRuntime', 'sandboxPolicy']`; `WorkflowEngine`'s constructor
-# publishes `workflowEngine`, `packages/workflow/workflow/src/index.ts:159`).
-# Disabling `workflow-ptc` alone would leave `tool-workflow` permanently pending
-# and unmount the entire preset. They leave TOGETHER or not at all, which is why
-# both are disabled in this one edit and why the comment block at the foot of
-# this file still explains the chain.
-#
-# WHAT IS KEPT, AND WHY. `tool-subagent-control` (`send_message`,
-# `interrupt_agent`) and `tool-subagent-list-agents` (`list_agents`) are the
-# management surface for children that `WorkService` created. Removing them
-# would leave the model unable to steer or even see its own managed children —
-# V5 §8 names them as the rows to keep. They CREATE nothing: `send_message`
-# calls `ctx.subagents.sendMessage`, `interrupt_agent` calls
-# `ctx.subagents.interrupt` with an `ancestor` authority that the service
-# checks against recorded lineage, and `list_agents` is a read
-# (packages/subagent/tool-subagent-control/src/index.ts:29,77 and
-# list-agents.ts:93).
-#
-# THE HONEST BOUNDARY, STATED SO IT CANNOT BE MISREAD. This removes the
-# MODEL-FACING creation surface. It does NOT make the underlying capability
-# unreachable: `ctx.subagents.startContinuable`, `ctx.subagents.start` and
-# `ctx.agents.create` remain public seams, and any in-process caller holding a
-# `Context` can still create a child — the host gate would meter it, but the
-# Work queue would not have authorized it. An out-of-process provider (`acp`,
-# `codex`, `claude-code`, `dsh-sdk`) publishes no local Agent at all and is out
-# of scope by construction (`capacity.ts:69-73`). V5 §8 asks about the
-# model-facing surface, and that is exactly — only — what this changes.
 - id: delegation
   name: cordis:group
   group: true
@@ -326,12 +262,8 @@
     - id: tool-subagent-list-agents
       name: '@deepseek-ai/dsh-tool-subagent-control/list-agents'
 
-    # DISABLED (V5 §8): a direct model-facing child-creation route around
-    # `WorkService`. See the group comment above for why it is disabled rather
-    # than deleted, and for what is kept in its place.
     - id: tool-subagent
       name: '@deepseek-ai/dsh-tool-subagent'
-      disabled: true
       config:
         provider: spawn
         toolName: subagent
@@ -342,12 +274,8 @@
     # the inherited history remains eligible for KV Cache reuse. This preset
     # keeps fork continuable; parent and child inherit the same messaging tool,
     # while the parent id and return guidance follow the inherited history.
-    #
-    # DISABLED (V5 §8) for the same reason as `tool-subagent` above: it is a
-    # second direct creation route around `WorkService`.
     - id: tool-subagent-fork
       name: '@deepseek-ai/dsh-tool-subagent'
-      disabled: true
       config:
         provider: fork
         toolName: subagent_fork
@@ -375,23 +303,13 @@
         backgroundMode: one-shot
         maxDepth: provider-managed
 
-    # DISABLED (V5 §8): `startChild` reaches `ctx.subagents.start()` around
-    # `WorkService` admission. DISABLED TOGETHER WITH `tool-workflow` below —
-    # they are a pair, because `tool-workflow` injects `workflowEngine`, which
-    # this row provides. Disabling only one would leave the other permanently
-    # pending and unmount the whole preset (mount.ts:394-396).
     - id: workflow-ptc
       name: '@deepseek-ai/dsh-workflow-ptc'
-      disabled: true
       config:
         provider: spawn
 
-    # DISABLED (V5 §8): the model-facing `workflow` tool. Its execution path is
-    # the PTC workflow engine, whose `startChild` creates children outside the
-    # Work queue.
     - id: tool-workflow
       name: '@deepseek-ai/dsh-tool-workflow'
-      disabled: true
 
     # Off by default with the base row it mirrors: the tool description
     # restricts `ralph` to runs the human explicitly asked for, and completion
