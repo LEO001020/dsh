@@ -37,7 +37,7 @@ async function main(): Promise<void> {
   const ctx = new Context()
   await ctx.plugin(Subprocess)
   const root = await mkdtemp(join(tmpdir(), 's5-ipy13-delivery-'))
-  const service = new KernelService(ctx, { pythonExecutable: PYTHON, brokerScript: BROKER, root })
+  const service = new KernelService(ctx, { pythonExecutable: PYTHON, brokerScript: BROKER, root, durableLedger: false })
   const agent = {
     session: { header: { id: 's5-ipy13-delivery', cwd: root } },
   } as unknown as Agent

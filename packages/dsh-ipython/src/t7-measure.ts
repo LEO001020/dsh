@@ -162,7 +162,7 @@ async function main(): Promise<void> {
   const startup = await bridge.start()
   observed['bridge'] = { boundPort: startup.endpoint.port, clientPath: startup.clientPath }
 
-  const service = new KernelService(ctx, { pythonExecutable: PYTHON, brokerScript: BROKER, root: join(root, 'kernels') })
+  const service = new KernelService(ctx, { pythonExecutable: PYTHON, brokerScript: BROKER, root: join(root, 'kernels'), durableLedger: false })
   const agent = agentFor('t7-measure', root)
 
   const leaseFor = (cellId: string, callId: string) => bridge.mintLease({

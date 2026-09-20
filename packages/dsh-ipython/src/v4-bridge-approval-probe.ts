@@ -135,7 +135,7 @@ async function main(): Promise<void> {
 
   const bridge = new BridgeServer({ artifactDirectory: join(root, 'artifacts'), inlineValueBytes: 1024 * 1024 })
   await bridge.start()
-  const service = new KernelService(ctx, { pythonExecutable: PYTHON, brokerScript: BROKER, root: join(root, 'kernels') })
+  const service = new KernelService(ctx, { pythonExecutable: PYTHON, brokerScript: BROKER, root: join(root, 'kernels'), durableLedger: false })
 
   // An agent whose session has an OPEN TURN, which the approval seam requires.
   const session = Session.create(SessionId('v4-approval-session'))

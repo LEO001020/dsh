@@ -257,7 +257,7 @@ async function main(): Promise<void> {
   const startup = await bridge.start()
   observed['bridge'] = { boundPort: startup.endpoint.port, inlineValueBytes: 4096 }
 
-  const service = new KernelService(ctx, { pythonExecutable: PYTHON, brokerScript: BROKER, root: join(root, 'kernels') })
+  const service = new KernelService(ctx, { pythonExecutable: PYTHON, brokerScript: BROKER, root: join(root, 'kernels'), durableLedger: false })
   const agent = agentFor('v4-bridge-probe', root)
 
   /** Control sinks the bridge's `NativeCallHandlerOptions` offers, recorded. */

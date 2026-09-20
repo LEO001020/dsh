@@ -470,6 +470,12 @@ async function mountIpythonTool(root: string): Promise<{ ctx: Context; dispose: 
     pythonExecutable: pythonPath(),
     brokerScript: join(pkg, 'src', 'broker.py'),
     root,
+    // This harness mounts no storage domain -- its subject is the DATA PLANE over
+    // a real kernel, not the bridge ledger -- so the non-durable ledger is opted
+    // into EXPLICITLY. Since V5 §11.1 an unset `durableLedger` means REQUIRED and
+    // would refuse every kernel in this file. The durable path is gated by
+    // `packages/dsh-ipython/src/p10-ledger-durable.test.ts`.
+    durableLedger: false,
   })
   ipyTool.apply(ctx)
   return {

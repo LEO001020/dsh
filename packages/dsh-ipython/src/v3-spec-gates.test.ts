@@ -104,7 +104,7 @@ function agentFor(sessionId: string, cwd?: string): Agent {
 }
 
 function makeService(): KernelService {
-  service = new KernelService(ctx, { pythonExecutable: PYTHON, brokerScript: BROKER, root })
+  service = new KernelService(ctx, { pythonExecutable: PYTHON, brokerScript: BROKER, root, durableLedger: false })
   return service
 }
 

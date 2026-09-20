@@ -80,7 +80,7 @@ async function main(): Promise<void> {
 
   const bridge = new BridgeServer({ artifactDirectory: join(root, 'artifacts') })
   await bridge.start()
-  const service = new KernelService(ctx, { pythonExecutable: PYTHON, brokerScript: BROKER, root: join(root, 'kernels') })
+  const service = new KernelService(ctx, { pythonExecutable: PYTHON, brokerScript: BROKER, root: join(root, 'kernels'), durableLedger: false })
   const agent = { session: { header: { id: 'v4-drain', cwd: root } } } as unknown as Agent
 
   const lease: CellLease = bridge.mintLease({
