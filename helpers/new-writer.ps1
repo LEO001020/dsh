@@ -38,7 +38,27 @@ function Step($m) { Write-Host "==> $m" }
 function Die($m) { Write-Error $m; exit 1 }
 
 # --- 1. worktree ------------------------------------------------------------
-if (Test-Path $wt) { Die "worktree already exists: $wt. Remove it first (git worktree remove --force)." }
+# A PREVIOUS FAILED RUN can leave the directory behind with no registered
+# worktree: this script builds AFTER `worktree add`, so a build failure exits
+# leaving a real directory that `git worktree list` no longer names (the
+# registration was rolled back, the files were not). `git worktree prune` does
+# not remove it either, because it prunes metadata, not directories. Re-running
+# then dies on "already exists" and the operator has to know to clean by hand --
+# so the script prunes, removes a stale directory no worktree owns, and only then
+# refuses.
+git -C $Repo worktree prune
+if (Test-Path $wt) {
+    $registered = @(git -C $Repo worktree list --porcelain | Select-String -SimpleMatch "worktree $wt").Count -gt 0
+    if ($registered) {
+        Die "worktree already exists and is REGISTERED: $wt. Remove it first (git worktree remove --force)."
+    }
+    Write-Host "    stale directory from a failed run, not a registered worktree -- removing $wt"
+    Remove-Item -Recurse -Force $wt
+}
+if (git -C $Repo branch --list $branch) {
+    Write-Host "    stale branch $branch from a failed run -- deleting"
+    git -C $Repo branch -D $branch | Out-Null
+}
 Step "worktree $wt on new branch $branch from $Base"
 git -C $Repo worktree add -b $branch $wt $Base
 if ($LASTEXITCODE -ne 0) { Die "git worktree add failed" }

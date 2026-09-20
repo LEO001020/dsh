@@ -75,6 +75,62 @@ if ($missing.Count -gt 0) {
 }
 
 # ---------------------------------------------------------------------------
+# BARE (non-@deepseek-ai) dependencies -- the second half of the same gap.
+#
+# `src/*.ts` imports `zod` (a runtime dependency: the record/observation schemas)
+# and `vitest` (the test runner). Neither is created by this script, and neither
+# is in the package's declared `dependencies` -- they exist in the main checkout
+# only because they were linked by hand. A fresh worktree therefore fails the
+# BUILD, not the link:
+#
+#     src/host.ts(28,19): error TS2307: Cannot find module 'zod'
+#
+# The set is DERIVED from what the sources actually import rather than listed
+# here, for the same reason the @deepseek-ai set is: a hand-maintained list is
+# what made the previous script wrong. Only `zod` and `vitest` are expected; any
+# other bare name is REPORTED and left unresolved, because silently linking an
+# arbitrary package would hide a real missing declaration.
+$bare = @{}
+Get-ChildItem -Path (Join-Path $pkg 'src') -Filter *.ts -File |
+    ForEach-Object {
+        $text = Get-Content -Raw $_.FullName
+        # Static `from 'x'`, side-effect `import 'x'`, and dynamic `import('x')`.
+        foreach ($m in [regex]::Matches($text, "(?:from|import)\s*\(?\s*'([^']+)'")) {
+            $spec = $m.Groups[1].Value
+            if ($spec.StartsWith('.') -or $spec.StartsWith('/')) { continue }
+            if ($spec.StartsWith('@deepseek-ai/')) { continue }
+            if ($spec.StartsWith('node:')) { continue }
+            $root = if ($spec.StartsWith('@')) { ($spec -split '/')[0..1] -join '/' } else { ($spec -split '/')[0] }
+            # A specifier that is really prose or a template fragment cannot be a
+            # package name; require the npm charset.
+            if ($root -match '^(@[a-z0-9-]+/)?[a-z0-9][a-z0-9._-]*$') { $bare[$root] = $true }
+        }
+    }
+
+$bareLinked = 0; $bareMissing = @()
+foreach ($n in ($bare.Keys | Sort-Object)) {
+    # Resolve from the checkout's own install, which is where a real deployment
+    # gets them from too.
+    $cand = Get-ChildItem -Path (Join-Path $DshSrc 'node_modules\.pnpm') -Directory -ErrorAction SilentlyContinue |
+        Where-Object { $_.Name -like "$($n -replace '/','+')@*" } |
+        Sort-Object Name -Descending
+    $found = $null
+    foreach ($c in $cand) {
+        $inner = Join-Path $c.FullName "node_modules\$n"
+        if (Test-Path $inner) { $found = $inner; break }
+    }
+    if (-not $found) { $bareMissing += $n; continue }
+    $dest = Join-Path $pkg "node_modules\$n"
+    $parent = Split-Path $dest -Parent
+    New-Item -ItemType Directory -Force -Path $parent | Out-Null
+    if (Test-Path $dest) { cmd /c rmdir /s /q "`"$dest`"" 2>$null | Out-Null }
+    New-Item -ItemType Junction -Path $dest -Target $found | Out-Null
+    $bareLinked++
+}
+if ($bareLinked -gt 0) { Write-Host "bare     : $bareLinked linked ($(($bare.Keys | Sort-Object) -join ', '))" }
+if ($bareMissing.Count -gt 0) { Write-Host "bare unresolved: $($bareMissing -join ', ')" }
+
+# ---------------------------------------------------------------------------
 # `@types/node` -- the link this script used to NOT make.
 #
 # MEASURED GAP, and it made the documented recreation procedure produce an
@@ -97,13 +153,13 @@ $checkoutManifest = Join-Path $DshSrc 'package.json'
 if (Test-Path $checkoutManifest) {
     $wanted = (Get-Content -Raw $checkoutManifest | ConvertFrom-Json).devDependencies.'@types/node'
     if ($wanted) {
-        $bare = $wanted -replace '^[\^~]', ''
-        # Prefer the exact declared version; fall back to the highest installed
-        # match so a caret range whose exact build was pruned still resolves.
+        $bareVer = $wanted -replace '^[\^~]', ''
+        # Prefer the exact declared version; fall back to any installed match so a
+        # caret range whose exact build was pruned still resolves.
         $cands = Get-ChildItem -Path (Join-Path $DshSrc 'node_modules\.pnpm') -Directory -Filter '@types+node@*' -ErrorAction SilentlyContinue |
-            Where-Object { $_.Name -eq "@types+node@$bare" -or $_.Name -like "@types+node@$bare-*" }
+            Where-Object { $_.Name -eq "@types+node@$bareVer" -or $_.Name -like "@types+node@$bareVer-*" }
         if (-not $cands) {
-            $cands = Get-ChildItem -Path (Join-Path $DshSrc 'node_modules\.pnpm') -Directory -Filter "@types+node@$bare*" -ErrorAction SilentlyContinue
+            $cands = Get-ChildItem -Path (Join-Path $DshSrc 'node_modules\.pnpm') -Directory -Filter "@types+node@$bareVer*" -ErrorAction SilentlyContinue
         }
         if ($cands) {
             $nodeTypes = (Get-ChildItem -Path $cands[0].FullName -Recurse -Directory -Filter node -ErrorAction SilentlyContinue |
