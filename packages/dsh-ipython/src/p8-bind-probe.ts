@@ -143,8 +143,19 @@ async function main(): Promise<void> {
   // `%%capture` is a real IPython cell magic present in this environment. The
   // question is asked from INSIDE the magic cell, because that is where a fresh
   // binding would have to be visible. `%%capture` swallows stdout, so the
-  // observation is written to a file the NEXT cell reads -- otherwise a
-  // captured print would look identical to a cell that never ran.
+  // observation is written to a file the NEXT cell reads -- otherwise a captured
+  // print would look identical to a cell that never ran.
+  //
+  // THE BODY USES `call_sync`, AND THAT IS A MEASURED CHOICE RATHER THAN A
+  // CONVENIENCE. A cell magic runs its body through IPython's own nested
+  // `run_cell`; when the body contains a top-level `await`, IPython routes it to
+  // `run_until_complete` while ipykernel's loop is already running and the cell
+  // dies with `RuntimeError: This event loop is already running`
+  // (`asyncio/base_events.py:631`). MEASURED IDENTICALLY BEFORE AND AFTER THE
+  // BIND CHANGE (both archived probes), so it is a property of nested magics and
+  // NOT of the capability path. `call_sync` reaches the same lease and the same
+  // host dispatch on the same socket, so it answers the binding question without
+  // importing that unrelated failure into this arm.
   const magicReport = join(root, 'magic-report.json')
   const magicSource = [
     '%%capture cap',
@@ -156,9 +167,9 @@ async function main(): Promise<void> {
     'except Exception as exc:',
     "    report['import'] = type(exc).__name__",
     'if report["dsh_in_dir"]:',
+    '    report["bound_lease"] = getattr(getattr(dsh, "_channel", None), "_lease", None)',
     '    try:',
-    "        await dsh.call('p8_echo', {'tag': 'from-the-magic-cell'})",
-    "        report['call'] = 'SERVED'",
+    "        report['call'] = 'SERVED:' + str(dsh.call_sync('p8_echo', {'tag': 'from-the-magic-cell'})['tag'])",
     '    except Exception as exc:',
     "        report['call'] = getattr(exc, 'code', type(exc).__name__)",
     'else:',
