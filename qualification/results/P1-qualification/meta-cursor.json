@@ -1,0 +1,17 @@
+{
+  "arms": [
+    {
+      "name": "META-CURSOR",
+      "required": "re-introducing the descriptor-derived key makes the cursor-key authority gate RED",
+      "held": true,
+      "detail": "baseline exit=0 (green=True); with the constant-key mutation exit=1 (RED=True); restored sha256=3e781b38b8e31dd4...",
+      "commands": [
+        "node node_modules/vitest/vitest.mjs run src/data16-cursor-key-authority.test.ts (baseline, in packages/dsh-daily-work)",
+        "node node_modules/vitest/vitest.mjs run src/data16-cursor-key-authority.test.ts (with readOrCreateStoreCursorKey mutated to the old public derivation)",
+        "sha256 of artifacts.ts after restore"
+      ]
+    }
+  ],
+  "held": 1,
+  "total": 1
+}
