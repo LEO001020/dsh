@@ -92,7 +92,13 @@ import {
   type BridgeCloseReason,
   type BridgeLedger,
 } from './bridge-ledger.ts'
-import type { CellResult, KernelStatus, LateOutput } from './protocol.ts'
+import { DSH_BACKGROUND_ORIGIN, type CellResult, type KernelStatus, type LateOutput } from './protocol.ts'
+import {
+  LateNoticeQueue,
+  type LateNotice,
+  type LateNoticeAccount,
+  type LateNoticeBounds,
+} from './late-notice.ts'
 
 /**
  * This package's own root directory, derived from the module's location.
@@ -201,6 +207,14 @@ export interface KernelServiceConfig {
   readonly jobHandoff?: (call: { subCallId: string, name: string, args: unknown }) => { jobId: string } | undefined
   /** Host-owned disposition sink, so the host's own log records the drain too. */
   readonly onLeaseDisposition?: (disposition: LeaseCallDisposition) => void
+  /**
+   * Bounds on the per-Session late-output notice queue (G-SEAM-78).
+   *
+   * Host policy, like every other bound in this config: the model has no path
+   * that reaches this object, and a tool that let the model raise its own notice
+   * budget would not be a budget. Defaults are in `late-notice.ts`.
+   */
+  readonly lateNoticeBounds?: LateNoticeBounds
 }
 
 /**
@@ -235,7 +249,17 @@ export interface CellAuthority {
   readonly onImageRetained?: (record: { callId: string, blockTypes: readonly string[], bytes: number }) => void
 }
 
-/** Output that belonged to no live cell, kept per Session so it cannot cross. */
+/**
+ * Output that belonged to no live cell, kept per Session so it cannot cross.
+ *
+ * SUPERSEDED BY {@link LateNoticeQueue} AS THE DELIVERY PATH, and retained
+ * because it is the record the classification gates assert against and removing
+ * it would silently change what those gates measure. The difference is the
+ * question each answers: this one answers "what did the kernel write after its
+ * cell settled", while a `LateNotice` answers "what has the model not been told
+ * yet", carrying the session id, the stream, the causal class and a timestamp
+ * that the delivery record needs.
+ */
 export interface UnattributedOutput extends LateOutput {
   readonly epoch: number
 }
@@ -311,6 +335,13 @@ interface Entry {
   /** Set once the kernel has been observed dead or reset; reported on the next call. */
   pendingGenerationNotice: string | undefined
   readonly unattributed: UnattributedOutput[]
+  /**
+   * THE DELIVERY QUEUE (G-SEAM-78). ONE per Session, created and destroyed with
+   * the kernel, exactly like `unattributed` above and for the same reason: a
+   * notice is about THIS Session's kernel epoch, and a queue that outlived its
+   * kernel would let a later generation deliver a dead one's output.
+   */
+  readonly lateNotices: LateNoticeQueue
   /**
    * Bridge-ledger writes that FAILED for this Session.
    *
@@ -510,6 +541,16 @@ export class KernelService extends Service {
       // `host.start()` is the handshake: it resolves only after the broker has
       // answered `start` and reported the epoch and transport it achieved.
       const unattributed: UnattributedOutput[] = []
+      // G-SEAM-78's delivery queue. Created HERE, alongside `unattributed`, so it
+      // shares the kernel's lifetime rather than the Session record's: a notice is
+      // about one kernel epoch, and its spill directory is that epoch's own
+      // artifact directory, which is disposed with the bridge.
+      const lateNotices = new LateNoticeQueue({
+        sessionId: identity.sessionId,
+        backgroundOrigin: DSH_BACKGROUND_ORIGIN,
+        spillDirectory: join(bridgeDirectory, 'artifacts'),
+        ...this.config.lateNoticeBounds === undefined ? {} : { bounds: this.config.lateNoticeBounds },
+      })
       host = new KernelHost({
         subprocess: this.ctx.subprocess,
         identity,
@@ -521,8 +562,18 @@ export class KernelService extends Service {
         cellTimeoutMs: this.config.cellTimeoutMs ?? DEFAULT_CELL_TIMEOUT_MS,
         interruptGraceMs: this.config.interruptGraceMs ?? DEFAULT_INTERRUPT_GRACE_MS,
         // Late output is recorded against the ORIGINATING cell id, so it can never
-        // be attached to whichever cell happens to run next.
-        onLateOutput: output => { unattributed.push(output) },
+        // be attached to whichever cell happens to run next. The SAME callback
+        // feeds the delivery queue: one observation, two readers, so the notice
+        // can never describe something the classification gates did not see.
+        onLateOutput: output => {
+          unattributed.push(output)
+          lateNotices.push({
+            kernelEpoch: output.epoch,
+            cellId: output.cellId,
+            stream: output.stream ?? 'unknown',
+            text: output.text,
+          })
+        },
       })
       await host.start()
 
@@ -542,6 +593,7 @@ export class KernelService extends Service {
         lifecycle: 'READY',
         pendingGenerationNotice: undefined,
         unattributed,
+        lateNotices,
         ledgerFailures: [],
       }
       this.entries.set(identity.sessionId, entry)
@@ -756,11 +808,51 @@ export class KernelService extends Service {
     return await entry.host.status()
   }
 
-  /** Output that belonged to no live cell. Draining it is how it is delivered. */
+  /**
+   * Output that belonged to no live cell. Draining it is how it is delivered.
+   *
+   * HOST-ONLY, and NOT the delivery path. It drains the raw classification
+   * records the gates assert against; the model-facing delivery is
+   * {@link drainLateNotices}, which is what the `ipython` tool calls. Two
+   * accessors rather than one because they answer different questions and a
+   * single drain would let one reader consume the other's evidence.
+   */
   drainUnattributed(agent: Agent): UnattributedOutput[] {
     const entry = this.entries.get(agent.session.header.id)
     if (entry === undefined) return []
     return entry.unattributed.splice(0, entry.unattributed.length)
+  }
+
+  /**
+   * Take this Session's pending late-output notices, and leave the queue empty.
+   *
+   * G-SEAM-78's DELIVERY ACCESSOR. It is called by the `ipython` tool's own
+   * return path -- the same tool that promises the model this output will be
+   * reported -- and the records it returns are surfaced through
+   * `ToolRunContext.deferContext`, a SEPARATE deferred message, never inside the
+   * cell's rendered text.
+   *
+   * WHY DRAINING IS THE DELIVERY. A notice is a fact the model has not been told
+   * yet; telling it twice would make one write look like two. So the take is
+   * destructive and the caller that takes is the caller that delivers. A Session
+   * with no kernel returns an empty list rather than starting one: a drain must
+   * not consume a kernel slot, and a notice for a kernel that does not exist is
+   * not a fact about anything.
+   */
+  drainLateNotices(agent: Agent): LateNotice[] {
+    return this.entries.get(agent.session.header.id)?.lateNotices.drain() ?? []
+  }
+
+  /**
+   * What this Session's notice queue is holding and what it could not hold.
+   *
+   * A READ, never a drain. It exists because "no notices" and "every notice was
+   * dropped by a bound" produce the same empty drain, and a reader that cannot
+   * tell them apart would read a flood as silence -- which is the failure mode
+   * the bounds exist to make visible rather than to hide.
+   */
+  lateNoticeAccount(agent: Agent): LateNoticeAccount | undefined {
+    return this.entries.get(agent.session.header.id)?.lateNotices.account()
   }
 
   /** Interrupt the running cell for one Session. A host operation. */

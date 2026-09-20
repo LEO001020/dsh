@@ -308,7 +308,22 @@ export type BrokerReply =
  */
 export type BrokerEvent =
   | { readonly type: 'event'; readonly event: 'kernel_exited'; readonly epoch: number; readonly detail: string }
-  | { readonly type: 'event'; readonly event: 'late_output'; readonly epoch: number; readonly cellId: string; readonly text: string }
+  | {
+    readonly type: 'event'
+    readonly event: 'late_output'
+    readonly epoch: number
+    readonly cellId: string
+    readonly text: string
+    /**
+     * Which stream the write arrived on.
+     *
+     * G-SEAM-78: V5 section 10's delivery record names the stream, and this frame
+     * is the only place the fact exists -- the broker saw the `stream` frame, and
+     * no later layer can recover it. `unknown` is a real value: a frame that named
+     * no stream, or named one this protocol does not carry.
+     */
+    readonly stream: LateStreamName
+  }
   | { readonly type: 'event'; readonly event: 'diagnostic'; readonly epoch: number; readonly detail: string }
   | {
     readonly type: 'event'
@@ -375,6 +390,12 @@ export function asBrokerMessage(value: unknown): BrokerMessage {
         epoch,
         cellId: typeof record['cellId'] === 'string' ? record['cellId'] : '',
         text: typeof record['text'] === 'string' ? record['text'] : '',
+        // ADDITIVE, and validated rather than passed through: an unrecognised
+        // stream name becomes `unknown` instead of reaching the delivery record
+        // as a string no reader can act on.
+        stream: record['stream'] === 'stdout' || record['stream'] === 'stderr'
+          ? record['stream']
+          : 'unknown',
       }
     }
     if (event === 'kernel_exited' || event === 'diagnostic') {

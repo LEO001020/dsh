@@ -352,7 +352,16 @@ export class KernelHost {
     if (message.type === 'event') {
       this.epoch = Math.max(this.epoch, message.epoch)
       if (message.event === 'late_output') {
-        const entry = { cellId: message.cellId, text: message.text, epoch: message.epoch }
+        const entry = {
+          cellId: message.cellId,
+          text: message.text,
+          epoch: message.epoch,
+          // G-SEAM-78: the delivery record names the stream, and this is the last
+          // layer that saw the frame's own field. `?? 'unknown'` is not a default
+          // standing in for a guess -- it is the honest value for a broker that
+          // reported no stream.
+          stream: message.stream ?? 'unknown',
+        }
         this.late.push(entry)
         this.options.onLateOutput?.(entry)
       } else if (message.event === 'kernel_exited') {
