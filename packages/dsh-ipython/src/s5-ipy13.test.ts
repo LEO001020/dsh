@@ -36,7 +36,7 @@
  */
 import { Context } from '@deepseek-ai/cordis'
 import Subprocess from '@deepseek-ai/dsh-subprocess-local'
-import { mkdtemp, rm } from 'node:fs/promises'
+import { mkdtemp, readFile, rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -81,6 +81,21 @@ function makeHost(): KernelHost {
 }
 
 describe('IPY-13: late output is classified separately and never rides another cell', () => {
+  it('the sentinel is the SAME string in broker.py and protocol.ts', async () => {
+    // The sentinel is defined in BOTH languages: broker.py stamps frames with it
+    // and protocol.ts is what a caller tests against. Two copies of a string that
+    // must agree is exactly the drift this project keeps recording, and the
+    // failure would be silent -- a caller comparing against a stale value would
+    // simply never match an undecidable frame. Reading the Python source and
+    // comparing is cheap; the duplication matches the existing convention
+    // (`MAX_FRAME_BYTES` is also defined in both), so the fix is a check rather
+    // than a new build step.
+    const source = await readFile(resolve(HERE, 'broker.py'), 'utf8')
+    const match = /^DSH_BACKGROUND_ORIGIN\s*=\s*"([^"]+)"/m.exec(source)
+    expect(match, 'broker.py no longer defines DSH_BACKGROUND_ORIGIN').not.toBeNull()
+    expect(match?.[1]).toBe(DSH_BACKGROUND_ORIGIN)
+  })
+
   it('the straddling write is undecidable, and ordinary in-cell output still works', async () => {
     const h = makeHost()
     const started = await h.start()
