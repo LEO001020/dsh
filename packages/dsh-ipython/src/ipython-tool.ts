@@ -49,9 +49,11 @@
  * are generated from the same definition and cannot drift.
  */
 import type { Context } from '@deepseek-ai/cordis'
-import { defineTool } from '@deepseek-ai/dsh-tools'
+import { defineTool, type ToolRunContext } from '@deepseek-ai/dsh-tools'
+import { createUserMessage } from '@deepseek-ai/dsh-llm'
 import { KernelBusyError, KernelOutcomeUnknownError, KernelTransportError } from './kernel.ts'
 import type { CellResult } from './protocol.ts'
+import type { LateNotice, LateNoticeAccount } from './late-notice.ts'
 import type { CellAuthority, KernelService } from './kernel-plugin.ts'
 
 export const name = 'dsh-ipython-tool'
@@ -137,6 +139,146 @@ function renderCell(result: CellResult, epoch: number): string {
   return lines.join('\n')
 }
 
+/**
+ * Render the Session's pending late-output notices as ONE bounded message.
+ *
+ * ===========================================================================
+ * G-SEAM-78: WHY THIS IS A SEPARATE MESSAGE AND NOT PART OF THE CELL RESULT
+ * ===========================================================================
+ *
+ * The tool's own description promises the model that background output "is
+ * reported separately as unattributed output". This function is the delivery of
+ * that promise, and the word "separately" is the load-bearing one:
+ *
+ *   - it is returned through `deferContext`, so it reaches the model as its own
+ *     message at the next step boundary, NOT as text inside a cell's stdout;
+ *   - nothing here is ever concatenated into {@link renderCell}'s output, so a
+ *     background write cannot be read as output of code that never ran;
+ *   - it does NOT wake the model. A deferred context is appended to the step that
+ *     is already happening; a thread printing at 3am starts no turn.
+ *
+ * THE PRESENTATION IS CAUSAL TRUTH, NOT AESTHETICS. A reader must be able to see
+ * that this text came from a DIFFERENT cell -- and, for the `undecidable` class,
+ * that no cell could be named at all. So the origin is stated per record, and an
+ * unknown origin is never rendered as if it were a cell id.
+ */
+function renderLateNotices(notices: readonly LateNotice[], account: LateNoticeAccount | undefined): string {
+  const lines: string[] = []
+  lines.push('Runtime notice: background output from earlier cell(s)')
+  lines.push('')
+  lines.push(
+    'This text was NOT produced by the cell you just ran. It was written by a background thread',
+    'after its own cell had already settled, and it is reported here rather than inside a cell',
+    'result so it cannot be mistaken for output of code that did not produce it.',
+  )
+
+  const bytes = notices.reduce((sum, notice) => sum + Buffer.byteLength(notice.text ?? '', 'utf8'), 0)
+  lines.push('')
+  lines.push(`records: ${String(notices.length)}, kept bytes: ${String(bytes)}`)
+
+  for (const notice of notices) {
+    lines.push('')
+    lines.push(`--- ${notice.causalClass === 'known-late' ? 'late output' : 'output of UNDECIDABLE origin'} ---`)
+    lines.push(`kernel epoch: ${String(notice.kernelEpoch)}`)
+    lines.push(`stream: ${notice.stream}`)
+    if (notice.causalClass === 'known-late') {
+      lines.push(`origin cell: ${notice.cellId}`)
+    } else {
+      // The sentinel or an empty id is reported VERBATIM and named as what it is.
+      // Rendering it as a cell id, or omitting the line, would each be a guess:
+      // the first attaches the write to a cell, the second hides that the origin
+      // was ever unknown.
+      lines.push(
+        `origin cell: UNDECIDABLE (recorded origin ${notice.cellId === '' ? '<none>' : notice.cellId}); ` +
+        'this write carried no cell identity that could be preserved, so no cell is named. ' +
+        'Do not assume any particular cell produced it.',
+      )
+    }
+    if (notice.text !== undefined) {
+      lines.push(notice.text.trimEnd())
+      if (notice.truncated === true) {
+        lines.push(
+          `[TRUNCATED: ${String(notice.bytes)} bytes were written for this record; the text above is a prefix.` +
+          `${notice.artifactRef === undefined ? '' : ` The complete bytes are in ${notice.artifactRef}`}]`,
+        )
+      }
+    } else {
+      // A record that was not kept is REPORTED, not dropped silently: the model
+      // must learn that output existed and where it went.
+      lines.push(
+        `[this record's text was not kept in memory${notice.artifactRef === undefined ? '' : `; it is in ${notice.artifactRef}`}. ` +
+        `${String(notice.bytes)} bytes were written.]`,
+      )
+    }
+  }
+
+  if (account !== undefined && (account.spilled > 0 || account.dropped > 0)) {
+    lines.push('')
+    lines.push(
+      `[${String(account.spilled)} further record(s) were spilled${account.spillPath === undefined ? '' : ` to ${account.spillPath}`}` +
+      `${account.dropped === 0 ? '' : `, and ${String(account.dropped)} record(s) exceeded every bound and were counted and DROPPED`}. ` +
+      'This notice is bounded; it is not the complete set of what the kernel wrote.]',
+    )
+  }
+  return lines.join('\n')
+}
+
+/**
+ * Drain this Session's pending late-output notices and ferry them to the model.
+ *
+ * ===========================================================================
+ * WHY `deferContext` AND NOT A RETURNED STRING (G-SEAM-78)
+ * ===========================================================================
+ *
+ * This is the whole delivery decision of the slice, so it is stated once here.
+ *
+ * `exec.deferContext` is the EXISTING DSH context-injection seam. The chain, each
+ * link read in the pinned checkout, is:
+ *
+ *   `ToolRunContext.deferContext`            packages/core/tools/src/index.ts:408
+ *   -> a per-execution array                 packages/core/tools/src/index.ts:1398
+ *   -> folded into the result as
+ *      `additionalContexts`                  packages/core/tools/src/index.ts:1590-1598
+ *   -> committed by the agent loop           packages/core/agent-loop/src/tool-calls.ts:157
+ *   -> spliced into the next-step inbox      packages/core/agent-loop/src/agent.ts:491
+ *   -> consumed at the next step boundary    packages/core/agent-loop/src/agent.ts:316-321
+ *
+ * Three properties follow from that chain rather than from a check written here:
+ *
+ *   1. IT DOES NOT WAKE THE MODEL. A message lands in the inbox of a step that is
+ *      already running; a background thread printing starts no turn. That is
+ *      V5 section 10's first rule, and it holds because the seam cannot do
+ *      anything else.
+ *   2. IT IS SEPARATE FROM THE CELL'S STDOUT BY CONSTRUCTION. `additionalContexts`
+ *      is a different field from the tool's rendered `text`, so "never merge late
+ *      output into the next cell's stdout" is not a rendering discipline that
+ *      could be forgotten -- there is no code path that puts these bytes there.
+ *   3. IT IS SESSION-SCOPED AND DURABLE WITHOUT A NEW STORE. The inbox is a
+ *      Session projection, so the notice inherits the Session's own scoping and
+ *      persistence. No new Session database is created, which V5 section 10
+ *      forbids.
+ *
+ * WHY THE ACCOUNT IS READ FIRST. An empty drain means one of two very different
+ * things: nothing was written, or everything written was dropped by a bound. The
+ * account is read before the drain so the notice can report the second case; a
+ * reader that saw only an empty list would read a flood as silence.
+ */
+function deliverLateNotices(
+  exec: Pick<ToolRunContext, 'deferContext'>,
+  service: KernelService,
+  agent: Parameters<KernelService['drainLateNotices']>[0],
+): void {
+  const account = service.lateNoticeAccount(agent)
+  const notices = service.drainLateNotices(agent)
+  // A dropped record with nothing held is still news, so the notice is emitted
+  // when EITHER list is non-empty.
+  if (notices.length === 0 && (account === undefined || (account.spilled === 0 && account.dropped === 0))) return
+  exec.deferContext(createUserMessage({
+    content: [{ type: 'text', text: renderLateNotices(notices, account) }],
+    source: { kind: 'plugin', plugin: 'dsh-ipython-late-output' },
+  }))
+}
+
 /** One-line explanation of why a cell could not be delivered a result. */
 function explainFailure(error: unknown): string {
   if (error instanceof KernelOutcomeUnknownError) {
@@ -180,7 +322,11 @@ export function apply(ctx: Context): void {
         '- Output is bounded. If a cell prints more than the cap, the result says TRUNCATED and',
         '  names a spill file; the text you get is a prefix, not the whole.',
         '- Output written by a background thread after the cell returns is NOT part of the result.',
-        '  It is reported separately as unattributed output.',
+        '  It is reported separately, in its own runtime-notice message, before your next step.',
+        '  That notice names the cell each write came from, or says the origin is UNDECIDABLE when',
+        '  no cell identity could be preserved -- in which case no cell is guessed. The notice is',
+        '  bounded: if a background thread floods, the overflow goes to a spill file and the notice',
+        '  says so. Background output never starts a turn of its own.',
         '- If the kernel dies or a cell cannot be given a definite outcome, the result says so and',
         '  reports a NEW kernel epoch. Variables from the old epoch are gone; nothing is replayed.',
       ].join('\n'),
@@ -236,6 +382,13 @@ export function apply(ctx: Context): void {
         try {
           const result = await service.runCell(exec.agent, args.code, exec.signal, authority)
           const epoch = service.currentEpoch(exec.agent)
+          // G-SEAM-78: THE DELIVERY. Drained AFTER the cell settled, so the notice
+          // describes output that arrived up to the moment this cell returned --
+          // including output produced by an earlier cell that is only now being
+          // reported. It rides `deferContext` as its OWN message, so it can never
+          // appear inside the cell's rendered text, and it does not conclude or
+          // extend the turn.
+          deliverLateNotices(exec, service, exec.agent)
           return {
             outcome: result.outcome,
             epoch,
@@ -244,6 +397,11 @@ export function apply(ctx: Context): void {
           }
         } catch (error) {
           const epoch = service.currentEpoch(exec.agent)
+          // The failure arm delivers too: a cell that could not be given a
+          // definite outcome is exactly when a reader most needs to know that
+          // background output exists, and withholding it because the cell failed
+          // would make the notice depend on an unrelated outcome.
+          deliverLateNotices(exec, service, exec.agent)
           return {
             outcome: error instanceof KernelOutcomeUnknownError ? 'unknown' : 'failed',
             epoch,

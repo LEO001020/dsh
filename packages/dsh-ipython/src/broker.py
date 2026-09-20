@@ -825,7 +825,17 @@ class Broker:
         if msg.get("msg_type") == "stream":
             text = msg.get("content", {}).get("text", "")
             if text:
-                self._event("late_output", cellId=parent or "", text=text)
+                # The stream's NAME is a fact only this frame carries, and the
+                # delivery record has to report it (G-SEAM-78). Read from the
+                # frame rather than inferred: an unrecognised or absent name is
+                # reported as "unknown" instead of being guessed from the text.
+                stream = msg.get("content", {}).get("name")
+                self._event(
+                    "late_output",
+                    cellId=parent or "",
+                    text=text,
+                    stream=stream if stream in ("stdout", "stderr") else "unknown",
+                )
         elif msg.get("msg_type") == "error":
             self._event(
                 "diagnostic",
