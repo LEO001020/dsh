@@ -834,18 +834,35 @@ export class KernelService extends Service {
    */
   private async runEnvironmentProbe(): Promise<EnvironmentManifest> {
     const timeoutMs = this.config.environmentProbeTimeoutMs ?? DEFAULT_ENV_PROBE_TIMEOUT_MS
-    const handle = this.ctx.subprocess.spawn({
-      argv: [this.config.pythonExecutable, '-c', ENVIRONMENT_PROBE_SOURCE],
-      // An EXISTING directory, and one this package knows: `PACKAGE_ROOT` is the
-      // directory this module was loaded from, so it exists by construction. The
-      // probe reads no files, so its cwd is not load-bearing; what matters is that
-      // it is not the launcher's directory and not a scratch root that may not
-      // have been created yet.
-      cwd: PACKAGE_ROOT,
-      stdio: { stdin: 'ignore', stdout: 'pipe', stderr: 'pipe' },
-      graceMs: PROBE_TERMINATION_GRACE_MS,
-      env: { PYTHONUNBUFFERED: '1', PYTHONIOENCODING: 'utf-8' },
-    })
+    // THE SPAWN IS INSIDE THE FAILURE BOUNDARY, and this is not defensive: an
+    // interpreter path that is a real file but not an executable makes the
+    // provider throw `spawn EFTYPE` synchronously, and a path that does not exist
+    // makes it throw `ENOENT`. Both are the SAME fact the probe exists to report --
+    // this environment cannot be identified -- so both must arrive as
+    // `KernelTransportError` rather than as whatever the provider happens to
+    // throw. Measured: without this, the failure arm leaked `Error: spawn EFTYPE`
+    // and a caller could not tell an unidentifiable environment from a bug in this
+    // package.
+    let handle: ReturnType<typeof this.ctx.subprocess.spawn>
+    try {
+      handle = this.ctx.subprocess.spawn({
+        argv: [this.config.pythonExecutable, '-c', ENVIRONMENT_PROBE_SOURCE],
+        // An EXISTING directory, and one this package knows: `PACKAGE_ROOT` is the
+        // directory this module was loaded from, so it exists by construction. The
+        // probe reads no files, so its cwd is not load-bearing; what matters is that
+        // it is not the launcher's directory and not a scratch root that may not
+        // have been created yet.
+        cwd: PACKAGE_ROOT,
+        stdio: { stdin: 'ignore', stdout: 'pipe', stderr: 'pipe' },
+        graceMs: PROBE_TERMINATION_GRACE_MS,
+        env: { PYTHONUNBUFFERED: '1', PYTHONIOENCODING: 'utf-8' },
+      })
+    } catch (error) {
+      throw new KernelTransportError(
+        `the environment probe could not be started with ${this.config.pythonExecutable}: ${String(error)}. `
+        + 'The environment cannot be identified, so no kernel may be built against it.',
+      )
+    }
 
     // Collected with a cap, so an interpreter that floods stdout cannot make the
     // host allocate without bound. A probe that needs more than this is not a
@@ -863,10 +880,25 @@ export class KernelService extends Service {
     handle.stdout?.on('data', (chunk: Buffer) => { stdout = append(chunk, stdout) })
     handle.stderr?.on('data', (chunk: Buffer) => { stderr = append(chunk, stderr) })
 
+    // THE OUTPUT MUST BE DRAINED, NOT MERELY EXITED. `handle.done` settles on the
+    // process 'exit' event, and Node can deliver 'exit' while bytes written by the
+    // child are still in the pipe buffer -- so awaiting `done` alone is a race that
+    // would read a TRUNCATED manifest and, worse, succeed intermittently. Both
+    // readable streams are awaited to 'end' (or 'close', for a stream that errors)
+    // so the manifest is parsed only after the child's last byte has arrived.
+    const streamEnded = (stream: NodeJS.ReadableStream | undefined): Promise<void> =>
+      stream === undefined
+        ? Promise.resolve()
+        : new Promise<void>(resolve => {
+          stream.once('end', resolve)
+          stream.once('close', resolve)
+          stream.once('error', resolve)
+        })
+
     let timer: NodeJS.Timeout | undefined
     try {
       await Promise.race([
-        handle.done,
+        Promise.all([handle.done, streamEnded(handle.stdout), streamEnded(handle.stderr)]),
         new Promise<never>((_resolve, reject) => {
           timer = setTimeout(() => {
             reject(new KernelTransportError(
@@ -881,7 +913,19 @@ export class KernelService extends Service {
     } catch (error) {
       handle.terminate()
       await handle.waitForExit().catch(() => false)
-      throw error
+      // EVERY failure of the probe is the SAME fact -- this environment cannot be
+      // identified -- so it leaves here as one error type. The provider rejects
+      // `handle.done` with its own vocabulary (`spawn EFTYPE` for a real file that
+      // is not executable, `spawn ENOENT` for a path that is not there, and a plain
+      // `Error` for a terminated range), and a caller that had to recognise those
+      // would be depending on a provider's internals. Measured: without this, the
+      // failure arm surfaced `Error: spawn EFTYPE` and an operator could not tell
+      // an unidentifiable environment from a bug in this package.
+      if (error instanceof KernelTransportError) throw error
+      throw new KernelTransportError(
+        `the environment probe could not be run with ${this.config.pythonExecutable}: ${String(error)}. `
+        + 'The environment cannot be identified, so no kernel may be built against it.',
+      )
     } finally {
       if (timer !== undefined) clearTimeout(timer)
     }
