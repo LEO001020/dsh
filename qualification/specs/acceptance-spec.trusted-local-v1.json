@@ -598,9 +598,9 @@
         },
         {
           "path": "qualification/results/V2-composition/boot7-home-override.json",
-          "sha256": "6ace8eb92aa62029b74c3a1280f3b20c39af81f9e00e9d6d8165204bae59a3d0",
+          "sha256": "688110f3026079d23f98076c0d80e6032ed889caf229d15dccaf571d541d2040",
           "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
-          "note": "FAILURE DIRECTION, measured. A one-key overlay (maxActiveSubagents only) was dumped with --dump-config and the subagent block is recorded verbatim: \"- id: subagent / name: '@deepseek-ai/dsh-subagent' / config: / maxActiveSubagents: 10\" -- maxDepth is GONE from that row, so the dialect is NOT a deep merge and the success direction's maxDepth 1 is present BECAUSE the patch states it."
+          "note": "FAILURE DIRECTION, measured. A one-key overlay (maxActiveSubagents only) was dumped with --dump-config and the subagent block is recorded verbatim: \"- id: subagent / name: '@deepseek-ai/dsh-subagent' / config: / maxActiveSubagents: 10\" -- maxDepth is GONE from that row, so the dialect is NOT a deep merge and the success direction's maxDepth 1 is present BECAUSE the patch states it. DIGEST CORRECTED (root, round-3 closure). The recorded value was the sha256 of the file's CRLF form; the committed file is LF, and the repository's canonical form is LF (`.gitattributes`: `* text=auto eol=lf`). MEASURED, not inferred: forcing this file's line endings to CRLF reproduces the OLD recorded digest exactly, and the file as committed reproduces the NEW one. So the content is UNCHANGED and no measurement moved -- this is an ENCODING artifact of `core.autocrlf=true` on a Windows host, the same host configuration that made ID-06's pinned checkout report dirty (filed as G-SEAM-81). The file's own content still supports this case: verified by reading it, not by trusting the hash. The recorded hash is updated to the digest of the canonical committed bytes so that verify-spec's existence-and-hash check is meaningful again."
         },
         {
           "path": "qualification/results/V2-composition/boot7-dump-one-key.txt",
@@ -730,9 +730,9 @@
       "evidence": [
         {
           "path": "qualification/results/V2-composition/boot7-home-override.json",
-          "sha256": "6ace8eb92aa62029b74c3a1280f3b20c39af81f9e00e9d6d8165204bae59a3d0",
+          "sha256": "688110f3026079d23f98076c0d80e6032ed889caf229d15dccaf571d541d2040",
           "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
-          "note": "Gate row CMP-12. CANARY: the home D:/DSH/home/v2-cmp-canary carries $DSH_HOME/cordis.patch.yml setting agent-presets.default to standard, and the boot reports presetDefaultId \"standard\" -- the override IS VISIBLE -- with 26 tools and ipythonToolPresent false. CONTROL: D:/DSH/home/v2-cmp-control has NO home patch (control_has_home_patch false, asserted), and the boot reports presetDefaultId \"daily-standard\" with 27 tools and ipythonToolPresent true."
+          "note": "Gate row CMP-12. CANARY: the home D:/DSH/home/v2-cmp-canary carries $DSH_HOME/cordis.patch.yml setting agent-presets.default to standard, and the boot reports presetDefaultId \"standard\" -- the override IS VISIBLE -- with 26 tools and ipythonToolPresent false. CONTROL: D:/DSH/home/v2-cmp-control has NO home patch (control_has_home_patch false, asserted), and the boot reports presetDefaultId \"daily-standard\" with 27 tools and ipythonToolPresent true. DIGEST CORRECTED (root, round-3 closure). The recorded value was the sha256 of the file's CRLF form; the committed file is LF, and the repository's canonical form is LF (`.gitattributes`: `* text=auto eol=lf`). MEASURED, not inferred: forcing this file's line endings to CRLF reproduces the OLD recorded digest exactly, and the file as committed reproduces the NEW one. So the content is UNCHANGED and no measurement moved -- this is an ENCODING artifact of `core.autocrlf=true` on a Windows host, the same host configuration that made ID-06's pinned checkout report dirty (filed as G-SEAM-81). The file's own content still supports this case: verified by reading it, not by trusting the hash. The recorded hash is updated to the digest of the canonical committed bytes so that verify-spec's existence-and-hash check is meaningful again."
         },
         {
           "path": "qualification/results/V2-composition/GATES.md",
@@ -3026,9 +3026,9 @@
         },
         {
           "path": "qualification/results/V9-verification/ver09-tier-audit.json",
-          "sha256": "197399316cef7304a21f533f0e88f541ba6d7c69e62bdb50b8f01a7a378aaeb9",
+          "sha256": "56aaddf1df64def55b43f4ab416088d702e85aec01962d4844850c47409235b6",
           "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
-          "note": "The machine-readable audit: per-case layer distribution, the T5 expectation, the receipt's binding fields, and its own scope statement -- it audits tier discipline in the record and does not judge whether an oracle was established."
+          "note": "The machine-readable audit: per-case layer distribution, the T5 expectation, the receipt's binding fields, and its own scope statement -- it audits tier discipline in the record and does not judge whether an oracle was established. DIGEST CORRECTED (root, round-3 closure). The recorded value was the sha256 of the file's CRLF form; the committed file is LF, and the repository's canonical form is LF (`.gitattributes`: `* text=auto eol=lf`). MEASURED, not inferred: forcing this file's line endings to CRLF reproduces the OLD recorded digest exactly, and the file as committed reproduces the NEW one. So the content is UNCHANGED and no measurement moved -- this is an ENCODING artifact of `core.autocrlf=true` on a Windows host, the same host configuration that made ID-06's pinned checkout report dirty (filed as G-SEAM-81). The file's own content still supports this case: verified by reading it, not by trusting the hash. The recorded hash is updated to the digest of the canonical committed bytes so that verify-spec's existence-and-hash check is meaningful again."
         },
         {
           "path": "qualification/results/V9-verification/cli-ver09-account.txt",
