@@ -73,6 +73,16 @@ No user code is wrapped. The cell body runs exactly as IPython would run it.
 | the earlier requirement | `vitest run src/requirements.test.ts -t "requirement 9"` | 2 passed |
 | the whole spec-gate file | `vitest run src/v3-spec-gates.test.ts` | 12 passed |
 | neighbours | `requirements.test.ts` 19/19, `faults.test.ts` 11/11, `lifecycle.test.ts` 15/15, `smoke.test.ts` 2/2 | 0 red |
+| typecheck, tests INCLUDED | `node <dsh-src>/node_modules/typescript/bin/tsc -p tsconfig.check.json` | exit 0, 0 errors |
+| typecheck, build config | `tsc -p tsconfig.json --noEmit` | exit 0 |
+
+TypeScript 6.0.3 is not installed in this worktree's `node_modules`, so the
+compiler was run from the pinned checkout's install
+(`D:\DSH\src\dsh-src\node_modules\typescript\bin\tsc`, `--version` 6.0.3). It is
+the same major the package declares (`^6.0.3`). The two probe `.ts` files under
+`src/` are picked up by `tsconfig.json` and emit into `lib/`, which is the
+convention already set by `r5-f2-before.ts`, `t7-measure.ts` and the
+`v4-bridge-*-probe.ts` files.
 
 ### Controls that must not regress, all in `s5-ipy13.test.ts`
 
