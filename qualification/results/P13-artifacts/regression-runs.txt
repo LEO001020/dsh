@@ -1,0 +1,38 @@
+P13 — regression runs on the files that exercise the changed path.
+All runs: one file at a time, per the round-3 brief §4. Identity: worktree
+D:\DSH\work\wt-p13, branch wt/p13.
+
+node node_modules/vitest/vitest.mjs run src/bridge-seam.test.ts
+  -> Test Files 1 passed (1), Tests 17 passed (17), 38.68s
+     Includes T7-04's artifact arm: "a value too large to inline comes back as
+     an Artifact whose bytes verify" -- so the SCRATCH-plane delivery path is
+     unchanged. Also includes T7-07, which was RED until the new probe was
+     registered in its auditable exclusion set.
+
+node node_modules/vitest/vitest.mjs run src/r5-product-bridge.test.ts
+  -> Test Files 1 passed (1), Tests 30 passed (30), 49.04s
+
+node node_modules/vitest/vitest.mjs run src/v3-spec-gates.test.ts
+  -> Test Files 1 passed (1), Tests 12 passed (12), 51.44s
+     Includes IPY-15: "the transport is curve-encrypted, and an over-limit frame
+     is LOST with a count" -- the unrelated frame-limit arm, still green.
+
+node node_modules/vitest/vitest.mjs run src/s6-ipy15.test.ts
+  -> Test Files 1 passed (1), Tests 4 passed (4), 11.89s
+
+node node_modules/vitest/vitest.mjs run src/p13-artifact-plane.test.ts
+  -> Test Files 1 passed (1), Tests 11 passed (11), 34.15s
+
+tsc -p tsconfig.check.json --noEmit  (dsh-ipython, tests INCLUDED)
+  -> exit 0
+
+NOT RUN, with reasons:
+- The full dsh-ipython suite: forbidden by the round-3 brief §4 (fifteen writers
+  share this machine). Four neighbouring files were run instead, chosen because
+  they are the ones that touch the changed API.
+- The full dsh-daily-work suite: this slice changed NOTHING in that package.
+  Verified: `git diff --stat` over packages/dsh-daily-work for this branch is
+  empty, so there is nothing there to regress.
+- A boot: PRODUCT REACHABILITY for the unified plane is P13-11 through
+  KernelService, not a boot, because nothing in the composition constructs a
+  retention port yet. See the report's PRODUCT REACHABILITY field.
