@@ -1,0 +1,126 @@
+{
+ "totalEntries": 108,
+ "numbering": {
+  "G-ENV": {
+   "count": 6,
+   "min": 1,
+   "max": 6,
+   "missing": [],
+   "collisions": []
+  },
+  "G-SEAM": {
+   "count": 74,
+   "min": 1,
+   "max": 74,
+   "missing": [],
+   "collisions": []
+  },
+  "G-VER": {
+   "count": 5,
+   "min": 1,
+   "max": 5,
+   "missing": [],
+   "collisions": []
+  },
+  "G-FIX": {
+   "count": 12,
+   "min": 1,
+   "max": 13,
+   "missing": [
+    10
+   ],
+   "collisions": []
+  },
+  "G-TODO": {
+   "count": 9,
+   "min": 1,
+   "max": 9,
+   "missing": [],
+   "collisions": []
+  },
+  "G-EXT": {
+   "count": 2,
+   "min": 1,
+   "max": 2,
+   "missing": [],
+   "collisions": []
+  }
+ },
+ "collisions": [],
+ "missingIds": {
+  "G-FIX": [
+   10
+  ]
+ },
+ "referencedButUndefined": [
+  "G-FIX-10",
+  "G-WEB-01",
+  "G-WEB-03"
+ ],
+ "malformedRows": [
+  {
+   "line": 69,
+   "id": "G-SEAM-31",
+   "ncols": 8
+  },
+  {
+   "line": 99,
+   "id": "G-SEAM-59",
+   "ncols": 9
+  },
+  {
+   "line": 101,
+   "id": "G-SEAM-61",
+   "ncols": 7
+  },
+  {
+   "line": 105,
+   "id": "G-SEAM-64",
+   "ncols": 8
+  },
+  {
+   "line": 114,
+   "id": "G-SEAM-73",
+   "ncols": 11
+  },
+  {
+   "line": 115,
+   "id": "G-SEAM-74",
+   "ncols": 7
+  }
+ ],
+ "noVerdictEntries": [
+  {
+   "line": 106,
+   "id": "G-SEAM-65",
+   "status": "MEASURED by writer R1 (`qualification/results/R1-trusted-local/session-override-inventory.json`); **the migration decision is OPEN**"
+  }
+ ],
+ "controlBytes": [
+  {
+   "offset": 93831,
+   "byte": "0x08"
+  },
+  {
+   "offset": 117369,
+   "byte": "0x00"
+  },
+  {
+   "offset": 133056,
+   "byte": "0x08"
+  }
+ ],
+ "leadingVerdictCounts": {
+  "RESOLVED": 33,
+  "OPEN": 49,
+  "CONFIRMED": 3,
+  "REFUTED": 1,
+  "RETRACTED": 2,
+  "VERIFIED": 3,
+  "PARTIAL": 1,
+  "NO_VERDICT": 1,
+  "FIXED": 5,
+  "IN_PROGRESS": 8,
+  "BLOCKED_EXTERNAL": 2
+ }
+}
