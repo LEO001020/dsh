@@ -282,11 +282,19 @@ rows present in both but DIFFERENT: agent-presets, approval, daily-work-host,
   fs-sandbox, permission, pwsh-sandbox, sandbox-policy, ui-permission
 ```
 
-Two of those differences are the very inputs that moved: the fresh dump's
+One of those differences is the input that moved: the fresh dump's
 `sandbox-policy.mode` reads `danger-full-access` where the pinned dump reads
-`!!js process.env.DSH_PERMISSION_MODE ?? 'workspace-write'`, and the fresh dump has no
-`daily-work-command` row because the dump is the host plane while that row is an AGENT
-PRESET row.
+`!!js process.env.DSH_PERMISSION_MODE ?? 'workspace-write'`.
+
+The OTHER moved input does NOT show up here, and the reason is worth recording rather
+than leaving as an apparent omission: the fresh dump contains no `daily-work-command`
+row. That is EXPECTED and not a defect — `--dump-config` dumps the HOST plane, and
+agent-preset rows are absent from it by construction. Measured: the fresh dump also has
+no `daily-work-tools` row (the pre-existing preset row), while `tool-todo` appears
+because it is a host row. So the absence of `daily-work-command` from this dump is not
+evidence about the row; it is a property of what the dump covers. The row's existence
+and reachability were verified directly instead: the preset file contains it and
+`packages/dsh-daily-work/package.json` exports `./command` to a built file.
 
 **The finding, stated plainly**: `resolved_plugin_graph_digest` is named as an identity
 input and is the digest of a dump file that predates the composition the identity now
