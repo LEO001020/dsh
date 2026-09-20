@@ -1,0 +1,10 @@
+ [2m[90m↓[39m[22m src/p13-artifact-plane.test.ts[2m > [22mP13 — the large-result plane is the project artifact plane, not a path[2m > [22mP13-3 with a port mounted the reply carries a typed ref and NO host path
+ [31m×[39m src/p13-artifact-plane.test.ts[2m > [22mP13 — the large-result plane is the project artifact plane, not a path[2m > [22mP13-10 the DURABLE LEDGER carries a typed ref, never a host path[33m 5179[2mms[22m[39m
+[31m   → expected 'C:\Users\hzq00\AppData\Local\Temp\p13…' to match /^artifact:sha256:[a-f0-9]{64}$/u[39m
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 1 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+[41m[1m FAIL [22m[49m src/p13-artifact-plane.test.ts[2m > [22mP13 — the large-result plane is the project artifact plane, not a path[2m > [22mP13-10 the DURABLE LEDGER carries a typed ref, never a host path
+[31m[1mAssertionError[22m: expected 'C:\Users\hzq00\AppData\Local\Temp\p13…' to match /^artifact:sha256:[a-f0-9]{64}$/u[39m
+[32m- Expected:[39m
+[31m+ Received:[39m
+"C:\\Users\\hzq00\\AppData\\Local\\Temp\\p13-plane-Q0fUvm\\artifacts-ledger-scratch\\03fb639faff61eb227bd77a217630bc373261ae401674c91d05f50ad450eff92.json"
+[2m      Tests [22m [1m[31m1 failed[39m[22m[2m | [22m[33m9 skipped[39m[90m (10)[39m

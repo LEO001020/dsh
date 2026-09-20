@@ -112,11 +112,15 @@ function recordingPlane(options: { transform?: (bytes: Uint8Array) => Uint8Array
   }
 }
 
-/** Mount a bridge + kernel service + lease, and register the size-controlled tool. */
-async function mount(
-  name: string,
-  options: { retention?: BridgeArtifactRetention } = {},
-): Promise<{ bridge: BridgeServer, service: KernelService, preamble: string }> {
+/**
+ * Register the size-controlled tool under a per-arm name.
+ *
+ * ONE definition, called by every arm, so an arm cannot pass because its tool
+ * happened to differ from the one another arm measured. The tool returns a
+ * canonical value whose SIZE the caller chooses, which is what lets one tool
+ * exercise both delivery doors.
+ */
+function registerBlob(name: string): void {
   ctx.tools.register(defineTool({
     name: `p13_blob_${name}`,
     description: 'Returns a blob of a requested character count.',
@@ -131,6 +135,14 @@ async function mount(
     },
     execute: async (args: { chars: number }) => ({ blob: 'x'.repeat(args.chars) }),
   }))
+}
+
+/** Mount a bridge + kernel service + lease, and register the size-controlled tool. */
+async function mount(
+  name: string,
+  options: { retention?: BridgeArtifactRetention } = {},
+): Promise<{ bridge: BridgeServer, service: KernelService, preamble: string }> {
+  registerBlob(name)
 
   const bridge = new BridgeServer({
     artifactDirectory: join(root, `artifacts-${name}`),
@@ -235,13 +247,21 @@ describe('P13 — the large-result plane is the project artifact plane, not a pa
       // unified plane still carried a path, this line would succeed.
       "import os as _os",
       "print('HAS_PATH:' + str(getattr(value, 'path', None) is not None))",
+      // EVERY call below is inside the try, INCLUDING verify(). A first version
+      // left verify() outside it, and the mutation test showed why that matters:
+      // with a leaked path, verify() raised an uncaught FileNotFoundError and the
+      // cell failed on `outcome` instead of on HAS_PATH -- red for an adjacent
+      // reason rather than for the property under test.
       "try:",
       "    value.load()",
       "    print('LOAD_REFUSED:no')",
       "except Exception as exc:",
       "    print('LOAD_REFUSED:yes')",
       "    print('LOAD_CODE:' + str(getattr(exc, 'code', None)))",
-      "print('VERIFY_WITHOUT_PATH:' + str(value.verify()))",
+      "try:",
+      "    print('VERIFY_WITHOUT_PATH:' + str(value.verify()))",
+      "except Exception as exc:",
+      "    print('VERIFY_RAISED:' + type(exc).__name__)",
     ].join('\n'))
     expect(result.outcome).toBe('ok')
     expect(result.stdout.text).toContain('HAS_PATH:False')
@@ -362,5 +382,129 @@ describe('P13 — the large-result plane is the project artifact plane, not a pa
     // Both were SMALL, so both were inline: the exact ToolRuntime lane did not
     // acquire an artifact hop from this slice.
     expect(dispatched.filter(name => name === 'p13_blob_serial')).toHaveLength(2)
+  }, 240_000)
+
+  it('P13-10 the DURABLE LEDGER carries a typed ref, never a host path', async () => {
+    // THIS ARM EXISTS BECAUSE A MUTATION SURVIVED WITHOUT IT. Reverting the
+    // ledger field to `outcome.artifact.path` -- the pre-P13 behaviour, which put
+    // a host filesystem path into a durable record -- left all nine arms green.
+    // A gate that does not notice the durable record naming a replaceable
+    // location is not gating the property §12 is about, so this arm was added
+    // and the mutation re-run against it.
+    const plane = recordingPlane()
+    const ledger = new MemoryBridgeLedger()
+    registerBlob('ledger')
+    const bridge = new BridgeServer({
+      artifactDirectory: join(root, 'artifacts-ledger'),
+      inlineValueBytes: 4096,
+      retention: plane.port,
+    })
+    bridges.push(bridge)
+    await bridge.start()
+    const service = new KernelService(ctx, {
+      pythonExecutable: PYTHON,
+      brokerScript: BROKER,
+      root: join(root, 'kernels-ledger'),
+    })
+    services.push(service)
+    const agent = agentFor('session-ledger', root)
+    const lease = bridge.mintLease({
+      sessionId: 'session-ledger',
+      cellId: 'cell-ledger',
+      epoch: 1,
+      outerCallId: 'ipython-call-ledger',
+      rootCallId: 'ipython-call-ledger',
+      ledger,
+      handler: createNativeCallHandler({
+        ctx,
+        authority: authorityFor('ipython-call-ledger', agent, new AbortController().signal),
+        bridge,
+      }),
+    })
+    const result = await service.runCell(agent, [
+      bridge.preamble(lease),
+      "value = await dsh.call('p13_blob_ledger', {'chars': 8192})",
+      "print('CALL_PLANE:' + str(value.plane))",
+    ].join('\n'))
+    expect(result.outcome).toBe('ok')
+    expect(result.stdout.text).toContain('CALL_PLANE:unified')
+
+    // ── HALF 1: THE SCRATCH PLANE, WHICH IS THE HALF THAT CAN LEAK A PATH ────
+    //
+    // Order matters here and it is not cosmetic. On the UNIFIED plane
+    // `artifact.path` is undefined, so reverting the ledger field to
+    // `outcome.artifact.path` writes `undefined` and the row simply has no ref --
+    // the unified assertion below would then fire with "carries no artifactRef",
+    // which is a CONFUSING message for "the durable record leaked a host path".
+    // A gate whose failure text misdescribes the defect is how a gate gets
+    // disabled later. So the scratch plane runs FIRST: it is the one where a path
+    // genuinely exists to leak, so the failure names the real defect.
+    //
+    // A SECOND KernelService ON THIS ctx IS NOT POSSIBLE: it registers as the
+    // `ipython` service, so constructing one throws `service "ipython" has been
+    // registered`. Measured -- the first version of this half failed exactly
+    // there. ONE service serves both halves, which is sound because a kernel is
+    // keyed by the agent's session id: the two halves use different sessions, so
+    // they get different kernels, and the only inputs this arm varies are the
+    // bridge and the ledger.
+    const scratchBridge = new BridgeServer({
+      artifactDirectory: join(root, 'artifacts-ledger-scratch'),
+      inlineValueBytes: 4096,
+    })
+    bridges.push(scratchBridge)
+    await scratchBridge.start()
+    const scratchAgent = agentFor('session-ledger-scratch', root)
+    const scratchLedger = new MemoryBridgeLedger()
+    registerBlob('ledger_scratch')
+    const scratchLease = scratchBridge.mintLease({
+      sessionId: 'session-ledger-scratch',
+      cellId: 'cell-ledger-scratch',
+      epoch: 1,
+      outerCallId: 'ipython-call-ledger-scratch',
+      rootCallId: 'ipython-call-ledger-scratch',
+      ledger: scratchLedger,
+      handler: createNativeCallHandler({
+        ctx,
+        authority: authorityFor('ipython-call-ledger-scratch', scratchAgent, new AbortController().signal),
+        bridge: scratchBridge,
+      }),
+    })
+    const scratchResult = await service.runCell(scratchAgent, [
+      scratchBridge.preamble(scratchLease),
+      "value = await dsh.call('p13_blob_ledger_scratch', {'chars': 8192})",
+      "print('SCRATCH_PLANE:' + str(value.plane))",
+      "print('SCRATCH_HAS_PATH:' + str(value.path is not None))",
+    ].join('\n'))
+    expect(scratchResult.outcome).toBe('ok')
+    expect(scratchResult.stdout.text).toContain('SCRATCH_PLANE:bridge-scratch')
+    // The path really is present on this plane, so the assertion below is about
+    // a path that EXISTS rather than about an absent field.
+    expect(scratchResult.stdout.text).toContain('SCRATCH_HAS_PATH:True')
+
+    const scratchRows = scratchLedger.forOuterCall('ipython-call-ledger-scratch')
+      .filter(row => row.name === 'p13_blob_ledger_scratch')
+    expect(scratchRows.length).toBeGreaterThan(0)
+    for (const row of scratchRows) {
+      expect(row.artifactRef, `scratch ledger row ${row.subCallId} carries no artifactRef`).toBeDefined()
+      expect(row.artifactRef).toMatch(/^artifact:sha256:[a-f0-9]{64}$/u)
+      // THE ASSERTION THE MUTATION TRIPS. A path here would be the durable
+      // record naming a location that any same-UID writer can replace, which is
+      // the defect this slice removes.
+      expect(row.artifactRef, 'the durable record must not name a host path').not.toMatch(/^[A-Za-z]:[\\/]/u)
+      expect(row.artifactRef).not.toContain('\\')
+    }
+
+    // ── HALF 2: THE UNIFIED PLANE, WHERE THERE IS NO PATH AT ALL ─────────────
+    const rows = ledger.forOuterCall('ipython-call-ledger')
+    const blobRows = rows.filter(row => row.name === 'p13_blob_ledger')
+    expect(blobRows.length).toBeGreaterThan(0)
+    for (const row of blobRows) {
+      // THE PROPERTY, asserted directly on the row so a failure NAMES it.
+      expect(row.artifactRef, `ledger row ${row.subCallId} carries no artifactRef`).toBeDefined()
+      expect(row.artifactRef).toMatch(/^artifact:sha256:[a-f0-9]{64}$/u)
+      expect(row.artifactRef).not.toMatch(/^[A-Za-z]:[\\/]/u)
+      expect(row.artifactRef).not.toContain('\\')
+      expect(row.artifactRef).not.toContain('/')
+    }
   }, 240_000)
 })

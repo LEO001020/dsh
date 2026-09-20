@@ -1,8 +1,5 @@
- [32m✓[39m src/p13-artifact-plane.test.ts[2m > [22mP13 — the large-result plane is the project artifact plane, not a path[2m > [22mP13-8 the ref this package mints is byte-identical to artifacts.ts:artifactRefOf[32m 6[2mms[22m[39m
- [32m✓[39m src/p13-artifact-plane.test.ts[2m > [22mP13 — the large-result plane is the project artifact plane, not a path[2m > [22mP13-9 the serial dsh.call lane is UNCHANGED: two calls, two dispatches, in order[33m 2960[2mms[22m[39m
-
 [2m Test Files [22m [1m[32m1 passed[39m[22m[90m (1)[39m
-[2m      Tests [22m [1m[32m9 passed[39m[22m[90m (9)[39m
-[2m   Start at [22m 21:51:56
-[2m   Duration [22m 25.20s[2m (transform 331ms, setup 0ms, import 464ms, tests 24.57s, environment 0ms)[22m
+[2m      Tests [22m [1m[32m10 passed[39m[22m[90m (10)[39m
+[2m   Start at [22m 22:01:53
+[2m   Duration [22m 30.00s[2m (transform 318ms, setup 0ms, import 451ms, tests 29.37s, environment 0ms)[22m
 
