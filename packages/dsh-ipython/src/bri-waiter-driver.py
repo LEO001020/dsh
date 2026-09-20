@@ -61,7 +61,7 @@ import time
 BARRIER_BUDGET_S = 4.0
 
 
-def _instrument(dsh):
+def _instrument(dsh, fail_send):
     """Install the two observations and the one scheduling hook. Returns state."""
     channel = dsh._channel
 
@@ -75,19 +75,34 @@ def _instrument(dsh):
         'sends': 0,
         'readerLookups': 0,
         'readerLookupsWithoutWaiter': 0,
+        'callerCleanupPops': 0,
         'registrationSendCount': None,
         'forcedWaitMs': 0.0,
         'readerWaitExpired': False,
+        'waitersAfter': 0,
     }
     reader_looked_up = threading.Event()
+    # ATTRIBUTED BY THREAD, because both the reader and the caller pop this dict:
+    # the reader pops every reply it reads, and the caller pops its own waiter on
+    # a timeout (`call_sync`) or in its `finally` (`call_async`). Counting them
+    # together would report a caller's cleanup as a discarded reply, which is the
+    # opposite of what the field is for. `_ensure_locked` has already started the
+    # thread, so its ident is available here.
+    reader_ident = channel._reader.ident
 
     class SendProbe:
         """Records that a frame went out. Everything else is forwarded."""
 
-        def __init__(self, sock):
+        def __init__(self, sock, fail):
             self._sock = sock
+            self._fail = fail
 
         def sendall(self, data):
+            if self._fail:
+                # The `sendfail` mode: a send that raises AFTER the waiter has
+                # been registered, which is the arm the cleanup path exists for.
+                # An injection, and named as one.
+                raise OSError('injected send failure')
             state['sends'] += 1
             return self._sock.sendall(data)
 
@@ -99,10 +114,17 @@ def _instrument(dsh):
 
         def pop(self, key, *default):
             present = dict.__contains__(self, key)
-            state['readerLookups'] += 1
-            if not present:
-                state['readerLookupsWithoutWaiter'] += 1
-            reader_looked_up.set()
+            if threading.get_ident() == reader_ident:
+                # The reader looking a reply up. `not present` here is the defect:
+                # the reply was delivered and there was no waiter to receive it.
+                state['readerLookups'] += 1
+                if not present:
+                    state['readerLookupsWithoutWaiter'] += 1
+                reader_looked_up.set()
+            else:
+                # The caller clearing up its own registration after a timeout, or
+                # the fixed `_send` rolling back a failed send.
+                state['callerCleanupPops'] += 1
             return dict.pop(self, key, *default)
 
         def __setitem__(self, key, value):
@@ -141,7 +163,7 @@ def _instrument(dsh):
             return False
 
     channel._waiters = ObservedWaiters()
-    channel._socket = SendProbe(real_sock)
+    channel._socket = SendProbe(real_sock, fail_send)
     channel._lock = SchedulingLock(channel._lock)
     return state
 
@@ -167,10 +189,10 @@ def _call(dsh, mode, timeout_s):
 
 def main(argv):
     if len(argv) != 4:
-        raise SystemExit('usage: bri-waiter-driver.py <sync|async> <preamble.py> <timeout_s>')
+        raise SystemExit('usage: bri-waiter-driver.py <sync|async|sendfail> <preamble.py> <timeout_s>')
     mode, preamble_path, timeout_text = argv[1], argv[2], argv[3]
-    if mode not in ('sync', 'async'):
-        raise SystemExit('mode must be sync or async')
+    if mode not in ('sync', 'async', 'sendfail'):
+        raise SystemExit('mode must be sync, async or sendfail')
 
     # The REAL per-cell preamble, rendered by the REAL BridgeServer, executed
     # exactly as the kernel would: it defines `dsh` in this namespace.
@@ -179,8 +201,12 @@ def main(argv):
         exec(compile(handle.read(), preamble_path, 'exec'), namespace)  # noqa: S102
     dsh = namespace['dsh']
 
-    state = _instrument(dsh)
-    outcome = _call(dsh, mode, float(timeout_text))
+    state = _instrument(dsh, fail_send=(mode == 'sendfail'))
+    outcome = _call(dsh, 'sync' if mode == 'sendfail' else mode, float(timeout_text))
+    # Whether the failed send left a waiter registered. Zero is the healthy
+    # state; a leftover would make a later caller wait for a request that was
+    # never sent.
+    state['waitersAfter'] = len(dsh._channel._waiters)
     report = {'mode': mode, **outcome, **state}
     sys.stdout.write(json.dumps(report, sort_keys=True) + '\n')
     return 0
