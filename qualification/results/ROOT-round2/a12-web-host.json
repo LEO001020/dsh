@@ -1,0 +1,17 @@
+{
+  "measured_at": "2026-09-20T10:43:23.340Z",
+  "profile": "daily",
+  "dsh_home": "D:/DSH/home/s15",
+  "banner_printed": true,
+  "port": 3080,
+  "token_present_in_url": true,
+  "still_running": true,
+  "exit_code": null,
+  "stderr_redacted": "",
+  "port_listening": true,
+  "http_status": 401,
+  "http_status_bad_token": 401,
+  "http_status_valid_token": 303,
+  "auth_gate_established": true,
+  "token_recorded_in_result": false
+}
