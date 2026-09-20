@@ -1,0 +1,69 @@
+{
+ "totalEntries": 109,
+ "numbering": {
+  "G-ENV": {
+   "count": 6,
+   "min": 1,
+   "max": 6,
+   "missing": [],
+   "collisions": []
+  },
+  "G-SEAM": {
+   "count": 74,
+   "min": 1,
+   "max": 74,
+   "missing": [],
+   "collisions": []
+  },
+  "G-VER": {
+   "count": 5,
+   "min": 1,
+   "max": 5,
+   "missing": [],
+   "collisions": []
+  },
+  "G-FIX": {
+   "count": 13,
+   "min": 1,
+   "max": 13,
+   "missing": [],
+   "collisions": []
+  },
+  "G-TODO": {
+   "count": 9,
+   "min": 1,
+   "max": 9,
+   "missing": [],
+   "collisions": []
+  },
+  "G-EXT": {
+   "count": 2,
+   "min": 1,
+   "max": 2,
+   "missing": [],
+   "collisions": []
+  }
+ },
+ "collisions": [],
+ "missingIds": {},
+ "referencedButUndefined": [
+  "G-WEB-01",
+  "G-WEB-03"
+ ],
+ "malformedRows": [],
+ "noVerdictEntries": [],
+ "controlBytes": [],
+ "leadingVerdictCounts": {
+  "RESOLVED": 43,
+  "OPEN": 39,
+  "DUPLICATE": 2,
+  "BLOCKED_EXTERNAL": 3,
+  "REFUTED": 1,
+  "RETRACTED": 2,
+  "SUPERSEDED": 2,
+  "VERIFIED": 3,
+  "PARTIAL": 1,
+  "FIXED": 5,
+  "IN_PROGRESS": 8
+ }
+}
