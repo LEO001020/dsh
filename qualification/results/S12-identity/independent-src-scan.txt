@@ -1,0 +1,18 @@
+# S12 independent src/-specifier scan
+# repo: D:\DSH\work\wt-s12
+# packages discovered from the filesystem: 2 -> dsh-daily-work, dsh-ipython
+
+## what was scanned
+   dsh-daily-work     production-src= 39 test-src= 53 emitted-lib= 39 libPresent=true
+   dsh-ipython        production-src= 13 test-src= 11 emitted-lib= 13 libPresent=true
+   TOTAL FILES SCANNED: 168
+
+## PRODUCTION offenders (src/ import in non-test source, or in emitted lib/)
+   NONE — measured zero, over 168 files
+
+## TEST-side offenders (deep imports in *.test.ts; allowed only if justified in the gate)
+   packages/dsh-daily-work/src/data-plane.test.ts -> @deepseek-ai/dsh-tool-fs/src/read-render.ts, @deepseek-ai/dsh-tool-fs/src/read.ts, @deepseek-ai/dsh-tool-fs-search/src/search-core.ts, @deepseek-ai/dsh-tool-fs-search/src/search-core.ts, @deepseek-ai/dsh-tool-fs-search/src/grep.ts, @deepseek-ai/dsh-tool-fs-search/src/search-core.ts
+   packages/dsh-daily-work/src/eco.test.ts -> @deepseek-ai/dsh-headless/src/json-stream.ts
+   packages/dsh-daily-work/src/history-web.test.ts -> @deepseek-ai/dsh-tool-web/src/trust.ts
+
+VERDICT: production CLEAN (0 offenders)

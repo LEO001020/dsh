@@ -1,0 +1,162 @@
+# ID-06 raw reproduction — pinned checkout git state
+# checkout: D:\DSH\src\dsh-src
+# captured: 2026-09-20T18:36:00+08:00
+# git: git version 2.55.0.windows.3
+# writer: S12 (wave 2, wt-s12). READ-ONLY: no write was made to the checkout.
+
+## CMD 1: git status --porcelain
+ M packages/deliverables/workspace-changes/src/index.ts
+(exit=0)
+
+## CMD 2: git rev-parse HEAD
+ddefc45fbc7f8e46dd73185e68295696d1297887
+(exit=0)
+
+## CMD 3: git diff --numstat
+warning: in the working copy of 'packages/deliverables/workspace-changes/src/index.ts', CRLF will be replaced by LF the next time Git touches it
+(exit=0)
+
+## CMD 4: git rev-parse HEAD:packages/deliverables/workspace-changes/src/index.ts
+c05787d931870defacfdfcb4feca85f4ae733d8e
+(exit=0)
+
+## CMD 5: git hash-object packages/deliverables/workspace-changes/src/index.ts
+c05787d931870defacfdfcb4feca85f4ae733d8e
+(exit=0)
+
+## SUPPORTING: git status --porcelain --untracked-files=all  (untracked dirs gone?)
+ M packages/deliverables/workspace-changes/src/index.ts
+(exit=0)
+
+## SUPPORTING: git ls-files -o --exclude-standard (untracked file list)
+(count=0)
+
+## SUPPORTING: git status --porcelain=v2 (hash columns)
+1 .M N... 100644 100644 100644 c05787d931870defacfdfcb4feca85f4ae733d8e c05787d931870defacfdfcb4feca85f4ae733d8e packages/deliverables/workspace-changes/src/index.ts
+
+## SUPPORTING: git diff --exit-code ; git diff --quiet HEAD
+diff --exit-code exit=0
+diff --quiet HEAD exit=0
+
+## SUPPORTING: index entry stat vs worktree stat
+packages/deliverables/workspace-changes/src/index.ts
+  ctime: 1789785717:474320000
+  mtime: 1789785717:474320000
+  dev: 0	ino: 0
+  uid: 0	gid: 0
+  size: 7086	flags: 0
+worktree: size=7251 mtime=2026-09-19 19:19:47.523704400 +0800 ctime=2026-09-19 19:19:47.523704400 +0800
+worktree CR count: 165
+worktree LF count: 165
+NOTE: index size=7086 (LF form). worktree size=7251. 7251-7086=165 = CR count. CRLF-only delta.
+
+## SUPPORTING: core.autocrlf / core.eol / .gitattributes
+core.autocrlf = true
+core.eol =    (blank = unset)
+.gitattributes line 1: * text=auto eol=lf 
+
+## SUPPORTING: .git/index mtime before/after these READ commands (proves no index write)
+.git/index mtime=2026-09-19 10:42:49.935483500 +0800
+ls: cannot access '.git/index.lock': No such file or directory
+
+## READ-ONLY OPTION ANALYSIS (does any non-writing option clear the ` M` flag?)
+
+Experiment design: a COPY of .git/index was placed at /tmp/s12-idx/idx-copy and
+addressed via GIT_INDEX_FILE, so any index write lands on the copy. The real
+index sha256 was recorded before and after.
+
+  real index BEFORE: sha256 cfb2958b0bec566de42648d54b440da7aa7b49b247972184daa79a2abff18dda
+                     mtime 2026-09-19 10:42:49.935483500 +0800  size 1573760
+  copy sha256      : cfb2958b0bec566de42648d54b440da7aa7b49b247972184daa79a2abff18dda
+
+  A) GIT_INDEX_FILE=<copy> git status --porcelain
+     ->  M packages/deliverables/workspace-changes/src/index.ts
+     The flag reproduces against an unrefreshed copy. It is a property of the
+     index STAT CACHE, not of any particular file on disk.
+
+  B) GIT_INDEX_FILE=<copy> git update-index --refresh
+     -> packages/deliverables/workspace-changes/src/index.ts: needs update
+     -> exit=1
+     -> copy sha256 UNCHANGED (cfb2958b...)
+     REFUSES TO CLEAR IT. The stat cache cannot be refreshed to match because
+     the on-disk size (7251) genuinely differs from the cached size (7086).
+     So even the WRITE-requiring option does not silently fix this; it reports
+     "needs update" and exits 1.
+
+  C) GIT_INDEX_FILE=<copy> git status --porcelain (after B)
+     ->  M packages/deliverables/workspace-changes/src/index.ts
+     Still flagged.
+
+  real index AFTER : sha256 cfb2958b0bec566de42648d54b440da7aa7b49b247972184daa79a2abff18dda
+                     mtime 2026-09-19 10:42:49.935483500 +0800  size 1573760
+                     (IDENTICAL to before)
+  .git/index.lock  : does not exist (no lock created)
+  ==> No write to the pinned checkout was performed by this writer.
+
+WHAT WOULD ACTUALLY BE NEEDED TO CLEAR THE FLAG (each is a WRITE; none performed):
+  1. `git update-index --really-refresh` / `--refresh`  -> writes .git/index,
+     and per experiment B it does not even clear the flag here.
+  2. `git add --renormalize packages/.../index.ts` -> rewrites the worktree file
+     to LF AND rewrites .git/index. This MUTATES the checkout: the file becomes
+     byte-different from what is there now. Forbidden by the read-only rule.
+  3. `git -c core.autocrlf=false status --porcelain` -> READ-ONLY, but see below.
+  4. `git config core.autocrlf false` -> writes .git/config (a checkout write).
+     Forbidden.
+
+  Option 3 was tested: it is a READ-ONLY invocation, so it is permitted to run.
+  Result recorded in ID-06-autocrlf-false.txt.
+
+## DISCLOSURE: a .git-internal write occurred, caused by this writer
+
+The checkout is a PARTIAL CLONE (`remote.origin.promisor=true`,
+`remote.origin.partialclonefilter=blob:none`, measured). In such a clone a git
+command that needs an object not present locally triggers a LAZY FETCH, which
+writes a new pack into `.git/objects/pack/`.
+
+While establishing whether the tracked blob was present locally, this writer ran:
+
+    git rev-list --objects --all --missing=print | grep '^?' | head -1
+      -> 000058ca325785cfdc34af02ea6eaf17c03e981c
+    git cat-file -e 000058ca325785cfdc34af02ea6eaf17c03e981c
+
+The second command materialised a new pack:
+
+    pack-681ade73241f5d72f6179cfcc64b470c7403ebd5.pack  130682 bytes  18:41:31
+    contents: 000058ca325785cfdc34af02ea6eaf17c03e981c blob 573454 130650 12
+              "non delta: 1 object"  -- exactly the ONE object requested
+
+CAUSE ATTRIBUTED TO THIS WRITER. It is a `.git`-internal write, NOT a working-tree
+write: no tracked file changed, no worktree file was created, HEAD did not move,
+and the oracle's two fields are byte-identical before and after (re-measured
+below). Recorded because the instruction was "do not touch the checkout" and this
+touched `.git`. The mechanism generalises: in a blob:none partial clone ANY git
+command that reads a non-local blob writes into `.git`, so "read-only git in this
+checkout" is not fully achievable.
+
+A second, EARLIER `.git` write is NOT attributable to this writer:
+
+    pack-c0fc169b5f51e445239ca34eff50a80549658b4f.pack  mtime 2026-09-20 18:37:22
+    (its .idx is unchanged at 2026-09-19 10:41:54, so the pack body was rewritten
+    without the index being rebuilt -- not the shape of a lazy fetch, which
+    creates a NEW pack as the 681ade7 case shows)
+
+This writer's session began 18:36:00. The 18:37:22 write falls inside that window
+but no command of mine at that moment requested a missing object, and 15 writers
+were running concurrently. UNKNOWN_CAUSE; recorded, not explained.
+
+## ORACLE FIELDS RE-MEASURED AFTER THE .git WRITE (unchanged)
+
+    $ git status --porcelain
+     M packages/deliverables/workspace-changes/src/index.ts
+    $ git rev-parse HEAD
+    ddefc45fbc7f8e46dd73185e68295696d1297887
+    $ git hash-object packages/deliverables/workspace-changes/src/index.ts
+    c05787d931870defacfdfcb4feca85f4ae733d8e
+    $ git rev-parse HEAD:packages/deliverables/workspace-changes/src/index.ts
+    c05787d931870defacfdfcb4feca85f4ae733d8e
+
+    $ find . -path ./.git -prune -o -path '*/node_modules' -prune \
+        -o -type f -newermt '2026-09-20 00:00:00' -print | wc -l
+    0
+    (ZERO working-tree files touched since 2026-09-20 00:00, i.e. by any writer
+     in this wave. The only worktree modification is the 2026-09-19 19:19:47 one.)

@@ -1,0 +1,33 @@
+# ID-06: can a READ-ONLY git invocation clear the ' M' flag?
+# captured: 2026-09-20T18:36:52+08:00  writer: S12
+# These are READ-ONLY commands (no --refresh, no add, no config write).
+# index sha256 before/after is recorded to prove nothing was written.
+
+index BEFORE: cfb2958b0bec566de42648d54b440da7aa7b49b247972184daa79a2abff18dda *.git/index
+
+## git -c core.autocrlf=false status --porcelain
+ M packages/deliverables/workspace-changes/src/index.ts
+(exit=0)
+
+## git -c core.autocrlf=false diff --numstat
+warning: in the working copy of 'packages/deliverables/workspace-changes/src/index.ts', CRLF will be replaced by LF the next time Git touches it
+(exit=0)
+
+## git -c core.autocrlf=input status --porcelain
+ M packages/deliverables/workspace-changes/src/index.ts
+(exit=0)
+
+## git -c core.autocrlf=true status --porcelain  (the ambient config)
+ M packages/deliverables/workspace-changes/src/index.ts
+(exit=0)
+
+## git -c core.autocrlf=false status --porcelain=v2
+1 .M N... 100644 100644 100644 c05787d931870defacfdfcb4feca85f4ae733d8e c05787d931870defacfdfcb4feca85f4ae733d8e packages/deliverables/workspace-changes/src/index.ts
+
+index AFTER : cfb2958b0bec566de42648d54b440da7aa7b49b247972184daa79a2abff18dda *.git/index
+index mtime : 2026-09-19 10:42:49.935483500 +0800
+
+## INTERPRETATION
+core.autocrlf=false makes git STOP normalising the worktree file, so the
+clean filter no longer maps CRLF->LF. The result below shows whether the
+flag survives that change.
