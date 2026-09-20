@@ -1131,6 +1131,12 @@ describe('T7-07 the bridge IS wired into the product (MEASURED — F2 closed)', 
       'packages/dsh-ipython/src/v4-bridge-approval-probe.ts',
       'packages/dsh-ipython/src/v4-bridge-drain-probe.ts',
       'packages/dsh-ipython/src/r5-f2-before.ts',
+      // P13's probe. It constructs a BridgeServer directly, like every probe
+      // above, and it is a PROBE for the same reason: it measures the
+      // large-result retention plane on a bridge the probe owns, not a caller
+      // the product reaches. Added here deliberately, which is the point of
+      // naming every probe exactly rather than widening the pattern.
+      'packages/dsh-ipython/src/p13-artifact-plane-probe.ts',
     ])
     // `file` arrives ABSOLUTE (the walk joins from `repo`), so it is reduced to
     // the repo-relative form the set is keyed by.
