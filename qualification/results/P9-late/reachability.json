@@ -1,0 +1,31 @@
+{
+  "measuredAt": "2026-09-20T13:15:06.629Z",
+  "note": "PRODUCT REACHABILITY: measured through the INSTALLED profile at D:/DSH/home/p9, not through src/",
+  "installedProfileLinkTargets": {
+    "dsh-daily-work": "link:D:/DSH/work/wt-p9/packages/dsh-daily-work",
+    "dsh-ipython": "link:D:/DSH/work/wt-p9/packages/dsh-ipython"
+  },
+  "presetRow": {
+    "file": "profiles/daily-candidate/presets/daily-standard/agent.cordis.yml:406",
+    "name": "dsh-ipython/tool"
+  },
+  "toolResolvesTo": "D:\\DSH\\work\\wt-p9\\packages\\dsh-ipython\\lib\\ipython-tool.js",
+  "pluginResolvesTo": "D:\\DSH\\work\\wt-p9\\packages\\dsh-ipython\\lib\\kernel-plugin.js",
+  "toolIsInThisWorktree": true,
+  "pluginIsInThisWorktree": true,
+  "builtToolCarriesDelivery": true,
+  "builtToolCarriesNoticeRenderer": true,
+  "builtToolNoticePluginId": true,
+  "builtKernelPluginCarriesQueue": true,
+  "builtKernelPluginCarriesQueueFeed": true,
+  "builtKernelPluginCarriesAccount": true,
+  "descriptionExtracted": true,
+  "builtToolPromiseText": true,
+  "builtToolNamesTheUndecidableCase": true,
+  "builtToolNamesTheBound": true,
+  "builtToolSaysNoTurnIsStarted": true,
+  "builtToolNoLongerClaimsUnattributedOnly": true,
+  "builtToolStillSaysBackgroundIsNotPartOfResult": true,
+  "failed": [],
+  "verdict": "REACHABLE: the installed profile resolves this worktree, and the BUILT tool and plugin carry the delivery path"
+}
