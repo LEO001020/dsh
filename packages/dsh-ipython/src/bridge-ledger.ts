@@ -427,18 +427,60 @@ export class StorageBridgeLedger implements BridgeLedger {
 }
 
 /**
+ * The one open attempt per storage facility.
+ *
+ * WHY A CACHE, AND WHY KEYED BY THE FACILITY. `openBridgeLedger` is called once
+ * per NEW Session (from `KernelService.entryFor`), and `DomainFacility.open`
+ * REFUSES a domain name that is already open:
+ *
+ *     throw new DomainError('already-open', `domain '${spec.name}' is already open`)
+ *     -- @deepseek-ai/dsh-storage-domain, src/index.ts
+ *
+ * MEASURED, not reasoned: with the facility mounted and the first Session
+ * durable, the SECOND Session's open rejects with exactly that error. Under the
+ * previous `?? new MemoryBridgeLedger()` fallback that meant the second kernel
+ * published in any process ran on an in-memory ledger -- a routine loss of
+ * durability on ordinary use (two Sessions in one host), not a hypothetical
+ * "storage might fail".
+ *
+ * A facility is per-process (the base bundle mounts ONE), so one ledger per
+ * facility is the natural reading and it is also the correct one: the table is
+ * keyed by `subCallId` and every row carries its `sessionId`, which is what
+ * `forSession` exists to filter. Sessions therefore SHARE one durable ledger
+ * rather than contending for one domain name.
+ *
+ * The cache holds the PROMISE, so two concurrent first-calls cannot both open.
+ * A FAILED open is evicted rather than cached: a transient failure must not
+ * become a permanent one, or the first bad moment of a process would decide the
+ * ledger for its whole lifetime.
+ */
+const openLedgerAttempts = new WeakMap<DomainFacility, Promise<{ ledger: BridgeLedger, durable: boolean }>>()
+
+/**
  * Open the ledger over the storage facility the profile already mounts.
  *
  * A caller that has no facility open gets `undefined` rather than a thrown
- * error: the bridge must still work in a composition that mounts no storage
- * (a test host, a minimal profile), and refusing to bridge because a ledger is
- * unavailable would turn a provenance gap into a capability outage. The caller
- * decides, and `KernelService` records which it got.
+ * error: this function does not decide policy. The caller decides, and
+ * `KernelService` records which it got -- and since V5 §11.1 the caller REFUSES
+ * to publish a kernel when durability was requested and this returned
+ * `undefined`. Keeping the policy at the caller is what lets a test host mount
+ * no storage without this module having to guess what it is talking to.
  */
 export async function openBridgeLedger(facility: DomainFacility | undefined): Promise<{ ledger: BridgeLedger, durable: boolean } | undefined> {
   if (facility === undefined) return undefined
-  const domain = await facility.open(bridgeLedgerDomainSpec)
-  return { ledger: new StorageBridgeLedger(domain), durable: true }
+  const attempted = openLedgerAttempts.get(facility)
+  if (attempted !== undefined) return await attempted
+  const attempt = (async (): Promise<{ ledger: BridgeLedger, durable: boolean }> => {
+    const domain = await facility.open(bridgeLedgerDomainSpec)
+    return { ledger: new StorageBridgeLedger(domain), durable: true }
+  })()
+  openLedgerAttempts.set(facility, attempt)
+  try {
+    return await attempt
+  } catch (error) {
+    openLedgerAttempts.delete(facility)
+    throw error
+  }
 }
 
 /** The storage facility a host context carries, when one is mounted. */
