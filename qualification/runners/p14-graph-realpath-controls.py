@@ -69,12 +69,41 @@ GENERATOR = ROOT / "qualification/runners/build-manifest.py"
 DEFAULT_OBSERVATION = ROOT / "qualification/results/P14-manifest/observation.json"
 OUT = ROOT / "qualification/results/P14-manifest/graph-realpath-controls.json"
 
-# The two shapes the gate refuses. The sibling is strictly worse than the main
-# tree -- there is no reading under which another writer's ephemeral branch is the
-# right target -- and the main tree is the shape G-SEAM-61/G-SEAM-66 recorded.
-SIBLING = "D:/DSH/work/wt-s99/packages/dsh-ipython/lib/host-plugin.js"
-SIBLING_BACKSLASH = "D:\\DSH\\work\\wt-s99\\packages\\dsh-ipython\\lib\\host-plugin.js"
-MAIN_TREE = "D:/DSH/work/dsh-native-daily/packages/dsh-ipython/lib/host-plugin.js"
+# ── THE FOREIGN PATHS ARE DERIVED, NOT LITERALS, AND THAT IS LOAD-BEARING ────
+#
+# The first version of this file hardcoded `D:/DSH/work/wt-s99/...` and
+# `D:/DSH/work/dsh-native-daily/...` as live constants. That is the exact shape
+# `packages/dsh-daily-work/src/cross-tree-paths.test.ts` refuses, and the gate would
+# have gone RED on this file -- correctly. The gate's own comment states the rule:
+# "a literal that names ONE checkout, in a repository that is checked out in MANY
+# places at once ... no single literal can be correct for all of them, so the correct
+# form is to DERIVE the path from the running file."
+#
+# So the foreign paths are BUILT from this file's own repo root by substituting the
+# last path segment. The result has exactly the refused SHAPE at run time, while no
+# literal of that shape appears in the source -- which is what the gate asks for and
+# also what makes the control correct in every worktree rather than only in wt-p14.
+#
+# The gate's own test file is exempted by name for this reason ("its own
+# negative-control arm carries the defect literal as a FIXTURE, which is the only
+# way the control can exist"). This file is NOT exempted, so it derives.
+OWN_TREE = str(ROOT).replace("\\", "/")
+_OWN_SEGMENT = OWN_TREE.rsplit("/", 1)[-1]
+
+def _sibling(name: str) -> str:
+    """A path under a DIFFERENT checkout of this repository, derived from our own."""
+    base = OWN_TREE[: -len(_OWN_SEGMENT)] if _OWN_SEGMENT else OWN_TREE
+    return f"{base}{name}/packages/dsh-ipython/lib/host-plugin.js"
+
+# A sibling writer's worktree: strictly worse than the main tree, because there is no
+# reading under which another writer's ephemeral branch is the right target.
+SIBLING = _sibling("wt-s99")
+# The same path in the OTHER Windows spelling. A gate that only saw forward slashes
+# would be trivially evaded by the backslash form.
+SIBLING_BACKSLASH = SIBLING.replace("/", "\\")
+# The main tree: the shape G-SEAM-61 / G-SEAM-66 recorded, where a writer's test
+# deposited its result into the main tree's evidence directory.
+MAIN_TREE = _sibling("dsh-native-daily")
 
 
 def run_gate(observation: dict) -> tuple[int, str]:
@@ -169,8 +198,9 @@ def main() -> int:
 
     # 6. THE TREE MOVED. An observation taken correctly and then invalidated: the
     #    resolved module no longer exists on disk. A DIFFERENT condition from a wrong
-    #    observation, and both must fail.
-    add("MISSING", 1, mutate_extension(0, "D:/DSH/work/wt-p14/packages/dsh-ipython/lib/does-not-exist.js"),
+    #    observation, and both must fail. The path is derived from our OWN tree, so it
+    #    is a missing file in the right checkout rather than a foreign one.
+    add("MISSING", 1, mutate_extension(0, f"{OWN_TREE}/packages/dsh-ipython/lib/does-not-exist.js"),
         "a resolved module that does not exist on disk")
 
     # 7. NO TREE. Without repo_root the gate cannot decide, and it must say so rather
