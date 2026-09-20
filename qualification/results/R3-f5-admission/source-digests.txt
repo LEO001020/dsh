@@ -1,16 +1,15 @@
 R3 F5 slice — source digests at the measured identity
 worktree : D:\DSH\work\wt-r3
 branch   : wt/r3
-base HEAD: a4b0838568f714b09f50143012e545124f0d06b3
-date     : 2026-09-20T09:38:24+08:00
+date     : 2026-09-20T09:41:04+08:00
 
 == tracked source under test (sha256) ==
-d7ee4a18d825c1a5a30667434d41bb45049769c448c02e298812e8981116fcf8 *src/host.ts
+83c388dd5fbae64d59f6cd9ffaffbde9de8b20a8f46bb6d71e188b8625e03140 *src/host.ts
 22c1f3dd93f364224ddf9c9021921a3af26d8a65c9fd52c40e8eccf713b402bc *src/counting.ts
 ae89060510270f4fb489ee231f2cf1408acf93b662f2aad049d103184b375350 *src/record.ts
 9d4ca0e781d93fd4b77936d5d72097faa26bd79c300127d3880cce93536e8ba7 *src/capacity-v8-probe.test.ts
 52cbe802ecdbbdf9118a7324a8672b33fbed276c0b308163a57f029585940926 *src/capacity.test.ts
-0de8f24c2ad4110ae60e567fadf2e5a712ec4fa268bee53e393b7dafec572dd7 *src/f5-admission.test.ts
+458bd1c86862368fc153938efac829dc4318e97d1ff046132a898d5b17186a7c *src/f5-admission.test.ts
 
 == built lib proves the fix is in the artifact measured ==
 grep -c tryReserveAdmission lib/host.js  -> 10

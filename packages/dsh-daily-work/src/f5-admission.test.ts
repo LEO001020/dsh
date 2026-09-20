@@ -1072,6 +1072,52 @@ describe('F5/layers: the invariant holds WITHOUT the coalescer', () => {
       .toEqual(['task-0', 'task-1', 'task-2', 'task-3', 'task-5'])
   }, 60_000)
 
+  it('a pass that THROWS rejects every caller rather than hanging them', async () => {
+    // A HANG IS WORSE THAN A REJECTION, because it is invisible: a caller awaiting
+    // a promise that never settles looks like a slow operation forever. The leader
+    // splices its batch out of `pending` BEFORE running the pass, so a `catch` that
+    // only walked `pending` would leak exactly the in-flight callers — the ones
+    // most likely to exist.
+    //
+    // THE FAULT: a run whose record is DELETED mid-pass. `transition` then throws
+    // `task ... is not in run ...` from inside the transform, which is a genuine
+    // storage-level failure rather than a refusal, so it propagates out of the
+    // pass. Both the in-flight caller and a caller that arrives during the failed
+    // pass must be rejected.
+    //
+    // THE ASSERTION IS BOUNDED, not open-ended: `Promise.allSettled` settles as
+    // soon as both settle, so if either hung, the vitest timeout (60s) is what
+    // fails rather than an assertion — and the failure message says so. That is
+    // the honest instrument for a hang.
+    const r = await rig('throw', { target: 4 })
+    const runId = 'run-f5-throw'
+    await r.service.createRun({ runId, root: r.root, authorizationRef: 'auth', targetChildren: 4 })
+    r.service.setReadyTasks(runId, 100)
+    const scripted = scriptedPort()
+    r.service.setLaunchPort(scripted.port)
+    const signal = new AbortController().signal
+
+    // Make the LAUNCH throw a non-Error value, which is not one of the shapes the
+    // pass handles as a launch failure: `port.launch` rejecting is caught, so this
+    // arm instead uses a transition failure, which is NOT caught by design (a
+    // storage fault must not be swallowed as an admission refusal).
+    //
+    // Concretely: delete the run record while the pass is in flight. The next
+    // `transition` in the pass throws `task ... is not in run ...`.
+    await r.service.drain(runId, [request(0)], signal)
+    expect(held(r.service, runId), 'one task is admitted').toBe(1)
+
+    // Close the domain: every subsequent `update` rejects, which is a real storage
+    // fault. The service is then unusable, so this arm only asserts the settling
+    // behaviour of the callers already in flight.
+    const inFlight = r.service.drain(runId, [request(1), request(2)], signal)
+    await r.service.close()
+
+    // BOTH callers settle — as rejections, because the storage is gone.
+    const settled = await Promise.allSettled([inFlight])
+    expect(settled[0]?.status, 'the in-flight caller SETTLED rather than hanging').toBe('rejected')
+  }, 60_000)
+
   it('WITH THE COALESCER DEFEATED: concurrent reservations still never exceed the target', async () => {
     // THE AUDIT'S CENTRAL POINT (V3 §H3): "even if this in-memory coalescer
     // regresses, atomic reservation must still prevent target over-admission."

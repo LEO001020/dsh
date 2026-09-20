@@ -1707,7 +1707,13 @@ export class WorkService extends Service {
       state.pending.push({ requests, signal, resolve, reject })
     })
     if (state.runner === undefined) {
-      state.runner = this.runDrainLeader(runId, state)
+      // The leader's own promise is deliberately NOT awaited by anyone, so it must
+      // never reject: an unhandled rejection terminates the process under Node's
+      // default policy, which would turn one caller's failure into a host-wide
+      // crash. `runDrainLeader` settles its callers itself and then rethrows for
+      // its own bookkeeping; this swallow is what keeps that rethrow local. The
+      // callers still observe their own rejection, which is the fact that matters.
+      state.runner = this.runDrainLeader(runId, state).catch(() => {})
     }
     return await promise
   }
@@ -1721,10 +1727,11 @@ export class WorkService extends Service {
    * property the old coalescer claimed and did not have.
    */
   private async runDrainLeader(runId: string, state: DrainLeaderState): Promise<void> {
+    let batch: DrainWorkItem[] = []
     try {
       while (state.requestedGeneration > state.handledGeneration) {
         const pass = state.requestedGeneration
-        const batch = state.pending.splice(0, state.pending.length)
+        batch = state.pending.splice(0, state.pending.length)
         // An empty batch with a pending generation means every queued caller was
         // already served; advancing the generation is what terminates the loop.
         if (batch.length > 0) {
@@ -1733,13 +1740,27 @@ export class WorkService extends Service {
             const mine = outcomes.get(entry) ?? []
             entry.resolve(mine)
           }
+          // Settled: clear the reference so a later failure cannot settle them
+          // twice, which a `Promise` silently ignores but a reader should not
+          // have to reason about.
+          batch = []
         }
         state.handledGeneration = pass
       }
     } catch (error) {
-      // The pass threw before it could resolve its callers. Reject them all
-      // rather than leaving a caller awaiting a promise that never settles, and
-      // leave the map clean so the next arrival elects a fresh leader.
+      // The pass threw before it could settle its callers. TWO groups need
+      // settling and the distinction is easy to get wrong:
+      //
+      //   - `batch` holds the callers whose pass was IN FLIGHT when it threw.
+      //     They were spliced out of `pending` before the pass began, so a catch
+      //     that only walked `pending` would leave them awaiting a promise that
+      //     never settles — a hang, which is worse than a rejection because it is
+      //     invisible.
+      //   - `pending` holds callers that ARRIVED during the failed pass.
+      //
+      // Both are rejected with the same error, and the generation is advanced so
+      // the loop cannot spin on work it has already failed.
+      for (const entry of batch) entry.reject(error)
       for (const entry of state.pending.splice(0, state.pending.length)) entry.reject(error)
       state.handledGeneration = state.requestedGeneration
       throw error
@@ -1750,7 +1771,7 @@ export class WorkService extends Service {
       // The loop's own condition already covers the common case; this covers a
       // future edit that introduces an await in that window.
       if (state.requestedGeneration > state.handledGeneration && state.pending.length > 0) {
-        state.runner = this.runDrainLeader(runId, state)
+        state.runner = this.runDrainLeader(runId, state).catch(() => {})
       } else if (state.pending.length === 0 && state.requestedGeneration === state.handledGeneration) {
         // Nothing queued and nothing requested: drop the state so a long-lived
         // host does not accumulate one entry per run it has ever drained.
