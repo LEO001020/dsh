@@ -32,6 +32,7 @@
  *   node qualification/runners/run-p14-manifest.mjs [--out <path>] [--home <path>]
  */
 import { createHash } from 'node:crypto'
+import { spawnSync } from 'node:child_process'
 import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -112,6 +113,70 @@ function treeDigest(dir) {
   }
   walk(dir)
   return { digest: hash.digest('hex'), fileCount }
+}
+
+/**
+ * The commit and tree this observation was taken at, read HERE rather than by the
+ * generator later.
+ *
+ * WHY THIS IS IN THE DRIVER AND NOT THE GENERATOR, and it is the whole point of the
+ * slice. The first version read the commit at GENERATION time, so a manifest
+ * generated after a commit named a commit the observation had never seen -- the
+ * manifest claimed to describe a build it was not measured against. Measured: the
+ * observation was taken at c281f12, one commit landed, and the regenerated manifest
+ * reported c061e09 with no indication that anything had moved.
+ *
+ * That is the SAME defect as the self-referential identity, one layer down: a
+ * record that silently re-labels itself with whatever is current. Twelve writers
+ * edit this tree concurrently, so this is not a rare race -- it is the normal
+ * condition. So the commit is read at OBSERVATION time, the manifest is computed
+ * from THAT value, and the generator compares it against the live tree and reports
+ * the divergence instead of absorbing it.
+ */
+function gitFacts() {
+  const run = (args) => {
+    try {
+      const proc = spawnSync('git', args, { cwd: REPO_ROOT, encoding: 'utf8', timeout: 60_000 })
+      return proc.status === 0 ? proc.stdout.trim() : null
+    } catch {
+      return null
+    }
+  }
+  const porcelain = run(['status', '--porcelain']) ?? ''
+  const rows = porcelain.split('\n').filter((line) => line.trim() !== '')
+  return {
+    commit: run(['rev-parse', 'HEAD']),
+    tree: run(['rev-parse', 'HEAD^{tree}']),
+    branch: run(['rev-parse', '--abbrev-ref', 'HEAD']),
+    dirty: rows.length > 0,
+    dirty_path_count: rows.length,
+    read_at: 'OBSERVATION time, by the driver, from its own repo root',
+  }
+}
+
+/**
+ * A fingerprint of every artifact the manifest hashes, taken at OBSERVATION time.
+ *
+ * WHY A FINGERPRINT AND NOT JUST THE COMMIT. The commit moves for reasons that do
+ * not change the deployment at all -- another writer committing a result directory,
+ * say. Reporting "the tree moved" for that would make the manifest uselessly stale
+ * and would push writers toward re-booting for nothing. So the artifacts are
+ * fingerprinted too, and the generator can distinguish the two cases the way
+ * `qualification-identity.py`'s staleness report already does: COMMIT MOVED ONLY
+ * (the deployment is materially the same) versus ARTIFACTS MOVED (re-measure).
+ */
+function buildFingerprint() {
+  const rows = {}
+  const paths = [
+    'D:/DSH/src/dsh-src/apps/cli/lib/bin.js',
+    join(REPO_ROOT, 'profiles/daily-candidate/cordis.patch.yml'),
+    join(REPO_ROOT, 'profiles/daily-candidate/presets/daily-standard/agent.cordis.yml'),
+    join(REPO_ROOT, 'packages/dsh-ipython/src/broker.py'),
+    join(REPO_ROOT, 'packages/dsh-daily-work/src/dsh_data_client.py'),
+    join(REPO_ROOT, 'packages/dsh-ipython/lib/bridge.js'),
+  ]
+  for (const p of paths) rows[p.replace(/\\/g, '/')] = sha256(p)
+  return rows
 }
 
 // ── BUILD FRESHNESS, measured rather than assumed ───────────────────────────
@@ -243,6 +308,17 @@ const observation = {
   ],
   ran_at: new Date().toISOString(),
   verdict,
+  /**
+   * THE REVISION THIS OBSERVATION DESCRIBES, read at observation time.
+   *
+   * The manifest is computed from THIS, not from the live HEAD, so a commit landing
+   * between the boot and the generation cannot silently re-label the measurement.
+   * `build_fingerprint` lets the generator tell "the commit moved and nothing else
+   * did" from "an artifact moved", which is the difference between re-deriving
+   * cheaply and re-measuring.
+   */
+  revision: gitFacts(),
+  build_fingerprint: buildFingerprint(),
   driver: {
     path: 'qualification/runners/run-p14-manifest.mjs',
     sha256: sha256(fileURLToPath(import.meta.url)),

@@ -2,7 +2,7 @@ build dsh-daily-work: lib=2026-09-20T12:39:56.411Z src=2026-09-20T12:39:46.052Z 
 build dsh-ipython: lib=2026-09-20T12:40:04.071Z src=2026-09-20T12:39:46.075Z fresh=true libFiles=17
 overlay materialised: D:/DSH/work/wt-p14/qualification/results/P14-manifest/p14-manifest.patch.yml
 
-port: 9269  released: true  timedOut: false  exitCode: null
+port: 5679  released: true  timedOut: false  exitCode: null
 
 --- checks ---
 ok   the boot did not time out

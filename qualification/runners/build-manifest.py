@@ -573,13 +573,82 @@ def build_manifest(observation: dict[str, Any]) -> tuple[dict[str, Any], list[st
     b = manifest["build"]
 
     # ── V5 section 14's named fields, in its order ───────────────────────────
-    rev = project_revision()
-    b["project_git_commit"] = rev["commit"]
-    b["project_git_tree"] = rev["tree"]
-    b["project_git_branch"] = rev["branch"]
-    b["project_git_dirty"] = rev["dirty"]
-    b["project_git_dirty_path_count"] = rev["dirty_path_count"]
-    b["project_git_bound_to"] = rev["bound_to"]
+    #
+    # THE REVISION COMES FROM THE OBSERVATION, NOT FROM THE LIVE TREE.
+    #
+    # THE DEFECT THIS FIXES, measured. The first version called `project_revision()`
+    # here and read the LIVE HEAD. The observation was taken at c281f12, one commit
+    # landed, and the regenerated manifest reported c061e09 -- claiming to describe a
+    # build it was never measured against, with nothing in the artifact to show that
+    # anything had moved. That is the SAME defect as the self-referential identity one
+    # layer down: a record that silently re-labels itself with whatever is current.
+    # Twelve writers edit this tree concurrently, so it is the normal condition rather
+    # than a rare race.
+    #
+    # So the commit is read from the observation, and the LIVE values are reported
+    # BESIDE it as a divergence. The manifest is bound to the commit it measured and
+    # says so; a reader who wants the current tree sees exactly how far it has moved.
+    observed_rev = observation.get("revision") or {}
+    live_rev = project_revision()
+    if not observed_rev.get("commit"):
+        problems.append(
+            "the observation does not carry the revision it was taken at (observation.revision). "
+            "Without it a manifest cannot say which build it describes -- re-run "
+            "qualification/runners/run-p14-manifest.mjs.")
+    b["project_git_commit"] = observed_rev.get("commit")
+    b["project_git_tree"] = observed_rev.get("tree")
+    b["project_git_branch"] = observed_rev.get("branch")
+    b["project_git_dirty"] = observed_rev.get("dirty")
+    b["project_git_dirty_path_count"] = observed_rev.get("dirty_path_count")
+    b["project_git_bound_to"] = (
+        "THE COMMIT RECORDED HERE, read at OBSERVATION time. Not the current HEAD of "
+        "this or any other checkout: twelve writers edit this tree concurrently, so the "
+        "commit moves under the measurement and the manifest states which one it saw.")
+    b["project_git_live_at_generation"] = {
+        "commit": live_rev["commit"],
+        "dirty": live_rev["dirty"],
+        "dirty_path_count": live_rev["dirty_path_count"],
+        "commit_moved_since_observation": live_rev["commit"] != observed_rev.get("commit"),
+        "_why_this_is_recorded_and_not_an_error": (
+            "A commit landing between the observation and the generation is EXPECTED in "
+            "this wave, not a fault. What would be a fault is the manifest SILENTLY "
+            "adopting the new commit, which is what the first version did. The manifest "
+            "keeps the commit it measured and reports the divergence here."),
+    }
+
+    # ARTIFACT-LEVEL STALENESS, so a reader can tell a commit-only move from a real
+    # change. This is the same distinction qualification-identity.py's staleness
+    # report makes, and for the same reason: "the identity moved" and "the deployment
+    # changed" are different facts and only one of them needs a re-measurement.
+    fingerprint = observation.get("build_fingerprint") or {}
+    moved_artifacts = []
+    for path, recorded in sorted(fingerprint.items()):
+        actual = sha256_file(Path(path))
+        if actual != recorded:
+            moved_artifacts.append({
+                "path": path,
+                "recorded_at_observation": recorded,
+                "on_disk_now": actual,
+            })
+    b["artifact_staleness"] = {
+        "fingerprinted_paths": len(fingerprint),
+        "moved_since_observation": moved_artifacts,
+        "commit_moved_only": bool(moved_artifacts) is False and live_rev["commit"] != observed_rev.get("commit"),
+        "_reading": (
+            "COMMIT MOVED ONLY: every fingerprinted artifact is byte-identical, so the "
+            "deployment is materially the same and the previous measurements still "
+            "describe it. Re-derive cheaply; re-measure only if an artifact appears here. "
+            "ARTIFACTS MOVED: the measurements no longer describe this tree -- RE-MEASURE."
+            if not moved_artifacts else
+            "ARTIFACTS MOVED since the observation: the deployment this manifest describes "
+            "is no longer what is on disk. RE-MEASURE. A manifest is a record of one build, "
+            "and this build is gone."),
+    }
+    if moved_artifacts:
+        problems.append(
+            f"{len(moved_artifacts)} fingerprinted artifact(s) moved between the observation and "
+            f"this generation: {json.dumps([m['path'] for m in moved_artifacts][:5])}. The manifest "
+            "would describe a build that is no longer on disk.")
 
     b["upstream_sha"] = (expected.get("upstream") or {}).get("commit")
     b["upstream_release"] = (expected.get("upstream") or {}).get("release")

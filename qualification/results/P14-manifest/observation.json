@@ -10,18 +10,34 @@
     "conditions under which it was taken; the generator decides whether those",
     "conditions permit an identity to be computed from it."
   ],
-  "ran_at": "2026-09-20T13:05:39.117Z",
+  "ran_at": "2026-09-20T13:11:23.433Z",
   "verdict": "OBSERVED",
+  "revision": {
+    "commit": "c061e09dc09fa11c6b90fa7e026f54e3cf60e399",
+    "tree": "2fd8448deb9e7114d4e57d5827ca28951f834e31",
+    "branch": "wt/p14",
+    "dirty": true,
+    "dirty_path_count": 7,
+    "read_at": "OBSERVATION time, by the driver, from its own repo root"
+  },
+  "build_fingerprint": {
+    "D:/DSH/src/dsh-src/apps/cli/lib/bin.js": "69c49c871735dc7ee81ec51f266bbec129f075fd5066e046374f4b13ab02a705",
+    "D:/DSH/work/wt-p14/profiles/daily-candidate/cordis.patch.yml": "4e3aa20cbc23b8cedbfc7205aac0756f37e1107a4ee556d38760dc3769ceedeb",
+    "D:/DSH/work/wt-p14/profiles/daily-candidate/presets/daily-standard/agent.cordis.yml": "05f7a029739692db4245efad803e6bbbec7caf309b2ac7bb2dd57b97f764a19c",
+    "D:/DSH/work/wt-p14/packages/dsh-ipython/src/broker.py": "6443868b1fdee5b4970691d1a7b4f76f0ec3a0a55e94fba2982583962acb1328",
+    "D:/DSH/work/wt-p14/packages/dsh-daily-work/src/dsh_data_client.py": "c152f0adf2ea8dbe7e419cdb138eb2176be727c8c4ba76ab27d942d7ec3b0ed5",
+    "D:/DSH/work/wt-p14/packages/dsh-ipython/lib/bridge.js": "f55916014a65ef92919472481cdecc3baceb3bc856b8568089f6625496770e97"
+  },
   "driver": {
     "path": "qualification/runners/run-p14-manifest.mjs",
-    "sha256": "cc10b5690bba1a845ac4f7286d9559080fe48317af69c27a38a851ce0e0db820",
+    "sha256": "8f34585fbad7cdcde88d9da53d1cb30259a1504b99e13f1c3f7d9a419ac11552",
     "repo_root": "D:/DSH/work/wt-p14",
     "launcher": "D:/DSH/src/dsh-src/apps/cli/lib/bin.js",
     "launcher_sha256": "69c49c871735dc7ee81ec51f266bbec129f075fd5066e046374f4b13ab02a705",
     "dsh_src": "D:/DSH/src/dsh-src",
     "home": "D:/DSH/home/p14",
     "profile": "daily",
-    "port": 9269,
+    "port": 5679,
     "port_released": true,
     "timed_out": false,
     "exit_code": null,
@@ -62,7 +78,7 @@
   "probe": {
     "probe": "p14-manifest",
     "schemaVersion": 1,
-    "ranAt": "2026-09-20T13:05:37.340Z",
+    "ranAt": "2026-09-20T13:11:21.529Z",
     "dshHome": "D:/DSH/home/p14",
     "presetRoots": [
       {
@@ -84,7 +100,7 @@
       "excludedOwnRowId": "p14-manifest-probe",
       "timeoutMs": 30000,
       "settled": true,
-      "waitedMs": 101,
+      "waitedMs": 102,
       "entryCount": 178,
       "stillMoving": [],
       "note": "loader.await() is NOT used: it waits on this probe's own fiber inertia and would deadlock."
@@ -1881,8 +1897,8 @@
         ],
         "why": "vendor/loader/src/config/tree.ts:54 assigns `options.id = Math.random().toString(16).slice(2, 10)` to any row that declares no id, so these ids differ on every boot. They are keyed by MODULE in the digest, and the raw ids are recorded here rather than discarded, so the substitution is visible. The rows are NOT dropped: their presence and activation are real facts this digest must cover.",
         "rawIdsObservedThisBoot": [
-          "8563f777",
-          "ab93227c"
+          "7667df70",
+          "ba011ddc"
         ]
       },
       "builtinRowCount": 1,
@@ -1955,7 +1971,7 @@
     ],
     "catalog": {
       "sessionCreated": true,
-      "sessionId": "session-c0c49679-3d49-40a4-a3ce-a3e70382b065",
+      "sessionId": "session-3d56aa12-5dcc-47e1-bfb9-46078ba0e9ca",
       "sessionCwd": "D:/DSH/work/wt-p14",
       "toolCount": 27,
       "namesInHeaderOrder": [
@@ -2070,7 +2086,7 @@
           "host": {
             "__jsExpr": "ctx.webStartup.host ?? '127.0.0.1'"
           },
-          "port": 9269,
+          "port": 5679,
           "compression": "gzip",
           "compressionLevel": 1
         },
@@ -2155,7 +2171,7 @@
     {
       "label": "the loader tree SETTLED before it was read",
       "ok": true,
-      "detail": "settled=true waitedMs=101 stillMoving=[]"
+      "detail": "settled=true waitedMs=102 stillMoving=[]"
     },
     {
       "label": "a real resolver was reachable",
@@ -2180,7 +2196,7 @@
     {
       "label": "a real Session was created, so an empty catalog would mean something",
       "ok": true,
-      "detail": "sessionCreated=true id=\"session-c0c49679-3d49-40a4-a3ce-a3e70382b065\" error=null"
+      "detail": "sessionCreated=true id=\"session-3d56aa12-5dcc-47e1-bfb9-46078ba0e9ca\" error=null"
     },
     {
       "label": "the per-Agent catalog is non-empty",
