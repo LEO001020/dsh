@@ -1,0 +1,28 @@
+# Verification overlay for P4's composition-tier data-plane measurement.
+#
+# ONE row, and it is the PROBE ONLY. There is deliberately NO `ipython` tool row
+# and NO `dsh-ipython/host` service row here, and no `dsh-daily-work/data-host`
+# row either: the whole point of the case is what the `daily` profile's OWN
+# composition registers. Adding any of them would prove that the data plane works
+# when a row is present while proving nothing about the product -- the exact
+# mistake recorded as G-FIX-04/G-FIX-05, and the shape G-SEAM-77 itself was (a
+# complete plane, a mounted service, and no reachable consumer).
+#
+# THIS FILE IS A TEMPLATE, NOT A RUNNABLE OVERLAY. The `name:` below is a
+# PLACEHOLDER and `p4-data-driver.mjs` rewrites it at run time to THIS tree's own
+# `p4-data-product.mjs` (via `materialiseOverlay`).
+#
+# WHY, and this is the defect the placeholder records. A cordis row's `name:` is a
+# MODULE SPECIFIER, and the loader turns an absolute one into a `file://` URL and
+# imports exactly that file (`packages/boot/app-boot/src/index.ts:521`,
+# `vendor/loader/src/config/tree.ts:122-126`). A committed absolute path would make
+# a boot from ANY other tree execute another writer's probe while believing it
+# measured its own composition -- cross-tree CODE EXECUTION, not merely a
+# cross-tree read. A relative `name:` is not a substitute: the loader resolves it
+# against the PROFILE directory, not against this file.
+#
+# Running this AS-IS fails loudly with an unresolvable module, which is
+# deliberate: a loud failure beats silently measuring another checkout.
+- insert:
+    - id: p4-data-product
+      name: 'REWRITTEN-AT-RUN-TIME/p4-data-product.mjs'
