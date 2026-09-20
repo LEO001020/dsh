@@ -1,0 +1,178 @@
+{
+  "label": "before",
+  "measuredAt": "2026-09-20T15:28:38.389Z",
+  "node": "v24.18.0",
+  "tree": "D:/DSH/work/wt-c3",
+  "identity": {
+    "builtLib": {
+      "artifactsJs": "8220d779717a6515a64cb5df01388ea5b04a5e062307bbbca1c9d6877feb7da9",
+      "observationsJs": "5ecebb3e698ed9a8b355e0c7f23bf189cd13a02fba9967d3099eb74ff9316ab6",
+      "artifactsJsBytes": 137062
+    },
+    "source": {
+      "artifactsTs": "3e781b38b8e31dd4769e32ea1fd9f2858375139984896f038c3abc918f8e789a",
+      "observationsTs": "26cee3d334770aaf105a0f87794763aaf3c5e07929fc33bfc6ebe6f45e1c63eb"
+    }
+  },
+  "arms": {
+    "cursorIssued": {
+      "issued": true,
+      "cursorLength": 576
+    },
+    "A_sameRealmSameRevision": {
+      "refused": false,
+      "bytes": 64,
+      "sha256": "ee8e658590c9a5e119400a774415a01db104de1ee6e2c29ec69aa73ef46544d2",
+      "offset": 64
+    },
+    "B_differentRevision": {
+      "refused": true,
+      "code": "pagination-scope-denied",
+      "name": "ArtifactError",
+      "message": "observation obs-c3-cursor was minted under grant revision 1, which is stale",
+      "realmRefused": null
+    },
+    "sameSha256AcrossStores": true,
+    "C_differentStoreSameBytes": {
+      "refused": true,
+      "code": "pagination-realm-denied",
+      "name": "ArtifactError",
+      "message": "pagination cursor names a different store realm than the one serving this request, and its MAC does not verify under this store's cursor key; a cursor is not a bearer token and cannot be replayed against another store",
+      "realmRefused": true
+    },
+    "D_differentStoreObjectAbsent": {
+      "refused": true,
+      "code": "pagination-realm-denied",
+      "name": "ArtifactError",
+      "message": "pagination cursor names a different store realm than the one serving this request, and its MAC does not verify under this store's cursor key; a cursor is not a bearer token and cannot be replayed against another store",
+      "realmRefused": true
+    },
+    "E_differentStoreDifferentBytes": {
+      "refused": true,
+      "code": "pagination-realm-denied",
+      "name": "ArtifactError",
+      "message": "pagination cursor names a different store realm than the one serving this request, and its MAC does not verify under this store's cursor key; a cursor is not a bearer token and cannot be replayed against another store",
+      "realmRefused": true,
+      "descriptorSha256": "9076e7f76f5ff90f416d5ebae347a8c7cc550f298016b893f01a920303d9689b",
+      "yieldedIsTheNamedArtifact": null
+    },
+    "F_ownStoreCorrupt": {
+      "refused": true,
+      "code": "artifact-integrity-error",
+      "name": "ArtifactError",
+      "message": "artifact artifact:sha256:9076e7f76f5ff90f416d5ebae347a8c7cc550f298016b893f01a920303d9689b is recorded as 9076e7f76f5ff90f416d5ebae347a8c7cc550f298016b893f01a920303d9689b (326 bytes) but the stored object hashes to 0faea5b6a77bd04c167b0f98cc92082131f00bbe2875b5350b76f8880f9e315a (326 bytes read); the bytes are not the artifact that was recorded",
+      "realmRefused": null,
+      "yieldedIsTheNamedArtifact": null,
+      "resolveReference": {
+        "refused": true,
+        "code": "artifact-integrity-error"
+      },
+      "pagingAndResolveDisagree": false
+    },
+    "G_tamperedCursor": {
+      "refused": true,
+      "code": "pagination-cursor-invalid",
+      "name": "ArtifactError",
+      "message": "pagination cursor MAC does not verify",
+      "realmRefused": null
+    },
+    "H_missingObject": {
+      "refused": true,
+      "code": "artifact-integrity-error",
+      "name": "ArtifactError",
+      "message": "artifact artifact:sha256:9076e7f76f5ff90f416d5ebae347a8c7cc550f298016b893f01a920303d9689b is referenced but absent from the store; refusing before any byte is read",
+      "realmRefused": null
+    },
+    "I_sharedKeyDifferentRealm": {
+      "refused": false,
+      "bytes": 64,
+      "sha256": "ee8e658590c9a5e119400a774415a01db104de1ee6e2c29ec69aa73ef46544d2",
+      "offset": 64
+    }
+  },
+  "refusals": [
+    {
+      "attempt": "B_differentRevision",
+      "at": "2026-09-20T15:28:38.414Z",
+      "code": "pagination-scope-denied",
+      "reason": "observation obs-c3-cursor was minted under grant revision 1, which is stale",
+      "storeRealmId": "realm_5446aa88-450b-4375-8127-fc90d8b806f9",
+      "observationId": "obs-c3-cursor",
+      "step": "reference"
+    },
+    {
+      "attempt": "C_differentStoreSameBytes",
+      "at": "2026-09-20T15:28:38.426Z",
+      "code": "pagination-realm-denied",
+      "reason": "pagination cursor names a different store realm than the one serving this request, and its MAC does not verify under this store's cursor key; a cursor is not a bearer token and cannot be replayed against another store",
+      "storeRealmId": "realm_8fed0a5d-a447-4226-9ef5-9349aa3c0a45",
+      "observationId": "obs-c3-cursor",
+      "step": "realm",
+      "cursorRealmId": "realm_5446aa88-450b-4375-8127-fc90d8b806f9"
+    },
+    {
+      "attempt": "D_differentStoreObjectAbsent",
+      "at": "2026-09-20T15:28:38.428Z",
+      "code": "pagination-realm-denied",
+      "reason": "pagination cursor names a different store realm than the one serving this request, and its MAC does not verify under this store's cursor key; a cursor is not a bearer token and cannot be replayed against another store",
+      "storeRealmId": "realm_6258eb09-be40-4a22-8160-8d249ac3c1a9",
+      "observationId": "obs-c3-cursor",
+      "step": "realm",
+      "cursorRealmId": "realm_5446aa88-450b-4375-8127-fc90d8b806f9"
+    },
+    {
+      "attempt": "E_differentStoreDifferentBytes",
+      "at": "2026-09-20T15:28:38.438Z",
+      "code": "pagination-realm-denied",
+      "reason": "pagination cursor names a different store realm than the one serving this request, and its MAC does not verify under this store's cursor key; a cursor is not a bearer token and cannot be replayed against another store",
+      "storeRealmId": "realm_41328cee-7d71-438c-aa02-c99c07849416",
+      "observationId": "obs-c3-cursor",
+      "step": "realm",
+      "cursorRealmId": "realm_5446aa88-450b-4375-8127-fc90d8b806f9"
+    },
+    {
+      "attempt": "F_ownStoreCorrupt",
+      "at": "2026-09-20T15:28:38.449Z",
+      "code": "artifact-integrity-error",
+      "reason": "artifact artifact:sha256:9076e7f76f5ff90f416d5ebae347a8c7cc550f298016b893f01a920303d9689b is recorded as 9076e7f76f5ff90f416d5ebae347a8c7cc550f298016b893f01a920303d9689b (326 bytes) but the stored object hashes to 0faea5b6a77bd04c167b0f98cc92082131f00bbe2875b5350b76f8880f9e315a (326 bytes read); the bytes are not the artifact that was recorded",
+      "storeRealmId": "realm_2e35f68d-f5ec-407c-88a9-3768af829fa1",
+      "observationId": "obs-c3-cursor-f",
+      "step": "identity"
+    },
+    {
+      "attempt": "G_tamperedCursor",
+      "at": "2026-09-20T15:28:38.450Z",
+      "code": "pagination-cursor-invalid",
+      "reason": "pagination cursor MAC does not verify",
+      "storeRealmId": "realm_5446aa88-450b-4375-8127-fc90d8b806f9",
+      "observationId": "obs-c3-cursor",
+      "step": "parse"
+    },
+    {
+      "attempt": "H_missingObject",
+      "at": "2026-09-20T15:28:38.461Z",
+      "code": "artifact-integrity-error",
+      "reason": "artifact artifact:sha256:9076e7f76f5ff90f416d5ebae347a8c7cc550f298016b893f01a920303d9689b is referenced but absent from the store; refusing before any byte is read",
+      "storeRealmId": "realm_881ffde6-a64d-46f5-a61e-3a0261c2c02f",
+      "observationId": "obs-c3-cursor-h",
+      "step": "identity"
+    }
+  ],
+  "realm": {
+    "storeA": "realm_5446aa88-450b-4375-8127-fc90d8b806f9",
+    "storeB": "realm_8fed0a5d-a447-4226-9ef5-9349aa3c0a45",
+    "storeI": "realm_4363ec91-8c86-48d9-92a6-1bb7172ccc41",
+    "realmDiffersAcrossStores": true
+  },
+  "verdicts": {
+    "control_sameRealmSucceeds": true,
+    "differentRevisionRefused": true,
+    "differentStoreRefused": true,
+    "crossStoreYieldedUnverifiedBytes": false,
+    "ownStoreCorruptRefused": true,
+    "tamperedCursorRefused": true,
+    "missingObjectRefused": true,
+    "refusalsRecorded": true,
+    "DATA_11_ORACLE_SATISFIED": true
+  }
+}
