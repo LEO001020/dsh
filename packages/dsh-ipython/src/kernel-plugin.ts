@@ -79,6 +79,7 @@ import {
   BRIDGE_PROTOCOL_VERSION,
   BridgeLedgerWriteError,
   BridgeServer,
+  bridgeClientDigest,
   canPrependPreamble,
   type BridgeEndpoint,
   type CellLease,
@@ -196,6 +197,178 @@ export interface EnvironmentManifest {
  * is an environment this host cannot identify, which is a refusal, not a default.
  */
 export const DEFAULT_ENV_PROBE_TIMEOUT_MS = 10_000
+
+/**
+ * The probe, as the interpreter receives it.
+ *
+ * WHY `importlib.metadata` AND NOT `import ipykernel`. Importing `ipykernel` costs
+ * ~0.5 s and pulls in zmq, tornado and IPython; `importlib.metadata.version` reads
+ * the distribution's own metadata and costs nothing. More importantly, a probe
+ * that IMPORTED the packages could not report them missing -- the import failure
+ * would take the probe down and the host would learn "the probe crashed" instead
+ * of "ipykernel is not installed", which are different facts with different fixes.
+ *
+ * WHY EVERY FIELD IS INDIVIDUALLY GUARDED. One unreadable distribution must not
+ * erase the other five facts. A field that cannot be established becomes `null`
+ * and stays `null` in the digest input, so "unknown" is a recorded value rather
+ * than a missing key.
+ *
+ * WHY IT PRINTS ONE LINE OF SORTED JSON. The host parses a single value and never
+ * has to reason about ordering; `sort_keys=True` makes the text itself
+ * deterministic, so two runs in the same environment produce identical bytes.
+ */
+const ENVIRONMENT_PROBE_SOURCE = [
+  'import json, os, platform, sys',
+  'from importlib.metadata import version as _dist_version',
+  'def _dist(name):',
+  '    try:',
+  '        return _dist_version(name)',
+  '    except Exception:',
+  '        return None',
+  'def _call(fn):',
+  '    try:',
+  '        return fn()',
+  '    except Exception:',
+  '        return None',
+  'executable = _call(lambda: os.path.realpath(sys.executable)) if sys.executable else None',
+  'manifest = {',
+  '    "sys_executable_realpath": executable or None,',
+  '    "python_implementation": _call(platform.python_implementation),',
+  '    "python_version": _call(platform.python_version),',
+  '    "ipython": _dist("ipython"),',
+  '    "ipykernel": _dist("ipykernel"),',
+  '    "jupyter_client": _dist("jupyter_client"),',
+  '    "pyzmq": _dist("pyzmq"),',
+  '}',
+  'print(json.dumps(manifest, sort_keys=True))',
+].join('\n')
+
+/** The manifest keys, in one place so the parser and the type cannot drift. */
+const ENVIRONMENT_MANIFEST_KEYS = [
+  'sys_executable_realpath',
+  'python_implementation',
+  'python_version',
+  'ipython',
+  'ipykernel',
+  'jupyter_client',
+  'pyzmq',
+] as const
+
+/**
+ * Canonical JSON for the manifest: keys sorted, no insignificant whitespace.
+ *
+ * V5 §11.2 says "Canonical JSON hash = environmentDigest", and canonicality is
+ * load-bearing rather than stylistic: the digest is compared for EQUALITY across
+ * processes, so two hosts that computed the same manifest must produce the same
+ * bytes. A serializer that emitted keys in insertion order would make the digest
+ * depend on the order this file happens to list its fields.
+ *
+ * Every value is a string or null, so no nested structure has to be canonicalized
+ * and no number formatting question arises. The key list is sorted explicitly
+ * rather than trusted to be sorted in the source.
+ */
+function canonicalManifestJson(manifest: EnvironmentManifest): string {
+  const entries = Object.entries(manifest).sort(([a], [b]) => a < b ? -1 : a > b ? 1 : 0)
+  return `{${entries.map(([key, value]) => `${JSON.stringify(key)}:${JSON.stringify(value)}`).join(',')}}`
+}
+
+/**
+ * sha256 of a file's bytes, or `null` when it cannot be read.
+ *
+ * NULL RATHER THAN A THROW, because the two failures are different and only one of
+ * them is fatal. A missing `broker.py` is fatal (the kernel cannot start at all)
+ * and the start will fail loudly on its own; a missing OPTIONAL client is a fact
+ * to record. Returning `null` for both lets the caller decide, and keeps the
+ * distinction visible in the manifest instead of collapsing it into an exception.
+ */
+function fileDigestOrNull(path: string | undefined): string | null {
+  if (path === undefined || path === '') return null
+  try {
+    return createHash('sha256').update(readFileSync(path)).digest('hex')
+  } catch {
+    return null
+  }
+}
+
+/** Largest probe stdout/stderr the host retains. A probe needing more is not a probe. */
+const ENVIRONMENT_PROBE_OUTPUT_CAP_BYTES = 256 * 1024
+
+/** How long the probe process is given to die after termination is requested. */
+const PROBE_TERMINATION_GRACE_MS = 5_000
+
+/**
+ * Parse the probe's stdout into a manifest, or explain why it is not one.
+ *
+ * WHY A THROW AND NOT A BEST-EFFORT PARSE. A probe that printed nothing, printed
+ * two lines, or printed a JSON object missing a key has NOT established the
+ * environment. Returning a manifest with `null`s in it would make an unreadable
+ * probe indistinguishable from an interpreter with no `ipykernel` installed, and
+ * the host would digest a value that describes neither. So the output must be
+ * exactly one line of JSON carrying every key.
+ *
+ * A NULL VALUE IS ACCEPTED AND KEPT. `{"ipykernel": null}` means the probe ran and
+ * could not read that distribution; that is a real, recorded fact about the
+ * environment and it belongs in the digest. A MISSING key is different: it means
+ * the probe did not answer the question at all.
+ */
+function manifestFromProbeOutput(
+  stdout: string,
+  diagnostics: { truncated: boolean, stderr: string },
+): EnvironmentManifest {
+  if (diagnostics.truncated) {
+    throw new KernelTransportError(
+      `the environment probe wrote more than ${String(ENVIRONMENT_PROBE_OUTPUT_CAP_BYTES)} bytes to stdout; `
+      + 'its output is not a manifest and the environment cannot be identified',
+    )
+  }
+  const lines = stdout.split(/\r?\n/u).filter(line => line.trim() !== '')
+  if (lines.length !== 1) {
+    throw new KernelTransportError(
+      `the environment probe printed ${String(lines.length)} non-empty lines; exactly one JSON object is required. `
+      + `${diagnostics.stderr.trim() === '' ? '' : `stderr: ${diagnostics.stderr.trim().slice(-500)}`}`,
+    )
+  }
+  let parsed: unknown
+  try {
+    parsed = JSON.parse(lines[0] ?? '')
+  } catch (error) {
+    throw new KernelTransportError(`the environment probe's output is not JSON: ${String(error)}`)
+  }
+  if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
+    throw new KernelTransportError('the environment probe did not print a JSON object')
+  }
+  const record = parsed as Record<string, unknown>
+  const values: Record<string, string | null> = {}
+  for (const key of ENVIRONMENT_MANIFEST_KEYS) {
+    if (!(key in record)) {
+      throw new KernelTransportError(
+        `the environment probe's manifest is missing ${key}; a manifest that did not answer every question `
+        + 'cannot identify an environment',
+      )
+    }
+    const value = record[key]
+    if (value !== null && typeof value !== 'string') {
+      throw new KernelTransportError(`the environment probe's ${key} is neither a string nor null`)
+    }
+    values[key] = value
+  }
+  // Written out field by field rather than spread from `values`, so a key renamed
+  // in one place and not the other is a COMPILE error instead of a silently
+  // dropped input. The three local-file fields are attached by the caller from
+  // paths the HOST owns; the probe cannot know them and must not be asked to guess.
+  return {
+    sys_executable_realpath: values['sys_executable_realpath'] ?? null,
+    python_implementation: values['python_implementation'] ?? null,
+    python_version: values['python_version'] ?? null,
+    ipython: values['ipython'] ?? null,
+    ipykernel: values['ipykernel'] ?? null,
+    jupyter_client: values['jupyter_client'] ?? null,
+    pyzmq: values['pyzmq'] ?? null,
+    broker_sha256: null,
+    bridge_python_client_sha256: null,
+    data_client_sha256: null,
+  }
+}
 
 /**
  * Default kernel scratch root: inside the package, so a second checkout gets its
@@ -340,6 +513,21 @@ export interface CellAuthority {
   readonly onImageRetained?: (record: { callId: string, blockTypes: readonly string[], bytes: number }) => void
 }
 
+/**
+ * The environment identity as a status surface.
+ *
+ * `configuredByHost: true` means the host declared the digest itself and NO probe
+ * ran, so `manifest` is undefined and the digest describes nothing this package
+ * measured. That distinction is carried structurally because a reader that saw
+ * only a digest could not tell a probed identity from a declared one, and those
+ * are different claims.
+ */
+export interface EnvironmentStatus {
+  readonly digest: string
+  readonly configuredByHost: boolean
+  readonly manifest: EnvironmentManifest | undefined
+}
+
 /** Output that belonged to no live cell, kept per Session so it cannot cross. */
 export interface UnattributedOutput extends LateOutput {
   readonly epoch: number
@@ -478,6 +666,20 @@ export class KernelService extends Service {
   private config: KernelServiceConfig
 
   /**
+   * The resolved manifest, cached for the process.
+   *
+   * WHY MEMOIZED. V5 §11.2 puts the probe at host ACTIVATION, and the identity it
+   * feeds must be stable for a Session's lifetime -- `entryFor` compares the
+   * identity a kernel was built with against the one the current configuration
+   * produces, so a digest that changed between two calls in one process would
+   * refuse a healthy kernel. Cleared by {@link KernelService.reconfigure}, which
+   * is the documented way a host changes the interpreter.
+   */
+  private resolvedManifest: EnvironmentManifest | undefined
+  /** The in-flight probe, so two concurrent first calls run ONE probe rather than two. */
+  private manifestPromise: Promise<EnvironmentManifest> | undefined
+
+  /**
    * Replace the configuration. A HOST operation; never model-reachable.
    *
    * It exists because the host can legitimately change the execution world or the
@@ -487,18 +689,32 @@ export class KernelService extends Service {
    * identity no longer matches is refused rather than served. Without a way to
    * change the configuration that check would be unreachable code, and a test of
    * it would be a test of nothing.
+   *
+   * THE CACHED MANIFEST IS DISCARDED HERE, and that is not incidental: a host that
+   * points the service at a different interpreter and kept the old manifest would
+   * have an identity that describes the previous environment. That is the defect
+   * this method's own documentation warns about, one layer in.
    */
   reconfigure(config: KernelServiceConfig): void {
     this.config = config
+    this.resolvedManifest = undefined
+    this.manifestPromise = undefined
   }
 
-  /** Kernel identity for one Session. Stable for the Session's lifetime. */
-  identityFor(agent: Agent): KernelIdentity {
+  /**
+   * Kernel identity for one Session. Stable for the Session's lifetime.
+   *
+   * ASYNC BECAUSE THE ENVIRONMENT IS NOW MEASURED, NOT ASSUMED. The digest comes
+   * from a bounded probe at activation (V5 §11.2), so resolving an identity is
+   * I/O the first time it happens and a cached read afterwards. The alternative --
+   * hashing a path synchronously -- is exactly the weakness this replaces.
+   */
+  async identityFor(agent: Agent): Promise<KernelIdentity> {
     const sessionId = agent.session.header.id
     return {
       sessionId,
       executionWorld: this.config.executionWorld ?? 'local',
-      environmentDigest: this.config.environmentDigest ?? this.defaultEnvironmentDigest(),
+      environmentDigest: await this.resolveEnvironmentDigest(),
     }
   }
 
@@ -540,14 +756,184 @@ export class KernelService extends Service {
   }
 
   /**
-   * A digest of the interpreter identity, so a kernel built against a different
-   * Python is not reused as if it were the same environment.
+   * A digest of the environment, so a kernel built against a different one is not
+   * reused as if it were the same.
+   *
+   * REPLACES `sha256(pythonExecutable + platform + arch).slice(0,16)`. That value
+   * was a hash of a PATH STRING and could not move when the thing at that path
+   * changed -- a Python patch bump, an IPython major upgrade, a different
+   * `ipykernel`, or an edit to `broker.py` all left it byte-identical. Measured
+   * before the change: `qualification/results/P11-env/before-weak-digest.json`.
+   *
+   * THE DIGEST IS NOW THE CANONICAL JSON OF {@link EnvironmentManifest}, which is
+   * V5 §11.2's field list, and it is returned IN FULL (64 hex chars).
+   *
+   * WHY NOT TRUNCATE TO 16. Nothing here requires a short digest, and this is
+   * grep-verified rather than assumed: every reader compares it for EQUALITY
+   * (`kernel-plugin.ts` `entryFor`, `kernel.ts` `assertIdentity`) and no path,
+   * filename, or bounded field is built from it, so truncation bought nothing and
+   * spent 192 bits of collision resistance on an identity value. 64 bits is
+   * adequate for accidental collisions and is not adequate for a value whose whole
+   * purpose is to be a boundary; the longer form costs 48 bytes in a log line.
+   *
+   * MEMOIZED, BECAUSE THE PROBE IS I/O. V5 §11.2 puts the probe at host
+   * activation, so it runs once per service and the result is stable for the
+   * process -- which is what makes a kernel's identity stable for a Session's
+   * lifetime. {@link KernelService.reconfigure} clears it, because that is the
+   * documented way a host changes the interpreter, and a memo that survived it
+   * would make the identity check unreachable code.
+   *
+   * A HOST-CONFIGURED DIGEST WINS AND SKIPS THE PROBE. `config.environmentDigest`
+   * predates this change and still means "the host takes responsibility for the
+   * identity"; a host that sets it gets no probe and no manifest. That arm is kept
+   * because removing it would break a deployment that already declares its own
+   * environment, and because a probe that runs when its answer is discarded would
+   * be a pure cost.
    */
-  private defaultEnvironmentDigest(): string {
-    return createHash('sha256')
-      .update(`${this.config.pythonExecutable}\u0000${process.platform}\u0000${process.arch}`)
-      .digest('hex')
-      .slice(0, 16)
+  private async resolveEnvironmentDigest(): Promise<string> {
+    const configured = this.config.environmentDigest
+    if (configured !== undefined) return configured
+    return createHash('sha256').update(canonicalManifestJson(await this.resolveEnvironmentManifest())).digest('hex')
+  }
+
+  /**
+   * The environment manifest for this service, resolved once and cached.
+   *
+   * FAILURES ARE NOT CACHED. A probe that failed is retried on the next call
+   * rather than pinning the service into a permanent error: a transient spawn
+   * failure (a busy filesystem, an antivirus scan holding the interpreter) must
+   * not make the deployment unbootable for the rest of its life.
+   */
+  private async resolveEnvironmentManifest(): Promise<EnvironmentManifest> {
+    if (this.resolvedManifest !== undefined) return this.resolvedManifest
+    if (this.manifestPromise === undefined) {
+      const injected = this.config.environmentManifest
+      this.manifestPromise = injected === undefined
+        ? this.runEnvironmentProbe()
+        : injected().then(probed => this.manifestWithLocalFiles(probed))
+    }
+    try {
+      const manifest = await this.manifestPromise
+      this.resolvedManifest = manifest
+      return manifest
+    } catch (error) {
+      this.manifestPromise = undefined
+      throw error
+    }
+  }
+
+  /**
+   * Run the bounded probe and combine it with the LOCAL FILE hashes.
+   *
+   * THE TIMEOUT IS THE BOUND, AND THERE IS NO PARTIAL ARM. `handle.done` races a
+   * timer; on expiry the process is terminated and a `KernelTransportError` is
+   * thrown, so activation fails loudly instead of digesting whatever happened to
+   * have arrived. Digesting a partial manifest would produce an identity that is
+   * stable, plausible and wrong -- which is the defect being fixed, not a
+   * mitigation of it.
+   */
+  private async runEnvironmentProbe(): Promise<EnvironmentManifest> {
+    const timeoutMs = this.config.environmentProbeTimeoutMs ?? DEFAULT_ENV_PROBE_TIMEOUT_MS
+    const handle = this.ctx.subprocess.spawn({
+      argv: [this.config.pythonExecutable, '-c', ENVIRONMENT_PROBE_SOURCE],
+      // An EXISTING directory, and one this package knows: `PACKAGE_ROOT` is the
+      // directory this module was loaded from, so it exists by construction. The
+      // probe reads no files, so its cwd is not load-bearing; what matters is that
+      // it is not the launcher's directory and not a scratch root that may not
+      // have been created yet.
+      cwd: PACKAGE_ROOT,
+      stdio: { stdin: 'ignore', stdout: 'pipe', stderr: 'pipe' },
+      graceMs: PROBE_TERMINATION_GRACE_MS,
+      env: { PYTHONUNBUFFERED: '1', PYTHONIOENCODING: 'utf-8' },
+    })
+
+    // Collected with a cap, so an interpreter that floods stdout cannot make the
+    // host allocate without bound. A probe that needs more than this is not a
+    // probe; the cap is reported rather than silently applied.
+    let stdout = ''
+    let stderr = ''
+    let truncated = false
+    const append = (chunk: Buffer, current: string): string => {
+      if (current.length >= ENVIRONMENT_PROBE_OUTPUT_CAP_BYTES) {
+        truncated = true
+        return current
+      }
+      return current + chunk.toString('utf8')
+    }
+    handle.stdout?.on('data', (chunk: Buffer) => { stdout = append(chunk, stdout) })
+    handle.stderr?.on('data', (chunk: Buffer) => { stderr = append(chunk, stderr) })
+
+    let timer: NodeJS.Timeout | undefined
+    try {
+      await Promise.race([
+        handle.done,
+        new Promise<never>((_resolve, reject) => {
+          timer = setTimeout(() => {
+            reject(new KernelTransportError(
+              `the environment probe did not finish within ${String(timeoutMs)} ms; the environment cannot be `
+              + `identified, so no kernel may be built against it. The interpreter was ${this.config.pythonExecutable}.`,
+            ))
+          }, timeoutMs)
+          // The host's own exit must not be delayed by a pending probe.
+          timer.unref()
+        }),
+      ])
+    } catch (error) {
+      handle.terminate()
+      await handle.waitForExit().catch(() => false)
+      throw error
+    } finally {
+      if (timer !== undefined) clearTimeout(timer)
+    }
+
+    const outcome = await handle.done.catch(() => undefined)
+    if (outcome !== undefined && outcome.exitCode !== 0) {
+      throw new KernelTransportError(
+        `the environment probe exited with code ${String(outcome.exitCode)}`
+        + `${stderr.trim() === '' ? '' : `: ${stderr.trim().slice(-500)}`}`,
+      )
+    }
+    return this.manifestWithLocalFiles(manifestFromProbeOutput(stdout, { truncated, stderr }))
+  }
+
+  /**
+   * Attach the three LOCAL FILE hashes to a manifest.
+   *
+   * THIS IS THE HALF THAT BINDS THE CODE. The probed fields describe the
+   * interpreter and the installed distributions; they cannot see a changed
+   * `broker.py` or a changed Python client, because those files are not
+   * distributions. They are read here, by the host, from paths the host owns.
+   *
+   * `dataClientScript` is HOST-SUPPLIED and its absence is recorded as `null`
+   * rather than guessed: the `dsh.data` client lives in another package that this
+   * one must not import in order to identify itself.
+   */
+  private manifestWithLocalFiles(probed: EnvironmentManifest): EnvironmentManifest {
+    return {
+      ...probed,
+      broker_sha256: fileDigestOrNull(this.config.brokerScript ?? DEFAULT_BROKER_SCRIPT),
+      bridge_python_client_sha256: bridgeClientDigest(),
+      data_client_sha256: fileDigestOrNull(this.config.dataClientScript),
+    }
+  }
+
+  /**
+   * The environment identity as a STATUS surface, for a host probe or a doctor.
+   *
+   * DOES NOT START A KERNEL and does not require one, so asking what environment
+   * this host would build a kernel against cannot consume a kernel slot -- the same
+   * rule {@link KernelService.status} follows. It returns the MANIFEST as well as
+   * the digest, because V5 §14's rule applies here too: an identity must describe
+   * the actual build, and a reader that can only see the digest cannot check that
+   * any particular input was in it.
+   */
+  async environmentStatus(): Promise<EnvironmentStatus> {
+    const configured = this.config.environmentDigest
+    if (configured !== undefined) {
+      return { digest: configured, configuredByHost: true, manifest: undefined }
+    }
+    const manifest = await this.resolveEnvironmentManifest()
+    return { digest: await this.resolveEnvironmentDigest(), configuredByHost: false, manifest }
   }
 
   /**
@@ -562,7 +948,7 @@ export class KernelService extends Service {
    * creation cannot be observed as a usable kernel.
    */
   private async entryFor(agent: Agent): Promise<Entry> {
-    const identity = this.identityFor(agent)
+    const identity = await this.identityFor(agent)
     const existing = this.entries.get(identity.sessionId)
     if (existing !== undefined) {
       // The identity is re-checked on every resolve, not only at creation: a
