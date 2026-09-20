@@ -67,23 +67,31 @@ function materialiseProbeOverlay(name) {
   return target
 }
 
-/** The negative arm's patch: disable the storage-domain facility by id. */
-function materialiseNoStoragePatch() {
-  const target = resolve(RESULTS, 'no-storage.patch.yml')
+/**
+ * The negative arm's overlay: occupy the ledger domain before the service opens
+ * it, so the service's own open fails while everything else stays intact.
+ *
+ * See `p10-ledger-occupier.mjs` for why this instrument replaced two coarser
+ * ones. `P10_LEDGER_MODULE` is passed through the boot environment so the
+ * occupier and the service contend for the SAME domain spec from the SAME tree.
+ */
+function materialiseOccupierOverlay() {
+  const target = resolve(RESULTS, 'p10-ledger-occupier.patch.yml')
+  const occupier = resolve(HERE, 'p10-ledger-occupier.mjs').replace(/\\/g, '/')
   mkdirSync(dirname(target), { recursive: true })
   writeFileSync(target, [
-    '# P10 negative arm: disable the storage-domain facility so the durable bridge',
-    '# ledger cannot open. A final-daily deployment must REFUSE here rather than',
-    '# silently fall back to an in-memory ledger (V5 11.1 / 18 LEDGER-DURABLE).',
-    '- id: storage-domain',
-    '  disabled: true',
+    '# P10 negative arm: the composition stays INTACT; only the bridge ledger\'s',
+    '# open is made to fail, by occupying its domain name first.',
+    '- insert:',
+    '    - id: p10-ledger-occupier',
+    `      name: '${occupier}'`,
     '',
   ].join('\n'), 'utf8')
   return target
 }
 
 /** Boot one arm and return what the probe wrote, plus the boot's own outcome. */
-async function runArm(label, patches, outName) {
+async function runArm(label, patches, outName, env = {}) {
   const outPath = resolve(RESULTS, outName)
   const boot = await bootAndWait({
     home: HOME,
@@ -92,6 +100,7 @@ async function runArm(label, patches, outName) {
     outPath,
     cwd: REPO,
     timeoutMs: 180_000,
+    env,
   })
   await sleep(500)
   let finding = null
@@ -118,8 +127,15 @@ async function runArm(label, patches, outName) {
 const probeOverlay = materialiseProbeOverlay('p10-ledger-durable.patch.yml')
 const positive = await runArm('daily-as-composed', [probeOverlay], 'composition-tier.json')
 
-const noStorage = materialiseNoStoragePatch()
-const negative = await runArm('storage-domain-disabled', [noStorage, probeOverlay], 'composition-tier.no-storage.json')
+const occupierOverlay = materialiseOccupierOverlay()
+const negative = await runArm(
+  'ledger-domain-occupied',
+  [occupierOverlay, probeOverlay],
+  'composition-tier.no-storage.json',
+  // The occupier imports the domain spec from THIS tree, so the name it occupies
+  // is the name the service will try to open.
+  { P10_LEDGER_MODULE: resolve(REPO, 'packages', 'dsh-ipython', 'src', 'bridge-ledger.ts').replace(/\\/g, '/') },
+)
 
 const verdict = {
   scope: 'P10 composition tier',
@@ -132,14 +148,19 @@ const verdict = {
   positiveClaims: {
     serviceResolved: positive.finding?.serviceResolved === true,
     storageDomainPresent: positive.finding?.storageDomainPresent === true,
-    cellRan: positive.finding?.cellOutcome === 'ok',
+    cellRan: positive.finding?.cellRan === true,
     ledgerIsDurable: positive.finding?.ledgerIsDurable === true,
     bridgeLedgerDurableOnStatus: positive.finding?.bridgeLedgerDurable === true,
   },
   negativeClaims: {
-    // "No silent memory ledger" can show up either as a refused cell or as a
-    // failed activation. What must NOT appear is a kernel that ran.
-    cellDidNotRun: negative.finding?.cellOutcome !== 'ok',
+    // The probe itself must have RUN for this arm to mean anything: if it never
+    // wrote, the arm measured a collapsed composition and not the ledger gate.
+    probeRan: negative.finding !== null,
+    cellRefused: negative.finding?.cellRefused === true,
+    // The refusal must be the LEDGER's, naming the ledger -- not some unrelated
+    // failure that happens to stop the cell.
+    refusalNamesLedger: /ledger/iu.test(String(negative.finding?.cellPrinted ?? '')
+      + String(negative.finding?.error ?? '')),
     noKernelPublished: negative.finding?.kernelLifecycle === null
       || negative.finding?.kernelLifecycle === undefined,
   },

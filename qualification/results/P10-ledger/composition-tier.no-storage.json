@@ -1,0 +1,17 @@
+{
+  "probe": "p10-ledger-durable",
+  "serviceResolved": true,
+  "storageDomainPresent": true,
+  "sessionCreated": true,
+  "cellOutcome": "ok",
+  "cellPrinted": "outcome: transport_failure\nthe durable bridge ledger was requested but could not be opened, so this kernel is refused: a kernel whose cells cannot record what they did cannot establish whether an external effect may have happened, and the retry rule depends on that record. Cause: domain 'dsh_ipython_bridge_ledger' is already open",
+  "cellOutcomeIsErrorFlag": false,
+  "cellRefused": true,
+  "cellRan": false,
+  "kernelEpoch": 0,
+  "kernelLifecycle": null,
+  "ledgerIsDurable": false,
+  "bridgeLedgerDurable": null,
+  "statusRead": false,
+  "error": null
+}
