@@ -146,7 +146,7 @@ export function createNativeCallHandler(
     }
 
     const result = await ctx.tools.execute(input)
-    return outcomeOf(bridge, call.tool, String(subCallId), result, options)
+    return await outcomeOf(bridge, call.tool, String(subCallId), result, options)
   }
 }
 
@@ -163,14 +163,19 @@ export function createNativeCallHandler(
  * CONTEXTS. Only a successful nested result can carry the terminal marker
  * (`ToolExecutionFailure` types it `never`), so a policy-converted failure cannot
  * stop the turn through a recovering program -- the same rule `ptc.ts` states.
+ *
+ * ASYNC, AND ONLY FOR THE DELIVERY DOOR. Retention of an oversized exact result
+ * goes through the unified artifact plane when the composition mounted one, and
+ * that write is asynchronous. Nothing above this function became async: the
+ * handler at `:130` was already returning a Promise.
  */
-function outcomeOf(
+async function outcomeOf(
   bridge: BridgeServer,
   tool: string,
   callId: string,
   result: ToolExecutionResult,
   options: NativeCallHandlerOptions,
-): NativeCallOutcome {
+): Promise<NativeCallOutcome> {
   // Control semantics are PRESERVED, not dropped: a policy that attached
   // context or asked to conclude the turn gets exactly that behaviour, ferried
   // onto the enclosing `ipython` result. Only the CONTENT is not ferried -- that
@@ -221,7 +226,12 @@ function outcomeOf(
       } satisfies BridgeFailure,
     }
   }
-  return bridge.deliver(tool, callId, result.value)
+  // AWAITED, because retention goes through the unified plane when the
+  // composition mounted one, and that write is asynchronous. `deliver` was
+  // synchronous when it only ever wrote to the bridge's own scratch directory;
+  // the handler it is called from already returns a Promise, so this changes no
+  // caller's contract.
+  return await bridge.deliver(tool, callId, result.value)
 }
 
 /**
