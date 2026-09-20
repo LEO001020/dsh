@@ -44,6 +44,8 @@ import type { Context } from '@deepseek-ai/cordis'
 import { Service } from '@deepseek-ai/cordis'
 import { defineDomain, domainTable, type Domain, type DomainFacility } from '@deepseek-ai/dsh-storage-domain'
 import { isAbsolute } from 'node:path'
+import { dirname, join } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { z } from 'zod'
 import {
   ArtifactError,
@@ -81,9 +83,26 @@ import {
 } from './observations.ts'
 import type { DataPlane } from './data-plane.ts'
 import { DataPlane as DataPlaneImpl } from './data-plane.ts'
+import {
+  dataCallerFromEnclosing,
+  routeDataRequest,
+  type DataRouteOutcome,
+  type EnclosingDataAuthority,
+} from './data-bridge.ts'
 
 /** The domain name. Doubles as the backend unit name, so it must match UNIT_NAME_RE. */
 export const DATA_DOMAIN_NAME = 'dsh_daily_data'
+
+/**
+ * The shipped Python data client's filename (V5 §5.3).
+ *
+ * Named once, here, because TWO things must agree on it: `dataClientPath()` (the
+ * absolute path handed to the bridge) and `package.json`'s `files` entry that
+ * makes the file survive `pnpm pack`. A drift between them is a packed install
+ * that resolves a path to nothing, which is exactly the packaging defect V5 §5.4
+ * exists to catch.
+ */
+export const DATA_CLIENT_FILENAME = 'dsh_data_client.py'
 
 /**
  * The reference-log schema version.
@@ -514,6 +533,75 @@ export class DataPlaneService extends Service {
   disposePlane(): void {
     this.dataPlane?.dispose()
     this.dataPlane = undefined
+  }
+
+  /**
+   * Route ONE cell-bound `data:*` request to this plane (V5 §5.1).
+   *
+   * WHY THIS METHOD EXISTS, AND WHY IT IS ON THE SERVICE RATHER THAN CALLED BY
+   * THE BRIDGE DIRECTLY. `dsh-ipython` is the consumer that must dispatch a
+   * `data:*` frame, but it cannot import `routeDataRequest` or
+   * `dataCallerFromEnclosing` from this package: the two packages are siblings
+   * `link:`ed into a profile, and a static import of this package's specifier
+   * does NOT resolve from `dsh-ipython`'s own realpath (MEASURED:
+   * `createRequire('packages/dsh-ipython/lib/bridge.js').resolve('dsh-daily-work/package.json')`
+   * -> `MODULE_NOT_FOUND`). The bridge therefore resolves the MOUNTED service
+   * (`ctx.get('dailyData')`) and calls this one method, which keeps the router,
+   * the method table and the caller constructor in the package that owns them.
+   *
+   * THE CALLER IS BUILT FROM THE ENCLOSING AUTHORITY, NEVER FROM THE PAYLOAD.
+   * `dataCallerFromEnclosing` reads every authority field from `enclosing`, which
+   * the bridge reads from the live cell lease. Nothing in `rawArguments` can
+   * widen a Session, a workspace or a scope -- and a payload that TRIES is
+   * refused by `refuseForgedClaims` inside the plane rather than having the field
+   * quietly dropped.
+   *
+   * @param tool - the reserved-prefix name, e.g. `data:fs.capture`.
+   * @param rawArguments - the request's argument object, validated not trusted.
+   * @param enclosing - the live cell's host-read identity.
+   * @returns the structured outcome; never throws for a plane-level refusal.
+   */
+  async routeData(
+    tool: string,
+    rawArguments: unknown,
+    enclosing: EnclosingDataAuthority,
+  ): Promise<DataRouteOutcome> {
+    return await routeDataRequest(this.plane(), dataCallerFromEnclosing(enclosing), tool, rawArguments)
+  }
+
+  /**
+   * The absolute path of THIS package's shipped Python data client (V5 §5.3).
+   *
+   * WHY THE SERVICE PUBLISHES ITS OWN PATH RATHER THAN THE CONSUMER FINDING IT.
+   *
+   * `dsh-ipython` is the package that must install `dsh.data` into a cell's
+   * namespace, and it cannot import this package at all: the two are siblings
+   * `link:`ed into one profile, and `dsh-daily-work` does not resolve from
+   * `dsh-ipython`'s own realpath (MEASURED: `MODULE_NOT_FOUND`). So the file's
+   * location is published by the package that OWNS the file, through the mounted
+   * service the consumer already resolves -- no cross-package specifier, and one
+   * copy of the client rather than a generated second one that could drift from
+   * the one `data-r6.test.ts` reads to assert its method list.
+   *
+   * WHY `import.meta.url` AND NOT `process.cwd()` OR A CONFIGURED PATH. This is
+   * the same rule `DEFAULT_BROKER_SCRIPT` was fixed to follow (G-SEAM-55): the
+   * compiled entry is `<pkg>/lib/data-service.js` and the source entry is
+   * `<pkg>/src/data-service.ts`, so `..` from either lands on the package root
+   * and `src/dsh_data_client.py` is correct in BOTH layouts. A configured path
+   * would be a path in ONE checkout, and this package's `cordis.patch.yml`
+   * travels with the package into every profile that installs it.
+   *
+   * `src/` and not `lib/`: Python is never compiled, so the file stays where it
+   * is authored -- the same reason `dsh-ipython` ships `src/broker.py`. That is
+   * why this file is named in `package.json`'s `files`; without that entry a
+   * packed install would have the path but not the file.
+   *
+   * @returns the path, whether or not the file exists; existence is the caller's
+   *          check, because a missing file must be a loud install-time refusal
+   *          rather than a namespace whose every method fails later.
+   */
+  dataClientPath(): string {
+    return join(dirname(fileURLToPath(import.meta.url)), '..', 'src', DATA_CLIENT_FILENAME)
   }
 }
 

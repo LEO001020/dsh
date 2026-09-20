@@ -63,7 +63,7 @@ import type { Context } from '@deepseek-ai/cordis'
 import { Service } from '@deepseek-ai/cordis'
 import type { Agent } from '@deepseek-ai/dsh-agent'
 import type { ToolExecutionToken } from '@deepseek-ai/dsh-tools'
-import { mkdirSync } from 'node:fs'
+import { existsSync, mkdirSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { createHash, randomUUID } from 'node:crypto'
@@ -82,6 +82,7 @@ import {
   canPrependPreamble,
   type BridgeEndpoint,
   type CellLease,
+  type DataCallHandler,
   type LeaseCallDisposition,
 } from './bridge.ts'
 import { createNativeCallHandler, type EnclosingAuthority } from './native-call.ts'
@@ -238,6 +239,39 @@ export interface CellAuthority {
 /** Output that belonged to no live cell, kept per Session so it cannot cross. */
 export interface UnattributedOutput extends LateOutput {
   readonly epoch: number
+}
+
+/**
+ * The `dsh.data` plane as THIS package needs it (V5 §5.1).
+ *
+ * A STRUCTURAL type, not an import. `dsh-daily-work` is a sibling package that
+ * does not resolve from this one's realpath (MEASURED: `MODULE_NOT_FOUND`), so
+ * importing the real `DataPlaneService` type would reintroduce at COMPILE time
+ * the very dependency that cannot be satisfied at runtime. The two members below
+ * are exactly what this file calls; `DataPlaneService.routeData` satisfies them.
+ *
+ * The same reasoning as `EnclosingDataAuthority` in `data-bridge.ts`, which is
+ * structural for the mirror-image reason: the plane must stay loadable without a
+ * kernel, and this package must stay loadable without a plane.
+ */
+interface DataPlaneLike {
+  routeData(
+    tool: string,
+    rawArguments: unknown,
+    enclosing: {
+      readonly sessionId: string
+      readonly cwd?: string
+      readonly signal?: AbortSignal
+      readonly callLabel?: string
+    },
+  ): Promise<{ readonly ok: boolean, readonly value?: unknown, readonly error?: { readonly code: string, readonly message: string } }>
+  /**
+   * Absolute path of the Python `dsh.data` client this plane's package ships.
+   *
+   * Published by the OWNER of the file, because this package cannot resolve the
+   * sibling specifier to find it. See `DataPlaneService.dataClientPath`.
+   */
+  dataClientPath(): string
 }
 
 /**
@@ -490,10 +524,16 @@ export class KernelService extends Service {
     // whose cells cannot reach any tool -- F2's own shape, arrived at from the
     // other direction.
     const bridgeDirectory = join(workingDirectory, 'bridge')
+    // THE DATA CLIENT'S PATH, from the package that owns the file (V5 §5.3).
+    // Resolved HERE, at kernel start, rather than at cell time: a missing client
+    // must fail the kernel's creation transaction loudly instead of producing a
+    // kernel whose cells silently have no `dsh.data`.
+    const dataClientPath = this.dataClientPathFromPlane()
     const bridge = new BridgeServer({
       artifactDirectory: join(bridgeDirectory, 'artifacts'),
       clientDirectory: bridgeDirectory,
       ...this.config.inlineValueBytes === undefined ? {} : { inlineValueBytes: this.config.inlineValueBytes },
+      ...dataClientPath === undefined ? {} : { dataClientPath },
     })
     let capability: BridgeCapability
     let host: KernelHost | undefined
@@ -669,6 +709,9 @@ export class KernelService extends Service {
         ...this.config.imageProjection === undefined ? {} : { imageProjection: this.config.imageProjection },
         ...authority.onImageRetained === undefined ? {} : { onImageRetained: authority.onImageRetained },
       }),
+      // THE SECOND INTERNAL DISPATCHER (V5 §5.1). Same frame, same lease, same
+      // authority checks -- a different plane.
+      dataHandler: this.dataHandlerFor(entry, controller, authority.agent),
     })
   }
 
@@ -676,6 +719,92 @@ export class KernelService extends Service {
   currentEpoch(agent: Agent): number {
     const sessionId = agent.session.header.id
     return this.entries.get(sessionId)?.host.currentEpoch ?? 0
+  }
+
+  /**
+   * The mounted `dsh.data` plane, or undefined when the composition has none.
+   *
+   * `ctx.get(name)` is the documented inject-free read (`reflect.ts:233-235`) and
+   * the same form `history-plane.ts:184` uses for `sessionQuery`. Naming
+   * `dailyData` in this package's static `inject` would be wrong: the kernel
+   * service is a valid product without a data plane, and a hard dependency would
+   * turn "no data plane configured" into "no kernel at all".
+   */
+  private dataPlane(): DataPlaneLike | undefined {
+    return this.ctx.get('dailyData') as DataPlaneLike | undefined
+  }
+
+  /**
+   * The absolute path of the shipped Python data client, from its owning package.
+   *
+   * ABSENT WHEN NO PLANE IS MOUNTED, so the preamble installs no `dsh.data`
+   * namespace -- consistent with the routing lane refusing `data:*` with
+   * `DATA_NO_CAPABILITY`. A path that is reported but whose FILE is missing is
+   * refused here rather than at cell time, because a kernel that starts and then
+   * silently has no `dsh.data` is the reachability defect this slice exists to
+   * close, one layer down.
+   */
+  private dataClientPathFromPlane(): string | undefined {
+    const plane = this.dataPlane()
+    if (plane === undefined) return undefined
+    const path = plane.dataClientPath()
+    if (!existsSync(path)) {
+      throw new Error(
+        `dsh-ipython: the data plane published its Python client at "${path}", but no such file exists. `
+        + 'A kernel started against a missing client would silently have no dsh.data, so this is refused at '
+        + 'kernel start. If this is a packed install, the owning package\'s "files" must include the client.',
+      )
+    }
+    return path
+  }
+
+  /**
+   * The `dsh.data` lane for one cell, or undefined when no plane is mounted
+   * (V5 §5.1/§5.2).
+   *
+   * HOW THE PLANE IS FOUND, AND WHY THIS WAY. `dsh-ipython` must not depend on
+   * `dsh-daily-work`: the two are siblings `link:`ed into a profile and the
+   * sibling specifier does NOT resolve from this package's own realpath
+   * (MEASURED: `MODULE_NOT_FOUND`). So the plane is resolved as a MOUNTED
+   * SERVICE through `ctx.get('dailyData')`, which is the documented inject-free
+   * read and the same form `history-plane.ts:184` uses for `sessionQuery`. A
+   * deployment that mounts no data plane gets `undefined` here, and the lease
+   * then refuses `data:*` with `DATA_NO_CAPABILITY` -- it does NOT fall through
+   * to `ctx.tools.execute`.
+   *
+   * WHY A STRUCTURAL TYPE AND NOT AN IMPORTED ONE. The shape below names exactly
+   * the two members this file uses. Importing the real type would reintroduce the
+   * unresolvable dependency at COMPILE time, and a compile-time dependency on a
+   * package this one cannot resolve is the defect, not the fix.
+   *
+   * THE CALLER IS BUILT FROM THE LEASE, NOT FROM THE FRAME. `sessionId` is the
+   * lease's own (read from the kernel identity), `cwd` is the Session header's,
+   * and `signal` is the LEASE'S controller -- the same one `close()` aborts. So a
+   * revoked cell stops its reads through the one abort path that already exists
+   * for tool calls, rather than through a second cancellation mechanism.
+   */
+  private dataHandlerFor(entry: Entry, controller: AbortController, agent: Agent | undefined): DataCallHandler | undefined {
+    const plane = this.dataPlane()
+    if (plane === undefined) return undefined
+    // The Session's project root, which is the history authorization key. Read
+    // from the SAME live Agent the tool lane dispatches as, so the two lanes
+    // cannot disagree about which workspace the cell is in.
+    const sessionCwd = agent?.session.header.cwd
+    return async (call, context) => {
+      const outcome = await plane.routeData(call.tool, call.arguments, {
+        sessionId: entry.identity.sessionId,
+        ...sessionCwd === undefined ? {} : { cwd: sessionCwd },
+        // The LEASE's signal, so a lease close aborts the read itself.
+        signal: controller.signal,
+        callLabel: call.tool,
+      })
+      // A `DataRouteOutcome` IS a `NativeCallOutcome` (its `{ok:true,value}` and
+      // `{ok:false,error}` arms are the same shape), so nothing is translated and
+      // the value takes the SAME size door the tool lane uses: `deliver` decides
+      // inline vs artifact by size, from this one execution, with no re-run.
+      if (!outcome.ok) return { ok: false, error: outcome.error ?? { code: 'DATA_ERROR', message: 'the data plane refused the request without a reason' } }
+      return entry.bridge.server.deliver(call.tool, context.subCallId, outcome.value)
+    }
   }
 
   /**

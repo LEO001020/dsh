@@ -1009,6 +1009,19 @@ export interface BridgeServerOptions {
   readonly inlineValueBytes?: number
   /** Directory the Python client is written into. Defaults to the artifact directory. */
   readonly clientDirectory?: string
+  /**
+   * Absolute path of the Python `dsh.data` client to install into each cell
+   * (V5 §5.3), or absent when no data plane is mounted.
+   *
+   * HOST-SET AND NEVER MODEL-REACHABLE. It is an option rather than something
+   * this package discovers, because `dsh-ipython` cannot import `dsh-daily-work`
+   * (MEASURED: `MODULE_NOT_FOUND` from its own realpath) -- the package that owns
+   * the file publishes its path through the mounted service, and the composition
+   * passes it here. Absent means the preamble installs no `dsh.data` namespace,
+   * which agrees with the routing lane refusing `data:*` with
+   * `DATA_NO_CAPABILITY`.
+   */
+  readonly dataClientPath?: string
 }
 
 /** Absolute path of the written Python client, so a caller can log it. */
@@ -1157,6 +1170,7 @@ export class BridgeServer {
       leaseId: lease.id,
       cellId: lease.cellId,
       epoch: lease.epoch,
+      ...this.options.dataClientPath === undefined ? {} : { dataClientPath: this.options.dataClientPath },
     })
   }
 
@@ -1409,6 +1423,19 @@ export interface BridgePreambleInput {
   readonly leaseId: string
   readonly cellId: string
   readonly epoch: number
+  /**
+   * Absolute path of the Python `dsh.data` client to install at bind time
+   * (V5 §5.3), or absent when the composition mounted no data plane.
+   *
+   * ABSENT MEANS NOT INSTALLED, NOT "INSTALL AND FAIL LATER". With no data plane
+   * the bridge's own routing refuses `data:*` with `DATA_NO_CAPABILITY`, so a
+   * namespace without `dsh.data` is consistent with a lane that would refuse
+   * anyway. Installing a namespace whose every method is refused would tell a
+   * program the opposite of what the host will do.
+   */
+  readonly dataClientPath?: string
+  /** The API version the client must report, so a drift is refused at bind time. */
+  readonly dataApiVersion?: number
 }
 
 /**
@@ -1432,7 +1459,7 @@ export interface BridgePreambleInput {
  */
 export function renderBridgePreamble(input: BridgePreambleInput): string {
   const literal = (value: string): string => JSON.stringify(value)
-  return [
+  const lines = [
     'import sys as _dsh_sys, types as _dsh_types',
     "_dsh_mod = _dsh_sys.modules.get('dsh')",
     'if _dsh_mod is None:',
@@ -1442,10 +1469,60 @@ export function renderBridgePreamble(input: BridgePreambleInput): string {
     '    with open(' + literal(input.clientPath) + ", 'rb') as _dsh_handle:",
     '        exec(compile(_dsh_handle.read(), ' + literal(input.clientPath) + ", 'exec'), _dsh_mod.__dict__)",
     `_dsh_mod._bind(${String(input.port)}, ${literal(input.token)}, ${literal(input.leaseId)}, ${literal(input.cellId)}, ${String(input.epoch)})`,
-    'dsh = _dsh_mod',
-    'del _dsh_sys, _dsh_types, _dsh_mod',
-    '',
-  ].join('\n')
+  ]
+  if (input.dataClientPath !== undefined) {
+    // ── THE `dsh.data` INSTALL (V5 §5.3), AFTER `_bind` AND BEFORE `dsh` IS
+    //    HANDED TO THE CELL ─────────────────────────────────────────────────
+    //
+    // The ORDER is the requirement: the client binds its call channel to the
+    // CURRENT cell's capability, so installing it before `_bind` would bind the
+    // previous cell's lease -- a live capability under stale authority, which is
+    // exactly what the lease mechanism exists to prevent.
+    //
+    // THE API VERSION IS VERIFIED BEFORE THE CAPABILITY IS EXPOSED. A client from
+    // a different version disagrees about which fields are authority-bearing, so
+    // the refusal is a bind-time failure rather than a namespace that answers
+    // wrongly later. The same rule `BRIDGE_PROTOCOL_VERSION` applies to the
+    // transport, applied to the data client.
+    //
+    // THE FILE IS LOADED BY ABSOLUTE PATH FROM THE PACKAGE THAT OWNS IT (the
+    // path is resolved host-side by `DataPlaneService.dataClientPath()`), so
+    // nothing depends on the kernel's cwd or on source-tree adjacency.
+    //
+    // WHY AN EXPLICIT CALL ADAPTER RATHER THAN LETTING `install()` FIND
+    // `_channel.call_async` ITSELF. That attribute IS the bridge client's own
+    // method and its real signature is `call_async(tool, arguments, timeout)` --
+    // `timeout` has NO default (`bridge.ts` `PYTHON_CLIENT_SOURCE`). The data
+    // client calls its channel with two arguments, so the self-discovering path
+    // would raise `TypeError: call_async() missing 1 required positional
+    // argument` on EVERY `dsh.data` call while `install()` itself succeeded --
+    // precisely the "namespace whose every method fails" outcome
+    // `dsh_data_client.py` says it refuses at install time. The adapter below
+    // supplies the bridge's own `_DEFAULT_TIMEOUT`, so the two clients are joined
+    // on one explicit, readable line instead of on a signature that happens to
+    // match today.
+    lines.push(
+      `_dsh_data_path = ${literal(input.dataClientPath)}`,
+      'with open(_dsh_data_path, \'rb\') as _dsh_data_handle:',
+      '    _dsh_data_src = _dsh_data_handle.read()',
+      "_dsh_data_mod = _dsh_types.ModuleType('dsh_data_client')",
+      "    _dsh_data_mod.__dict__['__file__'] = _dsh_data_path",
+      "exec(compile(_dsh_data_src, _dsh_data_path, 'exec'), _dsh_data_mod.__dict__)",
+      "_dsh_data_api = getattr(_dsh_data_mod, 'DATA_API_VERSION', None)",
+      `if _dsh_data_api != ${String(input.dataApiVersion ?? 1)}:`,
+      '    raise RuntimeError(',
+      "        'the dsh.data client at %s reports API version %r but this host requires "
+      + `${String(input.dataApiVersion ?? 1)}`
+      + "; refusing to expose a live dsh.data capability'",
+      '        % (_dsh_data_path, _dsh_data_api))',
+      'async def _dsh_data_call(_dsh_tool, _dsh_args):',
+      '    return await _dsh_mod._channel.call_async(_dsh_tool, _dsh_args, _dsh_mod._DEFAULT_TIMEOUT)',
+      '_dsh_data_mod.install(_dsh_mod, _dsh_data_call)',
+      'del _dsh_data_path, _dsh_data_handle, _dsh_data_src, _dsh_data_mod, _dsh_data_api, _dsh_data_call',
+    )
+  }
+  lines.push('dsh = _dsh_mod', 'del _dsh_sys, _dsh_types, _dsh_mod', '')
+  return lines.join('\n')
 }
 
 /**
