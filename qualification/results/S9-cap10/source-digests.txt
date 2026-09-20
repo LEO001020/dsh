@@ -1,0 +1,18 @@
+S9 CAP-10 slice — source digests at the measured identity
+worktree : D:\DSH\work\wt-s9
+branch   : wt/s9
+date     : 2026-09-20T19:45:49+08:00
+
+== tracked source under test (sha256) ==
+a1384deced322d519c5c7f356b0982d1ec392374368d97433620bc9afa991922 *src/host.ts
+a4b9600d3287c81d6006c41f9b370a1e70d1f95121eb89d1549e75b80a788156 *src/capacity.ts
+22c1f3dd93f364224ddf9c9021921a3af26d8a65c9fd52c40e8eccf713b402bc *src/counting.ts
+e7207ffd46f4aef395d6ff48a8679edca6107a90545716be179280bb49617aa0 *src/states.ts
+189ff0c4e6a4f22030b411a6763aa8127f13643cae0a3f5aef55f3f9f5ee567e *src/cap10-storm.test.ts
+458bd1c86862368fc153938efac829dc4318e97d1ff046132a898d5b17186a7c *src/f5-admission.test.ts
+52cbe802ecdbbdf9118a7324a8672b33fbed276c0b308163a57f029585940926 *src/capacity.test.ts
+9d4ca0e781d93fd4b77936d5d72097faa26bd79c300127d3880cce93536e8ba7 *src/capacity-v8-probe.test.ts
+b985c193b2fd357a9a030022259329873459ab3c7f548842c37a751e4abf22eb *src/concurrency.test.ts
+4bb4824203d6dcca9a2b879ab97f2d4ee571a7a3dfed182d94a6d21d577e6dbe *src/scheduling.test.ts
+
+== capacity.ts is UNCHANGED by this slice (git diff is empty) ==

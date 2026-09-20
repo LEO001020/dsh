@@ -1,0 +1,46 @@
+
+ RUN  v4.1.8 D:/DSH/work/wt-s9/packages/dsh-daily-work
+
+ ✓ src/dep-gates.test.ts > DEP-01: the launcher is locked by identity, and a REAL tool call proves it > cites a REAL tool round trip, not a --help success 1ms
+ ✓ src/dep-gates.test.ts > DEP-01: the launcher is locked by identity, and a REAL tool call proves it > cites a real Session on the composed preset whose catalog contains the work tool 1ms
+ ✓ src/dep-gates.test.ts > DEP-01: the launcher is locked by identity, and a REAL tool call proves it > records that the two launchers are different identities, reproduced 3/3 0ms
+ ✓ src/dep-gates.test.ts > DEP-01: the launcher is locked by identity, and a REAL tool call proves it > the module graph is recorded as digests, and the built graph resolves to lib not src 6ms
+ ✓ src/dep-gates.test.ts > DEP-02: the old 104-case evidence does not migrate into the new spec > installs the NEW spec at schema_version 2 with exactly 112 mandatory cases, all NOT_RUN 2ms
+ ✓ src/dep-gates.test.ts > DEP-02: the old 104-case evidence does not migrate into the new spec > the installed spec is byte-identical to the audit package copy 1ms
+ ✓ src/dep-gates.test.ts > DEP-02: the old 104-case evidence does not migrate into the new spec > the OLD report still exists, still says PASS, and is NOT the new spec 3ms
+ ✓ src/dep-gates.test.ts > DEP-02: the old 104-case evidence does not migrate into the new spec > nothing in the qualification tooling reads old results into the new spec 20ms
+ ✓ src/dep-gates.test.ts > DEP-03: all production packages AND tests compile, with no private bypass > the two configs differ exactly in the test exclusion, and both keep strict 2ms
+ ✓ src/dep-gates.test.ts > DEP-03: all production packages AND tests compile, with no private bypass > THIS family's own files typecheck clean under the check config 6527ms
+ ✓ src/dep-gates.test.ts > DEP-03: all production packages AND tests compile, with no private bypass > the WHOLE tree — production AND tests — compiles clean under the check config 7218ms
+ ✓ src/dep-gates.test.ts > DEP-03: all production packages AND tests compile, with no private bypass > no `any` bypass and no suppression directive in any production source 30ms
+ ✓ src/dep-gates.test.ts > DEP-03: all production packages AND tests compile, with no private bypass > the package exports only public entries, each pointing at a built artifact that exists 8ms
+ ✓ src/dep-gates.test.ts > DEP-03: all production packages AND tests compile, with no private bypass > no production source deep-imports a private path from a DSH peer 13ms
+ ✓ src/dep-gates.test.ts > DEP-03: all production packages AND tests compile, with no private bypass > every DSH peer a PRODUCTION source imports is resolvable, and the declared/undeclared gap is recorded 21ms
+ ✓ src/dep-gates.test.ts > DEP-04: read / grep / process / Web resolve the SAME execution world > the pinned checkout implements the one-world contract: every SSH provider shares one connection 2ms
+ ✓ src/dep-gates.test.ts > DEP-04: read / grep / process / Web resolve the SAME execution world > the filesystem seam carries the host/execution-world separation as a typed contract 2ms
+ ✓ src/dep-gates.test.ts > DEP-04: read / grep / process / Web resolve the SAME execution world > on THIS deployment the mounted providers are LOCAL, so no remote world exists to be consistent with 72ms
+ ✓ src/dep-gates.test.ts > DEP-05: a missing subprocess/sandbox provider fails EXPLICITLY, never as danger-full-access > a confining shell executor refuses to load without a ctx.sandbox provider 50ms
+ ✓ src/dep-gates.test.ts > DEP-05: a missing subprocess/sandbox provider fails EXPLICITLY, never as danger-full-access > a composition that cannot confine does NOT silently acquire an unconfined executor 7ms
+ ✓ src/dep-gates.test.ts > DEP-05: a missing subprocess/sandbox provider fails EXPLICITLY, never as danger-full-access > the sandbox-policy default is the STRICTEST mode, so an unconfigured host is read-only 1ms
+ ✓ src/dep-gates.test.ts > DEP-05: a missing subprocess/sandbox provider fails EXPLICITLY, never as danger-full-access > a provider that cannot enforce depth is refused rather than silently accepted (the same fail-closed shape) 1ms
+ ✓ src/dep-gates.test.ts > DEP-06: exactly one host wins the store, including under the A/B interleaving > cites the in-process coverage: the kernel object excludes, the note does not 1ms
+ ✓ src/dep-gates.test.ts > DEP-06: exactly one host wins the store, including under the A/B interleaving > cites the reproduced A/B interleaving on this machine, with the fix direction it implies 1ms
+ ✓ src/dep-gates.test.ts > DEP-06: exactly one host wins the store, including under the A/B interleaving > a REAL second process is refused while the first holds the lock, over one store 900ms
+ ✓ src/dep-gates.test.ts > DEP-07: a crashed holder releases the kernel lock, and no PID/TTL theft occurs > the release mechanism is the kernel handle, not a PID probe or a TTL 2ms
+ ✓ src/dep-gates.test.ts > DEP-07: a crashed holder releases the kernel lock, and no PID/TTL theft occurs > the durability suite already kills a real holder process and confirms it is gone 1ms
+ ✓ src/dep-gates.test.ts > DEP-07: a crashed holder releases the kernel lock, and no PID/TTL theft occurs > a SIGKILLed holder frees the store for the next acquirer, with no stale-lock surgery 224ms
+ ✓ src/dep-gates.test.ts > DEP-07: a crashed holder releases the kernel lock, and no PID/TTL theft occurs > a stale advisory note from a dead holder does not lock out the next generation 5ms
+ ✓ src/dep-gates.test.ts > DEP-08: the typecheck genuinely goes RED when a test file has a type error > injecting a type error into a TEST file fails the check config and passes the build config 3113ms
+ ✓ src/dep-gates.test.ts > DEP-08: the typecheck genuinely goes RED when a test file has a type error > the real tree is unmodified by the injection test 2ms
+ ✓ src/dep-gates.test.ts > DEP cross-check: the qualified launcher exists and is not a source path > the built launcher is present and is absolute in the source tree, not this repo 1ms
+ ✓ src/dep-gates.test.ts > DEP cross-check: the qualified launcher exists and is not a source path > the local launcher resolution fix is present as a script rather than a hand-made junction set 1ms
+ ✓ src/dep-gates.test.ts > DEP cross-check: the qualified launcher exists and is not a source path > every junction the package depends on resolves to a real directory inside the pinned checkout 83ms
+ ✓ src/dep-gates.test.ts > DEP: the store is a single-writer resource, and the lock is what makes that true > the host service takes the lock BEFORE it opens the domain 26ms
+ ✓ src/dep-gates.test.ts > DEP: the store is a single-writer resource, and the lock is what makes that true > an unconfigured host takes no lock, and that is stated rather than implied 8ms
+ ✓ src/dep-gates.test.ts > DEP: the store is a single-writer resource, and the lock is what makes that true > the store directory is created by the lock path, so a fresh deployment does not need a manual mkdir 8ms
+
+ Test Files  1 passed (1)
+      Tests  37 passed (37)
+   Start at  19:45:21
+   Duration  19.47s (transform 764ms, setup 0ms, import 870ms, tests 18.37s, environment 0ms)
+

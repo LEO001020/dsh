@@ -1,0 +1,32 @@
+
+ RUN  v4.1.8 D:/DSH/work/wt-s9/packages/dsh-daily-work
+
+stdout | src/s9-scratch-probe.test.ts > S9 scratch: the 1->0 measurement > K concurrent /work start with one admitted task
+S9/1->0 K=2 runs=1 claimedCreated=0 claimedExisting=2 tasksBefore=1 tasksAfter=1 ref="dsh-work-auth/1|kind=human-command|action=start|commandId=cmd-8afc0df0-1|commandName=work|commandArgs=start 4"
+
+stdout | src/s9-scratch-probe.test.ts > S9 scratch: the 1->0 measurement > K concurrent /work start with one admitted task
+S9/1->0 K=4 runs=1 claimedCreated=0 claimedExisting=4 tasksBefore=1 tasksAfter=1 ref="dsh-work-auth/1|kind=human-command|action=start|commandId=cmd-ac1234b0-1|commandName=work|commandArgs=start 4"
+
+stdout | src/s9-scratch-probe.test.ts > S9 scratch: the 1->0 measurement > K concurrent /work start with one admitted task
+S9/1->0 K=8 runs=1 claimedCreated=0 claimedExisting=8 tasksBefore=1 tasksAfter=1 ref="dsh-work-auth/1|kind=human-command|action=start|commandId=cmd-6da08a87-1|commandName=work|commandArgs=start 4"
+
+stdout | src/s9-scratch-probe.test.ts > S9 scratch: the 1->0 measurement > a STORM of concurrent /work start with NO prior run, then measure how many runs exist
+S9/COLD K=2 runs=1 claimedCreated=1 runIds=["run-start-s9-scratch-cold2"]
+
+stdout | src/s9-scratch-probe.test.ts > S9 scratch: the 1->0 measurement > a STORM of concurrent /work start with NO prior run, then measure how many runs exist
+S9/COLD K=4 runs=1 claimedCreated=1 runIds=["run-start-s9-scratch-cold4"]
+
+stdout | src/s9-scratch-probe.test.ts > S9 scratch: the 1->0 measurement > a STORM of concurrent /work start with NO prior run, then measure how many runs exist
+S9/COLD K=8 runs=1 claimedCreated=1 runIds=["run-start-s9-scratch-cold8"]
+
+stdout | src/s9-scratch-probe.test.ts > S9 scratch: the 1->0 measurement > a STORM of concurrent /work start with NO prior run, then measure how many runs exist
+S9/COLD K=16 runs=1 claimedCreated=1 runIds=["run-start-s9-scratch-cold16"]
+
+ ✓ src/s9-scratch-probe.test.ts > S9 scratch: the 1->0 measurement > K concurrent /work start with one admitted task 148ms
+ ✓ src/s9-scratch-probe.test.ts > S9 scratch: the 1->0 measurement > a STORM of concurrent /work start with NO prior run, then measure how many runs exist 92ms
+
+ Test Files  1 passed (1)
+      Tests  2 passed (2)
+   Start at  19:15:26
+   Duration  1.41s (transform 690ms, setup 0ms, import 952ms, tests 241ms, environment 0ms)
+

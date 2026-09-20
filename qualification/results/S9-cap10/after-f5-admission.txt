@@ -1,0 +1,29 @@
+
+ RUN  v4.1.8 D:/DSH/work/wt-s9/packages/dsh-daily-work
+
+ ✓ src/f5-admission.test.ts > F5/H4-1: a storm of concurrent drains cannot hold more than the target > target=3, twelve concurrent single-request drains, held reservations never exceed 3 57ms
+ ✓ src/f5-admission.test.ts > F5/H4-1: a storm of concurrent drains cannot hold more than the target > every refusal reports a reason, and a refusal leaves no task behind 33ms
+ ✓ src/f5-admission.test.ts > F5/H4-2: the deficit reading agrees with the authoritative occupancy > reports full, short and over as three DISTINCT readings 39ms
+ ✓ src/f5-admission.test.ts > F5/H4-3: simultaneous completions refill to exactly the target > four completions at once admit exactly four replacements, and the storm does not exceed 86ms
+ ✓ src/f5-admission.test.ts > F5/H4-4: a crash after the reservation but before the start keeps the slot > the reservation survives a process restart and still holds its slot 47ms
+ ✓ src/f5-admission.test.ts > F5/H4-5: a launch failure reconciles its reservation exactly once > a failed launch leaves the task UNKNOWN with its slot and credit HELD 31ms
+ ✓ src/f5-admission.test.ts > F5/H4-5: a launch failure reconciles its reservation exactly once > a missing launch port quarantines the task instead of pretending it failed 24ms
+ ✓ src/f5-admission.test.ts > F5/H4-6: a duplicate launch notification cannot double-admit > the same taskId submitted concurrently admits once, and its credit is reserved once 31ms
+ ✓ src/f5-admission.test.ts > F5/H4-7: a stopping child keeps its slot until quiescence > a requested cancel holds the slot and blocks the refill 60ms
+ ✓ src/f5-admission.test.ts > F5/H4-8: an unknown child retains its occupancy > a quarantined task holds its slot against a full target and blocks admission 51ms
+ ✓ src/f5-admission.test.ts > F5/H4-9: budget and target contend inside the SAME update > with one free credit and three free slots, exactly ONE admission wins 35ms
+ ✓ src/f5-admission.test.ts > F5/H4-10: a restart reconstructs the reservations and the outbox > a clean close and reopen preserves every reservation, credit and intention 55ms
+ ✓ src/f5-admission.test.ts > F5/H4-11: the reservation is the only admission path in the service > every public admission entry point routes through tryReserveAdmission 31ms
+ ✓ src/f5-admission.test.ts > F5/H4-11: the reservation is the only admission path in the service > a batch that fits admits exactly its share and no more 41ms
+ ✓ src/f5-admission.test.ts > F5/H4-12: the hard cap of 30 rejects the 31st child independently of the target > the deployment cap refuses the 31st even when the run target would allow it 20ms
+ ✓ src/f5-admission.test.ts > F5/H4-12: the hard cap of 30 rejects the 31st child independently of the target > the RESERVATION API reports the cap as a TYPED refusal, not as a thrown error 21ms
+ ✓ src/f5-admission.test.ts > F5/layers: the invariant holds WITHOUT the coalescer > THE COALESCER IS RE-TRIGGERABLE: a later arrival still causes a new pass 57ms
+ ✓ src/f5-admission.test.ts > F5/layers: the invariant holds WITHOUT the coalescer > a pass that THROWS rejects every caller rather than hanging them 31ms
+ ✓ src/f5-admission.test.ts > F5/layers: the invariant holds WITHOUT the coalescer > WITH THE COALESCER DEFEATED: concurrent reservations still never exceed the target 28ms
+ ✓ src/f5-admission.test.ts > F5/layers: the invariant holds WITHOUT the coalescer > WITH THE COALESCER DEFEATED: the generation refuses a caller that decided from a stale revision 22ms
+
+ Test Files  1 passed (1)
+      Tests  20 passed (20)
+   Start at  19:44:41
+   Duration  2.10s (transform 834ms, setup 0ms, import 1.07s, tests 802ms, environment 0ms)
+

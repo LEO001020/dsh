@@ -1,0 +1,25 @@
+
+ RUN  v4.1.8 D:/DSH/work/wt-s9/packages/dsh-daily-work
+
+stdout | src/s9-scratch-whichlayer.test.ts > S9 scratch 7: which layer refuses > releases + drains in ONE interval, with the gate reading before and after
+S9/7 before: highWater=10 occupied=10
+
+stdout | src/s9-scratch-whichlayer.test.ts > S9 scratch 7: which layer refuses > releases + drains in ONE interval, with the gate reading before and after
+S9/7 concurrent: admitted=0 reasons=["none","none","none","none"] held=6 highWater=10 occupied=6 refusals={"HOST_CAPACITY_REACHED":0,"DEPTH_CEILING_EXCEEDED":0}
+S9/7 VERDICT: PRE-CHECK refused (host slot never taken)
+
+ ✓ src/s9-scratch-whichlayer.test.ts > S9 scratch 7: which layer refuses > releases + drains in ONE interval, with the gate reading before and after 428ms
+stdout | src/s9-scratch-whichlayer.test.ts > S9 scratch 7: which layer refuses > the SAME interval, but the drains are issued in a LATER microtask
+S9/7 one-microtask-later: admitted=0 held=6 highWater=10
+
+ ✓ src/s9-scratch-whichlayer.test.ts > S9 scratch 7: which layer refuses > the SAME interval, but the drains are issued in a LATER microtask 471ms
+stdout | src/s9-scratch-whichlayer.test.ts > S9 scratch 7: which layer refuses > releases + drains with the drains issued FIRST (the reverse interleaving)
+S9/7 drains-first: admitted=0 held=6 highWater=10
+
+ ✓ src/s9-scratch-whichlayer.test.ts > S9 scratch 7: which layer refuses > releases + drains with the drains issued FIRST (the reverse interleaving) 329ms
+
+ Test Files  1 passed (1)
+      Tests  3 passed (3)
+   Start at  19:15:11
+   Duration  6.78s (transform 4.53s, setup 0ms, import 5.06s, tests 1.23s, environment 0ms)
+

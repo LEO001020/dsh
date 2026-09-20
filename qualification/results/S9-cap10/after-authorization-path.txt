@@ -1,0 +1,52 @@
+
+ RUN  v4.1.8 D:/DSH/work/wt-s9/packages/dsh-daily-work
+
+ ✓ src/authorization-path.test.ts > R4 I3-1: the real path, command -> CommandRuntime -> WorkService run > `/work start 10` through the real registry creates a durable run 64ms
+ ✓ src/authorization-path.test.ts > R4 I3-1: the real path, command -> CommandRuntime -> WorkService run > the run record carries the exact authorizing commandId as auditable evidence 26ms
+ ✓ src/authorization-path.test.ts > R4 I3-1: the real path, command -> CommandRuntime -> WorkService run > the command lifecycle is on the session log with source.kind === user 46ms
+ ✓ src/authorization-path.test.ts > R4 I3-2/3/4: nothing but a human action creates a run > Session creation alone creates no run 11ms
+ ✓ src/authorization-path.test.ts > R4 I3-2/3/4: nothing but a human action creates a run > a settings reload creates no run 11ms
+ ✓ src/authorization-path.test.ts > R4 I3-2/3/4: nothing but a human action creates a run > MOUNTING the command and tool plugins creates no run 12ms
+ ✓ src/authorization-path.test.ts > R4 I3-2/3/4: nothing but a human action creates a run > `/work target N` on a session with NO run creates nothing 22ms
+ ✓ src/authorization-path.test.ts > R4 I3-2/3/4: nothing but a human action creates a run > a bare settings WRITE of the target value creates nothing 20ms
+ ✓ src/authorization-path.test.ts > R4 I3-2/3/4: nothing but a human action creates a run > a model continuation cannot create a run: the tool has no create action 13ms
+ ✓ src/authorization-path.test.ts > R4 I3-2/3/4: nothing but a human action creates a run > a model call naming a create action is REFUSED and creates no run 15ms
+ ✓ src/authorization-path.test.ts > R4 I3-2/3/4: nothing but a human action creates a run > a subagent cannot authorize a run even though it can call the tool 15ms
+ ✓ src/authorization-path.test.ts > R4 I3-5: duplicate Start is deterministic and never creates a second run > a second `/work start` observes the existing run and reports it 30ms
+ ✓ src/authorization-path.test.ts > R4 I3-5: duplicate Start is deterministic and never creates a second run > a duplicate start does NOT overwrite the original authorizing commandId 31ms
+ ✓ src/authorization-path.test.ts > R4 I3-5: duplicate Start is deterministic and never creates a second run > a different target on a duplicate start does not silently re-target the run 26ms
+ ✓ src/authorization-path.test.ts > R4 I3-5: duplicate Start is deterministic and never creates a second run > a retry after a crash between the record write and command/done observes the run 26ms
+ ✓ src/authorization-path.test.ts > R4 I3-6: the target update is durable > `/work target 7` changes the stored target and the reported deficit 29ms
+ ✓ src/authorization-path.test.ts > R4 I3-6: the target update is durable > the target survives a real host restart over the same store 43ms
+ ✓ src/authorization-path.test.ts > R4 I3-6: the target update is durable > an out-of-range target is REFUSED, never clamped 26ms
+ ✓ src/authorization-path.test.ts > R4 I3-6: the target update is durable > `/work start 31` is refused and creates NO run 21ms
+ ✓ src/authorization-path.test.ts > R4 I3-7: Stop stops admissions and does NOT free capacity > `/work stop` moves the run out of open and leaves the ledger untouched 35ms
+ ✓ src/authorization-path.test.ts > R4 I3-7: Stop stops admissions and does NOT free capacity > a stopped run refuses further admissions 31ms
+ ✓ src/authorization-path.test.ts > R4 I3-7: Stop stops admissions and does NOT free capacity > `/work stop` on a session with no run is an error, not a silent success 25ms
+ ✓ src/authorization-path.test.ts > R4 I3-8: after Start, the REAL `work` tool resolves the run > the model tool refuses before a run and SUCCEEDS after one 32ms
+ ✓ src/authorization-path.test.ts > R4 I3-8: after Start, the REAL `work` tool resolves the run > the model tool can SUBMIT through the real path once the run exists 43ms
+ ✓ src/authorization-path.test.ts > R4 I3-8: after Start, the REAL `work` tool resolves the run > the tool reports the target the human set, not the composition default 26ms
+ ✓ src/authorization-path.test.ts > R4: the domain API and its evidence encoding > authorizeRun is idempotent and reports whether it created the run 16ms
+ ✓ src/authorization-path.test.ts > R4: the domain API and its evidence encoding > an authorization ref round-trips and refuses an unknown kind 0ms
+ ✓ src/authorization-path.test.ts > R4: the domain API and its evidence encoding > `/work` with no verb is a status read, and an unknown verb is an error 21ms
+stdout | src/authorization-path.test.ts > R4 CONCURRENCY: two concurrent /work start calls for one session > creates exactly ONE run, and only one call reports that it created it
+R4/CONCURRENCY measured: runCount=1 claimedCreated=1 ref="dsh-work-auth/1|kind=human-command|action=start|commandId=cmd-a1eacea4-1|commandName=work|commandArgs=start 10"
+
+stdout | src/authorization-path.test.ts > R4 CONCURRENCY: two concurrent /work start calls for one session > does NOT destroy work already admitted against the run
+R4/CONCURRENCY measured: runCount=1 tasksAfter=1 refUnchanged=true
+
+ ✓ src/authorization-path.test.ts > R4: the domain API and its evidence encoding > two sessions on one host get two independent runs 35ms
+ ✓ src/authorization-path.test.ts > R4 CONCURRENCY: two concurrent /work start calls for one session > creates exactly ONE run, and only one call reports that it created it 24ms
+ ✓ src/authorization-path.test.ts > R4 CONCURRENCY: two concurrent /work start calls for one session > does NOT destroy work already admitted against the run 33ms
+ ✓ src/authorization-path.test.ts > R4 CONCURRENCY: two concurrent /work start calls for one session > a concurrent authorization through the UI route is protected too 27ms
+stdout | src/authorization-path.test.ts > R4 CORROBORATION: a /work-start run exposes F5 (G-SEAM-45) — R3 owns the fix > two freed slots admit exactly two, never three, through a /work-start run
+R4/CORROBORATION measured: target=3 freedSlots=2 concurrentRequests=3 admitted=2 heldAgainstTarget3=3 acceptedIds=["child-70","child-71"] deficitAfter=0
+
+ ✓ src/authorization-path.test.ts > R4 CONCURRENCY: two concurrent /work start calls for one session > a FAILED authorization does not wedge the session for the next attempt 28ms
+ ✓ src/authorization-path.test.ts > R4 CORROBORATION: a /work-start run exposes F5 (G-SEAM-45) — R3 owns the fix > two freed slots admit exactly two, never three, through a /work-start run 81ms
+
+ Test Files  1 passed (1)
+      Tests  33 passed | 1 expected fail (34)
+   Start at  19:45:08
+   Duration  2.30s (transform 827ms, setup 0ms, import 1.13s, tests 945ms, environment 0ms)
+

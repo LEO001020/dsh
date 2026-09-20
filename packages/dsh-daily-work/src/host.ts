@@ -46,7 +46,6 @@ import {
   mountChildAdmissionGuard,
   type CapacitySnapshot,
   type ChildRefusal,
-  type ChildSlot,
 } from './capacity.ts'
 import { acquireHomeLock, type HeldHomeLock } from './homelock.ts'
 import {
@@ -1342,17 +1341,41 @@ export class WorkService extends Service {
       )
     }
     const now = input.now ?? new Date().toISOString()
-    // The host-wide slot is taken BEFORE the record write and released if the
-    // write refuses. WHY BEFORE: the plan's rule is "pre-publication同步
-    // reserve；失败清理后release；不能'先启动再计数'". Taking it after the record
-    // write would leave a window in which the record says a task exists and the
-    // host has not counted it, which is exactly the "start first, count later"
-    // shape the rule forbids.
+    // ---- THE HOST-WIDE SLOT IS TAKEN INSIDE THE UPDATE, AND WHY THAT MOVED ----
     //
-    // The bucket starts at `reserved`, which the plan counts:
-    // `occupied = reserved + starting + active_assignment + stopping +
-    // unknown_quarantined`. A reservation with no child yet therefore still
-    // blocks the 31st admission.
+    // The plan's rule is "pre-publication 同步 reserve；失败清理后 release；不能
+    // '先启动再计数'": the slot must be held before the child can materialize. It
+    // does NOT require the slot to be held before the RECORD write, because the
+    // record write is durable state and not publication — the child materializes
+    // in `port.launch`, which `runDrainPass` calls only after this method returns
+    // `reserved: true`.
+    //
+    // The take used to happen HERE, before the `update`, with a release on every
+    // non-committing path. That is correct for capacity but it is VISIBLE: the
+    // gate's `highWater` records the peak occupancy, so a refused attempt
+    // momentarily pushed it to `target + 1`. `runDrainPass` compensated with a
+    // read-only pre-check that refused before the take — and that compensation is
+    // where CAP-10's MISS was measured. See `runDrainPass` for the numbers.
+    //
+    // Taking the slot inside the transform removes the tension instead of
+    // trading one direction for the other:
+    //
+    //   - a REFUSAL now happens before the take, so a refused attempt cannot move
+    //     `highWater` at all, and the pre-check that caused the miss is gone;
+    //   - the take is now serialized by the SAME per-domain write chain as the
+    //     occupancy decision, which is strictly stronger than taking it outside;
+    //   - the host cap is still enforced, inside the chain, and reported as the
+    //     same typed `host_capacity_reached` refusal.
+    //
+    // THE SIDE EFFECT IS ACKNOWLEDGED, not glossed. The domain's contract says
+    // `fn` is a "synchronous pure transform". Mutating this process's slot ledger
+    // is a side effect on state OUTSIDE the record, and it is safe here for three
+    // reasons that must all hold: (1) it is synchronous, so it cannot interleave
+    // with the checks above it; (2) it happens LAST, after every refusal, so no
+    // refusal can leave a slot taken; (3) `reserveTask` is idempotent per task id,
+    // so even a hypothetical re-run of the transform would not double-take. What
+    // it does NOT have is rollback: if `putRecord` then fails, the caller releases
+    // the slot in its catch, and `tookSlot` below is what makes that exact.
     //
     // ---- THE HOST CAP IS REPORTED AS A TYPED REFUSAL, NOT THROWN ------------
     //
@@ -1361,41 +1384,12 @@ export class WorkService extends Service {
     // (`capacity.ts:434`, `:502-505`). Left unwrapped, that throw would escape a
     // method whose return type says it answers with a refusal — so a caller
     // written against `AdmissionReservation` would get an exception instead of
-    // `{ reserved: false, reason: 'host_capacity_reached' }`.
+    // `{ reserved: false, reason: 'host_capacity_reached' }`. It is therefore
+    // translated into the same typed refusal the rest of this transform uses.
     //
-    // This is NOT a defect this change introduced: the original `admit` had the
-    // same shape (`reserveTask` at `:795`, the releasing `.catch` on the
-    // `update(...)` promise at `:851-857`), so an at-cap admission threw there
-    // too. What this change does is stop WIDENING it: `tryReserveAdmission` is a
-    // new public seam whose type promises a typed answer, so the cap is caught
-    // here and reported in the same vocabulary `runDrain` already uses for it.
-    // The throw is not lost — it is named, counted by the gate, and surfaced as
-    // the `reason` a caller can act on.
-    //
-    // No slot was taken on this path (`assertRoom` throws BEFORE `tasks.set`), so
-    // there is nothing to release; the early return makes that explicit rather
-    // than relying on the reader to check `assertRoom`'s internals.
-    let slot: ChildSlot
-    try {
-      slot = this.gate.reserveTask(input.taskId, 'reserved', input.childId)
-    } catch (error) {
-      if (error instanceof ChildCapacityError && error.code === 'HOST_CAPACITY_REACHED') {
-        // The run's own record is read for the report only. The occupancy the
-        // caller sees is the RECORD's, and the reason is the HOST cap, which is
-        // what actually refused.
-        const record = this.getRun(input.runId)
-        return {
-          reserved: false,
-          reason: 'host_capacity_reached',
-          refusalMessage: error.message,
-          generation: record?.reservationGeneration ?? 0,
-          observedOccupancy: record === undefined ? 0 : heldSlots(record),
-          heldReservations: record === undefined ? 0 : heldSlots(record),
-          target: record?.requestedTarget ?? 0,
-        }
-      }
-      throw error
-    }
+    // `assertRoom` throws BEFORE `tasks.set`, so an at-cap attempt takes no slot;
+    // `tookSlot` stays false and the catch releases nothing.
+    let tookSlot = false
     // Set by the transform on its COMMIT path only, so the outcome the caller
     // receives is the one the transform actually decided rather than a value
     // re-derived outside the update (which would be a second opinion).
@@ -1511,7 +1505,48 @@ export class WorkService extends Service {
           )
         }
 
-        // ---- 6/7/8/9. reserve the slot, the credit, the state, the outbox ----
+        // ---- 6. take the HOST-WIDE slot --------------------------------------
+        //
+        // PLACED AFTER EVERY REFUSAL, and that placement is the whole point. The
+        // take used to happen before the `update`, so a refused attempt had
+        // already moved the ledger's `highWater` to `target + 1`; `runDrainPass`
+        // then had to pre-check to avoid that, and the pre-check is where the
+        // CAP-10 miss was measured. Taking it here means a refusal cannot move
+        // `highWater` at all, so no pre-check is needed and the miss is gone.
+        //
+        // The cap is checked by `assertRoom` inside `reserveTask`, which throws
+        // `ChildCapacityError('HOST_CAPACITY_REACHED')` BEFORE `tasks.set`. It is
+        // translated into the same typed refusal as every other refusal here, so
+        // the caller receives `{ reserved: false, reason: 'host_capacity_reached' }`
+        // rather than an exception from a method whose type promises an answer.
+        //
+        // SYNCHRONOUS AND IDEMPOTENT: no `await`, so this cannot interleave with
+        // the checks above it.
+        //
+        // `tookSlot` IS EXACT, AND WHY IT NEEDS NO "did the ledger already track
+        // this task id" TEST. `reserveTask` is idempotent per task id, so a
+        // hypothetical re-reserve would return the existing entry and a release
+        // would then give back a slot this call does not own. That case is
+        // UNREACHABLE here, and the reachability argument is short: the gate's
+        // only other writer for a task id is `syncSlotToState`, which runs after a
+        // committed transition, so the gate and the record agree on which tasks
+        // hold slots. A duplicate submission is therefore refused at STEP 2
+        // ("already admitted as ..."), which is ABOVE this take — so `tookSlot` is
+        // set only when this call's own transform is the one that put the entry
+        // there. Verified by mutation: making `tookSlot` unconditional here is
+        // caught by the duplicate arms, and an `alreadyTracked` refinement was
+        // measured to change nothing, which is why it is not carried.
+        try {
+          this.gate.reserveTask(input.taskId, 'reserved', input.childId)
+          tookSlot = true
+        } catch (error) {
+          if (error instanceof ChildCapacityError && error.code === 'HOST_CAPACITY_REACHED') {
+            throw new AdmissionRefused(error.message, 'host_capacity_reached', generation, held, target)
+          }
+          throw error
+        }
+
+        // ---- 7/8/9. reserve the credit, the state, the outbox ----------------
         const task: TaskRecord = {
           taskId: input.taskId,
           assignmentDigest: input.assignmentDigest,
@@ -1546,11 +1581,34 @@ export class WorkService extends Service {
         }
       })
     } catch (error) {
-      // The host-wide slot goes back on EVERY non-committing path: a refusal (the
-      // expected answer under contention) and a genuine storage failure alike.
-      // Leaving it held would leak capacity one refused attempt at a time, which
-      // is the "失败清理后 release" half of the plan's rule.
-      slot.release()
+      // The host-wide slot goes back on EVERY non-committing path where THIS CALL
+      // TOOK ONE: a storage failure after the take, or a failure of the `putRecord`
+      // that commits the transform's value. Leaving it held would leak capacity one
+      // failed attempt at a time, which is the "失败清理后 release" half of the
+      // plan's rule.
+      //
+      // `tookSlot` IS THE EXACT CONDITION, and it is not a refinement. Two distinct
+      // paths must NOT release here:
+      //
+      //   1. A REFUSAL. Every refusal is thrown BEFORE the take, so `tookSlot` is
+      //      false and there is nothing to give back. This is what makes a refusal
+      //      storm free AND keeps `highWater` at the target — the property that let
+      //      the read-only pre-check in `runDrainPass` be deleted.
+      //   2. A DUPLICATE FOR A TASK THIS LEDGER ALREADY TRACKS. `reserveTask` is
+      //      idempotent per task id: it updates the existing entry and returns a
+      //      handle to it rather than taking a second slot. MEASURED before this
+      //      guard existed: a duplicate `drain` for an already-admitted task was
+      //      correctly refused (`accepted: false`) and then released the WINNER's
+      //      slot, leaving the gate at `occupied 0` while the record still held one
+      //      admitted task. The host then believed it had room for a child that
+      //      already existed — the OVER-admission direction of INV-C1, reached by a
+      //      duplicate notification rather than by a race.
+      //
+      // Because the take is inside the transform, `tookSlot` is set only when this
+      // call's own transform ran to its take. A refusal that happens before it
+      // leaves it false, and the duplicate case is refused before the take too
+      // (step 2 of the transform), so neither can release a slot it does not own.
+      if (tookSlot) this.gate.releaseTask(input.taskId)
       if (error instanceof AdmissionRefused) {
         return {
           reserved: false,
@@ -1566,7 +1624,7 @@ export class WorkService extends Service {
     }
     const record = committed
     if (record === undefined || updated.tasks[input.taskId] === undefined) {
-      slot.release()
+      if (tookSlot) this.gate.releaseTask(input.taskId)
       throw new Error(`dailyWork: admission of "${input.taskId}" did not persist`)
     }
     return {
@@ -2118,47 +2176,44 @@ export class WorkService extends Service {
         const record = this.requireRun(runId)
         const counts = countRun(record, this.liveness.get(runId) ?? new Map(), this.readyTaskCount.get(runId) ?? 0)
 
-        // ---- A READ-ONLY PRE-CHECK THAT MAY ONLY EVER REFUSE -----------------
+        // ---- THERE IS NO OCCUPANCY PRE-CHECK HERE ANY MORE, AND WHY ----------
         //
-        // WHY THIS EXISTS, given that the reservation below is the authority.
-        // `tryReserveAdmission` provisionally takes a HOST-WIDE slot before it
-        // writes the record, and releases it if the write refuses. That take is
-        // correct (the plan requires the slot to be held before publication), but
-        // it is VISIBLE: the gate's `highWater` records the peak occupancy, and a
-        // refused attempt would push it to `target + 1`. MEASURED as a regression
-        // when this pre-check was first omitted: `capacity.test.ts` "ONE
-        // completion refills while TWO siblings are still ACTIVE" saw
-        // `highWater 4` against `N 3`, because the N+1th refused attempt had
-        // momentarily occupied the ledger. The old implementation never showed
-        // this, and the reason is worth stating: it pre-checked `mayAdmit` in
-        // `runDrain` and therefore never called `admit` at all for an over-target
-        // request, so the provisional take never happened.
+        // This loop used to call `mayAdmit(record, counts, request.reservedCost)`
+        // here and refuse on its answer. `record` was read at the TOP of this
+        // iteration, so that refusal was decided from a snapshot no write chain
+        // protects: in a completion storm the release and the top-up are in flight
+        // in the same event-loop interval, the read sees the PRE-release record,
+        // and every refill is refused even though the slots are free by the time
+        // the reservation would run.
         //
-        // So this restores that avoidance WITHOUT restoring the race. The
-        // asymmetry is the whole design and must not be inverted:
+        // MEASURED, target 10, four releases and four refills in ONE interval:
+        // `admitted=0`, `held=6`, `deficit=4`, all four refusals reported `'none'`,
+        // and `highWater` stayed at 10 — which is the proof the pre-check refused
+        // and the reservation never ran. The SAME four refills issued after the
+        // releases committed admit exactly four (`admitted=4 of 5`, control arm).
+        // So this was a MISSED TOP-UP in the ordinary trigger of the whole
+        // subsystem, not a corner case.
         //
-        //   - this check may REFUSE. A refusal based on a stale read can only
-        //     UNDER-admit, and a missed top-up is recoverable; an over-admission is
-        //     not.
-        //   - this check may NEVER ADMIT. It is not the gate. The admission
-        //     decision is `tryReserveAdmission`'s, inside one storage-domain
-        //     update, and it is the only path that commits anything.
+        // The reason it was here was real but is now obsolete. It existed to stop
+        // a REFUSED attempt from bumping the gate's `highWater` to `target + 1`,
+        // because `tryReserveAdmission` used to take the host-wide slot BEFORE the
+        // record write and release it afterwards. That take now happens INSIDE the
+        // transform, after every refusal (see `tryReserveAdmission` step 6), so a
+        // refusal cannot move `highWater` at all and the compensation is no longer
+        // needed. Both directions are then satisfied by one mechanism instead of
+        // trading one for the other:
         //
-        // A future edit that made this check authoritative — by admitting on its
-        // answer without reserving — would reopen F5 exactly. The comment is here
-        // because the asymmetry is not visible from the code alone.
-        if (!mayAdmit(record, counts, request.reservedCost)) {
-          mine.push({
-            taskId: request.taskId,
-            childId: request.childId,
-            accepted: false,
-            // The reason must be the one the GATE used, which needs this request's
-            // cost. `counts.deficitReason` cannot see it and would report a slot
-            // problem for a budget refusal.
-            reason: admissionReason(record, counts, request.reservedCost),
-          })
-          continue
-        }
+        //   - no DUPLICATE: occupancy, target and credit are decided inside the
+        //     one storage-domain update, serialized by the domain's write chain;
+        //   - no MISS: nothing refuses on a snapshot that a pending release can
+        //     invalidate. Every request reaches the authority, and the authority
+        //     reads the record as of its own queue slot.
+        //
+        // WHAT MUST NOT BE REINTRODUCED. A read-only refusal is only safe when the
+        // value it reads cannot be changed by a write already queued ahead of it.
+        // `this.gate.occupied` is process-local and synchronous, so the host-cap
+        // short-circuit below is safe; a DURABLE record field is not, which is why
+        // the run's occupancy is not pre-checked.
 
         // ---- THE HOST-WIDE GATE, which the per-run arithmetic cannot see -----
         //

@@ -1,0 +1,30 @@
+
+ RUN  v4.1.8 D:/DSH/work/wt-s9/packages/dsh-daily-work
+
+ ✓ src/host.test.ts > work service: admission and reservation > writes the reservation and the task in one record 18ms
+ ✓ src/host.test.ts > work service: admission and reservation > refuses admission past the budget ceiling 9ms
+ ✓ src/host.test.ts > work service: admission and reservation > refuses admission while the run is paused 10ms
+ ✓ src/host.test.ts > work service: admission and reservation > refuses to reopen a tombstoned task 20ms
+ ✓ src/host.test.ts > work service: admission and reservation > releases the reservation on a confirmed transition but not on a requested cancel 20ms
+ ✓ src/host.test.ts > work service: admission and reservation > rejects an illegal transition instead of quietly accepting it 10ms
+ ✓ src/host.test.ts > work service: admission and reservation > does not mutate the stored record in place 10ms
+ ✓ src/host.test.ts > work service: rolling top-up > launches up to the target and no further 36ms
+ ✓ src/host.test.ts > work service: rolling top-up > leaves admission as admission: the child is accepted, not executing 14ms
+ ✓ src/host.test.ts > work service: rolling top-up > reports a deficit instead of inventing work when fewer tasks are ready 27ms
+ ✓ src/host.test.ts > work service: rolling top-up > tops up a single completion without waiting for the whole wave 48ms
+ ✓ src/host.test.ts > work service: rolling top-up > coalesces concurrent drains so a completion storm cannot double-launch 16ms
+ ✓ src/host.test.ts > work service: rolling top-up > treats a failed launch as unknown and does not silently retry 16ms
+ ✓ src/host.test.ts > work service: rolling top-up > does not release a slot while a cancel is only requested 20ms
+ ✓ src/host.test.ts > work service: rolling top-up > stops admitting once the run is paused, even with free slots 10ms
+ ✓ src/host.test.ts > work service: rolling top-up > resumes a paused run as a new authorization edge 19ms
+ ✓ src/host.test.ts > work service: rolling top-up > does not launch when the caller signal is already aborted 6ms
+ ✓ src/host.test.ts > work service: rolling top-up > keeps each run isolated from the others 37ms
+ ✓ src/host.test.ts > work service: persistence > survives a reopen of the same domain directory 14ms
+ ✓ src/host.test.ts > work service: persistence > rejects a second open of the same domain 3ms
+ ✓ src/host.test.ts > work service: persistence > refuses writes after close 8ms
+
+ Test Files  1 passed (1)
+      Tests  21 passed (21)
+   Start at  19:45:11
+   Duration  1.31s (transform 513ms, setup 0ms, import 707ms, tests 371ms, environment 0ms)
+

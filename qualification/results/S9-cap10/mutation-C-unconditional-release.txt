@@ -1,0 +1,71 @@
+
+ RUN  v4.1.8 D:/DSH/work/wt-s9/packages/dsh-daily-work
+
+stdout | src/cap10-storm.test.ts > CAP-10/storm: N children complete inside ONE event-loop interval > neither misses a top-up nor duplicates one: N freed slots admit exactly N replacements
+CAP-10/storm measured: target=6 freedSlots=6 refillsRequested=6 admittedInStorm=5 deficitBeforeRetrigger=1 admittedOnRetrigger=1 heldFinal=6 overshoot=0 distinctReplacements=5
+
+ ✓ src/cap10-storm.test.ts > CAP-10/storm: N children complete inside ONE event-loop interval > neither misses a top-up nor duplicates one: N freed slots admit exactly N replacements 394ms
+stdout | src/cap10-storm.test.ts > CAP-10/storm: N children complete inside ONE event-loop interval > CONTROL: the same refills, issued after the releases COMMIT, admit the same N
+CAP-10/control measured: admitted=6 held=6 overshoot=0
+
+ ✓ src/cap10-storm.test.ts > CAP-10/storm: N children complete inside ONE event-loop interval > CONTROL: the same refills, issued after the releases COMMIT, admit the same N 433ms
+stdout | src/cap10-storm.test.ts > CAP-10/arithmetic: the storm without real children > N+2 concurrent top-ups against N freed slots admit exactly N
+CAP-10/arithmetic measured: target=6 freedSlots=6 refillsRequested=8 admitted=6 launches=12 highWater=6
+
+ ✓ src/cap10-storm.test.ts > CAP-10/arithmetic: the storm without real children > N+2 concurrent top-ups against N freed slots admit exactly N 144ms
+ × src/cap10-storm.test.ts > CAP-10/duplicate: one freed slot admits exactly one replacement > a duplicate notification for an already-admitted task does not free its slot 31ms
+   → the refusal did NOT release the winner's slot: expected +0 to be 1 // Object.is equality
+ × src/cap10-storm.test.ts > CAP-10/duplicate: one freed slot admits exactly one replacement > a duplicate storm for ONE task admits once and holds one slot 23ms
+   → and the ledger agrees: expected +0 to be 1 // Object.is equality
+stdout | src/cap10-storm.test.ts > CAP-10/sweep: the storm across every freed fraction of the target > freed 3, 5 and 10 of 10 each admit exactly that many, with no overshoot
+CAP-10/sweep measured: target=10 rows=[{"freed":3,"admitted":3,"held":10,"overshoot":0,"highWater":10},{"freed":5,"admitted":5,"held":10,"overshoot":0,"highWater":10},{"freed":10,"admitted":10,"held":10,"overshoot":0,"highWater":10}]
+
+ ✓ src/cap10-storm.test.ts > CAP-10/sweep: the storm across every freed fraction of the target > freed 3, 5 and 10 of 10 each admit exactly that many, with no overshoot 473ms
+ ✓ src/cap10-storm.test.ts > CAP-10/retrigger: the coalesced drain stays re-triggerable > after a storm, a LATER completion still admits a replacement 390ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/cap10-storm.test.ts > CAP-10/duplicate: one freed slot admits exactly one replacement > a duplicate notification for an already-admitted task does not free its slot
+AssertionError: the refusal did NOT release the winner's slot: expected +0 to be 1 // Object.is equality
+
+- Expected
++ Received
+
+- 1
++ 0
+
+ ❯ src/cap10-storm.test.ts:554:7
+    552|       r.service.capacityGate.occupied,
+    553|       'the refusal did NOT release the winner\'s slot',
+    554|     ).toBe(occupiedAfterAdmission)
+       |       ^
+    555|     expect(held(r.service, runId), 'and the record still holds one tas…
+    556|     expect(launches, 'and nothing was launched twice').toHaveLength(1)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  src/cap10-storm.test.ts > CAP-10/duplicate: one freed slot admits exactly one replacement > a duplicate storm for ONE task admits once and holds one slot
+AssertionError: and the ledger agrees: expected +0 to be 1 // Object.is equality
+
+- Expected
++ Received
+
+- 1
++ 0
+
+ ❯ src/cap10-storm.test.ts:584:70
+    582|     expect(admitted, 'exactly one of the eight is admitted').toHaveLen…
+    583|     expect(held(r.service, runId), 'exactly one slot is held').toBe(1)
+    584|     expect(r.service.capacityGate.occupied, 'and the ledger agrees').t…
+       |                                                                      ^
+    585|     expect(launches, 'and the port was called exactly once').toHaveLen…
+    586|     expect(r.service.getRun(runId)!.tasks['task-0']?.attempt, 'and it …
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 5 passed (7)
+   Start at  19:44:02
+   Duration  3.10s (transform 783ms, setup 0ms, import 1.02s, tests 1.89s, environment 0ms)
+

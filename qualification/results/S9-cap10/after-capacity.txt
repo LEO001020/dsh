@@ -1,0 +1,51 @@
+
+ RUN  v4.1.8 D:/DSH/work/wt-s9/packages/dsh-daily-work
+
+ ✓ src/capacity.test.ts > CAP-01: the hard capacity is a deployment constant of 30 > is 30, not a config value a caller can raise 2ms
+ ✓ src/capacity.test.ts > CAP-01: the hard capacity is a deployment constant of 30 > REFUSES the 31st and 32nd before publication, at N=30, with synthetic occupancy 1ms
+ ✓ src/capacity.test.ts > CAP-01: the hard capacity is a deployment constant of 30 > counts occupied as reserved + starting + active_assignment + stopping + unknown_quarantined 0ms
+ ✓ src/capacity.test.ts > CAP-01: the hard capacity is a deployment constant of 30 > DROPPING ANY ONE BUCKET from the formula changes `occupied`, so a test can catch it 0ms
+ ✓ src/capacity.test.ts > CAP-01: the hard capacity is a deployment constant of 30 > folds a task slot into its live child rather than double-counting it 0ms
+ ✓ src/capacity.test.ts > CAP-01: the hard capacity is a deployment constant of 30 > a QUARANTINED executor with NO live child still occupies, and is never released early 0ms
+ ✓ src/capacity.test.ts > CAP-04: an executor whose release is unconfirmed keeps its slot > a cancel that has only been REQUESTED still occupies 0ms
+ ✓ src/capacity.test.ts > CAP-04: an executor whose release is unconfirmed keeps its slot > an assignment waiting on its own tool or provider STILL occupies 124ms
+ ✓ src/capacity.test.ts > CAP-04: an executor whose release is unconfirmed keeps its slot > releases the physical slot on agent/disposed, not on a record transition 37ms
+ ✓ src/capacity.test.ts > CAP-02: every in-process creation path shares one host quota > the continuable path takes a host slot 37ms
+ ✓ src/capacity.test.ts > CAP-02: every in-process creation path shares one host quota > the ONE-SHOT path takes a host slot 35ms
+ ✓ src/capacity.test.ts > CAP-02: every in-process creation path shares one host quota > the DIRECT AgentFactory path takes a host slot 22ms
+ ✓ src/capacity.test.ts > CAP-02: every in-process creation path shares one host quota > the WORKFLOW/PTC path is covered, because it funnels through the one-shot start 57ms
+ ✓ src/capacity.test.ts > CAP-02: every in-process creation path shares one host quota > a non-child session fork does NOT consume a child slot 27ms
+ ✓ src/capacity.test.ts > CAP-02: maxDepth is an INDEPENDENT hard cap that a caller cannot lift > a caller passing maxDepth 99 is REFUSED 51ms
+ ✓ src/capacity.test.ts > CAP-02: maxDepth is an INDEPENDENT hard cap that a caller cannot lift > an OMITTED maxDepth is REFUSED too, not read as permission 47ms
+ ✓ src/capacity.test.ts > CAP-02: maxDepth is an INDEPENDENT hard cap that a caller cannot lift > the depth ceiling does not consume a capacity slot when it refuses 42ms
+ ✓ src/capacity.test.ts > CAP-02: maxDepth is an INDEPENDENT hard cap that a caller cannot lift > a depth-1 child IS admitted, so the ceiling is not a blanket refusal 39ms
+ ✓ src/capacity.test.ts > CAP-03/CAP-06: real top-up, and NO filler agents > one root really reaches its target of 3 with the real continuable seam 68ms
+ ✓ src/capacity.test.ts > CAP-03/CAP-06: real top-up, and NO filler agents > ready shortage with a high N runs only what is ready and creates NO filler agent 79ms
+ ✓ src/capacity.test.ts > CAP-03/CAP-06: real top-up, and NO filler agents > a root is NOT counted in the child target and is not starved of provider budget 29ms
+ ✓ src/capacity.test.ts > CAP-07: two roots share one host cap > the gate is HOST-wide: two roots cannot each hold the full cap 1ms
+ ✓ src/capacity.test.ts > CAP-07: two roots share one host cap > two real roots share one host ledger, and the second is refused at the boundary 129ms
+ ✓ src/capacity.test.ts > an idle historical Session is NOT active > does not occupy a slot, and its Session remains readable 89ms
+ ✓ src/capacity.test.ts > CAP-08: raising and lowering the target keeps running children > a raise tops up, and a lower STOPS admissions without killing a working child 195ms
+ ✓ src/capacity.test.ts > the gate refuses BEFORE publication, not after > the creating call rejects and the caller receives no child 51ms
+ ✓ src/capacity.test.ts > the gate refuses BEFORE publication, not after > a capacity refusal at the boundary also rejects the creating call 66ms
+ ✓ src/capacity.test.ts > CAP-04/CAP-05: rolling refill at N=3, on a controlled local provider route > ONE completion refills while TWO siblings are still ACTIVE (N=3) 147ms
+ ✓ src/capacity.test.ts > CAP-04/CAP-05: rolling refill at N=3, on a controlled local provider route > THREE sequential single completions each refill, with siblings held open (N=3) 252ms
+ ✓ src/capacity.test.ts > CAP-04/CAP-05: rolling refill at N=3, on a controlled local provider route > CAP-06 FIXED: two freed slots admit exactly two, not three 272ms
+ ✓ src/capacity.test.ts > CAP-05 falsification: a WAVE policy produces no refill under the same measurement > declines while a sibling is active, where the rolling path admits (N=3) 223ms
+ ✓ src/capacity.test.ts > CAP-07/CAP-08: a stopping or quarantined executor holds capacity > CAP-07: a slot is NOT released on `cancel requested`, only on quiescence 1ms
+ ✓ src/capacity.test.ts > CAP-07/CAP-08: a stopping or quarantined executor holds capacity > CAP-08: a quarantined executor holds capacity, and a live one is counted ONCE 0ms
+ ✓ src/capacity.test.ts > CAP-07/CAP-08: a stopping or quarantined executor holds capacity > a reservation admits the child it reserved, at exactly capacity 1ms
+ ✓ src/capacity.test.ts > CAP-09/CAP-10/CAP-11: deficit, a lower that cancels nothing, root headroom > CAP-09: a ready shortage at N=30 with 2 ready creates exactly 2 REAL children 125ms
+ ✓ src/capacity.test.ts > CAP-09/CAP-10/CAP-11: deficit, a lower that cancels nothing, root headroom > CAP-10: lowering N stops new admission WITHOUT fabricating cancellations 137ms
+ ✓ src/capacity.test.ts > CAP-09/CAP-10/CAP-11: deficit, a lower that cancels nothing, root headroom > CAP-11: the root is not counted in N and keeps its own provider headroom 29ms
+ ✓ src/capacity.test.ts > T10: the mandatory N=10 arm at the deployment numbers > the ADMIT/REFUSE BOUNDARY at target 10 and hard cap 30, with the root excluded 1ms
+ ✓ src/capacity.test.ts > T10: the mandatory N=10 arm at the deployment numbers > the root EXCLUSION is the classifier, not the mount order 61ms
+ ✓ src/capacity.test.ts > T10: the mandatory N=10 arm at the deployment numbers > REAL N=10: ten children in flight, the 11th refused, and the root holds no slot 428ms
+ ✓ src/capacity.test.ts > T10: the mandatory N=10 arm at the deployment numbers > REAL N=10 ROLLING REFILL: one completion admits exactly one more, back to ten 578ms
+ ✓ src/capacity.test.ts > T10: the mandatory N=10 arm at the deployment numbers > the ROOT keeps its own inference budget while ten children are in flight 463ms
+
+ Test Files  1 passed (1)
+      Tests  42 passed (42)
+   Start at  19:44:43
+   Duration  5.41s (transform 931ms, setup 0ms, import 1.21s, tests 3.95s, environment 0ms)
+

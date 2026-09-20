@@ -1,0 +1,31 @@
+
+ RUN  v4.1.8 D:/DSH/work/wt-s9/packages/dsh-daily-work
+
+ ✓ src/scheduling.test.ts > C01: ten distinct children carry real work, root excluded > runs ten distinct children from twenty submitted tasks with target N=10 315ms
+stdout | src/scheduling.test.ts > C02: a single completion refills without waiting for the wave > admits one replacement as soon as one child settles, with nine still running
+C02 refill timeline (measured; no SLO is asserted):
+    +0ms release child-0
+    +7ms child-0 ended and left the registry
+    +7ms slot freed by confirmation
+    +31ms child-500 admitted (+24ms)
+    +31ms replacement reached a model request
+C02 measured refill latency, confirmation -> replacement admitted: 24ms
+C02 measured replacement latency, admitted -> first model request: 0ms
+
+ ✓ src/scheduling.test.ts > C01: ten distinct children carry real work, root excluded > does not count the root own settlement-driven turn as one of the ten children 220ms
+ ✓ src/scheduling.test.ts > C02: a single completion refills without waiting for the wave > admits one replacement as soon as one child settles, with nine still running 270ms
+ ✓ src/scheduling.test.ts > C03: a completion storm neither double-launches nor misses a refill > serializes concurrent drains and admits exactly one child per freed slot 445ms
+ ✓ src/scheduling.test.ts > C04: an insufficient ready supply is reported, never padded with placeholders > creates exactly three real children and reports a seven-slot deficit 588ms
+ ✓ src/scheduling.test.ts > C07: a cancel that has not finished keeps the slot occupied > holds the slot while an interrupted child is still running, and refuses the premature refill 703ms
+ ✓ src/scheduling.test.ts > C07: a cancel that has not finished keeps the slot occupied > keeps an unknown-outcome task occupying its slot against a full target 410ms
+stdout | src/scheduling.test.ts > C09: provider limits are reported, never disguised as execution > a sustained 429 through the real wire keeps the target at 10 and reports a block
+C09 after a sustained 429: record holds 10 slots, DSH still has 0 resident children, activeAssignments 0
+
+ ✓ src/scheduling.test.ts > C09: provider limits are reported, never disguised as execution > a sustained 429 through the real wire keeps the target at 10 and reports a block 1375ms
+ ✓ src/scheduling.test.ts > C09: provider limits are reported, never disguised as execution > an exhausted child budget blocks with a real reason and does not lower the target 359ms
+
+ Test Files  1 passed (1)
+      Tests  9 passed (9)
+   Start at  19:45:01
+   Duration  5.99s (transform 823ms, setup 0ms, import 1.09s, tests 4.69s, environment 0ms)
+
