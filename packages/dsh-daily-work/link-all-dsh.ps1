@@ -73,3 +73,51 @@ if ($missing.Count -gt 0) {
     # so an unresolved name is reported rather than treated as a hard failure.
     Write-Host "unresolved: $($missing -join ', ')"
 }
+
+# ---------------------------------------------------------------------------
+# `@types/node` -- the link this script used to NOT make.
+#
+# MEASURED GAP, and it made the documented recreation procedure produce an
+# UNBUILDABLE install. `tsconfig.json` sets `"types": ["node"]`, so a build needs
+# `node_modules/@types/node` to resolve. This script derived its link set from
+# `@deepseek-ai/*` specifiers in `src/*.ts` and therefore never created it; in the
+# main checkout the directory exists because someone added it by hand, so the gap
+# was invisible there. A FRESH WORKTREE, where the farm is built only by this
+# script, fails immediately with:
+#
+#     error TS2688: Cannot find type definition file for 'node'.
+#
+# The version is READ FROM THE CHECKOUT'S OWN MANIFEST rather than pinned here: a
+# hardcoded 22.20.0 would silently outlive an upstream bump, which is the same
+# class of drift that made `link-dsh.cmd`'s hand-maintained list wrong.
+$typesDst = Join-Path $pkg 'node_modules\@types'
+New-Item -ItemType Directory -Force -Path $typesDst | Out-Null
+$nodeTypes = $null
+$checkoutManifest = Join-Path $DshSrc 'package.json'
+if (Test-Path $checkoutManifest) {
+    $wanted = (Get-Content -Raw $checkoutManifest | ConvertFrom-Json).devDependencies.'@types/node'
+    if ($wanted) {
+        $bare = $wanted -replace '^[\^~]', ''
+        # Prefer the exact declared version; fall back to the highest installed
+        # match so a caret range whose exact build was pruned still resolves.
+        $cands = Get-ChildItem -Path (Join-Path $DshSrc 'node_modules\.pnpm') -Directory -Filter '@types+node@*' -ErrorAction SilentlyContinue |
+            Where-Object { $_.Name -eq "@types+node@$bare" -or $_.Name -like "@types+node@$bare-*" }
+        if (-not $cands) {
+            $cands = Get-ChildItem -Path (Join-Path $DshSrc 'node_modules\.pnpm') -Directory -Filter "@types+node@$bare*" -ErrorAction SilentlyContinue
+        }
+        if ($cands) {
+            $nodeTypes = (Get-ChildItem -Path $cands[0].FullName -Recurse -Directory -Filter node -ErrorAction SilentlyContinue |
+                Where-Object { $_.FullName -like '*@types\node' } | Select-Object -First 1).FullName
+        }
+    }
+}
+if ($nodeTypes -and (Test-Path $nodeTypes)) {
+    $tlink = Join-Path $typesDst 'node'
+    if (Test-Path $tlink) { cmd /c rmdir /s /q "`"$tlink`"" 2>$null | Out-Null }
+    New-Item -ItemType Junction -Path $tlink -Target $nodeTypes | Out-Null
+    Write-Host "types    : node -> $nodeTypes"
+} else {
+    # Loud, because a missing @types/node fails the BUILD, not the link, and the
+    # build error (TS2688) does not mention this script.
+    Write-Host "types    : @types/node NOT LINKED -- the build will fail with TS2688."
+}
