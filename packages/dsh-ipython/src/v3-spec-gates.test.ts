@@ -1125,11 +1125,25 @@ describe('IPY-14: kernel death is visible and nothing is replayed', () => {
 // keys; nothing covered the over-limit frame clause, and nothing covered the
 // connection-file permissions the stimulus names.
 //
-// THE OVER-LIMIT CLAUSE HAS A MEASURED PROBLEM, and it is asserted honestly
-// rather than assumed away: `OutputBuffer.note_dropped_frame` exists to count
-// frames libzmq refused, but it has ZERO call sites, so `droppedFrames` is
-// structurally always 0. The renderer has a branch for `droppedFrames > 0` that
-// no code can reach. Both halves are measured below.
+// THE OVER-LIMIT CLAUSE WAS A MEASURED DEFECT AND IS NOW FIXED, and both halves
+// are asserted so a regression is caught rather than argued about.
+//
+// WHAT WAS WRONG. `OutputBuffer.note_dropped_frame` was the only writer of
+// `droppedFrames` and had ZERO call sites, so the field was structurally always 0
+// and the renderer's `droppedFrames > 0` branch was dead code. Writer c1 then
+// measured WHERE the loss actually lands, which is what made the fix possible
+// rather than guessed:
+//
+//   * a late frame over the bound made `encode_frame` raise INSIDE the iopub
+//     pump, whose bare `except Exception` swallowed it -- droppedFrames 0, no
+//     refusal event, 4,456,448 bytes gone, the model told nothing;
+//   * an over-limit REPLY raised `FRAME_TOO_LARGE` with no count on the error, so
+//     the caller whose cell just failed had to make a separate `status` call.
+//
+// WHAT IS ASSERTED NOW: the pump records a refused frame against the in-flight
+// cell (so the counter has a producer), and the refusal itself reports the loss
+// WITH A COUNT, in words and as a field, while still FAILING -- never as a
+// success carrying empty output.
 // ---------------------------------------------------------------------------
 
 describe('IPY-15: the kernel transport is authenticated and frames are bounded', () => {
@@ -1245,6 +1259,71 @@ describe('IPY-15: the kernel transport is authenticated and frames are bounded',
         return true
       }
     })()
+    // ---- (4b) THE COUNT REACHES A READER, ON THE REFUSAL ITSELF -------------
+    // The clause under test is that an over-limit frame be "reported as LOST with a
+    // count". Two facts have to hold for that to be true of a real caller, and
+    // neither did before: the refusal must CARRY a count, and the count must be
+    // readable without parsing prose. Measured before this: the reply said only
+    // `frame of 13118726 bytes exceeds the limit`, which states the bound and the
+    // size but never says the bytes are GONE, and the tally existed only in a
+    // separate `status` call the caller had to know to make.
+    //
+    // Driven through the REAL reply path: a cell whose output exceeds the bound is
+    // refused, and the text captured below is the sentence a model would read.
+    const refusedReplyText = await (async () => {
+      const overLimitHost = makeHost({ outputCapBytes: MAX_FRAME_BYTES * 2 })
+      try {
+        await overLimitHost.start()
+        const printed = MAX_FRAME_BYTES + 512 * 1024
+        return await overLimitHost.execute(`print("Z" * ${String(printed)})`)
+          .then(() => null)
+          .catch((error: unknown) => error instanceof Error ? error.message : String(error))
+      } finally {
+        await overLimitHost.shutdown().catch(() => undefined)
+        host = undefined
+      }
+    })()
+    const refusalNamesTheLoss = refusedReplyText !== null && /frame\(s\) LOST/iu.test(refusedReplyText)
+    const refusalStatesTheCount = refusedReplyText !== null && /\b\d+ frame\(s\) LOST/iu.test(refusedReplyText)
+    // AND IT IS STILL A FAILURE. The count must not have been bought by turning the
+    // refusal into a success carrying empty output -- that is the exact failure
+    // mode clause 2 names, so this control asserts the refusal is still an error.
+    const refusalIsStillAnError = refusedReplyText !== null
+    // The count as a FIELD, so a reader does not have to parse it out of prose.
+    const refusalEventCarriesCount = (() => {
+      try {
+        const decoded = asBrokerMessage({
+          type: 'event', event: 'transport_refused', epoch: 1,
+          code: 'FRAME_TOO_LARGE', detail: '1 frame(s) LOST',
+          limitBytes: MAX_FRAME_BYTES, declaredBytes: MAX_FRAME_BYTES + 1, refusedFrames: 1,
+        })
+        return decoded.type === 'event' && decoded.event === 'transport_refused'
+          && decoded.refusedFrames === 1
+      } catch {
+        return false
+      }
+    })()
+    // THE CONTROL for that: a NEGATIVE count must not survive decoding. Without
+    // this, `refusalEventCarriesCount: true` could come from a decoder that passes
+    // any number through.
+    const negativeCountRejected = (() => {
+      try {
+        const decoded = asBrokerMessage({
+          type: 'event', event: 'transport_refused', epoch: 1,
+          code: 'FRAME_TOO_LARGE', detail: 'bad count',
+          limitBytes: MAX_FRAME_BYTES, refusedFrames: -5,
+        })
+        return decoded.type === 'event' && decoded.event === 'transport_refused'
+          && decoded.refusedFrames === undefined
+      } catch {
+        return false
+      }
+    })()
+    // The broker's own sentence builder, so the reply and the transport event
+    // cannot drift into two accounts of one refusal: one definition plus the two
+    // call sites (the reply, and the event).
+    const brokerHasOneLossSentence = brokerSource.includes('def refused_frame_loss_message')
+      && (brokerSource.match(/refused_frame_loss_message\(/gu) ?? []).length >= 3
 
     console.log('[V3-MEASURED] IPY-15 ' + JSON.stringify({
       transport: status.transport,
@@ -1275,6 +1354,16 @@ describe('IPY-15: the kernel transport is authenticated and frames are bounded',
       brokerEmitsStructuredRefusal,
       structuredEventDecodes,
       malformedRefusalRejected,
+      // (4b) THE COUNT ON THE REFUSAL. The clause is "reported as LOST with a
+      // count", so the count has to reach a caller, on the refusal, as a field and
+      // in words -- and the refusal must still be a FAILURE.
+      refusedReplyText,
+      refusalNamesTheLoss,
+      refusalStatesTheCount,
+      refusalIsStillAnError,
+      refusalEventCarriesCount,
+      negativeCountRejected,
+      brokerHasOneLossSentence,
     }))
 
     // (1) The transport is TCP or IPC WITH curve keys. Plaintext TCP would be the
@@ -1311,6 +1400,25 @@ describe('IPY-15: the kernel transport is authenticated and frames are bounded',
     // The control arm: a refusal WITHOUT its bound must be refused, so the check
     // above cannot pass on a validator that accepts anything.
     expect(malformedRefusalRejected).toBe(true)
+
+    // (4b) THE REFUSAL REPORTS THE LOSS WITH A COUNT, ON THE REFUSAL ITSELF.
+    //      Measured before this: the reply said only `frame of 13118726 bytes
+    //      exceeds the limit` -- the bound and the size, never that the bytes were
+    //      GONE -- and the tally lived only in a separate `status` call the failing
+    //      caller had to know to make. Both halves are asserted here, plus the two
+    //      controls that stop the pair from passing on a vacuous implementation.
+    expect(refusedReplyText, 'a cell over the frame bound must be refused, not returned').not.toBeNull()
+    expect(refusalNamesTheLoss).toBe(true)
+    expect(refusalStatesTheCount).toBe(true)
+    // THE CONTROL THAT KEEPS FAIL-HARD: the count was not bought by reporting the
+    // refusal as a success with empty output, which is the failure mode clause 2
+    // names.
+    expect(refusalIsStillAnError).toBe(true)
+    expect(refusalEventCarriesCount).toBe(true)
+    // The control for the field: a negative count must not survive decoding.
+    expect(negativeCountRejected).toBe(true)
+    // One sentence builder, so the reply and the transport event cannot drift.
+    expect(brokerHasOneLossSentence).toBe(true)
 
     // (5) THE COUNT NOW HAS A PRODUCER, so this assertion was INVERTED rather than
     //     deleted -- and the comment it replaces asked for exactly that: "wiring a
