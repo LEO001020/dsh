@@ -297,6 +297,27 @@ The shortest real path from a boot to this code:
 Every link in that chain is a production call site. Steps 2 and 6 are the ones
 that did not exist before this slice.
 
+### 5.1 The built artifact, verified rather than assumed
+
+`lib/**` is gitignored (`packages/*/lib/`), so the sources are the deliverable —
+but the profile loads `main: lib/host-plugin.js`, so a claim about the PRODUCT
+has to be checked against the build, not only against `src/`. Measured:
+
+```
+node <pinned>/typescript/bin/tsc -p tsconfig.json      -> exit 0
+lib/completion.js                                      -> emitted (8,495 bytes)
+lib/host-plugin.js:36                                  -> service.installCompletionObserver();
+lib/host-plugin.js:44                                  -> await service.sweepOpenRuns();
+lib/host.js:289                                        -> mountWorkCompletionObserver(this.ctx, {...})
+lib/completion.js                                      -> 1 occurrence of 'subagent/end'
+lib/states.js:61                                       -> 'completed' in the vocabulary
+lib/states.js:117-118                                  -> accepted/executing -> 'completed' edges
+```
+
+So the listener is reachable from the file the profile actually executes. Before
+this slice, `grep -c "subagent/end"` over the built package's production JS
+returned 0 in every file.
+
 ---
 
 ## 6. WHAT I AM NOT CLAIMING
