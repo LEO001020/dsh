@@ -46,8 +46,8 @@ import { spawn } from 'node:child_process'
 import { mkdtemp, mkdir, readdir, readFile, rm, stat, utimes, writeFile } from 'node:fs/promises'
 import { existsSync } from 'node:fs'
 import { tmpdir } from 'node:os'
-import { join } from 'node:path'
-import { pathToFileURL } from 'node:url'
+import { dirname, join, resolve } from 'node:path'
+import { fileURLToPath, pathToFileURL } from 'node:url'
 import { Context } from '@deepseek-ai/cordis'
 import Loader from '@deepseek-ai/cordis-plugin-loader'
 import Include from '@deepseek-ai/cordis-plugin-include'
@@ -555,6 +555,14 @@ describe('A07 preset identity: precedence and resolution', () => {
     // The end-to-end version of the precedence rule: a real roster with the
     // real shipped root enabled, and a user home holding a directory named
     // after a shipped preset. The shipped one must win.
+    //
+    // THIS IS A MECHANISM TEST, NOT A DEPLOYMENT TEST, and the distinction
+    // became load-bearing when the deployment set `includeShippedRoot: false`.
+    // It configures the roster explicitly below, so it keeps asserting the
+    // PRECEDENCE RULE for any composition that does enable the shipped root --
+    // which is a real rule of the real package and must not be lost. The
+    // DEPLOYMENT's own roster (shipped root absent, one preset) is asserted
+    // separately by the single-mode gate further down.
     const home = await tempHome()
     const userRoot = join(home, '.agent-presets')
     await presetDir(userRoot, 'minimal', 'name: User Minimal\n')
@@ -996,7 +1004,19 @@ describe('the real launcher composes the preset roster into its profile graph', 
 
 // ── the real shipped roster, read from the installed harness ────────────────
 
-describe('the shipped roster the launcher actually mounts', () => {
+describe('the shipped roster inside the pinned checkout', () => {
+  // WHAT THIS DESCRIBE DOES AND DOES NOT ESTABLISH.
+  //
+  // It reads the SHIPPED ROOT DIRECTLY, by passing `SHIPPED_PRESET_ROOT` to
+  // `discoverPresets` itself. It is therefore a statement about the CONTENT OF
+  // THE PINNED CHECKOUT -- "these four compositions exist and are mountable" --
+  // and NOT a statement about what the deployment offers. Those were the same
+  // fact until `includeShippedRoot` became `false` in the profile; they are now
+  // different facts, and the describe title says which one this is so a reader
+  // cannot take it for the other.
+  //
+  // The deployment's own roster is asserted by the single-mode gate below,
+  // which reads the PROFILE's configuration rather than this directory.
   it('holds the four shipped presets and no more', async () => {
     const found = await discoverPresets([{ path: SHIPPED_PRESET_ROOT, trust: 'system' }], HARNESS_BASE)
 
@@ -1047,5 +1067,231 @@ describe('the shipped roster the launcher actually mounts', () => {
     const found = await discoverPresets([{ path: root, trust: 'user' }], HARNESS_BASE)
 
     expect(found.map(preset => preset.id)).toEqual(['good-id'])
+  })
+})
+
+// ── the deployment offers exactly ONE selectable mode ───────────────────────
+
+describe('the deployment offers exactly one selectable mode', () => {
+  /**
+   * The repository root, derived from this file's own location so the gate
+   * cannot be retargeted at a different checkout by a constant edit.
+   *
+   * `src/` -> package -> `packages/` -> repo.
+   */
+  const REPO = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..', '..')
+
+  /** The profile patch that defines the deployment's roster. */
+  const PROFILE_PATCH = join(REPO, 'profiles', 'daily-candidate', 'cordis.patch.yml')
+
+  /**
+   * The ROOT the profile's own `roots` entry points at.
+   *
+   * This is `profiles/daily-candidate/presets/` -- the PARENT of the preset
+   * directories, not the preset itself. `scanRoot` lists the root's CHILDREN and
+   * treats each directory whose name matches `PRESET_ID` as a roster row
+   * (`packages/preset/agent-presets/src/discovery.ts:285-308`), so passing
+   * `.../presets/daily-standard` here would scan ITS children and find nothing.
+   * The profile's own row names this same directory, via
+   * `new URL('presets/', ctx.baseUrl)` anchored at the profile directory
+   * (`cordis.patch.yml`, DIFFERENCE 1b).
+   */
+  const OWN_PRESET_ROOT = join(REPO, 'profiles', 'daily-candidate', 'presets')
+
+  /** The deployment's own preset, i.e. the ONE mode this roster may offer. */
+  const OWN_PRESET_ID = 'daily-standard'
+
+  /** The deployment's own preset directory. */
+  const OWN_PRESET_DIR = join(OWN_PRESET_ROOT, OWN_PRESET_ID)
+
+  /**
+   * The `agent-presets` row's config block, as text, read from the profile patch.
+   *
+   * WHY TEXT AND NOT A YAML PARSE. `js-yaml` is not a dependency of this package
+   * (it belongs to `cordis-plugin-include`, and importing it from there would be
+   * the deep-import pattern `no-src-imports.test.ts` forbids), and the row's
+   * `roots[].path` is a `!!js` expression that a plain parse would reject
+   * anyway. The repo's own idiom for reading a row out of a patch is the
+   * line-walk in `no-sandbox-contract.test.ts:103-119`, and this follows it.
+   *
+   * WHAT IT CAN AND CANNOT SEE. It reads the ACTIVE lines of the block --
+   * comments are stripped first, because this file's rows are documented at
+   * length and a comment that happened to mention `includeShippedRoot: true`
+   * (explaining the OLD value, which the DIFFERENCE 1c comment does) must not be
+   * mistaken for the setting. That is the failure mode a naive `String.includes`
+   * scan has, and round 1 recorded exactly that defect: a scan that reported a
+   * LIVE function as deleted.
+   * @returns the block's active lines, or undefined when the row is absent.
+   */
+  async function agentPresetsConfigLines(): Promise<string[] | undefined> {
+    const text = await readFile(PROFILE_PATCH, 'utf8')
+    const lines = text.split('\n')
+    const start = lines.findIndex(line => line.trim() === '- id: agent-presets')
+    if (start < 0) return undefined
+    const indentOf = (line: string): number => line.length - line.trimStart().length
+    const ownIndent = indentOf(lines[start]!)
+    const block: string[] = []
+    for (let index = start + 1; index < lines.length; index++) {
+      const line = lines[index]!
+      if (line.trim() !== '' && indentOf(line) <= ownIndent) break
+      block.push(line)
+    }
+    // Drop comments and blanks: only the ACTIVE YAML is evidence of the setting.
+    return block
+      .map(line => line.trim())
+      .filter(line => line !== '' && !line.startsWith('#'))
+  }
+
+  /**
+   * One active `key: value` setting from the row's config block.
+   *
+   * Scoped to the block rather than the whole file, so a value in another row
+   * cannot satisfy the assertion.
+   * @param key - the YAML key to read.
+   * @returns the raw value text, or undefined when the key is absent.
+   */
+  async function agentPresetsSetting(key: string): Promise<string | undefined> {
+    const active = await agentPresetsConfigLines()
+    if (active === undefined) return undefined
+    const line = active.find(candidate => candidate.startsWith(`${key}:`))
+    return line?.slice(key.length + 1).trim()
+  }
+
+  it('sets includeShippedRoot: false in the profile patch, explicitly', async () => {
+    // THE MECHANISM, pinned where it lives. `includeShippedRoot` is composed in
+    // the roster's CONSTRUCTOR as one element of a list
+    // (`packages/preset/agent-presets/src/index.ts:182-184`), so `false` omits
+    // the shipped directory from discovery rather than breaking it.
+    //
+    // The assertion is on the VALUE, not on the key's presence: the schema
+    // default is `true` (`:114`) and a patch replaces the whole `config`
+    // object, so an omitted key would silently restore all four shipped modes.
+    // That is the exact regression this gate exists to catch.
+    expect(await agentPresetsSetting('includeShippedRoot')).toBe('false')
+  })
+
+  it('keeps includeUserRoot: true, so a preset can still be authored', async () => {
+    // Not one of the four "modes": it is the empty writable directory
+    // `$DSH_HOME/.agent-presets` that the authoring flow writes to, and
+    // `authorable` is computed from it (`index.ts:520-522`). Turning it off
+    // would remove the ability to author a preset at all, which the
+    // authorization did not ask for.
+    //
+    // MEASURED on the deployment: that directory does not exist, so it
+    // contributes ZERO selectable modes -- the roster lists it as a root and
+    // gets nothing from it (`roster-before.json` / `roster-after.json`).
+    expect(await agentPresetsSetting('includeUserRoot')).toBe('true')
+  })
+
+  it('names our own preset as the default, so an unnamed Session composes it', async () => {
+    // If the default still named a shipped preset, the deployment would offer
+    // ONE mode in the picker and compose a DIFFERENT, unselectable one by
+    // default -- which is worse than offering five. The two facts must agree.
+    expect(await agentPresetsSetting('default')).toBe('daily-standard')
+  })
+
+  it('offers exactly ONE preset when the profile\'s own root is scanned', async () => {
+    // THE END-TO-END PROPERTY, and the one the authorization is about. This
+    // boots the REAL roster with the EXACT root set the profile composes --
+    // the profile's own `presets/` directory, with the shipped root omitted as
+    // the patch now specifies -- and asserts the resulting selectable set.
+    //
+    // It is not a re-statement of the two assertions above: those pin the
+    // CONFIGURATION, this measures the ROSTER THAT CONFIGURATION PRODUCES. A
+    // future shipped preset, a stray directory in `presets/`, or a
+    // `USER_PRESET_DIR` that acquired a preset would all be invisible to a
+    // config assertion and are exactly what this catches.
+    const home = await tempHome()
+    // The value under test is READ FROM THE PATCH rather than retyped: a gate
+    // that hardcoded `false` here would keep passing after the patch was
+    // reverted, and would then be measuring itself instead of the product.
+    // (`agentPresetsSetting` is asserted to return a real value by the test
+    // above, so an absent key cannot make this `undefined`-tolerant and silent.)
+    const shippedSetting = await agentPresetsSetting('includeShippedRoot')
+    expect(shippedSetting, 'the setting must exist for this test to be meaningful').toBeDefined()
+
+    const ctx = new Context()
+    ctx.baseUrl = HARNESS_BASE
+    await ctx.plugin(Loader)
+    ctx.loader.builtins.include = Include
+    await ctx.plugin(SessionProjectionRegistry)
+    await ctx.plugin(AgentPresets, {
+      default: OWN_PRESET_ID,
+      roots: [{ path: OWN_PRESET_ROOT, trust: 'system' }],
+      includeShippedRoot: shippedSetting === 'true',
+      includeUserRoot: true,
+    })
+    cleanups.push(async () => {
+      await ctx.fiber.dispose()
+    })
+
+    const listed = await ctx.agentPresets.list()
+    expect(listed.map(preset => preset.id)).toEqual([OWN_PRESET_ID])
+    expect(listed[0]?.trust).toBe('system')
+
+    // THE HEALTH ASSERTION, and it is deliberately weaker HERE than the boot
+    // measures -- stated rather than glossed, because an unexamined `broken`
+    // would make "selectable" false while this gate still passed.
+    //
+    // `HARNESS_BASE` is `apps/cli/` inside the PINNED CHECKOUT, which is where
+    // `mountPreset` resolves a preset's bare package rows from. This package's
+    // own preset names `dsh-daily-work/tools` and `dsh-ipython/tool`, and those
+    // two extensions are installed in the PROFILE's `node_modules` -- not in the
+    // checkout's. So in this fixture the health check reports them unresolved,
+    // and that is a property of the FIXTURE BASE, not of the composition. The
+    // pinned package's own test handles the same situation the same way
+    // (`shipped-root.spec.ts:99-100`, which filters `cannot be resolved`).
+    //
+    // The reason must be EXACTLY that class: a malformed composition or a
+    // missing file would be a real defect and must not pass under this filter.
+    // The product-level health is measured where it can be: the real boot
+    // records `broken: null` for this preset
+    // (`qualification/results/S1-single-mode/roster-after.json`).
+    const broken = listed[0]?.broken
+    if (broken !== undefined) {
+      expect(broken).toContain('cannot be resolved')
+      expect(broken).not.toContain('not valid YAML')
+      expect(broken).not.toContain('is missing')
+      expect(broken).not.toContain('must be a top-level list')
+    }
+
+    // The user root contributes nothing here, which is the measured state on
+    // this deployment -- `tempHome()` creates no `.agent-presets`. Asserted so
+    // the "one mode" claim cannot be satisfied by an accident of a home that
+    // happened to hold a preset.
+    expect(existsSync(join(home, '.agent-presets'))).toBe(false)
+
+    // RESOLUTION AGREES WITH THE ROSTER. `list()` and `resolve()` are separate
+    // code paths, so a change that emptied the roster while resolution still
+    // answered a shipped id would pass a roster-only assertion.
+    for (const shipped of ['standard', 'ptc', 'minimal', 'cordis']) {
+      const failure = await ctx.agentPresets.resolve(shipped).then(
+        () => undefined,
+        (error: unknown) => error as { code?: string; message: string },
+      )
+      expect(failure, `${shipped} must NOT resolve on this deployment`).toBeDefined()
+      expect(failure?.code).toBe('agent-preset/not-found')
+      expect(failure?.message).toContain(`preset "${shipped}" not found`)
+    }
+    // The positive control: ours resolves. Without this the gate would pass for
+    // a composition that offers NOTHING, which is not the property claimed.
+    const own = await ctx.agentPresets.resolve('daily-standard')
+    expect(own.path.startsWith(OWN_PRESET_DIR)).toBe(true)
+  })
+
+  it('gives our preset a display name, so the one remaining mode is labelled', async () => {
+    // The picker renders `name` and falls back to the raw id. With the shipped
+    // set gone ours is the only label a person sees, and the four presets it
+    // replaces all carried one -- so an unnamed row would be a visible
+    // regression in the only surface that remains.
+    //
+    // `preset.yml` is OPTIONAL and this is not a mountability assertion:
+    // metadata is display text only and degrades to `{}` on any failure
+    // (`metadata.ts:14-16, 56-64`). The gate is about the LABEL.
+    const found = await discoverPresets([{ path: OWN_PRESET_ROOT, trust: 'system' }], HARNESS_BASE)
+    expect(found).toHaveLength(1)
+    expect(found[0]?.id).toBe(OWN_PRESET_ID)
+    expect(found[0]?.name).toBeTruthy()
+    expect(found[0]?.order).toBe(1)
   })
 })

@@ -1,0 +1,134 @@
+{
+  "label": "after",
+  "driver": "s1-roster-driver",
+  "home": "D:/DSH/home/s1",
+  "profile": "daily",
+  "bootCwd": "D:/DSH/work/wt-s1",
+  "port": 7371,
+  "portReleased": true,
+  "exitCode": null,
+  "timedOut": false,
+  "executedArtifacts": {
+    "packages/dsh-daily-work/lib/host-plugin.js": "fb553116e31cde9e8230fe7d1fc97bf00b9c783b201579c9e0758da262b8f888",
+    "packages/dsh-ipython/lib/host-plugin.js": "d91aba164c8143fdb1d0c8f4913598a51daf67f8dc2bea2c7afd02998cd87e7e",
+    "packages/dsh-ipython/lib/ipython-tool.js": "40f42421129ddc371340a7fd5c1a92ce336b22836f12ad407500c49c63d12222"
+  },
+  "sourceProfilePatchSha256": "4e3aa20cbc23b8cedbfc7205aac0756f37e1107a4ee556d38760dc3769ceedeb",
+  "probe": {
+    "profileBooted": true,
+    "roots": [
+      {
+        "path": "D:/DSH/home/s1/profiles/daily/presets/",
+        "trust": "system"
+      },
+      {
+        "path": "D:\\DSH\\home\\s1\\.agent-presets",
+        "trust": "user"
+      }
+    ],
+    "presetRoots": [
+      {
+        "path": "D:/DSH/home/s1/profiles/daily/presets/",
+        "trust": "system"
+      },
+      {
+        "path": "D:\\DSH\\home\\s1\\.agent-presets",
+        "trust": "user"
+      }
+    ],
+    "shippedRootPresent": false,
+    "listed": [
+      {
+        "id": "daily-standard",
+        "trust": "system",
+        "name": null,
+        "order": null,
+        "broken": null
+      }
+    ],
+    "listedIds": [
+      "daily-standard"
+    ],
+    "listedCount": 1,
+    "defaultId": "daily-standard",
+    "resolveOf": {
+      "standard": {
+        "resolved": false,
+        "error": "RemoteError: agent-presets: preset \"standard\" not found (available: daily-standard)"
+      },
+      "ptc": {
+        "resolved": false,
+        "error": "RemoteError: agent-presets: preset \"ptc\" not found (available: daily-standard)"
+      },
+      "minimal": {
+        "resolved": false,
+        "error": "RemoteError: agent-presets: preset \"minimal\" not found (available: daily-standard)"
+      },
+      "cordis": {
+        "resolved": false,
+        "error": "RemoteError: agent-presets: preset \"cordis\" not found (available: daily-standard)"
+      },
+      "daily-standard": {
+        "resolved": true,
+        "path": "D:\\DSH\\home\\s1\\profiles\\daily\\presets\\daily-standard\\agent.cordis.yml",
+        "trust": "system"
+      }
+    },
+    "selectionPolicy": {
+      "modeSelectionEnabled": true,
+      "authorable": true,
+      "isDefaultId": "daily-standard",
+      "projectedIds": [
+        "daily-standard"
+      ]
+    },
+    "sessionCreated": true,
+    "sessionId": "session-3ce0018a-e09e-416e-ba24-cfa469fc7538",
+    "sessionAgentPreset": "daily-standard",
+    "toolCountAgentKey": 27,
+    "tools": [
+      "ask_user_question",
+      "create_goal",
+      "edit",
+      "exit_plan_mode",
+      "get_goal",
+      "glob",
+      "grep",
+      "interrupt_agent",
+      "ipython",
+      "job_kill",
+      "job_list",
+      "job_output",
+      "list_agents",
+      "present",
+      "read",
+      "read_image",
+      "send_message",
+      "skill",
+      "subagent",
+      "subagent_fork",
+      "todo_write",
+      "update_goal",
+      "web_fetch",
+      "web_search",
+      "work",
+      "workflow",
+      "write"
+    ],
+    "ipythonToolPresent": true,
+    "workToolPresent": true,
+    "error": null,
+    "projectedPresets": [
+      {
+        "id": "daily-standard",
+        "trust": "system",
+        "isDefault": true,
+        "name": null,
+        "broken": null
+      }
+    ]
+  },
+  "probeError": null,
+  "activationWarnings": [],
+  "stderrTail": ""
+}

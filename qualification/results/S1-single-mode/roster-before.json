@@ -1,0 +1,190 @@
+{
+  "profileBooted": true,
+  "roots": [
+    {
+      "path": "D:\\DSH\\src\\dsh-src\\packages\\preset\\agent-presets\\presets\\",
+      "trust": "system"
+    },
+    {
+      "path": "D:/DSH/home/s1/profiles/daily/presets/",
+      "trust": "system"
+    },
+    {
+      "path": "D:\\DSH\\home\\s1\\.agent-presets",
+      "trust": "user"
+    }
+  ],
+  "presetRoots": [
+    {
+      "path": "D:\\DSH\\src\\dsh-src\\packages\\preset\\agent-presets\\presets\\",
+      "trust": "system"
+    },
+    {
+      "path": "D:/DSH/home/s1/profiles/daily/presets/",
+      "trust": "system"
+    },
+    {
+      "path": "D:\\DSH\\home\\s1\\.agent-presets",
+      "trust": "user"
+    }
+  ],
+  "shippedRootPresent": true,
+  "listed": [
+    {
+      "id": "standard",
+      "trust": "system",
+      "name": "标准模式",
+      "order": 1,
+      "broken": null
+    },
+    {
+      "id": "ptc",
+      "trust": "system",
+      "name": "PTC 模式",
+      "order": 2,
+      "broken": null
+    },
+    {
+      "id": "minimal",
+      "trust": "system",
+      "name": "极简模式",
+      "order": 3,
+      "broken": null
+    },
+    {
+      "id": "cordis",
+      "trust": "system",
+      "name": "创造模式",
+      "order": 4,
+      "broken": null
+    },
+    {
+      "id": "daily-standard",
+      "trust": "system",
+      "name": null,
+      "order": null,
+      "broken": null
+    }
+  ],
+  "listedIds": [
+    "standard",
+    "ptc",
+    "minimal",
+    "cordis",
+    "daily-standard"
+  ],
+  "listedCount": 5,
+  "defaultId": "daily-standard",
+  "resolveOf": {
+    "standard": {
+      "resolved": true,
+      "path": "D:\\DSH\\src\\dsh-src\\packages\\preset\\agent-presets\\presets\\standard\\agent.cordis.yml",
+      "trust": "system"
+    },
+    "ptc": {
+      "resolved": true,
+      "path": "D:\\DSH\\src\\dsh-src\\packages\\preset\\agent-presets\\presets\\ptc\\agent.cordis.yml",
+      "trust": "system"
+    },
+    "minimal": {
+      "resolved": true,
+      "path": "D:\\DSH\\src\\dsh-src\\packages\\preset\\agent-presets\\presets\\minimal\\agent.cordis.yml",
+      "trust": "system"
+    },
+    "cordis": {
+      "resolved": true,
+      "path": "D:\\DSH\\src\\dsh-src\\packages\\preset\\agent-presets\\presets\\cordis\\agent.cordis.yml",
+      "trust": "system"
+    },
+    "daily-standard": {
+      "resolved": true,
+      "path": "D:\\DSH\\home\\s1\\profiles\\daily\\presets\\daily-standard\\agent.cordis.yml",
+      "trust": "system"
+    }
+  },
+  "selectionPolicy": {
+    "modeSelectionEnabled": true,
+    "authorable": true,
+    "isDefaultId": "daily-standard",
+    "projectedIds": [
+      "standard",
+      "ptc",
+      "minimal",
+      "cordis",
+      "daily-standard"
+    ]
+  },
+  "sessionCreated": true,
+  "sessionId": "session-2749624d-54f0-46d1-a46b-c1418729ef5c",
+  "sessionAgentPreset": "daily-standard",
+  "toolCountAgentKey": 27,
+  "tools": [
+    "ask_user_question",
+    "create_goal",
+    "edit",
+    "exit_plan_mode",
+    "get_goal",
+    "glob",
+    "grep",
+    "interrupt_agent",
+    "ipython",
+    "job_kill",
+    "job_list",
+    "job_output",
+    "list_agents",
+    "present",
+    "read",
+    "read_image",
+    "send_message",
+    "skill",
+    "subagent",
+    "subagent_fork",
+    "todo_write",
+    "update_goal",
+    "web_fetch",
+    "web_search",
+    "work",
+    "workflow",
+    "write"
+  ],
+  "ipythonToolPresent": true,
+  "workToolPresent": true,
+  "error": null,
+  "projectedPresets": [
+    {
+      "id": "standard",
+      "trust": "system",
+      "isDefault": false,
+      "name": "标准模式",
+      "broken": null
+    },
+    {
+      "id": "ptc",
+      "trust": "system",
+      "isDefault": false,
+      "name": "PTC 模式",
+      "broken": null
+    },
+    {
+      "id": "minimal",
+      "trust": "system",
+      "isDefault": false,
+      "name": "极简模式",
+      "broken": null
+    },
+    {
+      "id": "cordis",
+      "trust": "system",
+      "isDefault": false,
+      "name": "创造模式",
+      "broken": null
+    },
+    {
+      "id": "daily-standard",
+      "trust": "system",
+      "isDefault": true,
+      "name": null,
+      "broken": null
+    }
+  ]
+}
