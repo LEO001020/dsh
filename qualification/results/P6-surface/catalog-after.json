@@ -1,0 +1,425 @@
+{
+  "probe": "p6-surface",
+  "ranAt": "2026-09-20T13:09:32.977Z",
+  "profileName": "unknown",
+  "agentPreset": "daily-standard",
+  "sessionId": "session-64460154-a5ee-42be-aa52-1cebaf8e65b5",
+  "tools": [
+    "ask_user_question",
+    "create_goal",
+    "edit",
+    "exit_plan_mode",
+    "get_goal",
+    "glob",
+    "grep",
+    "interrupt_agent",
+    "ipython",
+    "job_kill",
+    "job_list",
+    "job_output",
+    "list_agents",
+    "present",
+    "read",
+    "read_image",
+    "send_message",
+    "skill",
+    "todo_write",
+    "update_goal",
+    "web_fetch",
+    "web_search",
+    "work",
+    "write"
+  ],
+  "toolCountAgentKey": 24,
+  "toolCountContextKey": 0,
+  "creationRoutes": [
+    {
+      "tool": "subagent",
+      "row": "tool-subagent",
+      "why": "ctx.subagents.startContinuable via @deepseek-ai/dsh-tool-subagent (provider spawn)",
+      "visibleToModel": false,
+      "definitionName": null
+    },
+    {
+      "tool": "subagent_fork",
+      "row": "tool-subagent-fork",
+      "why": "ctx.subagents.startContinuable via @deepseek-ai/dsh-tool-subagent (provider fork)",
+      "visibleToModel": false,
+      "definitionName": null
+    },
+    {
+      "tool": "subagent_codex",
+      "row": "tool-subagent-codex",
+      "why": "provider-bound one-shot child (@deepseek-ai/dsh-tool-subagent, provider codex)",
+      "visibleToModel": false,
+      "definitionName": null
+    },
+    {
+      "tool": "subagent_claude_code",
+      "row": "tool-subagent-claude-code",
+      "why": "provider-bound one-shot child (@deepseek-ai/dsh-tool-subagent, provider claude-code)",
+      "visibleToModel": false,
+      "definitionName": null
+    },
+    {
+      "tool": "workflow",
+      "row": "tool-workflow",
+      "why": "ctx.workflowEngine.start -> workflow-ptc startChild -> ctx.subagents.start()",
+      "visibleToModel": false,
+      "definitionName": null
+    },
+    {
+      "tool": "ralph",
+      "row": "tool-ralph",
+      "why": "ctx.workflowEngine.start -> subagents (tool-ralph, disabled by default)",
+      "visibleToModel": false,
+      "definitionName": null
+    }
+  ],
+  "unknownToolRefusals": [
+    {
+      "tool": "subagent",
+      "row": "tool-subagent",
+      "executed": false,
+      "isError": true,
+      "errorCode": "UNKNOWN_TOOL",
+      "errorName": "ToolNotFoundError",
+      "message": "unknown tool \"subagent\"",
+      "contentText": "Error: unknown tool \"subagent\"",
+      "settled": true,
+      "dispatchedButUnsettled": false
+    },
+    {
+      "tool": "subagent_fork",
+      "row": "tool-subagent-fork",
+      "executed": false,
+      "isError": true,
+      "errorCode": "UNKNOWN_TOOL",
+      "errorName": "ToolNotFoundError",
+      "message": "unknown tool \"subagent_fork\"",
+      "contentText": "Error: unknown tool \"subagent_fork\"",
+      "settled": true,
+      "dispatchedButUnsettled": false
+    },
+    {
+      "tool": "subagent_codex",
+      "row": "tool-subagent-codex",
+      "executed": false,
+      "isError": true,
+      "errorCode": "UNKNOWN_TOOL",
+      "errorName": "ToolNotFoundError",
+      "message": "unknown tool \"subagent_codex\"",
+      "contentText": "Error: unknown tool \"subagent_codex\"",
+      "settled": true,
+      "dispatchedButUnsettled": false
+    },
+    {
+      "tool": "subagent_claude_code",
+      "row": "tool-subagent-claude-code",
+      "executed": false,
+      "isError": true,
+      "errorCode": "UNKNOWN_TOOL",
+      "errorName": "ToolNotFoundError",
+      "message": "unknown tool \"subagent_claude_code\"",
+      "contentText": "Error: unknown tool \"subagent_claude_code\"",
+      "settled": true,
+      "dispatchedButUnsettled": false
+    },
+    {
+      "tool": "workflow",
+      "row": "tool-workflow",
+      "executed": false,
+      "isError": true,
+      "errorCode": "UNKNOWN_TOOL",
+      "errorName": "ToolNotFoundError",
+      "message": "unknown tool \"workflow\"",
+      "contentText": "Error: unknown tool \"workflow\"",
+      "settled": true,
+      "dispatchedButUnsettled": false
+    },
+    {
+      "tool": "ralph",
+      "row": "tool-ralph",
+      "executed": false,
+      "isError": true,
+      "errorCode": "UNKNOWN_TOOL",
+      "errorName": "ToolNotFoundError",
+      "message": "unknown tool \"ralph\"",
+      "contentText": "Error: unknown tool \"ralph\"",
+      "settled": true,
+      "dispatchedButUnsettled": false
+    }
+  ],
+  "anyCreationRouteExecuted": false,
+  "bridgeArm": {
+    "available": true,
+    "reason": null,
+    "refusals": [
+      {
+        "error": "UNKNOWN_TOOL: unknown tool \"subagent\"",
+        "outcome": "REFUSED",
+        "tool": "subagent"
+      },
+      {
+        "error": "UNKNOWN_TOOL: unknown tool \"subagent_fork\"",
+        "outcome": "REFUSED",
+        "tool": "subagent_fork"
+      },
+      {
+        "error": "UNKNOWN_TOOL: unknown tool \"subagent_codex\"",
+        "outcome": "REFUSED",
+        "tool": "subagent_codex"
+      },
+      {
+        "error": "UNKNOWN_TOOL: unknown tool \"subagent_claude_code\"",
+        "outcome": "REFUSED",
+        "tool": "subagent_claude_code"
+      },
+      {
+        "error": "UNKNOWN_TOOL: unknown tool \"workflow\"",
+        "outcome": "REFUSED",
+        "tool": "workflow"
+      },
+      {
+        "error": "UNKNOWN_TOOL: unknown tool \"ralph\"",
+        "outcome": "REFUSED",
+        "tool": "ralph"
+      }
+    ],
+    "error": null,
+    "isError": false,
+    "errorCode": null,
+    "cellText": "outcome: ok\nkernel epoch: 1\n--- stdout ---\nP6_BRIDGE=[{\"error\": \"UNKNOWN_TOOL: unknown tool \\\"subagent\\\"\", \"outcome\": \"REFUSED\", \"tool\": \"subagent\"}, {\"error\": \"UNKNOWN_TOOL: unknown tool \\\"subagent_fork\\\"\", \"outcome\": \"REFUSED\", \"tool\": \"subagent_fork\"}, {\"error\": \"UNKNOWN_TOOL: unknown tool \\\"subagent_codex\\\"\", \"outcome\": \"REFUSED\", \"tool\": \"subagent_codex\"}, {\"error\": \"UNKNOWN_TOOL: unknown tool \\\"subagent_claude_code\\\"\", \"outcome\": \"REFUSED\", \"tool\": \"subagent_claude_code\"}, {\"error\": \"UNKNOWN_TOOL: unknown tool \\\"workflow\\\"\", \"outcome\": \"REFUSED\", \"tool\": \"workflow\"}, {\"error\": \"UNKNOWN_TOOL: unknown tool \\\"ralph\\\"\", \"outcome\": \"REFUSED\", \"tool\": \"ralph\"}]\n\n[1 shell frame(s) for other requests were ignored while waiting for this cell. They did not complete it.]",
+    "anyExecuted": false
+  },
+  "rowEnablement": [
+    {
+      "entryId": "include:agent-presets:persona",
+      "moduleName": "@deepseek-ai/dsh-persona",
+      "enabled": true,
+      "fiberState": 2
+    },
+    {
+      "entryId": "include:agent-presets:agent-instructions",
+      "moduleName": "@deepseek-ai/dsh-agent-instructions",
+      "enabled": true,
+      "fiberState": 2
+    },
+    {
+      "entryId": "include:agent-presets:tool-bash",
+      "moduleName": "@deepseek-ai/dsh-tool-bash",
+      "enabled": false,
+      "condition": "process.platform === 'win32'"
+    },
+    {
+      "entryId": "include:agent-presets:tool-pwsh",
+      "moduleName": "@deepseek-ai/dsh-tool-pwsh",
+      "enabled": false
+    },
+    {
+      "entryId": "include:agent-presets:tool-fs",
+      "moduleName": "@deepseek-ai/dsh-tool-fs",
+      "enabled": true,
+      "fiberState": 2
+    },
+    {
+      "entryId": "include:agent-presets:tool-fs-search",
+      "moduleName": "@deepseek-ai/dsh-tool-fs-search",
+      "enabled": true,
+      "fiberState": 2
+    },
+    {
+      "entryId": "include:agent-presets:tool-jobs",
+      "moduleName": "@deepseek-ai/dsh-tool-jobs",
+      "enabled": true,
+      "fiberState": 2
+    },
+    {
+      "entryId": "include:agent-presets:skill-filesystem",
+      "moduleName": "@deepseek-ai/dsh-skill-filesystem",
+      "enabled": true,
+      "fiberState": 2
+    },
+    {
+      "entryId": "include:agent-presets:tool-skill",
+      "moduleName": "@deepseek-ai/dsh-tool-skill",
+      "enabled": true,
+      "fiberState": 2
+    },
+    {
+      "entryId": "include:agent-presets:command-goal",
+      "moduleName": "@deepseek-ai/dsh-command-goal",
+      "enabled": true,
+      "fiberState": 2
+    },
+    {
+      "entryId": "include:agent-presets:tool-goal",
+      "moduleName": "@deepseek-ai/dsh-tool-goal",
+      "enabled": true,
+      "fiberState": 2
+    },
+    {
+      "entryId": "include:agent-presets:tool-ask-user",
+      "moduleName": "@deepseek-ai/dsh-tool-ask-user",
+      "enabled": true,
+      "fiberState": 2
+    },
+    {
+      "entryId": "include:agent-presets:tool-todo",
+      "moduleName": "@deepseek-ai/dsh-tool-todo",
+      "enabled": true,
+      "fiberState": 2
+    },
+    {
+      "entryId": "include:agent-presets:tool-web",
+      "moduleName": "@deepseek-ai/dsh-tool-web",
+      "enabled": true,
+      "fiberState": 2
+    },
+    {
+      "entryId": "include:agent-presets:present",
+      "moduleName": "@deepseek-ai/dsh-tool-present",
+      "enabled": true,
+      "fiberState": 2
+    },
+    {
+      "entryId": "include:agent-presets:tool-plugin-manager",
+      "moduleName": "@deepseek-ai/dsh-plugin-manager/tools",
+      "enabled": false
+    },
+    {
+      "entryId": "include:agent-presets:daily-work-tools",
+      "moduleName": "dsh-daily-work/tools",
+      "enabled": true,
+      "fiberState": 2
+    },
+    {
+      "entryId": "include:agent-presets:daily-work-command",
+      "moduleName": "dsh-daily-work/command",
+      "enabled": true,
+      "fiberState": 2
+    },
+    {
+      "entryId": "include:agent-presets:ipython-tool",
+      "moduleName": "dsh-ipython/tool",
+      "enabled": true,
+      "fiberState": 2
+    },
+    {
+      "entryId": "include:agent-presets:plan-mode",
+      "moduleName": "@deepseek-ai/dsh-plan-mode",
+      "enabled": true,
+      "fiberState": 2
+    },
+    {
+      "entryId": "include:agent-presets:compaction-basic",
+      "moduleName": "@deepseek-ai/dsh-compaction-basic",
+      "enabled": true,
+      "fiberState": 2
+    },
+    {
+      "entryId": "include:agent-presets:command-compact",
+      "moduleName": "@deepseek-ai/dsh-command-compact",
+      "enabled": true,
+      "fiberState": 2
+    },
+    {
+      "entryId": "include:agent-presets:tool-result-pruner",
+      "moduleName": "@deepseek-ai/dsh-compaction-tool-result-pruner",
+      "enabled": true,
+      "fiberState": 2
+    },
+    {
+      "entryId": "include:agent-presets:tool-subagent-control",
+      "moduleName": "@deepseek-ai/dsh-tool-subagent-control",
+      "enabled": true,
+      "fiberState": 2
+    },
+    {
+      "entryId": "include:agent-presets:tool-subagent-list-agents",
+      "moduleName": "@deepseek-ai/dsh-tool-subagent-control/list-agents",
+      "enabled": true,
+      "fiberState": 2
+    },
+    {
+      "entryId": "include:agent-presets:tool-subagent",
+      "moduleName": "@deepseek-ai/dsh-tool-subagent",
+      "enabled": false
+    },
+    {
+      "entryId": "include:agent-presets:tool-subagent-fork",
+      "moduleName": "@deepseek-ai/dsh-tool-subagent",
+      "enabled": false
+    },
+    {
+      "entryId": "include:agent-presets:tool-subagent-codex",
+      "moduleName": "@deepseek-ai/dsh-tool-subagent",
+      "enabled": false
+    },
+    {
+      "entryId": "include:agent-presets:tool-subagent-claude-code",
+      "moduleName": "@deepseek-ai/dsh-tool-subagent",
+      "enabled": false
+    },
+    {
+      "entryId": "include:agent-presets:workflow-ptc",
+      "moduleName": "@deepseek-ai/dsh-workflow-ptc",
+      "enabled": false
+    },
+    {
+      "entryId": "include:agent-presets:tool-workflow",
+      "moduleName": "@deepseek-ai/dsh-tool-workflow",
+      "enabled": false
+    },
+    {
+      "entryId": "include:agent-presets:tool-ralph",
+      "moduleName": "@deepseek-ai/dsh-tool-ralph",
+      "enabled": false
+    }
+  ],
+  "subagentRowConfig": {
+    "id": "subagent",
+    "name": "@deepseek-ai/dsh-subagent",
+    "config": {
+      "maxActiveSubagents": 30,
+      "maxDepth": 1
+    },
+    "fiberState": 2
+  },
+  "managementSurface": {
+    "send_message": {
+      "visibleToModel": true,
+      "parameters": [
+        "agent_id",
+        "message"
+      ]
+    },
+    "interrupt_agent": {
+      "visibleToModel": true,
+      "parameters": [
+        "agent_id"
+      ]
+    },
+    "list_agents": {
+      "visibleToModel": true,
+      "parameters": [
+        "scope"
+      ]
+    },
+    "work": {
+      "visibleToModel": true,
+      "parameters": [
+        "action",
+        "taskId",
+        "goal",
+        "childId"
+      ]
+    }
+  },
+  "presetRoots": [
+    "D:/DSH/home/p6-surface-after/profiles/daily/presets/",
+    "D:\\DSH\\home\\p6-surface-after\\.agent-presets"
+  ],
+  "error": null,
+  "errorPhase": null
+}

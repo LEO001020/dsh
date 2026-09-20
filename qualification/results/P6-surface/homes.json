@@ -1,0 +1,61 @@
+{
+  "mode": "build-only",
+  "homes": {
+    "before": "D:/DSH/home/p6-surface-before/profiles/daily",
+    "after": "D:/DSH/home/p6-surface-after/profiles/daily"
+  },
+  "before": {
+    "profile": [
+      "file cordis.patch.yml",
+      "file cordis.yml",
+      "dir  node_modules",
+      "file package.json",
+      "file pnpm-lock.yaml",
+      "dir  presets"
+    ],
+    "nodeModules": [
+      "file .package-map.json",
+      "dir  .pnpm",
+      "file .pnpm-workspace-state-v1.json",
+      "link dsh-daily-work",
+      "link dsh-ipython"
+    ],
+    "presets": [
+      "file agent.cordis.yml",
+      "file preset.yml"
+    ],
+    "junctions": {
+      "dsh-daily-work": "D:/DSH/work/wt-p6/packages/dsh-daily-work",
+      "dsh-ipython": "D:/DSH/work/wt-p6/packages/dsh-ipython"
+    }
+  },
+  "after": {
+    "profile": [
+      "file cordis.patch.yml",
+      "file cordis.yml",
+      "dir  node_modules",
+      "file package.json",
+      "file pnpm-lock.yaml",
+      "dir  presets"
+    ],
+    "nodeModules": [
+      "file .package-map.json",
+      "dir  .pnpm",
+      "file .pnpm-workspace-state-v1.json",
+      "link dsh-daily-work",
+      "link dsh-ipython"
+    ],
+    "presets": [
+      "file agent.cordis.yml",
+      "file preset.yml"
+    ],
+    "junctions": {
+      "dsh-daily-work": "D:/DSH/work/wt-p6/packages/dsh-daily-work",
+      "dsh-ipython": "D:/DSH/work/wt-p6/packages/dsh-ipython"
+    }
+  },
+  "presetDiffers": true,
+  "patchDiffers": true,
+  "packageJsonSame": true,
+  "presetYmlSame": true
+}

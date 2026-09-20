@@ -1,0 +1,630 @@
+# C2 — the daily candidate: C1 plus the mandatory work extension.
+#
+# Each block below is ONE explainable difference from C0. Nothing else changes.
+# C0's resolved graph is captured and hashed in
+# qualification/results/M0.5-c0-resolved-graph/, so the diff is auditable rather
+# than asserted.
+#
+# ---------------------------------------------------------------------------
+# DIFFERENCE 1 (mandatory): raise the continuable-child capacity to the user's N.
+# ---------------------------------------------------------------------------
+#
+# MEASURED GAP, not an assumption. `--dump-default-config` for every shipped
+# profile shows:
+#
+#     - id: subagent
+#       name: '@deepseek-ai/dsh-subagent'
+#
+# with NO config block, so `maxActiveSubagents` falls back to the Schemastery
+# default 8 and `maxDepth` to 1
+# (packages/subagent/subagent/src/index.ts:200-201).
+#
+# N=10 is therefore NOT satisfiable by any stock profile. This row is the
+# override that makes it possible. Evidence:
+# qualification/results/M0.5-c0-resolved-graph/C0-resolved-graph.md
+#
+# IMPORTANT, and the reason this row restates both keys: a patch replaces the
+# target row's WHOLE `config` object; it is not a deep merge
+# (vendor/include/src/index.ts:120-123). Omitting `maxDepth` here would silently
+# reset it to the schema default, and a later upstream default change would not
+# be reflected. Both keys are therefore stated explicitly.
+#
+# `maxDepth: 1` is deliberate and load-bearing: it allows the ten direct children
+# and forbids them from opening unbilled grandchildren.
+- id: subagent
+  config:
+    # The user's chosen N. Root is NOT counted in this number.
+    maxActiveSubagents: 10
+    # 1 = direct children only. Grandchildren would escape the same metering.
+    maxDepth: 1
+
+# ---------------------------------------------------------------------------
+# DIFFERENCE 1b (mandatory): ship the agent preset that carries the tool rows.
+# ---------------------------------------------------------------------------
+#
+# WHY THE PRESET IS SHIPPED FROM THE REPOSITORY RATHER THAN AUTHORED BY HAND.
+# The tool half of both extensions lives in an AGENT PRESET, not in this patch:
+# a tool row is agent-scoped (`ctx.tools` layers are keyed by the Agent object),
+# so a host-level row publishes into the root realm where no agent's scope sees
+# it -- the model gets the service and no way to call it.
+#
+# The obvious home for a preset is `$DSH_HOME/.agent-presets`, and that is where
+# the earlier work put it. That location is a RUNTIME directory: no repository
+# file reproduces it, so a fresh install silently gets a kernel service with no
+# `ipython` tool and a work service with no `work` tool. The `dsh-ipython`
+# package's own `ipython-preset-row.yml` says as much -- it is a FRAGMENT to be
+# appended by hand -- and G-FIX-05 records the same failure already happening
+# once with the `work` tool, which was never wired into any preset while the
+# extension loaded fine.
+#
+# The roster accepts deployment-added `roots`, so the preset travels with the
+# profile instead. This row ADDS a root; it does not replace the shipped one or
+# the user's own (`includeShippedRoot` and `includeUserRoot` are restated at
+# their defaults because a patch replaces the whole `config` object).
+#
+# The root is an ABSOLUTE path, and that is not laziness -- a relative one is
+# broken, and this was measured rather than assumed. `scanRoot` does
+# `resolve(expandHomePath(root.path))` (packages/preset/agent-presets/src/
+# discovery.ts:285), and Node's `resolve` is relative to the PROCESS CWD, not to
+# the profile directory. Booting this profile from its own directory worked;
+# booting the SAME installed profile from a different cwd produced
+#
+#   RemoteError: agent-presets: preset "daily-standard" not found
+#     (available: standard, ptc, minimal, cordis)
+#
+# with `toolCountAgentKey: 0` and no `ipython` or `work` tool. Both runs are
+# recorded in qualification/results/M12-deliverable-surface/. So `./presets`
+# resolves only when the operator happens to be standing in the profile
+# directory, which is exactly the "looks healthy, model has neither tool"
+# failure this row exists to prevent.
+#
+# A `!!js` expression is the dialect's own escape for a computed value, and it is
+# evaluated at entry activation. The expression below derives the path from
+# `ctx.baseUrl`, which the launcher anchors at THE PROFILE'S OWN DIRECTORY
+# (`apps/cli/src/profile-boot.ts:160-164`: "the Loader needs a real include root
+# to anchor `baseUrl` at the profile directory"). That is the one anchor that
+# survives both problems above: it is absolute, and it follows the profile to
+# whatever directory the operator installed it under.
+#
+# TWO EARLIER ATTEMPTS FAILED, and both are recorded because each looked
+# reasonable:
+#   - `./presets` -- cwd-relative, so it broke from any other directory (above).
+#   - `process.env.DSH_HOME + '/profiles/daily-candidate/presets'` -- absolute
+#     and cwd-independent, but it HARDCODES the install name. The install
+#     directory is chosen by the operator (`dsh plugin --profile <name> add`),
+#     so this silently broke for anyone who named it anything else. Verified:
+#     installed as `daily` it resolved nothing.
+# `ctx.baseUrl` has neither defect.
+#
+# MEASURED, both directions, in qualification/results/M12-deliverable-surface/:
+# booting from an unrelated cwd with this row yields
+# `presetsListed: standard, ptc, minimal, cordis, daily-standard`,
+# `toolCountAgentKey: 28`, `ipythonToolPresent: true`, `workToolPresent: true`.
+# The failure direction is recorded too: the same installed profile with a
+# cwd-relative root yields `preset "daily-standard" not found` and zero tools.
+#
+# `default: daily-standard` is deliberate. The stock default is `standard`, which
+# has NO tool rows for these extensions; leaving it would mount a preset that
+# cannot reach either tool, and the deployment would look healthy while the
+# model had neither.
+#
+# ---------------------------------------------------------------------------
+# DIFFERENCE 1c (user-authorized): ONE selectable mode -- ours.
+# ---------------------------------------------------------------------------
+#
+# `includeShippedRoot: false`. The user's instruction is to keep only our single
+# mode, and this is the change that makes it true.
+#
+# THE HONEST BOUNDARY, stated first because a careless reader will over-read
+# this: we removed the EXPOSURE, not the upstream code. The four shipped presets
+# still exist, unmodified, inside the read-only pinned checkout
+# (`packages/preset/agent-presets/presets/`, which is not ours to edit -- case
+# ID-06's oracle requires that checkout byte-identical). What changes is that
+# OUR composition no longer PREPENDS that directory as a roster root, so the
+# product no longer offers those four as selectable modes. The code is intact;
+# the offering is gone. Anyone re-reading this as "DSH's native modes were
+# deleted" would be wrong.
+#
+# WHAT THE KEY ACTUALLY DOES, read from the source rather than assumed. The
+# roster composes its root list in the CONSTRUCTOR
+# (`packages/preset/agent-presets/src/index.ts:182-184`):
+#
+#     this.resolvedRoots = [
+#       ...config.includeShippedRoot ? [{ path: SHIPPED_PRESET_ROOT, trust: 'system' }] : [],
+#       ...config.roots,
+#       ...config.includeUserRoot ? [{ path: dshHomePath(USER_PRESET_DIR), trust: 'user' }] : [],
+#     ]
+#
+# So the shipped root is PREPENDED or omitted -- it is one element of a list,
+# not a code path. `false` therefore REMOVES the shipped directory from
+# discovery and does NOT break discovery: the profile's own `roots` entry and
+# the user root are still scanned by the same `discoverPresets` walk
+# (`discovery.ts:324-337`). This is confirmed by the package's own test for
+# exactly this configuration, which asserts the resolved root list is the
+# configured roots and NOTHING else
+# (`packages/preset/agent-presets/tests/shipped-root.spec.ts:119-129`:
+# `expect(ctx.agentPresets.roots).toEqual([{ path: SYSTEM_ROOT, trust: 'system' }])`).
+# The schema default is `true` (`index.ts:114`) and a patch replaces the whole
+# `config` object, so the value must be restated either way -- omitting the key
+# would silently restore the shipped root, which is the trap this file's
+# DIFFERENCE 1 comment already records for `subagent`.
+#
+# WHY THIS IS NOT A REGRESSION FOR THE MODEL. `standard` (the shipped default)
+# carries no `ipython`/`work` tool rows, so it was never a usable mode for this
+# deployment -- it was an OFFER that could not reach either extension. Removing
+# it removes a way to compose a session that looks healthy and has neither tool.
+#
+# `includeUserRoot` STAYS `true`, deliberately. It is not one of the four
+# "modes": it is the empty writable directory `$DSH_HOME/.agent-presets` that
+# the authoring flow writes to, and `authorable` is computed from it
+# (`index.ts:520-522` reads `resolvedRoots.some(root => root.trust === 'user')`).
+# Turning it off would remove the ability to author a preset at all. Measured on
+# this machine: that directory does not exist, so it contributes ZERO selectable
+# modes today -- the roster below shows it listed as a root and supplying nothing.
+#
+# MEASURED, before and after, by booting the real installed profile and reading
+# the roster the product itself composes. Both artifacts are in
+# `qualification/results/S1-single-mode/`, and the two runs differ ONLY in this
+# key:
+#
+#   before (includeShippedRoot: true)  -> listedIds
+#     ["standard","ptc","minimal","cordis","daily-standard"]   (5)
+#   after  (includeShippedRoot: false) -> listedIds
+#     ["daily-standard"]                                        (1)
+#
+# with `resolve()` of each shipped id THROWING `agent-preset/not-found` after
+# the change while `resolve('daily-standard')` still succeeds and a real Session
+# still mounts it with both `ipython` and `work` present. `list()` and
+# `resolve()` are separate code paths, so both were measured rather than
+# inferred from the roster.
+- id: agent-presets
+  config:
+    default: daily-standard
+    roots:
+      - path: !!js new URL('presets/', ctx.baseUrl).pathname.replace(/^\/([A-Za-z]:)/, '$1')
+        trust: system
+    includeShippedRoot: false
+    includeUserRoot: true
+
+# ---------------------------------------------------------------------------
+# DIFFERENCE 2 (mandatory): mount the work extension's host service.
+# ---------------------------------------------------------------------------
+#
+# The host service owns the run record, the credit reservation and the admission
+# decisions. It is mounted ONCE, and the record is a host-scoped resource: a
+# second handle would duplicate the single-writer assumption the storage domain
+# explicitly does not enforce.
+#
+# THIS ROW IS NOW PROVIDED BY THE BUNDLE, and this comment is what remains of
+# the profile-side copy that used to be here. The reason for the move is a real
+# defect the first boot exposed: the profile patch AND `dsh-daily-work`'s own
+# bundle patch both inserted `daily-work-host`, so installing the package as a
+# bundle would have registered the service twice.
+#
+# The bundle is the correct owner. It is the layer that travels WITH the code,
+# so a deployment cannot install the package and forget the row -- which is
+# exactly the failure G-FIX-04 recorded, where a package with no
+# `dsh.bundle.patch` installed as a plain dependency and activated no layer at
+# all. Keeping the row in the profile instead would reintroduce that coupling
+# between two files that can drift apart.
+#
+# The row's config values live in `packages/dsh-daily-work/cordis.patch.yml`.
+# They are USER-AUTHORIZED defaults, not writable by the model: the model has a
+# `work` tool, but that tool cannot reach these fields.
+#
+# There is no longer an `insert` entry in this file. That is deliberate: an
+# empty patch list is valid, and a duplicate row would be a registration
+# conflict rather than a harmless second mount.
+
+# ---------------------------------------------------------------------------
+# DIFFERENCE 3 (mandatory): mount the LOCAL filesystem provider, not the sandboxed one.
+# ---------------------------------------------------------------------------
+#
+# WHAT CHANGES. `fs-sandbox` is disabled and `fs-local` is inserted in its place.
+# Both register the SAME service name (`ctx.fs` -- `packages/fs/fs/src/index.ts:88`
+# and `packages/fs/fs-local/src/index.ts:66`), so every consumer is untouched:
+# `tool-fs`, `tool-fs-search`, `workspace-files`, `ui-deliverables`, `present`
+# and `ptc-runtime` keep working without a single edit, and the model-facing
+# `read`/`write`/`edit` tools are the same tools.
+#
+# WHY THIS IS A TWO-ROW CHANGE AND NOT A RENAME. A patch cannot rename a row.
+# `applyEntryPatches` destructures `name` OUT of the patch before applying the
+# rest (`vendor/include/src/index.ts:77`), so `name` is only a GUARD: passing a
+# new name on an existing id is a mismatch and the whole patch is skipped with
+# `patch: name mismatch for %C ... skipping` (`vendor/include/src/index.ts:115-118`).
+# Disabling the old row and inserting a new one is therefore the only mechanism
+# the dialect offers, and it is also the honest description of the change.
+#
+# WHY THIS DOES NOT REPRODUCE FACT F (`toolCount: 0`). That failure came from
+# deleting rows that OTHER rows `inject`. `sandboxPolicy` is injected by seven
+# rows (pwsh-sandbox, ptc-runtime, terminal-controller, workspace-files,
+# ui-deliverables, permission, workflow-ptc), so it stays mounted -- this change
+# does not touch it, and the `sandbox-policy` row keeps its shipped config. The
+# provider being replaced is `fs-sandbox`, whose `inject = ['sandboxPolicy']`
+# (`packages/fs/fs-sandbox/src/index.ts:56`) is the ONLY reason it participates in
+# the readiness graph at all. The replacement, `LocalFileSystem`, declares no
+# `inject` member (`packages/fs/fs-local/src/index.ts:66`), so it cannot
+# introduce a new pending row. A DISABLED row is not reported as "did not
+# activate", which is why the activation-warning count stays at 0.
+#
+# WHAT IS GIVEN UP. `SandboxedFileSystem` extends `LocalFileSystem` and overrides
+# exactly three members (`packages/fs/fs-sandbox/src/index.ts:65,80,101`): the
+# `sandboxMode` capability getter, and the two MUTATION entry points
+# `writeText`/`editText`, each of which canonicalizes the target and requires
+# containment under a writable root. Nothing else. So this swap removes ACCESS
+# CONTAINMENT on mutations and nothing else: every file-operation CORRECTNESS
+# property -- realpath-derived target identity, per-target mutation
+# serialization, the version/staleness guard, create-if-absent,
+# read-before-overwrite, atomic publication, literal edit matching, line-ending
+# preservation and the diff basis -- is owned by `LocalFileSystem` and is
+# inherited by both providers verbatim. The delta is tabulated with file:line in
+# `qualification/results/T2-fs/FINDINGS.md`, and the boot probe recorded there
+# proves the guards still refuse under the local provider.
+#
+# NO `config` IS STATED, deliberately. The base bundle mounts `fs-sandbox` with
+# no config block either, so the schema defaults apply identically in both
+# compositions (`cwd: process.cwd()`, `diffBasisMaxBytes: 10 MiB`). Stating them
+# here would be a second place to keep in sync for no behavioural gain, and
+# agent calls never reach the provider default anyway: `tool-fs` always passes
+# the calling session's own cwd (`packages/fs/tool-fs/src/session-cwd.ts:29-31`).
+#
+# ONE OBSERVABLE TOOL-FACE CONSEQUENCE, stated rather than left to be discovered:
+# `ctx.fs.sandboxMode` becomes `undefined`, and `dsh-tool-fs` advertises the
+# `sandbox_permissions`/`justification` escalation parameters ONLY when it is
+# defined (`packages/fs/tool-fs/src/sandbox.ts:44-45`). So those two escalation
+# parameters disappear from the `write` and `edit` schemas. That is correct --
+# there is no longer a fence to escalate past -- and it is the honest visible
+# cost of the swap, not a defect to be patched around.
+- id: fs-sandbox
+  disabled: true
+
+- insert:
+    - id: fs-local
+      name: '@deepseek-ai/dsh-fs-local'
+
+# ---------------------------------------------------------------------------
+# DIFFERENCE 4 (mandatory): mount the LOCAL pwsh executor, not the sandboxed one.
+# ---------------------------------------------------------------------------
+#
+# WHAT CHANGES. `pwsh-sandbox` is disabled and `pwsh-local` is inserted in its
+# place. Both register the SAME service name (`ctx.shell` --
+# `packages/shell/shell/src/index.ts:67` registers the key, and each subclass
+# provides it), so every consumer is untouched: `tool-pwsh` injects `shell` and
+# keeps working, `shell-env` is unaffected, and the model-facing `pwsh` tool is
+# the same tool.
+#
+# WHY THIS IS A TWO-ROW CHANGE AND NOT A RENAME. A patch cannot rename a row.
+# `applyEntryPatches` destructures `name` OUT of the patch before applying the
+# rest (`vendor/include/src/index.ts:77`), so `name` is only a GUARD: passing a
+# new name on an existing id is a mismatch and the whole patch is skipped with
+# `patch: name mismatch for %C ... skipping`
+# (`vendor/include/src/index.ts:115-118`). Disabling the old row and inserting a
+# new one is the only mechanism the dialect offers. Same mechanism, and the same
+# reason, as DIFFERENCE 3 above.
+#
+# THE SHIPPED ROW'S `disabled` EXPRESSION IS REPLACED, and that is safe in both
+# directions. The base bundle gates `pwsh-sandbox` on
+# `!!js process.platform !== 'win32'` (`packages/bundle/base/cordis.patch.yml:229`).
+# `applyEntryPatches` assigns over the whole key, so this literal `true` replaces
+# the expression. On Windows the row was enabled and is now off (the change we
+# want); on POSIX it was already off and stays off (no behaviour change).
+#
+# WHY THIS DOES NOT REPRODUCE FACT F (`toolCount: 0`). That failure came from
+# removing rows that OTHER rows `inject`. `pwsh-sandbox` declares
+# `inject = ['subprocess', 'sandbox', 'sandboxPolicy']`
+# (`packages/shell/pwsh-sandbox/src/index.ts:53`); the replacement `PwshLocalExecutor`
+# declares `inject = ['subprocess']` (`packages/shell/pwsh-local/src/index.ts:129`).
+# `subprocess` is mounted by the base bundle
+# (`packages/bundle/base/cordis.patch.yml:207`), so the replacement CANNOT
+# introduce a pending row -- it injects strictly less than the row it replaces.
+#
+# `sandbox` AND `sandbox-policy` STAY MOUNTED, deliberately, and this change does
+# not touch them. They are not part of this difference: `sandboxPolicy` is still
+# injected by terminal-controller, workspace-files, ui-deliverables,
+# ptc-runtime-node and workflow-ptc, and `sandbox` is still injected by
+# ptc-runtime-node (`packages/ptc-runtime/ptc-runtime-node/src/index.ts:53`).
+# Removing them is what produced the measured `toolCount: 0`; leaving them
+# mounted is what keeps the activation-warning count at 0.
+#
+# WHAT IS GIVEN UP. `SandboxPwshExecutor` extends `PwshLocalExecutor` and adds
+# exactly: the `sandboxMode` capability getter
+# (`packages/shell/pwsh-sandbox/src/index.ts:83`), the per-call policy stamp in
+# `resolve` (`:92`), the `confine` wrap and its `SANDBOX_UNAVAILABLE`
+# classification in `run`/`start` (`:99,136,193`), and the per-process
+# enforcement/denial facts in `onProcessDone` (`:164`). Nothing else. So this
+# swap removes ARGV CONFINEMENT and nothing else: command defaulting, deadlines,
+# cause classification, the model-friendly environment, bounded output, spill
+# files and managed-range termination are all `PwshLocalExecutor`'s and are
+# inherited verbatim by both.
+#
+# ONE OBSERVABLE TOOL-FACE CONSEQUENCE, stated rather than left to be discovered:
+# `ctx.shell.sandboxMode` becomes `undefined`, and `dsh-tool-pwsh` advertises the
+# `sandbox_permissions`/`justification` escalation parameters ONLY when it is
+# defined (`packages/shell/tool-pwsh/src/index.ts:196-197,268`). So those two
+# parameters disappear from the `pwsh` schema. That is correct -- there is no
+# longer a fence to escalate past -- and it is the same honest visible cost
+# DIFFERENCE 3 records for `write`/`edit`.
+- id: pwsh-sandbox
+  disabled: true
+
+- insert:
+    - id: pwsh-local
+      name: '@deepseek-ai/dsh-pwsh-local'
+
+# ---------------------------------------------------------------------------
+# DIFFERENCE 5 (mandatory): turn OFF the permission control plane.
+# ---------------------------------------------------------------------------
+#
+# THIS IS A HARD CONSTRAINT, NOT A PREFERENCE. `permission-presets` reads
+# `ctx.shell.sandboxMode` in its CONSTRUCTOR and throws when it is undefined
+# (`packages/interaction/permission-presets/src/index.ts:214-216`):
+#
+#     if (ctx.shell.sandboxMode === undefined) {
+#       throw new Error('permission: the mounted bash executor does not confine
+#         (no sandboxMode) -- presets bundle a sandbox mode, so composing this
+#         plugin over an unconfined executor is a misconfiguration')
+#     }
+#
+# `PwshLocalExecutor` inherits the seam's base getter, which returns `undefined`
+# (`packages/shell/shell/src/index.ts:75-77`; `pwsh-local` does not override it).
+# DIFFERENCE 4 therefore makes the throw reachable, and it is a CONSTRUCTION
+# failure -- the row cannot activate at all. `permission-presets` CANNOT coexist
+# with an unconfined executor, so it is disabled here rather than left to fail.
+#
+# WHY `ui-permission` IS DISABLED TOO, and not left mounted. The UI half depends
+# on the host service through the Remote namespace, so without it the surface is
+# a dead picker rather than an absent one:
+#   - `packages/client/ui-permission-presets/src/client/index.ts:61` lists
+#     `'remote.permissionPresets'` in its client `inject` array;
+#   - `packages/client/ui-permission-presets/src/client/catalog.ts:134` calls
+#     `this.ctx.remote.permissionPresets.catalog()`.
+# The host half of that package is an empty `apply()`
+# (`packages/client/ui-permission-presets/src/index.ts:9`) with NO `inject`, so
+# it would still ACTIVATE -- it would just render a permission row and a
+# `/permission` popup whose every read fails. Disabling the row removes it from
+# the browser roster instead: the `dsh.client` scan reads `ctx.loader.entries()`
+# and skips disabled entries (`packages/client/modules/src/index.ts:946`).
+#
+# THE PRESET-MOUNT TRAP, re-checked because it is the failure this change could
+# cause. `inject` is a READINESS GATE, and a preset with any non-activating row
+# fails to mount ENTIRELY (`packages/preset/agent-presets/src/mount.ts:396`),
+# which is what took the measured tool face to `toolCount: 0`. So every consumer
+# of the two services this removes was searched for, not assumed:
+#   - `permissionPresets` is injected by exactly ONE row in the whole checkout,
+#     `permission-presets` itself (`.../permission-presets/src/index.ts:198`), plus
+#     `packages/experimental/auto-review/src/index.ts:124` -- and `auto-review` is
+#     mounted by NO bundle patch or profile, so it is not in this composition.
+#     The `remote.permissionPresets` client edge is browser-side factory
+#     ordering, not a host readiness gate, and it disappears with the row above.
+#   - the `permissions` session projection is registered by `permission-presets`
+#     and read only by `ui-permission-presets` (`PermissionSelect.tsx:99`,
+#     `client/index.ts:74`). Both halves are gone together; nothing else reads it.
+#   - the `/permission` command is registered by `permission-presets`; the client
+#     name table that localizes it (`packages/client/ui-commands/src/client/
+#     resolution.ts:11`) is a lookup on descriptors received from the host, so an
+#     absent command simply never matches.
+# Nothing is left `pending`, and the probe in
+# `qualification/results/T3-shell/` measures that rather than asserting it.
+#
+# WHAT IS GIVEN UP, stated plainly because it is a real loss and not a detail:
+# the user loses the ABILITY TO BE ASKED. With this plane removed there is no
+# `/permission` command, no permission picker, and no preset that writes the
+# sandbox and approval knobs. In a trusted-local deployment that is intended --
+# the model already runs with the user's own OS authority, so an escalation
+# prompt would be asking permission to do what it can already do -- but it is
+# the deployment's central security consequence and it is recorded as such in
+# `qualification/results/T3-shell/FINDINGS.md` rather than glossed here.
+- id: permission
+  disabled: true
+
+- id: ui-permission
+  disabled: true
+
+# ---------------------------------------------------------------------------
+# DIFFERENCE 6 (mandatory): pin the approval policy to `never` explicitly.
+# ---------------------------------------------------------------------------
+#
+# WHY THIS IS NOT LEFT AT ITS SHIPPED VALUE. The base bundle computes the policy
+# from an environment variable
+# (`packages/bundle/base/cordis.patch.yml:233-234`):
+#
+#     policy: !!js "(process.env.DSH_PERMISSION_MODE ?? 'workspace-write')
+#                    === 'danger-full-access' ? 'never' : 'ask'"
+#
+# With `DSH_PERMISSION_MODE` UNSET -- the default, and the state of this machine
+# -- that expression evaluates to `'ask'`, not `'never'`. Under DIFFERENCE 5
+# there is no longer any preset or `/permission` command that could change it, so
+# the deployment's stated policy would be a value nobody chose and no surface can
+# correct. Stating `never` makes the stance explicit and removes the dependence
+# on an environment variable for a fact the composition should own.
+#
+# WHAT `never` ACTUALLY DOES, read from the code rather than assumed, because the
+# audit's claim about it needed checking:
+#   1. `ApprovalService.decide` returns `'rejected'` BEFORE dispatching to any
+#      answerer (`packages/interaction/user-approval/src/index.ts:268`), so every
+#      ask resolves deterministically without prompting anyone.
+#   2. It ALSO injects a model-facing sentence into the runtime context
+#      (`:155-167`). For `never` that sentence is `NEVER_SENTENCE` (`:66`):
+#      "Approval prompts are disabled in this session: actions that require
+#       approval are rejected automatically -- do not request sandbox escalation
+#       (do not set `sandbox_permissions`)."
+# The audit's claim is CONFIRMED: the note does reach model runtime context. Its
+# SECOND clause is now unreachable advice -- after DIFFERENCES 3 and 4 neither
+# `ctx.fs` nor `ctx.shell` reports a `sandboxMode`, so `tool-fs` and `tool-pwsh`
+# do not advertise `sandbox_permissions` at all and the model cannot set it. The
+# first clause remains true and load-bearing: it tells the model that an ask
+# cannot succeed, so a denial is final rather than retryable.
+#
+# WHY `approval` IS KEPT MOUNTED rather than disabled with the rest of the plane.
+# It is not in conflict with the constraint above -- `user-approval` never reads
+# `ctx.shell`, and its only `inject` is the optional `['systemPrompt']`
+# (`:155`). Keeping it preserves the `approval/asked` + `approval/decided` audit
+# pair on the session log, which is the durable record of what was asked and how
+# it resolved. Disabling it would also be a LARGER change than the architecture
+# decision requires: with `approval` absent, `ToolRuntime` denies the same asks
+# anyway through its `ctx.get('approval') === undefined` branch
+# (`packages/core/tools/src/index.ts:1702-1708`), but it denies them WITHOUT
+# logging that pair. Keeping the row costs nothing and keeps the record.
+#
+# THE CONSUMER INVENTORY V3 F1 ASKS FOR, enumerated rather than asserted. Every
+# reference to `ctx.approval` / `ctx.get('approval')` in the pinned checkout was
+# read, and each one is classified by whether it is ACTIVE in THIS composition:
+#
+#   ACTIVE, and the reason the row is kept:
+#     `ToolRuntime.serviceAsk` (packages/core/tools/src/index.ts:1702) resolves an
+#     `ask` pre-tool decision through the service, and `:1707-1708` denies
+#     WITHOUT an audit pair when it is absent. In this composition no tool
+#     currently produces `ask` (see below), so this is a PRESERVED-CAPABILITY
+#     consumer rather than a live caller: it is what keeps a future `ask`
+#     logged instead of silently denied.
+#     `ptc.ts` `peekApprover` (packages/core/tools/src/index.ts:927 ->
+#     packages/core/tools/src/ptc.ts:394) is the same seam on the `run_code`
+#     transport. `run_code` is NOT on this surface (measured), so it is likewise
+#     dormant-but-wired.
+#
+#   NOT ACTIVE in this composition, with the reason:
+#     `permission-presets` (static `inject = ['shell', 'approval', ...]`, :198) --
+#     disabled by DIFFERENCE 5. This is the ONLY hard injector of `approval` in
+#     the whole checkout, and it is the reason disabling the row is not free.
+#     `tool-fs` escalation (packages/fs/tool-fs/src/sandbox.ts:101) and
+#     `tool-pwsh`/`tool-bash` escalation (:233 / :225) -- all three gate on a
+#     mounted CONFINING backend, and after DIFFERENCES 3/4 `ctx.fs` and `ctx.shell`
+#     report no `sandboxMode`, so `sandbox_permissions` is not advertised at all.
+#     MEASURED: `escalationTools: []` on the composed surface
+#     (qualification/results/R1-trusted-local/composition-after.json).
+#     `tool-plugin-manager` (packages/boot/plugin-manager/src/tools.ts:38) --
+#     `disabled: true` in the daily preset.
+#     `hooks-claude-code` (`:241` is the only other producer of an `ask`) -- NOT
+#     mounted by any bundle patch or profile in this deployment.
+#
+#   CONCLUSION, stated plainly because V3 asks for a disposition rather than an
+#   inventory: `policy: never` IS the minimal truthful configuration for the
+#   consumers that remain, and the row is KEPT rather than removed.
+#     - The ONE hard injector is already disabled, so keeping the row adds no
+#       readiness edge that could go `pending`.
+#     - `never` is the honest value under trusted-local: the model already runs
+#       with the user's own OS authority, so an escalation prompt would ask
+#       permission for what it can already do. It also means every ask resolves
+#       `rejected` deterministically at `:268` BEFORE any answerer dispatch.
+#     - Removing the row would be strictly worse, not more minimal: the same asks
+#       would still be denied (ToolRuntime's absent-service branch) but WITHOUT
+#       the `approval/asked` + `approval/decided` pair, so the deployment would
+#       lose the audit record while gaining nothing. `policy` is the row's only
+#       key, so `never` is also the complete minimal configuration -- there is no
+#       second key to trim.
+#     - It is NOT represented anywhere as a security boundary: the trust model
+#       statement (compatibility.lock.json) names the OS user account as the
+#       execution authority boundary, and the row grants no confinement.
+#
+# NO `name` IS STATED, so the row is matched by id alone. `policy` is the ONLY
+# key the base row sets, so restating it is complete -- the whole-`config`
+# replacement rule of TRAP 4 is satisfied trivially here, and there is no second
+# key to silently revert.
+- id: approval
+  config:
+    policy: never
+
+# ---------------------------------------------------------------------------
+# DIFFERENCE 7 (mandatory): declare the effective sandbox mode EXPLICITLY.
+# ---------------------------------------------------------------------------
+#
+# WHAT WAS WRONG. Until this row existed the deployment had NO `sandbox-policy`
+# row of its own, so the shipped bundle's value stood
+# (`packages/bundle/base/cordis.patch.yml:215-218`):
+#
+#     mode: !!js process.env.DSH_PERMISSION_MODE ?? 'workspace-write'
+#     workspaceRoot: !!js process.cwd()
+#
+# `DSH_PERMISSION_MODE` is unset on this machine, so the deployment resolved to
+# **`workspace-write`** -- a CONFINING mode -- while the architecture claims
+# Windows trusted-local with the OS user account as the execution authority
+# boundary. This was not a documentation defect. MEASURED on a real boot
+# (qualification/results/R1-trusted-local/composition-before.json), the mode
+# reached the model as a statement about its own authority:
+#
+#     "Current DSH file policy: workspace-write. Any available operation enforced
+#      by the DSH file sandbox may modify files under the session workspace:
+#      \"<the session workspace>\". Some platform temporary areas may also be writable."
+#
+# The workspace path in that sentence is elided HERE on purpose, and the elision
+# is not cosmetic: `upg-gates.test.ts` asserts that this file contains no absolute
+# source path, so that the install does not depend on one machine's checkout
+# layout. The verbatim string, path included, is in the artifact named above.
+#
+# read from the `sandbox:policy` entry of a real `ctx.systemPrompt.assemble()`,
+# which is the exact string AgentLoop folds into the request
+# (`packages/core/agent-loop/src/agent.ts:246-249`). And it had a BEHAVIOURAL
+# consequence, not merely a narrative one: `ptc-runtime-node` confines unless the
+# mode is EXACTLY `danger-full-access`
+# (`packages/ptc-runtime/ptc-runtime-node/src/index.ts:224`), so the PTC path
+# would have fenced while every other path (`fs-local`, `pwsh-local`) did not.
+#
+# WHY THE ROW STAYS MOUNTED RATHER THAN BEING DELETED. `sandboxPolicy` is
+# injected by SEVEN rows (pwsh-sandbox, ptc-runtime, terminal-controller,
+# workspace-files, ui-deliverables, permission, workflow-ptc). Deleting it leaves
+# them `pending`, which fails the preset mount and takes the model's tool face to
+# `toolCount: 0` -- MEASURED, and recorded as fact F in
+# `docs/decisions/AUDIT-REQUEST-nosandbox.md`. The spec's own oracle for this
+# (CMP-02) names that exact failure: "The row being absent is a specific known
+# failure: it leaves seven entries pending and drives the tool face to zero."
+# So the row stays and its VALUE becomes truthful.
+#
+# WHY THIS IS NOT THE "DELETE THE PROMPT LINE" REPAIR, which the audit forbids.
+# Removing only the model-facing narration would leave `workspace-write` in force
+# for the PTC confine decision and for the session fold. Both the narration AND
+# the execution fact move here, together, because they are produced by the same
+# resolved policy -- `renderPolicyContext` (`sandbox-policy/src/index.ts:42-56`)
+# is a pure function OF the mode this row sets. There is no way to keep them
+# disagreeing once the mode is right, which is the property that makes this the
+# honest repair rather than a cosmetic one.
+#
+# BOTH KEYS ARE RESTATED, and that is TRAP 4, not tidiness. A patch REPLACES the
+# target row's whole `config` object; it is not a deep merge
+# (`vendor/include/src/index.ts:120-123` assigns over the whole key). Stating
+# only `mode` would drop `workspaceRoot`, whose schema has NO default
+# (`sandbox-policy/src/index.ts:112-115`), so the row would fail validation. And
+# this project has already been bitten by a partial restatement: the comment on
+# DIFFERENCE 1 records the same trap for `subagent`.
+#
+# `workspaceRoot` KEEPS ITS SHIPPED EXPRESSION, deliberately. It is the fallback
+# root for agentless calls and for sessions without a cwd -- `resolve()` prefers
+# `session.header.cwd` (`:164-171`), so this value does not reach an ordinary
+# agent call. Restating it as the shipped `!!js process.cwd()` keeps the
+# behaviour identical to the composition this replaces; replacing it with a
+# literal would be a second, unrelated change with its own evidence burden. The
+# absolute-path requirement the spec's oracle names is enforced by the service
+# itself, which throws for a non-absolute root (`:36-39`), and it is MEASURED
+# rather than asserted: `workspaceRoot` is recorded on every boot probe.
+#
+# `mode` IS A LITERAL, NOT AN ENVIRONMENT EXPRESSION, and that is the point. The
+# bundle's expression makes the deployment's trust model depend on an unset
+# environment variable, which is how it silently became `workspace-write` in the
+# first place. A deployment that is trusted-local by construction must not be
+# one `unset` away from confining. `DSH_PERMISSION_MODE` is now deliberately NOT
+# consulted for this row: an operator who wants a confining deployment changes
+# the profile, where the change is visible and reviewable, rather than exporting
+# a variable that contradicts the profile's own stated architecture.
+- id: sandbox-policy
+  config:
+    mode: danger-full-access
+    workspaceRoot: !!js process.cwd()
+
+# ---------------------------------------------------------------------------
+# NOT changed here, on purpose.
+# ---------------------------------------------------------------------------
+#
+# - The Goal service stays mounted. Managed-work mode disarms continuation for a
+#   single root through the public ctx.goals.disarm(root) at run creation; the
+#   durable objective is not cleared and completion is not faked. Removing the
+#   Goal row here would be deleting a stock component and then calling the result
+#   stock, which the plan forbids.
+#
+# - Planning tools, workflow, sub-agents and the browser roster stay as shipped.
+#
+# - session-query-sqlite stays at `:memory:` / `openAt: never`, the shipped
+#   value. Full-text session search is a separate decision with its own evidence
+#   requirement; it is not needed to satisfy the concurrency requirement.
+#
+# - The storage backend stays `json`. The plan forbids switching to SQLite
+#   because the substrate "should" be a database. If measurement later shows a
+#   volume or concurrency need, that is a separate, evidenced change.
