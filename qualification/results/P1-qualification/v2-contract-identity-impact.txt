@@ -1,0 +1,49 @@
+SIDE EFFECT OF THIS SLICE ON THE v2 QUALIFICATION CONTRACT IDENTITY
+===================================================================
+MEASURED, because a change to a pinned input invalidates evidence recorded
+against it, and that is not something a writer may leave for a reader to discover.
+
+WHAT IS PINNED. `qualification/results/trusted-local-v2.88834ae45ad7/identity.json`
+records `qualification_contract.qualification_runner_digests`, a map of six paths
+to sha256. `qualification/runners/verify-spec.py` is one of them. The contract id
+is derived from those digests, so editing a pinned runner moves the contract
+identity and invalidates verdicts recorded against it -- by design, not by defect.
+
+MEASURED STATE:
+
+  path                                             pinned(16)        at 2e1b2c2         now
+  qualification/runners/qualification-identity.py   (unchanged)       same               same
+  qualification/runners/verify-spec.py              79a3a1fe5dd3058c  MATCHED            3e7.. MOVED (this slice)
+  qualification/runners/build-v2-definition.py      (unchanged)       same               same
+  qualification/runners/v2-identity-probe.mjs       536951bdd6243dc5  ALREADY MOVED      moved
+  qualification/specs/frozen/verify-freeze.py       (unchanged)       same               same
+  .gitattributes                                    (unchanged)       same               same
+
+THE FINDING THAT MATTERS FOR BLAME, and it is not mine to claim either way:
+
+  * `v2-identity-probe.mjs` was ALREADY moved at the base commit 2e1b2c2 -- it was
+    changed by S15 (`fdd8863 S15: eliminate cross-tree checkout paths, and gate
+    them`). So the v2 contract identity `88834ae45ad7...` was ALREADY INVALIDATED
+    before this slice started.
+  * `verify-spec.py` MATCHED at 2e1b2c2 and is moved BY THIS SLICE (commit 229d075).
+    So this slice adds a SECOND moved pinned input to an identity that had already
+    moved.
+
+WHAT THIS MEANS, stated precisely and without over-claiming:
+  1. The v2 contract identity was stale before P1 and is stale after P1. This slice
+     did not create the staleness.
+  2. This slice DID move a pinned input, so a reader recomputing the v2 contract
+     identity will now see two moved inputs instead of one, and the verify-spec
+     digest they see is mine. That is recorded here so the second move is not
+     mistaken for an unexplained drift.
+  3. The V5 §4.1 fix REQUIRED editing verify-spec.py. A pinned-input move was
+     therefore unavoidable if the false green was to be fixed at all. The
+     alternative -- leaving a gate that exits 0 while 317 problems exist -- is worse
+     than a stale v2 contract identity, and V5 ranks the false green as P0.
+  4. NO EVIDENCE FILE WAS EDITED to make this true. The v2 result directory is
+     untouched by this slice: `git status` shows it clean.
+
+WHAT IS NOT CLAIMED: that the v2 contract identity should now be re-derived. That
+is a root/integration decision, and re-deriving it would invalidate the verdicts
+recorded against it -- which is exactly the kind of decision a writer must not make
+unilaterally. Flagged for the integrator.
