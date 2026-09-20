@@ -35,6 +35,7 @@ import Subprocess from '@deepseek-ai/dsh-subprocess-local'
 import SystemPrompt from '@deepseek-ai/dsh-system-prompt'
 import ToolRuntime, { defineTool } from '@deepseek-ai/dsh-tools'
 import type { Agent } from '@deepseek-ai/dsh-agent'
+import { ToolCallId } from '@deepseek-ai/dsh-llm'
 import { mkdirSync, writeFileSync } from 'node:fs'
 import { mkdtemp, rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
@@ -92,7 +93,7 @@ async function main(): Promise<void> {
   async function cell(code: string): Promise<{ text: string, outcome: string }> {
     seq += 1
     const result = await ctx.tools.execute({
-      callId: `p8-outer-${String(seq)}` as never,
+      callId: ToolCallId(`p8-outer-${String(seq)}`),
       name: ipythonTool.IPYTHON_TOOL_NAME,
       arguments: { code },
       agent,
