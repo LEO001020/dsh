@@ -256,7 +256,32 @@ export interface KernelStatus {
   readonly transport: string
   readonly curveKeysPresent: boolean
   readonly plaintextWarningSeen: boolean
-  readonly ipythonVersion?: string
+  /**
+   * The kernel's identity, under the names V5 §11.2 requires.
+   *
+   * WHY `ipythonVersion` IS GONE RATHER THAN KEPT BESIDE THESE. It was a field
+   * whose NAME asserted one thing and whose VALUE was another: `broker.py`
+   * populated it from `kernel_info_reply.language_info.version`, which is the
+   * Python LANGUAGE version. Measured on this host, an IPython 9.16.1 install
+   * reported `ipythonVersion: "3.14.3"`. Keeping it as a deprecated alias would
+   * preserve a field that is wrong by construction, and the whole point of
+   * naming the identity fields is that a reader must not have to know the
+   * history to read them correctly. The Python version it used to carry is
+   * `languageVersion`.
+   *
+   * Each is optional because the values come from a live `kernel_info_reply`: a
+   * kernel that is not alive, or whose reply did not carry a field, reports
+   * `undefined` rather than a fabricated version.
+   */
+  readonly kernelImplementation?: string
+  /** The IPYTHON version (`kernel_info_reply.implementation_version`). */
+  readonly kernelImplementationVersion?: string
+  /** The language name, e.g. `python` (`language_info.name`). */
+  readonly languageName?: string
+  /** The PYTHON version (`language_info.version`). This is what `ipythonVersion` used to carry. */
+  readonly languageVersion?: string
+  /** The Jupyter messaging protocol version (`protocol_version`). */
+  readonly protocolVersion?: string
   /** The directory the kernel was started in. Read back, not restated from the request. */
   readonly kernelCwd?: string
   /**

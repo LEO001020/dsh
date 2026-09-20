@@ -274,6 +274,48 @@ def log(detail):
     sys.stderr.flush()
 
 
+def kernel_identity_fields(reply):
+    """The kernel's own identity, under V5 11.2's names, from one kernel_info_reply.
+
+    WHY THIS FUNCTION EXISTS. `status()` used to publish a field called
+    `ipythonVersion` whose value came from `language_info.version`. That value is
+    the PYTHON LANGUAGE version, not the IPython version, so the field name
+    asserted something the value did not mean. A reader would reasonably trust the
+    name; this project already recorded the mislabelling at
+    `qualification/results/V3-ipython/GATES.md:141` and in the live transcript
+    `qualification/results/V3-ipython/run-v3-spec-gates.txt:5`, which shows
+    `"ipythonVersion":"3.14.3"` for an IPython 9.16.1 install.
+
+    Measured on this host, the four values are genuinely distinct:
+
+        implementation          = "ipython"     <- kernelImplementation
+        implementation_version  = "9.16.1"      <- kernelImplementationVersion
+        language_info.name      = "python"      <- languageName
+        language_info.version   = "3.14.3"      <- languageVersion
+        protocol_version        = "5.3"         <- protocolVersion
+
+    The names come from the Jupyter messaging spec's `kernel_info_reply`, which is
+    what the reply actually carries; V5 11.2 names the host-facing fields. Nothing
+    is inferred: a field the reply does not carry is None rather than a default,
+    because a fabricated version is worse than an absent one.
+
+    `language_info.version` is STILL reported, as `languageVersion`, so the value
+    that used to be published under the wrong name is not lost -- it is published
+    under the name that describes it.
+    """
+    content = reply.get("content", {}) if isinstance(reply, dict) else {}
+    language_info = content.get("language_info") or {}
+    if not isinstance(language_info, dict):
+        language_info = {}
+    return {
+        "kernelImplementation": content.get("implementation"),
+        "kernelImplementationVersion": content.get("implementation_version"),
+        "languageName": language_info.get("name"),
+        "languageVersion": language_info.get("version"),
+        "protocolVersion": content.get("protocol_version"),
+    }
+
+
 class ProtocolError(Exception):
     pass
 
@@ -753,13 +795,17 @@ class Broker:
                 alive = False
             if self._km.provisioner is not None:
                 pid = getattr(self._km.provisioner, "pid", None)
-        version = None
+        identity = {}
         if alive:
             try:
                 reply = self._shell_request("kernel_info_request", timeout=10)
-                version = reply.get("content", {}).get("language_info", {}).get("version")
+                # V5 11.2's names, from the reply the kernel actually sent. The
+                # `language_info.version` value that used to be published as
+                # `ipythonVersion` is published as `languageVersion` -- see
+                # `kernel_identity_fields`.
+                identity = kernel_identity_fields(reply)
             except Exception:  # noqa: BLE001
-                version = None
+                identity = {}
         return {
             "alive": alive,
             "epoch": self._epoch,
@@ -767,7 +813,14 @@ class Broker:
             "transport": self._transport,
             "curveKeysPresent": self._curve_keys_present,
             "plaintextWarningSeen": self._plaintext_warning_seen,
-            "ipythonVersion": version,
+            # The kernel's identity, under names that describe what the values
+            # ARE. `kernelImplementationVersion` is the IPython version;
+            # `languageVersion` is the Python version.
+            "kernelImplementation": identity.get("kernelImplementation"),
+            "kernelImplementationVersion": identity.get("kernelImplementationVersion"),
+            "languageName": identity.get("languageName"),
+            "languageVersion": identity.get("languageVersion"),
+            "protocolVersion": identity.get("protocolVersion"),
             # The directory the kernel was STARTED in, and whether the manager
             # accepted it. A host that reads `kernelCwdEnforced: false` knows the
             # Session's relative paths are not resolving where it asked.
