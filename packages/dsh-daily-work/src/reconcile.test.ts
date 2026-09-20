@@ -258,7 +258,9 @@ describe('recoveryPhase: restart does not re-authorize', () => {
  * this class: every case above passes while the product never reconciles
  * anything. `docs/GAPS.md` records the class five times over — `setLaunchPort`,
  * `takeContinuation`, `dsh-ipython`'s missing bundle, the `recovery.ts` epoch
- * guard, and the data plane before its plugin row.
+ * guard (since DELETED rather than wired, because its input could not be
+ * constructed — see `qualification/results/R9-recovery-topology/`), and the data
+ * plane before its plugin row.
  *
  * So this case installs NOTHING and drives the REAL production stack: a real
  * AgentLoop, a real SubagentRuntime, a real spawn provider, and the service's own

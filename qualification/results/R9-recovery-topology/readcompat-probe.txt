@@ -1,0 +1,2 @@
+injected legacy key: epoch = 1
+RESULT: opened OK; runId = r1 | has epoch key = false

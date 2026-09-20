@@ -344,14 +344,16 @@ describe('B04: the same SessionId resumed as a new Agent must not let the old ob
     expect(exactOwnerDenialReason(bare, { name: 'work' } as unknown as Readonly<ToolExecution>)).toBeUndefined()
   })
 
-  it('the run epoch is inert, so identity is the only enforceable check', async () => {
-    // HONEST RECORD, not a passing claim. `record.ts` documents `epoch` as
-    // "bumped when a run is re-adopted by a new host generation", but nothing
-    // reads or writes it after `initialRunRecord` sets 1, and no call site
-    // accepts an epoch to compare. A "stale epoch is refused" assertion would
-    // therefore be testing a field that cannot be presented. What IS asserted is
-    // that the field exists, is stable, and is not silently changed by the
-    // events B04 describes.
+  it('the run record carries no epoch, so identity is the only enforceable check', async () => {
+    // HONEST RECORD, not a passing claim. The record used to carry an `epoch`
+    // documented as "bumped when a run is re-adopted by a new host generation",
+    // but nothing read or wrote it after `initialRunRecord` set 1, and no call
+    // site accepted an epoch to compare. A "stale epoch is refused" assertion
+    // would therefore have been testing a field that cannot be presented. The
+    // field and the guard that would have read it are now DELETED
+    // (qualification/results/R9-recovery-topology/). What IS asserted here is the
+    // thing that survives: object identity is the enforceable check, and the
+    // events B04 describes do not resurrect any generation-fencing claim.
     const r = await ownerRig()
     await seedResumableSession(r.ctx, 'owner-session')
     await r.ctx.plugin(guardPlugin as never, {} as never)
@@ -359,12 +361,16 @@ describe('B04: the same SessionId resumed as a new Agent must not let the old ob
 
     const oldAgent = await r.resume('owner-session')
     await r.service.createRun({ runId: 'run-1', root: oldAgent.agent, authorizationRef: 'auth-1' })
-    expect(r.service.getRun('run-1')?.epoch).toBe(1)
+    expect(Object.hasOwn(r.service.getRun('run-1')!, 'epoch'), 'no epoch field may exist').toBe(false)
 
     await oldAgent.dispose()
     await r.resume('owner-session')
     await callWork(r.ctx, oldAgent.agent, { action: 'finish' }, 'stale-finish')
-    expect(r.service.getRun('run-1')?.epoch).toBe(1)
+    // The stale object's `finish` was refused by the object-identity guard, so the
+    // run never left `open` — that is the property, and it is measured rather than
+    // assumed.
+    expect(r.service.getRun('run-1')?.phase).toBe('open')
+    expect(Object.hasOwn(r.service.getRun('run-1')!, 'epoch')).toBe(false)
   })
 })
 

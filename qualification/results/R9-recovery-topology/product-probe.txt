@@ -1,0 +1,4 @@
+measured source: D:\DSH\work\wt-r9\packages\dsh-daily-work\src\host.ts
+run keys: authorizationRef,budget,continuation,createdAt,lastReconciledRefs,maxDepth,outbox,phase,policyDigest,requestedTarget,restartResumeAuthorized,rootSessionId,runId,tasks,terminalTombstones,updatedAt,version
+has epoch: false
+domain tables: runs

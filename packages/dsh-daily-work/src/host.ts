@@ -16,9 +16,13 @@
  * The top-up algorithm, in the order the plan requires:
  *   event arrives -> read real state -> atomic reserve -> launch OUTSIDE the lock
  *   -> save the admission result.
- * After every await we re-check the run epoch, the user-cancel state and whether
- * the owner is still the exact live Agent. A stale generation must not publish
- * authoritative state.
+ * After every await we re-check that this service is not disposed and that the
+ * caller's signal is not aborted. A stale generation must not publish
+ * authoritative state; the check that enforces that is the exact-owner guard in
+ * `tool-protocol-guards.ts`, which compares the calling Agent by OBJECT against
+ * the live registry. There is deliberately no run-epoch check here: the run
+ * record has no `epoch` field, and the topology measurement behind that decision
+ * is recorded in `qualification/results/R9-recovery-topology/`.
  */
 import type { Context } from '@deepseek-ai/cordis'
 import { Service } from '@deepseek-ai/cordis'
@@ -662,9 +666,12 @@ export class WorkService extends Service {
   /**
    * Create a run for an exact live Agent.
    *
-   * The root Agent is stored as an identity, not as a string: authority is
-   * bound to the live object plus the run epoch, so a stale callback carrying
-   * the same session id cannot write authoritative state (INV-L3).
+   * The root Agent is stored as an identity, not as a string: authority is bound
+   * to the live object, so a stale callback carrying the same session id cannot
+   * write authoritative state (INV-L3). The enforcement is object identity in
+   * `tool-protocol-guards.ts`; this record deliberately carries NO run `epoch`,
+   * because no settlement path exists that could present a stale one (see
+   * `qualification/results/R9-recovery-topology/`).
    *
    * `rootReserve` carves the root's own credit out of the ceiling at creation
    * time. It defaults to a fraction of the ceiling rather than to zero, because

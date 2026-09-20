@@ -39,9 +39,6 @@
  * provably never launched is launched once, under its ORIGINAL reserved id, and
  * an ambiguous outcome is never converted into a second launch.
  */
-import type { Context } from '@deepseek-ai/cordis'
-import { defineDomain, domainTable, type Domain } from '@deepseek-ai/dsh-storage-domain'
-import { z } from 'zod'
 import type { LaunchPort } from './host.ts'
 import type { WorkService } from './host.ts'
 import type { TaskRecord } from './record.ts'
@@ -188,236 +185,71 @@ export async function relaunchPrepared(input: {
   return { taskId, childId, launched: true }
 }
 
-/** A settlement submitted by a worker, with the generation that produced it. */
-export interface WorkerSettlement {
-  /** The run the worker believes it is settling. */
-  readonly runId: string
-  /**
-   * The run epoch the worker was admitted under. A worker from a previous host
-   * generation carries the epoch it saw, which is what makes it identifiable.
-   */
-  readonly epoch: number
-  readonly taskId: string
-  /**
-   * The child identity the worker claims. Checked against the record's reserved
-   * `childId`, because a settlement attributed to the wrong child is not a
-   * settlement.
-   */
-  readonly childId: string
-  readonly to: 'settling' | 'confirmed' | 'cancelled'
-  /** Where the evidence for this settlement lives, if the worker supplies one. */
-  readonly evidenceRef?: { readonly kind: string; readonly id: string; readonly label?: string }
-}
-
-/** What happened to a submitted settlement. */
-export interface SettlementOutcome {
-  readonly accepted: boolean
-  /** Present when the settlement was refused, in words a reader can check. */
-  readonly reason?: string
-  /** Where the refusal was recorded, when one was. */
-  readonly refusalRef?: string
-}
-
-/**
- * Apply a worker's settlement only if its epoch is the CURRENT one.
+/*
+ * WHAT IS DELIBERATELY NOT HERE, and why — the F8 / REC-09 / REC-10 decision.
  *
- * WHY THIS EXISTS. `record.ts:383-388` documents the run epoch as "bumped when a
- * run is re-adopted by a new host generation. A callback carrying a stale epoch
- * must be rejected rather than allowed to write authoritative state." Nothing
- * enforced that: `initialRunRecord` sets `epoch` to 1 and no other code reads or
- * writes the field, so a stale worker's settlement could be applied to a run it
- * no longer belongs to. This function is the missing enforcement.
+ * This module used to also export a settlement guard: `WorkerSettlement`,
+ * `applyWorkerSettlement`, and a `RefusalLedger` over a separate
+ * `dsh_daily_work_refusals` domain. The guard refused a settlement whose run
+ * `epoch` was not the record's current epoch, leaving the task unmoved and its
+ * reservation held, and retained the refusal as diagnostic evidence. It was
+ * correct, it was tested, and it was **deleted rather than wired**, because the
+ * topology measurement showed it guards a path that does not exist.
  *
- * The two halves of gate D10, both required:
+ * THE MEASUREMENT. A stale-generation settlement requires a settlement PRODUCER
+ * — something that receives a child's completion and offers it to this package.
+ * No such producer exists, and the precise reason is worth stating carefully
+ * because an earlier draft of this comment overstated it:
  *
- *   REFUSE the authoritative write. A settlement whose epoch is not the record's
- *   current epoch does not move the task and does not release its reservation.
- *   The refusal is total: a stale worker cannot confirm, cannot settle and
- *   cannot cancel.
+ *   - `WorkService.transition` (host.ts:884) is the only method that can write a
+ *     task's state, its reservation release and its tombstone. **No production
+ *     call site targets a TERMINAL state** — `settling`, `confirmed`,
+ *     `cancelled` or `cancel_requested`. The only non-test site that names any of
+ *     them is `durability-runner.ts`, the hand-run CLI in no production import
+ *     graph. `TERMINAL_STATES` is `confirmed | cancelled` (states.ts:67-70).
+ *   - The product DOES write one non-terminal uncertainty state: `unknown`, at
+ *     host.ts:1342 (no launch port) and host.ts:1364 (launch failed), both on the
+ *     drain path reachable from the model-facing `work` tool (tools.ts:162). Both
+ *     pass `releaseReservation: false`, so the slot stays held.
+ *   - **Nothing can move a task OUT of `unknown`.** The only production writer of
+ *     any `unknown`-exit state is host.ts:1379's `accepted`, and it is unreachable
+ *     for an `unknown` task: `admit` refuses a task that still holds its slot
+ *     (host.ts:823-825, `task "..." is already admitted as unknown`), `unknown`
+ *     holds a slot (states.ts:63), and `relaunchPrepared` refuses anything that is
+ *     not `prepared` (recovery.ts:103-116). Measured, not inferred: a task driven
+ *     to `unknown` by a failing launch stays `unknown` through a re-drain and
+ *     through `relaunchPrepared`.
+ *   - the launch port resolves at the ADMISSION edge and is never called back on
+ *     completion (launch-port.ts:9-20, quoting the pinned DSH contract).
+ *   - no completion listener, inbox callback, outbox consumer, IPC channel,
+ *     socket or second process exists in this package's non-test source; the two
+ *     `ctx.on` registrations in capacity.ts:593,617 touch only the capacity
+ *     ledger, never task state.
+ *   - nothing ever bumped the epoch: `initialRunRecord` wrote the literal 1 and
+ *     no other code wrote or read it. A real SIGKILL plus a real re-adoption left
+ *     it at 1, so even a wired guard would have compared 1 to 1 forever.
  *
- *   RETAIN the diagnostic evidence. Refusing silently would destroy the only
- *   record that a stale worker exists, which is exactly the fact an operator
- *   needs. The refusal goes to a SEPARATE diagnostic store (see
- *   {@link RefusalLedger}) rather than into the run record, so diagnostic
- *   evidence can never be mistaken for authority. Nothing in the decision path
- *   reads it.
+ * The conclusion does not depend on the terminal write alone: a settlement is the
+ * act of LEAVING an in-flight state, and the state the product actually leaves a
+ * task in — `unknown`, reservation held — has no exit on any production path.
+ * So the guard's input cannot be constructed in any generation, stale or current.
  *
- * A childId that does not match the record's reserved one is refused the same
- * way, for the same reason: attributing a result to a task the worker never ran
- * would corrupt the reconciliation relation.
+ * So the guard was not merely unreachable — the input it refuses cannot be
+ * constructed. Wiring it would have meant INVENTING a cross-process settlement
+ * producer, which the audit forbids ("Do not create a cross-process worker solely
+ * to make REC-09/REC-10 pass"). The honest resolution was the other direction:
+ * delete the guard, delete the run record's `epoch` field (it had no real
+ * consumer), and have v2 not claim the guarantee.
  *
- * @param input.service - the open work service owning the run.
- * @param input.ledger - where refused settlements are recorded as evidence.
- * @param input.settlement - what the worker submitted.
- * @returns whether the settlement was applied, and why not when it was refused.
+ * WHAT THIS REMOVAL IS AND IS NOT. It removes a CLAIM that was never true — an
+ * epoch that looked like a guard only because nothing checked it — and it removes
+ * no mechanism the product relied on. It is the same shape as G-SEAM-50, where
+ * CMP-06's sandbox-policy protection is unreachability rather than immutability.
+ * The v1 cases REC-09 and REC-10 stay FAIL historically; nothing here makes them
+ * pass.
+ *
+ * `relaunchPrepared` above is a DIFFERENT claim and is deliberately kept: gate
+ * D03 asks that a task proven never to have launched is relaunched exactly once
+ * under its ORIGINAL reserved childId. That is a statement about recovery
+ * deciding, not about generation fencing, and it is not this slice's to delete.
  */
-export async function applyWorkerSettlement(input: {
-  readonly service: WorkService
-  readonly ledger: RefusalLedger
-  readonly settlement: WorkerSettlement
-}): Promise<SettlementOutcome> {
-  const { service, ledger, settlement } = input
-  const record = service.getRun(settlement.runId)
-  if (record === undefined) {
-    const reason = `run "${settlement.runId}" does not exist`
-    const refusalRef = await ledger.record({ ...settlement, reason })
-    return { accepted: false, reason, refusalRef }
-  }
-
-  /** Record the refusal as evidence, without letting it become authority. */
-  const refuse = async (reason: string): Promise<SettlementOutcome> => {
-    const refusalRef = await ledger.record({ ...settlement, reason })
-    return { accepted: false, reason, refusalRef }
-  }
-
-  // THE GUARD. A stale generation's settlement is not authority.
-  if (settlement.epoch !== record.epoch) {
-    return refuse(
-      `settlement carries epoch ${settlement.epoch} but run "${settlement.runId}" is at epoch ${record.epoch}; `
-      + 'a stale generation cannot write authoritative state',
-    )
-  }
-
-  const task = record.tasks[settlement.taskId]
-  if (task === undefined) {
-    return refuse(`task "${settlement.taskId}" is not in run "${settlement.runId}"`)
-  }
-
-  // The identity check: the reserved id is the reconciliation relation, so a
-  // settlement for a different child is refused rather than attributed.
-  if (task.childId !== settlement.childId) {
-    return refuse(
-      `settlement names child "${settlement.childId}" but task "${settlement.taskId}" reserved `
-      + `"${task.childId ?? ''}"; a result is not attributable across identities`,
-    )
-  }
-
-  // The epoch and the identity agree, so this settlement IS current and the
-  // ordinary state machine decides whether the transition is legal.
-  await service.transition({
-    runId: settlement.runId,
-    taskId: settlement.taskId,
-    to: settlement.to,
-  })
-  return { accepted: true }
-}
-
-/**
- * The diagnostic store for REFUSED settlements.
- *
- * WHY A SEPARATE DOMAIN, and not a field on the run record. The two facts here
- * have opposite authority, and putting them in one record invites exactly the
- * confusion the gate is about:
- *
- *   the run record is AUTHORITATIVE -- it decides what the system believes and
- *   what budget is held;
- *   a refusal is DIAGNOSTIC -- it says a stale worker tried, and must never
- *   influence a decision.
- *
- * A separate domain also keeps the write paths apart: recording a refusal can
- * never take the run record's write chain, so it cannot interleave with an
- * admission and cannot be mistaken for one. The domain name is distinct from the
- * run domain, so the storage facility opens them independently.
- */
-export const REFUSAL_DOMAIN_NAME = 'dsh_daily_work_refusals'
-
-/** One retained refusal. Append-only in practice; the key is unique per refusal. */
-export const refusalRecordSchema = z.object({
-  /** Unique key for this refusal. */
-  key: z.string().min(1),
-  runId: z.string().min(1),
-  /** The epoch the worker presented. */
-  epoch: z.number().int(),
-  taskId: z.string().min(1),
-  childId: z.string().min(1),
-  to: z.string().min(1),
-  /** Why it was refused, in the words the caller can check against the record. */
-  reason: z.string().min(1),
-  /** When it was refused. */
-  recordedAt: z.string(),
-})
-
-export type RefusalRecord = z.infer<typeof refusalRecordSchema>
-
-export const refusalDomainSpec = defineDomain({
-  name: REFUSAL_DOMAIN_NAME,
-  version: 1,
-  tables: {
-    refusals: domainTable<string, RefusalRecord>(refusalRecordSchema),
-  },
-})
-
-/**
- * A ledger of refused settlements, over the real storage domain.
- *
- * The handle is owned by the caller and released by {@link close}, exactly like
- * the work service's own domain handle.
- */
-export class RefusalLedger {
-  private domain: Domain<typeof refusalDomainSpec> | undefined
-  private readonly ctx: Context
-
-  constructor(ctx: Context) {
-    this.ctx = ctx
-  }
-
-  /** Open the ledger's domain. A second open is a caller bug and is refused. */
-  async open(): Promise<void> {
-    if (this.domain !== undefined) throw new Error('refusalLedger: domain is already open')
-    const facility = this.ctx.get('storageDomain')
-    if (facility === undefined) {
-      throw new Error('refusalLedger: the storageDomain service is not mounted')
-    }
-    this.domain = await facility.open(refusalDomainSpec)
-  }
-
-  /** Close the ledger's domain. Idempotent. */
-  async close(): Promise<void> {
-    const domain = this.domain
-    this.domain = undefined
-    if (domain !== undefined) await domain.close()
-  }
-
-  /**
-   * Durably record one refusal.
-   *
-   * The key is derived from the settlement's identity plus a timestamp, so two
-   * refusals of the same claim are both kept: the second attempt is itself a
-   * fact worth having.
-   *
-   * @returns the key the refusal was stored under.
-   */
-  async record(input: WorkerSettlement & { readonly reason: string }): Promise<string> {
-    const domain = this.domain
-    if (domain === undefined) throw new Error('refusalLedger: domain is not open')
-    const recordedAt = new Date().toISOString()
-    // Colons are not path-safe in the per-record layout; the domain name is
-    // fixed but keys are ours, so they stay within the safe alphabet.
-    const key = `${input.runId}_${input.taskId}_${String(input.epoch)}_${String(Date.now())}`
-    await domain.table('refusals').put(key, {
-      key,
-      runId: input.runId,
-      epoch: input.epoch,
-      taskId: input.taskId,
-      childId: input.childId,
-      to: input.to,
-      reason: input.reason,
-      recordedAt,
-    })
-    return key
-  }
-
-  /** Every retained refusal, in no promised order. For inspection and tests. */
-  entries(): RefusalRecord[] {
-    const domain = this.domain
-    if (domain === undefined) throw new Error('refusalLedger: domain is not open')
-    return [...domain.table('refusals').entries()].map(([, value]) => value)
-  }
-
-  /** One retained refusal, or `undefined`. */
-  get(key: string): RefusalRecord | undefined {
-    const domain = this.domain
-    if (domain === undefined) throw new Error('refusalLedger: domain is not open')
-    return domain.table('refusals').get(key)
-  }
-}

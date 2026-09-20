@@ -1352,78 +1352,106 @@ describe('SEC-06: park invalidates old RPC; reset invalidates old references and
   /**
    * THE HONEST RESULT, and it is NOT what the record's own comment promised.
    *
-   * `recovery.ts` DOES implement a stale-epoch refusal with its own tests. But
-   * `docs/GAPS.md` G-SEAM-21 records the load-bearing finding: the guard is
-   * UNREACHABLE from production. `recovery.ts` has no non-test importer,
-   * `applyWorkerSettlement` has no caller outside its module and its own test,
-   * and nothing outside `recovery.ts` reads or writes `.epoch` after
-   * `initialRunRecord` sets it to 1. So nothing bumps the epoch and nothing
-   * checks it: the field is INERT in the product.
+   * `recovery.ts` used to implement a stale-epoch refusal with its own tests, and
+   * `docs/GAPS.md` G-SEAM-21 recorded the load-bearing finding that it was
+   * UNREACHABLE from production: no non-test importer, no caller outside its own
+   * module and its test, and nothing outside `recovery.ts` reading or writing
+   * `.epoch` after `initialRunRecord` set it to 1. The field was INERT.
    *
-   * The unreachability is DOUBLE, and the second half is what this file adds by
-   * measurement. Importing the guard would not be enough, because its
-   * precondition cannot occur: the epoch is written in exactly ONE production
-   * place (`initialRunRecord`, to the literal 1), and the production `resume()`
-   * path re-opens the phase WITHOUT touching it. So even a wired-up
-   * `applyWorkerSettlement` would compare `1 !== 1` and refuse nothing. What the
-   * guard would refuse — a settlement from a previous host generation — is a
-   * value no code in this package can currently produce.
+   * The F8 / REC-09 / REC-10 topology measurement then showed the sharper fact
+   * that decided this gate: the guard's INPUT cannot be constructed. The
+   * unreachability was double, and the second half is why wiring it would have been
+   * a fabrication rather than a fix. Importing the guard would not have been
+   * enough, because its precondition cannot occur — the epoch was written in
+   * exactly ONE production place (`initialRunRecord`, to the literal 1), and the
+   * production `resume()` path re-opened the phase WITHOUT touching it, so even a
+   * wired-up `applyWorkerSettlement` would have compared `1 !== 1` and refused
+   * nothing. Beyond that, there is no settlement PRODUCER to call it: no
+   * production call site targets a terminal task state at all, and the launch port
+   * resolves at the ADMISSION edge and is never called back on completion.
+   * Graph: `qualification/results/R9-recovery-topology/TOPOLOGY.md`.
    *
-   * WHAT THE MISSING ENFORCEMENT WOULD LET THROUGH, stated concretely, because
-   * "the field is inert" undersells it. The scenario the field exists for: host
-   * A admits a task under epoch 1 and launches a child; host A dies and the run
-   * is re-adopted by host B, which is a NEW generation holding the same store.
-   * The stale worker (or a late settlement from A's child) submits
-   * `{ runId, taskId, childId, to: 'confirmed' }`. With no enforcement, the only
-   * remaining checks are the task's existence and the `childId` match — and
-   * `childId` is a STRING that a resumed or re-launched child can legitimately
-   * carry. So the settlement is applied: the task moves to a terminal state and
-   * its reservation is RELEASED, in a generation that never admitted it. The
-   * concrete damage is budget authority: `release` is what frees the slot and
-   * `spentCost` is what attributes cost, so a stale confirmation can both free a
-   * slot the new generation believes is occupied and attribute spend to a
-   * generation that did not incur it. That is the "旧执行权限失效" clause of the
-   * gate's oracle going unmet — and note it is unmet by the RECORD path alone,
-   * before the kernel half is even considered.
+   * SO THE GUARD, its `WorkerSettlement` type, its `RefusalLedger` over a separate
+   * `dsh_daily_work_refusals` domain, and the run record's `epoch` field were all
+   * DELETED rather than wired. Wiring them would have meant INVENTING a
+   * cross-process settlement producer, which the audit forbids.
    *
-   * THE MINIMAL HONEST FIX, recorded rather than applied: bump the epoch on the
-   * one path that actually re-adopts a run (`WorkService.resume`, or whatever
-   * path a re-adopting host uses), then route every settlement through
-   * `applyWorkerSettlement` instead of `WorkService.transition`. Both halves are
-   * required: bumping without routing leaves the guard unimported, and routing
-   * without bumping compares 1 to 1 forever. This is NOT wired here, and
-   * deliberately: `recovery.ts` is outside this file's ownership, and the
-   * recorded conclusion is that inventing a caller would connect nothing real.
-   * The status stays FAIL until a real settlement-receiving path exists.
+   * WHAT THIS REMOVAL IS: a CLAIM that was never true is removed — an epoch that
+   * looked like a guard only because nothing checked it. It is NOT the removal of a
+   * working mechanism the product relied on. This is the same shape as G-SEAM-50,
+   * where CMP-06's sandbox-policy protection is unreachability rather than
+   * immutability.
    *
-   * This matters more than a missing feature would. `record.ts` stated "a
-   * callback carrying a stale epoch must be rejected" as if it were a property,
-   * and that sentence was a REQUIREMENT written in the grammar of enforcement.
-   * A gate that accepted the sentence would be reading a comment as a control.
+   * `record.ts` stated "a callback carrying a stale epoch must be rejected" as if
+   * it were a property, and that sentence was a REQUIREMENT written in the grammar
+   * of enforcement. A gate that accepted the sentence would have been reading a
+   * comment as a control. The corrected record now states what is actually
+   * enforced — object identity, for the in-process case the product can reach —
+   * and that the cross-process generation case is not covered and is not claimed.
    *
    * So SEC-06's kernel half is NOT_RUN (no kernel plane exists) and its
-   * record-epoch half is FAIL: the mechanism exists and is tested, but the
-   * product path cannot reach it, so the gate's oracle — "旧执行权限失效" for a
-   * stale generation — is unmet.
+   * record-epoch half is a recorded NON-CLAIM: v2 does not assert the guarantee,
+   * and v1's REC-09/REC-10 stay FAIL as the historical record of what was asked
+   * for and never delivered.
    */
-  it('the epoch guard exists and is tested, and the tests are the ONLY callers', () => {
+  it('the epoch guard is DELETED, and this gate is a recorded NON-CLAIM', () => {
+    // THE HONEST RESULT, and it is the opposite of what the record once promised.
+    //
+    // `recovery.ts` used to implement a stale-epoch refusal with its own tests.
+    // `docs/GAPS.md` G-SEAM-21 recorded that it was UNREACHABLE from production.
+    // The topology measurement taken for F8 / REC-09 / REC-10 then showed something
+    // sharper than unreachability: the guard's INPUT cannot be constructed. A
+    // settlement is the act of LEAVING an in-flight state, and the product has no
+    // path that does it — `WorkService.transition` is the only method that can
+    // write a task's state, reservation release and tombstone, and no production
+    // call site targets a TERMINAL state. The product does write the non-terminal
+    // uncertainty state `unknown` (host.ts:1342, host.ts:1364), and nothing can
+    // move a task out of it: the only production writer of an `unknown`-exit state
+    // is host.ts:1379's `accepted`, unreachable for such a task because `admit`
+    // refuses a slot-holding one (host.ts:823-825). The launch port resolves at the
+    // ADMISSION edge and is never called back on completion; and nothing ever
+    // bumped the epoch, so even a wired guard would have compared 1 to 1 forever.
+    // Graph: `qualification/results/R9-recovery-topology/TOPOLOGY.md`.
+    //
+    // So the guard, the `WorkerSettlement` type, the `RefusalLedger`, the
+    // `dsh_daily_work_refusals` domain and the run record's `epoch` field were all
+    // DELETED, rather than wired. Wiring them would have meant INVENTING a
+    // cross-process settlement producer, which the audit forbids.
+    //
+    // WHAT THIS REMOVAL IS: a CLAIM that was never true is removed — an epoch that
+    // looked like a guard only because nothing checked it. It is NOT the removal of
+    // a mechanism the product relied on. Same shape as G-SEAM-50, where CMP-06's
+    // sandbox-policy protection is unreachability rather than immutability.
     const recovery = readFileSync(join(REPO_ROOT, 'packages', 'dsh-daily-work', 'src', 'recovery.ts'), 'utf8')
-    // The mechanism, as written.
-    expect(recovery).toMatch(/if \(settlement\.epoch !== record\.epoch\)/u)
-    expect(recovery).toMatch(/settlement carries epoch \$\{settlement\.epoch\} but run/u)
-    expect(flat(recovery)).toContain('A settlement whose epoch is not the record\'s current epoch does not move the task and does not release its reservation')
-    // And the MEASURED reachability finding, which is the gate's real result.
+    // The guard is gone, in code. The comment naming it is allowed and intended:
+    // that is where the decision is documented.
+    const recoveryCode = recovery.split(/\r?\n/u)
+      .filter(line => !/^\s*(?:\/\/|\*|\/\*)/u.test(line))
+      .join('\n')
+    expect(recoveryCode, 'the epoch comparison must not survive').not.toMatch(/\bepoch\b/u)
+    expect(recoveryCode).not.toMatch(/applyWorkerSettlement|RefusalLedger|WorkerSettlement/u)
+    // `relaunchPrepared` is a DIFFERENT claim (gate D03) and is deliberately kept.
+    expect(recoveryCode).toContain('export async function relaunchPrepared')
+    // The record no longer carries the field, and the schema is the place that
+    // decides what a stored record may contain. Comments are stripped first,
+    // because the corrected comment in `record.ts` DESCRIBES the removed field —
+    // that description is the documentation and must not read as a declaration.
+    const record = readFileSync(join(REPO_ROOT, 'packages', 'dsh-daily-work', 'src', 'record.ts'), 'utf8')
+    const recordCode = record.split(/\r?\n/u)
+      .filter(line => !/^\s*(?:\/\/|\*|\/\*)/u.test(line))
+      .join('\n')
+    expect(recordCode, 'the run record schema must not declare an epoch').not.toMatch(/epoch/u)
+    // The removal is documented where the field used to be, so a reader learns
+    // why it is gone rather than finding a silent gap.
+    expect(record, 'the removal must be documented in the schema').toContain('THERE IS NO `epoch` FIELD HERE')
+    // The measured finding is still recorded, now as a deletion with its reason.
     const gaps = readFileSync(join(REPO_ROOT, 'docs', 'GAPS.md'), 'utf8')
     expect(gaps).toContain('G-SEAM-21')
-    expect(flat(gaps)).toContain('**The run record\'s `epoch` guard is UNREACHABLE, so the field is inert in the product.**')
-    expect(flat(gaps)).toContain('`recovery.ts` has NO non-test importer (verified by import-graph scan)')
-    expect(flat(gaps)).toContain('nothing bumps it and nothing checks it')
-    expect(flat(gaps)).toContain('a requirement stated as if it were enforcement')
   })
 
   it('the reachability claim is verified here rather than inherited from the GAPS entry', () => {
     // An import-graph scan over PRODUCTION sources: who imports recovery.ts, and
-    // who reads `.epoch` outside its own module.
+    // who reads a run epoch outside its own module.
     const pkg = join(REPO_ROOT, 'packages', 'dsh-daily-work', 'src')
     const production = readdirSync(pkg).filter(f => f.endsWith('.ts') && !f.endsWith('.test.ts'))
     const importers: string[] = []
@@ -1432,102 +1460,54 @@ describe('SEC-06: park invalidates old RPC; reset invalidates old references and
       if (file === 'recovery.ts') continue
       const text = readFileSync(join(pkg, file), 'utf8')
       if (/from\s+'\.\/recovery\.ts'/u.test(text)) importers.push(file)
-      // A read of the field, not a mention in a comment.
-      if (/\.epoch\b/u.test(text.replace(/^\s*(?:\/\/|\*|\/\*).*$/gmu, ''))) epochReaders.push(file)
+      // A read of the field, not a mention in a comment. `kernel-lifecycle.ts` has
+      // a KERNEL epoch, a different field with the same word (G-SEAM-43), so it is
+      // excluded by name to keep this about the RUN record.
+      const code = text.replace(/^\s*(?:\/\/|\*|\/\*).*$/gmu, '')
+      if (file !== 'kernel-lifecycle.ts' && /\bepoch\b/u.test(code)) epochReaders.push(file)
     }
-    // THE FINDING, re-measured: no production module imports the guard.
-    expect(importers, 'the epoch guard must have no production importer').toEqual([])
-    // The run record DOES carry the field (so the shape is right) and the
-    // launch port passes the provider but not the epoch.
-    const record = readFileSync(join(pkg, 'record.ts'), 'utf8')
-    expect(record).toMatch(/epoch: z\.number\(\)\.int\(\)\.min\(1\)/u)
-    expect(record).toMatch(/epoch: 1,/u)
-
-    // THE SECOND HALF OF THE CLAIM, and the one an import scan alone cannot
-    // establish: even if the guard WERE imported, it would refuse nothing today,
-    // because the epoch is never BUMPED. The field's doc promises "bumped when a
-    // run is re-adopted by a new host generation", and the production resume path
-    // does not touch it:
-    const host = readFileSync(join(pkg, 'host.ts'), 'utf8')
-    const resume = /async resume\(runId: string, now = new Date\(\)\.toISOString\(\)\): Promise<RunRecord> \{([\s\S]*?)\n  \}/u.exec(host)
-    expect(resume, 'the production resume path must be locatable').not.toBeNull()
-    expect(resume![1], 'resume must not bump the epoch — it only re-opens the phase').not.toMatch(/epoch/u)
-    expect(resume![1]).toMatch(/phase: record\.phase === 'paused' \? 'open' : record\.phase/u)
-    // Across ALL production sources, `epoch` is assigned in exactly ONE place:
-    // `initialRunRecord`. Everything else reads it (or is the guard itself).
-    const epochWriters: string[] = []
-    for (const file of production) {
-      if (file === 'recovery.ts' || file === 'record.ts') continue
-      const text = readFileSync(join(pkg, file), 'utf8')
-      const code = text.split(/\r?\n/u).filter(line => !/^\s*(?:\/\/|\*|\/\*)/u.test(line)).join('\n')
-      if (/\bepoch\s*[:=]/u.test(code)) epochWriters.push(file)
-    }
-    expect(epochWriters, 'nothing outside record.ts may WRITE the epoch').toEqual([])
-    // So the guard's own precondition is unreachable twice over: no caller
-    // imports it, and no code could produce a settlement whose epoch differs.
+    // THE FINDING, re-measured: no production module imports recovery.ts, and no
+    // production module mentions a run epoch at all.
+    expect(importers, 'recovery.ts must have no production importer').toEqual([])
+    expect(epochReaders, 'no production module may read a run epoch').toEqual([])
   })
 
-  it('the field\'s own comment now says it is NOT enforced, which is the corrected claim', () => {
-    // The correction is the deliverable: a requirement stated as enforcement was
-    // replaced by a statement of what is actually true.
-    const record = readFileSync(join(REPO_ROOT, 'packages', 'dsh-daily-work', 'src', 'record.ts'), 'utf8')
-    expect(flat(record)).toContain('Monotonic run epoch')
-    // The GAPS entry records that the correction was made.
-    const gaps = readFileSync(join(REPO_ROOT, 'docs', 'GAPS.md'), 'utf8')
-    expect(flat(gaps)).toContain('That is now corrected to say the field is NOT enforced, with the reason')
-    // And the guard that IS reachable is named, with its exact limit.
-    expect(flat(gaps)).toContain('a live Agent\'s identity, via `tool-protocol-guards.ts` comparing the registry entry by OBJECT')
-    expect(flat(gaps)).toContain('the cross-PROCESS generation case this field promises is not covered')
-    // The real guard, asserted from its own source: object identity, not a string.
-    const guards = readFileSync(join(REPO_ROOT, 'packages', 'dsh-daily-work', 'src', 'tool-protocol-guards.ts'), 'utf8')
-    expect(flat(guards)).toContain('It does not make the run record\'s `epoch` field')
-    expect(flat(guards)).toContain('the epoch is an unused field and is reported as such in FINDINGS.md')
-    // And the reason a string comparison is not enough.
-    expect(flat(guards)).toContain('A SessionId is reused across an agent\'s life')
-  })
-
-  /**
-   * A SECOND INSTANCE OF THE SAME DEFECT, in a file the GAPS entry does not
-   * name. `host.ts`'s module header states the top-up contract in the grammar of
-   * enforcement:
-   *
-   *   "After every await we re-check the run epoch, the user-cancel state and
-   *    whether the owner is still the exact live Agent. A stale generation must
-   *    not publish authoritative state."
-   *
-   * and `createRun`'s doc repeats it ("authority is bound to the live object plus
-   * the run epoch, so a stale callback carrying the same session id cannot write
-   * authoritative state (INV-L3)").
-   *
-   * Neither is true of the code. The word `epoch` appears in `host.ts` ONLY
-   * inside those two comments — there is no expression in the file that reads or
-   * compares it. The actual re-check in `runDrain` is `this.disposed` and
-   * `signal.aborted`, and the owner is stored as `rootSessionId`, a STRING, which
-   * is the exact identity form `tool-protocol-guards.ts` documents as
-   * insufficient ("an id survives a replacement, an object does not").
-   *
-   * This is the same defect shape SEC-06 already records, one layer up: the
-   * record field is inert AND the service that owns the record claims a
-   * generation check it does not perform.
-   */
-  it('host.ts claims a per-await epoch and owner re-check that its code does not perform', () => {
+  it('the host service no longer claims a per-await epoch re-check it does not perform', () => {
+    // `host.ts`'s module header used to state the top-up contract in the grammar of
+    // enforcement: "After every await we re-check the run epoch, the user-cancel
+    // state and whether the owner is still the exact live Agent. A stale generation
+    // must not publish authoritative state." and `createRun`'s doc repeated it
+    // ("authority is bound to the live object plus the run epoch ... (INV-L3)").
+    //
+    // Neither was true of the code: the word `epoch` appeared in that file ONLY
+    // inside those two comments. Both are now corrected to name what IS enforced —
+    // object identity in `tool-protocol-guards.ts` — and to state that the record
+    // deliberately carries no epoch. This is the same defect shape SEC-06 records,
+    // one layer up: a requirement written in the grammar of enforcement.
     const host = readFileSync(join(REPO_ROOT, 'packages', 'dsh-daily-work', 'src', 'host.ts'), 'utf8')
-    // The claim, in the module header and in `createRun`'s doc.
-    expect(flat(host)).toContain('After every await we re-check the run epoch, the user-cancel state and whether the owner is still the exact live Agent')
-    expect(flat(host)).toContain('A stale generation must not publish authoritative state')
-    expect(flat(host)).toContain('The root Agent is stored as an identity, not as a string')
-    expect(flat(host)).toContain('authority is bound to the live object plus the run epoch')
-    expect(flat(host)).toContain('INV-L3')
     // THE MEASUREMENT: strip comments, then look for the field. Nothing.
     const code = host.split(/\r?\n/u)
       .filter(line => !/^\s*(?:\/\/|\*|\/\*)/u.test(line))
       .join('\n')
-    expect(code, 'host.ts must contain no epoch EXPRESSION, only the two comments').not.toMatch(/\bepoch\b/u)
-    // What the await-boundary re-check ACTUALLY is, quoted from the loop it is
-    // claimed to guard. These two checks are real; the epoch and the owner are not.
+    expect(code, 'host.ts must contain no epoch EXPRESSION, only comments').not.toMatch(/\bepoch\b/u)
+    // The false claims are gone.
+    expect(host).not.toContain('After every await we re-check the run epoch')
+    expect(host).not.toContain('bound to the live object plus the run epoch')
+    // What the await-boundary re-check ACTUALLY is, quoted from the loop it guards.
+    // These two checks are real; the epoch and the owner are not.
     expect(code).toMatch(/if \(this\.disposed\) break/u)
     expect(code).toMatch(/if \(signal\.aborted\) break/u)
-    expect(code).not.toMatch(/this\.disposed\) break[\s\S]{0,400}epoch/u)
+    // THE TWO WRITERS' CHANGES ARE COMBINED HERE, not chosen between, because
+    // they are about different properties and neither subsumes the other.
+    //
+    // R9 removed the EPOCH assertion that used to live here: its subject (the run
+    // epoch field and the settlement guard that read it) no longer exists, so
+    // asserting anything about it would be a test of nothing. R9 replaced it with
+    // a pointer to the guard that IS reachable, so the correction reads as a
+    // redirection rather than a deletion.
+    expect(host).toContain('tool-protocol-guards.ts')
+    // R4 narrowed the PERSISTENCE assertion below, and the narrowing is a
+    // correction rather than a weakening -- see the comment it carries.
     // And the sharpest form of the contradiction: the sentence says "an identity,
     // NOT as a string" and the very next assignment persists exactly a string.
     expect(code, 'the root must be persisted as the session-id string the doc disclaims').toMatch(/rootSessionId: input\.root\.session\.header\.id/u)

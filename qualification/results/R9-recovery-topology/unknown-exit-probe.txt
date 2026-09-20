@@ -1,0 +1,9 @@
+1. drain outcome      : [{"taskId":"t1","childId":"c1","accepted":false,"reason":"launch_failed_unknown"}]
+   state              : unknown (expected: unknown)
+   reservation held   : 5 (expected: 5)
+   uncertainty        : launch failed: provider exploded
+2. re-drain           : [{"taskId":"t1","childId":"c1","accepted":false,"reason":"dailyWork: task \"t1\" is already admitted as unknown"}]
+   state              : unknown (expected: still unknown)
+3. relaunchPrepared   : {"taskId":"t1","childId":"c1","launched":false,"reason":"task \"t1\" is unknown; only a task proven never to have launched (prepared) may be relaunched"}
+   state              : unknown (expected: still unknown)
+   reservation held   : 5 (expected: still 5)

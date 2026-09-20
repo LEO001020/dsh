@@ -406,37 +406,46 @@ export type RunPhase = (typeof RUN_PHASES)[number]
 export const runRecordSchema = z.object({
   version: z.literal(1),
   runId: z.string().min(1),
-  /**
-   * Monotonic run epoch. **Currently NOT enforced in the product.**
+  /*
+   * THERE IS NO `epoch` FIELD HERE, and its absence is a decision rather than an
+   * omission (F8 / REC-09 / REC-10).
    *
-   * This field exists to distinguish host generations, so that a callback from a
-   * superseded generation can be refused instead of writing authoritative state.
-   * The comparison that would do that lives in `recovery.ts`'s
-   * `applyWorkerSettlement`, which refuses a settlement whose epoch does not match
-   * the record's.
+   * This record used to carry a monotonic run `epoch` (a positive integer,
+   * documented as "bumped when a run is re-adopted by a new host generation"),
+   * with a guard in `recovery.ts` that refused a settlement carrying a stale one.
+   * The field was set to the literal 1 by `initialRunRecord` and **no other code
+   * ever read or wrote it** — not `resume`, not `pause`, not `createRun`, not a
+   * real SIGKILL followed by a real re-adoption. So the value a "stale generation"
+   * would carry could not be produced by any code in this package.
    *
-   * That guard is **unreachable from any production path**: `recovery.ts` has no
-   * non-test importer, `applyWorkerSettlement` has no caller outside its own
-   * module and that test, and outside `recovery.ts` nothing reads or writes this
-   * field after `initialRunRecord` sets it to 1. So nothing bumps it and nothing
-   * checks it.
+   * The topology measurement (qualification/results/R9-recovery-topology/) showed
+   * the guard was not merely unreachable but guarding a path that does not exist.
+   * Precisely: `WorkService.transition` is the only method that can write a task's
+   * state, its reservation release and its tombstone, and **no production call
+   * site targets a TERMINAL state** (`settling`, `confirmed`, `cancelled`,
+   * `cancel_requested`). The product does write the NON-terminal uncertainty state
+   * `unknown` (host.ts:1342, host.ts:1364, both `releaseReservation: false`), and
+   * **nothing can move a task out of it**: the only production writer of an
+   * `unknown`-exit state is host.ts:1379's `accepted`, which is unreachable for
+   * such a task because `admit` refuses a slot-holding one (host.ts:823-825).
+   * A settlement is the act of LEAVING an in-flight state, and that write has no
+   * production call site in any generation, stale or current. The launch port
+   * resolves at the ADMISSION edge and is never called back on completion, and the
+   * package has no completion listener, no settlement entry point, no IPC channel
+   * and no second process.
    *
-   * This comment previously said a stale-epoch callback "must be rejected". That
-   * was a requirement stated as if it were enforcement, which is the same defect
-   * shape this project found three times (the launch port and the Goal handover
-   * had zero production callers; this guard is unreachable). Presence of a guard
-   * is not enforcement; reachability is.
+   * WHAT IS ENFORCED INSTEAD, for the case that is real: a live Agent's identity,
+   * by `tool-protocol-guards.ts` comparing the registry entry by OBJECT
+   * (`ctx.agents.get(id) === owner`). That covers an in-process resume, which is a
+   * case the product can actually reach; the cross-process generation case is not
+   * covered, and v2 does not claim it.
    *
-   * What IS enforced today, for the case that matters most: a live Agent's
-   * identity, by `tool-protocol-guards.ts` comparing the registry entry by object
-   * (`ctx.agents.get(id) === owner`), which covers an in-process resume. The
-   * cross-PROCESS generation case, which this field promises, is not covered.
-   *
-   * To close it: call `applyWorkerSettlement` from whatever path receives a
-   * worker settlement. That path does not exist yet, so wiring one would mean
-   * inventing a caller rather than connecting a real one.
+   * The field's removal is read-compatible with stores written by the previous
+   * schema: a stored record that still carries the old key parses, and the extra
+   * key is dropped. It is NOT writable-compatible in the other direction: a
+   * pre-change build reading a post-change record would reject it, because the old
+   * schema required the field.
    */
-  epoch: z.number().int().min(1),
   /**
    * How many admissions this run's reservation relation has committed.
    *
@@ -514,7 +523,6 @@ export function initialRunRecord(input: {
   return {
     version: 1,
     runId: input.runId,
-    epoch: 1,
     reservationGeneration: 0,
     rootSessionId: input.rootSessionId,
     authorizationRef: input.authorizationRef,
