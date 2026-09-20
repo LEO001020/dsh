@@ -14,3 +14,10 @@ packages/*/lib/
 # checkout and must never be committed. A junction is a reparse point, so a
 # checkout that recursed into one would copy the whole DSH tree.
 qualification/results/**/node_modules/
+
+# Per-session IPython kernel scratch (spill files, kernel.out/err). A runtime
+# directory, not a deliverable: it is created by the kernel plugin under the
+# configured root and holds nothing a reader needs. Left unignored it shows up as
+# an untracked directory after any real kernel run, which is noise in a tree where
+# untracked files have meant real defects twice today (G-SEAM-30, G-SEAM-42).
+.ipython-kernels/
