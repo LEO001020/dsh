@@ -400,3 +400,129 @@ describe('P5 WORK-ROLLING: a completion refills without another model call', () 
     expect(before).toEqual(['task-0', 'task-1'])
   })
 })
+
+/**
+ * V5 §7.6's larger shapes, and §18's WORK-N30.
+ *
+ * V5 §21 is explicit that N=30 is a PRODUCT CONTRACT and not a performance
+ * claim, and the distinction decides how these arms are written: they assert
+ * OCCUPANCY AND ORDERING, never throughput or latency. No arm here would become
+ * false if the machine were ten times slower, and no number is compared against
+ * a figure from a paper.
+ *
+ * The children are REAL: the production AgentLoop, the real continuable registry,
+ * the real in-process spawn provider, a real JSONL Session each. What is
+ * controlled is the model adapter, which is the provider boundary and not a
+ * second loop.
+ */
+describe('P5 WORK-N30: 30 sustained from 60+ ready assignments', () => {
+  it('N=30 with 62 ready: occupancy reaches and holds 30, and never exceeds it', async () => {
+    const r = await rig({ target: 30 })
+    await submitAll(r, 62)
+
+    await r.service.requestDrain('run-rolling')
+    const counts = r.service.counts('run-rolling')
+    expect(counts.heldReservations, 'the target is reached exactly').toBe(30)
+    expect(counts.targetOvershoot, 'and not exceeded').toBe(0)
+    expect(counts.capacityDeficit).toBe(0)
+    expect(r.launches, 'thirty children were started').toHaveLength(30)
+    // 32 assignments remain pending and durable: this is the reserve that makes
+    // the target SUSTAINED rather than a one-shot wave.
+    expect(r.service.readyAssignments('run-rolling')).toHaveLength(32)
+    // The oldest-first order is what the reserve is consumed in.
+    expect(r.service.readyAssignments('run-rolling')[0]?.taskId).toBe('task-30')
+  })
+
+  it('N=30: completions roll the wave down to the reserve with NO further work call', async () => {
+    const r = await rig({ target: 30 })
+    await submitAll(r, 62)
+    await r.service.requestDrain('run-rolling')
+    expect(r.launches).toHaveLength(30)
+
+    // Release five children. After this line the test issues NO work call and NO
+    // explicit wake: every replacement must come from a real `subagent/end`.
+    const launched = r.launches.slice(0, 5)
+    for (const taskId of launched) r.adapter.release(`child-${taskId}`)
+    await until(
+      () => r.launches.length >= 35,
+      () => ({ launches: r.launches.length, ends: r.ends.length, counts: r.service.counts('run-rolling') }),
+    )
+    // Five replacements, and they are the five OLDEST remaining assignments --
+    // which is the difference between a queue and a set.
+    expect(r.launches.slice(30, 35)).toEqual(['task-30', 'task-31', 'task-32', 'task-33', 'task-34'])
+
+    const counts = r.service.counts('run-rolling')
+    expect(counts.heldReservations, 'still exactly the target after rolling').toBe(30)
+    expect(counts.targetOvershoot).toBe(0)
+    expect(counts.completed, 'the five finished children are completed, not confirmed').toBe(5)
+    expect(counts.confirmed, 'and NONE of them is claimed as verified work').toBe(0)
+  })
+
+  it('N=30 -> N=1 stops admission WITHOUT killing the running children', async () => {
+    const r = await rig({ target: 30 })
+    await submitAll(r, 40)
+    await r.service.requestDrain('run-rolling')
+    expect(r.launches).toHaveLength(30)
+
+    await r.service.setTargetChildren('run-rolling', 1)
+    // V3's rule, measured: a lower target stops NEW admission and does not
+    // cancel anything. All thirty children are still live and still hold slots.
+    const listed = await r.ctx.subagents.listChildren(r.root.id)
+    expect(listed.length, 'no child was killed by the lower target').toBe(30)
+    expect(r.service.counts('run-rolling').targetOvershoot).toBe(29)
+
+    // A completion at N=1 frees its slot and admits NOTHING, because the run is
+    // still 29 above its target.
+    r.adapter.release(`child-${r.launches[0]!}`)
+    await until(() => r.ends.length >= 1, () => ({ ends: r.ends.length }))
+    await new Promise(resolve => setTimeout(resolve, 300))
+    expect(r.launches, 'no replacement while above the lowered target').toHaveLength(30)
+    // And the freed slot is visible as a genuine reduction in occupancy.
+    expect(r.service.counts('run-rolling').heldReservations).toBe(29)
+  })
+})
+
+/**
+ * WORK-MULTIROOT: all roots combined never exceed the host cap of 30.
+ *
+ * The host cap is a DEPLOYMENT-level defence and a cross-root accounting layer
+ * (`capacity.ts`, one `ChildAdmissionGate` per host, mounted once by the host
+ * profile). This arm drives two independent runs with their own targets through
+ * ONE service, which is the configuration the cap exists for.
+ */
+describe('P5 WORK-MULTIROOT: two roots share the host cap without starving one', () => {
+  it('two runs at target 25 each admit 30 in total, and both make progress', async () => {
+    const r = await rig({ target: 25 })
+    // A second run on the SAME service: one host, one gate, two roots.
+    await r.service.createRun({
+      runId: 'run-rolling-2',
+      root: r.root,
+      authorizationRef: 'human-command /work start',
+      targetChildren: 25,
+    })
+    for (let i = 0; i < 25; i += 1) {
+      await r.service.submitReady({ runId: 'run-rolling', taskId: `a-${i}`, prompt: `a ${i}`, reservedCost: 1 })
+      await r.service.submitReady({ runId: 'run-rolling-2', taskId: `b-${i}`, prompt: `b ${i}`, reservedCost: 1 })
+    }
+
+    // Interleave the wakes, as two independent roots would.
+    await r.service.requestDrain('run-rolling')
+    await r.service.requestDrain('run-rolling-2')
+    await r.service.requestDrain('run-rolling')
+
+    const a = r.service.counts('run-rolling')
+    const b = r.service.counts('run-rolling-2')
+    const total = a.heldReservations + b.heldReservations
+    expect(total, 'the host cap is 30 and the two runs want 50').toBe(30)
+    // NEITHER RUN IS STARVED. The precise split depends on interleaving and is
+    // NOT asserted -- asserting it would be asserting a scheduler. What must hold
+    // is that the cap did not let one run take everything, because a root that
+    // gets zero children while another takes thirty is the starvation V5 §7.6
+    // asks about.
+    expect(a.heldReservations, 'the first root made real progress').toBeGreaterThan(0)
+    expect(b.heldReservations, 'the second root made real progress').toBeGreaterThan(0)
+    // The gate's own snapshot is the cross-root number, and it agrees.
+    expect(r.service.capacity().occupied).toBe(30)
+    expect(r.service.capacity().capacity).toBe(30)
+  })
+})
