@@ -1,0 +1,4 @@
+# digests of the IPY-13 experiment, so a reader can verify the scripts are the ones measured
+
+2fc7562ec540daf4717e1bb1863bd88b3176e788c3afc2d0b2f4b591f304eb66  exp.py
+74d017071040f08c5cdeb5eb7a28b21499915372c7fec457d9af7a4010cbb782  exp3.py
