@@ -271,6 +271,26 @@ export type BrokerEvent =
   | { readonly type: 'event'; readonly event: 'kernel_exited'; readonly epoch: number; readonly detail: string }
   | { readonly type: 'event'; readonly event: 'late_output'; readonly epoch: number; readonly cellId: string; readonly text: string }
   | { readonly type: 'event'; readonly event: 'diagnostic'; readonly epoch: number; readonly detail: string }
+  | {
+    readonly type: 'event'
+    readonly event: 'transport_refused'
+    /**
+     * The kernel generation the refusal happened in.
+     *
+     * EVERY broker event carries one, and the host's decoder REQUIRES it: an
+     * event without an integer epoch is treated as a malformed frame, so a
+     * refusal that omitted it would be reported as a protocol violation instead
+     * of as a bounded refusal.
+     */
+    readonly epoch: number
+    /** The refusal's name. `FRAME_TOO_LARGE` is the bound in this module. */
+    readonly code: string
+    readonly detail: string
+    /** The bound that was violated, so the reader is not left to guess it. */
+    readonly limitBytes: number
+    /** What the frame claimed, when the peer declared it. Absent otherwise. */
+    readonly declaredBytes?: number
+  }
 
 export type BrokerMessage = BrokerReply | BrokerEvent
 
@@ -324,6 +344,27 @@ export function asBrokerMessage(value: unknown): BrokerMessage {
         event,
         epoch,
         detail: typeof record['detail'] === 'string' ? record['detail'] : '',
+      }
+    }
+    if (event === 'transport_refused') {
+      // The refusal carries the bound as a NUMBER, so a reader never has to parse
+      // it back out of `detail`. A frame that omits it is malformed rather than
+      // defaulted: a refusal whose limit is unknown cannot be acted on.
+      const limitBytes = record['limitBytes']
+      if (typeof limitBytes !== 'number' || !Number.isFinite(limitBytes)) {
+        throw new FrameError('transport_refused is missing a numeric limitBytes')
+      }
+      const declaredBytes = record['declaredBytes']
+      return {
+        type: 'event',
+        event,
+        epoch,
+        code: typeof record['code'] === 'string' ? record['code'] : 'FRAME_TOO_LARGE',
+        detail: typeof record['detail'] === 'string' ? record['detail'] : '',
+        limitBytes,
+        ...typeof declaredBytes === 'number' && Number.isFinite(declaredBytes)
+          ? { declaredBytes }
+          : {},
       }
     }
     throw new FrameError(`unknown event name ${JSON.stringify(event)}`)

@@ -72,10 +72,57 @@ class ProtocolError(Exception):
     pass
 
 
+class FrameLimitError(ProtocolError):
+    """A frame violated MAX_FRAME_BYTES. Distinct so it can be named structurally.
+
+    WHY A SUBCLASS RATHER THAN A MESSAGE. The v2 oracle decision (D2) requires the
+    refusal to be a STRUCTURED `FRAME_TOO_LARGE` fact, not a prose sentence a
+    caller has to pattern-match. Both the reader and the writer raise this, so one
+    handler can report the limit by name wherever it is crossed.
+
+    The declared length and the actual limit are carried as FIELDS for the same
+    reason: a reader of the event should not have to parse them back out of a
+    sentence that may be reworded.
+    """
+
+    def __init__(self, message, limit_bytes=None, declared_bytes=None):
+        ProtocolError.__init__(self, message)
+        self.limit_bytes = limit_bytes
+        self.declared_bytes = declared_bytes
+
+
+def frame_too_large_event(exc, epoch=0):
+    """The structured refusal for a frame that violated the bound.
+
+    Returns the event the host reads. `limitBytes` is the bound the broker
+    enforces; `declaredBytes` is what the frame claimed. No payload bytes are
+    included -- a refusal must not become a second copy of the oversized data.
+
+    `epoch` is carried because EVERY broker event carries one: the host's decoder
+    requires an integer epoch on every event and treats its absence as a malformed
+    frame. An event that the host cannot decode is not a report.
+    """
+    event = {
+        "type": "event",
+        "event": "transport_refused",
+        "epoch": epoch,
+        "code": "FRAME_TOO_LARGE",
+        "detail": str(exc),
+        "limitBytes": exc.limit_bytes if exc.limit_bytes is not None else MAX_FRAME_BYTES,
+    }
+    if exc.declared_bytes is not None:
+        event["declaredBytes"] = exc.declared_bytes
+    return event
+
+
 def encode_frame(value):
     payload = json.dumps(value, ensure_ascii=False).encode("utf-8")
     if len(payload) > MAX_FRAME_BYTES:
-        raise ProtocolError("frame of %d bytes exceeds the limit" % len(payload))
+        raise FrameLimitError(
+            "frame of %d bytes exceeds the limit" % len(payload),
+            limit_bytes=MAX_FRAME_BYTES,
+            declared_bytes=len(payload),
+        )
     return HEADER.pack(len(payload)) + payload
 
 
@@ -101,7 +148,11 @@ class FrameReader:
             return None
         (length,) = HEADER.unpack(header)
         if length > MAX_FRAME_BYTES:
-            raise ProtocolError("declared frame length %d exceeds the limit" % length)
+            raise FrameLimitError(
+                "declared frame length %d exceeds the limit" % length,
+                limit_bytes=MAX_FRAME_BYTES,
+                declared_bytes=length,
+            )
         body = self._read_exactly(length)
         if body is None:
             return None
@@ -885,7 +936,7 @@ def main():
     reader = FrameReader(raw)
     broker = Broker(write_frame)
 
-    def reply(request_id, ok, payload):
+    def reply(request_id, ok, payload, code="BROKER_FAILURE"):
         if ok:
             write_frame({"type": "reply", "id": request_id, "ok": True, "result": payload})
         else:
@@ -893,19 +944,52 @@ def main():
                 "type": "reply",
                 "id": request_id,
                 "ok": False,
-                "error": {"code": "BROKER_FAILURE", "message": payload},
+                "error": {"code": code, "message": payload},
             })
 
     def run_execute(request, request_id):
         try:
             reply(request_id, True, broker.execute(request))
+        except FrameLimitError as exc:
+            # A cell result too large to frame is a BOUNDED refusal with a name,
+            # not a generic broker failure. The host reads `FRAME_TOO_LARGE` and
+            # knows the reply exceeded the transport bound rather than that the
+            # broker broke. The cell itself already ran -- this is the delivery
+            # that failed, and saying so is what keeps the two facts distinct.
+            log("execute reply exceeded the frame bound: %s" % exc)
+            reply(request_id, False, str(exc), code="FRAME_TOO_LARGE")
         except Exception as exc:  # noqa: BLE001
             log("execute failed: %s" % traceback.format_exc()[-1200:])
             reply(request_id, False, "%s: %s" % (type(exc).__name__, exc))
 
+    def refuse_and_exit(exc):
+        """Tell the host WHY the control stream is being abandoned, then exit.
+
+        WHY EXIT AT ALL. A frame whose DECLARED length exceeds the bound leaves the
+        reader unable to find the next boundary: the prefix is the only thing that
+        says where this frame ends, and it is not trustworthy. Continuing would
+        mean guessing at alignment, which is how a corrupt request is delivered as
+        a plausible one. So the stream is abandoned.
+
+        WHY NOT SILENTLY. Exiting without a word left the host with only a stderr
+        line and a dead process -- measured: the host's `unexpectedExit` recorded
+        `broker exited with code 2 signal null` and the caller learned nothing
+        about the limit. The structured event is emitted FIRST, on the reply
+        channel the host already decodes, so the refusal carries its own code and
+        the bound it violated.
+        """
+        log("protocol error: %s" % exc)
+        try:
+            write_frame(frame_too_large_event(exc))
+        except Exception:  # noqa: BLE001
+            log("could not report the refusal to the host")
+        return 2
+
     while True:
         try:
             request = reader.next_frame()
+        except FrameLimitError as exc:
+            return refuse_and_exit(exc)
         except ProtocolError as exc:
             log("protocol error: %s" % exc)
             return 2

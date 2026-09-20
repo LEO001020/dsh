@@ -1,0 +1,30 @@
+{
+  "status_transport": "tcp",
+  "status_curveKeysPresent": true,
+  "status_plaintextWarningSeen": false,
+  "status_kernel_pid": 48656,
+  "maxFrameBytes": 4194304,
+  "controlArm_outcome": "ok",
+  "overLimitRequest_refused": true,
+  "recoveryAfterRefusedRequest_outcome": "ok",
+  "rawFrame_declaredBytes": 4195328,
+  "uncaughtException": "Error: write EOF",
+  "brokerExit_registered_after_ms": 156,
+  "host_unexpectedExit": "broker exited with code 2 signal null",
+  "brokerDiagnostics_hasLimit": true,
+  "cellAfterBrokerDeath_waitedMs": 62005,
+  "cellAfterBrokerDeath_errorName": "KernelTransportError",
+  "cellAfterBrokerDeath_errorMessage": "broker did not answer execute within 62000 ms",
+  "unhandledRejectionCount_beforeShutdown": 1,
+  "shutdownOutcome": "hung",
+  "shutdown_waitedMs": 8012,
+  "unhandledRejectionCount_afterShutdown": 1,
+  "unhandledRejections": [
+    "KernelTransportError: broker exited with code 2 signal null"
+  ],
+  "uncaughtExceptionCount": 1,
+  "uncaughtExceptions": [
+    "Error: write EOF"
+  ],
+  "armComplete": true
+}
