@@ -291,8 +291,21 @@ def implementation_commit() -> dict[str, Any]:
 def lock_inputs() -> dict[str, Any]:
     lock = json.loads(LOCK.read_text(encoding="utf-8"))
     deployment = lock["deployment"]
+    # `trust_model` is read from `deployment`, NOT from the lock's top level.
+    #
+    # THE BUG THIS COMMENT EXISTS FOR, measured rather than anticipated. The first
+    # version read `lock.get("trust_model")` and got `None`: the key lives at
+    # `deployment.trust_model` (the top level has no such key at all). The result was
+    # that `trust_model_name` entered the runtime input set as the literal `null` --
+    # a NAMED V3 E2 term contributing a constant, which is worse than an absent field
+    # because a reader sees the name and assumes it is load-bearing. Root found it by
+    # reading the filed identity.json.
+    #
+    # The fix is the lookup; the guard that would have caught it is in
+    # `assert_no_constant_inputs` below, which refuses a null in the hashed set.
     return {"inputs": deployment["inputs"], "identity": deployment["identity"],
-            "algorithm": deployment["identity_algorithm"], "trust_model": lock.get("trust_model"),
+            "algorithm": deployment["identity_algorithm"],
+            "trust_model": deployment.get("trust_model"),
             "trust_model_statement": deployment.get("trust_model_statement")}
 
 
@@ -335,8 +348,12 @@ def runtime_inputs(probe: dict[str, Any] | None) -> dict[str, Any]:
 
     # The trust-model statement: the lock's own text, so the identity is bound to
     # what the deployment CLAIMS, not only to what it contains.
+    # The trust-model statement AND its name. V3 E2 names the trust-model statement as
+    # a runtime identity term; the name is carried beside it because a statement without
+    # the name of the model it belongs to cannot be checked against the deployment's own
+    # claim. Both come from `deployment` -- see lock_inputs for the lookup bug.
     out["trust_model_statement"] = lock["trust_model_statement"]
-    out["trust_model_name"] = lock.get("trust_model")
+    out["trust_model_name"] = lock["trust_model"]
 
     # NEW: the implementation revision and the machine's Python/Jupyter identities.
     impl = implementation_commit()
@@ -445,6 +462,86 @@ def checkout_reproducibility() -> dict[str, Any]:
         "uncommitted_inputs": uncommitted,
         "files": rows,
     }
+
+
+def assert_no_constant_inputs(inputs: dict[str, Any]) -> list[str]:
+    """Refuse an identity input whose value is null, empty, or a fixed placeholder.
+
+    WHY THIS GUARD EXISTS. A `null` in the hashed input set contributes a CONSTANT, so
+    it can never distinguish two deployments -- but it is named, so a reader assumes it
+    is load-bearing. `trust_model_name` shipped as `null` for exactly this reason (a
+    lookup at the wrong path), and it was found by a human reading the filed artifact,
+    not by any check. This makes the check exist.
+
+    The rule is deliberately about the SHAPE of the value rather than about a list of
+    known-bad fields, so a new field cannot be added as a silent constant:
+      * `None` is refused outright;
+      * an empty string, list or dict is refused;
+      * a string containing NOT_MEASURED is refused, because that is the explicit
+        placeholder for an unmeasured value and it must not be hashed as if measured.
+
+    `NOT_MEASURED-...` values are the ONE legitimate exception and are returned
+    separately, because the probe is optional: an identity computed without a boot
+    genuinely has no measured catalog, and pretending otherwise would be worse. Those
+    are reported as a WARNING, so the distinction between "no probe was supplied" and
+    "the field silently defaulted" stays visible.
+    """
+    problems: list[str] = []
+    not_measured: list[str] = []
+    for key, value in sorted(inputs.items()):
+        if value is None:
+            problems.append(f"{key} is null: a constant cannot distinguish two deployments")
+        elif isinstance(value, str):
+            if value == "":
+                problems.append(f"{key} is an empty string: a constant in the input set")
+            elif "NOT_MEASURED" in value:
+                not_measured.append(key)
+        elif isinstance(value, (list, dict)) and not value:
+            problems.append(f"{key} is empty: a constant in the input set")
+    return problems + [f"WARNING {k}: unmeasured, contributes a constant" for k in not_measured]
+
+
+def guard_self_test() -> int:
+    """Prove `assert_no_constant_inputs` catches the defect it was written for.
+
+    A guard that never fires is indistinguishable from a guard that cannot fire. This
+    feeds it the EXACT value the real defect produced -- `trust_model_name: None` from
+    the wrong lookup path -- plus the neighbouring shapes, and checks each is refused.
+    It also checks that a legitimate NOT_MEASURED value is NOT refused as a null, since
+    a guard that refuses the optional-probe case would make the probe mandatory.
+    """
+    cases = [
+        ("the real defect: trust_model_name None from a lookup at the wrong path",
+         {"trust_model_name": None}, True),
+        ("an empty string", {"field": ""}, True),
+        ("an empty list", {"field": []}, True),
+        ("an empty dict", {"field": {}}, True),
+        ("a populated term is NOT refused", {"field": "trusted-local"}, False),
+        ("a NOT_MEASURED placeholder is a WARNING, not a refusal",
+         {"field": "NOT_MEASURED-no-probe-supplied"}, False),
+        ("a legitimate null-free set is clean",
+         {"a": "trusted-local", "b": {"c": "d"}, "d": ["e"]}, False),
+    ]
+    failures = []
+    for label, inputs, must_refuse in cases:
+        result = assert_no_constant_inputs(inputs)
+        refused = any(not r.startswith("WARNING") for r in result)
+        warned = any(r.startswith("WARNING") for r in result)
+        ok = (refused == must_refuse)
+        if label.startswith("a NOT_MEASURED"):
+            ok = ok and warned
+        print(f"{'ok  ' if ok else 'FAIL'} {label}")
+        if not ok:
+            failures.append(label)
+            print(f"       refused={refused} warned={warned} result={result}")
+    print("")
+    if failures:
+        print(f"verdict: GUARD_BROKEN ({len(failures)} case(s) wrong)")
+        return 1
+    print("verdict: GUARD_PROVED")
+    print("In particular the real defect value (trust_model_name: None) is REFUSED, so a")
+    print("null can no longer enter an identity input set unnoticed.")
+    return 0
 
 
 def staleness_report(model: dict[str, Any]) -> dict[str, Any]:
@@ -628,7 +725,12 @@ def main() -> int:
                         help="a probe.json from qualification/runners/v2-identity-probe.mjs")
     parser.add_argument("--write", action="store_true",
                         help="write identity.json into the results directory")
+    parser.add_argument("--guard-test", action="store_true",
+                        help="prove the constant-input guard catches a null identity term")
     args = parser.parse_args()
+
+    if args.guard_test:
+        return guard_self_test()
 
     model = compute(args.probe)
     # Filled here rather than inside compute(), because the report reads the results
@@ -644,6 +746,12 @@ def main() -> int:
         for banned in ('"status"', '"verdict"', '"evidence"', '"evidence_path"'):
             if banned in blob:
                 problems.append(f"{label} inputs contain {banned}")
+
+    # No identity input may be a constant that looks like a variable. This is the
+    # guard for the `trust_model_name: null` defect root found by reading the artifact.
+    constant_problems = assert_no_constant_inputs(model["runtime_inputs"])
+    problems.extend(p for p in constant_problems if not p.startswith("WARNING"))
+    unmeasured = [p for p in constant_problems if p.startswith("WARNING")]
 
     if args.write:
         out_dir = RESULTS_ROOT / f"trusted-local-v2.{model['qualification_contract']['qualification_contract_identity'][:12]}"
@@ -711,12 +819,19 @@ def main() -> int:
     print("        carries a result moves the identity that result names. A result filed")
     print("        before the final integration commit is stale BY CONSTRUCTION; re-derive")
     print("        with `file-result.py --init-results` after integration.")
+    print("")
+    print(f"runtime inputs that are constants rather than variables: "
+          f"{len([p for p in constant_problems if not p.startswith('WARNING')])}")
+    for problem in constant_problems:
+        print(f"  {problem}")
+    print("")
     if problems:
         print("STRUCTURAL PROBLEM:")
         for problem in problems:
             print(f"  - {problem}")
         return 1
-    print("neither identity input set contains a status, verdict or evidence path.")
+    print("neither identity input set contains a status, verdict or evidence path,")
+    print("and no input is a null/empty constant masquerading as a term.")
     print("This computes identities. It does not judge any acceptance case.")
     return 0
 

@@ -120,6 +120,9 @@ CHEAP_MECHANICAL_GATES = [
     {"id": "G-MUTATION",
      "what": "runtime drift and spec drift produce DIFFERENT identity failures",
      "command": "python qualification/runners/mutation-test-identity-split.py"},
+    {"id": "G-CONSTANT-INPUT",
+     "what": "no runtime identity input is a null/empty constant (the trust_model_name defect)",
+     "command": "python qualification/runners/qualification-identity.py --guard-test"},
 ]
 
 # A digest that identifies a build, as it appears in a v1 evidence note.
