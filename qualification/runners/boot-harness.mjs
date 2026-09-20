@@ -28,6 +28,7 @@
 import { createServer } from 'node:net'
 import { spawn } from 'node:child_process'
 import { existsSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { assertCleanSourcePlane } from './check-source-plane.mjs'
 
 export const DSH_SRC = 'D:/DSH/src/dsh-src'
 export const LAUNCHER = `${DSH_SRC}/apps/cli/lib/bin.js`
@@ -81,6 +82,24 @@ export async function bootAndWait(options) {
     home, profile, patches = [], outPath, cwd = process.cwd(),
     timeoutMs = 90_000, settleMs = 900, port, env = {},
   } = options
+
+  // F11 / ID-06: the qualification source plane must be CLEAN before a launch.
+  //
+  // OPT-IN, and deliberately so. `DSH_REQUIRE_CLEAN_SOURCE_PLANE=1` turns a boot
+  // that would produce a verdict on an unstateable tree into a refusal. It is not
+  // the default because this harness is also used by EXPLORATORY probes whose
+  // whole purpose is to look at a tree that is mid-edit, and a precondition that
+  // silently changed those runs' behaviour would be the "gate redefined the
+  // question" defect. A run that wants its result to be citable sets the variable
+  // and gets the guarantee; a run that does not, keeps the old behaviour and
+  // cannot cite the result as a qualification verdict.
+  //
+  // It is a PRECONDITION, not an identity check: it says nothing about the
+  // artifact, which is `helpers/doctor.py`'s job (and that check survives a dirty
+  // checkout). V3 §G2 makes exactly this distinction.
+  if (process.env.DSH_REQUIRE_CLEAN_SOURCE_PLANE === '1') {
+    assertCleanSourcePlane({ checkout: options.sourceCheckout })
+  }
 
   const chosen = port ?? await freePort()
   const portFile = `${outPath}.port.yml`

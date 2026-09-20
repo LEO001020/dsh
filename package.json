@@ -1,0 +1,36 @@
+{
+  "name": "dsh-native-daily",
+  "version": "0.1.0",
+  "private": true,
+  "description": "DSH trusted-local daily harness: two extension packages (dsh-daily-work, dsh-ipython) plus the qualification plane. NOT an official @deepseek-ai package.",
+  "license": "MIT",
+  "type": "module",
+  "//": [
+    "WHY A ROOT package.json EXISTS AT ALL (F10).",
+    "",
+    "Before this file, the repository had NO root manifest, so there was no single",
+    "entry point to cite for the typecheck and readers reached for whatever was",
+    "obvious: `tsc -p tsconfig.json`, which excludes src/**/*.test.ts and therefore",
+    "exits 0 with or without a test file present. That is the F10 / ID-05 false pass.",
+    "",
+    "The package set is deliberately NOT a pnpm workspace. The two packages are",
+    "consumed by the DSH profile resolver through `link:` targets (see",
+    "profiles/daily-candidate/package.json) and are built by their own",
+    "`link-all-dsh.ps1` junction farms; turning them into workspace members would",
+    "change how they resolve `@deepseek-ai/*` and would be a build-identity change",
+    "made to satisfy a typecheck gate. The gate does not need it: it needs ONE",
+    "command, and that command is `pnpm typecheck` -> helpers/typecheck.mjs.",
+    "",
+    "There are no dependencies here on purpose. The script uses only Node builtins,",
+    "so `pnpm typecheck` works from a clean clone with nothing installed, which is",
+    "what makes it a usable gate rather than a statement about one machine."
+  ],
+  "scripts": {
+    "typecheck": "node helpers/typecheck.mjs",
+    "typecheck:json": "node helpers/typecheck.mjs --json",
+    "check:source-plane": "node qualification/runners/check-source-plane.mjs"
+  },
+  "engines": {
+    "node": "^22.19.0 || >=24.0.0"
+  }
+}

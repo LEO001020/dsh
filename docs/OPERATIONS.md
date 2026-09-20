@@ -150,8 +150,21 @@ cd /d/DSH/work/dsh-native-daily/packages/dsh-daily-work
 powershell -NoProfile -ExecutionPolicy Bypass -File link-all-dsh.ps1
 export PATH="/d/DSH/tools/bin:/d/DSH/src/dsh-src/node_modules/.bin:$PATH"
 vitest run
-tsc -p tsconfig.check.json --noEmit     # NOT tsconfig.json -- see below
 ```
+
+## Typecheck — the ONE official command
+
+```sh
+cd /d/DSH/work/dsh-native-daily
+pnpm typecheck
+```
+
+**`pnpm typecheck` is the authoritative compiler gate for this repository. Cite
+it, and only it, as the typecheck.** It covers BOTH packages (`dsh-daily-work`,
+`dsh-ipython`) with their test files included, and it verifies that coverage
+rather than assuming it: before checking each package it resolves the config with
+`--showConfig` and refuses to report success if the resolved program contains no
+`*.test.ts` file. It exits 0 only if every package passes.
 
 `link-all-dsh.ps1` junctions the pinned DSH packages into the extension's
 `node_modules` so it compiles against REAL DSH type declarations, deriving the
@@ -164,14 +177,79 @@ is recorded in this repository. Earlier revisions of this file said "126 tests, 
 files" (M2 era) and then "592 across 37 files" (`2d4534f`); both were accurate for
 their tree and both had gone stale.
 
-**Use `tsconfig.check.json`, not `tsconfig.json`, for any gate whose evidence is
-"the tests type-check".** `tsconfig.json` excludes `src/**/*.test.ts` (correct for
-the build, so test code never emits into `lib/`), which means
-`tsc -p tsconfig.json --noEmit` exits 0 **with or without** a test file present —
-a false pass. `tsconfig.check.json` extends it, keeps identical strict flags and
-clears only the exclude. Switching to it immediately surfaced two real type errors
-the old config was hiding (recorded in
+**Do NOT cite `tsc -p tsconfig.json --noEmit` as the typecheck.** `tsconfig.json`
+excludes `src/**/*.test.ts` (correct for the build, so test code never emits into
+`lib/`), which means it exits 0 **with or without** a test file present — a false
+pass. This is measured, not asserted: `ID-05`'s control arm injected one type
+error into a test file, `tsc -p tsconfig.json` exited **0** and missed it, while
+`pnpm typecheck` exited **1** and named the file
+(`qualification/results/R2-F10F11/mutation-test.txt`).
+
+**The two configs are not meant to mean the same thing, and that is deliberate.**
+`tsconfig.json` is the BUILD face (test code must never emit into `lib/`);
+`tsconfig.check.json` extends it, keeps identical strict flags, clears only the
+exclude, and adds `noEmit` — it is the CHECK face. There is no root
+`tsconfig.json`, and none is wanted: a solution-style root that merely referenced
+both packages would add a config without adding coverage. `pnpm typecheck` is the
+single entry point instead, and it is what makes "one authoritative gate" true
+without collapsing the two compiler faces into one.
+
+Per-package configs, for reference — these are the pieces the official command
+drives, not alternatives to it:
+
+| Config | Role |
+|---|---|
+| `packages/<pkg>/tsconfig.json` | the BUILD: `include src/**/*.ts`, `exclude src/**/*.test.ts` |
+| `packages/<pkg>/tsconfig.check.json` | the CHECK: extends the above, clears only the exclude, `noEmit: true` |
+| `packages/dsh-daily-work/tsconfig.eco.json` | a SCOPED probe for one case's two files; not a gate |
+
+Switching the gate to the check config immediately surfaced two real type errors
+the build config was hiding (recorded in
 `qualification/results/M9.2-terminal-advanced/FINDINGS.md`).
+
+## The qualification source plane (F11 / ID-06)
+
+```sh
+cd /d/DSH/work/dsh-native-daily
+node qualification/runners/check-source-plane.mjs     # exit 0 clean, 1 dirty, 2 unusable
+```
+
+**A developer workspace may be dirty; the qualification source plane may not.**
+This is a PRECONDITION for starting a qualification run, not a statement about the
+artifact. It answers one question: is the checkout we are about to qualify against
+the pinned checkout, with nothing tracked-modified, nothing staged, and no
+generated state written into it?
+
+**It is deliberately NOT part of the deployment identity.** The identity is the
+built launcher digest + lockfile + profile/preset digests + the resolved graph,
+and `python helpers/doctor.py` re-derives and verifies it — that is the check that
+survives a dirty checkout. Neither check substitutes for the other, and the
+distinguishable exit codes keep them apart: this script exits 1 for "the plane is
+dirty" and 2 for "the rig is unusable", so a broken invocation can never be read
+as a verdict about the source.
+
+To make a boot refuse to launch on a dirty plane, set
+`DSH_REQUIRE_CLEAN_SOURCE_PLANE=1` (the shared boot harness honours it). It is
+opt-in because exploratory probes deliberately run against mid-edit trees; a run
+that wants its result to be citable sets the variable, and a run that does not
+cannot cite its result as a qualification verdict.
+
+**The three kinds of entry are classified, not collapsed into "dirty".** A
+`CONTENT_MODIFICATION` is a real edit. A `STAGED_CHANGE` is a write to the index.
+An `UNTRACKED_GENERATED` path is generated state (a DSH_HOME, an artifact store,
+qualification output) that belongs outside the checkout. An `EOL_STAT_DIRTY` entry
+is a line-ending artifact: `git status` reports the file modified, but its FILTERED
+BLOB ID equals `HEAD`'s, so there is no content delta — the script prints both blob
+ids as the proof. It still blocks, because the oracle's machine-checkable
+definition of clean is an empty `git status --porcelain` and a gate that quietly
+redefined that would be a weaker oracle than the one that was filed.
+
+**The remedy for an EOL entry is named and never run by the gate.** It is
+`git add --renormalize <path>`, which rewrites the shared index of a tree this
+gate does not own. This project has already paid for five git accidents in a
+shared worktree (G-SEAM-35, G-SEAM-42), so the script tells the operator what to
+run and refuses to run it. Never `git checkout`/`reset`/`clean` a checkout you do
+not own to make a gate green.
 
 ## Durability runner (VERIFIED)
 

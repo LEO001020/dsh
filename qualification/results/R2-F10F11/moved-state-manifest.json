@@ -1,0 +1,78 @@
+{
+  "DSHhomem914": {
+    "file_count": 9,
+    "files": [
+      {
+        "path": "DSHhomem914/.anonymous-user-id",
+        "bytes": 37,
+        "sha256": "6beb2123073f7ef766acb76e78b2190f7d087e5ac5cbb83a43629ecbb1db211b"
+      },
+      {
+        "path": "DSHhomem914/profiles/sdk/cordis.patch.yml",
+        "bytes": 217,
+        "sha256": "ef189a8c27db6d63930aa3046a3040482e952eafcb7487c644d508e8d461f027"
+      },
+      {
+        "path": "DSHhomem914/profiles/sdk/cordis.yml",
+        "bytes": 223,
+        "sha256": "c300dcf2ebc5f02062d6591268d29d3db6fe45e0cb138f5467276fe2ba06076e"
+      },
+      {
+        "path": "DSHhomem914/profiles/sdk/package.json",
+        "bytes": 207,
+        "sha256": "da521592a0b2d6bbb85376f3069ad9efdd1d5edc4e61f36957fffb8d56f03ed2"
+      },
+      {
+        "path": "DSHhomem914/profiles/sdk/pnpm-workspace.yaml",
+        "bytes": 61,
+        "sha256": "ae7c5b68e2f157528e62885804e69e88583897b775e03c86fcbe52feaf498aba"
+      },
+      {
+        "path": "DSHhomem914/sessions/--D-DSH-src-dsh-src--/m914-sdk/session.v3.jsonl.zstd",
+        "bytes": 21502,
+        "sha256": "c2aa1e3d4dbfff02547f06415f0a7a590f2b801b634353708ff594795a03e84d"
+      },
+      {
+        "path": "DSHhomem914/sessions/--D-DSH-src-dsh-src--/m914-sdk-boundary/session.v3.jsonl.zstd",
+        "bytes": 21508,
+        "sha256": "1c881263c8078999007b71ec747947184839a98ad8ee5dad5b243a18eca9d258"
+      },
+      {
+        "path": "DSHhomem914/storages/session_projcache/sessions/m914-sdk-boundary.json",
+        "bytes": 3672,
+        "sha256": "5ab1051a6d8d1443c352db582ae0671bd63410cd0677e8910540a7a79cfb04e9"
+      },
+      {
+        "path": "DSHhomem914/storages/session_projcache/sessions/m914-sdk.json",
+        "bytes": 3672,
+        "sha256": "f3c062a22d999ee695aedee654deb5670d32ae5f9987b65cd36f03554beb38ea"
+      }
+    ],
+    "empty_dirs": [
+      "DSHhomem914/profiles",
+      "DSHhomem914/profiles/sdk",
+      "DSHhomem914/sessions",
+      "DSHhomem914/sessions/--D-DSH-src-dsh-src--",
+      "DSHhomem914/sessions/--D-DSH-src-dsh-src--/m914-sdk",
+      "DSHhomem914/sessions/--D-DSH-src-dsh-src--/m914-sdk-boundary",
+      "DSHhomem914/storages",
+      "DSHhomem914/storages/session_projcache",
+      "DSHhomem914/storages/session_projcache/sessions"
+    ]
+  },
+  "data-artifacts": {
+    "file_count": 1,
+    "files": [
+      {
+        "path": "data-artifacts/objects/15/150f662de432382d21003d7ba23053663e76f94c0d79cbe4ac27ef0a54b21184",
+        "bytes": 162,
+        "sha256": "150f662de432382d21003d7ba23053663e76f94c0d79cbe4ac27ef0a54b21184"
+      }
+    ],
+    "empty_dirs": [
+      "data-artifacts/objects",
+      "data-artifacts/objects/15",
+      "data-artifacts/tmp"
+    ]
+  }
+}

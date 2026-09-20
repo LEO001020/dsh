@@ -21,3 +21,19 @@ qualification/results/**/node_modules/
 # an untracked directory after any real kernel run, which is noise in a tree where
 # untracked files have meant real defects twice today (G-SEAM-30, G-SEAM-42).
 .ipython-kernels/
+
+# Root-level state created by `pnpm <script>` (F10). The root manifest exists so
+# there is ONE official command to cite, and pnpm writes a workspace-state file
+# and a lockfile next to it on first run. Neither is a deliverable: this repo has
+# no root dependencies (helpers/typecheck.mjs uses Node builtins only), so the
+# lockfile records an empty importer set and the node_modules holds one pnpm
+# bookkeeping file. Committing a lockfile whose only content is "no packages"
+# would be noise, and leaving it UNIGNORED would mean the official command
+# dirties the tree it is used to check -- which is the F11 defect class
+# (generated state inside a source plane) reproduced by the F10 fix.
+#
+# Deliberately NOT ignored: `pnpm-lock.yaml` is tracked in upstream DSH checkouts
+# where it names real resolutions. This entry is scoped to the root of THIS repo,
+# and the packages keep their own manifests.
+/pnpm-lock.yaml
+/node_modules/

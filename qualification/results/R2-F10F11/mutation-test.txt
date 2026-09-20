@@ -1,0 +1,79 @@
+=== F10 / ID-05 MUTATION TEST -- the official command must be sensitive in BOTH directions ===
+
+Identity measured under:
+  tree      : D:\DSH\work\wt-r2b   (branch wt/r2b, a worktree of the pinned repository)
+  compiler  : D:\DSH\src\dsh-src\node_modules\typescript\bin\tsc
+  version   : Version 6.0.3
+  command   : pnpm typecheck  ->  node helpers/typecheck.mjs
+  prod file : packages/dsh-ipython/src/protocol.ts  sha256 c38f7ee8bf94bf82227dc4318754735c2305c827bb51dee258e9c0f3a32047bc
+  test file : packages/dsh-ipython/src/protocol.test.ts  sha256 bab987c217d58e8db309802eecc1df39c8314a3d303b4dade97fbdfcc0ecdb47
+
+=== ARM 1: CLEAN TREE -> the official command MUST pass ===
+$ pnpm typecheck
+exit=0 in 5488ms
+[ok  ] the resolved program covers 81 files (33 production + 48 test)
+[ok  ] typecheck exit 0 in 3497ms
+[ok  ] the resolved program covers 20 files (11 production + 9 test)
+[ok  ] typecheck exit 0 in 1187ms
+typecheck: PASS -- 2 package(s), complete production graph, tests included.
+ARM 1: PASS -- clean tree exits 0
+
+=== ARM 2: TYPE ERROR INJECTED INTO A PRODUCTION FILE -> the official command MUST fail ===
+injected into protocol.ts (TS2322, a TYPE error, not a syntax error)
+$ pnpm typecheck
+exit=1 in 6994ms
+[FAIL] typecheck exit 2 in 1369ms
+src/protocol.ts(335,7): error TS2322: Type 'string' is not assignable to type 'number'.
+typecheck: FAIL -- 1 of 2 package(s) did not pass.
+ARM 2: PASS -- non-zero exit, and the injected file is named
+restored protocol.ts: sha256 c38f7ee8bf94bf82227dc4318754735c2305c827bb51dee258e9c0f3a32047bc  byte-exact=true
+
+=== CONTROL ARM -- the contrast ID-05 names: the same error under `tsc -p tsconfig.json` ===
+
+The F10 trap is only visible on a file the BUILD config excludes, so both arms
+are run twice: once against a production file, once against a test file.
+
+--- control 2a: the error in the PRODUCTION file ---
+$ tsc -p tsconfig.json --noEmit   (cwd: packages/dsh-ipython)
+exit=2 in 1640ms
+src/protocol.ts(335,7): error TS2322: Type 'string' is not assignable to type 'number'.
+   -> tsconfig.json INCLUDES this file (it is not a test), so it catches it too.
+   restored: byte-exact=true
+
+--- control 2b: the error in the TEST file (the case the oracle is actually about) ---
+$ tsc -p tsconfig.json --noEmit   (cwd: packages/dsh-ipython)
+exit=0 in 1098ms
+   -> EXCLUDES src/**/*.test.ts, so it MISSES the error entirely.
+
+--- and the OFFICIAL command on the SAME mutation, still in place ---
+$ pnpm typecheck
+exit=1 in 9163ms
+[FAIL] typecheck exit 2 in 1360ms
+src/protocol.test.ts(129,7): error TS2322: Type 'string' is not assignable to type 'number'.
+typecheck: FAIL -- 1 of 2 package(s) did not pass.
+
+CONTROL: tsc -p tsconfig.json exit=0 (MISSED)  |  pnpm typecheck exit=1 (CAUGHT)
+restored protocol.test.ts: sha256 bab987c217d58e8db309802eecc1df39c8314a3d303b4dade97fbdfcc0ecdb47  byte-exact=true
+
+=== ARM 3: RESTORED TREE -> the official command MUST pass again ===
+$ pnpm typecheck
+exit=0 in 6621ms
+[ok  ] the resolved program covers 81 files (33 production + 48 test)
+[ok  ] typecheck exit 0 in 4640ms
+[ok  ] the resolved program covers 20 files (11 production + 9 test)
+[ok  ] typecheck exit 0 in 1133ms
+typecheck: PASS -- 2 package(s), complete production graph, tests included.
+ARM 3: PASS -- exits 0 again after restore
+
+=== VERDICT ===
+arm1    clean -> exit 0                        : true
+arm2    production mutation -> non-zero exit    : true
+arm3    restored -> exit 0                      : true
+control tsconfig.json MISSES the test error     : true
+control pnpm typecheck CATCHES it               : true
+restore protocol.ts      byte-exact             : true  (c38f7ee8bf94bf82227dc4318754735c2305c827bb51dee258e9c0f3a32047bc)
+restore protocol.test.ts byte-exact             : true  (bab987c217d58e8db309802eecc1df39c8314a3d303b4dade97fbdfcc0ecdb47)
+
+(control 2a, the production-file arm under tsconfig.json, exits 2 -- recorded for completeness, not part of the verdict)
+
+ORACLE ESTABLISHED
