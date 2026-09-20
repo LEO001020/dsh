@@ -1,0 +1,36 @@
+{
+  "toolName": "ipython",
+  "turn1_outcome": "ok",
+  "turn1_text": "outcome: ok\nkernel epoch: 1\n--- stdout ---\nturn1-settled\n\n[1 shell frame(s) for other requests were ignored while waiting for this cell. They did not complete it.]",
+  "turn1_text_mentions_late_marker": false,
+  "turn1_contexts": [],
+  "turn1_context_mentions_late_marker": false,
+  "turn2_outcome": "ok",
+  "turn2_text": "outcome: ok\nkernel epoch: 1\n--- stdout ---\nturn2-settled\n\n[1 shell frame(s) for other requests were ignored while waiting for this cell. They did not complete it.]",
+  "turn2_text_mentions_late_marker": false,
+  "turn2_contexts": [],
+  "turn3_outcome": "ok",
+  "turn3_text": "outcome: ok\nkernel epoch: 1\n--- stdout ---\nturn3-settled\n\n[1 shell frame(s) for other requests were ignored while waiting for this cell. They did not complete it.]",
+  "turn3_text_mentions_late_marker": false,
+  "turn3_contexts": [
+    "Runtime notice: background output from earlier cell(s)\n\nThis text was NOT produced by the cell you just ran. It was written by a background thread\nafter its own cell had already settled, and it is reported here rather than inside a cell\nresult so it cannot be mistaken for output of code that did not produce it.\n\nrecords: 1, kept bytes: 21\n\n--- late output ---\nkernel epoch: 1\nstream: stdout\norigin cell: 73e3130a-ba735fb03fe8152eb4b3315a_44636_3\nDELIVERY-LATE-MARKER"
+  ],
+  "turn3_context_mentions_late_marker": true,
+  "drainUnattributed_count": 1,
+  "drainUnattributed_entries": [
+    {
+      "cellId": "73e3130a-ba735fb03fe8152eb4b3315a_44636_3",
+      "text": "DELIVERY-LATE-MARKER\n",
+      "epoch": 1,
+      "stream": "stdout"
+    }
+  ],
+  "lateNoticeAccount": {
+    "held": 0,
+    "heldBytes": 0,
+    "spilled": 0,
+    "dropped": 0,
+    "spillBytes": 0
+  },
+  "verdict": "DELIVERED SEPARATELY: the notice reached the model-visible boundary and the cell stdout excluded it"
+}
