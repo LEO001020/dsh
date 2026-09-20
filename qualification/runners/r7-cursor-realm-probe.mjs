@@ -31,9 +31,10 @@
  *     tool row exists in this tree (measured, and reported by this probe as
  *     `dataToolNames`), so the model-facing call is still absent. What is proven is
  *     that the SERVICE the intended caller binds to refuses correctly.
- *   - The second store is a second `LocalArtifactStore` over a second root inside
- *     the probe process, not a second deployment. It is a genuinely different realm
- *     (asserted), which is the property the refusal depends on.
+ *   - The second store is a second `AttachmentArtifactStore` over a second INDEX
+ *     root inside the probe process, sharing the boot's own mounted provider, not a
+ *     second deployment. It is a genuinely different realm (asserted), which is the
+ *     property the refusal depends on.
  */
 import { mkdirSync, writeFileSync } from 'node:fs'
 
@@ -112,13 +113,28 @@ export async function apply(ctx) {
     // ---- ARM 2: the cursor replayed against a DIFFERENT store.
     //
     // The second store is constructed from the SAME module the product loaded (the
-    // class the service itself is holding), rooted at a different directory, so its
+    // class the service itself is holding), over a different INDEX root, so its
     // realm is genuinely different. `pages()` is driven directly because the service
     // owns exactly one store; the point of this arm is the store binding, not the
     // service's plumbing.
+    //
+    // THE CONSTRUCTOR CHANGED AND THIS PROBE DID NOT, WHICH IS WHY IT COULD NOT RUN.
+    // F4 (`bcc036e`) replaced `LocalArtifactStore(root)` with
+    // `AttachmentArtifactStore(attachments, root)`, so the old two-argument-free call
+    // raised `TypeError: LocalArtifactStore is not a constructor` and the probe
+    // reported `DATA_11_PRODUCT_REACHABLE: false` for a reason that had nothing to do
+    // with DATA-11. The fix is not to re-derive the provider: the boot ALREADY
+    // mounted one, and `ctx.attachments` is that instance. Borrowing it is what makes
+    // this a second STORE rather than a second PROVIDER, which is the distinction the
+    // arm depends on -- two providers over one home would put the bytes in one place
+    // and make "a different store" untrue.
     const artifactsModule = await import('../../packages/dsh-daily-work/lib/artifacts.js')
+    const attachments = ctx.get('attachments')
+    if (attachments === undefined) {
+      throw new Error('ctx.attachments is absent: the profile mounted no attachment provider, so a second store cannot be built')
+    }
     const otherRoot = `${probeDir}/other-store`
-    const otherStore = new artifactsModule.LocalArtifactStore(otherRoot)
+    const otherStore = new artifactsModule.AttachmentArtifactStore(attachments, otherRoot)
     const otherRealm = await otherStore.ensureRealm()
     finding.arms.otherStoreRealm = otherRealm
     finding.arms.realmsDiffer = otherRealm !== finding.storeRealmId
