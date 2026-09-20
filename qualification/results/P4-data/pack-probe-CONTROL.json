@@ -1,0 +1,26 @@
+{
+  "scope": "V5 5.4 / DATA-PACKAGE: a foreign packed install carries the Python data client",
+  "packTool": "pnpm",
+  "packSucceeded": true,
+  "tarballBytes": 483549,
+  "foreignRoot": "C:\\Users\\hzq00\\AppData\\Local\\Temp\\p4-foreign-d4TxlL",
+  "sourceTreeOnPath": false,
+  "clientPresentInTarball": false,
+  "clientPresentInExtract": false,
+  "clientPathResolvedFromPackage": "C:\\Users\\hzq00\\AppData\\Local\\Temp\\p4-foreign-d4TxlL\\pkg\\package\\src\\dsh_data_client.py",
+  "resolvedPathIsInsideForeignRoot": true,
+  "dataApiVersionRead": null,
+  "installSucceeded": false,
+  "dataNamespacePresent": false,
+  "dataSurface": null,
+  "oneCallServedByHost": false,
+  "servedTool": null,
+  "servedValue": null,
+  "refusal": "Command failed: C:/Users/hzq00/AppData/Local/Programs/Python/Python314/python.exe -c import asyncio, importlib.util, json\nspec = importlib.util.spec_from_file_location(\"dsh_data_client\", \"C:\\\\Users\\\\hzq00\\\\AppData\\\\Local\\\\Temp\\\\p4-foreign-d4TxlL\\\\pkg\\\\package\\\\src\\\\dsh_data_client.py\")\nmod = importlib.util.module_from_spec(spec)\nspec.loader.exec_module(mod)\nprint(\"API:\" + str(mod.DATA_API_VERSION))\nseen = []\nclass Channel:\n    async def call_async(self, tool, arguments, timeout=120.0):\n        seen.append(tool)\n        return {\"observation_id\": \"obs-packed\", \"descriptor\": {\"captured\": {\"artifact\": \"artifact:sha256:aa\", \"sha256\": \"aa\", \"bytes\": 7},\n                \"acquisition\": {\"completeness\": \"complete-within-request\"}},\n                \"identity\": {}, \"reference\": {}, \"gaps\": [], \"acquired_bytes\": 7, \"persisted_bytes\": 7}\nclass DshModule:\n    pass\ndsh = DshModule()\ndsh._channel = Channel()\nmod.install(dsh)\nprint(\"SURFACE:\" + json.dumps(sorted(n for n in dir(dsh.data) if not n.startswith(\"_\"))))\nasync def main():\n    obs = await dsh.data.fs.capture(\"packed.bin\")\n    print(\"OBS:\" + json.dumps({\"id\": obs.observation_id, \"bytes\": obs.bytes}))\nasyncio.run(main())\nprint(\"SEEN:\" + json.dumps(seen))\nTraceback (most recent call last):\r\n  File \"<string>\", line 4, in <module>\r\n    spec.loader.exec_module(mod)\r\n    ~~~~~~~~~~~~~~~~~~~~~~~^^^^^\r\n  File \"<frozen importlib._bootstrap_external>\", line 755, in exec_module\r\n  File \"<frozen importlib._bootstrap_external>\", line 892, in get_code\r\n  File \"<frozen importlib._bootstrap_external>\", line 950, in get_data\r\nFileNotFoundError: [Errno 2] No such file or directory: 'C:\\\\Users\\\\hzq00\\\\AppData\\\\Local\\\\Temp\\\\p4-foreign-d4TxlL\\\\pkg\\\\package\\\\src\\\\dsh_data_client.py'\r\n",
+  "notes": [
+    "the tarball does NOT contain package/src/dsh_data_client.py",
+    "the extracted package does NOT contain src/dsh_data_client.py"
+  ],
+  "pathRulePresentInPackedBuild": true,
+  "filenameConstantInPackedBuild": "dsh_data_client.py"
+}

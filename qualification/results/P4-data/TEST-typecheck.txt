@@ -1,0 +1,24 @@
+=== the authoritative typecheck (F10 / ID-05) ===
+repo:       D:\DSH\work\wt-p4
+tsc:        D:\DSH\src\dsh-src\node_modules\typescript\bin\tsc
+tsc source: pinned checkout node_modules
+version:    Version 6.0.3
+config:     tsconfig.check.json in each package (extends tsconfig.json, clears ONLY the exclude)
+packages:   dsh-daily-work, dsh-ipython
+
+--- dsh-daily-work ---
+[ok  ] the resolved program covers 95 files (39 production + 56 test)
+[ok  ] typecheck exit 0 in 6304ms
+
+--- dsh-ipython ---
+[ok  ] the resolved program covers 31 files (17 production + 14 test)
+[ok  ] typecheck exit 0 in 1936ms
+
+--- escape-hatch gate (ID-05, non-test `as never`) ---
+[ok  ] 3 non-test cast(s); baseline allows 3
+
+typecheck: PASS -- 2 package(s), complete production graph, tests included.
+This is the ONE official command. Do not cite `tsc -p tsconfig.json` as its
+equivalent: that config excludes src/**/*.test.ts and exits 0 with or without
+a test file present, which is the F10 / ID-05 false pass.
+exit=0
