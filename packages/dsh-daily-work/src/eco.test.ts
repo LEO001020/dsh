@@ -1358,8 +1358,31 @@ describe('ECO-07: the stock control arm is not secretly modified, and the variab
    * THE STALENESS IS THE POINT OF THIS TEST, so the pin is kept as a literal
    * rather than computed. A digest that were recomputed at runtime would agree
    * with whatever the file happened to contain and would catch nothing.
+   *
+   * IT MOVED A FIFTH TIME, and this move is EXECUTABLE like the fourth. `3c2b190`
+   * (P0.7) changed exactly ONE non-comment line --
+   * `maxActiveSubagents: 10` -> `30` -- and did NOT update this pin, so the gate
+   * went red on the next run. The red was the gate working: it caught a profile
+   * change that shipped without its digest being re-derived, which is the whole
+   * reason this constant is a literal.
+   *
+   * RE-DERIVED, not absorbed. The new value is not "whatever the file now
+   * contains"; it is independently corroborated by the project's own identity
+   * tooling, which re-hashed this same file for an unrelated reason and recorded
+   * the same number: `compatibility.lock.json`'s `host_profile_digest` moved
+   * `0e8e370e...` -> `e12edffb...`, and the re-derivation note attributes the
+   * move to `3c2b190` (P0.7) and `8941ad5` (S1) together
+   * (`qualification/results/C0-identity/rederive.txt`). Two independent
+   * computations of the same file agree, so the value below is the file's true
+   * digest rather than a snapshot taken to silence an assertion.
+   *
+   * The change itself is the one P0.7's message defends: this row is DSH's
+   * per-root continuable POOL, not the user's target N, and leaving it at 10
+   * while the host ledger was 30 made DSH's pool the binding constraint while the
+   * run's accounting claimed otherwise. The STOCK arm is untouched by all of
+   * this and is still asserted below.
    */
-  const DAILY_PATCH_SHA256 = '4e3aa20cbc23b8cedbfc7205aac0756f37e1107a4ee556d38760dc3769ceedeb'
+  const DAILY_PATCH_SHA256 = 'e12edffbbf69d531454f83a242863b7586e65f222f7c2f8c4151bf4918b43114'
 
   it('the stock arm declares no plugin rows, and its files hash to the committed values', () => {
     // "A control group that has been quietly modified is not a control group."

@@ -53,6 +53,34 @@ import { WorkService } from './host.ts'
 /** The repo root, resolved from this file rather than from cwd. */
 const REPO_ROOT = resolve(import.meta.dirname, '..', '..', '..')
 
+/**
+ * The cwd every spawned child is given, derived from THIS FILE rather than from
+ * `process.cwd()`.
+ *
+ * WHY NOT `process.cwd()`. The DEP-06/DEP-07 children below are started with
+ * `--import tsx/esm` and import `@deepseek-ai/*` and `./host.ts` by bare
+ * specifier, so they resolve through this package's `node_modules` junction
+ * farm. `tsx` is loaded as an ESM loader BEFORE any module exists, so its own
+ * resolution falls back to the process cwd: run the documented way
+ * (`cd packages/dsh-daily-work && vitest run ...`) that is this package and it
+ * works, but run from the repository root it is the repo root, whose
+ * `node_modules` is EMPTY, and every child dies immediately with
+ * `ERR_MODULE_NOT_FOUND: Cannot find package 'tsx'`.
+ *
+ * WHY THIS FILE'S SYMPTOM LOOKED LIKE SOMETHING ELSE. DEP-06 and DEP-07 do not
+ * capture their child's stderr (unlike `durability-advanced.test.ts`, which
+ * reports it), so a child that died in milliseconds was indistinguishable from
+ * a child that hung. It surfaced as `timed out waiting for ...holder.json` at
+ * 60090 ms and as `the holder exited before acquiring` -- both read as a lock
+ * or teardown problem, and neither was one. Measured directly: the same
+ * `node --import tsx/esm` child prints `ERR_MODULE_NOT_FOUND` from the repo
+ * root and runs from this package's directory.
+ *
+ * Anchoring to this file makes the child's resolution independent of the launch
+ * directory, which is the property the assertions below actually depend on.
+ */
+const CHILD_CWD = resolve(import.meta.dirname, '..')
+
 /** The pinned DSH checkout this deployment is qualified against. */
 const DSH_SRC = process.env.DSH_SRC_ROOT ?? 'D:/DSH/src/dsh-src'
 
@@ -913,7 +941,7 @@ describe('DEP-06: exactly one host wins the store, including under the A/B inter
     const holder = spawn(process.execPath, [
       '--import', 'tsx/esm', '--input-type=module', '--eval', childSource, '--',
       dir, lockPath, join(dir, 'holder.json'), goPath,
-    ], { cwd: process.cwd(), stdio: ['ignore', 'pipe', 'pipe'], env: { ...process.env } })
+    ], { cwd: CHILD_CWD, stdio: ['ignore', 'pipe', 'pipe'], env: { ...process.env } })
     spawnedChildren.push(holder)
 
     const waitForFile = async (path: string, timeoutMs = 60_000): Promise<void> => {
@@ -934,7 +962,7 @@ describe('DEP-06: exactly one host wins the store, including under the A/B inter
     const contender = spawn(process.execPath, [
       '--import', 'tsx/esm', '--input-type=module', '--eval', childSource, '--',
       dir, lockPath, reportPath, join(dir, 'unused-go'),
-    ], { cwd: process.cwd(), stdio: ['ignore', 'pipe', 'pipe'], env: { ...process.env } })
+    ], { cwd: CHILD_CWD, stdio: ['ignore', 'pipe', 'pipe'], env: { ...process.env } })
     spawnedChildren.push(contender)
     await waitForFile(reportPath)
     const contenderReport = JSON.parse(readFileSync(reportPath, 'utf8')) as {
@@ -1044,7 +1072,7 @@ describe('DEP-07: a crashed holder releases the kernel lock, and no PID/TTL thef
 
     const holder = spawn(process.execPath, [
       '--import', 'tsx/esm', '--input-type=module', '--eval', childSource, '--', lockPath, reportPath,
-    ], { cwd: process.cwd(), stdio: ['ignore', 'pipe', 'pipe'], env: { ...process.env } })
+    ], { cwd: CHILD_CWD, stdio: ['ignore', 'pipe', 'pipe'], env: { ...process.env } })
     spawnedChildren.push(holder)
 
     const deadline = Date.now() + 60_000
