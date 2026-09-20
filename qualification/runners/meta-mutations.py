@@ -97,32 +97,43 @@ class Mutation:
     `finally`, so a mutation cannot survive an exception -- a mutated tree left
     behind is worse than a failed arm, because the next reader would measure it and
     not know.
+
+    BYTES, NOT TEXT, AND THIS IS NOT PEDANTRY. The first version used
+    `read_text`/`write_text`, which apply newline translation: on a CRLF file the
+    "restore" wrote LF bytes, so the file was NOT restored and the sha256 check
+    caught it. Measured while running META-CONSUMER -- `RESTORE FAILED for host.ts:
+    44ca91d1dfa24ebd != a1384deced322d51`, with host.ts left modified in the working
+    tree. The check is what made that a caught failure instead of silent corruption,
+    and the fix is to do the whole thing in bytes so no translation can occur. A
+    mutation harness that silently rewrites line endings would make every
+    "restored" claim false on a CRLF checkout, and this project's own `.gitattributes`
+    means that is a real configuration, not a hypothetical one.
     """
 
     def __init__(self, path: pathlib.Path, replacements: list[tuple[str, str]]):
         self.path = path
         self.replacements = replacements
-        self.original: str | None = None
+        self.original_bytes: bytes | None = None
         self.original_sha: str | None = None
 
     def __enter__(self) -> "Mutation":
-        self.original = self.path.read_text(encoding="utf-8")
-        self.original_sha = hashlib.sha256(self.original.encode("utf-8")).hexdigest()
-        text = self.original
+        self.original_bytes = self.path.read_bytes()
+        self.original_sha = hashlib.sha256(self.original_bytes).hexdigest()
+        text = self.original_bytes.decode("utf-8")
         for old, new in self.replacements:
             if old not in text:
                 # Restore before raising: the tree may already be partly mutated.
-                self.path.write_text(self.original, encoding="utf-8")
+                self.path.write_bytes(self.original_bytes)
                 raise AssertionError(
                     f"the mutation anchor was not found in {self.path.name}: {old[:80]!r}. "
                     "A mutation that silently matched nothing would leave the gate green "
                     "and be reported as a gate that cannot fail.")
             text = text.replace(old, new, 1)
-        self.path.write_text(text, encoding="utf-8")
+        self.path.write_bytes(text.encode("utf-8"))
         return self
 
     def __exit__(self, *exc) -> bool:
-        self.path.write_text(self.original, encoding="utf-8")
+        self.path.write_bytes(self.original_bytes)
         restored = hashlib.sha256(self.path.read_bytes()).hexdigest()
         if restored != self.original_sha:
             raise AssertionError(
@@ -637,26 +648,43 @@ def meta_consumer() -> Arm:
     # `counting.ts` is imported by `host.ts` (measured: `non-test importers: src/host.ts`
     # in the baseline output above). Removing that one import is the minimal mutation
     # that leaves a module mounted with no production consumer.
+    #
+    # THE IMPORT IS MULTI-LINE, and the first version of this arm looked for a
+    # single-line `import ... from './counting'` and found nothing, so it reported
+    # FAILED rather than mutating. That is the correct failure mode -- an anchor that
+    # matched nothing would have left the gate green and been reported as "a gate that
+    # cannot fail" -- but it meant the arm measured nothing. The block is now located
+    # by its `from` clause and walked BACK to the line that opens the statement.
     host = ROOT / pkg_rel / "src" / "host.ts"
-    counting_import = None
-    for line in host.read_text(encoding="utf-8").splitlines():
-        if "counting" in line and ("import" in line):
-            counting_import = line
+    host_lines = host.read_text(encoding="utf-8").splitlines(keepends=True)
+    from_idx = None
+    for i, line in enumerate(host_lines):
+        if "from './counting" in line or 'from "./counting' in line:
+            from_idx = i
             break
-
-    if counting_import is None:
-        # Fall back to a measured, named module from the baseline output rather than
-        # guessing: the arm reports which module it used.
+    if from_idx is None:
         arm.detail = (
-            "no single-line import of counting.ts was found in host.ts, so the minimal "
-            f"consumer-removal mutation could not be applied. The baseline measurement "
+            f"no import of counting.ts was found in host.ts. The baseline measurement "
             f"is still recorded: REACHABLE={reachable_count}, UNREACHABLE={len(unreachable)} "
             f"({', '.join(unreachable[:5])}).")
         arm.held = False
         return arm
 
+    start_idx = from_idx
+    while start_idx > 0 and not host_lines[start_idx].lstrip().startswith("import"):
+        start_idx -= 1
+    if not host_lines[start_idx].lstrip().startswith("import"):
+        arm.detail = f"could not locate the opening `import` line for the counting.ts block"
+        arm.held = False
+        return arm
+
+    removed_block = "".join(host_lines[start_idx:from_idx + 1])
+    arm.commands.append(
+        f"remove host.ts lines {start_idx + 1}-{from_idx + 1} "
+        f"({len(removed_block.splitlines())}-line import block for counting.ts)")
+
     try:
-        with Mutation(host, [(counting_import + "\n", "")]):
+        with Mutation(host, [(removed_block, "")]):
             mutated_code, mutated_out = run(
                 [NODE, "qualification/runners/import-graph.mjs", pkg_rel], timeout=300)
     except AssertionError as exc:
