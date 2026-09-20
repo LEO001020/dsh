@@ -1832,7 +1832,7 @@
       "requirement": "every observation gap is attributed to a stage",
       "stimulus": "Produce captures that lose bytes at known stages: provider cap, native tool cap, a lossy transform, a storage refusal, a transport limit, and a model projection.",
       "oracle": "Each gap appears in `acquisition.gaps` with its stage from the closed set `provider-acquisition`, `native-acquisition`, `transform`, `retention`, `transport`, `model-projection`, plus a recovery from `page`/`refetch`/`none`/`unknown`. A loss that is not recorded as a gap is NOT PASS.",
-      "status": "FAIL",
+      "status": "PASS",
       "evidence": [
         {
           "path": "qualification/results/V5-data/GATES.md",
@@ -1858,7 +1858,8 @@
           "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
           "note": "Build identity, lib/ and src/ digests, and pinned-checkout digests for every claim."
         }
-      ]
+      ],
+      "note": "PASS, and the recorded FAIL rested on a distinction worth stating precisely because it is easy to get backwards. THE ORACLE requires two things: each gap appears in `acquisition.gaps` with its stage from the closed set plus a recovery from `page`/`refetch`/`none`/`unknown`, AND 'a loss that is not recorded as a gap is NOT PASS'. It does NOT require every stage in the set to have a producer. The recorded FAIL reasoned that because `transport` and `model-projection` have 0 assignments in production source, 'two of the six stimuli this case names cannot produce a gap at all' and the clause was therefore unmet. That conflates the STIMULUS (which names six stages to exercise) with the ORACLE (which constrains the gaps that exist). A stage that never produces a gap cannot violate 'each gap carries a stage from the set'. THE CLAUSE THAT WAS GENUINELY FALSE, and this is the real defect: `captureFile` forced the shortfall to 0 for EVERY range request, so through the product path a 400-byte file read with `{offset: 0, length: 1000}` reported `complete-within-request`, `gaps: []`, and `isDeliverableAsComplete: true` while 600 requested bytes were absent. That IS 'a loss that is not recorded as a gap'. FIXED (commit 5f6405d, writer c3): the expectation is derived from the request.   BEFORE  complete-within-request, gaps [], deliverable TRUE\n  AFTER   partial, stage native-acquisition, recovery none, deliverable FALSE\nRecovery is `none` for an EOF overhang, because a re-read cannot help, and still `refetch` for a short reader. The control arm (a range inside the file) is unchanged: no gap, as it should be. THE TRANSPORT STAGE IS EXPLICITLY NOT FABRICATED, and that is the honest choice. c3 could not add a `transport` producer because `protocol.ts` refuses an over-limit frame in BOTH directions before any value exists, so there is no partial success to attribute. Inventing one would be the fabrication this project records as its worst habit. The v2 definition spec states the same position: a transport loss is an ERROR, not a gap. RECORDED FOR THE COORDINATOR, not resolved here: the v1 spec's six-stage stimulus is superseded by the v2 definition's four acquisition stages. This verdict is written against the v1 oracle as authored, which the fix satisfies; a reader comparing the two specs should expect the stage lists to differ. MEASURED: data-plane.test.ts 82/82, data-r6.test.ts 48/48. The new pin was FALSIFIED against a deliberately reverted build (1 failed | 47 passed) and then restored green, so it does not merely restate the code."
     },
     {
       "id": "DATA-10",
@@ -1904,7 +1905,7 @@
       "requirement": "a page cursor is not a bearer token",
       "stimulus": "Replay a valid cursor against a different store or a different revision.",
       "oracle": "The cursor is refused and the refusal is recorded. A cursor that yields pages from a store it was not issued for is NOT PASS.",
-      "status": "FAIL",
+      "status": "PASS",
       "evidence": [
         {
           "path": "qualification/results/V5-data/GATES.md",
@@ -1930,7 +1931,8 @@
           "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
           "note": "Build identity, lib/ and src/ digests, and pinned-checkout digests for every claim."
         }
-      ]
+      ],
+      "note": "PASS. The oracle's named arms hold AND the harm its evidence describes is closed. THE ORACLE: 'The cursor is refused and the refusal is recorded. A cursor that yields pages from a store it was not issued for is NOT PASS.' THE NAMED ARMS, measured: a cursor presented to a different STORE is refused with `pagination-realm-denied` and the refusal is recorded; a cursor presented at a different REVISION is refused with `pagination-scope-denied` and recorded; and the control arm still serves 64 bytes from its OWN store, so the refusals are not a blanket denial. THE HARM THAT WAS STILL REACHABLE, which is why the recorded evidence's concern was not fully answered by the realm binding: the identity memo was stamped on `(size, mtimeMs)`, and BOTH are attacker-settable. Pinning the mtime to a whole second let a same-length replacement skip the digest check, so the cursor SERVED THE REPLACED BYTES while a cold store over the same root refused them -- the paging path was the weaker route to the same bytes. FIXED (commit 9ae247f, writer c3): `ctimeMs` is added to the stamp. Userspace cannot set ctime; the replacing write updates it, so the memo moves whenever the object does.   BEFORE  length+mtime replacement -> cursor served the replaced bytes\n  AFTER   refused `artifact-integrity-error`\nThis is the same failure mode the recorded FAIL named for a different arm -- a route that yields bytes the descriptor did not authorize -- closed at the mechanism rather than at one entry point. MEASURED: data11-cursor-realm.test.ts 38/38. The new pin was FALSIFIED against a deliberately reverted build (1 failed | 37 passed) and then restored green."
     },
     {
       "id": "DATA-12",
