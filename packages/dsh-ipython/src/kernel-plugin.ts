@@ -21,7 +21,8 @@ import type { Context } from '@deepseek-ai/cordis'
 import { Service } from '@deepseek-ai/cordis'
 import type { Agent } from '@deepseek-ai/dsh-agent'
 import { mkdirSync } from 'node:fs'
-import { join } from 'node:path'
+import { dirname, join } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { createHash } from 'node:crypto'
 import {
   DEFAULT_CELL_TIMEOUT_MS,
@@ -33,14 +34,61 @@ import {
 } from './kernel.ts'
 import type { CellResult, KernelStatus, LateOutput } from './protocol.ts'
 
+/**
+ * This package's own root directory, derived from the module's location.
+ *
+ * WHY THIS EXISTS. `cordis.patch.yml` named `brokerScript` and `root` as absolute
+ * paths into one developer's checkout (`D:/DSH/work/dsh-native-daily/...`), while
+ * this package's own comment claimed the broker was "resolved relative to the
+ * package root so a relocated checkout still finds it". The comment described a
+ * property the code did not have, and the gap is measurable: a SECOND checkout of
+ * this repository -- a git worktree, which the multi-agent discipline requires --
+ * boots with its own profile and its own built `lib/`, yet its kernel ran the
+ * FIRST checkout's `broker.py`, because the patch travels with the package and
+ * carried the other tree's absolute path. An experiment in a worktree would then
+ * measure the main tree's Python: the stale-artifact trap (G-SEAM-29/36) in a new
+ * costume, and the reason this was found at all is that the first worktree
+ * provisioned for this round failed its own "does the boot name THIS tree" check.
+ *
+ * WHY ONE `..` IS CORRECT FOR BOTH LAYOUTS. The compiled entry is
+ * `<pkg>/lib/x.js` and the source entry is `<pkg>/src/x.ts`, so the package root is
+ * one level above either. No build-time substitution is needed, and `process.cwd()`
+ * is deliberately NOT used: it is the launcher's directory, not this package's.
+ */
+const PACKAGE_ROOT = dirname(dirname(fileURLToPath(import.meta.url)))
+
+/** The broker script shipped inside this package. Python is never compiled, so it stays in `src/`. */
+export const DEFAULT_BROKER_SCRIPT = join(PACKAGE_ROOT, 'src', 'broker.py')
+
+/**
+ * Default kernel scratch root: inside the package, so a second checkout gets its
+ * own kernels instead of sharing the first one's.
+ *
+ * A host that wants them elsewhere (a temp volume, a shared scratch disk) still
+ * sets `root` explicitly; this is only the default. It is `.gitignore`d, because a
+ * runtime directory must not appear as an untracked change in a tree where
+ * untracked files have meant real defects twice (G-SEAM-30, G-SEAM-42).
+ */
+export const DEFAULT_KERNEL_ROOT = join(PACKAGE_ROOT, '.ipython-kernels')
+
 /** Configuration. Every bound is host-set; none of it is model-reachable. */
 export interface KernelServiceConfig {
   /** Python interpreter that has jupyter_client and ipykernel. */
   readonly pythonExecutable: string
-  /** Absolute path to `broker.py`. */
-  readonly brokerScript: string
-  /** Directory for per-session kernel working directories. */
-  readonly root: string
+  /**
+   * Absolute path to `broker.py`. OPTIONAL: omitted, the package's own shipped
+   * broker is used (`DEFAULT_BROKER_SCRIPT`).
+   *
+   * It is optional because a path in a profile patch is a path in ONE checkout.
+   * This package is installed by `link:` into a profile, so the patch file is
+   * shared by every checkout that installs it, and an absolute path there silently
+   * redirects a second checkout's kernel at the first checkout's Python. Leaving
+   * it unset is the correct configuration for a normal deployment; a host that
+   * ships a vendored broker elsewhere may still override it.
+   */
+  readonly brokerScript?: string
+  /** Directory for per-session kernel working directories. Defaults to the package's own `.ipython-kernels`. */
+  readonly root?: string
   /** Execution world label; part of the kernel identity. */
   readonly executionWorld?: string
   /** Environment digest; part of the kernel identity. Changing it invalidates every kernel. */
@@ -136,7 +184,20 @@ export class KernelService extends Service {
   private kernelWorkingDirectoryFor(agent: Agent): string {
     const declared = agent.session.header.cwd
     if (declared !== undefined && declared !== '') return declared
-    return this.config.root
+    return this.kernelRoot()
+  }
+
+  /**
+   * The kernel scratch root: the configured one, or this package's own directory.
+   *
+   * WHY A DEFAULT AND NOT A REQUIRED FIELD. A required field means every profile
+   * patch must name an absolute path, and a profile patch is shared by every
+   * checkout that installs this package -- so the second checkout inherits the
+   * first one's directory. That is not hypothetical: it is why a git worktree's
+   * kernel wrote its connection files into the main checkout until this changed.
+   */
+  private kernelRoot(): string {
+    return this.config.root ?? DEFAULT_KERNEL_ROOT
   }
 
   /**
@@ -170,7 +231,7 @@ export class KernelService extends Service {
       return existing
     }
 
-    const workingDirectory = join(this.config.root, sanitize(identity.sessionId))
+    const workingDirectory = join(this.kernelRoot(), sanitize(identity.sessionId))
     mkdirSync(workingDirectory, { recursive: true })
     const kernelWorkingDirectory = this.kernelWorkingDirectoryFor(agent)
     // The kernel's directory is created if absent, so a Session whose project root
@@ -182,7 +243,7 @@ export class KernelService extends Service {
     const host = new KernelHost({
       subprocess: this.ctx.subprocess,
       identity,
-      brokerScript: this.config.brokerScript,
+      brokerScript: this.config.brokerScript ?? DEFAULT_BROKER_SCRIPT,
       pythonExecutable: this.config.pythonExecutable,
       workingDirectory,
       kernelWorkingDirectory,

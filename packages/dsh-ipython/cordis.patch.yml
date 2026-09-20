@@ -40,12 +40,25 @@
         # different Python would be a different environment, and the identity
         # digest in `KernelService` is derived from this path.
         pythonExecutable: 'C:/Users/hzq00/AppData/Local/Programs/Python/Python314/python.exe'
-        # The broker is a file in this package, resolved relative to the
-        # package root so a relocated checkout still finds it.
-        brokerScript: 'D:/DSH/work/dsh-native-daily/packages/dsh-ipython/src/broker.py'
-        # Per-Session kernel working directories: connection files, kernel logs
-        # and output spill files land under here.
-        root: 'D:/DSH/work/dsh-native-daily/.ipython-kernels'
+        # `brokerScript` and `root` are deliberately NOT SET HERE.
+        #
+        # They used to be absolute paths into one developer's checkout
+        # (`D:/DSH/work/dsh-native-daily/...`), while the comment above them
+        # claimed the broker was "resolved relative to the package root so a
+        # relocated checkout still finds it". The comment described a property the
+        # configuration did not have, and the consequence was measured: this patch
+        # file TRAVELS WITH THE PACKAGE, so a second checkout of this repository --
+        # a git worktree, which the multi-agent discipline requires -- installed the
+        # package, booted its own profile and its own built `lib/`, and still ran
+        # the FIRST checkout's `broker.py`. Every kernel measurement taken in that
+        # worktree would have been a measurement of the other tree.
+        #
+        # Both fields now default inside the package, derived from the module's own
+        # location (`DEFAULT_BROKER_SCRIPT`, `DEFAULT_KERNEL_ROOT` in
+        # `kernel-plugin.ts`). Leaving them unset is correct for any normal
+        # deployment; a host that vendors a broker elsewhere can still set
+        # `brokerScript` explicitly.
+        #
         # Part of the kernel identity. Changing either value invalidates every
         # live kernel rather than letting a namespace built under one authority
         # serve another; `KernelService.entryFor` refuses the mismatch.
