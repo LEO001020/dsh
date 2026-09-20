@@ -66,9 +66,9 @@
  *   event committed, object missing        -> INTEGRITY ERROR. Never an empty string.
  *   effect happened, save failed           -> UNKNOWN. Never re-execute to "fix the log".
  */
-import { createHash, randomUUID } from 'node:crypto'
+import { createHash, createHmac, randomUUID, timingSafeEqual } from 'node:crypto'
 import { createReadStream } from 'node:fs'
-import { open, stat as statPath } from 'node:fs/promises'
+import { appendFile, mkdir, open, readFile, stat as statPath, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import type { FileSystem, FsTarget } from '@deepseek-ai/dsh-fs'
 import { publishImmutableObjectStream } from '@deepseek-ai/dsh-attachment-local/src/store.ts'
@@ -92,6 +92,40 @@ import {
  * reinterpret old objects.
  */
 export const ARTIFACT_STORE_VERSION = 'v1'
+
+/**
+ * The file inside a store root that holds its durable realm identity.
+ *
+ * WHY THIS FILE AND NOT AN ENVIRONMENT VARIABLE OR A PATH HASH.
+ *
+ * The realm identity must survive process restart, and it must DISTINGUISH two
+ * stores that are byte-identical in content. A path hash would fail the second
+ * requirement in the case that matters most: two stores at different paths holding
+ * the same object (a copy, a restore, a second deployment) would hash to different
+ * realms and the cross-store replay would be refused -- but two stores reachable
+ * under the same path at different times (a remount, a wiped and re-created
+ * directory) would collide, and a cursor from the destroyed store would resume
+ * against the new one. The file records the identity of the OBJECT STORE ITSELF,
+ * so a re-created directory gets a new realm, which is the honest answer.
+ *
+ * WHY IT IS WRITTEN ONCE AND NEVER REWRITTEN.
+ *
+ * A per-boot random realm is the specific failure this design avoids: it would
+ * look like a security property (every restart invalidates every old cursor)
+ * while actually being a restart bug, because a legitimate paging walk that spans
+ * a restart would fail. The realm is therefore created with `wx` (exclusive
+ * create) and a concurrent creator rereads the winner's value.
+ */
+export const STORE_REALM_FILE_NAME = 'store-realm.json'
+
+/** The persisted realm record. `realmId` is opaque; nothing derives meaning from it. */
+interface StoreRealmRecord {
+  storeRealmId: string
+  /** When the realm was minted. Informational: it is never used in a decision. */
+  createdAt: string
+  /** The on-disk layout version this realm was created under. */
+  storeVersion: string
+}
 
 /**
  * Default page size. 64 KiB is chosen so a 32 MiB artifact is 512 pages, which
@@ -130,14 +164,34 @@ export type ArtifactErrorCode =
   | 'pagination-stalled'
   | 'pagination-cursor-invalid'
   | 'pagination-scope-denied'
+  /**
+   * A cursor minted against one artifact STORE was presented to another.
+   *
+   * This is DATA-11's own case and it is a separate code from
+   * `pagination-cursor-invalid` on purpose: a caller that replayed a cursor
+   * across realms needs a different remedy from one that sent a malformed or
+   * tampered token, and collapsing the two would make the cross-realm refusal
+   * indistinguishable from a parse failure in the refusal record.
+   */
+  | 'pagination-realm-denied'
 
 export class ArtifactError extends Error {
   readonly code: ArtifactErrorCode
+  /**
+   * Whether this refusal was a REALM mismatch.
+   *
+   * A dedicated flag rather than a code string comparison, because the refusal
+   * record and any observer branch on it and a caller matching on message text is
+   * how a refusal becomes unobservable. Present and `true` only on
+   * `pagination-realm-denied`.
+   */
+  readonly realmRefused?: boolean
 
-  constructor(message: string, code: ArtifactErrorCode, options?: { cause?: unknown }) {
-    super(message, options)
+  constructor(message: string, code: ArtifactErrorCode, options?: { cause?: unknown; realmRefused?: boolean }) {
+    super(message, options?.cause !== undefined ? { cause: options.cause } : undefined)
     this.name = 'ArtifactError'
     this.code = code
+    if (options?.realmRefused !== undefined) this.realmRefused = options.realmRefused
   }
 }
 
@@ -208,6 +262,27 @@ export interface ArtifactStore {
   /** The root this store publishes below. Used as the durable boundary for syncs. */
   readonly root: string
   /**
+   * This store's durable realm identity.
+   *
+   * A content address cannot distinguish two stores that hold the same bytes, so
+   * the realm is the part of a cursor's identity that the address cannot carry.
+   * It is a property of the store's ROOT and survives a process restart.
+   */
+  readonly realmId: string
+  /** Resolve the realm identity, creating it on first use. Idempotent. */
+  ensureRealm(): Promise<string>
+  /**
+   * Assert that the object at `artifact` still satisfies a recorded identity,
+   * BEFORE any of its bytes are served.
+   *
+   * This is the cheap, per-page-checkable half of content integrity: it verifies
+   * presence and length on every call (one `stat`, no bytes read) and verifies the
+   * full digest whenever the object's `(size, mtime)` is not one this store has
+   * already verified. It throws `artifact-integrity-error` rather than returning a
+   * boolean, because a caller that ignored a `false` would serve the bytes anyway.
+   */
+  assertObjectIdentity(artifact: string, expected: { sha256: string; bytes: number }): Promise<void>
+  /**
    * Stream `chunks` to an immutable, content-addressed object.
    * The hash is computed WHILE streaming; the caller never supplies it.
    */
@@ -229,6 +304,119 @@ export interface Tombstone {
   artifact: string
   deletedAt: string
   reason: string
+}
+
+/**
+ * Why a cursor was refused, as a durable record.
+ *
+ * THE ORACLE REQUIRES THE REFUSAL TO BE RECORDED, not merely raised. An error a
+ * caller can catch and swallow leaves no evidence that a cross-realm replay was
+ * attempted, and the audit's whole complaint about this defect class is that the
+ * system "keeps running and reporting health". So every refusal on the paging path
+ * is appended to a journal inside the store root, where it survives the process
+ * that refused it.
+ */
+export interface CursorRefusal {
+  /** Stable code, the same one the thrown `ArtifactError` carries. */
+  code: ArtifactErrorCode
+  /** Why, in terms an operator can act on. Names the binding that failed. */
+  reason: string
+  /** The realm the request was served BY. */
+  storeRealmId: string
+  /** The realm the cursor claimed, when the cursor parsed far enough to say. */
+  cursorRealmId?: string
+  observationId?: string
+  /** Which ordered check refused it. The read order is the point, so it is recorded. */
+  step: 'parse' | 'realm' | 'reference' | 'identity' | 'read'
+  at: string
+}
+
+/** The name of the refusal journal inside a store root. */
+export const CURSOR_REFUSAL_LOG_NAME = 'cursor-refusals.jsonl'
+
+/**
+ * Read the durable realm identity of a store root, creating it on first use.
+ *
+ * WHY `wx` AND NOT A PLAIN WRITE. Two processes opening one store must agree on
+ * ONE realm. A plain write would let the second creator overwrite the first
+ * creator's identity, so cursors minted by the first process would stop verifying
+ * -- the same restart bug in a concurrent form. With `wx` the loser gets `EEXIST`
+ * and rereads the winner's value.
+ *
+ * A MALFORMED realm file is a REFUSAL, never a silent regeneration. Regenerating
+ * would invalidate every cursor ever minted against this store, which is
+ * indistinguishable from the security property it resembles and is actually data
+ * loss. The file is small and its shape is versioned, so a malformed one means
+ * something else wrote there.
+ *
+ * @param root - the store root.
+ * @returns the realm id, stable for the lifetime of this directory.
+ */
+async function readOrCreateStoreRealm(root: string): Promise<string> {
+  const path = join(root, STORE_REALM_FILE_NAME)
+  const existing = await readStoreRealmRecord(path)
+  if (existing !== undefined) return existing.storeRealmId
+  const created: StoreRealmRecord = {
+    storeRealmId: `realm_${randomUUID()}`,
+    createdAt: new Date().toISOString(),
+    storeVersion: ARTIFACT_STORE_VERSION,
+  }
+  await mkdir(root, { recursive: true })
+  try {
+    await writeFile(path, `${JSON.stringify(created, null, 2)}\n`, { encoding: 'utf8', flag: 'wx' })
+    return created.storeRealmId
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === 'EEXIST') {
+      // Another process created the realm between our read and our write. Its
+      // identity wins: the file is the store's, not this process's.
+      const winner = await readStoreRealmRecord(path)
+      if (winner !== undefined) return winner.storeRealmId
+    }
+    throw new ArtifactError(
+      `artifact store ${root} has no readable realm identity and one could not be created: `
+      + `${error instanceof Error ? error.message : String(error)}`,
+      'artifact-integrity-error',
+      { cause: error },
+    )
+  }
+}
+
+/** Read and validate the realm record, or `undefined` when the file is absent. */
+async function readStoreRealmRecord(path: string): Promise<StoreRealmRecord | undefined> {
+  let text: string
+  try {
+    text = await readFile(path, 'utf8')
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === 'ENOENT') return undefined
+    throw new ArtifactError(
+      `the store realm file ${path} exists but could not be read: ${error instanceof Error ? error.message : String(error)}`,
+      'artifact-integrity-error',
+      { cause: error },
+    )
+  }
+  let parsed: unknown
+  try {
+    parsed = JSON.parse(text)
+  } catch (error) {
+    throw new ArtifactError(
+      `the store realm file ${path} is not valid JSON; refusing to mint a new realm, because a new realm would `
+      + 'invalidate every cursor this store ever issued while looking like a security property',
+      'artifact-integrity-error',
+      { cause: error },
+    )
+  }
+  const record = parsed as Partial<StoreRealmRecord>
+  if (typeof record.storeRealmId !== 'string' || record.storeRealmId.length === 0) {
+    throw new ArtifactError(
+      `the store realm file ${path} carries no storeRealmId; refusing to mint a new realm for the same reason`,
+      'artifact-integrity-error',
+    )
+  }
+  return {
+    storeRealmId: record.storeRealmId,
+    createdAt: typeof record.createdAt === 'string' ? record.createdAt : '',
+    storeVersion: typeof record.storeVersion === 'string' ? record.storeVersion : '',
+  }
 }
 
 /**
@@ -256,10 +444,85 @@ export class LocalArtifactStore implements ArtifactStore {
   private readonly quotaBytes: number
   private readonly pinned = new Set<string>()
   private readonly tombstones = new Map<string, Tombstone>()
+  /**
+   * Objects whose full digest has been verified in this process, keyed by
+   * artifact ref and stamped with the `(size, mtimeMs)` that was verified.
+   *
+   * A memo rather than a boolean: an object replaced in place keeps its length but
+   * changes its mtime, so the stamp makes the next `assertObjectIdentity` re-verify
+   * instead of trusting a stale "verified" flag.
+   */
+  private readonly verifiedObjects = new Map<string, string>()
+  /** Journal write failures, kept so a broken refusal journal is visible. */
+  private readonly journalFailures: string[] = []
+  /**
+   * This store's durable realm identity.
+   *
+   * Resolved lazily by {@link realmIdOf} and memoized, because a store may be
+   * constructed before its root exists (a test that names a temp path, a boot that
+   * constructs the service before the domain opens). The memo is keyed to the
+   * RESOLVED ROOT, so the identity is a property of the directory and not of the
+   * object instance: two `LocalArtifactStore` objects over one root share it, and
+   * one object can never drift from the file on disk within a process.
+   */
+  private realm: string | undefined
 
   constructor(root: string, options?: { quotaBytes?: number }) {
     this.root = root
     this.quotaBytes = options?.quotaBytes ?? DEFAULT_ARTIFACT_QUOTA_BYTES
+  }
+
+  /**
+   * The durable identity of THIS store, created on first use.
+   *
+   * THE DEFECT THIS EXISTS FOR. A page cursor carried no store identity at all, so
+   * a cursor minted against store A was accepted by store B whenever B held an
+   * object at the same content address -- which is exactly the case a content
+   * address cannot distinguish, because two stores holding the same bytes agree on
+   * it. The realm is the piece of identity the content address cannot carry.
+   *
+   * WHY IT SURVIVES A RESTART. It is a file in the store root, created with `wx`
+   * and never rewritten, so a restart rereads the same value. A per-boot random id
+   * would make every cursor from a previous process invalid, which reads as a
+   * security property and is actually a restart bug.
+   *
+   * @returns the realm id, stable for the lifetime of the store root.
+   */
+  get realmId(): string {
+    // Synchronous accessor over a memo, so `pages()` can bind the realm without
+    // making every caller await a property. The file is created by `ensureRealm()`
+    // at the durable boundaries (put/collectGarbage) and by `realmIdOf()` for a
+    // store that has never been written to.
+    if (this.realm === undefined) {
+      throw new ArtifactError(
+        `artifact store ${this.root} has no resolved realm identity; call ensureRealm() (or open the store) `
+        + 'before paging, so a cursor can be bound to the store it was issued for',
+        'artifact-integrity-error',
+      )
+    }
+    return this.realm
+  }
+
+  /** Whether the realm has been resolved in this process. */
+  get realmResolved(): boolean {
+    return this.realm !== undefined
+  }
+
+  /**
+   * Resolve (creating if absent) this store's durable realm identity.
+   *
+   * Idempotent, and safe against a concurrent creator: the file is written with
+   * `wx`, and an `EEXIST` loser rereads and adopts the winner's value rather than
+   * overwriting it. Two processes opening one store therefore agree on ONE realm,
+   * which is what makes the identity a property of the store instead of a race.
+   *
+   * @returns the realm id.
+   */
+  async ensureRealm(): Promise<string> {
+    if (this.realm !== undefined) return this.realm
+    const realm = await readOrCreateStoreRealm(this.root)
+    this.realm = realm
+    return realm
   }
 
   /**
@@ -275,6 +538,11 @@ export class LocalArtifactStore implements ArtifactStore {
     chunks: AsyncIterable<Uint8Array> | Iterable<Uint8Array>,
     options?: { signal?: AbortSignal },
   ): Promise<{ artifact: string; sha256: string; bytes: number }> {
+    // The realm is established BEFORE the first object is published, so a store
+    // can never hold an object without an identity that its cursors bind. Doing
+    // it lazily at paging time would leave a window in which a capture succeeds
+    // and a cursor cannot be minted.
+    await this.ensureRealm()
     const quota = this.quotaBytes
     let streamed = 0
     async function* bounded(): AsyncIterable<Uint8Array> {
@@ -397,6 +665,147 @@ export class LocalArtifactStore implements ArtifactStore {
   }
 
   /**
+   * Assert the object still satisfies a recorded `(sha256, bytes)` identity.
+   *
+   * WHY THIS IS A SEPARATE, CHEAP, PER-PAGE CHECK.
+   *
+   * The paging path must verify the object BEFORE it serves any of its bytes --
+   * the failing shape is "openRange, then discover it was the wrong artifact". But
+   * hashing the whole object on every page would be a full re-read per page, which
+   * is the O(P x full-file) cost DAT-06 exists to forbid. So the check is split:
+   *
+   *   every call    one `stat`: the object must exist and its length must equal the
+   *                 recorded length. A truncated or replaced-with-different-length
+   *                 object is refused here, for one syscall.
+   *   once per      a full digest verification, memoized on `(size, mtimeMs)`. A
+   *   (size,mtime)  same-length in-place replacement changes the mtime, so the next
+   *                 call re-verifies and refuses.
+   *
+   * THE LIMIT, STATED. A replacement that preserves BOTH the length and the mtime
+   * (a hostile writer with filesystem access) is not caught by the stat comparison,
+   * and the memo would let it through on later pages. That is why this does not
+   * replace the byte-level check in `resolveReference`, which hashes the bytes it
+   * actually read and cannot be memoized away. The two are layered on purpose: this
+   * one makes the PAGING path verify before serving; that one makes the RESOLVE
+   * path verify what it served.
+   *
+   * @param artifact - the store-issued artifact reference.
+   * @param expected - the digest and byte count the descriptor recorded.
+   * @throws ArtifactError `artifact-integrity-error` when either disagrees.
+   * @throws ArtifactError `artifact-not-found` when the object was explicitly deleted.
+   */
+  async assertObjectIdentity(artifact: string, expected: { sha256: string; bytes: number }): Promise<void> {
+    const tombstone = this.tombstones.get(artifact)
+    if (tombstone !== undefined) {
+      throw new ArtifactError(
+        `artifact ${artifact} was deleted at ${tombstone.deletedAt} (${tombstone.reason})`,
+        'artifact-not-found',
+      )
+    }
+    const sha256 = digestOfRef(artifact)
+    // The address IS the recorded digest. A descriptor whose ref and digest disagree
+    // is malformed, and refusing here stops a walk from being bound to one object
+    // while claiming another.
+    if (sha256 !== expected.sha256) {
+      throw new ArtifactError(
+        `artifact ${artifact} addresses ${sha256} but the descriptor records ${expected.sha256}; `
+        + 'the reference and the recorded digest disagree, so no page can be attributed to either',
+        'artifact-integrity-error',
+      )
+    }
+    const path = this.pathOf(sha256)
+    let info
+    try {
+      info = await statPath(path)
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
+        throw new ArtifactError(
+          `artifact ${artifact} is referenced but absent from the store; refusing before any byte is read`,
+          'artifact-integrity-error',
+          { cause: error },
+        )
+      }
+      throw error
+    }
+    if (info.size !== expected.bytes) {
+      throw new ArtifactError(
+        `artifact ${artifact} is ${String(info.size)} bytes but the descriptor records ${String(expected.bytes)}; `
+        + 'a truncated or replaced object is refused before any byte is served',
+        'artifact-integrity-error',
+      )
+    }
+    const stamp = `${String(info.size)}:${String(info.mtimeMs)}`
+    if (this.verifiedObjects.get(artifact) === stamp) return
+    // First touch, or the object moved under us. Hash it, then remember the stamp.
+    const hash = createHash('sha256')
+    let read = 0
+    for await (const chunk of createReadStream(path) as AsyncIterable<Buffer>) {
+      hash.update(chunk)
+      read += chunk.byteLength
+    }
+    const actual = hash.digest('hex')
+    if (actual !== expected.sha256) {
+      throw new ArtifactError(
+        `artifact ${artifact} is recorded as ${expected.sha256} (${String(expected.bytes)} bytes) but the stored `
+        + `object hashes to ${actual} (${String(read)} bytes read); the bytes are not the artifact that was recorded`,
+        'artifact-integrity-error',
+      )
+    }
+    this.verifiedObjects.set(artifact, stamp)
+  }
+
+  /**
+   * Append a refusal to the store's durable refusal journal.
+   *
+   * The oracle requires the refusal to be RECORDED. A thrown error that a caller
+   * may catch leaves no trace, and this defect class is precisely the one where the
+   * system "keeps running and reporting health". The journal lives inside the store
+   * root, so the evidence is where the store is.
+   *
+   * A journal write failure must never turn a refusal into a success: the refusal
+   * has already happened, and the caller is about to receive it. So the failure is
+   * reported through `onRefusalJournalFailure` rather than swallowed silently, and
+   * it does not change the verdict.
+   *
+   * @param refusal - what was refused and why.
+   */
+  async recordRefusal(refusal: CursorRefusal): Promise<void> {
+    try {
+      await mkdir(this.root, { recursive: true })
+      await appendFile(join(this.root, CURSOR_REFUSAL_LOG_NAME), `${JSON.stringify(refusal)}\n`, { encoding: 'utf8' })
+    } catch (error) {
+      this.journalFailures.push(error instanceof Error ? error.message : String(error))
+    }
+  }
+
+  /** Every refusal this store recorded, oldest first. */
+  async readRefusals(): Promise<CursorRefusal[]> {
+    let text: string
+    try {
+      text = await readFile(join(this.root, CURSOR_REFUSAL_LOG_NAME), 'utf8')
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code === 'ENOENT') return []
+      throw error
+    }
+    const out: CursorRefusal[] = []
+    for (const line of text.split('\n')) {
+      if (line.trim() === '') continue
+      try {
+        out.push(JSON.parse(line) as CursorRefusal)
+      } catch {
+        // A torn final line from a crashed append is skipped rather than making the
+        // whole journal unreadable; the earlier records are still evidence.
+      }
+    }
+    return out
+  }
+
+  /** Journal write failures, so a broken journal is visible rather than silent. */
+  get refusalJournalFailures(): readonly string[] {
+    return this.journalFailures
+  }
+
+  /**
    * Delete an object, leaving a TOMBSTONE.
    *
    * The tombstone is what makes a deleted reference read as `expired/deleted`
@@ -417,6 +826,10 @@ export class LocalArtifactStore implements ArtifactStore {
       deletedAt: new Date().toISOString(),
       reason: existed ? 'explicit-delete' : 'absent-at-delete',
     })
+    // The memo is dropped with the object: a later capture of the same bytes
+    // republishes the file with a new mtime, and a stale stamp would let the first
+    // page skip the digest verification the new object needs.
+    this.verifiedObjects.delete(artifact)
     return existed
   }
 
@@ -520,23 +933,48 @@ export function digestOfRef(artifact: string): string {
 /**
  * A paging cursor.
  *
- * Opaque to the caller and validated by the host. It binds SIX things, and each
- * binding closes a specific failure:
+ * Opaque to the caller and validated by the host. It binds the COMPLETE tuple, and
+ * each binding closes a specific failure:
  *
+ *   storeRealmId     a cursor cannot be replayed against a DIFFERENT STORE
  *   artifactSha256   a cursor cannot be replayed against a different object
+ *   observationId    a cursor cannot be replayed under a different observation
+ *   revision         the descriptor's revision/digest the walk was started under
  *   representation   a cursor for `bytes` cannot be used for a `lines` walk
+ *   query            the request scope the walk was started for
  *   position         where to resume
  *   schemaVersion    a cursor from an older descriptor shape is refused
  *   ownerScope       a copied cursor cannot cross an authorization scope
  *   watermark        the snapshot the walk started from
  *
+ * WHY `storeRealmId` IS THE FIELD THAT WAS MISSING. Before it, every other field
+ * was a property of the DESCRIPTOR, and a descriptor is portable: two stores that
+ * hold the same content address both satisfy all of them. The content address
+ * cannot distinguish those two stores by construction -- that is what a content
+ * address IS -- so the store's own identity has to be carried explicitly. Without
+ * it a cursor minted by store A was accepted by store B and served B's bytes.
+ *
  * A page NUMBER is deliberately not authorization (ARCHITECTURE §7): possessing
  * `page=7` proves nothing, which is why the cursor is a host-minted string with a
- * host-checked signature rather than a client-supplied integer.
+ * host-checked MAC rather than a client-supplied integer.
  */
 export interface PageCursor {
+  /** The store realm the cursor was issued for. THE field the defect was missing. */
+  storeRealmId: string
   artifactSha256: string
+  /** The observation the walk belongs to, so a cursor cannot migrate between descriptors. */
+  observationId: string
+  /**
+   * The revision/digest the walk was started under.
+   *
+   * Recorded as the descriptor's digest plus its grant revision, because those are
+   * the two things that can move under a walk: a re-captured object changes the
+   * digest, and a permission change bumps the revision.
+   */
+  revision: string
   representation: string
+  /** The request scope, so a cursor from one query cannot resume another. */
+  query: string
   position: number
   schemaVersion: number
   ownerScope: string
@@ -549,10 +987,19 @@ const CURSOR_SEPARATOR = '.'
 /**
  * The host-side cursor authority.
  *
- * The signature is what makes a cursor host-validated rather than
- * caller-asserted. Without it, a caller could mint a cursor naming any position
- * in any artifact and the pager would have to trust it; with it, a forged or
- * tampered cursor is refused before any bytes are read.
+ * THE MAC IS OVER THE WHOLE TUPLE, INCLUDING THE REALM. The previous signature was
+ * `sha256(secret + payload)` where the secret was derived from the descriptor, so
+ * the signature proved only that whoever minted the token knew the descriptor --
+ * and a descriptor is not a secret, it is the thing being paged. It is now an HMAC
+ * over a CANONICAL, FIELD-ORDERED serialization of every bound field, so a cursor
+ * cannot be re-signed for another realm, another object, another revision or
+ * another position by anyone who has not got the host secret.
+ *
+ * WHY THE PAYLOAD IS RE-SERIALIZED CANONICALLY RATHER THAN SIGNED AS RECEIVED. If
+ * the MAC covered the raw received bytes, a token could carry a valid MAC while its
+ * parsed fields differed from the bytes signed (duplicate keys, different key
+ * order, different number spelling). Signing the canonical form means the verified
+ * bytes and the fields the pager uses are the same bytes.
  */
 export class CursorAuthority {
   private readonly secret: string
@@ -571,21 +1018,30 @@ export class CursorAuthority {
   }
 
   /**
-   * Validate and decode a cursor.
+   * STEP 1 of the read order: verify the token is host-minted and decode it.
    *
-   * Every rejection names WHICH binding failed, because "invalid cursor" is not
-   * actionable: a caller that crossed scopes needs a different remedy from one
-   * that replayed a stale position.
+   * Nothing in the returned cursor is trusted yet. This step answers exactly one
+   * question -- "did a holder of the host secret produce these bytes?" -- and it
+   * answers it over the CANONICAL serialization of the fields, so the verified
+   * bytes and the fields the pager will use are the same bytes.
+   *
+   * The realm is deliberately NOT compared here. The read order is the contract
+   * (V3 §L: parse/verify, then compare the realm, then resolve the reference,
+   * then verify identity, then read), and splitting them keeps each step
+   * separately observable and separately testable.
+   *
+   * @param token - the opaque cursor string.
+   * @throws ArtifactError `pagination-cursor-invalid` when the MAC, schema or shape fails.
    */
-  parse(token: string, expect: { ownerScope: string; representation: string }): PageCursor {
+  verify(token: string): PageCursor {
     const index = token.lastIndexOf(CURSOR_SEPARATOR)
     if (index <= 0) {
       throw new ArtifactError('pagination cursor is not a host-minted cursor', 'pagination-cursor-invalid')
     }
     const payload = token.slice(0, index)
     const signature = token.slice(index + 1)
-    if (this.sign(payload) !== signature) {
-      throw new ArtifactError('pagination cursor signature does not verify', 'pagination-cursor-invalid')
+    if (!timingSafeEqualText(this.sign(payload), signature)) {
+      throw new ArtifactError('pagination cursor MAC does not verify', 'pagination-cursor-invalid')
     }
     let decoded: unknown
     try {
@@ -600,30 +1056,121 @@ export class CursorAuthority {
         'pagination-cursor-invalid',
       )
     }
-    if (cursor.ownerScope !== expect.ownerScope) {
-      // A copied cursor is not a capability. The scope is bound at mint time and
-      // re-checked here, so possession of the string grants nothing.
-      throw new ArtifactError(
-        `pagination cursor is scoped to "${String(cursor.ownerScope)}", not "${expect.ownerScope}"`,
-        'pagination-scope-denied',
-      )
-    }
-    if (cursor.representation !== expect.representation) {
-      throw new ArtifactError(
-        `pagination cursor represents "${String(cursor.representation)}", not "${expect.representation}"`,
-        'pagination-cursor-invalid',
-      )
-    }
-    if (typeof cursor.artifactSha256 !== 'string' || typeof cursor.position !== 'number'
-      || typeof cursor.watermark !== 'string' || !Number.isInteger(cursor.position) || cursor.position < 0) {
+    if (typeof cursor.storeRealmId !== 'string' || cursor.storeRealmId.length === 0
+      || typeof cursor.artifactSha256 !== 'string' || typeof cursor.observationId !== 'string'
+      || typeof cursor.revision !== 'string' || typeof cursor.query !== 'string'
+      || typeof cursor.representation !== 'string' || typeof cursor.ownerScope !== 'string'
+      || typeof cursor.position !== 'number' || typeof cursor.watermark !== 'string'
+      || !Number.isInteger(cursor.position) || cursor.position < 0) {
+      // Every field the MAC covers must be present and well-typed: a cursor missing
+      // one of them would otherwise compare `undefined` against a live value and
+      // could be accepted by an equality that happened to hold.
       throw new ArtifactError('pagination cursor is missing a bound field', 'pagination-cursor-invalid')
     }
     return cursor as PageCursor
   }
 
-  private sign(payload: string): string {
-    return createHash('sha256').update(`${this.secret}:${payload}`).digest('base64url')
+  /**
+   * STEP 2 of the read order: compare the REALM.
+   *
+   * This is the check the defect was missing, and it runs BEFORE the reference is
+   * resolved or any byte is read. It has to: a cursor from another store names a
+   * valid content address that this store may well hold, so nothing downstream --
+   * not the grant, not the scope, not the object's own digest -- can tell the two
+   * stores apart. Only the store's own identity can.
+   *
+   * @param cursor - a cursor already verified by {@link verify}.
+   * @param storeRealmId - the realm of the store the request is being served BY.
+   * @throws ArtifactError `pagination-realm-denied` when they differ.
+   */
+  assertRealm(cursor: PageCursor, storeRealmId: string): void {
+    if (cursor.storeRealmId !== storeRealmId) {
+      throw new ArtifactError(
+        `pagination cursor was issued for store realm "${cursor.storeRealmId}", not `
+        + `"${storeRealmId}"; a cursor is not a bearer token and cannot be replayed against another store`,
+        'pagination-realm-denied',
+        { realmRefused: true },
+      )
+    }
   }
+
+  /**
+   * STEP 4's binding half: the cursor's remaining bindings against live values.
+   *
+   * Separated from `verify` because these compare against values that only the
+   * reference resolution establishes (the observation id, the revision, the query),
+   * so they cannot be checked before it without comparing against the same
+   * caller-supplied input twice.
+   *
+   * @throws ArtifactError `pagination-scope-denied` / `pagination-cursor-invalid`.
+   */
+  assertBindings(cursor: PageCursor, expect: {
+    ownerScope: string
+    representation: string
+    observationId: string
+    revision: string
+    query: string
+  }): void {
+    if (cursor.ownerScope !== expect.ownerScope) {
+      // A copied cursor is not a capability. The scope is bound at mint time and
+      // re-checked here, so possession of the string grants nothing.
+      throw new ArtifactError(
+        `pagination cursor is scoped to "${cursor.ownerScope}", not "${expect.ownerScope}"`,
+        'pagination-scope-denied',
+      )
+    }
+    if (cursor.representation !== expect.representation) {
+      throw new ArtifactError(
+        `pagination cursor represents "${cursor.representation}", not "${expect.representation}"`,
+        'pagination-cursor-invalid',
+      )
+    }
+    if (cursor.observationId !== expect.observationId) {
+      throw new ArtifactError(
+        `pagination cursor belongs to observation "${cursor.observationId}", not "${expect.observationId}"`,
+        'pagination-cursor-invalid',
+      )
+    }
+    if (cursor.revision !== expect.revision) {
+      throw new ArtifactError(
+        `pagination cursor was issued for revision "${cursor.revision}", not "${expect.revision}"`,
+        'pagination-cursor-invalid',
+      )
+    }
+    if (cursor.query !== expect.query) {
+      throw new ArtifactError(
+        `pagination cursor was issued for query "${cursor.query}", not "${expect.query}"`,
+        'pagination-cursor-invalid',
+      )
+    }
+  }
+
+  /**
+   * The MAC over the canonical payload.
+   *
+   * HMAC-SHA256 keyed by the host secret, not a bare hash of `secret + payload`:
+   * a length-extension or a concatenation ambiguity is not available against HMAC,
+   * and the secret is the only thing standing between a caller and a self-minted
+   * cursor naming any position in any artifact.
+   */
+  private sign(payload: string): string {
+    return createHmac('sha256', this.secret).update(payload).digest('base64url')
+  }
+}
+
+/**
+ * Compare two MAC strings without leaking their difference through timing.
+ *
+ * A MAC comparison that returns early on the first differing character lets an
+ * attacker recover a valid MAC one byte at a time. `timingSafeEqual` requires equal
+ * lengths, so the length is checked first -- and a length difference is not secret,
+ * because the MAC's length is fixed by the algorithm.
+ */
+function timingSafeEqualText(a: string, b: string): boolean {
+  const left = Buffer.from(a, 'utf8')
+  const right = Buffer.from(b, 'utf8')
+  if (left.length !== right.length) return false
+  return timingSafeEqual(left, right)
 }
 
 /** Where a paging walk starts, and what it is allowed to read. */
@@ -637,6 +1184,37 @@ export interface PageRequest {
   grants: GrantTable
   /** The scope the CALLER is acting under. Checked against the descriptor and the cursor. */
   callerScope: string
+  /**
+   * Called with every refusal BEFORE it is thrown, so a refusal is observable.
+   *
+   * The oracle requires the refusal to be RECORDED, not merely raised. `pages()`
+   * cannot write to the store's journal itself without making every read path
+   * durable, so it reports the refusal here and the caller (the host service, which
+   * has the store) persists it. A caller that supplies no sink still gets the
+   * throw; a caller that supplies one gets both.
+   */
+  onRefusal?: (refusal: Omit<CursorRefusal, 'at' | 'storeRealmId'> & { storeRealmId: string }) => void
+  /**
+   * The query/request scope this walk belongs to.
+   *
+   * Bound into the cursor so a cursor issued for one query cannot resume another
+   * over the same artifact. Defaults to a value derived from the page size and the
+   * caller scope, which is what the current single-representation pager actually
+   * varies on.
+   */
+  query?: string
+}
+
+/**
+ * The revision a walk is bound to.
+ *
+ * Composed of the two things that can move under a walk: the artifact's content
+ * digest (a re-capture changes it) and the descriptor's grant revision (a
+ * permission change bumps it). Both are in the cursor's MAC, so a cursor cannot
+ * survive either change.
+ */
+function revisionOf(descriptor: ObservationDescriptor): string {
+  return `${descriptor.captured.sha256}@g${String(descriptor.authority.grantRevision)}`
 }
 
 /**
@@ -649,6 +1227,21 @@ export interface PageRequest {
  * audit forbids mixing pages across a change, and the only way to guarantee that
  * is to read the captured object, whose address IS its content hash (DAT-05).
  *
+ * THE READ ORDER IS THE POINT, and it is enforced in this order:
+ *
+ *   1. parse and verify the cursor (MAC over the whole tuple)
+ *   2. compare the REALM -- the store's own identity, which a content address
+ *      cannot carry
+ *   3. resolve the exact reference (the descriptor's grant, scope and object)
+ *   4. verify the descriptor/revision/content identity of the object BEFORE
+ *      reading it
+ *   5. only then read the range/page
+ *
+ * The failing shape this replaces was "openRange, then discover it was the wrong
+ * artifact": `store.openRange` was called directly, so the content check that
+ * `resolveReference` performs never ran on the paging path, and a store holding
+ * different bytes under the same content address served them.
+ *
  * THE STALL CHECK
  *
  * A provider that returns a repeated or backwards cursor would loop forever. The
@@ -660,7 +1253,10 @@ export interface PageRequest {
  * @param store - the artifact store holding the captured object.
  * @param request - the descriptor, page size, cursor and scope.
  * @param counters - optional IO accounting, so the cost is measurable (DAT-06).
+ * @throws ArtifactError `pagination-realm-denied` when the cursor belongs to another store.
+ * @throws ArtifactError `pagination-cursor-invalid` when the cursor is forged, tampered or stale.
  * @throws ArtifactError `pagination-stalled` when the cursor does not advance.
+ * @throws ArtifactError `artifact-integrity-error` when the object does not match its record.
  */
 export async function pages(
   store: ArtifactStore,
@@ -668,51 +1264,153 @@ export async function pages(
   counters?: IoCounters,
 ): Promise<ArtifactPage> {
   const { descriptor, maxBytes, grants, callerScope } = request
-  // The descriptor's authority is host-authored and checked against the LIVE grant,
-  // so a permission-domain change invalidates every cursor minted before it.
-  if (descriptor.authority.ownerScope !== callerScope) {
-    throw new ArtifactError(
-      `observation ${descriptor.id} is scoped to "${descriptor.authority.ownerScope}", not "${callerScope}"`,
-      'pagination-scope-denied',
-    )
-  }
-  if (!grants.stillValid(descriptor.authority)) {
-    throw new ArtifactError(
-      `observation ${descriptor.id} was minted under grant revision ${descriptor.authority.grantRevision}, which is stale`,
-      'pagination-scope-denied',
-    )
-  }
-  if (!Number.isInteger(maxBytes) || maxBytes < 1) {
-    throw new ArtifactError(`maxBytes must be a positive integer, got ${maxBytes}`, 'pagination-cursor-invalid')
-  }
   const representation = 'bytes'
-  const sha256 = descriptor.captured.sha256
-  const watermark = descriptor.source.acquiredAt
+  const query = request.query ?? `bytes:${String(maxBytes)}`
+  const revision = revisionOf(descriptor)
+  // The realm is resolved BEFORE anything else, because step 2 needs it and a
+  // store that cannot state its identity cannot safely serve a cursor at all.
+  const storeRealmId = await store.ensureRealm()
+  // The MAC secret is still derived from the descriptor, so a cursor is only
+  // mintable by a host holding the descriptor. The REALM is bound as a SIGNED
+  // FIELD, not as part of the secret: two stores that share a descriptor must still
+  // produce cursors that do not verify against each other.
   const authority = new CursorAuthority(cursorSecretOf(descriptor), descriptor.schemaVersion)
 
-  let position = 0
+  /**
+   * Record and throw. ONE helper, so no refusal path can bypass the sink: a
+   * refusal that is not reported is exactly the "keeps running and reporting
+   * health" shape the audit names.
+   *
+   * The `never` return type is annotated on the BINDING, not only on the signature,
+   * so TypeScript's control-flow analysis knows every call terminates and the
+   * locals below stay definitely assigned.
+   */
+  const refuse: (
+    error: ArtifactError,
+    step: CursorRefusal['step'],
+    extra?: { cursorRealmId?: string },
+  ) => never = (error, step, extra = {}) => {
+    const refusal = {
+      code: error.code,
+      reason: error.message,
+      storeRealmId,
+      observationId: descriptor.id,
+      step,
+      ...extra,
+    }
+    try {
+      request.onRefusal?.(refusal)
+    } catch {
+      // A sink that throws must not replace the refusal with its own error: the
+      // caller needs the refusal, and the sink's failure is the caller's problem.
+    }
+    throw error
+  }
+
+  // ---- STEP 1: parse/verify the cursor. Nothing in it is believed yet.
+  //
+  // Runs FIRST, before the descriptor's authority is even consulted, because the
+  // order is the contract: a caller presenting a token that is not host-minted
+  // should learn that before it learns anything about the store's contents.
+  let cursor: PageCursor | undefined
   if (request.cursor !== undefined) {
-    const cursor = authority.parse(request.cursor, { ownerScope: callerScope, representation })
+    try {
+      cursor = authority.verify(request.cursor)
+    } catch (error) {
+      refuse(asArtifactError(error, 'pagination cursor could not be verified'), 'parse')
+    }
+    // ---- STEP 2: compare the REALM, before resolving the reference.
+    //
+    // This is the check the defect was missing. A cursor from another store names a
+    // valid content address this store may hold, so nothing downstream can tell the
+    // two stores apart -- only the store's own identity can.
+    try {
+      authority.assertRealm(cursor, storeRealmId)
+    } catch (error) {
+      refuse(asArtifactError(error, 'pagination cursor realm could not be checked'), 'realm', {
+        cursorRealmId: realmClaimOf(request.cursor),
+      })
+    }
+  }
+
+  // ---- STEP 3: resolve the exact reference, and check it against the LIVE grant.
+  //
+  // The descriptor's authority is host-authored and checked against the live table,
+  // so a permission-domain change invalidates every cursor minted before it.
+  if (descriptor.authority.ownerScope !== callerScope) {
+    refuse(new ArtifactError(
+      `observation ${descriptor.id} is scoped to "${descriptor.authority.ownerScope}", not "${callerScope}"`,
+      'pagination-scope-denied',
+    ), 'reference')
+  }
+  if (!grants.stillValid(descriptor.authority)) {
+    refuse(new ArtifactError(
+      `observation ${descriptor.id} was minted under grant revision ${descriptor.authority.grantRevision}, which is stale`,
+      'pagination-scope-denied',
+    ), 'reference')
+  }
+  if (!Number.isInteger(maxBytes) || maxBytes < 1) {
+    refuse(new ArtifactError(
+      `maxBytes must be a positive integer, got ${maxBytes}`,
+      'pagination-cursor-invalid',
+    ), 'reference')
+  }
+
+  const sha256 = descriptor.captured.sha256
+  const watermark = descriptor.source.acquiredAt
+
+  // ---- STEP 4a: the cursor's remaining bindings against the resolved reference.
+  let position = 0
+  if (cursor !== undefined) {
+    try {
+      authority.assertBindings(cursor, {
+        ownerScope: callerScope,
+        representation,
+        observationId: descriptor.id,
+        revision,
+        query,
+      })
+    } catch (error) {
+      refuse(asArtifactError(error, 'pagination cursor bindings could not be checked'), 'reference')
+    }
     if (cursor.artifactSha256 !== sha256) {
       // The cursor names a different object than the descriptor. Continuing would
       // splice two artifacts into one stream, which is the mixing the audit forbids.
-      throw new ArtifactError(
+      refuse(new ArtifactError(
         `pagination cursor is bound to artifact ${cursor.artifactSha256}, not ${sha256}`,
         'pagination-cursor-invalid',
-      )
+      ), 'reference')
     }
     if (cursor.watermark !== watermark) {
-      throw new ArtifactError(
+      refuse(new ArtifactError(
         `pagination cursor is bound to watermark ${cursor.watermark}, not ${watermark}`,
         'pagination-cursor-invalid',
-      )
+      ), 'reference')
     }
     position = cursor.position
   }
 
+  // ---- STEP 4b: verify the descriptor/revision/content identity BEFORE reading.
+  //
+  // This is the call the old path was missing. `openRange` reads bytes and knows
+  // nothing about what they are supposed to be; `assertObjectIdentity` establishes
+  // presence, length and digest first, so no byte of a wrong or damaged object is
+  // ever handed back.
+  try {
+    await store.assertObjectIdentity(descriptor.captured.artifact, { sha256, bytes: descriptor.captured.bytes })
+  } catch (error) {
+    refuse(asArtifactError(error, `artifact ${descriptor.captured.artifact} could not be verified before paging`), 'identity')
+  }
+
+  // ---- STEP 5: only now read the range/page.
   const total = descriptor.captured.bytes
   const length = Math.min(maxBytes, Math.max(0, total - position))
-  const bytes = await store.openRange(descriptor.captured.artifact, { offset: position, length }, counters)
+  let bytes: Uint8Array
+  try {
+    bytes = await store.openRange(descriptor.captured.artifact, { offset: position, length }, counters)
+  } catch (error) {
+    refuse(asArtifactError(error, `artifact ${descriptor.captured.artifact} could not be read`), 'read')
+  }
   const end = position + bytes.byteLength
   const exhausted = end >= total
   return {
@@ -722,8 +1420,12 @@ export async function pages(
     exhausted,
     ...exhausted ? {} : {
       nextCursor: authority.mint({
+        storeRealmId,
         artifactSha256: sha256,
+        observationId: descriptor.id,
+        revision,
         representation,
+        query,
         position: end,
         ownerScope: callerScope,
         watermark,
@@ -732,13 +1434,46 @@ export async function pages(
   }
 }
 
+/** Normalize a thrown value into an `ArtifactError` that names the operation. */
+function asArtifactError(error: unknown, context: string): ArtifactError {
+  if (error instanceof ArtifactError) return error
+  return new ArtifactError(
+    `${context}: ${error instanceof Error ? error.message : String(error)}`,
+    'artifact-integrity-error',
+    { cause: error },
+  )
+}
+
 /**
- * A cursor's signature secret, derived from the descriptor.
+ * Read the realm a cursor CLAIMS, without verifying its MAC.
  *
- * Deriving it rather than storing a random secret keeps the cursor verifiable
- * across a process restart (which a paging walk must survive) while still being
- * host-only: a caller cannot mint a valid cursor without the descriptor, and the
- * descriptor is host-authored.
+ * Used only to make a refusal record name both realms, which is what makes the
+ * record actionable. It never decides anything: the refusal has already been
+ * decided by the verified MAC and the realm comparison.
+ */
+function realmClaimOf(token: string): string | undefined {
+  try {
+    const index = token.lastIndexOf(CURSOR_SEPARATOR)
+    if (index <= 0) return undefined
+    const decoded = JSON.parse(Buffer.from(token.slice(0, index), 'base64url').toString('utf8')) as
+      { storeRealmId?: unknown }
+    return typeof decoded.storeRealmId === 'string' ? decoded.storeRealmId : undefined
+  } catch {
+    return undefined
+  }
+}
+
+/**
+ * A cursor's MAC secret, derived from the descriptor.
+ *
+ * Deriving it rather than storing a random secret keeps the cursor mintable
+ * without extra state while still being host-only: a caller cannot mint a valid
+ * cursor without the descriptor, and the descriptor is host-authored.
+ *
+ * NOTE WHAT IT IS NOT: it is not the store identity. Two stores that hold the same
+ * object share this secret, which is precisely why the realm had to become a
+ * signed FIELD -- deriving the secret from the descriptor could never distinguish
+ * the two stores, because the descriptor is the same for both.
  */
 function cursorSecretOf(descriptor: ObservationDescriptor): string {
   return `${descriptor.id}:${descriptor.captured.sha256}:${descriptor.authority.ownerScope}:${descriptor.authority.grantRevision}`
@@ -817,7 +1552,7 @@ export interface PageProvider {
   next(request: PageRequest, counters?: IoCounters): Promise<ArtifactPage>
 }
 
-/** Pages an immutable artifact through {@link pages}. */
+  /** Pages an immutable artifact through {@link pages}. */
 export class ArtifactStorePageProvider implements PageProvider {
   private readonly store: ArtifactStore
 
@@ -827,6 +1562,85 @@ export class ArtifactStorePageProvider implements PageProvider {
 
   next(request: PageRequest, counters?: IoCounters): Promise<ArtifactPage> {
     return pages(this.store, request, counters)
+  }
+}
+
+/**
+ * A page provider that RECORDS every refusal before rethrowing it.
+ *
+ * WHY A DECORATOR AND NOT LOGIC INSIDE `pages()`. `pages()` takes an `ArtifactStore`,
+ * which is deliberately six methods and no more (see the interface's doc comment):
+ * adding a journal method to it would make every store implementation carry a
+ * durability concern, and adding the write directly to `pages()` would make every
+ * read path perform disk IO. This decorator binds the two only where a durable store
+ * actually exists, so the recording happens in production and the pure paging path
+ * stays pure.
+ *
+ * The refusal is recorded and THEN rethrown, in that order: a caller that catches
+ * the error has already caused the evidence to be written.
+ */
+export class RecordingPageProvider implements PageProvider {
+  private readonly inner: PageProvider
+  private readonly journal: RefusalJournal
+
+  constructor(inner: PageProvider, journal: RefusalJournal) {
+    this.inner = inner
+    this.journal = journal
+  }
+
+  async next(request: PageRequest, counters?: IoCounters): Promise<ArtifactPage> {
+    try {
+      return await this.inner.next(request, counters)
+    } catch (error) {
+      if (error instanceof ArtifactError) {
+        await this.journal.recordRefusal({
+          code: error.code,
+          reason: error.message,
+          storeRealmId: await this.journal.realmId(),
+          observationId: request.descriptor.id,
+          step: refusalStepOf(error),
+          at: new Date().toISOString(),
+        })
+      }
+      throw error
+    }
+  }
+}
+
+/**
+ * Where a refusal belongs in the read order.
+ *
+ * Derived from the code rather than carried through the throw, because the code is
+ * the stable public fact and a step attached by hand at each throw site would drift
+ * from it. A realm refusal is ALWAYS step 2; a cursor refusal is always step 1; an
+ * integrity refusal is step 4.
+ */
+export function refusalStepOf(error: ArtifactError): CursorRefusal['step'] {
+  switch (error.code) {
+    case 'pagination-realm-denied': return 'realm'
+    case 'pagination-cursor-invalid': return 'parse'
+    case 'pagination-scope-denied': return 'reference'
+    case 'artifact-integrity-error':
+    case 'artifact-corrupt': return 'identity'
+    case 'artifact-not-found':
+    case 'artifact-orphaned': return 'read'
+    default: return 'read'
+  }
+}
+
+/** The durability surface a refusal journal needs. Narrow, so a fake is trivial. */
+export interface RefusalJournal {
+  /** Append a refusal record durably. */
+  recordRefusal(refusal: CursorRefusal): Promise<void>
+  /** The realm this journal's store belongs to. */
+  realmId(): Promise<string>
+}
+
+/** The default sink for the host service's page/walk calls. */
+export function mountRefusalRecording(store: LocalArtifactStore): RefusalJournal {
+  return {
+    recordRefusal: refusal => store.recordRefusal(refusal),
+    realmId: () => store.ensureRealm(),
   }
 }
 

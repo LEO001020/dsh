@@ -1,0 +1,35 @@
+# Overlay for the R7 cursor/store-realm boot probe.
+#
+# Loaded ON TOP of the daily-candidate profile, so the probe runs inside a real
+# composed profile boot rather than a hand-mounted context. This is the same shape
+# as `verify-data-plane.patch.yml`, for the same reason: the product-reachability
+# question is "does the ASSEMBLED profile refuse a cross-store cursor", and a
+# hand-mounted `ctx.plugin()` would prove only that the module runs.
+#
+# The `daily-data-plane` row is restated HERE as well as in the package's own
+# `cordis.patch.yml` because the installed profile under DSH_HOME carries a COPY of
+# that file, and a stale copy would make the probe report a false absence -- a
+# measurement error about the probe, not a finding about the product.
+#
+# EVERY key is restated because a patch replaces the target row's whole `config`
+# object; it is not a deep merge (`vendor/include/src/index.ts:120-123`). Overriding
+# only `port` drops `host` and the boot fails schema validation.
+- id: webserver
+  config:
+    host: '127.0.0.1'
+    port: 0
+    compression: gzip
+    compressionLevel: 1
+    compressionThresholdBytes: 1024
+
+- insert:
+    - id: daily-data-plane
+      name: dsh-daily-work/data-host
+      config:
+        ownerScope: project:daily
+        executionWorld: local
+        pageBytes: 65536
+        quotaBytes: 268435456
+
+    - id: r7-cursor-realm-probe
+      name: 'D:/DSH/work/wt-r7/qualification/runners/r7-cursor-realm-probe.mjs'
