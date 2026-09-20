@@ -1,0 +1,20 @@
+CONTROL ARM: is exit 0 still REACHABLE after the refactor?
+==============================================================
+WHY THIS ARM EXISTS. 'Both renderers now exit nonzero when problems exist' is
+worthless if exit 0 became unreachable: an always-red gate is exactly as useless
+as the always-green one it replaced, and it would be indistinguishable from a
+correct fix in every test that only checks the failing direction.
+
+CLEAN spec (real evidence, current identity)
+  -> exit 0 | PASS | problems 0
+  -> REQUIRED: exit 0. HELD
+
+SAME spec, ONE field changed: the evidence identity is foreign
+  -> exit 1 | FAIL | problems 1
+  -> REQUIRED: exit 1. HELD
+  -> ID-01: evidence was filed under identity 0a0996f3944b5528... but the lock's identity is 533c8cb08b2ccd7f...
+
+VERDICT: the gate DISCRIMINATES. It is not always-red and not always-green:
+the same spec passes or fails depending on whether its evidence is bound to
+the identity the lock records. The 317-problem result on the real spec is
+therefore a measurement about that spec, not a property of the code path.
