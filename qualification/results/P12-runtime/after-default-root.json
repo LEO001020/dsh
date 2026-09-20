@@ -1,0 +1,46 @@
+{
+  "probe": "P12 runtime location",
+  "arm": "DEFAULT (no root configured)",
+  "dshHome": "D:\\DSH\\home\\p12",
+  "packageRoot": "D:\\DSH\\work\\wt-p12\\packages\\dsh-ipython",
+  "python": "C:/Users/hzq00/AppData/Local/Programs/Python/Python314/python.exe",
+  "defaultKernelRootConstant": "D:\\DSH\\home\\p12\\runtime\\ipython",
+  "defaultKernelRootInsidePackage": false,
+  "cellOutcome": "ok",
+  "cellStdout": "KERNEL_CWD=D:\\DSH\\work\\wt-p12",
+  "kernelCwd": "D:\\DSH\\work\\wt-p12",
+  "transport": "tcp",
+  "curveKeysPresent": true,
+  "packageScratchEntries": [],
+  "homeRuntimeEntries": [
+    "runtime\\ipython/",
+    "runtime\\ipython\\428cd04611a7062a9a1e69e7cdd3625e/",
+    "runtime\\ipython\\428cd04611a7062a9a1e69e7cdd3625e\\0/",
+    "runtime\\ipython\\428cd04611a7062a9a1e69e7cdd3625e\\0\\bridge/",
+    "runtime\\ipython\\428cd04611a7062a9a1e69e7cdd3625e\\0\\bridge\\artifacts/",
+    "runtime\\ipython\\428cd04611a7062a9a1e69e7cdd3625e\\0\\bridge\\dsh_bridge_client.py",
+    "runtime\\ipython\\428cd04611a7062a9a1e69e7cdd3625e\\0\\dsh_attribution_bootstrap.loaded",
+    "runtime\\ipython\\428cd04611a7062a9a1e69e7cdd3625e\\0\\dsh_attribution_bootstrap.py",
+    "runtime\\ipython\\428cd04611a7062a9a1e69e7cdd3625e\\0\\jupyter/",
+    "runtime\\ipython\\428cd04611a7062a9a1e69e7cdd3625e\\0\\kernel.err",
+    "runtime\\ipython\\428cd04611a7062a9a1e69e7cdd3625e\\0\\kernel.out"
+  ],
+  "errors": [],
+  "scratchTree": {
+    "D:\\DSH\\home\\p12\\runtime\\ipython": {
+      "exists": true,
+      "entries": [
+        "428cd04611a7062a9a1e69e7cdd3625e/",
+        "428cd04611a7062a9a1e69e7cdd3625e\\0/",
+        "428cd04611a7062a9a1e69e7cdd3625e\\0\\bridge/",
+        "428cd04611a7062a9a1e69e7cdd3625e\\0\\bridge\\artifacts/",
+        "428cd04611a7062a9a1e69e7cdd3625e\\0\\bridge\\dsh_bridge_client.py",
+        "428cd04611a7062a9a1e69e7cdd3625e\\0\\dsh_attribution_bootstrap.loaded",
+        "428cd04611a7062a9a1e69e7cdd3625e\\0\\dsh_attribution_bootstrap.py",
+        "428cd04611a7062a9a1e69e7cdd3625e\\0\\jupyter/",
+        "428cd04611a7062a9a1e69e7cdd3625e\\0\\kernel.err",
+        "428cd04611a7062a9a1e69e7cdd3625e\\0\\kernel.out"
+      ]
+    }
+  }
+}
