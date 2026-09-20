@@ -37,6 +37,7 @@ import { fileURLToPath } from 'node:url'
 import { BridgeServer, type CellLease } from './bridge.ts'
 import { createNativeCallHandler, type EnclosingAuthority } from './native-call.ts'
 import { KernelService } from './kernel-plugin.ts'
+import { MemoryBridgeLedger } from './bridge-ledger.ts'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
 const BROKER = resolve(HERE, 'broker.py')
@@ -86,6 +87,9 @@ async function main(): Promise<void> {
     sessionId: 'v4-drain',
     cellId: 'cell-drain',
     epoch: 1,
+    outerCallId: String('v4-drain-call'),
+    rootCallId: String('v4-drain-call'),
+    ledger: new MemoryBridgeLedger(),
     handler: createNativeCallHandler({
       ctx,
       authority: {
@@ -126,7 +130,7 @@ async function main(): Promise<void> {
   // Now revoke, which is the bridge's own drain, and see whether it waits.
   const beforeRevoke = { slowStarted, slowFinished }
   const revokeStart = Date.now()
-  await lease.revoke('the cell settled')
+  await lease.close('completed', 'the cell settled')
   const revokeMs = Date.now() - revokeStart
   observed['revokeDrains'] = {
     slowStartedBeforeRevoke: beforeRevoke.slowStarted,

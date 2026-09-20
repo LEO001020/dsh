@@ -1,0 +1,44 @@
+{
+  "scope": "R5 composition tier: a real daily boot reaches a live BridgeServer",
+  "profileBooted": true,
+  "presetDefaultId": "daily-standard",
+  "presetRoots": [
+    "D:\\DSH\\src\\dsh-src\\packages\\preset\\agent-presets\\presets\\",
+    "D:/DSH/home/r5/profiles/daily/presets/",
+    "D:\\DSH\\home\\r5\\.agent-presets"
+  ],
+  "kernelServicePresent": true,
+  "sessionCreated": true,
+  "sessionId": "session-ff63ee59-dfbb-47e3-902a-510610f4198f",
+  "ipythonToolPresent": true,
+  "toolCountAgentKey": 28,
+  "toolCountUnscopedKey": 1,
+  "bridgePresentAfterBoot": true,
+  "bridgeEndpointPort": 4191,
+  "bridgeProtocolVersion": 1,
+  "bridgeLeasesAtRest": 0,
+  "bridgeCreatedByProduction": true,
+  "kernelEpoch": 1,
+  "kernelLifecycle": "READY",
+  "toolCallDispatched": true,
+  "toolCallOutcome": "ok",
+  "cellPrinted": "outcome: ok\nkernel epoch: 1\n--- stdout ---\nDSH_BOUND=True\nCELL_VALUE={\"marker\":\"R5-COMPOSITION\",\"tag\":\"from-a-real-boot\"}\n\n[1 shell frame(s) for other requests were ignored while waiting for this cell. They did not complete it.]",
+  "dshBoundInCell": "True",
+  "nestedDispatchCount": 1,
+  "nestedSubCallIds": [
+    "r5-composition-outer-1:ipython:1"
+  ],
+  "ledgerRowCount": 1,
+  "ledgerDispositions": [
+    {
+      "subCallId": "r5-composition-outer-1:ipython:1",
+      "name": "r5_product_echo",
+      "disposition": "settled",
+      "started": true,
+      "settled": true,
+      "jobId": null
+    }
+  ],
+  "ledgerDurable": true,
+  "error": null
+}

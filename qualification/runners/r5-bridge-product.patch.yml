@@ -1,0 +1,14 @@
+# Verification overlay for R5's composition-tier measurement.
+#
+# ONE row, and it is the PROBE ONLY. There is deliberately NO ipython tool row
+# and NO ipython service row here: the whole point of the case is what the
+# `daily` profile's OWN composition registers. Adding either would prove the
+# bridge works when a row is present while proving nothing about the product --
+# the exact mistake recorded as G-FIX-04/G-FIX-05, and the shape F2 was.
+#
+# The probe path is absolute because a cordis row names a module to load, and it
+# points INTO THIS WORKTREE. A path into the main checkout would make a worktree
+# boot measure another tree's probe.
+- insert:
+    - id: r5-bridge-product
+      name: 'D:/DSH/work/wt-r5/qualification/runners/r5-bridge-product.mjs'

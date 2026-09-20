@@ -38,6 +38,7 @@ import { fileURLToPath } from 'node:url'
 import { BridgeServer } from './bridge.ts'
 import { createNativeCallHandler, type EnclosingAuthority } from './native-call.ts'
 import { KernelService } from './kernel-plugin.ts'
+import { MemoryBridgeLedger } from './bridge-ledger.ts'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
 const BROKER = resolve(HERE, 'broker.py')
@@ -259,6 +260,9 @@ async function main(): Promise<void> {
       sessionId: 'v4-bridge-probe',
       cellId,
       epoch: 1,
+      outerCallId: String(callId),
+      rootCallId: String(callId),
+      ledger: new MemoryBridgeLedger(),
       handler: createNativeCallHandler({
         ctx,
         authority: authorityFor(callId, agent, new AbortController().signal),
@@ -270,7 +274,7 @@ async function main(): Promise<void> {
       }),
     })
     const result = await service.runCell(agent, [bridge.preamble(lease), code].join('\n'))
-    await lease.revoke('settled')
+    await lease.close('completed', 'settled')
     bridge.releaseLease(lease)
     return { outcome: result.outcome, stdout: result.stdout.text.trim() }
   }
@@ -473,6 +477,9 @@ async function main(): Promise<void> {
       sessionId: 'v4-forge',
       cellId: 'v4-forge-1',
       epoch: 1,
+      outerCallId: String('legacy-outer-call'),
+      rootCallId: String('legacy-outer-call'),
+      ledger: new MemoryBridgeLedger(),
       handler: async (call) => {
         handlerRan += 1
         handlerSaw.push({
