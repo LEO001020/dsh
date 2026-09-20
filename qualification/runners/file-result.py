@@ -236,6 +236,14 @@ def validate_reuse(cid: str, binding: dict[str, Any], definition: dict[str, Any]
 
 def write_result(out_dir: Path, verdicts: list[dict[str, Any]], manifest: list[dict[str, Any]],
                  model: dict[str, Any], gates_md: str) -> None:
+    """Write the four result files, WITH LF ENDINGS.
+
+    `newline="\\n"` on every write is deliberate, not stylistic. `.gitattributes`
+    declares `*.json text eol=lf` while core.autocrlf is true, so a result written with
+    CRLF endings is stored as LF and its on-disk digest does not reproduce from a fresh
+    checkout. A result whose hash depends on the machine that wrote it cannot be
+    hash-verified by a later reader, which is what the evidence rules require.
+    """
     out_dir.mkdir(parents=True, exist_ok=True)
     (out_dir / "verdicts.json").write_text(json.dumps({
         "schema_version": 1,
@@ -245,16 +253,16 @@ def write_result(out_dir: Path, verdicts: list[dict[str, Any]], manifest: list[d
         "acceptance_definition_digest": model["qualification_contract"]["acceptance_definition_digest"],
         "verdict_vocabulary": list(VERDICTS) + ["REUSED_EVIDENCE (a binding, not a verdict)"],
         "verdicts": verdicts,
-    }, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    }, indent=2, ensure_ascii=False) + "\n", encoding="utf-8", newline="\n")
     (out_dir / "evidence-manifest.json").write_text(json.dumps({
         "schema_version": 1,
         "kind": "TRUSTED_LOCAL_V2_EVIDENCE_MANIFEST_NOT_A_DSH_ARTIFACT",
         "qualification_contract_identity": model["qualification_contract"]["qualification_contract_identity"],
         "entries": manifest,
-    }, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
-    (out_dir / "GATES.md").write_text(gates_md, encoding="utf-8")
+    }, indent=2, ensure_ascii=False) + "\n", encoding="utf-8", newline="\n")
+    (out_dir / "GATES.md").write_text(gates_md, encoding="utf-8", newline="\n")
     (out_dir / "identity.json").write_text(
-        json.dumps(model, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+        json.dumps(model, indent=2, ensure_ascii=False) + "\n", encoding="utf-8", newline="\n")
 
 
 def gates_table(verdicts: list[dict[str, Any]], definition: dict[str, Any],
@@ -319,7 +327,14 @@ def self_test(probe: str | None) -> int:
 
     # A REAL filing, not a dry run: a case is written with evidence attached, under
     # the contract directory, and the evidence is a real file that hashes correctly.
-    out_dir = ROOT / "qualification" / "results" / contract_id(identities(probe))
+    # THE SELF-TEST WRITES INTO A SEPARATE DIRECTORY, AND THAT IS NOT FASTIDIOUSNESS.
+    # A self-test that filed rows into the REAL contract directory would leave two
+    # verdicts on disk that no writer produced -- a `PASS` for ID-02 and a
+    # `NOT_CLAIMED` for REC-09 -- and a later reader would have no way to tell them
+    # from filed results. This project has already been burned by a result that was
+    # not measured being read as one. So the split is proved in a directory named for
+    # the fact, and the real contract directory contains only what a writer filed.
+    out_dir = ROOT / "qualification" / "results" / "trusted-local-v2-identity" / "split-self-test"
     evidence_rel = "qualification/results/trusted-local-v2-identity/probe.json"
     evidence_abs = ROOT / evidence_rel
     if not evidence_abs.is_file():
@@ -517,12 +532,52 @@ def vocabulary_test() -> int:
     return 0
 
 
+def init_results(probe: str | None) -> int:
+    """Create the contract result directory with every case filed as NOT_RUN.
+
+    WHY THE INITIAL STATE IS WRITTEN RATHER THAN LEFT ABSENT. V3 E2 names three files
+    in the results directory. A directory that exists but carries no verdicts.json is
+    ambiguous: a reader cannot tell "no case has been run" from "the results were lost
+    or never filed". Filing all 110 cases explicitly as NOT_RUN makes the starting
+    state a RECORDED fact, and it makes a missing case detectable -- a case id that
+    disappears from verdicts.json is then a defect rather than a smaller file.
+
+    It writes NO verdict other than NOT_RUN. A generator that pre-marked anything else
+    would be a rigged oracle, which is the thing v1's own rules forbid twice.
+    """
+    definition = json.loads(DEFINITION.read_text(encoding="utf-8"))
+    model = identities(probe)
+    out_dir = ROOT / "qualification" / "results" / contract_id(model)
+
+    verdicts = [{"case_id": c["id"], "verdict": "NOT_RUN", "evidence": []}
+                for c in definition["cases"]]
+    problems: list[str] = []
+    for row in verdicts:
+        problems.extend(validate_verdict(row, definition))
+    if problems:
+        print("file-result --init-results: the generated rows are INVALID (a bug in this file):")
+        for problem in problems:
+            print(f"  - {problem}")
+        return 2
+
+    write_result(out_dir, verdicts, [], model, gates_table(verdicts, definition, model))
+    print(f"initialised {out_dir}")
+    print(f"  {len(verdicts)} cases filed as NOT_RUN, 0 evidence entries")
+    print(f"  QualificationContractIdentity {model['qualification_contract']['qualification_contract_identity']}")
+    print("")
+    print("The starting state is RECORDED rather than implied, so a case id that disappears")
+    print("from verdicts.json is a defect instead of a smaller file.")
+    return 0
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="file a v2 result under the contract identity")
     parser.add_argument("--self-test", action="store_true",
                         help="prove filing a result moves neither identity")
     parser.add_argument("--vocabulary-test", action="store_true",
                         help="prove the verdict vocabulary accepts and refuses correctly")
+    parser.add_argument("--init-results", action="store_true",
+                        help="create the contract result directory with all cases NOT_RUN")
     parser.add_argument("--probe", default=None, help="the probe.json whose inputs bind the identity")
     parser.add_argument("--case", default=None)
     parser.add_argument("--verdict", default=None, choices=VERDICTS)
@@ -531,6 +586,9 @@ def main() -> int:
 
     if args.vocabulary_test:
         return vocabulary_test()
+
+    if args.init_results:
+        return init_results(args.probe)
 
     if args.self_test:
         return self_test(args.probe)

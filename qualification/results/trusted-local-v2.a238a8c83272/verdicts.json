@@ -1,0 +1,567 @@
+{
+  "schema_version": 1,
+  "kind": "TRUSTED_LOCAL_V2_VERDICTS_NOT_A_DSH_ARTIFACT",
+  "qualification_contract_identity": "a238a8c83272dedc51d3626ba1324a315dc98f335a73fb898ab80d1106d76b3c",
+  "runtime_deployment_identity": "17ce7722624c171561b1d32def2679e9a1e0dd3b12a5826655405f020fc9e724",
+  "acceptance_definition_digest": "115aa092d0279c005d6f83d0412c1e00d374b60f803dd10f56eaba878ed664e1",
+  "verdict_vocabulary": [
+    "NOT_RUN",
+    "PASS",
+    "FAIL",
+    "NOT_CLAIMED",
+    "BLOCKED_EXTERNAL",
+    "REUSED_EVIDENCE (a binding, not a verdict)"
+  ],
+  "verdicts": [
+    {
+      "case_id": "ID-01",
+      "verdict": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "case_id": "ID-02",
+      "verdict": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "case_id": "ID-03",
+      "verdict": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "case_id": "ID-04",
+      "verdict": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "case_id": "ID-05",
+      "verdict": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "case_id": "ID-06",
+      "verdict": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "case_id": "CMP-01",
+      "verdict": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "case_id": "CMP-02",
+      "verdict": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "case_id": "CMP-03",
+      "verdict": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "case_id": "CMP-04",
+      "verdict": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "case_id": "CMP-05",
+      "verdict": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "case_id": "CMP-06",
+      "verdict": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "case_id": "CMP-07",
+      "verdict": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "case_id": "CMP-08",
+      "verdict": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "case_id": "CMP-09",
+      "verdict": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "case_id": "CMP-10",
+      "verdict": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "case_id": "CMP-11",
+      "verdict": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "case_id": "CMP-12",
+      "verdict": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "case_id": "CMP-13",
+      "verdict": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "case_id": "CMP-14",
+      "verdict": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "case_id": "IPY-01",
+      "verdict": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "case_id": "IPY-02",
+      "verdict": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "case_id": "IPY-03",
+      "verdict": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "case_id": "IPY-04",
+      "verdict": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "case_id": "IPY-05",
+      "verdict": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "case_id": "IPY-06",
+      "verdict": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "case_id": "IPY-07",
+      "verdict": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "case_id": "IPY-08",
+      "verdict": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "case_id": "IPY-09",
+      "verdict": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "case_id": "IPY-10",
+      "verdict": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "case_id": "IPY-11",
+      "verdict": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "case_id": "IPY-12",
+      "verdict": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "case_id": "IPY-13",
+      "verdict": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "case_id": "IPY-14",
+      "verdict": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "case_id": "IPY-15",
+      "verdict": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "case_id": "BR-01",
+      "verdict": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "case_id": "BR-02",
+      "verdict": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "case_id": "BR-03",
+      "verdict": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "case_id": "BR-04",
+      "verdict": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "case_id": "BR-05",
+      "verdict": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "case_id": "BR-06",
+      "verdict": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "case_id": "BR-07",
+      "verdict": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "case_id": "BR-08",
+      "verdict": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "case_id": "BR-09",
+      "verdict": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "case_id": "BR-10",
+      "verdict": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "case_id": "BR-11",
+      "verdict": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "case_id": "BR-12",
+      "verdict": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "case_id": "DATA-01",
+      "verdict": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "case_id": "DATA-02",
+      "verdict": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "case_id": "DATA-03",
+      "verdict": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "case_id": "DATA-04",
+      "verdict": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "case_id": "DATA-05",
+      "verdict": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "case_id": "DATA-06",
+      "verdict": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "case_id": "DATA-07",
+      "verdict": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "case_id": "DATA-08",
+      "verdict": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "case_id": "DATA-09",
+      "verdict": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "case_id": "DATA-10",
+      "verdict": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "case_id": "DATA-11",
+      "verdict": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "case_id": "DATA-12",
+      "verdict": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "case_id": "DATA-13",
+      "verdict": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "case_id": "REC-01",
+      "verdict": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "case_id": "REC-02",
+      "verdict": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "case_id": "REC-03",
+      "verdict": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "case_id": "REC-04",
+      "verdict": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "case_id": "REC-05",
+      "verdict": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "case_id": "REC-06",
+      "verdict": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "case_id": "REC-07",
+      "verdict": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "case_id": "REC-08",
+      "verdict": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "case_id": "REC-09",
+      "verdict": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "case_id": "REC-10",
+      "verdict": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "case_id": "FS-01",
+      "verdict": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "case_id": "FS-02",
+      "verdict": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "case_id": "FS-03",
+      "verdict": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "case_id": "FS-04",
+      "verdict": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "case_id": "FS-05",
+      "verdict": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "case_id": "FS-06",
+      "verdict": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "case_id": "CAP-01",
+      "verdict": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "case_id": "CAP-02",
+      "verdict": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "case_id": "CAP-03",
+      "verdict": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "case_id": "CAP-04",
+      "verdict": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "case_id": "CAP-05",
+      "verdict": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "case_id": "CAP-06",
+      "verdict": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "case_id": "CAP-07",
+      "verdict": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "case_id": "CAP-08",
+      "verdict": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "case_id": "CAP-09",
+      "verdict": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "case_id": "CAP-10",
+      "verdict": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "case_id": "CAP-11",
+      "verdict": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "case_id": "CAP-12",
+      "verdict": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "case_id": "CAP-13",
+      "verdict": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "case_id": "VER-01",
+      "verdict": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "case_id": "VER-02",
+      "verdict": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "case_id": "VER-03",
+      "verdict": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "case_id": "VER-04",
+      "verdict": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "case_id": "VER-05",
+      "verdict": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "case_id": "VER-06",
+      "verdict": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "case_id": "VER-07",
+      "verdict": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "case_id": "VER-08",
+      "verdict": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "case_id": "VER-09",
+      "verdict": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "case_id": "RES-01",
+      "verdict": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "case_id": "RES-02",
+      "verdict": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "case_id": "RES-03",
+      "verdict": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "case_id": "RES-04",
+      "verdict": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "case_id": "RES-05",
+      "verdict": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "case_id": "RES-06",
+      "verdict": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "case_id": "OBS-01",
+      "verdict": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "case_id": "OBS-02",
+      "verdict": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "case_id": "OBS-03",
+      "verdict": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "case_id": "OBS-04",
+      "verdict": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "case_id": "OBS-05",
+      "verdict": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "case_id": "OBS-06",
+      "verdict": "NOT_RUN",
+      "evidence": []
+    }
+  ]
+}

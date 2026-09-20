@@ -1,0 +1,262 @@
+{
+  "schema_version": 1,
+  "kind": "TRUSTED_LOCAL_V2_QUALIFICATION_IDENTITY_NOT_A_DSH_ARTIFACT",
+  "algorithm": "sha256(UTF8(json.dumps(inputs, sort_keys=True, separators=(',', ':'), ensure_ascii=True)))",
+  "algorithm_note": "The lock's own declared algorithm, reused verbatim so a reader who can reproduce v1's identity reproduces v2's the same way: sha256(UTF8(json.dumps(inputs, sort_keys=True, separators=(',',':'), ensure_ascii=True))).",
+  "runtime_deployment_identity": "17ce7722624c171561b1d32def2679e9a1e0dd3b12a5826655405f020fc9e724",
+  "runtime_inputs": {
+    "upstream_commit": "ddefc45fbc7f8e46dd73185e68295696d1297887",
+    "upstream_repository": "deepseek-ai/deepseek-harness",
+    "artifact_sha256": "69c49c871735dc7ee81ec51f266bbec129f075fd5066e046374f4b13ab02a705",
+    "launcher_realpath": "D:\\DSH\\src\\dsh-src\\apps\\cli\\lib\\bin.js",
+    "dependency_lock_sha256": "72523ca50bd34e3e21d07c82e1cedfdb91b17e1bcd83006c645e8dc6e0786fe0",
+    "node_version": "v24.18.0",
+    "package_manager_version": "11.7.0",
+    "host_profile_digest": "5b8b2a8e5d9ae13d35c1d86833f8b96eeb84078a13027a08efc1379a6fc8afb4",
+    "agent_preset_digest": "16bc20e559d0c05b810876522fd468952b421a69ed2b5276a3ddd06c01053bce",
+    "agent_preset_id": "daily-standard",
+    "resolved_plugin_graph_digest": "23f763d1bf2af8ba3210473d6743bc39ac0185bdefd661861935414a01e5af6b",
+    "model_and_provider_capabilities_digest": "no-live-provider-authorized",
+    "isolation_image_or_policy_digest": "none-trusted-local-os-user-account-is-the-execution-authority-boundary",
+    "os_and_architecture": "Windows 10.0.26200 / AMD64",
+    "authority_policy_digest": "user-authorizes-n-model-cannot-widen",
+    "trust_model_statement": "The OS user account is the execution authority boundary. No sandbox, no WSL, no Linux VM, no SSH execution world. Every process this deployment starts -- including the persistent IPython kernel -- runs as the invoking OS user with that user's full filesystem, network and process visibility. This deployment claims NO confinement of reads, writes, network or process visibility, and no case in qualification/specs/acceptance-spec.trusted-local-v1.json may be read as establishing one.",
+    "trust_model_name": null,
+    "implementation_commit": "42701e234223e1dc3819127459a32a2aa3c7d010",
+    "python_identity": {
+      "python_version": "3.14.3",
+      "python_executable": "C:\\Users\\hzq00\\AppData\\Local\\Programs\\Python\\Python314\\python.exe",
+      "implementation": "CPython",
+      "platform": "Windows-11-10.0.26200-SP0"
+    },
+    "jupyter_identity": {
+      "ipython": "9.16.1",
+      "ipykernel": "7.3.0",
+      "jupyter-client": "8.10.0",
+      "jupyter-core": "5.9.1",
+      "traitlets": "5.16.1",
+      "pyzmq": "27.2.0"
+    },
+    "extension_package_digests": {
+      "packages/dsh-daily-work/lib": {
+        "path": "packages/dsh-daily-work/lib",
+        "digest": "d525478d4c99d66fe92de19d56ced8a4c95ac4c50735d6681e5ed317b40e7398",
+        "files": 66
+      },
+      "packages/dsh-ipython/lib": {
+        "path": "packages/dsh-ipython/lib",
+        "digest": "9a47ac0fe615110fc1965e9b6e768aa1eb6f1f8ee6ba92ec12ecc82a02d2a1c6",
+        "files": 22
+      }
+    },
+    "resolved_host_graph_measured": "f6fb688b2bcc0a4a0dc64f9a40ee09d1cb4e205cb07ca3e8b75167dbfb0f586a",
+    "agent_tool_catalog_digest": "8f8b54fadf5ce2d1f1882c05d5c20d6cc2b8c2c2bd85bb9a654b1b106081978f",
+    "agent_tool_catalog_order_digest": "02a593f1cc11d534b16038cc7655c2a2866ab816aa7eeab8da8d39d65dd7b003",
+    "agent_tool_count": 27
+  },
+  "runtime_verification": {
+    "upstream_commit_recorded": "ddefc45fbc7f8e46dd73185e68295696d1297887",
+    "upstream_repository_recorded": "deepseek-ai/deepseek-harness",
+    "artifact_sha256_recorded": "69c49c871735dc7ee81ec51f266bbec129f075fd5066e046374f4b13ab02a705",
+    "launcher_realpath_recorded": "D:\\DSH\\src\\dsh-src\\apps\\cli\\lib\\bin.js",
+    "dependency_lock_sha256_recorded": "72523ca50bd34e3e21d07c82e1cedfdb91b17e1bcd83006c645e8dc6e0786fe0",
+    "node_version_recorded": "v24.18.0",
+    "package_manager_version_recorded": "11.7.0",
+    "host_profile_digest_recorded": "5b8b2a8e5d9ae13d35c1d86833f8b96eeb84078a13027a08efc1379a6fc8afb4",
+    "agent_preset_digest_recorded": "16bc20e559d0c05b810876522fd468952b421a69ed2b5276a3ddd06c01053bce",
+    "agent_preset_id_recorded": "daily-standard",
+    "resolved_plugin_graph_digest_recorded": "23f763d1bf2af8ba3210473d6743bc39ac0185bdefd661861935414a01e5af6b",
+    "model_and_provider_capabilities_digest_recorded": "no-live-provider-authorized",
+    "isolation_image_or_policy_digest_recorded": "none-trusted-local-os-user-account-is-the-execution-authority-boundary",
+    "os_and_architecture_recorded": "Windows 10.0.26200 / AMD64",
+    "authority_policy_digest_recorded": "user-authorizes-n-model-cannot-widen",
+    "probe_dsh_home": "D:/DSH/home/r0",
+    "probe_preset_default_id": "daily-standard"
+  },
+  "v1_lock_identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+  "qualification_contract": {
+    "contract_id": "trusted-local-v2.a238a8c83272",
+    "qualification_contract_identity": "a238a8c83272dedc51d3626ba1324a315dc98f335a73fb898ab80d1106d76b3c",
+    "acceptance_definition_path": "qualification/specs/acceptance-spec.trusted-local-v2.definition.json",
+    "acceptance_definition_digest": "115aa092d0279c005d6f83d0412c1e00d374b60f803dd10f56eaba878ed664e1",
+    "provenance_path": "qualification/specs/acceptance-spec.trusted-local-v2.provenance.json",
+    "provenance_digest": "2d7342bd105d796613cbcb6521feb0e849b18b603f40d989c4708ca889fbbebd",
+    "qualification_runner_digests": {
+      "qualification/runners/qualification-identity.py": "bdf3f8e736daf46836997b41510628ef9ffc71b18ab29684e7343cdb34e1f0a3",
+      "qualification/runners/verify-spec.py": "79a3a1fe5dd3058c602fdaec91d956c46f3c05e86c0073e3838265f8d745181c",
+      "qualification/runners/build-v2-definition.py": "b8fae63f50be92a44f9969c7b0b02eabb12e1307d913b24b98272fbc7793948c",
+      "qualification/runners/v2-identity-probe.mjs": "536951bdd6243dc5ed66ac51c2262e1f257cff0429839f9230cf70d7fc2b9b4e",
+      "qualification/specs/frozen/verify-freeze.py": "b4d05c80094c4c813dae4dd92ff4c2a3834d3e31728877efab94f79e58cc842e",
+      ".gitattributes": "a7c77786b5f1d95cf22ddbb1f3f37bdcf77c2ff6bab01c14a8fbc46e0bd22c5e"
+    },
+    "results_location": "qualification/results/trusted-local-v2.a238a8c83272/"
+  },
+  "field_provenance": [
+    {
+      "v3_term": "exact upstream DSH SHA",
+      "field": "upstream_commit",
+      "source": "lock",
+      "lock_key": "upstream_commit"
+    },
+    {
+      "v3_term": "exact implementation SHA",
+      "field": "implementation_commit",
+      "source": "derived",
+      "why_new": "v1's lock has no field for the implementation's own git revision. The launcher digest and the profile digests cover the ARTIFACTS, but the revision that produced them is not an input anywhere, so two different revisions with identical artifacts would share an identity."
+    },
+    {
+      "v3_term": "built launcher digest",
+      "field": "artifact_sha256",
+      "source": "lock",
+      "lock_key": "artifact_sha256",
+      "also": "launcher_realpath is reused as the path the digest covers"
+    },
+    {
+      "v3_term": "lockfile digest",
+      "field": "dependency_lock_sha256",
+      "source": "lock",
+      "lock_key": "dependency_lock_sha256"
+    },
+    {
+      "v3_term": "Node identity",
+      "field": "node_version",
+      "source": "lock",
+      "lock_key": "node_version"
+    },
+    {
+      "v3_term": "pnpm identity",
+      "field": "package_manager_version",
+      "source": "lock",
+      "lock_key": "package_manager_version"
+    },
+    {
+      "v3_term": "Python identity",
+      "field": "python_identity",
+      "source": "derived",
+      "why_new": "the lock names no Python. It is a real runtime input: the IPython kernel is a Python process, so its interpreter version and executable path decide what the primary execution surface IS."
+    },
+    {
+      "v3_term": "Jupyter identity",
+      "field": "jupyter_identity",
+      "source": "derived",
+      "why_new": "the lock names no Jupyter. ipykernel/jupyter_client/jupyter_core versions decide the kernel protocol and therefore the observable semantics of every IPY case."
+    },
+    {
+      "v3_term": "host profile digest",
+      "field": "host_profile_digest",
+      "source": "lock",
+      "lock_key": "host_profile_digest"
+    },
+    {
+      "v3_term": "Agent Preset digest",
+      "field": "agent_preset_digest",
+      "source": "lock",
+      "lock_key": "agent_preset_digest"
+    },
+    {
+      "v3_term": "resolved host graph digest",
+      "field": "resolved_plugin_graph_digest",
+      "source": "lock",
+      "lock_key": "resolved_plugin_graph_digest",
+      "caveat": "REUSED VERBATIM. This value is the sha256 of the DUMP FILE at qualification/results/M3.1-c2-profile/dump-config-daily-candidate.yml, which is what the loader DECLARED. The probe additionally measures the RESOLVED host row table (id + module + activation state) from a live boot; that measured digest is carried as `resolved_host_graph_measured` and is a SEPARATE input, not a replacement, because the declared dump and the activated graph are different facts."
+    },
+    {
+      "v3_term": "resolved per-Agent tool catalog/schema/order digest",
+      "field": "agent_tool_catalog_digest",
+      "source": "probe",
+      "why_new": "no lock field covers it, and no file can: the catalog exists only after the preset resolves for a real Session. The digest covers the names IN HEADER ORDER plus each tool's canonical parameters, so a reordering and a parameter change are both visible."
+    },
+    {
+      "v3_term": "local extension package digests",
+      "field": "extension_package_digests",
+      "source": "derived",
+      "why_new": "the two in-repo extension packages are the implementation, but no lock input names them. Their built `lib/` trees are what the profile actually loads, so a rebuilt-but-uncommitted lib/ would otherwise be invisible to the identity."
+    },
+    {
+      "v3_term": "provider/model route",
+      "field": "model_and_provider_capabilities_digest",
+      "source": "lock",
+      "lock_key": "model_and_provider_capabilities_digest"
+    },
+    {
+      "v3_term": "trust-model statement",
+      "field": "trust_model_statement",
+      "source": "lock",
+      "lock_key": "trust_model_statement",
+      "also": "isolation_image_or_policy_digest is reused as the policy half"
+    }
+  ],
+  "checkout_reproducibility": {
+    "why": "A contract digest that depends on the checkout that computed it is not an identity. `.gitattributes` declares `*.json text eol=lf` with core.autocrlf=true, so on-disk CRLF becomes LF in git and the two digests diverge unless line endings are normalised.",
+    "all_committed_inputs_reproducible": true,
+    "committed_inputs": 8,
+    "uncommitted_inputs": [],
+    "files": [
+      {
+        "path": "qualification/specs/acceptance-spec.trusted-local-v2.definition.json",
+        "canonical_digest_disk": "115aa092d0279c005d6f83d0412c1e00d374b60f803dd10f56eaba878ed664e1",
+        "canonical_digest_git": "115aa092d0279c005d6f83d0412c1e00d374b60f803dd10f56eaba878ed664e1",
+        "committed": true,
+        "reproducible": true
+      },
+      {
+        "path": "qualification/specs/acceptance-spec.trusted-local-v2.provenance.json",
+        "canonical_digest_disk": "2d7342bd105d796613cbcb6521feb0e849b18b603f40d989c4708ca889fbbebd",
+        "canonical_digest_git": "2d7342bd105d796613cbcb6521feb0e849b18b603f40d989c4708ca889fbbebd",
+        "committed": true,
+        "reproducible": true
+      },
+      {
+        "path": "qualification/runners/qualification-identity.py",
+        "canonical_digest_disk": "bdf3f8e736daf46836997b41510628ef9ffc71b18ab29684e7343cdb34e1f0a3",
+        "canonical_digest_git": "bdf3f8e736daf46836997b41510628ef9ffc71b18ab29684e7343cdb34e1f0a3",
+        "committed": true,
+        "reproducible": true
+      },
+      {
+        "path": "qualification/runners/verify-spec.py",
+        "canonical_digest_disk": "79a3a1fe5dd3058c602fdaec91d956c46f3c05e86c0073e3838265f8d745181c",
+        "canonical_digest_git": "79a3a1fe5dd3058c602fdaec91d956c46f3c05e86c0073e3838265f8d745181c",
+        "committed": true,
+        "reproducible": true
+      },
+      {
+        "path": "qualification/runners/build-v2-definition.py",
+        "canonical_digest_disk": "b8fae63f50be92a44f9969c7b0b02eabb12e1307d913b24b98272fbc7793948c",
+        "canonical_digest_git": "b8fae63f50be92a44f9969c7b0b02eabb12e1307d913b24b98272fbc7793948c",
+        "committed": true,
+        "reproducible": true
+      },
+      {
+        "path": "qualification/runners/v2-identity-probe.mjs",
+        "canonical_digest_disk": "536951bdd6243dc5ed66ac51c2262e1f257cff0429839f9230cf70d7fc2b9b4e",
+        "canonical_digest_git": "536951bdd6243dc5ed66ac51c2262e1f257cff0429839f9230cf70d7fc2b9b4e",
+        "committed": true,
+        "reproducible": true
+      },
+      {
+        "path": "qualification/specs/frozen/verify-freeze.py",
+        "canonical_digest_disk": "b4d05c80094c4c813dae4dd92ff4c2a3834d3e31728877efab94f79e58cc842e",
+        "canonical_digest_git": "b4d05c80094c4c813dae4dd92ff4c2a3834d3e31728877efab94f79e58cc842e",
+        "committed": true,
+        "reproducible": true
+      },
+      {
+        "path": ".gitattributes",
+        "canonical_digest_disk": "a7c77786b5f1d95cf22ddbb1f3f37bdcf77c2ff6bab01c14a8fbc46e0bd22c5e",
+        "canonical_digest_git": "a7c77786b5f1d95cf22ddbb1f3f37bdcf77c2ff6bab01c14a8fbc46e0bd22c5e",
+        "committed": true,
+        "reproducible": true
+      }
+    ]
+  },
+  "probe_path": "qualification/results/trusted-local-v2-identity/probe.json",
+  "probe_error": null,
+  "the_split": {
+    "runtime_inputs_include_any_verdict": false,
+    "runtime_inputs_include_any_evidence_path": false,
+    "contract_inputs_include_any_verdict": false,
+    "contract_inputs_include_any_evidence_path": false,
+    "statement": "Neither hash's input set contains a status, a verdict or an evidence path. Filing a result writes a file under the results directory, which is an input of neither hash. That is the property that makes the split work, and it is checked rather than asserted."
+  }
+}

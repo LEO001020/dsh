@@ -1,0 +1,35 @@
+{
+  "schema_version": 1,
+  "kind": "TRUSTED_LOCAL_V2_VERDICTS_NOT_A_DSH_ARTIFACT",
+  "qualification_contract_identity": "a238a8c83272dedc51d3626ba1324a315dc98f335a73fb898ab80d1106d76b3c",
+  "runtime_deployment_identity": "17ce7722624c171561b1d32def2679e9a1e0dd3b12a5826655405f020fc9e724",
+  "acceptance_definition_digest": "115aa092d0279c005d6f83d0412c1e00d374b60f803dd10f56eaba878ed664e1",
+  "verdict_vocabulary": [
+    "NOT_RUN",
+    "PASS",
+    "FAIL",
+    "NOT_CLAIMED",
+    "BLOCKED_EXTERNAL",
+    "REUSED_EVIDENCE (a binding, not a verdict)"
+  ],
+  "verdicts": [
+    {
+      "case_id": "ID-02",
+      "verdict": "PASS",
+      "evidence": [
+        {
+          "path": "qualification/results/trusted-local-v2-identity/probe.json",
+          "sha256": "bfb05c7714a48b8d6dc903ad10c9cf91dcc1300e2a56655295c814162459a856",
+          "note": "A self-test filing. ID-02 asks whether the identity recomputes from its inputs, and this artifact is the measured runtime input set the recomputation consumes."
+        }
+      ],
+      "reason": null
+    },
+    {
+      "case_id": "REC-09",
+      "verdict": "NOT_CLAIMED",
+      "not_claimed_basis": "SELF-TEST ROW, not a filed verdict: it exists to exercise the NOT_CLAIMED validation path. R9 owns the real topology decision.",
+      "evidence": []
+    }
+  ]
+}

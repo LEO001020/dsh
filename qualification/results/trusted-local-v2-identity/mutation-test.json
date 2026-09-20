@@ -1,0 +1,148 @@
+{
+  "what": "the v2 identity split, proved by mutation in both directions",
+  "generated_by": "qualification/runners/mutation-test-identity-split.py",
+  "baseline": {
+    "runtime": "17ce7722624c171561b1d32def2679e9a1e0dd3b12a5826655405f020fc9e724",
+    "contract": "a238a8c83272dedc51d3626ba1324a315dc98f335a73fb898ab80d1106d76b3c",
+    "definition": "115aa092d0279c005d6f83d0412c1e00d374b60f803dd10f56eaba878ed664e1"
+  },
+  "final": {
+    "runtime": "17ce7722624c171561b1d32def2679e9a1e0dd3b12a5826655405f020fc9e724",
+    "contract": "a238a8c83272dedc51d3626ba1324a315dc98f335a73fb898ab80d1106d76b3c",
+    "definition": "115aa092d0279c005d6f83d0412c1e00d374b60f803dd10f56eaba878ed664e1"
+  },
+  "tree_restored": true,
+  "arms": [
+    {
+      "arm": "A",
+      "what": "RUNTIME DRIFT: one measured runtime input changes (the resolved per-Agent tool catalog schema digest, a V3 E2 runtime identity term)",
+      "expected": "RuntimeDeploymentIdentity MOVES; QualificationContractIdentity MOVES (it hashes the runtime identity)",
+      "expect_runtime_moved": true,
+      "expect_contract_moved": true,
+      "runtime_moved": true,
+      "contract_moved": true,
+      "definition_moved": false,
+      "before": {
+        "runtime": "17ce7722624c171561b1d32def2679e9a1e0dd3b12a5826655405f020fc9e724",
+        "contract": "a238a8c83272dedc51d3626ba1324a315dc98f335a73fb898ab80d1106d76b3c",
+        "definition": "115aa092d0279c005d6f83d0412c1e00d374b60f803dd10f56eaba878ed664e1"
+      },
+      "after": {
+        "runtime": "5edc86f90d21dc529e1e20dd15d3645888c61f2f588ed1005dcbac030572a1f0",
+        "contract": "4a49abb0a8b63ee246117504f4cd7f41d96c0f2a8f7dcdc1d866a280d67b6b04",
+        "definition": "115aa092d0279c005d6f83d0412c1e00d374b60f803dd10f56eaba878ed664e1"
+      },
+      "restored": true,
+      "restored_sha256": "bfb05c7714a48b8d6dc903ad10c9cf91dcc1300e2a56655295c814162459a856",
+      "note": "mutated on a COPY: the real probe is the runtime identity's measured half"
+    },
+    {
+      "arm": "B",
+      "what": "SPEC DRIFT: ONE WORD of one oracle changes, nothing else",
+      "expected": "QualificationContractIdentity MOVES; RuntimeDeploymentIdentity DOES NOT",
+      "expect_runtime_moved": false,
+      "expect_contract_moved": true,
+      "runtime_moved": false,
+      "contract_moved": true,
+      "definition_moved": true,
+      "before": {
+        "runtime": "17ce7722624c171561b1d32def2679e9a1e0dd3b12a5826655405f020fc9e724",
+        "contract": "a238a8c83272dedc51d3626ba1324a315dc98f335a73fb898ab80d1106d76b3c",
+        "definition": "115aa092d0279c005d6f83d0412c1e00d374b60f803dd10f56eaba878ed664e1"
+      },
+      "after": {
+        "runtime": "17ce7722624c171561b1d32def2679e9a1e0dd3b12a5826655405f020fc9e724",
+        "contract": "eaa8b63b0fc238e736979a52a66a715f49afbb8db53b0558062f0ccdd1d9b360",
+        "definition": "1855a42ad96b3601bde88b0b108ef8b3c7cfbbf08f42a57c8d04b61fdbc78e90"
+      },
+      "restored": true,
+      "original_sha256": "115aa092d0279c005d6f83d0412c1e00d374b60f803dd10f56eaba878ed664e1",
+      "restored_sha256": "115aa092d0279c005d6f83d0412c1e00d374b60f803dd10f56eaba878ed664e1"
+    },
+    {
+      "arm": "C",
+      "what": "CONTRACT-METADATA DRIFT: a case's DEPENDENCIES change and every oracle is byte-identical",
+      "expected": "QualificationContractIdentity MOVES; RuntimeDeploymentIdentity DOES NOT",
+      "expect_runtime_moved": false,
+      "expect_contract_moved": true,
+      "runtime_moved": false,
+      "contract_moved": true,
+      "definition_moved": true,
+      "before": {
+        "runtime": "17ce7722624c171561b1d32def2679e9a1e0dd3b12a5826655405f020fc9e724",
+        "contract": "a238a8c83272dedc51d3626ba1324a315dc98f335a73fb898ab80d1106d76b3c",
+        "definition": "115aa092d0279c005d6f83d0412c1e00d374b60f803dd10f56eaba878ed664e1"
+      },
+      "after": {
+        "runtime": "17ce7722624c171561b1d32def2679e9a1e0dd3b12a5826655405f020fc9e724",
+        "contract": "9fc990159e0c08994623db9821f724457d7ba6d2ee41d71bdb50070a0f678dbb",
+        "definition": "0d105041f2a879ee466a915ed295a25d444623b2b6654d53b2d7c35b18b5a963"
+      },
+      "restored": true,
+      "original_sha256": "115aa092d0279c005d6f83d0412c1e00d374b60f803dd10f56eaba878ed664e1",
+      "restored_sha256": "115aa092d0279c005d6f83d0412c1e00d374b60f803dd10f56eaba878ed664e1"
+    },
+    {
+      "arm": "D",
+      "what": "RUNNER/GATE DRIFT: one line added to a qualification runner whose digest is a contract input",
+      "expected": "QualificationContractIdentity MOVES; RuntimeDeploymentIdentity DOES NOT",
+      "expect_runtime_moved": false,
+      "expect_contract_moved": true,
+      "runtime_moved": false,
+      "contract_moved": true,
+      "definition_moved": false,
+      "before": {
+        "runtime": "17ce7722624c171561b1d32def2679e9a1e0dd3b12a5826655405f020fc9e724",
+        "contract": "a238a8c83272dedc51d3626ba1324a315dc98f335a73fb898ab80d1106d76b3c",
+        "definition": "115aa092d0279c005d6f83d0412c1e00d374b60f803dd10f56eaba878ed664e1"
+      },
+      "after": {
+        "runtime": "17ce7722624c171561b1d32def2679e9a1e0dd3b12a5826655405f020fc9e724",
+        "contract": "c8293e014532fb3eb7b7847dc85f5cb5426966d357581c188bbf5e884f2ff908",
+        "definition": "115aa092d0279c005d6f83d0412c1e00d374b60f803dd10f56eaba878ed664e1"
+      },
+      "restored": true,
+      "original_sha256": "b8fae63f50be92a44f9969c7b0b02eabb12e1307d913b24b98272fbc7793948c",
+      "restored_sha256": "b8fae63f50be92a44f9969c7b0b02eabb12e1307d913b24b98272fbc7793948c"
+    },
+    {
+      "arm": "E",
+      "what": "RESULT FEEDBACK: a new artifact is written into the results directory",
+      "expected": "NEITHER identity moves -- results are OUTPUTS, not inputs",
+      "expect_runtime_moved": false,
+      "expect_contract_moved": false,
+      "runtime_moved": false,
+      "contract_moved": false,
+      "definition_moved": false,
+      "before": {
+        "runtime": "17ce7722624c171561b1d32def2679e9a1e0dd3b12a5826655405f020fc9e724",
+        "contract": "a238a8c83272dedc51d3626ba1324a315dc98f335a73fb898ab80d1106d76b3c",
+        "definition": "115aa092d0279c005d6f83d0412c1e00d374b60f803dd10f56eaba878ed664e1"
+      },
+      "after": {
+        "runtime": "17ce7722624c171561b1d32def2679e9a1e0dd3b12a5826655405f020fc9e724",
+        "contract": "a238a8c83272dedc51d3626ba1324a315dc98f335a73fb898ab80d1106d76b3c",
+        "definition": "115aa092d0279c005d6f83d0412c1e00d374b60f803dd10f56eaba878ed664e1"
+      },
+      "restored": true,
+      "restored_sha256": "n/a (a created file, removed)",
+      "note": "a real file was CREATED in the results directory and then removed; the removal is verified"
+    }
+  ],
+  "distinguishable": true,
+  "results_are_not_identity_inputs": {
+    "results_root": "qualification/results/",
+    "results_path_in_runtime_hashed_inputs": false,
+    "results_path_in_contract_hashed_inputs": false,
+    "results_location_is_reported_but_not_hashed": true,
+    "arm_e_measured_neither_identity_moved": true,
+    "statement": "Results are OUTPUTS bound to the contract identity. Arm E writes a real file into the results tree and neither identity moves; this block additionally checks that no identity input set NAMES a results path, so the property does not depend on the file not existing. The contract report carries `results_location` as a POINTER for a reader, which is why the check is against the HASHED input sets rather than against the whole report."
+  },
+  "failures": [],
+  "verdict": "SPLIT_PROVED",
+  "what_this_does_not_prove": [
+    "It does not prove any acceptance case. It mutates files and reads two digests.",
+    "It does not prove the runtime identity covers EVERY runtime fact. It proves the measured runtime inputs it carries are load-bearing, by moving one and observing the runtime identity move.",
+    "It does not prove the identity is COMPLETE for a deployment it has not seen. It proves the failure DIRECTIONS are separated, which is what the exit criterion asks."
+  ]
+}
