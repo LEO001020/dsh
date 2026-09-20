@@ -5,7 +5,7 @@
     "worktree": "D:/DSH/work/wt-r4",
     "dshHome": "D:/DSH/home/r4",
     "profile": "daily",
-    "port": 10913,
+    "port": 11030,
     "portReleased": true,
     "launcher": "D:/DSH/src/dsh-src/apps/cli/lib/bin.js",
     "presetRoots": [
@@ -30,7 +30,7 @@
     {
       "label": "a real Session was created on the deployment preset",
       "ok": true,
-      "detail": "\"session-8afcab81-a37a-47f4-ac64-dfe93b36ab0f\""
+      "detail": "\"session-75a0142b-e552-4caa-8846-eb2cacc55e5f\""
     },
     {
       "label": "the Session mounted the daily-standard preset",
@@ -40,7 +40,7 @@
     {
       "label": "SESSION CREATION ALONE CREATES NO RUN",
       "ok": true,
-      "detail": "runsForThisSession=0 hostWideRuns=3"
+      "detail": "runsForThisSession=0 hostWideRuns=5"
     },
     {
       "label": "the `work` tool does not advertise a create action",
@@ -65,17 +65,17 @@
     {
       "label": "`/work start 10` through CommandRuntime SUCCEEDS",
       "ok": true,
-      "detail": "kind=\"success\" text=\"Run authorized: run-start-session-8afcab81-a37a-47f4-ac64-dfe93b36ab0f\\nRun: run-start-session-8afcab81-a37a-47f4-ac64-dfe93b36ab0f\\nPhase: open\\nTarget: 10\\nDurably admitted: 0\\nLaunching: 0\\nActive assignments: 0\\nStopping: 0\\nQuarantined (unknown): 0\\nConfirmed: 0\\nCapacity deficit: 10 (insufficient_ready_tasks)\\nAuthorized by: human-command cmd-6f7231ce-3\" error=null"
+      "detail": "kind=\"success\" text=\"Run authorized: run-start-session-75a0142b-e552-4caa-8846-eb2cacc55e5f\\nRun: run-start-session-75a0142b-e552-4caa-8846-eb2cacc55e5f\\nPhase: open\\nTarget: 10\\nDurably admitted: 0\\nLaunching: 0\\nActive assignments: 0\\nStopping: 0\\nQuarantined (unknown): 0\\nConfirmed: 0\\nCapacity deficit: 10 (insufficient_ready_tasks)\\nAuthorized by: human-command cmd-3f75c719-3\" error=null"
     },
     {
       "label": "A DURABLE RUN EXISTS after `/work start 10`",
       "ok": true,
-      "detail": "runsForThisSession=1 hostWideRuns=5 run={\"runId\":\"run-start-session-8afcab81-a37a-47f4-ac64-dfe93b36ab0f\",\"rootSessionId\":\"session-8afcab81-a37a-47f4-ac64-dfe93b36ab0f\",\"authorizationRef\":\"dsh-work-auth/1|kind=human-command|action=start|commandId=cmd-6f7231ce-3|commandName=work|commandArgs=start 10\",\"phase\":\"open\",\"requestedTarget\":10,\"epoch\":1,\"createdAt\":\"2026-09-20T02:09:05.347Z\"}"
+      "detail": "runsForThisSession=1 hostWideRuns=7 run={\"runId\":\"run-start-session-75a0142b-e552-4caa-8846-eb2cacc55e5f\",\"rootSessionId\":\"session-75a0142b-e552-4caa-8846-eb2cacc55e5f\",\"authorizationRef\":\"dsh-work-auth/1|kind=human-command|action=start|commandId=cmd-3f75c719-3|commandName=work|commandArgs=start 10\",\"phase\":\"open\",\"requestedTarget\":10,\"epoch\":1,\"createdAt\":\"2026-09-20T02:12:50.580Z\"}"
     },
     {
       "label": "the run records the ROOT SESSION that authorized it",
       "ok": true,
-      "detail": "\"session-8afcab81-a37a-47f4-ac64-dfe93b36ab0f\" vs \"session-8afcab81-a37a-47f4-ac64-dfe93b36ab0f\""
+      "detail": "\"session-75a0142b-e552-4caa-8846-eb2cacc55e5f\" vs \"session-75a0142b-e552-4caa-8846-eb2cacc55e5f\""
     },
     {
       "label": "the run records target N=10 from the command",
@@ -85,22 +85,22 @@
     {
       "label": "the run records an authorization ref naming the human command",
       "ok": true,
-      "detail": "\"dsh-work-auth/1|kind=human-command|action=start|commandId=cmd-6f7231ce-3|commandName=work|commandArgs=start 10\""
+      "detail": "\"dsh-work-auth/1|kind=human-command|action=start|commandId=cmd-3f75c719-3|commandName=work|commandArgs=start 10\""
     },
     {
       "label": "DUPLICATE `/work start 10` is deterministic and creates NO second run",
       "ok": true,
-      "detail": "runCount=1 runId=\"run-start-session-8afcab81-a37a-47f4-ac64-dfe93b36ab0f\" text=\"A run is already active for this session; nothing was created: run-start-session-8afcab81-a37a-47f4-ac64-dfe93b36ab0f\\nPhase: open\\nTarget: 10\\nDurably admitted: 0\\nLaunching: 0\\nActive assignments: 0\\nStopping: 0\\nQuarantined (unknown): 0\\nConfirmed: 0\\nCapacity deficit: 10 (insufficient_ready_tasks)\\nAuthorized by: human-command cmd-6f7231ce-3\""
+      "detail": "runCount=1 runId=\"run-start-session-75a0142b-e552-4caa-8846-eb2cacc55e5f\" text=\"A run is already active for this session; nothing was created: run-start-session-75a0142b-e552-4caa-8846-eb2cacc55e5f\\nPhase: open\\nTarget: 10\\nDurably admitted: 0\\nLaunching: 0\\nActive assignments: 0\\nStopping: 0\\nQuarantined (unknown): 0\\nConfirmed: 0\\nCapacity deficit: 10 (insufficient_ready_tasks)\\nAuthorized by: human-command cmd-3f75c719-3\""
     },
     {
       "label": "TWO CONCURRENT authorizations leave exactly ONE run",
       "ok": true,
-      "detail": "runs=1 texts=[\"Run authorized: run-start-session-3cb7c052-2ce5-4d8e-9cc0-8f51da914644\",\"A run is already active for this session; nothing was created: run-start-session-3cb7c052-2ce5-4d8e-9cc0-8f51da914644\"]"
+      "detail": "runs=1 texts=[\"Run authorized: run-start-session-25ed7342-63ef-47dc-9296-f41549b50912\",\"A run is already active for this session; nothing was created: run-start-session-25ed7342-63ef-47dc-9296-f41549b50912\"]"
     },
     {
       "label": "exactly ONE concurrent call reports that it created the run",
       "ok": true,
-      "detail": "claimedCreated=1 texts=[\"Run authorized: run-start-session-3cb7c052-2ce5-4d8e-9cc0-8f51da914644\",\"A run is already active for this session; nothing was created: run-start-session-3cb7c052-2ce5-4d8e-9cc0-8f51da914644\"]"
+      "detail": "claimedCreated=1 texts=[\"Run authorized: run-start-session-25ed7342-63ef-47dc-9296-f41549b50912\",\"A run is already active for this session; nothing was created: run-start-session-25ed7342-63ef-47dc-9296-f41549b50912\"]"
     },
     {
       "label": "the typert Remote gateway is mounted (the UI route exists)",
@@ -110,7 +110,7 @@
     {
       "label": "the UI route `commands/execute` resolves `/work status` on a live agent",
       "ok": true,
-      "detail": "error=null unresolved=false value={\"commandId\":\"cmd-6f7231ce-5\",\"result\":{\"kind\":\"success\",\"text\":\"Run: run-start-session-8afcab81-a37a-47f4-ac64-dfe93b36ab0f\\nPhase: open\\nTarget: 10\\nDurably admitted: 0\\nLaunching: 0\\nActive assignments: 0\\nStopping: 0\\nQuarantined (unknown): 0\\nConfirmed: 0\\nCapacity deficit: 10 (insufficient_ready_tasks)\\nAuthorized by: human-command cmd-6f7231ce-3\"}}"
+      "detail": "error=null unresolved=false value={\"commandId\":\"cmd-3f75c719-5\",\"result\":{\"kind\":\"success\",\"text\":\"Run: run-start-session-75a0142b-e552-4caa-8846-eb2cacc55e5f\\nPhase: open\\nTarget: 10\\nDurably admitted: 0\\nLaunching: 0\\nActive assignments: 0\\nStopping: 0\\nQuarantined (unknown): 0\\nConfirmed: 0\\nCapacity deficit: 10 (insufficient_ready_tasks)\\nAuthorized by: human-command cmd-3f75c719-3\"}}"
     },
     {
       "label": "a read through the UI route creates no run",
@@ -120,17 +120,17 @@
     {
       "label": "the UI route is IDEMPOTENT too: `/work start 5` on an active run creates no second run",
       "ok": true,
-      "detail": "runCount=1 value={\"commandId\":\"cmd-6f7231ce-6\",\"result\":{\"kind\":\"success\",\"text\":\"A run is already active for this session; nothing was created: run-start-session-8afcab81-a37a-47f4-ac64-dfe93b36ab0f\\nPhase: open\\nTarget: 10\\nDurably admitted: 0\\nLaunching: 0\\nActive assignments: 0\\nStopping: 0\\nQuarantined (unknown): 0\\nConfirmed: 0\\nCapacity deficit: 10 (insufficient_ready_tasks)\\nAuthorized by: human-command cmd-6f7231ce-3\"}} error=null"
+      "detail": "runCount=1 value={\"commandId\":\"cmd-3f75c719-6\",\"result\":{\"kind\":\"success\",\"text\":\"A run is already active for this session; nothing was created: run-start-session-75a0142b-e552-4caa-8846-eb2cacc55e5f\\nPhase: open\\nTarget: 10\\nDurably admitted: 0\\nLaunching: 0\\nActive assignments: 0\\nStopping: 0\\nQuarantined (unknown): 0\\nConfirmed: 0\\nCapacity deficit: 10 (insufficient_ready_tasks)\\nAuthorized by: human-command cmd-3f75c719-3\"}} error=null"
     },
     {
       "label": "the real HTTP transport is available (connection + webServer port)",
       "ok": true,
-      "detail": "available=true origin=\"http://127.0.0.1:10913\" error=null"
+      "detail": "available=true origin=\"http://127.0.0.1:11030\" error=null"
     },
     {
       "label": "POST /api/commands/execute resolves `/work status` over real HTTP",
       "ok": true,
-      "detail": "status=200 body={\"type\":\"server-response\",\"rpcId\":\"rpc-r4-status\",\"result\":{\"ok\":true,\"value\":{\"commandId\":\"cmd-6f7231ce-7\",\"result\":{\"kind\":\"success\",\"text\":\"Run: run-start-session-8afcab81-a37a-47f4-ac64-dfe93b36ab0f\\nPhase: open\\nTarget: 10\\nDurably admitted: 0\\nLaunching: 0\\nActive assignments: 0\\nStopping: 0\\nQuarantined (unknown): 0\\nConfirmed: 0\\nCapacity deficit: 10 (insufficient_ready_tasks)\\nAuthorized "
+      "detail": "status=200 body={\"type\":\"server-response\",\"rpcId\":\"rpc-r4-status\",\"result\":{\"ok\":true,\"value\":{\"commandId\":\"cmd-3f75c719-7\",\"result\":{\"kind\":\"success\",\"text\":\"Run: run-start-session-75a0142b-e552-4caa-8846-eb2cacc55e5f\\nPhase: open\\nTarget: 10\\nDurably admitted: 0\\nLaunching: 0\\nActive assignments: 0\\nStopping: 0\\nQuarantined (unknown): 0\\nConfirmed: 0\\nCapacity deficit: 10 (insufficient_ready_tasks)\\nAuthorized "
     },
     {
       "label": "a read over real HTTP creates no run",
@@ -140,7 +140,7 @@
     {
       "label": "the REAL UI ACTION over HTTP is idempotent: no second run",
       "ok": true,
-      "detail": "status=200 runs=1 body={\"type\":\"server-response\",\"rpcId\":\"rpc-r4-start\",\"result\":{\"ok\":true,\"value\":{\"commandId\":\"cmd-6f7231ce-8\",\"result\":{\"kind\":\"success\",\"text\":\"A run is already active for this session; nothing was created: run-start-session-8afcab81-a37a-47f4-ac64-dfe93b36ab0f\\nPhase: open\\nTarget: 10\\nDurably admitted: 0\\nLaunching: 0\\nActive assignments: 0\\nStopping: 0\\nQuarantined (unknown): 0\\nConfirmed: 0\\nCap"
+      "detail": "status=200 runs=1 body={\"type\":\"server-response\",\"rpcId\":\"rpc-r4-start\",\"result\":{\"ok\":true,\"value\":{\"commandId\":\"cmd-3f75c719-8\",\"result\":{\"kind\":\"success\",\"text\":\"A run is already active for this session; nothing was created: run-start-session-75a0142b-e552-4caa-8846-eb2cacc55e5f\\nPhase: open\\nTarget: 10\\nDurably admitted: 0\\nLaunching: 0\\nActive assignments: 0\\nStopping: 0\\nQuarantined (unknown): 0\\nConfirmed: 0\\nCap"
     },
     {
       "label": "`/work target 7` updates the durable record",
@@ -155,7 +155,7 @@
     {
       "label": "THE REAL `work` TOOL NOW RESOLVES THE RUN (F1 CLOSED)",
       "ok": true,
-      "detail": "isError=false value={\"action\":\"status\",\"runId\":\"run-start-session-8afcab81-a37a-47f4-ac64-dfe93b36ab0f\",\"desiredTarget\":7,\"readyTasks\":0,\"durablyAdmitted\":0,\"launching\":0,\"activeAssignments\":0,\"waitingOwnedTool\":0,\"providerWaiting\":0,\"stopping\":0,\"quarantinedUnknown\":0,\"confirmed\":0,\"cancelled\":0,\"capacityDeficit\":7,\"deficitReason\":\"insufficient_ready_tasks\"} error=null"
+      "detail": "isError=false value={\"action\":\"status\",\"runId\":\"run-start-session-75a0142b-e552-4caa-8846-eb2cacc55e5f\",\"desiredTarget\":7,\"readyTasks\":0,\"durablyAdmitted\":0,\"launching\":0,\"activeAssignments\":0,\"waitingOwnedTool\":0,\"providerWaiting\":0,\"stopping\":0,\"quarantinedUnknown\":0,\"confirmed\":0,\"cancelled\":0,\"capacityDeficit\":7,\"deficitReason\":\"insufficient_ready_tasks\"} error=null"
     },
     {
       "label": "the tool reports the LIVE target the human set",
@@ -175,7 +175,7 @@
     {
       "label": "the human command lifecycle is on the session log with source.kind=user",
       "ok": true,
-      "detail": "runEvents=[{\"seq\":0,\"commandId\":\"cmd-6f7231ce-3\",\"name\":\"work\",\"args\":\" start 10\",\"sourceKind\":\"user\"},{\"seq\":2,\"commandId\":\"cmd-6f7231ce-4\",\"name\":\"work\",\"args\":\" start 10\",\"sourceKind\":\"user\"},{\"seq\":4,\"commandId\":\"cmd-6f7231ce-5\",\"name\":\"work\",\"args\":\" status\",\"sourceKind\":\"user\"},{\"seq\":6,\"commandId\":\"cmd-6f7231ce-6\",\"name\":\"work\",\"args\":\" start 5\",\"sourceKind\":\"user\"},{\"seq\":8,\"commandId\":\"cmd-6f7231ce-7\",\"name\":\"work\",\"args\":\" status\",\"sourceKind\":\"user\"},{\"seq\":10,\"commandId\":\"cmd-6f7231ce-8\",\"name\":\"work\",\"args\":\" start 5\",\"sourceKind\":\"user\"},{\"seq\":12,\"commandId\":\"cmd-6f7231ce-9\",\"name\":\"work\",\"args\":\" target 7\",\"sourceKind\":\"user\"}]"
+      "detail": "runEvents=[{\"seq\":0,\"commandId\":\"cmd-3f75c719-3\",\"name\":\"work\",\"args\":\" start 10\",\"sourceKind\":\"user\"},{\"seq\":2,\"commandId\":\"cmd-3f75c719-4\",\"name\":\"work\",\"args\":\" start 10\",\"sourceKind\":\"user\"},{\"seq\":4,\"commandId\":\"cmd-3f75c719-5\",\"name\":\"work\",\"args\":\" status\",\"sourceKind\":\"user\"},{\"seq\":6,\"commandId\":\"cmd-3f75c719-6\",\"name\":\"work\",\"args\":\" start 5\",\"sourceKind\":\"user\"},{\"seq\":8,\"commandId\":\"cmd-3f75c719-7\",\"name\":\"work\",\"args\":\" status\",\"sourceKind\":\"user\"},{\"seq\":10,\"commandId\":\"cmd-3f75c719-8\",\"name\":\"work\",\"args\":\" start 5\",\"sourceKind\":\"user\"},{\"seq\":12,\"commandId\":\"cmd-3f75c719-9\",\"name\":\"work\",\"args\":\" target 7\",\"sourceKind\":\"user\"}]"
     },
     {
       "label": "every command/run has a paired command/done",
