@@ -86,7 +86,7 @@ async function rig(entry = 5, doc: Record<string, unknown> = {}): Promise<Rig> {
   // (packages/settings/settings/tests/settings.spec.ts:51-56).
   await ctx.plugin(MemorySettings, doc)
   const settings = ctx.get('settings') as MemorySettings
-  const target = installDailyWorkTargetSetting(ctx, { targetActiveChildren: entry })
+  const target = installDailyWorkTargetSetting(ctx, { defaultTargetActiveChildren: entry })
   cleanups.push(async () => { await ctx.fiber.dispose() })
   return { ctx, settings, target }
 }
@@ -98,8 +98,8 @@ describe('UI-01: the target is a real, host-persisted, live-read setting', () =>
     expect(descriptor).toBeDefined()
     // The composition entry is the base layer, so an absent user section resolves
     // to it rather than to a schema default that could drift from the profile.
-    expect(descriptor!.base).toEqual({ targetActiveChildren: 5 })
-    expect(descriptor!.value).toEqual({ targetActiveChildren: 5 })
+    expect(descriptor!.base).toEqual({ defaultTargetActiveChildren: 5 })
+    expect(descriptor!.value).toEqual({ defaultTargetActiveChildren: 5 })
     // `applies: 'live'` is what tells a configuration surface the change does not
     // need a restart. `register` defaults to it (settings/src/index.ts:428).
     expect(descriptor!.applies).toBe('live')
@@ -107,12 +107,12 @@ describe('UI-01: the target is a real, host-persisted, live-read setting', () =>
 
   it('reads LIVE: a write takes effect on the next read with NO restart', async () => {
     const r = await rig(5)
-    expect(r.target.target()).toBe(5)
-    await r.settings.update(DAILY_WORK_NS, { targetActiveChildren: 15 })
+    expect(r.target.defaultTarget()).toBe(5)
+    await r.settings.update(DAILY_WORK_NS, { defaultTargetActiveChildren: 15 })
     // The same handle, no re-registration, no restart.
-    expect(r.target.target()).toBe(15)
-    await r.settings.update(DAILY_WORK_NS, { targetActiveChildren: 1 })
-    expect(r.target.target()).toBe(1)
+    expect(r.target.defaultTarget()).toBe(15)
+    await r.settings.update(DAILY_WORK_NS, { defaultTargetActiveChildren: 1 })
+    expect(r.target.defaultTarget()).toBe(1)
   })
 
   it('persists through the provider, so a reconnect reads host state and not React state', async () => {
@@ -120,12 +120,12 @@ describe('UI-01: the target is a real, host-persisted, live-read setting', () =>
     await r.target.set(30, r.target.revision())
     // The provider really stored the section.
     expect(r.settings.persisted.some(entry => entry.ns === DAILY_WORK_NS)).toBe(true)
-    expect(r.settings.doc[DAILY_WORK_NS]).toEqual({ targetActiveChildren: 30 })
+    expect(r.settings.doc[DAILY_WORK_NS]).toEqual({ defaultTargetActiveChildren: 30 })
     // A FRESH handle over the same stored document reads the persisted value,
     // which is the "reconnect reads host state" property.
-    const second = installDailyWorkTargetSetting(new Context(), { targetActiveChildren: 5 })
+    const second = installDailyWorkTargetSetting(new Context(), { defaultTargetActiveChildren: 5 })
     expect(second.target()).toBe(5)
-    expect(r.settings.doc[DAILY_WORK_NS]).toEqual({ targetActiveChildren: 30 })
+    expect(r.settings.doc[DAILY_WORK_NS]).toEqual({ defaultTargetActiveChildren: 30 })
   })
 
   it('reports the revision a UI must read before writing', async () => {
@@ -138,7 +138,7 @@ describe('UI-01: the target is a real, host-persisted, live-read setting', () =>
   it('falls back to the composition entry when no settings provider is mounted', async () => {
     // A host with no settings provider must still boot with a defined target.
     const ctx = new Context()
-    const target = installDailyWorkTargetSetting(ctx, { targetActiveChildren: 7 })
+    const target = installDailyWorkTargetSetting(ctx, { defaultTargetActiveChildren: 7 })
     expect(target.target()).toBe(7)
     // And there is no writer, reported as such rather than silently doing nothing.
     expect(() => target.revision()).toThrow(/settings service is not mounted/)
@@ -158,7 +158,7 @@ describe('UI-02: illegal N is refused at BOTH boundaries', () => {
     ['a numeric string', '12'],
     ['a non-numeric string', 'twelve'],
     ['null', null],
-    ['an object', { targetActiveChildren: 12 }],
+    ['an object', { defaultTargetActiveChildren: 12 }],
     ['an array', [12]],
     ['a boolean', true],
     ['a function', () => 12],
@@ -169,7 +169,7 @@ describe('UI-02: illegal N is refused at BOTH boundaries', () => {
     const outcome = await r.target.set(value as number, r.target.revision())
     expect(outcome.ok).toBe(false)
     // The target is unchanged and nothing was persisted.
-    expect(r.target.target()).toBe(5)
+    expect(r.target.defaultTarget()).toBe(5)
     expect(r.settings.persisted).toHaveLength(0)
   })
 
@@ -178,11 +178,11 @@ describe('UI-02: illegal N is refused at BOTH boundaries', () => {
     // exercises the schema itself — which is the boundary a UI write actually
     // crosses (`settings-controller` calls `settings.mutate` directly).
     const r = await rig(5)
-    await expect(r.settings.update(DAILY_WORK_NS, { targetActiveChildren: 0 })).rejects.toThrow()
-    await expect(r.settings.update(DAILY_WORK_NS, { targetActiveChildren: 31 })).rejects.toThrow()
-    await expect(r.settings.update(DAILY_WORK_NS, { targetActiveChildren: 2.5 })).rejects.toThrow()
-    await expect(r.settings.update(DAILY_WORK_NS, { targetActiveChildren: '12' })).rejects.toThrow()
-    await expect(r.settings.update(DAILY_WORK_NS, { targetActiveChildren: Number.NaN })).rejects.toThrow()
+    await expect(r.settings.update(DAILY_WORK_NS, { defaultTargetActiveChildren: 0 })).rejects.toThrow()
+    await expect(r.settings.update(DAILY_WORK_NS, { defaultTargetActiveChildren: 31 })).rejects.toThrow()
+    await expect(r.settings.update(DAILY_WORK_NS, { defaultTargetActiveChildren: 2.5 })).rejects.toThrow()
+    await expect(r.settings.update(DAILY_WORK_NS, { defaultTargetActiveChildren: '12' })).rejects.toThrow()
+    await expect(r.settings.update(DAILY_WORK_NS, { defaultTargetActiveChildren: Number.NaN })).rejects.toThrow()
     // Nothing was stored by any of them.
     expect(r.settings.persisted).toHaveLength(0)
   })
@@ -192,7 +192,7 @@ describe('UI-02: illegal N is refused at BOTH boundaries', () => {
     for (const value of [MIN_TARGET_ACTIVE_CHILDREN, MAX_TARGET_ACTIVE_CHILDREN, 1, 10, 30]) {
       const outcome = await r.target.set(value, r.target.revision())
       expect(outcome.ok, `expected ${value} to be accepted`).toBe(true)
-      expect(r.target.target()).toBe(value)
+      expect(r.target.defaultTarget()).toBe(value)
     }
   })
 
@@ -216,7 +216,7 @@ describe('UI-02: illegal N is refused at BOTH boundaries', () => {
     const ctx = new Context()
     await ctx.plugin(MemorySettings, {})
     // A composition entry that is itself out of range must fail the mount loudly.
-    expect(() => installDailyWorkTargetSetting(ctx, { targetActiveChildren: 99 }))
+    expect(() => installDailyWorkTargetSetting(ctx, { defaultTargetActiveChildren: 99 }))
       .toThrow(/between 1 and 30/)
     cleanups.push(async () => { await ctx.fiber.dispose() })
   })
@@ -277,7 +277,7 @@ describe('UI-03: revision fencing makes a concurrent write an explicit stale rej
     expect(second.ok).toBe(false)
     expect(second).toMatchObject({ reason: 'stale', expected: revision })
     // The winner's value stands. There was no silent last-write-wins.
-    expect(r.target.target()).toBe(10)
+    expect(r.target.defaultTarget()).toBe(10)
   })
 
   it('the stale rejection is a typed conflict, not a validation failure', async () => {
@@ -298,8 +298,8 @@ describe('UI-03: revision fencing makes a concurrent write an explicit stale rej
     // the mapping in `set` cannot silently drift from the real error shape.
     const r = await rig(5)
     const revision = r.target.revision()
-    await r.settings.update(DAILY_WORK_NS, { targetActiveChildren: 10 }, revision)
-    const failure = await r.settings.update(DAILY_WORK_NS, { targetActiveChildren: 20 }, revision)
+    await r.settings.update(DAILY_WORK_NS, { defaultTargetActiveChildren: 10 }, revision)
+    const failure = await r.settings.update(DAILY_WORK_NS, { defaultTargetActiveChildren: 20 }, revision)
       .then(() => undefined, (error: unknown) => error)
     expect(failure).toBeInstanceOf(SettingsConflictError)
     expect((failure as SettingsConflictError).code).toBe('SETTINGS_CONFLICT')
@@ -326,14 +326,14 @@ describe('UI-03: revision fencing makes a concurrent write an explicit stale rej
     const second = await r.target.set(20)
     expect(first.ok).toBe(true)
     expect(second.ok).toBe(true)
-    expect(r.target.target()).toBe(20)
+    expect(r.target.defaultTarget()).toBe(20)
   })
 
   it('a revision that never existed is stale, not accepted', async () => {
     const r = await rig(5)
     const stale = await r.target.set(10, 999)
     expect(stale).toMatchObject({ reason: 'stale', expected: 999, actual: 0 })
-    expect(r.target.target()).toBe(5)
+    expect(r.target.defaultTarget()).toBe(5)
   })
 })
 
@@ -402,20 +402,20 @@ describe('CAP-08: raising and lowering N keeps running tasks, and the record fol
     // so a raise applies to the next admission decision and a lower stops new
     // admissions without touching a task already in flight.
     const r = await rig(5)
-    expect(r.target.target()).toBe(5)
+    expect(r.target.defaultTarget()).toBe(5)
 
     // RAISE 5 -> 15: the next read sees it, so the top-up budget is 15.
     await r.target.set(15, r.target.revision())
-    expect(r.target.target()).toBe(15)
+    expect(r.target.defaultTarget()).toBe(15)
 
     // LOWER 15 -> 5: the value changes and nothing else is touched. There is no
     // kill, no drain, and no reset of a running task's budget in this module —
     // the plan's rule is "N下降温和收敛；N变化不改正在运行任务的原budget".
     await r.target.set(5, r.target.revision())
-    expect(r.target.target()).toBe(5)
+    expect(r.target.defaultTarget()).toBe(5)
 
     // RAISE back to 30.
     await r.target.set(30, r.target.revision())
-    expect(r.target.target()).toBe(30)
+    expect(r.target.defaultTarget()).toBe(30)
   })
 })

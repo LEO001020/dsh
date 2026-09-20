@@ -150,7 +150,7 @@ async function runWork(r: Rig, suffix: string): Promise<string> {
     r.agent, `/work${suffix}`, [], new AbortController().signal,
   )
   if (execution === undefined) throw new Error(`/work${suffix} did not resolve to a registered command`)
-  return execution.result.text
+  return execution.result.text ?? ''
 }
 
 /** The one run this session owns, through the service's own session lookup. */
@@ -323,7 +323,7 @@ describe('P7 split: the default and the active target are independently addressa
     // they cannot be one value. The setting is the settings document; the run
     // target is the Work store.
     const { readFileSync, readdirSync } = await import('node:fs')
-    expect(readFileSync(r.settingsPath, 'utf8')).toContain('targetActiveChildren: 20')
+    expect(readFileSync(r.settingsPath, 'utf8')).toContain('defaultTargetActiveChildren: 20')
     const runId = activeRun(r).runId
     const stored = readdirSync(r.storeRoot)
       .filter(name => name.endsWith('.json'))
