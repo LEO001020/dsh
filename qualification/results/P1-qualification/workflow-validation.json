@@ -1,0 +1,84 @@
+{
+  ".github/workflows/post-integration.yml": {
+    "parses": true,
+    "jobs": [
+      "windows-post-integration",
+      "linux-early-signal"
+    ],
+    "triggers": [
+      "push",
+      "pull_request",
+      "workflow_dispatch"
+    ],
+    "steps": {
+      "windows-post-integration": [
+        "1. checkout",
+        "2. clean-tree / input checks",
+        "3. install pinned deps",
+        "4. build",
+        "5. authoritative typecheck",
+        "6. qualification meta-tests",
+        "7. unit / integration tests",
+        "8. assembled daily boot in an isolated DSH_HOME",
+        "9. real IPython kernel smoke",
+        "10. dsh.call e2e",
+        "11. dsh.data e2e",
+        "12. Work /work product path",
+        "13. N rolling mechanical test",
+        "14. cross-tree runtime graph test",
+        "15. package / foreign-path install test",
+        "16. secret scan",
+        "17. fresh BuildManifest",
+        "18. release-gate"
+      ],
+      "linux-early-signal": [
+        "1. checkout",
+        "2. the same one-ValidationResult check, on a second platform",
+        "3. qualification meta-tests"
+      ]
+    }
+  },
+  ".github/workflows/paid-live-provider.yml": {
+    "parses": true,
+    "jobs": [
+      "paid-gate"
+    ],
+    "triggers": [
+      "workflow_dispatch"
+    ],
+    "steps": {
+      "paid-gate": [
+        "1. checkout",
+        "2. refuse unless the authorization is explicit and agrees with the lock",
+        "3. record the authorization before spending anything",
+        "4. the live gate itself"
+      ]
+    }
+  },
+  "_honest_status": {
+    "executed_on_a_runner": false,
+    "reason": "No GitHub runner exists for this repository in this project, and no network authorization to add one. Every step is UNVALIDATED YAML: a claim about what CI would do, not evidence that CI does it.",
+    "what_is_validated": "Each step's COMMAND, where it could be run locally. Steps whose command was run locally are named in the workflow comments as VALIDATED LOCALLY; steps that were not are marked NOT RUN LOCALLY with the reason.",
+    "validated_locally": [
+      "5. authoritative typecheck (pnpm typecheck)",
+      "6. qualification meta-tests (verify-spec --summary, verify-spec, meta-flaky, meta-mutations)",
+      "14. cross-tree runtime graph test (import-graph.mjs; the runtime-resolved check itself does NOT exist)",
+      "16. secret scan (as a scan shape)",
+      "18. release-gate"
+    ],
+    "not_run_locally": [
+      "3. install pinned deps",
+      "4. build",
+      "8. assembled daily boot",
+      "9. real IPython kernel smoke",
+      "10. dsh.call e2e",
+      "11. dsh.data e2e",
+      "12. Work /work product path",
+      "13. N rolling mechanical test",
+      "15. package/foreign-path install",
+      "17. fresh BuildManifest"
+    ],
+    "paid_workflow_budget_consumed": false,
+    "paid_workflow_status": "BLOCKED_EXTERNAL by construction: triggers only on workflow_dispatch and refuses unless BOTH the dispatch acknowledgement is set AND the lock's runtime_authorization.live_provider_budget_authorized is true. Measured on this tree the lock says false, so it refuses."
+  }
+}

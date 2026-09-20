@@ -1,0 +1,266 @@
+# Post-integration CI — the gate that V5 §17 makes mandatory.
+#
+# WHY THIS FILE EXISTS, and the measurement behind it. This project already landed a
+# correct cross-tree gate at 19:03:03, merged the offending files at 19:10:27, and
+# nobody re-ran the gate. The defect was found AFTER publication by a post-hoc audit.
+# V5 states the rule this workflow exists to make mechanical:
+#
+#     A gate that is not run post-integration is not a gate.
+#
+# So this workflow runs on the MERGED HEAD, not on a writer's branch, and its final
+# step is `release-gate.py` — the decision, not the evidence check. A worker's local
+# green result is never a merge or release result.
+#
+# =================================================================================
+# HONEST STATUS OF THIS FILE, which a reader must have before trusting any of it:
+#
+# THIS WORKFLOW HAS NEVER BEEN EXECUTED. There is no GitHub runner for this
+# repository in this project, and no network authorization to add one. Every step
+# below is therefore UNVALIDATED YAML: it is a claim about what CI would do, not
+# evidence that CI does it. What IS validated is each step's COMMAND, which was run
+# locally and whose output is recorded under
+# `qualification/results/P1-qualification/`. Steps whose command has NOT been run
+# locally are marked `# NOT RUN LOCALLY` with the reason.
+#
+# It is written conservatively for that reason: no matrix, no caching, no
+# third-party actions beyond the checkout, no `continue-on-error`, and no step whose
+# failure is ignored. A workflow that cannot be tested must not be clever.
+# =================================================================================
+#
+# WINDOWS PRIMARY. The deployment is Windows trusted-local (the OS user account is
+# the execution authority boundary), so `windows-latest` is the primary runner and
+# the only one that can decide the release. The Linux job is a cheap early signal
+# and is explicitly NOT the release decision.
+
+name: post-integration
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+  workflow_dispatch:
+
+# Least privilege. This workflow reads the repository and writes nothing back, so it
+# asks for no write scope at all.
+permissions:
+  contents: read
+
+concurrency:
+  # One run per ref. A second push supersedes the first rather than racing it, which
+  # matters because the release decision must describe ONE candidate.
+  group: post-integration-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ==============================================================================
+  # THE RELEASE DECISION. Windows primary, because that is the deployment.
+  # ==============================================================================
+  windows-post-integration:
+    name: windows / post-integration gates
+    runs-on: windows-latest
+    timeout-minutes: 90
+    defaults:
+      run:
+        shell: pwsh
+
+    steps:
+      - name: '1. checkout'
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0          # the clean-tree check compares against the base ref
+
+      - name: '2. clean-tree / input checks'
+        # The qualification source plane must be clean before a launch (ID-06). A run
+        # that starts on a dirty plane produces a verdict whose source identity nobody
+        # can state, so this is a PRECONDITION and it fails before anything else runs.
+        # `check-source-plane.mjs` classifies entries rather than collapsing them into
+        # "dirty" (CONTENT_MODIFICATION / STAGED_CHANGE / UNTRACKED_GENERATED /
+        # EOL_STAT_DIRTY), so a failure says which kind it is.
+        run: |
+          node qualification/runners/check-source-plane.mjs
+          git status --porcelain
+          git rev-parse HEAD
+
+      - name: '3. install pinned deps'
+        # NOT RUN LOCALLY as written: this machine has the dependencies already
+        # installed through the pinned checkout's junction farm, so a cold install was
+        # not performed here. The step is kept because a CI runner starts cold and
+        # skipping it would make every later step fail for the wrong reason.
+        #
+        # The repository's root manifest has NO dependencies on purpose (see
+        # package.json): the typecheck and the qualification runners use Node builtins
+        # and Python's standard library only. So this step installs the PINNED
+        # CHECKOUT's dependencies, which the two extension packages resolve
+        # `@deepseek-ai/*` through.
+        run: |
+          corepack enable
+          corepack prepare pnpm@11.7.0 --activate
+          pnpm --version
+          if (Test-Path pnpm-lock.yaml) { pnpm install --frozen-lockfile } else { Write-Host 'no root lockfile; root manifest declares no dependencies' }
+
+      - name: '4. build'
+        # NOT RUN LOCALLY as written. The packages are built by `link-all-dsh.ps1`
+        # against the pinned checkout; a CI runner has no pinned checkout at
+        # `D:\DSH\src\dsh-src`, so this step needs a checkout of the pinned upstream at
+        # the SHA in compatibility.lock.json. Until that is wired, this step is a
+        # STATEMENT OF INTENT and the gates below are the ones that actually decide.
+        run: |
+          $lock = Get-Content compatibility.lock.json | ConvertFrom-Json
+          Write-Host "pinned upstream: $($lock.deployment.inputs.upstream_commit)"
+          Write-Host "artifact: $($lock.deployment.inputs.artifact_sha256)"
+          Write-Host 'BUILD: requires a checkout of the pinned upstream; not wired in this workflow yet'
+          exit 1
+
+      - name: '5. authoritative typecheck'
+        # VALIDATED LOCALLY. `pnpm typecheck` -> helpers/typecheck.mjs, the single
+        # official command. It discovers packages rather than listing them, and it
+        # asserts the check config actually SEES test files -- which is the F10 / ID-05
+        # false pass (`tsc -p tsconfig.json` exits 0 with or without a test file).
+        run: |
+          pnpm typecheck
+
+      - name: '6. qualification meta-tests'
+        # VALIDATED LOCALLY. This is the step that proves the gates can FAIL, which is
+        # the one property a gate cannot self-certify. It mutates the gates' inputs and
+        # the gates' own code, restores every mutation byte-for-byte, and requires each
+        # arm to produce its specified observation.
+        run: |
+          python qualification/runners/verify-spec.py --summary
+          python qualification/runners/verify-spec.py
+          python qualification/runners/meta-flaky.py
+          python qualification/runners/meta-mutations.py
+
+      - name: '7. unit / integration tests'
+        # VALIDATED LOCALLY, one file at a time. On CI the whole suite is affordable;
+        # the local CPU discipline (one test file per run, fifteen writers sharing one
+        # machine) is a local constraint, not a CI one, and this step is the first place
+        # the full suite is run against the MERGED candidate.
+        run: |
+          Push-Location packages/dsh-daily-work
+          node node_modules/vitest/vitest.mjs run
+          Pop-Location
+          Push-Location packages/dsh-ipython
+          node node_modules/vitest/vitest.mjs run
+          Pop-Location
+
+      - name: '8. assembled daily boot in an isolated DSH_HOME'
+        # NOT RUN LOCALLY in this exact form. Requires the built launcher; see step 4.
+        run: |
+          Write-Host 'ASSEMBLED BOOT: requires the built artifact from step 4'
+          exit 1
+
+      - name: '9. real IPython kernel smoke'
+        # NOT RUN LOCALLY in this exact form; requires the assembled boot.
+        run: |
+          Write-Host 'IPYTHON SMOKE: requires the assembled boot from step 8'
+          exit 1
+
+      - name: '10. dsh.call e2e'
+        # NOT RUN LOCALLY in this form. NOTE, with the source fact: the bridge has no
+        # `data:` routing branch (`grep -c "data:" packages/dsh-ipython/src/bridge.ts` = 0
+        # at the time of writing), so a `dsh.data` e2e cannot pass yet. This step is
+        # expected to fail until V5 §5 is implemented, and it is deliberately NOT marked
+        # `continue-on-error`: a step that is allowed to fail is not a gate.
+        run: |
+          Write-Host 'DSH.CALL E2E: requires steps 8-9'
+          exit 1
+
+      - name: '11. dsh.data e2e'
+        # NOT RUN LOCALLY. See step 10: the data route does not exist yet.
+        run: |
+          Write-Host 'DSH.DATA E2E: the bridge has no data: routing branch; expected RED until V5 5'
+          exit 1
+
+      - name: '12. Work /work product path'
+        # NOT RUN LOCALLY in this form; requires the assembled boot.
+        run: |
+          Write-Host 'WORK PATH: requires the assembled boot from step 8'
+          exit 1
+
+      - name: '13. N rolling mechanical test'
+        # NOT RUN LOCALLY as a single step. The pieces are measured (admission,
+        # refill, occupancy) but the N=30 assembled run needs the built artifact.
+        run: |
+          Write-Host 'N ROLLING: requires the assembled boot from step 8'
+          exit 1
+
+      - name: '14. cross-tree runtime graph test'
+        # PARTIALLY VALIDATED LOCALLY. `import-graph.mjs` runs and reports the graph
+        # (measured: REACHABLE=32, UNREACHABLE=7 for dsh-daily-work). The
+        # RUNTIME-RESOLVED cross-tree check that would catch a foreign resolution does
+        # not exist as a runner yet -- META-IMPORT measures the premise (a
+        # variable-held specifier is invisible to a text scan and resolved at runtime)
+        # and records the check itself as NOT_RUN.
+        run: |
+          node qualification/runners/import-graph.mjs packages/dsh-daily-work
+          node qualification/runners/import-graph.mjs packages/dsh-ipython
+          node qualification/runners/verify-b02.mjs
+
+      - name: '15. package / foreign-path install test'
+        # NOT RUN LOCALLY. Requires a packed install into a directory outside this
+        # checkout, which is what makes "it works here" distinguishable from "it works".
+        run: |
+          Write-Host 'FOREIGN-PATH INSTALL: not wired in this workflow yet'
+          exit 1
+
+      - name: '16. secret scan'
+        # VALIDATED LOCALLY as a scan shape. Greps for credential-shaped strings in the
+        # tree that is about to be published. It does NOT print any match's content --
+        # a secret scan that echoes what it found has published it.
+        run: |
+          $patterns = 'BEGIN (RSA|OPENSSH|EC) PRIVATE KEY', 'sk-[A-Za-z0-9]{20,}', 'ghp_[A-Za-z0-9]{20,}'
+          $hits = 0
+          foreach ($p in $patterns) {
+            $found = Get-ChildItem -Recurse -File -Include *.ts,*.js,*.mjs,*.py,*.json,*.yml,*.yaml,*.md |
+              Where-Object { $_.FullName -notmatch 'node_modules|\.git\\' } |
+              Select-String -Pattern $p -List
+            if ($found) { $hits += $found.Count; Write-Host "pattern matched in $($found.Count) file(s): $p" }
+          }
+          if ($hits -gt 0) { Write-Host "SECRET SCAN: $hits file(s) matched a credential-shaped pattern"; exit 1 }
+          Write-Host 'SECRET SCAN: no credential-shaped pattern matched'
+
+      - name: '17. fresh BuildManifest'
+        # NOT RUN LOCALLY. The BuildManifest is produced by the build (step 4).
+        run: |
+          Write-Host 'BUILD MANIFEST: requires the built artifact from step 4'
+          exit 1
+
+      - name: '18. release-gate'
+        # VALIDATED LOCALLY, and this is the step that decides. It requires verify-spec
+        # to pass, then adds fresh identity, no FAIL, no FLAKY, no NOT_RUN, no
+        # INVALIDATED, no stale evidence, only allowlisted BLOCKED_EXTERNAL, and
+        # post-integration assembled-product evidence at the current identity.
+        #
+        # It is expected to FAIL today, and that is the correct output: measured
+        # NOT_READY with 4 blockers. A release gate that is green on a tree with 13 FAIL
+        # cases would be the false green this whole slice exists to remove.
+        run: |
+          python qualification/runners/release-gate.py
+          python qualification/runners/release-gate.py --json > release-decision.json
+          Get-Content release-decision.json
+
+  # ==============================================================================
+  # A CHEAP EARLY SIGNAL. Explicitly NOT the release decision: the deployment is
+  # Windows, and a Linux pass says nothing about the artifact that ships.
+  # ==============================================================================
+  linux-early-signal:
+    name: linux / early signal (NOT the release decision)
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: '1. checkout'
+        uses: actions/checkout@v4
+
+      - name: '2. the same one-ValidationResult check, on a second platform'
+        # The --summary parity check is cheap and platform-independent, so it runs
+        # here as a fast signal. If this job and the Windows job disagree, the
+        # Windows one is right.
+        run: |
+          python3 qualification/runners/verify-spec.py --summary || true
+          python3 qualification/runners/verify-spec.py || true
+          echo 'NOTE: exit codes are reported above; this job is a signal, not the decision'
+
+      - name: '3. qualification meta-tests'
+        run: |
+          python3 qualification/runners/meta-flaky.py
+          python3 qualification/runners/meta-mutations.py --only META-SUMMARY,META-MARKUP,META-ZERO,META-SKIP,META-TIMEOUT
