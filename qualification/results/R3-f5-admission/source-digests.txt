@@ -1,0 +1,22 @@
+R3 F5 slice — source digests at the measured identity
+worktree : D:\DSH\work\wt-r3
+branch   : wt/r3
+date     : 2026-09-20T09:41:04+08:00
+
+== tracked source under test (sha256) ==
+83c388dd5fbae64d59f6cd9ffaffbde9de8b20a8f46bb6d71e188b8625e03140 *src/host.ts
+22c1f3dd93f364224ddf9c9021921a3af26d8a65c9fd52c40e8eccf713b402bc *src/counting.ts
+ae89060510270f4fb489ee231f2cf1408acf93b662f2aad049d103184b375350 *src/record.ts
+9d4ca0e781d93fd4b77936d5d72097faa26bd79c300127d3880cce93536e8ba7 *src/capacity-v8-probe.test.ts
+52cbe802ecdbbdf9118a7324a8672b33fbed276c0b308163a57f029585940926 *src/capacity.test.ts
+458bd1c86862368fc153938efac829dc4318e97d1ff046132a898d5b17186a7c *src/f5-admission.test.ts
+
+== built lib proves the fix is in the artifact measured ==
+grep -c tryReserveAdmission lib/host.js  -> 10
+grep -c targetOvershoot lib/counting.js    -> 1
+grep -c drainLeaders lib/host.js           -> 4
+
+== atomicity the design cites ==
+packages/storage/storage-domain/src/domain.ts:3      "per-domain write chain"
+packages/storage/storage-domain/src/domain.ts:83-89  update(key,fn) "Atomic read-modify-write on the domain's write chain: fn sees the value current at its queue slot, so concurrent updates never interleave."
+packages/storage/storage-domain/src/domain.ts:125-126 enqueue<T>(job) "Queue one job on the domain's single write chain."

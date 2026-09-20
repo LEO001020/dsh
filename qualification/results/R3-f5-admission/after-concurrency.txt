@@ -1,0 +1,19 @@
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.8 [39m[90mD:/DSH/work/wt-r3/packages/dsh-daily-work[39m
+
+ [32m✓[39m src/concurrency.test.ts[2m > [22mmandatory concurrency: N=10 rolling top-up on the production loop[2m > [22madmits exactly ten children through the real startContinuable seam[33m 489[2mms[22m[39m
+ [32m✓[39m src/concurrency.test.ts[2m > [22mmandatory concurrency: N=10 rolling top-up on the production loop[2m > [22mdoes not admit an eleventh child while ten hold their slots[33m 380[2mms[22m[39m
+ [32m✓[39m src/concurrency.test.ts[2m > [22mmandatory concurrency: N=10 rolling top-up on the production loop[2m > [22mtops up one completion immediately without waiting for the wave[33m 778[2mms[22m[39m
+ [32m✓[39m src/concurrency.test.ts[2m > [22mmandatory concurrency: N=10 rolling top-up on the production loop[2m > [22mreports a deficit and invents no work when only three tasks are ready[32m 152[2mms[22m[39m
+ [32m✓[39m src/concurrency.test.ts[2m > [22mmandatory concurrency: N=10 rolling top-up on the production loop[2m > [22mrefuses admission past the real capacity even when the record would allow it[33m 360[2mms[22m[39m
+ [32m✓[39m src/concurrency.test.ts[2m > [22mmandatory concurrency: N=10 rolling top-up on the production loop[2m > [22mkeeps the root separate from the ten children[33m 422[2mms[22m[39m
+ [32m✓[39m src/concurrency.test.ts[2m > [22mmandatory concurrency: N=10 rolling top-up on the production loop[2m > [22mrefuses to launch grandchildren because maxDepth is 1[32m 85[2mms[22m[39m
+ [32m✓[39m src/concurrency.test.ts[2m > [22mmandatory concurrency: N=10 rolling top-up on the production loop[2m > [22mcoalesces concurrent drains so a completion storm cannot double-admit[32m 80[2mms[22m[39m
+ [32m✓[39m src/concurrency.test.ts[2m > [22mmandatory concurrency: N=10 rolling top-up on the production loop[2m > [22mstops admitting once the user pauses, with free slots remaining[32m 121[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[32m9 passed[39m[22m[90m (9)[39m
+[2m   Start at [22m 09:38:00
+[2m   Duration [22m 4.35s[2m (transform 908ms, setup 0ms, import 1.20s, tests 2.87s, environment 0ms)[22m
+
+EXIT=0

@@ -1298,16 +1298,12 @@ describe('CAP-04/CAP-05: rolling refill at N=3, on a controlled local provider r
     expect(r.gate.snapshot().highWater).toBe(N)
   }, 90_000)
 
-  it.fails('CAP-06 KNOWN-BROKEN: two freed slots must admit exactly two, not three', async () => {
+  it('CAP-06 FIXED: two freed slots admit exactly two, not three', async () => {
     // =====================================================================
-    // THIS CASE ENCODES AN OPEN DEFECT, MEASURED, NOT A PASS.
+    // THIS CASE WAS `it.fails` AND IS NOW A REAL ASSERTION. The history is kept
+    // because the before/after pair is the evidence that the defect was closed.
     //
-    // `it.fails` means the assertion below MUST fail for this test to be green.
-    // If someone fixes the defect, THIS TEST TURNS RED, which is the point: the
-    // marker cannot be left behind silently. The property asserted is the
-    // CORRECT one (the plan's rule); the code does not currently satisfy it.
-    //
-    // WHAT IS WRONG, and where. `WorkService.drain` (`host.ts`) coalesces like
+    // WHAT WAS WRONG, and where. `WorkService.drain` (`host.ts`) coalesced like
     // this:
     //
     //     const inFlight = this.pendingDrain.get(runId)
@@ -1315,18 +1311,19 @@ describe('CAP-04/CAP-05: rolling refill at N=3, on a controlled local provider r
     //     const task = this.runDrain(runId, requests, signal)   // <-- no re-check
     //     this.pendingDrain.set(runId, task)
     //
-    // A burst of K concurrent calls therefore awaits the SAME in-flight drain,
-    // and when that one settles all K-1 waiters resume in one microtask batch.
-    // Each then starts its OWN `runDrain` without re-reading `pendingDrain`, so
-    // K-1 drains run CONCURRENTLY. Each reads the record with `countRun` before
-    // the others' `admit` has committed, so they all observe the same deficit
-    // and all admit.
+    // A burst of K concurrent calls therefore awaited the SAME in-flight drain,
+    // and when that one settled all K-1 waiters resumed in one microtask batch.
+    // Each then started its OWN `runDrain` without re-reading `pendingDrain`, so
+    // K-1 drains ran CONCURRENTLY. Each read the record with `countRun` before
+    // the others' `admit` had committed, so they all observed the same deficit
+    // and all admitted.
     //
-    // MEASURED: two freed slots at target 3, three concurrent drains ->
-    // three accepted, four tasks holding slots against a target of three, four
-    // live children. The trace was
+    // MEASURED BEFORE THE FIX: two freed slots at target 3, three concurrent
+    // drains -> three accepted, four tasks holding slots against a target of
+    // three, four live children. The trace was
     //   req(70) accepted=true, req(71) accepted=true, req(72) accepted=true
-    // with the deficit reading 2 for every one of them.
+    // with the deficit reading 2 for every one of them. Archived under
+    // `qualification/results/R3-f5-admission/`.
     //
     // WHY THE EXISTING C03 CASE DID NOT CATCH IT. `scheduling.test.ts` C03 frees
     // THREE slots and then storms THREE refills, so three admissions is the
@@ -1335,10 +1332,14 @@ describe('CAP-04/CAP-05: rolling refill at N=3, on a controlled local provider r
     // slots — which is the case that matters, because that is the case that
     // oversubscribes.
     //
-    // NOT FIXED HERE: `host.ts` is outside this agent's file ownership. The fix
-    // is to re-check `pendingDrain` after the await (loop until no drain is in
-    // flight), so the coalescing is a real serialization rather than a
-    // one-shot wait.
+    // THE FIX, and why it is not in the coalescer. The target check moved INSIDE
+    // one storage-domain `update` (`WorkService.tryReserveAdmission`), where the
+    // domain's per-domain write chain serializes it against every other write to
+    // this run — the same place the BUDGET check already was, which is why CAP-09
+    // never had this hole. `drain` also gained a single-leader generation loop,
+    // but that layer is EFFICIENCY ONLY: this test would pass with the coalescer
+    // removed entirely, and `f5-admission.test.ts` proves that by driving the
+    // reservation path with the leader bypassed.
     // =====================================================================
     const N = 3
     const r = await refillRig(N)

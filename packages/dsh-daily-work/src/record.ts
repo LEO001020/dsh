@@ -437,6 +437,30 @@ export const runRecordSchema = z.object({
    * inventing a caller rather than connecting a real one.
    */
   epoch: z.number().int().min(1),
+  /**
+   * How many admissions this run's reservation relation has committed.
+   *
+   * WHY THIS IS A GENERATION AND NOT A WHOLE-RECORD REVISION. The audit's
+   * `tryReserveAdmission(runId, taskId, expectedRunRevision, requestedCredit)`
+   * asks for a revision token so a caller can prove the state it decided from is
+   * the state it committed into. The honest implementation of that here is a
+   * counter advanced by the ADMISSION path only, because that is the path this
+   * change actually funnels through one atomic update. Calling it a whole-record
+   * revision would claim coverage over `transition`, `recordSpend`,
+   * `retainUnknown` and the rest, which this change does not have and does not
+   * verify. A narrower token whose meaning is true beats a broader one whose
+   * meaning is aspirational.
+   *
+   * Advanced inside the same `update` that reserves the slot, so a caller that
+   * read generation G and is told generation G+1 knows its own reservation
+   * landed and another one did too.
+   *
+   * Optional so that a record written before this field existed still validates
+   * on read; absent means generation 0, which is exactly what it meant. Same
+   * reasoning as `rootReserve`/`overage` on the budget, and the same reason
+   * `WORK_SCHEMA_VERSION` does not move.
+   */
+  reservationGeneration: z.number().int().min(0).optional(),
   rootSessionId: z.string().min(1),
   /** Opaque reference to the user's authorization for this run. */
   authorizationRef: z.string().min(1),
@@ -491,6 +515,7 @@ export function initialRunRecord(input: {
     version: 1,
     runId: input.runId,
     epoch: 1,
+    reservationGeneration: 0,
     rootSessionId: input.rootSessionId,
     authorizationRef: input.authorizationRef,
     phase: 'open',
