@@ -435,11 +435,14 @@ def main() -> int:
         case["evidence"] = by_id[cid]["evidence"]
 
     # THE FILE'S OWN FORMAT, matched exactly. The spec is `json.dumps(indent=2,
-    # ensure_ascii=False)` plus a trailing newline (verified byte-for-byte against
-    # the file on disk before this script was run). Writing it with any other
-    # spacing would reformat all 109 cases and produce a diff that looks like this
-    # slice touched every one of them.
-    SPEC.write_text(json.dumps(latest, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    # ensure_ascii=False)` plus a trailing newline, written with LF endings
+    # (verified byte-for-byte against the file on disk before this script was
+    # run). Two things would otherwise produce a diff that looks like this slice
+    # touched all 109 cases: any other indentation, and `newline=None`, which on
+    # Windows translates every `\n` to `\r\n` -- 2949 lines of line-ending noise
+    # around 12 real changes.
+    with SPEC.open("w", encoding="utf-8", newline="\n") as handle:
+        handle.write(json.dumps(latest, indent=2, ensure_ascii=False) + "\n")
     print(f"file-v10-cases: wrote {len(OWNED)} case(s) into {SPEC.relative_to(REPO)}")
     return 0
 
