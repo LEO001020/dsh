@@ -283,6 +283,55 @@ TEST_RESULT  node node_modules/vitest/vitest.mjs run src/cross-tree-paths.test.t
 
 ---
 
+## 4b. ID-FRESH — 8/8 CONTROLS, AND ONE FOUND A REAL BUG IN MY OWN CONSUMER
+
+V5 §18: *"current runtime graph/build differs -> old identity rejected."* Computing
+two identities is not the same as rejecting a stale one: without a consumer, an old
+identity is a string that happens to differ from a new one and nothing in the release
+path notices. That is this project's most-recorded defect, so the consumer is written
+(`build-manifest.py --id-fresh-check OLD NEW`) rather than assumed to arrive later.
+
+`qualification/results/P14-manifest/id-fresh-controls.json`, 8/8. Each case mutates a
+manifest **in memory** and **recomputes the identity over the mutated `build`** with
+the generator's own algorithm, so each case is a manifest a real build could produce.
+Two arms are load-bearing in opposite directions:
+
+| case | injection | required | observed |
+|---|---|---|---|
+| **POSITIVE** | the manifest against itself | 0 | **0** |
+| **QUALIFIER** | only the dirty path count moved | 0 | **0** |
+| COMMIT | only commit + tree moved | 1 | **1**, says `COMMIT MOVED ONLY` |
+| GRAPH | one row's realpath → sibling worktree | 1 | **1**, names `resolved_plugin_graph` |
+| CATALOG | one tool removed from the catalog | 1 | **1**, names `model_tool_catalog` |
+| PROFILE | the profile digest changed | 1 | **1**, names `profile` |
+| CONTRACT | only the contract identity moved | 1 | **1**, says `CONTRACT MOVED ONLY` |
+| NO-IDENTITY | a manifest that never computed one | 1 | **1**, refused not compared |
+
+**QUALIFIER is the arm that keeps the gate usable**: a concurrent writer's untracked
+file must NOT be reported as a changed deployment, or the gate fires on noise and is
+ignored within a day.
+
+**The CONTRACT control found a real bug in my own consumer.** It expected exit 1 and
+observed **0**. I had reasoned *"the deployment did not change, so nothing is stale"*.
+But result and evidence files **bind to `QualificationContractIdentity`**, so a contract
+move invalidates every filed result exactly as a runtime move does — the difference is
+**why** and therefore **what to do**, not **whether** to reject. Fixed. A control that
+found nothing would have been the suspicious outcome.
+
+The two causes are reported separately because they call for different actions, and a
+single combined hash cannot distinguish them:
+
+```
+RUNTIME moved  -> the DEPLOYMENT changed   -> RE-MEASURE
+CONTRACT moved -> the deployment is unchanged -> RE-QUALIFY the contract
+```
+
+and the changed **fields** are named, so a commit-moved-only state (the normal state at
+a writer's tip) is visibly different from an artifact move rather than triggering a
+needless re-boot.
+
+---
+
 ## 5. THE GENERATOR REFUSES RATHER THAN DEFAULTS — EXERCISED FOR REAL, TWICE
 
 A **load-bearing gap** sets `identity_computable: false` and **no identity is emitted
@@ -311,6 +360,36 @@ Measured: `11975 chars, 340 lines, first_line "…DSH native-tool bridge client�
 last_line "tools = _ToolNamespace(_channel)"`. And hashing the built `lib/bridge.js`
 rather than `bridge.ts` is the stronger claim: a change to the TypeScript *around*
 the literal does not move a byte the kernel executes.
+
+**And the refusal path has its own controls — 13/13**,
+`qualification/results/P14-manifest/refusal-controls.json`:
+
+```
+POSITIVE          the real observation                      -> 0  (an identity IS computable)
+STALE-BUILD       a built lib/ older than its src/          -> 1
+UNSETTLED-GRAPH   the loader tree had not settled           -> 1
+EMPTY-CATALOG     the catalog is empty (a failed Session)   -> 1
+FAILED-VERDICT    the observation failed its own checks     -> 1
+NO-REVISION       the observation names no commit           -> 1
+NO-PROBE          no probe result                           -> 1
+UNRESOLVED-ROW    a composition row that did not resolve    -> 1
+NO-EXT-ROWS       no dsh-daily-work/dsh-ipython row         -> 1
+EXTRACT-MISSING-FILE  the built file does not exist         -> sha256 None + error
+EXTRACT-NO-EXPORT     the export is absent                  -> sha256 None + error
+EXTRACT-NOT-A-STRING  the export is not a string            -> sha256 None + error
+EXTRACT-POSITIVE      the real spec extracts the client     -> 11975 chars / 340 lines
+```
+
+`verdict: CONTROLS_PROVED (13/13)`. The POSITIVE arm is what makes the rest
+meaningful: a generator that refused everything would satisfy every other case.
+
+**And the first version of that controls file was MISLABELLED, which the run
+caught.** It nulled an extension row's realpath and called the case "the bridge
+Python client could not be extracted" — but that is a GRAPH-REALPATH condition, not
+an extraction condition, because the extraction reads `lib/bridge.js` directly rather
+than going through the rows. The case passed nothing and proved nothing about the
+thing it named. Fixed by importing the real function and calling it with specs that
+must fail, so it tests the real code on the real built file.
 
 ---
 
@@ -399,6 +478,10 @@ TEST_RESULT  python qualification/runners/build-manifest.py --from-observation .
              -> identity_computable True, 0 gaps, exit 0
 TEST_RESULT  python qualification/runners/p14-graph-realpath-controls.py
              -> CONTROLS_PROVED (8/8)
+TEST_RESULT  python qualification/runners/p14-id-fresh-controls.py
+             -> CONTROLS_PROVED (8/8)
+TEST_RESULT  python qualification/runners/p14-refusal-controls.py
+             -> CONTROLS_PROVED (13/13)
 TEST_RESULT  node node_modules/vitest/vitest.mjs run src/cross-tree-paths.test.ts
              -> 7 passed / 0 failed
 TEST_RESULT  python helpers/doctor.py           -> exit 1 (the one requirement violation)
@@ -416,11 +499,12 @@ TEST_RESULT  determinism: two generations of the same observation, with a volati
 |---|---|---|
 | `compatibility.expected.json` exists and holds requirements only | **PASS** | self-reference audit: 1 sha256, allowlisted |
 | `BuildManifest` generated with every V5 §14 field | **PASS** | `identity_computable: true`, 0 gaps |
+| the generator REFUSES rather than defaults | **PASS** | 13/13 refusal controls, incl. the positive one |
 | Runtime + Contract identities computed | **PASS** | `c969808e…` / `a091cb59…` |
 | Graph freshly observed with realpaths | **PASS** | 177 rows, 176 realpaths + 1 builtin, 0 unresolved |
 | Model tool catalog/schema/order | **PASS** | 27 names, header order + schema + order digests |
 | GRAPH-REALPATH refuses a foreign tree | **PASS** | 8/8 controls, incl. the positive one |
-| ID-FRESH (a changed build is rejected) | **PARTIAL** | the identity is computed from the observed build and a moved artifact REFUSES (exercised); a *rejected old identity* needs a consumer that compares two manifests, and no such consumer exists yet |
+| ID-FRESH: a changed build's old identity is rejected | **PASS** | consumer written + 8/8 controls; found a real bug in my own consumer (§4b) |
 | `helpers/rederive-identity.py`, `helpers/doctor.py` updated | **PASS** | both check the previously-unchecked input |
 | `compatibility.lock.json` | **NOT TOUCHED** | not required by the design |
 | the pinned checkout is clean (ID-06 requirement) | **FAIL** | one tracked file modified — see below |
@@ -446,9 +530,10 @@ the day **before** this wave. My checker reports it because ID-06's oracle is ab
 
 ## 11. UNRESOLVED UNKNOWNs
 
-1. **No consumer compares two manifests yet.** The identities are computed and the
-   refusal conditions are exercised, but nothing in the tree REJECTS an old identity
-   at release time. ID-FRESH's "old identity rejected" half needs that consumer.
+1. **Nothing in the release path CALLS `--id-fresh-check` yet.** The consumer exists,
+   is exercised by 8 controls, and found a real bug — but wiring it into
+   `RELEASE_DECISION.json` / CI is a later step, and until then ID-FRESH is a gate
+   that must be run by hand.
 2. **`resolved default` values are not in the manifest.** The probe reads
    `options.config` — what the loader was GIVEN, with `!!js` expressions as
    `{__jsExpr: ...}` — not the schema-resolved config, which is applied at plugin
@@ -489,8 +574,9 @@ the day **before** this wave. My checker reports it because ID-06's oracle is ab
    why `identity_computable` exists: a load-bearing gap produces NO identity rather
    than a weaker one. It fired twice for real during this slice (§5).
 3. **The two identities are not yet used by any release decision.** They are
-   computed, reproducible and refusal-tested; binding `RELEASE_DECISION.json` to
-   them is a later step.
+   computed, reproducible, and refusal-tested (both gates 8/8), and the ID-FRESH
+   consumer exists — but nothing in `RELEASE_DECISION.json` or CI calls it yet, so
+   until that wiring lands the gates must be run by hand.
 4. **GRAPH-REALPATH's 8 controls exercise the GATE, not a real foreign boot.** Every
    case mutates an observation. I did not boot from a sibling worktree and watch the
    gate go red on a genuine cross-tree resolution — the mechanism is proven to

@@ -1,0 +1,388 @@
+{
+  "schema_version": 1,
+  "kind": "DSH_BUILD_MANIFEST_NOT_A_DSH_ARTIFACT",
+  "_what_this_is": [
+    "A generated record of ONE BUILD, stored as a qualification/release",
+    "artifact. It is NOT a source input of the candidate it describes: the",
+    "requirements a candidate must satisfy live in compatibility.expected.json,",
+    "which no edit to a profile, preset, spec or dump can move.",
+    "",
+    "RuntimeDeploymentIdentity = H(canonical of the `build` object below).",
+    "QualificationContractIdentity = H(RuntimeDeploymentIdentity + the contract",
+    "object's digests). Result and evidence files bind to the CONTRACT identity."
+  ],
+  "generator": {
+    "path": "qualification/runners/build-manifest.py",
+    "sha256": "6dd3879cba4f3ac5b0ad07d6a004f55d8c5065781e7a8ecf63870dcccafc1e73",
+    "algorithm": "sha256(UTF8(json.dumps(value, sort_keys=True, separators=(',',':'), ensure_ascii=True))), the algorithm compatibility.lock.json declares, reused verbatim"
+  },
+  "observation": {
+    "path": "qualification/results/P14-manifest/observation.json",
+    "ran_at": "2026-09-20T13:11:23.433Z",
+    "verdict": "OBSERVED",
+    "driver": "qualification/runners/run-p14-manifest.mjs",
+    "driver_sha256": "8f34585fbad7cdcde88d9da53d1cb30259a1504b99e13f1c3f7d9a419ac11552",
+    "probe_source_sha256": "2fd76930aff5d23fc09edc8e966234c997521005465642037c025800640f5e9a",
+    "overlay_sha256": "978a7b9f4ecfe0df59070d376afb6db2a8e6aee67650a80855b3c3ca60fd26bb",
+    "dsh_home": "D:/DSH/home/p14",
+    "profile": "daily",
+    "boot_cwd": "C:/Windows/Temp",
+    "_why_the_boot_conditions_are_part_of_the_manifest": "A graph observed from a foreign cwd, a different DSH_HOME or a different launcher is a graph of a different deployment. Recording them here is what makes the observation reproducible rather than merely reported."
+  },
+  "build": {
+    "project_git_commit": "c061e09dc09fa11c6b90fa7e026f54e3cf60e399",
+    "project_git_tree": "2fd8448deb9e7114d4e57d5827ca28951f834e31",
+    "project_git_bound_to": "THE COMMIT RECORDED HERE, read at OBSERVATION time. Not the current HEAD of this or any other checkout: twelve writers edit this tree concurrently, so the commit moves under the measurement and the manifest states which one it saw.",
+    "upstream_sha": "ddefc45fbc7f8e46dd73185e68295696d1297887",
+    "upstream_release": "0.1.6-alpha.2",
+    "pinned_checkout": {
+      "path": "D:/DSH/src/dsh-src",
+      "present": true,
+      "head": "ddefc45fbc7f8e46dd73185e68295696d1297887",
+      "clean": false,
+      "porcelain_rows": [
+        "M packages/deliverables/workspace-changes/src/index.ts"
+      ]
+    },
+    "lockfile": {
+      "path": "D:/DSH/src/dsh-src/pnpm-lock.yaml",
+      "digest": "72523ca50bd34e3e21d07c82e1cedfdb91b17e1bcd83006c645e8dc6e0786fe0",
+      "_note": "The value is CARRIED from the lock and re-checked against the file below. Carrying it is deliberate: it is the same value ID-02 and the doctor check, so a divergence between the lock and the file is a visible finding rather than two numbers that quietly disagree.",
+      "recomputed_sha256": "72523ca50bd34e3e21d07c82e1cedfdb91b17e1bcd83006c645e8dc6e0786fe0"
+    },
+    "toolchain": {
+      "node": "v24.18.0",
+      "node_error": null,
+      "pnpm": "11.24.0",
+      "pnpm_error": null,
+      "platform": "Windows 11 / AMD64"
+    },
+    "python_environment": {
+      "sys_executable": "C:\\Users\\hzq00\\AppData\\Local\\Programs\\Python\\Python314\\python.EXE",
+      "sys_executable_realpath": "C:\\Users\\hzq00\\AppData\\Local\\Programs\\Python\\Python314\\python.exe",
+      "python_implementation": "cpython",
+      "python_version": "3.14.3",
+      "platform": "win32",
+      "distributions": {
+        "ipython": "9.16.1",
+        "ipykernel": "7.3.0",
+        "jupyter-client": "8.10.0",
+        "jupyter-core": "5.9.1",
+        "traitlets": "5.16.1",
+        "pyzmq": "27.2.0"
+      },
+      "digest": "6c408f73b6af0c632d28b10c3af319a7a95339a028c17174f4c05f78ade5e962"
+    },
+    "built_launcher": {
+      "path": "D:\\DSH\\src\\dsh-src\\apps\\cli\\lib\\bin.js",
+      "sha256": "69c49c871735dc7ee81ec51f266bbec129f075fd5066e046374f4b13ab02a705",
+      "lock_artifact_sha256": "69c49c871735dc7ee81ec51f266bbec129f075fd5066e046374f4b13ab02a705",
+      "sha256_matches_lock": true,
+      "_note": "The digest is recomputed from the file, and the lock's value is carried beside it so a divergence is visible. G-ENV-06: the BUILT launcher is the qualified artifact; the source launcher is a development convenience and is not a drop-in substitute (reproduced 3/3)."
+    },
+    "package_digests": {
+      "dsh-daily-work": {
+        "path": "packages/dsh-daily-work/lib",
+        "digest": "a5345c4a90254cf20531bd6cd2929afdeb1e836ef34732f96e91b950b874bce9",
+        "files": 39,
+        "package_json_sha256": "97897e9443691012411d2f0cd0b77eaafd1839fcad91bf8141d51bacc67ea4cb"
+      },
+      "dsh-ipython": {
+        "path": "packages/dsh-ipython/lib",
+        "digest": "791ab386ff84f17bd79f6925fc31c45a0525bdf9170b45f91f6739a61df424a9",
+        "files": 17,
+        "package_json_sha256": "5fe6e85005e19d2972b80501d6c16ded139dabb39c6f7aa44de9fb98b436077e"
+      }
+    },
+    "python_source_digests": {
+      "broker": {
+        "path": "packages/dsh-ipython/src/broker.py",
+        "sha256": "6443868b1fdee5b4970691d1a7b4f76f0ec3a0a55e94fba2982583962acb1328",
+        "_note": "No npm build step touches this file, so a lib/ digest cannot see a change to it."
+      },
+      "data_client": {
+        "path": "packages/dsh-daily-work/src/dsh_data_client.py",
+        "sha256": "c152f0adf2ea8dbe7e419cdb138eb2176be727c8c4ba76ab27d942d7ec3b0ed5",
+        "_note": "No npm build step touches this file, so a lib/ digest cannot see a change to it."
+      }
+    },
+    "embedded_python_clients": {
+      "bridge_python_client": {
+        "sha256": "b78cc5e3bb7df19e3f0c418fae2044f843ccfa661ed624cdd56808195efbf573",
+        "chars": 11975,
+        "lines": 340,
+        "first_line": "\"\"\"DSH native-tool bridge client, injected into the kernel by the host.",
+        "last_line": "tools = _ToolNamespace(_channel)",
+        "extracted_from": "packages/dsh-ipython/lib/bridge.js",
+        "source_of_the_literal": "packages/dsh-ipython/src/bridge.ts",
+        "extraction": "node imported the built module and hashed the VALUE of the export, so JS escape rules are not re-implemented here",
+        "why": "the bytes the host writes to the kernel's client path and the kernel compiles with exec(compile(...)); extracted from the built lib so a change to the TypeScript AROUND the literal does not move it"
+      }
+    },
+    "profile": {
+      "path": "profiles/daily-candidate/cordis.patch.yml",
+      "sha256": "4e3aa20cbc23b8cedbfc7205aac0756f37e1107a4ee556d38760dc3769ceedeb",
+      "lock_host_profile_digest": "0e8e370e06375ad4a289fa36f783232dde4159a69844422d6363b874af7445f2",
+      "matches_lock": false,
+      "installed_at": "D:/DSH/home/p14/profiles/daily/cordis.patch.yml",
+      "installed_sha256": "4e3aa20cbc23b8cedbfc7205aac0756f37e1107a4ee556d38760dc3769ceedeb"
+    },
+    "agent_preset": {
+      "path": "profiles/daily-candidate/presets/daily-standard/agent.cordis.yml",
+      "id": "daily-standard",
+      "sha256": "05f7a029739692db4245efad803e6bbbec7caf309b2ac7bb2dd57b97f764a19c",
+      "lock_agent_preset_digest": "05f7a029739692db4245efad803e6bbbec7caf309b2ac7bb2dd57b97f764a19c",
+      "matches_lock": true,
+      "default_id_measured": "daily-standard",
+      "roots_measured": [
+        {
+          "path": "D:/DSH/home/p14/profiles/daily/presets/",
+          "trust": "system"
+        },
+        {
+          "path": "D:\\DSH\\home\\p14\\.agent-presets",
+          "trust": "user"
+        }
+      ]
+    },
+    "resolved_plugin_graph": {
+      "source": "FRESH_OBSERVATION_FROM_A_LIVE_BOOT",
+      "observed_at": "2026-09-20T13:11:23.433Z",
+      "row_count": 177,
+      "active_row_count": 146,
+      "resolved_row_count": 176,
+      "loader_builtin_row_count": 1,
+      "unresolved_rows": [],
+      "composition_digest": "0beaf1be49398da7020f48abb36e50cd0c8e20e215a1aea69041283304a8ade3",
+      "resolved_url_digest": "664ccaffe95ec426c8baa8221680026ad230ebe6d91c24f9f1c37341343c8a13",
+      "realpath_digest": "5014d06e2d9c92d990fec01f47df6225a7bce93629b99b7f9aff8ca8a64c83fe",
+      "extension_rows": [
+        {
+          "key": "daily-data-plane",
+          "name": "dsh-daily-work/data-host",
+          "realpath": "D:/DSH/work/wt-p14/packages/dsh-daily-work/lib/data-plugin.js",
+          "active": true,
+          "resolveError": null
+        },
+        {
+          "key": "daily-history",
+          "name": "dsh-daily-work/history",
+          "realpath": "D:/DSH/work/wt-p14/packages/dsh-daily-work/lib/history-plugin.js",
+          "active": true,
+          "resolveError": null
+        },
+        {
+          "key": "daily-no-sandbox-contract",
+          "name": "dsh-daily-work/no-sandbox-contract",
+          "realpath": "D:/DSH/work/wt-p14/packages/dsh-daily-work/lib/no-sandbox-contract.js",
+          "active": true,
+          "resolveError": null
+        },
+        {
+          "key": "daily-programmatic-scope",
+          "name": "dsh-daily-work/programmatic-scope",
+          "realpath": "D:/DSH/work/wt-p14/packages/dsh-daily-work/lib/programmatic-scope-plugin.js",
+          "active": true,
+          "resolveError": null
+        },
+        {
+          "key": "daily-web-search",
+          "name": "dsh-daily-work/web-search",
+          "realpath": "D:/DSH/work/wt-p14/packages/dsh-daily-work/lib/web-search-plugin.js",
+          "active": true,
+          "resolveError": null
+        },
+        {
+          "key": "daily-work-host",
+          "name": "dsh-daily-work/host",
+          "realpath": "D:/DSH/work/wt-p14/packages/dsh-daily-work/lib/host-plugin.js",
+          "active": true,
+          "resolveError": null
+        },
+        {
+          "key": "daily-work-tool-protocol-guards",
+          "name": "dsh-daily-work/tool-protocol-guards",
+          "realpath": "D:/DSH/work/wt-p14/packages/dsh-daily-work/lib/tool-protocol-guards.js",
+          "active": true,
+          "resolveError": null
+        },
+        {
+          "key": "daily-writers",
+          "name": "dsh-daily-work/writers",
+          "realpath": "D:/DSH/work/wt-p14/packages/dsh-daily-work/lib/writers-plugin.js",
+          "active": true,
+          "resolveError": null
+        },
+        {
+          "key": "ipython-kernel-host",
+          "name": "dsh-ipython/host",
+          "realpath": "D:/DSH/work/wt-p14/packages/dsh-ipython/lib/host-plugin.js",
+          "active": true,
+          "resolveError": null
+        }
+      ],
+      "auto_generated_id_rows": {
+        "count": 2,
+        "modules": [
+          "@deepseek-ai/dsh-client-ui-directory-picker-native",
+          "@deepseek-ai/dsh-host-directory-picker-native"
+        ],
+        "why": "vendor/loader/src/config/tree.ts:54 assigns `options.id = Math.random().toString(16).slice(2, 10)` to any row that declares no id, so these ids differ on every boot. They are keyed by MODULE in the digest, and the raw ids are recorded here rather than discarded, so the substitution is visible. The rows are NOT dropped: their presence and activation are real facts this digest must cover.",
+        "rawIdsObservedThisBoot": [
+          "7667df70",
+          "ba011ddc"
+        ]
+      },
+      "superseded_lock_field": {
+        "field": "deployment.inputs.resolved_plugin_graph_digest",
+        "value": "23f763d1bf2af8ba3210473d6743bc39ac0185bdefd661861935414a01e5af6b",
+        "basis": "qualification/results/M3.1-c2-profile/dump-config-daily-candidate.yml",
+        "basis_sha256": "23f763d1bf2af8ba3210473d6743bc39ac0185bdefd661861935414a01e5af6b",
+        "checked_by_any_tool": false,
+        "stale_reason": "the dump is from 786edb1, before F3, and its sandbox-policy row still reads mode: workspace-write. See qualification/results/ROOT-round2/identity-input-unchecked-and-stale.md, re-measured for this manifest.",
+        "_why_it_is_carried_and_not_deleted": "Deleting it would erase the evidence that the defect existed. Carrying it here, beside the fresh value, is what makes the supersession auditable -- and it is now a RECORD rather than an input, so it cannot certify anything."
+      }
+    },
+    "model_tool_catalog": {
+      "source": "FRESH_OBSERVATION_FROM_A_LIVE_BOOT",
+      "session_id": "session-3d56aa12-5dcc-47e1-bfb9-46078ba0e9ca",
+      "session_cwd": "D:/DSH/work/wt-p14",
+      "tool_count": 27,
+      "names_in_header_order": [
+        "work",
+        "read",
+        "write",
+        "edit",
+        "glob",
+        "grep",
+        "job_output",
+        "job_list",
+        "job_kill",
+        "skill",
+        "ask_user_question",
+        "web_search",
+        "web_fetch",
+        "present",
+        "ipython",
+        "read_image",
+        "send_message",
+        "interrupt_agent",
+        "list_agents",
+        "todo_write",
+        "workflow",
+        "get_goal",
+        "create_goal",
+        "update_goal",
+        "exit_plan_mode",
+        "subagent_fork",
+        "subagent"
+      ],
+      "names_sorted": [
+        "ask_user_question",
+        "create_goal",
+        "edit",
+        "exit_plan_mode",
+        "get_goal",
+        "glob",
+        "grep",
+        "interrupt_agent",
+        "ipython",
+        "job_kill",
+        "job_list",
+        "job_output",
+        "list_agents",
+        "present",
+        "read",
+        "read_image",
+        "send_message",
+        "skill",
+        "subagent",
+        "subagent_fork",
+        "todo_write",
+        "update_goal",
+        "web_fetch",
+        "web_search",
+        "work",
+        "workflow",
+        "write"
+      ],
+      "schema_digest": "8f8b54fadf5ce2d1f1882c05d5c20d6cc2b8c2c2bd85bb9a654b1b106081978f",
+      "order_digest": "02a593f1cc11d534b16038cc7655c2a2866ab816aa7eeab8da8d39d65dd7b003",
+      "has_run_code": false,
+      "_why_order_and_schema_are_both_hashed": "`ctx.tools.schemas(agent)` returns schemas in the order the model reads them, so two boots offering the same names in a different order are a different deployment -- the first tool is what the model reaches for. And a tool whose NAME is stable while its PARAMETERS changed is a different tool surface. A digest over a sorted name set would call both changes invisible."
+    },
+    "hard_child_cap": {
+      "requirement": 30,
+      "requirement_source": "compatibility.expected.json -> product_contract.hard_child_capacity (V5 product contract)",
+      "enforced_by": "packages/dsh-daily-work/src/capacity.ts -> HARD_CHILD_CAPACITY (the project's host-global gate, across roots)",
+      "mounted_subagent_row": {
+        "maxActiveSubagents": 10,
+        "maxDepth": 1,
+        "_why_this_is_NOT_the_cap": "DSH's `maxActiveSubagents` caps ONE ROOT's continuable pool. Two roots would each get a full pool, so 2 x N children on a 'N child' deployment -- which is exactly why the project enforces the host-global cap itself. A reader must not read the row's value as the deployment's cap, nor read a value below 30 as the cap being weakened: it is the user-selected target N."
+      }
+    },
+    "presentation_mode": {
+      "requirement": "native",
+      "measured_from": "the absence of `run_code` in a non-empty model tool catalog",
+      "measured_value": "native",
+      "mounted_tools_row_mode": {
+        "__jsExpr": "process.env.DSH_TOOLS_MODE"
+      },
+      "_why_the_measured_value_is_derived_and_not_read": "`ToolRuntime.modeFor(scope)` is private and the resolved default is applied at construction, so the probe cannot read it. What it CAN read is the catalog: `run_code` is presented only under ptc/both (packages/core/tools/src/index.ts:1331 denies a native name when modeFor is 'ptc' and the name is not RUN_CODE_NAME). Its ABSENCE from a 27-tool catalog is therefore positive evidence of `native` -- a NEGATIVE observation, which is weaker than reading the field and is stated as such rather than presented as a direct read."
+    }
+  },
+  "qualifiers": {
+    "git_dirty_at_observation": {
+      "dirty": true,
+      "dirty_path_count": 7,
+      "branch": "wt/p14",
+      "excluded_from_the_identity_because": "a concurrent writer's untracked file is not a change to this deployment, and including a path COUNT made the identity move for exactly that reason -- measured. The artifacts are hashed instead, so a real change is still caught. Same rule and same reason as qualification-identity.py's implementation_commit."
+    },
+    "git_live_at_generation": {
+      "commit": "88dd103262f33dbc8ed6f0794f1ac7a3a5ccba69",
+      "dirty": true,
+      "dirty_path_count": 4,
+      "commit_moved_since_observation": true,
+      "_why_this_is_recorded_and_not_an_error": "A commit landing between the observation and the generation is EXPECTED in this wave, not a fault. What would be a fault is the manifest SILENTLY adopting the new commit, which is what the first version did. The manifest keeps the commit it measured and reports the divergence here."
+    },
+    "artifact_staleness": {
+      "fingerprinted_paths": 6,
+      "moved_since_observation": [],
+      "commit_moved_only": true,
+      "excluded_from_the_identity_because": "it compares the observation to the moment of generation, so hashing it would make the identity move every time the generator was re-run on an unchanged build.",
+      "_reading": "COMMIT MOVED ONLY: every fingerprinted artifact is byte-identical, so the deployment is materially the same and the previous measurements still describe it. Re-derive cheaply; re-measure only if an artifact appears here. ARTIFACTS MOVED: the measurements no longer describe this tree -- RE-MEASURE."
+    }
+  },
+  "gaps": [],
+  "contract": {
+    "acceptance_definition_path": "qualification/specs/acceptance-spec.trusted-local-v2.definition.json",
+    "acceptance_definition_digest": "115aa092d0279c005d6f83d0412c1e00d374b60f803dd10f56eaba878ed664e1",
+    "acceptance_definition_version": "trusted-local-v2.definition/1",
+    "acceptance_definition_contract_id": "trusted-local-v2",
+    "acceptance_definition_case_count": 110,
+    "provenance_path": "qualification/specs/acceptance-spec.trusted-local-v2.provenance.json",
+    "provenance_digest": "2d7342bd105d796613cbcb6521feb0e849b18b603f40d989c4708ca889fbbebd",
+    "frozen_v1_snapshot_path": "qualification/specs/frozen/acceptance-spec.trusted-local-v1.as-authored.json",
+    "frozen_v1_snapshot_sha256": "e5b6a1d2481f39c52a6012ec6b48a72e4618ff713f1927b6b0d6827a24b10ce7",
+    "qualification_runner_digests": {
+      "qualification/runners/build-manifest.py": "6dd3879cba4f3ac5b0ad07d6a004f55d8c5065781e7a8ecf63870dcccafc1e73",
+      "qualification/runners/p14-manifest-probe.mjs": "2fd76930aff5d23fc09edc8e966234c997521005465642037c025800640f5e9a",
+      "qualification/runners/run-p14-manifest.mjs": "8f34585fbad7cdcde88d9da53d1cb30259a1504b99e13f1c3f7d9a419ac11552",
+      "qualification/runners/overlay.mjs": "e901a590c486096a15a6fb9a32768b067c0d2e809986f0db4d088d320721fdd1",
+      "qualification/runners/boot-harness.mjs": "840e3f8cae06bb1e0f81b812f14003a33ff7344c7582cb121fa545d946c391c1",
+      "qualification/runners/qualification-identity.py": "053168fc7ce4de696bbd9c8e0635ee245416e6f6d56418a27d4f8373e6b5eefe",
+      "qualification/runners/verify-spec.py": "79a3a1fe5dd3058c602fdaec91d956c46f3c05e86c0073e3838265f8d745181c",
+      "qualification/specs/frozen/verify-freeze.py": "7d8b4fadf3eb1940dd5b5773acbf34f30bfd673cd75465ae634aa7da50f914d0",
+      ".gitattributes": "a7c77786b5f1d95cf22ddbb1f3f37bdcf77c2ff6bab01c14a8fbc46e0bd22c5e"
+    },
+    "results_location_rule": "qualification/results/<QualificationContractIdentity>/ -- a RESULT IS FILED BY WRITING A FILE THERE, which is an input of NEITHER hash. That is the property that makes the split work, and it is checked below rather than asserted."
+  },
+  "identity_computable": true,
+  "runtime_deployment_identity": "c969808e7633162526b3a93d7ea398ce2e63b0e9a10fac13e3f42fad257d65de",
+  "qualification_contract": {
+    "qualification_contract_identity": "5146ee996bea2de8500e029ea509cf466bbb263dae2155d0e73913ef37fe2342",
+    "contract_id": "trusted-local-v3.5146ee996bea",
+    "results_location": "qualification/results/trusted-local-v3.5146ee996bea/",
+    "_algorithm": "H(RuntimeDeploymentIdentity + acceptance_definition_digest + release_runner_digests), canonical-JSON sha256."
+  }
+}
