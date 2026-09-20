@@ -1,0 +1,163 @@
+{
+  "probe": "c3-dataplane",
+  "label": "after",
+  "measuredAt": "2026-09-20T15:44:07.778Z",
+  "identity": {
+    "repo": "D:/DSH/work/wt-c3",
+    "srcArtifactsTs": "78f634cc158da13b401cd59a8ec1e1429301758f4675815d788154551fc0b38a",
+    "srcObservationsTs": "26cee3d334770aaf105a0f87794763aaf3c5e07929fc33bfc6ebe6f45e1c63eb",
+    "libArtifactsJs": "a9ccbcfe95957a304d7a9a63b736fda36198dc43e413fed8dfca897fc06fc703",
+    "libObservationsJs": "5ecebb3e698ed9a8b355e0c7f23bf189cd13a02fba9967d3099eb74ff9316ab6"
+  },
+  "sections": {
+    "data09": {
+      "observationSchemaVersion": 2,
+      "closedSet": [
+        "provider-acquisition",
+        "native-acquisition",
+        "transform",
+        "retention"
+      ],
+      "closedSetSize": 4,
+      "coverageVocabulary": [
+        "provider-acquisition",
+        "native-acquisition",
+        "transform",
+        "retention"
+      ],
+      "coverageMatchesGapStages": true,
+      "recoveries": [
+        "page",
+        "refetch",
+        "none",
+        "unknown"
+      ],
+      "v1OracleStages": [
+        "provider-acquisition",
+        "native-acquisition",
+        "transform",
+        "retention",
+        "transport",
+        "model-projection"
+      ],
+      "producers": {
+        "provider-acquisition": [
+          "web-provenance.ts:355"
+        ],
+        "native-acquisition": [
+          "artifacts.ts:2836"
+        ],
+        "transform": [
+          "web-provenance.ts:500",
+          "web-provenance.ts:516"
+        ],
+        "retention": [
+          "artifacts.ts:2738",
+          "artifacts.ts:2901",
+          "artifacts.ts:2923"
+        ],
+        "transport": [],
+        "model-projection": []
+      },
+      "stagesInClosedSetWithNoProducer": [],
+      "v1StagesAbsentFromClosedSet": [
+        "transport",
+        "model-projection"
+      ],
+      "v1StagesPresentInClosedSet": [
+        "provider-acquisition",
+        "native-acquisition",
+        "transform",
+        "retention"
+      ],
+      "allClosedSetStagesProduced": true,
+      "gapSchemaAcceptsOnlyClosedSet": {
+        "closedSetStageAccepted": true,
+        "transportRejected": true,
+        "modelProjectionRejected": true,
+        "badRecoveryRejected": true
+      }
+    },
+    "data11": {
+      "arms": {
+        "control_ownStore": {
+          "offset": 0,
+          "bytes": 64,
+          "hasCursor": true
+        },
+        "control_cursorReplayOnOwnStore": {
+          "refused": false,
+          "yieldedBytes": 64,
+          "sha256": "54b74fa3b75131703c57f171843dc58b7ec633810c1d414697a7b314d5fc6d5d",
+          "offset": 64,
+          "refusals": []
+        },
+        "differentStore": {
+          "refused": true,
+          "code": "pagination-realm-denied",
+          "name": "ArtifactError",
+          "message": "pagination cursor names a different store realm than the one serving this request, and its MAC does not verify under this store's cursor key; a cursor is not a bearer token and cannot be replayed against another store",
+          "realmRefused": true,
+          "refusals": [
+            {
+              "code": "pagination-realm-denied",
+              "step": "realm"
+            }
+          ]
+        },
+        "differentRevision": {
+          "refused": true,
+          "code": "pagination-scope-denied",
+          "name": "ArtifactError",
+          "message": "observation obs-c3-e was minted under grant revision 1, which is stale",
+          "realmRefused": null,
+          "refusals": [
+            {
+              "code": "pagination-scope-denied",
+              "step": "reference"
+            }
+          ]
+        },
+        "corruptStoreMintingItsOwnCursor": {
+          "refused": true,
+          "code": "artifact-integrity-error",
+          "message": "artifact artifact:sha256:a00df084cc0c37b78e5c8ac1b41b7c917846e1e71f9c9e7bd8ff64b2048bd364 is recorded as a00df084cc0c37b78e5c8ac1b41b7c917846e1e71f9c9e7bd8ff64b2048bd364 (316 bytes) but the stored object hashes to 62e0f3ccaf6a88b91534b6927ebc9d753685173f55db8341e3139b49558f2867 (316 bytes read); the bytes are not the artifact that was recorded"
+        },
+        "corruptOwnStore": {
+          "refused": true,
+          "code": "artifact-integrity-error",
+          "name": "ArtifactError",
+          "message": "artifact artifact:sha256:a00df084cc0c37b78e5c8ac1b41b7c917846e1e71f9c9e7bd8ff64b2048bd364 is recorded as a00df084cc0c37b78e5c8ac1b41b7c917846e1e71f9c9e7bd8ff64b2048bd364 (316 bytes) but the stored object hashes to bde74840b1168b96dcd10213b7e12743cac895983c2860522b1d1b3719a93a67 (316 bytes read); the bytes are not the artifact that was recorded",
+          "realmRefused": null,
+          "refusals": [
+            {
+              "code": "artifact-integrity-error",
+              "step": "identity"
+            }
+          ]
+        },
+        "corruptOwnStore_resolveReference": {
+          "refused": true,
+          "code": "artifact-orphaned"
+        }
+      },
+      "verdicts": {
+        "control_ownStoreServes": true,
+        "control_cursorReplayServes": true,
+        "differentStoreRefused": true,
+        "differentStoreRefusalIsRealm": true,
+        "differentStoreRefusalRecorded": true,
+        "differentStoreYieldedBytes": null,
+        "differentRevisionRefused": true,
+        "differentRevisionRefusalRecorded": true,
+        "corruptOwnStoreRefused": true,
+        "DATA_11_ORACLE_SATISFIED": true
+      },
+      "realmA": "realm_8da0298a-2e30-4666-b032-ceb0ee687136",
+      "realmB": "realm_4ca057e0-1ca6-4b86-8bf4-6838f97c81d7",
+      "realmsDiffer": true,
+      "sameSha256InBothStores": true,
+      "descriptorSha256": "a00df084cc0c37b78e5c8ac1b41b7c917846e1e71f9c9e7bd8ff64b2048bd364"
+    }
+  }
+}

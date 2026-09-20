@@ -57,7 +57,7 @@ import AttachmentLocal from '@deepseek-ai/dsh-attachment-local'
 import LocalFileSystem from '@deepseek-ai/dsh-fs-local'
 import { createHash, createHmac } from 'node:crypto'
 import { execFile } from 'node:child_process'
-import { chmodSync, copyFileSync, mkdtempSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs'
+import { chmodSync, copyFileSync, mkdtempSync, readFileSync, rmSync, statSync, utimesSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -566,6 +566,85 @@ describe('DATA-11 [real] arm 5: a descriptor/content mismatch is refused before 
     })
     expect(page.bytes.byteLength).toBe(64)
     expect(sha256(Buffer.from(page.bytes))).toBe(sha256(PAYLOAD.subarray(0, 64)))
+  })
+
+  it('refuses a replacement that preserves the length AND the mtime, because the memo moves with ctime', async () => {
+    // THE WEAKER-ROUTE ARM, and the reason `ctimeMs` is in the identity stamp.
+    //
+    // DATA-11's evidence note names the harm as a DISAGREEMENT between two read
+    // paths: `pages()` serving bytes that are not the artifact while
+    // `resolveReference()` refuses the same object. This arm constructs the one
+    // shape that produced that disagreement.
+    //
+    // THE MECHANISM. `assertObjectIdentity` memoized a verification under
+    // `${size}:${mtimeMs}`, and BOTH fields are settable by whoever can write the
+    // store root. A naive replacement fails, because this filesystem keeps
+    // sub-millisecond mtime precision and `utimesSync` cannot reproduce the
+    // fraction. So the arm pins the mtime to a WHOLE SECOND FIRST -- a whole second
+    // IS exactly reproducible -- and only then pages once. The store hashes the
+    // REAL bytes and memoizes that stamp; the replacement then restores the same
+    // whole second and matches it.
+    //
+    // MEASURED BEFORE THE FIX, all five steps
+    // (`qualification/results/C3-dataplane/memo-before.json`): the cursor SERVED
+    // THE REPLACED BYTES with an empty refusal list, while a COLD store over the
+    // same root refused them with `artifact-integrity-error`. The replacement was
+    // therefore detectable and the warm memo was the only reason it was not
+    // detected -- the paging path was the weaker route to the same bytes.
+    //
+    // This test asserts the NEW truth: the stamp now includes `ctimeMs`, which
+    // POSIX does not let `utimes` set and which the replacing write updates, so the
+    // digest is re-taken and the page is refused.
+    const root = tempRoot('memo-stamp')
+    writeFileSync(join(root, 'p.bin'), PAYLOAD)
+    const plane = makePlane('memo-stamp-store')
+    const capture = await captureInto(root, plane, 'obs-memo-stamp')
+    const hostPath = await objectPath(plane.store, capture.descriptor.captured.sha256)
+
+    // STEP 1: pin the mtime to a whole second BEFORE any verification.
+    chmodSync(hostPath, 0o600)
+    const pinned = Math.floor(Date.now() / 1000)
+    utimesSync(hostPath, pinned, pinned)
+    const pinnedStat = statSync(hostPath)
+    expect(pinnedStat.mtimeMs % 1000).toBe(0)
+
+    // STEP 2: page once, so the REAL bytes are verified and the stamp memoized.
+    const first = await pages(plane.store, {
+      descriptor: capture.descriptor, maxBytes: 64, grants: plane.grants, callerScope: plane.scope,
+    })
+    expect(first.nextCursor).toBeDefined()
+
+    // STEP 3: replace in place with different bytes of the SAME length.
+    const replacement = Buffer.alloc(PAYLOAD.length, 0xcc)
+    writeFileSync(hostPath, replacement)
+
+    // STEP 4: restore the SAME whole second. The old stamp matched here, which is
+    // the defect; the assertion records that the attack really was constructed,
+    // so a green result below cannot be a test that failed to build its stimulus.
+    utimesSync(hostPath, pinned, pinned)
+    const afterStat = statSync(hostPath)
+    expect(afterStat.size).toBe(pinnedStat.size)
+    expect(afterStat.mtimeMs).toBe(pinnedStat.mtimeMs)
+    expect(`${String(afterStat.size)}:${String(afterStat.mtimeMs)}`)
+      .toBe(`${String(pinnedStat.size)}:${String(pinnedStat.mtimeMs)}`)
+    // The bytes really are not the artifact.
+    expect(sha256(replacement)).not.toBe(capture.descriptor.captured.sha256)
+    // AND THE FIELD THAT MAKES THE STAMP MOVE: the replacement updated ctime, and
+    // userspace cannot set it back.
+    expect(afterStat.ctimeMs).not.toBe(pinnedStat.ctimeMs)
+
+    // STEP 5: the cursor is REFUSED, and the refusal reaches the host's sink.
+    // The LIVE callback type, which is narrower than the JOURNAL row: `onRefusal`
+    // fires before the journal assigns `at`, so it carries no timestamp. Typing this
+    // as `CursorRefusal[]` was the mismatch the compiler caught -- the assertion below
+    // reads only `.code`, which both shapes carry.
+    const refusals: Array<Omit<CursorRefusal, 'at'>> = []
+    await expect(pages(plane.store, {
+      descriptor: capture.descriptor, maxBytes: 64, grants: plane.grants, callerScope: plane.scope,
+      cursor: first.nextCursor ?? '',
+      onRefusal: refusal => { refusals.push(refusal) },
+    })).rejects.toMatchObject({ code: 'artifact-integrity-error' })
+    expect(refusals.map(entry => entry.code)).toContain('artifact-integrity-error')
   })
 })
 

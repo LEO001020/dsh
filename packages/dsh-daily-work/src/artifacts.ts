@@ -598,6 +598,31 @@ function keyIdOf(key: string): string {
 }
 
 /**
+ * The stamp that decides whether a memoized digest verification is still valid.
+ *
+ * WHY IT IS A FUNCTION AND NOT AN INLINE TEMPLATE. The stamp is the whole of the
+ * re-verification trigger: if it does not move when the object's bytes are
+ * rewritten, `assertObjectIdentity` returns early and serves whatever is on disk.
+ * Keeping it in one named place means the fields that make it move are reviewable,
+ * and that a second call site cannot quietly use a weaker stamp.
+ *
+ * `ctimeMs` IS THE LOAD-BEARING FIELD. `size` and `mtimeMs` are both settable by
+ * whoever can write the store root: a same-length replacement with the mtime
+ * restored leaves them identical, which is how a replacement skipped the digest
+ * (measured; see the note on `verifiedObjects`). POSIX does not allow `utimes` to
+ * set `ctime`, and the write that performs the replacement updates it, so the stamp
+ * moves on exactly the event it exists to catch. `mtimeMs` stays in the stamp
+ * because it is free and still catches a replacement on a filesystem with coarse
+ * ctime granularity.
+ *
+ * @param info - the `stat` result for the host path.
+ * @returns a stamp that changes whenever the file is rewritten.
+ */
+function identityStampOf(info: { size: number; mtimeMs: number; ctimeMs: number }): string {
+  return `${String(info.size)}:${String(info.mtimeMs)}:${String(info.ctimeMs)}`
+}
+
+/**
  * Read the durable cursor key of a store root, creating it on first use.
  *
  * THE SAME `wx` PROTOCOL AS THE REALM, for the same two reasons: two processes
@@ -803,11 +828,37 @@ export class AttachmentArtifactStore implements ArtifactStore {
   private readonly tombstones = new Map<string, Tombstone>()
   /**
    * Objects whose full digest has been verified in this process, keyed by
-   * artifact ref and stamped with the `(size, mtimeMs)` that was verified.
+   * artifact ref and stamped with the `(size, mtimeMs, ctimeMs)` that was verified.
    *
    * A memo rather than a boolean: an object replaced in place keeps its length but
    * changes its mtime, so the stamp makes the next `assertObjectIdentity` re-verify
    * instead of trusting a stale "verified" flag.
+   *
+   * WHY `ctimeMs` IS IN THE STAMP (DATA-11, and the harm its evidence note names).
+   * The stamp was `(size, mtimeMs)` and BOTH are settable by whoever can write the
+   * store root -- which is the same trust boundary `STORE_CURSOR_KEY_FILE_NAME`
+   * already records. MEASURED: pinning the object's mtime to a WHOLE SECOND before
+   * the first page made the stamp exactly reproducible, so a replacement of the same
+   * length that restored that second skipped the digest and the cursor SERVED THE
+   * REPLACED BYTES (`qualification/results/C3-dataplane/memo-before.json`). The
+   * replacement was detectable -- a cold store over the same root refused it with
+   * `artifact-integrity-error` -- so the paging path was the weaker route to the
+   * same bytes, which is exactly what DATA-11 forbids.
+   *
+   * `ctime` is the fix and not another guess: POSIX says it cannot be set by
+   * `utimes`/`utimensat`, and it is updated by the write that performs the
+   * replacement. Measured: a same-length replacement with the mtime restored to the
+   * same whole second left `mtimeMs` identical and moved `ctimeMs`. So the stamp now
+   * moves whenever the file's CONTENT or metadata is rewritten, and the hash is
+   * re-taken. The `mtimeMs` field stays in the stamp because it costs nothing and
+   * catches a replacement on a filesystem with coarse ctime.
+   *
+   * WHAT THIS DOES NOT BUY, stated so the memo is not over-read. It is a
+   * re-verification TRIGGER, not an integrity guarantee: an attacker who can write
+   * the store root can also rewrite the index the digest is compared against, and
+   * this file already says so for the realm. The property is narrower and still
+   * worth having: a byte replacement that leaves the declared digest alone no longer
+   * survives the memo.
    */
   private readonly verifiedObjects = new Map<string, string>()
   /** Journal write failures, kept so a broken refusal journal is visible. */
@@ -1276,17 +1327,33 @@ export class AttachmentArtifactStore implements ArtifactStore {
    *   every call    one `stat`: the object must exist and its length must equal the
    *                 recorded length. A truncated or replaced-with-different-length
    *                 object is refused here, for one syscall.
-   *   once per      a full digest verification, memoized on `(size, mtimeMs)`. A
-   *   (size,mtime)  same-length in-place replacement changes the mtime, so the next
-   *                 call re-verifies and refuses.
+   *   once per      a full digest verification, memoized on `(size, mtimeMs,
+   *   (size,mtime,  ctimeMs)`. A same-length in-place replacement changes the mtime
+   *    ctime)       AND the ctime, so the next call re-verifies and refuses.
    *
-   * THE LIMIT, STATED. A replacement that preserves BOTH the length and the mtime
-   * (a hostile writer with filesystem access) is not caught by the stat comparison,
-   * and the memo would let it through on later pages. That is why this does not
-   * replace the byte-level check in `resolveReference`, which hashes the bytes it
-   * actually read and cannot be memoized away. The two are layered on purpose: this
-   * one makes the PAGING path verify before serving; that one makes the RESOLVE
-   * path verify what it served.
+   * THE LIMIT, STATED. A replacement that preserves the length, the mtime AND the
+   * ctime is not caught by the stat comparison. That combination is not reachable
+   * from userspace through the ordinary file APIs -- POSIX does not let `utimes`
+   * set `ctime`, and the write that performs a replacement updates it -- which is
+   * why `ctimeMs` is in the stamp. An attacker who can rewrite the filesystem
+   * metadata below the syscall layer, or who can rewrite the index the digest is
+   * compared against, is inside the trust boundary this class does not defend; see
+   * {@link STORE_CURSOR_KEY_FILE_NAME} for the same statement about the realm.
+   *
+   * The earlier version of this comment recorded the `(size, mtimeMs)` memo as an
+   * accepted hole: "a replacement that preserves BOTH the length and the mtime (a
+   * hostile writer with filesystem access) is not caught". MEASURED, and it was
+   * not merely theoretical: pinning the mtime to a whole second made the stamp
+   * exactly reproducible, and the cursor then SERVED THE REPLACED BYTES while a
+   * cold store over the same root refused them with `artifact-integrity-error`
+   * (`qualification/results/C3-dataplane/memo-before.json`). A documented hole is
+   * still a hole, and this one made the paging path the weaker route to the same
+   * bytes -- the harm DATA-11 names. It is closed by adding `ctimeMs`.
+   *
+   * This still does not replace the byte-level check in `resolveReference`, which
+   * hashes the bytes it actually read and cannot be memoized away. The two are
+   * layered on purpose: this one makes the PAGING path verify before serving; that
+   * one makes the RESOLVE path verify what it served.
    *
    * @param artifact - the store-issued artifact reference.
    * @param expected - the digest and byte count the descriptor recorded.
@@ -1366,7 +1433,7 @@ export class AttachmentArtifactStore implements ArtifactStore {
         'artifact-integrity-error',
       )
     }
-    const stamp = `${String(info.size)}:${String(info.mtimeMs)}`
+    const stamp = identityStampOf(info)
     if (this.verifiedObjects.get(artifact) === stamp) return
     // First touch, or the object moved under us. Hash it, then remember the stamp.
     const hash = createHash('sha256')

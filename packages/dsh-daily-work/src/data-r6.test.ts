@@ -64,6 +64,7 @@ import {
   OBSERVATION_SCHEMA_VERSION,
   GrantTable,
   coverageVerdictOf,
+  isDeliverableAsComplete,
   type ObservationDescriptor,
   type ObservationGapStage,
 } from './observations.ts'
@@ -298,6 +299,77 @@ describe('R6-K1 [real] fs.capture records the target identity basis and the byte
       // must NOT be reported as a short acquisition.
       expect(captured.descriptor.acquisition.completeness).toBe('complete-within-request')
       expect(captured.gaps).toHaveLength(0)
+    } finally {
+      await dispose()
+    }
+  })
+
+  it('records a gap when the requested range extends PAST EOF, instead of claiming the request was complete', async () => {
+    // DATA-09's deciding clause is "a loss at one of those four stages that is not
+    // recorded as a gap is NOT PASS", and `observations.ts` defines `partial` as
+    // "bytes inside the requested range are known to be absent".
+    //
+    // MEASURED BEFORE THE FIX through THIS product path: a 400-byte file with
+    // `requestedRange: {offset: 0, length: 1000}` reported
+    // `complete-within-request` with an EMPTY gap list, and
+    // `isDeliverableAsComplete` returned TRUE -- while 600 bytes inside the range
+    // the caller named were absent. `{offset: 1000, length: 512}` did the same with
+    // all 512 requested bytes absent. The cause was a guard that forced the
+    // shortfall to 0 for EVERY range request, on the reasoning that a range
+    // legitimately captures fewer bytes than the file holds -- true only while the
+    // range lies inside the source.
+    //
+    // The control above is the other half and is deliberately kept adjacent: a
+    // range INSIDE the file still records no gap, so this is not a producer that
+    // files a loss on every range request.
+    const { plane, root, dispose } = await mountService('k1-range-past-eof')
+    try {
+      writeFileSync(join(root, 'short.txt'), Buffer.alloc(400, 0x61))
+      const caller = dataCallerFromEnclosing({ sessionId: 'session-r6', cwd: root })
+
+      // ARM A: the range overhangs EOF by 600 bytes.
+      const overhang = await plane.fsCapture(caller, {
+        path: 'short.txt',
+        observationId: 'obs-r6-range-overhang',
+        requestedRange: { offset: 0, length: 1000 },
+      })
+      expect(overhang.descriptor.captured.bytes).toBe(400)
+      // The absence is inside the range the caller NAMED, so the record is partial
+      // and the gap is filed -- under the stage that caused it.
+      expect(overhang.descriptor.acquisition.completeness).toBe('partial')
+      const gap = overhang.gaps.find(entry => entry.stage === 'native-acquisition')
+      expect(gap, 'bytes absent inside the requested range must be filed as a gap').toBeDefined()
+      // A re-read of the same path cannot produce bytes the source does not have,
+      // so `refetch` would be a promise this plane cannot keep.
+      expect(gap?.recovery).toBe('none')
+      expect(gap?.reason).toContain('600')
+      expect(coverageVerdictOf(overhang.descriptor)).toBe('partial-native-acquisition')
+      // The consequence that matters: it is no longer deliverable as a complete
+      // value. Before the fix this was `true`.
+      expect(isDeliverableAsComplete(overhang.descriptor)).toBe(false)
+
+      // ARM B: the range starts past EOF, so every requested byte is absent.
+      const allAbsent = await plane.fsCapture(caller, {
+        path: 'short.txt',
+        observationId: 'obs-r6-range-all-absent',
+        requestedRange: { offset: 1000, length: 512 },
+      })
+      expect(allAbsent.descriptor.captured.bytes).toBe(0)
+      expect(allAbsent.descriptor.acquisition.completeness).toBe('partial')
+      expect(allAbsent.gaps.find(entry => entry.stage === 'native-acquisition')).toBeDefined()
+      expect(isDeliverableAsComplete(allAbsent.descriptor)).toBe(false)
+
+      // ARM C: an OPEN-ENDED range at an offset past EOF implies zero bytes, so it
+      // is not a loss and must NOT file a gap. Without this arm, a fix that filed a
+      // gap on every past-EOF offset would pass the two above.
+      const openEnded = await plane.fsCapture(caller, {
+        path: 'short.txt',
+        observationId: 'obs-r6-range-open-past-eof',
+        requestedRange: { offset: 1000 },
+      })
+      expect(openEnded.descriptor.captured.bytes).toBe(0)
+      expect(openEnded.gaps).toHaveLength(0)
+      expect(openEnded.descriptor.acquisition.completeness).toBe('complete-within-request')
     } finally {
       await dispose()
     }

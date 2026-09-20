@@ -1,10 +1,10 @@
 {
   "probe": "c3-page-identity",
-  "label": "before",
-  "measuredAt": "2026-09-20T15:34:48.978Z",
+  "label": "after",
+  "measuredAt": "2026-09-20T15:42:17.741Z",
   "identity": {
-    "srcArtifactsTs": "ecbb31a5aa7520224ab4e540df903991c9f6451fddbff329c372044636a6b39a",
-    "libArtifactsJs": "f22ef649e211e1c7c7c4fb3da798051bce9c75a0d90ebacb56e831a51ef270ca"
+    "srcArtifactsTs": "78f634cc158da13b401cd59a8ec1e1429301758f4675815d788154551fc0b38a",
+    "libArtifactsJs": "a9ccbcfe95957a304d7a9a63b736fda36198dc43e413fed8dfca897fc06fc703"
   },
   "arms": {
     "benignFirstPage": {
@@ -22,18 +22,18 @@
       "bytesAreTheNamedArtifact": false
     },
     "cursorAfterReplacement": {
-      "refused": false,
-      "bytes": 64,
-      "sha256": "cc7321cce5e4409bd8077d58422e1214969059bbd40b4eeb0de0a642f40f7282",
-      "offset": 64,
-      "yieldedIsTheNamedArtifact": false
+      "refused": true,
+      "code": "artifact-integrity-error",
+      "name": "ArtifactError",
+      "message": "artifact artifact:sha256:e0626d0ac9504f04ae26bc4796d355e988ecbba8114fd9eef1b0b6c1279f78a8 is recorded as e0626d0ac9504f04ae26bc4796d355e988ecbba8114fd9eef1b0b6c1279f78a8 (920 bytes) but the stored object hashes to 4d06b09eea8b7ee7266c9b36cd03d8354187889bf428120a034921f0da827194 (920 bytes read); the bytes are not the artifact that was recorded",
+      "yieldedIsTheNamedArtifact": null
     },
     "resolveReferenceOnSameObject": {
       "refused": true,
       "code": "artifact-integrity-error",
       "message": "artifact artifact:sha256:e0626d0ac9504f04ae26bc4796d355e988ecbba8114fd9eef1b0b6c1279f78a8 declares 920 bytes hashing to e0626d0ac9504f04ae26bc4796d355e988ecbba8114fd9eef1b0b6c1279f78a8 but the stored object hashes to 4d06b09eea8b7ee7266c9b36cd03d8354187889bf428120a034921f0da827194 (920 bytes read)"
     },
-    "pagingAndResolveDisagree": true,
+    "pagingAndResolveDisagree": false,
     "freshStoreSameRootCursor": {
       "refused": true,
       "code": "artifact-integrity-error",
@@ -45,9 +45,9 @@
     "firstPageWasTheArtifact": true,
     "replacementPreservedLengthAndMtime": true,
     "replacementIsNotTheNamedArtifact": true,
-    "cursorServedReplacedBytes": true,
+    "cursorServedReplacedBytes": false,
     "resolveReferenceRefused": true,
     "freshStoreRefused": true,
-    "PAGE_IDENTITY_HOLDS": false
+    "PAGE_IDENTITY_HOLDS": true
   }
 }
