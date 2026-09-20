@@ -23,6 +23,7 @@ import Subprocess from '@deepseek-ai/dsh-subprocess-local'
 import SystemPrompt from '@deepseek-ai/dsh-system-prompt'
 import ToolRuntime, { defineTool } from '@deepseek-ai/dsh-tools'
 import type { Agent } from '@deepseek-ai/dsh-agent'
+import { createHash } from 'node:crypto'
 import { writeFileSync } from 'node:fs'
 import { mkdtemp, rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
@@ -152,11 +153,25 @@ async function main(): Promise<void> {
   // ARM C: the ARGUMENTS direction, which IS bounded by the frame. A call
   // whose arguments exceed 4 MiB is refused by the CLIENT before the socket
   // write. This is the one place the frame limit is authoritative today.
+  //
+  // THE ARGUMENTS MUST BE BIG ON THE WIRE, so the payload is built INSIDE the
+  // cell. A first version of this arm passed `{'chars': 5242880}`, which
+  // serializes to ~25 bytes: the number was large but the FRAME was not, so the
+  // refusal was never reached and the arm reported `C_RAISED:no`. That is the
+  // project's most-recorded defect shape -- a check that does not fire and a
+  // check that is absent producing identical evidence -- so this arm now builds
+  // the bytes in the kernel and prints the exact serialized size it is about to
+  // send, which makes the arm self-falsifying: if the size printed is under the
+  // limit, the arm says so rather than passing.
   // ---------------------------------------------------------------------
   const armC = await service.runCell(agent, [
     bridge.preamble(lease),
+    "import json as _c_json",
+    `_c_payload = {'blob': 'y' * ${String(5 * 1024 * 1024)}}`,
+    "print('C_ARGS_JSON_BYTES:' + str(len(_c_json.dumps(_c_payload).encode('utf-8'))))",
+    `print('C_FRAME_LIMIT:${String(4 * 1024 * 1024)}')`,
     "try:",
-    `    await dsh.call('p13_blob', {'chars': ${String(5 * 1024 * 1024)}})`,
+    "    await dsh.call('p13_blob', _c_payload)",
     "    print('C_RAISED:no')",
     "except Exception as exc:",
     "    print('C_RAISED:yes')",
@@ -193,6 +208,85 @@ async function main(): Promise<void> {
       hasArtifactStoreRef: typeof (bridge as unknown as Record<string, unknown>)['artifactStore'] !== 'undefined',
     },
   }
+
+  // ---------------------------------------------------------------------
+  // ARM E: the SAME tool, on a bridge that HAS a retention port.
+  //
+  // This is the after-picture for the host-side half. The port here is a
+  // recording stand-in for the unified plane -- it is NOT a second store, and
+  // the production binding is the composition's `AttachmentArtifactStore`. What
+  // this arm establishes is the CONTRACT: with a plane mounted, the reply
+  // carries the plane's own reference, the `plane` field says `unified`, and NO
+  // host path crosses the wire.
+  //
+  // The two observations that matter are the negative ones:
+  //   - `E_PATH_IS_NONE` must be True  (no raw path reaches Python at all)
+  //   - `E_LOAD_REFUSED` must name ARTIFACT_NOT_A_PATH (load() cannot silently
+  //     fall back to a filesystem read, which is the authority confusion §12 is
+  //     about)
+  // ---------------------------------------------------------------------
+  const retainedBytes: Array<{ artifact: string, bytes: number, sha256: string }> = []
+  const unifiedBridge = new BridgeServer({
+    artifactDirectory: join(root, 'artifacts-unified-scratch'),
+    inlineValueBytes: 4096,
+    retention: {
+      retain: async (bytes: Uint8Array) => {
+        const sha256 = createHash('sha256').update(bytes).digest('hex')
+        const artifact = `artifact:sha256:${sha256}`
+        retainedBytes.push({ artifact, bytes: bytes.byteLength, sha256 })
+        return { artifact, sha256, bytes: bytes.byteLength }
+      },
+    },
+  })
+  await unifiedBridge.start()
+  const unifiedService = new KernelService(ctx, { pythonExecutable: PYTHON, brokerScript: BROKER, root: join(root, 'kernels-unified') })
+  const unifiedLease = unifiedBridge.mintLease({
+    sessionId: 'session-p13-unified',
+    cellId: 'cell-p13-unified-1',
+    epoch: 1,
+    outerCallId: String('ipython-call-p13-unified'),
+    rootCallId: String('ipython-call-p13-unified'),
+    ledger: new MemoryBridgeLedger(),
+    handler: createNativeCallHandler({
+      ctx,
+      authority: authorityFor('ipython-call-p13-unified', agent, new AbortController().signal),
+      bridge: unifiedBridge,
+    }),
+  })
+  const armE = await unifiedService.runCell(agent, [
+    unifiedBridge.preamble(unifiedLease),
+    "value = await dsh.call('p13_blob', {'chars': 8192})",
+    "print('E_TYPE:' + type(value).__name__)",
+    "print('E_PLANE:' + str(value.plane))",
+    "print('E_ARTIFACT_PREFIXED:' + str(str(value.artifact).startswith('artifact:sha256:')))",
+    "print('E_PATH_IS_NONE:' + str(value.path is None))",
+    "print('E_HAS_NO_RAW_PATH_ATTR:' + str(not hasattr(value, 'path') or value.path is None))",
+    "try:",
+    "    value.load()",
+    "    print('E_LOAD_REFUSED:no')",
+    "except Exception as exc:",
+    "    print('E_LOAD_REFUSED:yes')",
+    "    print('E_LOAD_CODE:' + str(getattr(exc, 'code', None)))",
+    // On the unified plane there is nothing to open, so verify() must not reach
+    // for a path. It reports True because the PLANE checks the digest on read.
+    "print('E_VERIFY_NO_PATH:' + str(value.verify()))",
+    "print('E_REPR:' + repr(value))",
+  ].join('\n'))
+  observed['armE_unifiedRetentionPort'] = {
+    outcome: armE.outcome,
+    stdout: armE.stdout.text.trim().split('\n'),
+    stderrTail: armE.stderr.text.trim().split('\n').slice(-6),
+    // What the PORT was asked to retain -- the host side of the same call.
+    portCalls: retainedBytes.map(entry => ({ artifact: entry.artifact, bytes: entry.bytes })),
+    scratchDirectoryEntries: await (async () => {
+      try { return await readdir(join(root, 'artifacts-unified-scratch')) } catch { return [] }
+    })(),
+  }
+
+  await unifiedLease.close('completed', 'the probe finished')
+  unifiedBridge.releaseLease(unifiedLease)
+  await unifiedService.close()
+  await unifiedBridge.close()
 
   await lease.close('completed', 'the probe finished')
   bridge.releaseLease(lease)
