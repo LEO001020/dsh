@@ -147,13 +147,18 @@ holds its slot (`states.ts:63`; `unknown` is in `SLOT_HOLDING_STATES`). The stat
 machine permits six exits from `unknown` — `accepted | executing | settling |
 confirmed | cancelled | cancel_requested` (`states.ts:93`) — and:
 
-- `executing`, `settling`, `confirmed`, `cancelled`, `cancel_requested` have **no
-  production writer at all** (FACT 1);
+- `settling`, `confirmed`, `cancelled`, `cancel_requested` have **no non-test
+  writer anywhere** (FACT 1);
+- `executing` has exactly one non-test writer, `durability-runner.ts:91`, and that
+  file is the hand-run CLI with **zero importers** — so it is not a production path;
 - `accepted` has exactly one production writer, `host.ts:1379`, and it is
   **unreachable for an `unknown` task**: `admit` refuses a task that still holds
   its slot — `dailyWork: task "..." is already admitted as unknown`
   (`host.ts:823-825`) — and `relaunchPrepared` refuses anything that is not
   `prepared` (`recovery.ts:103-116`).
+
+So no exit from `unknown` is reachable in the product, by either route: no writer
+exists, or the writer exists but cannot be reached for a task in this state.
 
 **Measured, not inferred** (test "and nothing can move a task OUT of `unknown`"): a
 task driven to `unknown` by a failing launch stays `unknown` with its reservation
@@ -331,13 +336,14 @@ the case text.
 > **No production call site targets a terminal task state (`settling`, `confirmed`,
 > `cancelled`, `cancel_requested`), and the one in-flight state the product does
 > write — `unknown`, at `host.ts:1342` (no launch port installed) and `host.ts:1364`
-> (launch failed), both with `releaseReservation: false` — has no production exit:
-> every exit the state machine permits from `unknown` (`states.ts:93`) either has no
-> production writer at all, or is `accepted`, whose only production writer
-> (`host.ts:1379`) is unreachable for such a task because `admit` refuses a task that
-> still holds its slot (`host.ts:823-825`). Since a settlement is the act of leaving
-> an in-flight state, no settlement can be delivered in any generation, stale or
-> current — so no epoch or fencing token has anything to guard.**
+> (launch failed), both with `releaseReservation: false` — has no reachable exit:
+> of the six exits the state machine permits from `unknown` (`states.ts:93`), four
+> have no non-test writer anywhere, `executing`'s only writer is the hand-run CLI
+> with zero importers (`durability-runner.ts:91`), and `accepted`'s only production
+> writer (`host.ts:1379`) is unreachable for such a task because `admit` refuses a
+> task that still holds its slot (`host.ts:823-825`). Since a settlement is the act
+> of leaving an in-flight state, no settlement can be delivered in any generation,
+> stale or current — so no epoch or fencing token has anything to guard.**
 
 Checkable by a reader with grep, in four commands:
 
@@ -362,11 +368,12 @@ a task OUT of `unknown`").
 > targets a terminal task state (`settling`, `confirmed`, `cancelled`,
 > `cancel_requested`), and the one in-flight state the product does write — `unknown`,
 > at `host.ts:1342` and `host.ts:1364`, both holding the reservation — has no
-> production exit: every permitted exit from `unknown` either has no production
-> writer, or is `accepted`, unreachable for such a task because `admit` refuses a
-> task that still holds its slot (`host.ts:823-825`). A settlement is the act of
-> leaving an in-flight state, so no settlement can be delivered from any generation,
-> stale or current, and an epoch guard would have nothing to compare.
+> reachable exit: of the six exits permitted from `unknown` (`states.ts:93`), four
+> have no non-test writer, `executing`'s only writer is the unreachable CLI
+> (`durability-runner.ts:91`), and `accepted` is unreachable for such a task because
+> `admit` refuses a task that still holds its slot (`host.ts:823-825`). A settlement
+> is the act of leaving an in-flight state, so no settlement can be delivered from
+> any generation, stale or current, and an epoch guard would have nothing to compare.
 >
 > **The guard is DELETED, as this arm requires:** `applyWorkerSettlement`, the
 > `WorkerSettlement` type, the `RefusalLedger` and the `dsh_daily_work_refusals`
