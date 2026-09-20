@@ -262,6 +262,23 @@ const homes = {
 const OUT_BEFORE = `${RESULT_DIR}/catalog-before.json`
 const OUT_AFTER = `${RESULT_DIR}/catalog-after.json`
 
+/**
+ * `--replay`: re-judge the artifacts already on disk instead of booting again.
+ *
+ * WHY THIS EXISTS. The judgment (the diff and the assertions) is separable from
+ * the observation (the two boots), and the observation is the expensive half:
+ * two boots cost minutes of a CPU many writers share. A defect in the JUDGMENT
+ * therefore must not cost two more boots — which is exactly what happened here,
+ * where a row-id lookup keyed the bare id while the Loader reports
+ * `include:agent-presets:tool-subagent`.
+ *
+ * IT READS ONLY FILES THIS DRIVER WROTE, and it re-derives the diff from the
+ * artifacts rather than from anything in memory, so a replay cannot report a
+ * result the recorded observations do not support. The report it writes says
+ * `mode: 'replay'` so a reader can tell a re-judgment from a fresh measurement.
+ */
+const REPLAY = process.argv.includes('--replay')
+
 // `--build-only`: construct both homes and stop, so the cheap half of the
 // measurement can be checked before the expensive half is paid for.
 if (process.argv.includes('--build-only')) {
@@ -305,8 +322,37 @@ if (process.argv.includes('--build-only')) {
 }
 
 // ONE BOOT AT A TIME. Strictly serial.
-const before = await bootHome({ label: 'before', home: BEFORE_HOME, outPath: OUT_BEFORE })
-const after = await bootHome({ label: 'after', home: AFTER_HOME, outPath: OUT_AFTER })
+//
+// In replay mode the observations come from the artifacts already on disk and
+// NO boot is run. `readResult` still guards each read, so a replay cannot pick
+// up another home's file.
+function loadRecorded(outPath, home, label) {
+  const partialPath = `${outPath}.partial`
+  const read = candidate => readResult(candidate, home).json
+  const attempts = [outPath, partialPath].map(candidate => {
+    try {
+      return { candidate, probe: read(candidate), error: null }
+    } catch (error) {
+      return { candidate, probe: null, error: error instanceof Error ? error.message : String(error) }
+    }
+  })
+  const used = attempts.find(attempt => attempt.probe !== null)
+  return {
+    boot: { replay: true, label },
+    probe: used?.probe ?? null,
+    probeError: used === undefined ? attempts.map(a => a.error).join('\n  ') : null,
+    artifactUsed: used?.candidate ?? null,
+    partial: used?.candidate === partialPath,
+    buildIdentity: { artifacts: null, changedDuringBoot: [] },
+  }
+}
+
+const before = REPLAY
+  ? loadRecorded(OUT_BEFORE, BEFORE_HOME, 'before')
+  : await bootHome({ label: 'before', home: BEFORE_HOME, outPath: OUT_BEFORE })
+const after = REPLAY
+  ? loadRecorded(OUT_AFTER, AFTER_HOME, 'after')
+  : await bootHome({ label: 'after', home: AFTER_HOME, outPath: OUT_AFTER })
 
 const diff = catalogDiff(before.probe?.tools, after.probe?.tools)
 
@@ -333,6 +379,22 @@ const afterRefusals = refusalsBy(after.probe)
 const rowsBy = probe => Object.fromEntries((probe?.rowEnablement ?? []).map(row => [row.entryId, row.enabled]))
 const beforeRows = rowsBy(before.probe)
 const afterRows = rowsBy(after.probe)
+
+/**
+ * Look one row up in the Loader's entry table by its SHORT id.
+ *
+ * THE IDS ARE NAMESPACED, and this is measured rather than assumed. The preset
+ * is mounted through an `include:` row, so the entry ids the Loader reports are
+ * `include:agent-presets:tool-subagent` — not `tool-subagent`. A first version
+ * of this driver looked up the bare id, found nothing, and reported two
+ * assertions as failures whose underlying values were correct. The match below
+ * accepts the exact id or any id ending in `:` + the short id, so it survives a
+ * different include prefix without silently matching a substring.
+ */
+function rowEnabled(rows, shortId) {
+  const key = Object.keys(rows).find(id => id === shortId || id.endsWith(`:${shortId}`))
+  return key === undefined ? undefined : rows[key]
+}
 
 const assertions = {
   // The measurement itself must have happened on both sides.
@@ -373,29 +435,59 @@ const assertions = {
     row.errorCode !== 'UNKNOWN_TOOL'),
   // The row table agrees with the catalog, so "disabled in the file" and
   // "absent from the mounted composition" are two facts and not one.
-  disabledRowsReportedDisabledAfter: DISABLED_TOOLS
-    .map(name => ({ subagent: 'tool-subagent', subagent_fork: 'tool-subagent-fork', workflow: 'tool-workflow' }[name]))
-    .every(id => afterRows[id] === false),
-  disabledRowsWereEnabledBefore: ['tool-subagent', 'tool-subagent-fork', 'tool-workflow']
-    .every(id => beforeRows[id] === true),
+  //
+  // `undefined` must FAIL, not pass: a lookup that finds no row is a driver bug,
+  // and the first version of this file read it as a pass. Each comparison is
+  // therefore explicit against true/false.
+  disabledRowsReportedDisabledAfter: ['tool-subagent', 'tool-subagent-fork', 'workflow-ptc', 'tool-workflow']
+    .every(id => rowEnabled(afterRows, id) === false),
+  disabledRowsWereEnabledBefore: ['tool-subagent', 'tool-subagent-fork', 'workflow-ptc', 'tool-workflow']
+    .every(id => rowEnabled(beforeRows, id) === true),
+  // The two rows V5 §8 KEEPS must stay enabled on BOTH sides: a change that
+  // took the management surface down with the creation rows would be a
+  // different regression, and it would not show in the catalog diff if the
+  // tools were re-registered from elsewhere.
+  keptRowsStayEnabled: ['tool-subagent-control', 'tool-subagent-list-agents']
+    .every(id => rowEnabled(beforeRows, id) === true && rowEnabled(afterRows, id) === true),
   // No row appeared that nobody asked for.
   noUnexpectedToolsAdded: diff.added.length === 0,
   // The preset did not die: the measured FACT F failure was toolCount 0.
   presetSurvivedTheDisable: (after.probe?.toolCountAgentKey ?? 0) > 0,
   // Neither boot's executed bytes moved underneath it.
-  buildsStableDuringBothBoots:
-    before.buildIdentity.changedDuringBoot.length === 0 && after.buildIdentity.changedDuringBoot.length === 0,
+  //
+  // NULL IN REPLAY, and it must be: a replay runs no boot, so it has no before
+  // and after digests to compare. Recording it as `true` would be a free pass
+  // for a fact a replay never observed -- the vacuous-truth trap. `null` is
+  // reported as NOT_RUN rather than as PASS.
+  buildsStableDuringBothBoots: REPLAY
+    ? null
+    : before.buildIdentity.changedDuringBoot.length === 0 && after.buildIdentity.changedDuringBoot.length === 0,
   // The hidden arm: Python could not reach a creation route either.
   bridgeArmDidNotExecute: after.probe?.bridgeArm?.anyExecuted === false
     || after.probe?.bridgeArm?.available === false,
 }
 
-const failed = Object.entries(assertions).filter(([, ok]) => ok !== true).map(([name]) => name)
+/**
+ * Three outcomes, not two.
+ *
+ * `true` passes; `false` fails; `null` means NOT_RUN -- the observation was not
+ * made (a replay runs no boot, so it has no digests to compare). Collapsing
+ * NOT_RUN into PASS is the vacuous-truth trap, and collapsing it into FAIL would
+ * report a replay as a product failure. It is named separately so a reader sees
+ * which assertions the run actually exercised.
+ */
+const failed = Object.entries(assertions).filter(([, ok]) => ok === false).map(([name]) => name)
+const notRun = Object.entries(assertions).filter(([, ok]) => ok === null).map(([name]) => name)
 
 const report = {
   driver: 'p6-surface-driver',
   slice: 'P6 — the model-facing child-creation surface, before and after',
   ranAt: new Date().toISOString(),
+  // `boot` = two fresh boots produced the observations below.
+  // `replay` = the observations were READ BACK from artifacts already on disk
+  // and only the judgment was re-run. A reader must be able to tell these apart:
+  // a replay says nothing new about the product.
+  mode: REPLAY ? 'replay' : 'boot',
   homes: { before: homes.before, after: homes.after, canonical: CANONICAL_HOME },
   cwd: FOREIGN_CWD,
   boots: {
@@ -403,14 +495,14 @@ const report = {
       port: before.boot.port, portReleased: before.boot.portReleased, exitCode: before.boot.exitCode,
       timedOut: before.boot.timedOut, probeError: before.probeError,
       artifactUsed: before.artifactUsed, partial: before.partial,
-      activationWarnings: before.boot.stderr.split('\n').filter(l => /did not activate|startup failed/i.test(l)),
+      activationWarnings: (before.boot.stderr ?? '').split('\n').filter(l => /did not activate|startup failed/i.test(l)),
       buildIdentity: before.buildIdentity,
     },
     after: {
       port: after.boot.port, portReleased: after.boot.portReleased, exitCode: after.boot.exitCode,
       timedOut: after.boot.timedOut, probeError: after.probeError,
       artifactUsed: after.artifactUsed, partial: after.partial,
-      activationWarnings: after.boot.stderr.split('\n').filter(l => /did not activate|startup failed/i.test(l)),
+      activationWarnings: (after.boot.stderr ?? '').split('\n').filter(l => /did not activate|startup failed/i.test(l)),
       buildIdentity: after.buildIdentity,
     },
   },
@@ -439,13 +531,16 @@ const report = {
   subagentRowConfig: { before: before.probe?.subagentRowConfig ?? null, after: after.probe?.subagentRowConfig ?? null },
   assertions,
   failedAssertions: failed,
+  notRunAssertions: notRun,
   verdict: failed.length === 0 ? 'PASS' : 'FAIL',
 }
 
 writeFileSync(`${RESULT_DIR}/driver.json`, JSON.stringify(report, null, 2))
 process.stdout.write(`P6-SURFACE-DRIVER: ${JSON.stringify({
   verdict: report.verdict,
+  mode: report.mode,
   failed,
+  notRun,
   diff,
   afterCount: diff.afterCount,
   beforeCount: diff.beforeCount,
