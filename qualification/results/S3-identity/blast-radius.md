@@ -11,25 +11,26 @@ superseded identity. Rewriting them would be re-labelling a measurement as havin
 taken under an identity it was not taken under — the inheritance the trusted-local spec
 explicitly forbids. What follows is the list, and the re-run each one needs.
 
-Scan, reproducible at the pre-change revision (so the numbers do not include this
-slice's own files or its lock edit):
+Scan, reproducible at the pre-change revision, named explicitly so the numbers do not
+shift when HEAD moves:
 
 ```
-git grep -l "0a0996f3" HEAD -- . ':(exclude)node_modules'   -> 65 files
-git grep -c "0a0996f3" HEAD -- . ':(exclude)node_modules'   -> 860 lines contain it
-git grep -o "0a0996f3" HEAD -- . ':(exclude)node_modules'   -> 868 occurrences
+PRE = fef7612fa427ce04aed8a329dd22a80fd8fc8e77   # the revision this slice started from
+git grep -l "0a0996f3" $PRE -- . ':(exclude)node_modules'   -> 65 files
+git grep -c "0a0996f3" $PRE -- . ':(exclude)node_modules'   -> 860 lines contain it
+git grep -o "0a0996f3" $PRE -- . ':(exclude)node_modules'   -> 868 occurrences
 ```
 
 **65 files / 860 lines / 868 occurrences**, excluding `node_modules`. All per-file
-counts below are the `git grep -c` LINE counts at `HEAD`, so they are re-derivable with
+counts below are the `git grep -c` LINE counts at `PRE`, so they are re-derivable with
 the same command. (A JSON parse of the ledger is used for the evidence-entry counts in
 section A, because line counts cannot answer "how many entries".)
 
 Two caveats on the scan, so a reader reproducing it is not surprised:
-- `HEAD` is used deliberately. In the working tree this slice adds
-  `qualification/results/S3-identity/*` (which quote the old identity as the subject of
-  the report) and edits `compatibility.lock.json`, so a working-tree grep returns more
-  files and would confuse this slice's own prose with a stale artifact.
+- The revision is PINNED to `fef7612`, not written as `HEAD`. This slice's own commit
+  moves HEAD and adds `qualification/results/S3-identity/*`, which quote the old
+  identity as the subject of this report; a bare `HEAD` scan after the commit returns
+  more files and would confuse this report's own prose with a stale artifact.
 - `qualification/runners/__pycache__/` can appear in a working-tree grep after any
   runner is imported. It is a build artefact, not evidence.
 
