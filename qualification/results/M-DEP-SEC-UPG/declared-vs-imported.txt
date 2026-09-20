@@ -4,10 +4,11 @@
 # production import of an undeclared peer is the sibling defect: it resolves
 # here through the junction farm and can fail in a real install.
 
-imported (20):
+imported (22):
   @deepseek-ai/cordis
   @deepseek-ai/dsh-agent
   @deepseek-ai/dsh-attachment-local   <-- NOT DECLARED
+  @deepseek-ai/dsh-commands
   @deepseek-ai/dsh-credentials
   @deepseek-ai/dsh-fs   <-- NOT DECLARED
   @deepseek-ai/dsh-llm   <-- NOT DECLARED
@@ -21,14 +22,16 @@ imported (20):
   @deepseek-ai/dsh-subagent
   @deepseek-ai/dsh-subprocess   <-- NOT DECLARED
   @deepseek-ai/dsh-subprocess-local   <-- NOT DECLARED
+  @deepseek-ai/dsh-system-prompt   <-- NOT DECLARED
   @deepseek-ai/dsh-tools
   @deepseek-ai/dsh-util-values   <-- NOT DECLARED
   @deepseek-ai/dsh-web
   @deepseek-ai/schemastery   <-- NOT DECLARED
 
-declared (9):
+declared (10):
   @deepseek-ai/cordis
   @deepseek-ai/dsh-agent
+  @deepseek-ai/dsh-commands
   @deepseek-ai/dsh-credentials
   @deepseek-ai/dsh-storage-domain
   @deepseek-ai/dsh-subagent
@@ -37,7 +40,7 @@ declared (9):
   @deepseek-ai/dsh-web
   typescript
 
-UNDECLARED (13):
+UNDECLARED (14):
   @deepseek-ai/dsh-attachment-local
   @deepseek-ai/dsh-fs
   @deepseek-ai/dsh-llm
@@ -49,5 +52,6 @@ UNDECLARED (13):
   @deepseek-ai/dsh-storage-json
   @deepseek-ai/dsh-subprocess
   @deepseek-ai/dsh-subprocess-local
+  @deepseek-ai/dsh-system-prompt
   @deepseek-ai/dsh-util-values
   @deepseek-ai/schemastery
