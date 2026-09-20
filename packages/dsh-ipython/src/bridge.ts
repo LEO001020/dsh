@@ -247,6 +247,33 @@ export class LeaseRejection extends Error {
 }
 
 /**
+ * A lease closed but could NOT record every disposition durably.
+ *
+ * WHY THIS IS AN ERROR AND NOT A LOG LINE. `BR-07`'s oracle is about the RECORD:
+ * "nothing continues silently in the background with no record". A close whose
+ * ledger writes failed has exactly that property -- the calls settled, and what
+ * became of them is not written down -- so reporting the close as clean would be
+ * the defect the oracle names, one level down. The lease is still CLOSED (that
+ * fact is about the lease, not the ledger), and this error is what stops a caller
+ * from mistaking "closed" for "recorded".
+ */
+export class BridgeLedgerWriteError extends Error {
+  readonly leaseId: string
+  /** Which dispositions are missing, so a reader knows what was lost. */
+  readonly unrecorded: readonly { subCallId: string, disposition: BridgeDisposition, reason: string }[]
+
+  constructor(leaseId: string, unrecorded: readonly { subCallId: string, disposition: BridgeDisposition, reason: string }[]) {
+    super(
+      `cell lease ${leaseId} closed but ${String(unrecorded.length)} disposition(s) could not be recorded durably: `
+      + unrecorded.map(entry => `${entry.subCallId} (${entry.disposition}): ${entry.reason}`).join('; '),
+    )
+    this.name = 'BridgeLedgerWriteError'
+    this.leaseId = leaseId
+    this.unrecorded = Object.freeze([...unrecorded])
+  }
+}
+
+/**
  * Host-bound authority for one cell. NONE of this comes from Python.
  *
  * `handler` closes over the live `exec`, so the Agent, the Session, the root
@@ -582,8 +609,17 @@ export class CellLease {
     this.settleQueuedCalls(reason)
     // STEP 4: flush the ledger BEFORE the lease reports itself closed, so a
     // reader that observes CLOSED can rely on every disposition being durable.
+    // The flush does NOT throw here: the state flip below must happen either way,
+    // because leaving a lease stuck in CLOSING would be a worse defect than the
+    // one being reported. The failures are carried out of `drain` instead.
     await this.flush()
+    // STEP 5: mark CLOSED.
     this.state = 'CLOSED'
+    if (this.unrecorded.length > 0) {
+      // A CLOSED lease whose dispositions are incomplete. The caller learns it
+      // here rather than having to ask; see `BridgeLedgerWriteError`.
+      throw new BridgeLedgerWriteError(this.id, this.unrecorded)
+    }
   }
 
   /**
@@ -626,19 +662,76 @@ export class CellLease {
     // synchronous queue-disposal loop would deadlock the loop against itself.
     // `drain` awaits `flush()` before it flips to CLOSED, so the write is still
     // ordered before the lease reports itself closed.
+    //
+    // THE REJECTION IS CAPTURED, NOT DISCARDED. `ledger.disposed` rejects in four
+    // distinct ways (no row for the subcall, a duplicate disposition, a handoff
+    // without a job id, a job id on a non-handoff arm) and the backend's `put` can
+    // fail too. A bare `Promise.allSettled` in `flush` would make every one of
+    // those unobservable while still letting the lease reach CLOSED -- which is
+    // exactly the "continues silently with no record" outcome BR-07 forbids, one
+    // level down. The rejection is retained here and rethrown by `flush`.
     this.pendingWrites.push(this.ledger.disposed(disposition.subCallId, disposition.disposition, {
       ...disposition.jobId === undefined ? {} : { jobId: disposition.jobId },
       ...disposition.closeReason === undefined ? {} : { closeReason: disposition.closeReason },
     }))
+    // The report is the KEY for the failure trace above, so a rejected write can
+    // name the subcall it belonged to instead of an array index.
+    this.writeByReport.set(disposition, this.pendingWrites[this.pendingWrites.length - 1] as Promise<void>)
   }
 
   private readonly pendingWrites: Promise<void>[] = []
+  /** Dispositions that could NOT be recorded durably. Empty is the healthy state. */
+  private readonly unrecorded: Array<{ subCallId: string, disposition: BridgeDisposition, reason: string }> = []
 
-  /** Await every ledger write this lease has issued. */
+  /**
+   * Await every ledger write this lease has issued, retaining any that failed.
+   *
+   * A rejection is NOT swallowed: each failure is recorded in
+   * {@link unrecordedDispositions} so a reader can see WHICH disposition is
+   * missing, and `drain` turns a non-empty list into a
+   * {@link BridgeLedgerWriteError}. Both halves are needed -- throwing alone
+   * would lose the list of which calls are unrecorded, and recording alone would
+   * let a caller believe a close that lost records was clean.
+   *
+   * This method itself does not throw, because its caller must complete the state
+   * flip to CLOSED regardless: a lease stuck in CLOSING would refuse every call
+   * while claiming not to have settled, which is a worse failure than the one
+   * being reported.
+   */
   private async flush(): Promise<void> {
     while (this.pendingWrites.length > 0) {
-      await Promise.allSettled(this.pendingWrites.splice(0, this.pendingWrites.length))
+      const batch = this.pendingWrites.splice(0, this.pendingWrites.length)
+      const settled = await Promise.allSettled(batch)
+      for (const [index, outcome] of settled.entries()) {
+        if (outcome.status !== 'rejected') continue
+        // The disposition this write belonged to is looked up from the ledger of
+        // reports, so the failure names a subcall rather than an array index.
+        const reported = this.reported.find(entry => this.writeOf(entry) === batch[index])
+        this.unrecorded.push({
+          subCallId: reported?.subCallId ?? '(unknown)',
+          disposition: reported?.disposition ?? 'settled',
+          reason: outcome.reason instanceof Error ? outcome.reason.message : String(outcome.reason),
+        })
+      }
     }
+  }
+
+  /** The promise a report produced, so a failed write can be traced back to its call. */
+  private readonly writeByReport = new Map<LeaseCallDisposition, Promise<void>>()
+
+  private writeOf(disposition: LeaseCallDisposition): Promise<void> | undefined {
+    return this.writeByReport.get(disposition)
+  }
+
+  /**
+   * Dispositions this lease could NOT record durably.
+   *
+   * A reader that wants to know whether the record is COMPLETE asks this rather
+   * than trusting that `CLOSED` implies completeness. Empty means every
+   * disposition reached the ledger.
+   */
+  get unrecordedDispositions(): readonly { subCallId: string, disposition: BridgeDisposition, reason: string }[] {
+    return Object.freeze([...this.unrecorded])
   }
 
   /** Start the FIFO runner if it is not already running. */

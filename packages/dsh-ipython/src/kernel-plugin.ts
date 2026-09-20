@@ -77,6 +77,7 @@ import {
 } from './kernel.ts'
 import {
   BRIDGE_PROTOCOL_VERSION,
+  BridgeLedgerWriteError,
   BridgeServer,
   canPrependPreamble,
   type BridgeEndpoint,
@@ -310,6 +311,15 @@ interface Entry {
   /** Set once the kernel has been observed dead or reset; reported on the next call. */
   pendingGenerationNotice: string | undefined
   readonly unattributed: UnattributedOutput[]
+  /**
+   * Bridge-ledger writes that FAILED for this Session.
+   *
+   * Kept because a close that could not record its dispositions is exactly the
+   * "continues with no record" outcome BR-07's oracle forbids, and a reader must
+   * be able to ask rather than infer it from a healthy-looking CLOSED state. Empty
+   * is the healthy value.
+   */
+  readonly ledgerFailures: BridgeLedgerWriteError[]
 }
 
 declare module '@deepseek-ai/cordis' {
@@ -506,6 +516,7 @@ export class KernelService extends Service {
         lifecycle: 'READY',
         pendingGenerationNotice: undefined,
         unattributed,
+        ledgerFailures: [],
       }
       this.entries.set(identity.sessionId, entry)
       return entry
@@ -559,15 +570,26 @@ export class KernelService extends Service {
       ? [entry.bridge.server.preamble(lease), code].join('\n')
       : code
     let result: CellResult
+    let ledgerFailure: BridgeLedgerWriteError | undefined
     try {
       result = await entry.host.execute(dispatched, { identity: entry.identity })
     } finally {
       // THE CELL SETTLED. Close the lease before returning, so by the time any
       // caller sees this cell's result, every exact call it authorised has
       // reached quiescence and carries a recorded disposition. `close` is the
-      // five-step sequence in `bridge.ts`; it does not throw, so a failure to
-      // close cannot mask the cell's own outcome.
-      await lease.close('completed', 'the cell settled').catch(() => undefined)
+      // five-step sequence in `bridge.ts`.
+      //
+      // A FAILED LEDGER WRITE IS NOT SWALLOWED. `close` throws
+      // `BridgeLedgerWriteError` when a disposition could not be recorded
+      // durably, and that is recorded on the entry so a reader can see the
+      // record is INCOMPLETE. It is deliberately NOT rethrown out of `runCell`:
+      // the cell's own outcome is a different fact, and replacing it with a
+      // ledger error would misreport a successful cell as a failed one. What the
+      // caller gets is the cell result PLUS a durable-record gap they can query.
+      ledgerFailure = await lease.close('completed', 'the cell settled')
+        .then(() => undefined)
+        .catch((error: unknown) => error instanceof BridgeLedgerWriteError ? error : undefined)
+      if (ledgerFailure !== undefined) entry.ledgerFailures.push(ledgerFailure)
       entry.bridge.leases.delete(lease)
       entry.bridge.server.releaseLease(lease)
     }
@@ -669,6 +691,17 @@ export class KernelService extends Service {
   /** Whether the Session's ledger is durable (storage-domain) or in-memory. */
   ledgerIsDurable(agent: Agent): boolean {
     return this.entries.get(agent.session.header.id)?.ledgerDurable === true
+  }
+
+  /**
+   * Dispositions this Session's cells could NOT record durably.
+   *
+   * A reader that wants to know whether the BR-07 record is COMPLETE asks this
+   * rather than trusting a healthy-looking kernel. Empty means every disposition
+   * reached the ledger; a non-empty list names the subcalls that are missing.
+   */
+  ledgerFailures(agent: Agent): readonly BridgeLedgerWriteError[] {
+    return Object.freeze([...(this.entries.get(agent.session.header.id)?.ledgerFailures ?? [])])
   }
 
   /** The lifecycle state of one Session's kernel, or undefined when no kernel exists. */

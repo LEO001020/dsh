@@ -51,6 +51,7 @@ import { fileURLToPath } from 'node:url'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import * as ipythonTool from './ipython-tool.ts'
 import { KernelService } from './kernel-plugin.ts'
+import { BridgeServer } from './bridge.ts'
 import { MemoryBridgeLedger } from './bridge-ledger.ts'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
@@ -364,8 +365,8 @@ describe('R5-BR-07: dispositions, the half that was missing', () => {
         slowEntered += 1
         // A long sleep that the abort cuts short: the point is that this call is
         // IN FLIGHT at close, not that it finishes.
-        await new Promise(resolveDelay => {
-          const timer = setTimeout(resolveDelay, 30_000)
+        await new Promise<void>(resolveDelay => {
+          const timer = setTimeout(() => { resolveDelay() }, 30_000)
           exec.signal.addEventListener('abort', () => { clearTimeout(timer); resolveDelay() }, { once: true })
         })
         return { ran: true }
@@ -510,6 +511,75 @@ describe('R5-BR-07: dispositions, the half that was missing', () => {
     await expect(ledger.disposed('handoff-3', 'settled', { jobId: 'job-9' }))
       .rejects.toThrow(/only handed-to-jobs/u)
   }, 30_000)
+
+  it('a FAILED disposition write is reported, not swallowed, and CLOSED still happens', async () => {
+    // FAULT INJECTION for the case a happy-path test cannot see: the ledger's
+    // disposition write rejects. Before the fix, `flush` used a bare
+    // `Promise.allSettled`, so the lease reached CLOSED with the disposition
+    // missing and the caller was told nothing -- "continues silently with no
+    // record", one level below the bridge. This drives that arm.
+    const failing = new MemoryBridgeLedger()
+    let refusals = 0
+    failing.disposed = async () => {
+      refusals += 1
+      throw new Error('injected storage failure: the disposition could not be written')
+    }
+
+    const bridge = new BridgeServer({ artifactDirectory: join(root, 'ledger-fault') })
+    await bridge.start()
+    const lease = bridge.mintLease({
+      sessionId: 'r5-ledger-fault', cellId: 'cell-1', epoch: 1,
+      outerCallId: 'outer-fault', rootCallId: 'outer-fault',
+      ledger: failing,
+      handler: async () => ({ ok: true, value: { ok: true } }),
+    })
+    // One call, accepted and settled normally. Only the DISPOSITION write fails.
+    const outcome = await lease.invoke({
+      requestId: 'req-1', tool: 'r5_ok', arguments: {},
+      cellId: 'cell-1', epoch: 1, leaseId: lease.id,
+    })
+    expect(outcome.ok).toBe(true)
+
+    const failure = await lease.close('completed', 'the cell settled').then(
+      () => undefined,
+      (error: unknown) => error,
+    )
+    // THE FIX: the close REPORTS the unrecorded disposition.
+    expect(refusals).toBe(1)
+    expect(failure).toBeDefined()
+    expect(String(failure)).toMatch(/could not be recorded durably/u)
+    expect((failure as { unrecorded?: unknown[] }).unrecorded).toHaveLength(1)
+    expect((failure as { unrecorded: Array<{ subCallId: string, disposition: string }> }).unrecorded[0]?.subCallId)
+      .toBe('outer-fault:ipython:1')
+    expect((failure as { unrecorded: Array<{ disposition: string }> }).unrecorded[0]?.disposition).toBe('settled')
+    // AND the lease still reached CLOSED: a lease stuck in CLOSING would refuse
+    // every call while claiming not to have settled, which is a worse defect.
+    expect(lease.lifecycle).toBe('CLOSED')
+    expect(lease.unrecordedDispositions).toHaveLength(1)
+    await bridge.close()
+  }, 60_000)
+
+  it('a healthy close records every disposition and reports no failure', async () => {
+    // The contrast for the fault-injection arm: the same path with a working
+    // ledger reports NOTHING, so the error above is a real signal rather than an
+    // always-on one. A test that can only fail is not a measurement.
+    const ledger = new MemoryBridgeLedger()
+    const bridge = new BridgeServer({ artifactDirectory: join(root, 'ledger-healthy') })
+    await bridge.start()
+    const lease = bridge.mintLease({
+      sessionId: 'r5-ledger-healthy', cellId: 'cell-1', epoch: 1,
+      outerCallId: 'outer-healthy', rootCallId: 'outer-healthy',
+      ledger,
+      handler: async () => ({ ok: true, value: { ok: true } }),
+    })
+    await lease.invoke({ requestId: 'req-1', tool: 'r5_ok', arguments: {}, cellId: 'cell-1', epoch: 1, leaseId: lease.id })
+    const failure = await lease.close('completed', 'the cell settled').then(() => undefined, (error: unknown) => error)
+    expect(failure).toBeUndefined()
+    expect(lease.lifecycle).toBe('CLOSED')
+    expect(lease.unrecordedDispositions).toHaveLength(0)
+    expect(ledger.get('outer-healthy:ipython:1')?.disposition).toBe('settled')
+    await bridge.close()
+  }, 60_000)
 })
 
 describe('R5-J4/J5: composite semantics, idempotency, unknown outcomes', () => {
