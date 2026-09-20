@@ -494,6 +494,23 @@ const assertions = {
   bridgeArmDidNotExecute: after.probe?.bridgeArm?.anyExecuted === false
     || after.probe?.bridgeArm?.available === false,
 
+  // THE CATALOG IS THE WHOLE SURFACE, because the deployment is in NATIVE mode.
+  //
+  // WHY THIS IS AN ASSERTION AND NOT A FOOTNOTE. Under `tools` mode `ptc`, the
+  // registry presents ONLY `run_code` and collapses the executor to match
+  // (packages/core/tools/src/index.ts:653-668, `collapses()` at :1330-1332). The
+  // model would then reach every tool through `run_code`'s SDK sub-dispatch --
+  // INCLUDING a creation tool whose row was still live, which the catalog would
+  // not name. So the catalog is only the model's full surface if `run_code` is
+  // absent, and that is measured rather than assumed: neither boot's catalog
+  // contains it, and no `tools` row in the profile patch sets a mode.
+  //
+  // If a future change flips the deployment to PTC, THIS ASSERTION FAILS, which
+  // is the correct outcome: the catalog diff would no longer be sufficient
+  // evidence and the measurement would have to be re-taken through run_code.
+  deploymentIsNativeMode: !(after.probe?.tools ?? []).includes('run_code')
+    && !(before.probe?.tools ?? []).includes('run_code'),
+
   // THE HONEST BOUNDARY, ASSERTED SO IT CANNOT BE MISREAD.
   //
   // These are the OPPOSITE direction from the assertions above: they must be

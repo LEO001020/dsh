@@ -1,7 +1,7 @@
 {
   "driver": "p6-surface-driver",
   "slice": "P6 — the model-facing child-creation surface, before and after",
-  "ranAt": "2026-09-20T13:14:43.155Z",
+  "ranAt": "2026-09-20T13:15:58.426Z",
   "mode": "boot",
   "bootedSides": {
     "before": true,
@@ -15,7 +15,7 @@
   "cwd": "C:/Windows/Temp",
   "boots": {
     "before": {
-      "port": 2069,
+      "port": 11472,
       "portReleased": true,
       "exitCode": null,
       "timedOut": false,
@@ -35,7 +35,7 @@
       }
     },
     "after": {
-      "port": 2620,
+      "port": 5099,
       "portReleased": true,
       "exitCode": null,
       "timedOut": false,
@@ -451,7 +451,7 @@
       "error": null,
       "isError": false,
       "errorCode": null,
-      "cellText": "outcome: ok\nkernel epoch: 1\n--- stdout ---\nP6_BRIDGE=[{\"error\": \"UNKNOWN_TOOL: unknown tool \\\"subagent\\\"\", \"outcome\": \"REFUSED\", \"tool\": \"subagent\"}, {\"error\": \"UNKNOWN_TOOL: unknown tool \\\"subagent_fork\\\"\", \"outcome\": \"REFUSED\", \"tool\": \"subagent_fork\"}, {\"error\": \"UNKNOWN_TOOL: unknown tool \\\"subagent_codex\\\"\", \"outcome\": \"REFUSED\", \"tool\": \"subagent_codex\"}, {\"error\": \"UNKNOWN_TOOL: unknown tool \\\"subagent_claude_code\\\"\", \"outcome\": \"REFUSED\", \"tool\": \"subagent_claude_code\"}, {\"error\": \"UNKNOWN_TOOL: unknown tool \\\"workflow\\\"\", \"outcome\": \"REFUSED\", \"tool\": \"workflow\"}, {\"error\": \"UNKNOWN_TOOL: unknown tool \\\"ralph\\\"\", \"outcome\": \"REFUSED\", \"tool\": \"ralph\"}]\n",
+      "cellText": "outcome: ok\nkernel epoch: 1\n--- stdout ---\nP6_BRIDGE=[{\"error\": \"UNKNOWN_TOOL: unknown tool \\\"subagent\\\"\", \"outcome\": \"REFUSED\", \"tool\": \"subagent\"}, {\"error\": \"UNKNOWN_TOOL: unknown tool \\\"subagent_fork\\\"\", \"outcome\": \"REFUSED\", \"tool\": \"subagent_fork\"}, {\"error\": \"UNKNOWN_TOOL: unknown tool \\\"subagent_codex\\\"\", \"outcome\": \"REFUSED\", \"tool\": \"subagent_codex\"}, {\"error\": \"UNKNOWN_TOOL: unknown tool \\\"subagent_claude_code\\\"\", \"outcome\": \"REFUSED\", \"tool\": \"subagent_claude_code\"}, {\"error\": \"UNKNOWN_TOOL: unknown tool \\\"workflow\\\"\", \"outcome\": \"REFUSED\", \"tool\": \"workflow\"}, {\"error\": \"UNKNOWN_TOOL: unknown tool \\\"ralph\\\"\", \"outcome\": \"REFUSED\", \"tool\": \"ralph\"}]\n\n[1 shell frame(s) for other requests were ignored while waiting for this cell. They did not complete it.]",
       "anyExecuted": false
     },
     "before": {
@@ -461,12 +461,12 @@
         {
           "outcome": "EXECUTED",
           "tool": "subagent",
-          "value": "{'kind': 'continuable', 'subagentId': 'ce5817a4-2f23-45f3-9ef5-0c5a1fd7caa3'}"
+          "value": "{'kind': 'continuable', 'subagentId': '0dba03e9-9797-4b93-a5f6-fe9cddb0cee4'}"
         },
         {
           "outcome": "EXECUTED",
           "tool": "subagent_fork",
-          "value": "{'kind': 'continuable', 'subagentId': '4f771154-5a42-428a-b2dc-8468d9ac94e6'}"
+          "value": "{'kind': 'continuable', 'subagentId': 'e88395d9-cbdd-4b3e-a25c-4e8739e56a8c'}"
         },
         {
           "error": "UNKNOWN_TOOL: unknown tool \"subagent_codex\"",
@@ -492,7 +492,7 @@
       "error": null,
       "isError": false,
       "errorCode": null,
-      "cellText": "outcome: ok\nkernel epoch: 1\n--- stdout ---\nP6_BRIDGE=[{\"outcome\": \"EXECUTED\", \"tool\": \"subagent\", \"value\": \"{'kind': 'continuable', 'subagentId': 'ce5817a4-2f23-45f3-9ef5-0c5a1fd7caa3'}\"}, {\"outcome\": \"EXECUTED\", \"tool\": \"subagent_fork\", \"value\": \"{'kind': 'continuable', 'subagentId': '4f771154-5a42-428a-b2dc-8468d9ac94e6'}\"}, {\"error\": \"UNKNOWN_TOOL: unknown tool \\\"subagent_codex\\\"\", \"outcome\": \"REFUSED\", \"tool\": \"subagent_codex\"}, {\"error\": \"UNKNOWN_TOOL: unknown tool \\\"subagent_claude_code\\\"\", \"outcome\": \"REFUSED\", \"tool\": \"subagent_claude_code\"}, {\"error\": \"INVALID_ARGS: invalid arguments: missing required property \\\"script\\\"; missing required property \\\"meta\\\"\", \"outcome\": \"REFUSED\", \"tool\": \"workflow\"}, {\"error\": \"UNKNOWN_TOOL: unknown tool \\\"ralph\\\"\", \"outcome\": \"REFUSED\", \"tool\": \"ralph\"}]\n\n[1 shell frame(s) for other requests were ignored while waiting for this cell. They did not complete it.]",
+      "cellText": "outcome: ok\nkernel epoch: 1\n--- stdout ---\nP6_BRIDGE=[{\"outcome\": \"EXECUTED\", \"tool\": \"subagent\", \"value\": \"{'kind': 'continuable', 'subagentId': '0dba03e9-9797-4b93-a5f6-fe9cddb0cee4'}\"}, {\"outcome\": \"EXECUTED\", \"tool\": \"subagent_fork\", \"value\": \"{'kind': 'continuable', 'subagentId': 'e88395d9-cbdd-4b3e-a25c-4e8739e56a8c'}\"}, {\"error\": \"UNKNOWN_TOOL: unknown tool \\\"subagent_codex\\\"\", \"outcome\": \"REFUSED\", \"tool\": \"subagent_codex\"}, {\"error\": \"UNKNOWN_TOOL: unknown tool \\\"subagent_claude_code\\\"\", \"outcome\": \"REFUSED\", \"tool\": \"subagent_claude_code\"}, {\"error\": \"INVALID_ARGS: invalid arguments: missing required property \\\"script\\\"; missing required property \\\"meta\\\"\", \"outcome\": \"REFUSED\", \"tool\": \"workflow\"}, {\"error\": \"UNKNOWN_TOOL: unknown tool \\\"ralph\\\"\", \"outcome\": \"REFUSED\", \"tool\": \"ralph\"}]\n\n[1 shell frame(s) for other requests were ignored while waiting for this cell. They did not complete it.]",
       "anyExecuted": true
     }
   },
@@ -620,6 +620,7 @@
     "presetSurvivedTheDisable": true,
     "buildsStableDuringBothBoots": true,
     "bridgeArmDidNotExecute": true,
+    "deploymentIsNativeMode": true,
     "substrateSeamStillPresent": true,
     "substrateSeamStillCallable": true,
     "substrateSeamHasProviders": true,

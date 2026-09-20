@@ -1,9 +1,9 @@
 {
   "probe": "p6-surface",
-  "ranAt": "2026-09-20T13:14:38.240Z",
+  "ranAt": "2026-09-20T13:15:53.244Z",
   "profileName": "unknown",
   "agentPreset": "daily-standard",
-  "sessionId": "session-b5794c7f-0791-4cb1-8675-d7bf835e6b5c",
+  "sessionId": "session-702cb746-363d-470e-9786-220262865f89",
   "tools": [
     "ask_user_question",
     "create_goal",
@@ -189,7 +189,7 @@
     "error": null,
     "isError": false,
     "errorCode": null,
-    "cellText": "outcome: ok\nkernel epoch: 1\n--- stdout ---\nP6_BRIDGE=[{\"error\": \"UNKNOWN_TOOL: unknown tool \\\"subagent\\\"\", \"outcome\": \"REFUSED\", \"tool\": \"subagent\"}, {\"error\": \"UNKNOWN_TOOL: unknown tool \\\"subagent_fork\\\"\", \"outcome\": \"REFUSED\", \"tool\": \"subagent_fork\"}, {\"error\": \"UNKNOWN_TOOL: unknown tool \\\"subagent_codex\\\"\", \"outcome\": \"REFUSED\", \"tool\": \"subagent_codex\"}, {\"error\": \"UNKNOWN_TOOL: unknown tool \\\"subagent_claude_code\\\"\", \"outcome\": \"REFUSED\", \"tool\": \"subagent_claude_code\"}, {\"error\": \"UNKNOWN_TOOL: unknown tool \\\"workflow\\\"\", \"outcome\": \"REFUSED\", \"tool\": \"workflow\"}, {\"error\": \"UNKNOWN_TOOL: unknown tool \\\"ralph\\\"\", \"outcome\": \"REFUSED\", \"tool\": \"ralph\"}]\n",
+    "cellText": "outcome: ok\nkernel epoch: 1\n--- stdout ---\nP6_BRIDGE=[{\"error\": \"UNKNOWN_TOOL: unknown tool \\\"subagent\\\"\", \"outcome\": \"REFUSED\", \"tool\": \"subagent\"}, {\"error\": \"UNKNOWN_TOOL: unknown tool \\\"subagent_fork\\\"\", \"outcome\": \"REFUSED\", \"tool\": \"subagent_fork\"}, {\"error\": \"UNKNOWN_TOOL: unknown tool \\\"subagent_codex\\\"\", \"outcome\": \"REFUSED\", \"tool\": \"subagent_codex\"}, {\"error\": \"UNKNOWN_TOOL: unknown tool \\\"subagent_claude_code\\\"\", \"outcome\": \"REFUSED\", \"tool\": \"subagent_claude_code\"}, {\"error\": \"UNKNOWN_TOOL: unknown tool \\\"workflow\\\"\", \"outcome\": \"REFUSED\", \"tool\": \"workflow\"}, {\"error\": \"UNKNOWN_TOOL: unknown tool \\\"ralph\\\"\", \"outcome\": \"REFUSED\", \"tool\": \"ralph\"}]\n\n[1 shell frame(s) for other requests were ignored while waiting for this cell. They did not complete it.]",
     "anyExecuted": false
   },
   "rowEnablement": [
