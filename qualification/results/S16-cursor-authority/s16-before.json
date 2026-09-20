@@ -1,0 +1,76 @@
+{
+  "probe": "S16 D-1/D-2 BEFORE — correctly-signed cursor forgeries against the accepted DATA-11 fix",
+  "measuredAt": "2026-09-20T11:32:34.698Z",
+  "node": "v24.18.0",
+  "identity": {
+    "worktree": "D:/DSH/work/wt-s16",
+    "branch": "wt/s16",
+    "artifactsTsSha256": "8dac7929894e0f9938c689df27704b21755e4a32efa0562275bb25fbe6fac703",
+    "observationsTsSha256": "26cee3d334770aaf105a0f87794763aaf3c5e07929fc33bfc6ebe6f45e1c63eb"
+  },
+  "attacks": {
+    "sortedKeyControl": {
+      "refused": false,
+      "offset": 500
+    },
+    "positionForgery": {
+      "refused": false,
+      "offset": 500,
+      "bytes": 64,
+      "bytesMatchChosenOffset": true,
+      "hostMintedPosition": 64,
+      "callerChosePosition": 500
+    },
+    "crossStoreHonestCursor": {
+      "refused": true,
+      "code": "pagination-realm-denied",
+      "name": "ArtifactError",
+      "message": "pagination cursor was issued for store realm \"sha256:ab8993366e00…(len 42)\", not \"sha256:31d64008c6c8…(len 42)\"; a cursor is not a bearer token and cannot be replayed against another store",
+      "messageNamesBothRealms": true
+    },
+    "crossStoreForgery": {
+      "refused": false,
+      "offset": 64,
+      "bytes": 64,
+      "servedByRealm": "sha256:31d64008c6c8…(len 42)",
+      "storeNeverMintedThisCursor": true
+    },
+    "realmCopyBefore": {
+      "refused": true,
+      "code": "pagination-realm-denied",
+      "name": "ArtifactError",
+      "message": "pagination cursor was issued for store realm \"sha256:f20b09623b3e…(len 42)\", not \"sha256:41499d5a2fd8…(len 42)\"; a cursor is not a bearer token and cannot be replayed against another store",
+      "messageNamesBothRealms": true
+    },
+    "realmCopyAfter": {
+      "refused": false,
+      "offset": 64,
+      "bytes": 64,
+      "adoptedRealm": true,
+      "adoptedRealmRedacted": "sha256:f20b09623b3e…(len 42)",
+      "bytesMatchA": true
+    }
+  },
+  "hostCursor": {
+    "fieldOrder": [
+      "storeRealmId",
+      "artifactSha256",
+      "observationId",
+      "revision",
+      "representation",
+      "query",
+      "position",
+      "ownerScope",
+      "watermark",
+      "schemaVersion"
+    ],
+    "matchesInterfaceOrderWithSchemaVersionLast": true,
+    "positionMinted": 64,
+    "schemaVersion": 2,
+    "tokenSha256": "c34763e3678ca502489d6776be8c18cc665c5e324e7d559cdcae6a8d28fedc9d",
+    "honestContinuation": {
+      "offset": 64,
+      "bytes": 64
+    }
+  }
+}

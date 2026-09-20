@@ -24,6 +24,23 @@
  *   - descriptor/content mismatch -> reject
  *   - missing/corrupt object -> reject
  *
+ * ROUND 2 ADDITION — THE ATTACKER THE SUITE WAS MISSING (D-1).
+ *
+ * Every arm above TAMPERS with the token, so every one of them trips the MAC. That
+ * proves the MAC is computed; it does not prove it protects anything. S16's
+ * falsification found the reason the whole file was green while the authority model
+ * was broken: the MAC key was `cursorSecretOf(descriptor)` -- four fields of an
+ * object `data:fs.capture` hands to the caller -- so a CORRECTLY SIGNED forgery was
+ * accepted and served (position 64 -> 500). The block at the end of this file,
+ * "a CORRECTLY SIGNED forgery is refused", is that missing attacker, and it is the
+ * arm whose absence let 32 green cases miss D-1.
+ *
+ * THE SHARED-KEY BLOCK is the other half. With a per-store key, a cursor from a
+ * store with a DIFFERENT key is refused at step 1 and never reaches the realm
+ * comparison, so the realm check would look dead. It is not: it is what separates
+ * two stores that share a key (a whole-root clone, one key provisioned twice), and
+ * the block below constructs that case deliberately so the check has a live arm.
+ *
  * TRACK LABEL: `[real]`. Every arm drives the production `AttachmentArtifactStore`
  * over real files on this machine's disk through the production
  * `publishImmutableObjectStream` publication primitive. There is no mock here:
@@ -38,9 +55,9 @@
 import { Context } from '@deepseek-ai/cordis'
 import AttachmentLocal from '@deepseek-ai/dsh-attachment-local'
 import LocalFileSystem from '@deepseek-ai/dsh-fs-local'
-import { createHash } from 'node:crypto'
+import { createHash, createHmac } from 'node:crypto'
 import { execFile } from 'node:child_process'
-import { chmodSync, mkdtempSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs'
+import { chmodSync, copyFileSync, mkdtempSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -49,6 +66,7 @@ import { afterEach, describe, expect, it } from 'vitest'
 import {
   ArtifactError,
   CURSOR_REFUSAL_LOG_NAME,
+  STORE_CURSOR_KEY_FILE_NAME,
   STORE_REALM_FILE_NAME,
   InMemorySessionReferenceLog,
   AttachmentArtifactStore,
@@ -62,6 +80,7 @@ import {
   type ArtifactPage,
   type CursorRefusal,
   type IoCounters,
+  type PageCursor,
 } from './artifacts.ts'
 import { GrantTable, OBSERVATION_SCHEMA_VERSION, type ObservationDescriptor } from './observations.ts'
 
@@ -915,5 +934,357 @@ describe('DATA-11 [real] the identity check does not become a full re-read per p
     // than implied: this counter measures the paging path, and the one-time verify
     // pass is a separate cost.
     expect(counters.artifactBytesRead).toBeLessThan(totalBytes)
+  })
+})
+
+// ---------------------------------------------------------------------------
+// S16 D-1: THE ARM THAT WAS MISSING — a CORRECTLY SIGNED forgery.
+// ---------------------------------------------------------------------------
+//
+// WHY THIS BLOCK EXISTS, in one sentence: every other arm in this file tampers with
+// the token, so every other arm trips the MAC, and a suite whose arms all fail for
+// the same reason cannot tell "the MAC is checked" from "the MAC protects
+// something".
+//
+// THE DEFECT, measured before the fix
+// (`qualification/results/S16-cursor-authority/s16-before.json`): the MAC key was
+// `cursorSecretOf(descriptor)` --
+//
+//     `${descriptor.id}:${descriptor.captured.sha256}:${descriptor.authority.ownerScope}:${descriptor.authority.grantRevision}`
+//
+// -- four fields of an object `data:fs.capture` returns to the caller
+// (`data-bridge.ts:255`), which the Python client stores verbatim
+// (`dsh_data_client.py:82`) and sends back on every page call. So a caller could
+// re-derive the key and mint a cursor the host never issued. One was ACCEPTED and
+// served offset 500, a position the host never minted.
+//
+// WHY `position` AND `storeRealmId` WERE THE TWO FORGEABLE FIELDS. Seven of the nine
+// bound fields are ALSO compared against a live value (`assertBindings`, the digest
+// and watermark checks, the live grant), so a signed forgery of those is refused for
+// a reason that has nothing to do with the MAC. `position` is the caller's chosen
+// resume point and has no live counterpart; `storeRealmId` was compared only against
+// the store's own value, which a caller can read out of a refusal. Those two are
+// therefore where a broken key is observable, and they are the arms below.
+//
+// THE TRAP THAT COST THE ROOT AGENT AN ATTEMPT, recorded so nobody repeats it: the
+// canonical form is `JSON.stringify(full)` in the INTERFACE FIELD ORDER with
+// `schemaVersion` appended last (`mint`, artifacts.ts). A SORTED key/value form is
+// refused -- and that refusal proves NOTHING about the key, because it is a
+// malformed token. A test that stops at the first refusal concludes the opposite of
+// the truth. Both forms are exercised below: the sorted one is kept as the control
+// that a malformed-token refusal is not evidence.
+describe('DATA-11 [real] D-1: a CORRECTLY SIGNED forgery is refused', () => {
+  /**
+   * The OLD key derivation, copied from the source as it was before this fix.
+   *
+   * Kept verbatim rather than described, because this is the ATTACKER's function:
+   * it reads four fields of an object the caller holds, and the point of the block
+   * is that this is no longer the key.
+   */
+  const oldPublicDerivation = (descriptor: ObservationDescriptor): string =>
+    `${descriptor.id}:${descriptor.captured.sha256}:${descriptor.authority.ownerScope}:${descriptor.authority.grantRevision}`
+
+  /**
+   * Mint a cursor with the REAL algorithm: HMAC-SHA256 over `JSON.stringify(full)`
+   * in interface field order, `schemaVersion` last.
+   *
+   * A forgery that merely appends a bogus MAC proves only that the MAC is checked.
+   * The question is whether a caller holding the descriptor can produce a cursor the
+   * host did not issue, so the forgery has to be CORRECTLY SIGNED to test anything.
+   */
+  function mintWithKey(
+    key: string,
+    cursor: Omit<PageCursor, 'schemaVersion'>,
+    schemaVersion: number,
+  ): string {
+    const full = { ...cursor, schemaVersion }
+    const payload = Buffer.from(JSON.stringify(full), 'utf8').toString('base64url')
+    return `${payload}.${createHmac('sha256', key).update(payload).digest('base64url')}`
+  }
+
+  /** The fields a cursor binds, as the host mints them, so only one has to differ. */
+  function boundFields(
+    descriptor: ObservationDescriptor,
+    storeRealmId: string,
+    scope: string,
+    position: number,
+  ): Omit<PageCursor, 'schemaVersion'> {
+    return {
+      storeRealmId,
+      artifactSha256: descriptor.captured.sha256,
+      observationId: descriptor.id,
+      revision: `${descriptor.captured.sha256}@g${descriptor.authority.grantRevision}`,
+      representation: 'bytes',
+      query: 'bytes:64',
+      position,
+      ownerScope: scope,
+      watermark: descriptor.source.acquiredAt,
+    }
+  }
+
+  it('refuses a CORRECTLY SIGNED cursor claiming a position the host never minted', async () => {
+    // THE DEFECT'S OWN CASE. The host minted position 64; the caller asks for 500 and
+    // signs it with the key re-derived from the PUBLIC descriptor. Before the fix this
+    // was accepted and returned the payload's bytes at 500.
+    const root = tempRoot('s16-forge-position')
+    writeFileSync(join(root, 'p.bin'), PAYLOAD)
+    const plane = makePlane('s16-forge-position-store')
+    const capture = await captureInto(root, plane, 'obs-s16-forge')
+    const descriptor = capture.descriptor
+
+    // POSITIVE CONTROLS, hard-asserted OUTSIDE the refusal assertion. A pager that
+    // refused everything would satisfy the arm below and be useless, so the honest
+    // walk is established first: page 1 works, and its cursor resumes at 64.
+    const first = await pages(plane.store, {
+      descriptor, maxBytes: 64, grants: plane.grants, callerScope: plane.scope,
+    })
+    expect(first.offset).toBe(0)
+    const honest = await pages(plane.store, {
+      descriptor, maxBytes: 64, grants: plane.grants, callerScope: plane.scope, cursor: first.nextCursor ?? '',
+    })
+    expect(honest.offset).toBe(64)
+    // And the bytes really are the artifact's at that offset, so the control is about
+    // content and not merely about a call returning.
+    expect(Buffer.from(honest.bytes)).toEqual(PAYLOAD.subarray(64, 128))
+
+    // The MAC-failure control: a SORTED-key token with the same key material. It is
+    // refused, and that refusal is NOT evidence about the key -- it is a malformed
+    // token. Kept so the block cannot be read as "any refusal proves the fix".
+    const realmOf = await plane.store.realmId
+    const sorted = (() => {
+      const full: Record<string, unknown> = {
+        ...boundFields(descriptor, realmOf, plane.scope, 500),
+        schemaVersion: OBSERVATION_SCHEMA_VERSION,
+      }
+      const ordered: Record<string, unknown> = {}
+      for (const key of Object.keys(full).sort()) ordered[key] = full[key]
+      const payload = Buffer.from(JSON.stringify(ordered), 'utf8').toString('base64url')
+      return `${payload}.${createHmac('sha256', oldPublicDerivation(descriptor)).update(payload).digest('base64url')}`
+    })()
+    await expect(pages(plane.store, {
+      descriptor, maxBytes: 64, grants: plane.grants, callerScope: plane.scope, cursor: sorted,
+    })).rejects.toMatchObject({ code: 'pagination-cursor-invalid' })
+
+    // THE ARM. Correctly signed in the host's own canonical form, with the OLD key.
+    const forged = mintWithKey(
+      oldPublicDerivation(descriptor),
+      boundFields(descriptor, await plane.store.realmId, plane.scope, 500),
+      OBSERVATION_SCHEMA_VERSION,
+    )
+    await expect(pages(plane.store, {
+      descriptor, maxBytes: 64, grants: plane.grants, callerScope: plane.scope, cursor: forged,
+    })).rejects.toMatchObject({ code: 'pagination-cursor-invalid' })
+    // Named so the failure mode is unambiguous: the MAC is what refused it, not a
+    // binding that happens to differ.
+    await expect(pages(plane.store, {
+      descriptor, maxBytes: 64, grants: plane.grants, callerScope: plane.scope, cursor: forged,
+    })).rejects.toThrow(/MAC does not verify/u)
+  })
+
+  it('refuses a CORRECTLY SIGNED cursor claiming ANOTHER store\u2019s realm, without naming a realm back', async () => {
+    // THE SECOND FORGEABLE FIELD. `storeRealmId` was compared only against the
+    // store's own value, and that value is readable from a refusal message, so a
+    // caller could obtain it and sign a token naming it. Before the fix store B
+    // accepted such a token and served its pages.
+    const root = tempRoot('s16-forge-realm')
+    writeFileSync(join(root, 'p.bin'), PAYLOAD)
+    const planeA = makePlane('s16-forge-realm-a')
+    const planeB = makePlane('s16-forge-realm-b')
+    const captureA = await captureInto(root, planeA, 'obs-s16-realm-a')
+    await captureInto(root, planeB, 'obs-s16-realm-b')
+    const descriptor = captureA.descriptor
+
+    // POSITIVE CONTROLS, hard-asserted: A's honest cursor is served by A, and the
+    // same cursor is refused by B. R7's own arm HOLDS and is not what this arm tests.
+    const firstA = await pages(planeA.store, {
+      descriptor, maxBytes: 64, grants: planeA.grants, callerScope: planeA.scope,
+    })
+    const sameStore = await pages(planeA.store, {
+      descriptor, maxBytes: 64, grants: planeA.grants, callerScope: planeA.scope, cursor: firstA.nextCursor ?? '',
+    })
+    expect(sameStore.offset).toBe(64)
+    await expect(pages(planeB.store, {
+      descriptor, maxBytes: 64, grants: planeB.grants, callerScope: planeA.scope, cursor: firstA.nextCursor ?? '',
+    })).rejects.toMatchObject({ code: 'pagination-realm-denied' })
+
+    // THE ARM: B's OWN realm, correctly signed by the caller with the public key.
+    const forged = mintWithKey(
+      oldPublicDerivation(descriptor),
+      boundFields(descriptor, await planeB.store.realmId, planeA.scope, 64),
+      OBSERVATION_SCHEMA_VERSION,
+    )
+    await expect(pages(planeB.store, {
+      descriptor, maxBytes: 64, grants: planeB.grants, callerScope: planeA.scope, cursor: forged,
+    })).rejects.toMatchObject({ code: 'pagination-cursor-invalid' })
+
+    // THE DISCLOSURE ARM, and the reason the refusal path classifies rather than
+    // prints. A request whose MAC FAILED is unauthenticated, so answering it must not
+    // name the serving store's realm: doing so would hand B's realm to anyone who can
+    // send a garbage token, which is the amplifier that made the old cross-store
+    // forgery need no prior knowledge. Asserted as "no realm id in the message".
+    await expect(pages(planeB.store, {
+      descriptor, maxBytes: 64, grants: planeB.grants, callerScope: planeA.scope, cursor: forged,
+    })).rejects.toThrow(/^(?!.*realm_[0-9a-fA-F-]{36}).*$/su)
+  })
+
+  it('keeps the old public derivation from being the key at all, so the fix is not a coincidence', async () => {
+    // A refusal could in principle come from a binding rather than from the key. This
+    // asserts the stronger, direct property: the store's key is NOT the value the
+    // old derivation produces, and it does not CONTAIN any of the four descriptor
+    // fields. A key built from those fields is a key a caller can build.
+    const root = tempRoot('s16-key-provenance')
+    writeFileSync(join(root, 'p.bin'), PAYLOAD)
+    const plane = makePlane('s16-key-provenance-store')
+    const capture = await captureInto(root, plane, 'obs-s16-provenance')
+    const descriptor = capture.descriptor
+    const key = await plane.store.cursorKey()
+
+    expect(key).not.toBe(oldPublicDerivation(descriptor))
+    // Only the fields long enough for a substring test to MEAN anything. A single
+    // character like the grant revision `1` occurs by chance in any base64url string,
+    // so asserting "the key does not contain '1'" would be a test that fails for a
+    // reason unrelated to the property -- the same trap as a sorted-key token being
+    // refused for the wrong reason.
+    for (const part of [
+      descriptor.id,
+      descriptor.captured.sha256,
+      descriptor.authority.ownerScope,
+    ]) {
+      expect(part.length).toBeGreaterThan(3)
+      expect(key).not.toContain(part)
+    }
+    // And it is not a digest of the descriptor either: a hash of public data is
+    // public. Compared against the two plausible ways to "derive" it.
+    expect(key).not.toBe(sha256(Buffer.from(oldPublicDerivation(descriptor), 'utf8')))
+    expect(key).not.toBe(sha256(Buffer.from(descriptor.captured.sha256, 'utf8')))
+  })
+})
+
+// ---------------------------------------------------------------------------
+// S16: THE REALM CHECK'S LIVE ARM — two stores that SHARE a cursor key.
+// ---------------------------------------------------------------------------
+//
+// WHY THIS BLOCK IS NECESSARY NOW. Before the fix, a cursor from store A reached
+// store B's realm comparison, so R7's arm 3 exercised that check. After the fix the
+// keys differ, so a cross-store token is refused at STEP 1 (the MAC) and the realm
+// comparison is never reached by that stimulus. The check is still load-bearing --
+// it is what separates two stores that share a key -- but a suite that only ever
+// presents differently-keyed tokens would leave it unexercised, which is how a guard
+// becomes decorative.
+//
+// THE SHARED-KEY CASE IS NOT HYPOTHETICAL. It is what a whole-root clone produces
+// (both `store-realm.json` and `store-cursor-key.json` copied), what a deployment
+// that provisions one key into two roots produces, and what the `before` probe's
+// `realmCopyAfter` arm measured when the realm alone was copied. This block
+// constructs it by copying the KEY file only, so the realms still DIFFER and the
+// realm comparison is the only thing left that can refuse.
+describe('DATA-11 [real] the realm binding still refuses when two stores SHARE a cursor key', () => {
+  it('refuses a shared-key cursor minted for a different realm, so the realm check is not dead code', async () => {
+    const root = tempRoot('s16-shared-key')
+    writeFileSync(join(root, 'p.bin'), PAYLOAD)
+    const planeA = makePlane('s16-shared-key-a')
+    const planeB = makePlane('s16-shared-key-b')
+    const captureA = await captureInto(root, planeA, 'obs-s16-shared-a')
+    await captureInto(root, planeB, 'obs-s16-shared-b')
+    const descriptor = captureA.descriptor
+
+    const firstA = await pages(planeA.store, {
+      descriptor, maxBytes: 64, grants: planeA.grants, callerScope: planeA.scope,
+    })
+    expect(firstA.nextCursor).toBeDefined()
+
+    // POSITIVE CONTROL before the copy: the keys differ, so the refusal is the MAC.
+    expect(await planeA.store.cursorKey()).not.toBe(await planeB.store.cursorKey())
+    await expect(pages(planeB.store, {
+      descriptor, maxBytes: 64, grants: planeB.grants, callerScope: planeA.scope, cursor: firstA.nextCursor ?? '',
+    })).rejects.toMatchObject({ code: 'pagination-realm-denied' })
+
+    // THE STIMULUS: B adopts A's KEY, and only the key. Its realm is its own.
+    copyFileSync(
+      join(planeA.store.root, STORE_CURSOR_KEY_FILE_NAME),
+      join(planeB.store.root, STORE_CURSOR_KEY_FILE_NAME),
+    )
+    const ctx = new Context()
+    new AttachmentLocal(ctx, { dshHome: planeB.home })
+    const planeBShared = new AttachmentArtifactStore(ctx.attachments, planeB.indexRoot)
+
+    // The two stores now agree on the key and disagree on the realm, which is exactly
+    // the case the realm comparison exists for.
+    expect(await planeBShared.cursorKey()).toBe(await planeA.store.cursorKey())
+    expect(await planeBShared.ensureRealm()).not.toBe(await planeA.store.ensureRealm())
+
+    // THE ARM. A's cursor now verifies under B's key and MUST still be refused, by
+    // the realm, naming both realms so the diagnosis is actionable. Driven through
+    // the PRODUCTION recording provider, so the oracle's second clause ("the refusal
+    // is recorded") is exercised rather than asserted about a sink nobody mounted.
+    const provider = new RecordingPageProvider(
+      new ArtifactStorePageProvider(planeBShared),
+      mountRefusalRecording(planeBShared),
+    )
+    await expect(provider.next({
+      descriptor, maxBytes: 64, grants: planeB.grants, callerScope: planeA.scope, cursor: firstA.nextCursor ?? '',
+    })).rejects.toMatchObject({ code: 'pagination-realm-denied', realmRefused: true })
+    await expect(pages(planeBShared, {
+      descriptor, maxBytes: 64, grants: planeB.grants, callerScope: planeA.scope, cursor: firstA.nextCursor ?? '',
+    })).rejects.toThrow(/store realm/u)
+
+    // AND THE REFUSAL IS RECORDED, which is the oracle's second clause: a shared key
+    // must not make a cross-realm replay silent.
+    const recorded = await planeBShared.readRefusals()
+    expect(recorded).toHaveLength(1)
+    expect(recorded.every(entry => entry.code === 'pagination-realm-denied' && entry.step === 'realm')).toBe(true)
+    // The recorded refusal names BOTH realms, because the MAC verified and the caller
+    // legitimately holds another store's cursor: the diagnosis is worth the disclosure
+    // here, which is the opposite of the unauthenticated path above.
+    expect(recorded[0]?.cursorRealmId).toBe(await planeA.store.ensureRealm())
+    expect(recorded[0]?.storeRealmId).toBe(await planeBShared.ensureRealm())
+  })
+
+  it('does not let a copied REALM alone make a store accept another store\u2019s cursors (D-2)', async () => {
+    // D-2, re-measured under the fix. Before it, one `copyFileSync` of a 3-line JSON
+    // file made store B accept store A's cursors and serve A's pages, because the
+    // realm was the only store identity there was. The fix makes the KEY a second,
+    // independent identity, so a copied realm is no longer sufficient.
+    //
+    // WHAT THIS DOES NOT CLAIM: copying BOTH files still works, and that is measured
+    // in `s16-after.json` (`wholeRootCloneAfter`). A caller who can write both files
+    // has the store. The honest statement is that the realm file alone is no longer
+    // enough, not that the store root is tamper-proof.
+    const root = tempRoot('s16-realm-copy')
+    writeFileSync(join(root, 'p.bin'), PAYLOAD)
+    const planeA = makePlane('s16-realm-copy-a')
+    const planeB = makePlane('s16-realm-copy-b')
+    const captureA = await captureInto(root, planeA, 'obs-s16-copy-a')
+    await captureInto(root, planeB, 'obs-s16-copy-b')
+    const descriptor = captureA.descriptor
+
+    const firstA = await pages(planeA.store, {
+      descriptor, maxBytes: 64, grants: planeA.grants, callerScope: planeA.scope,
+    })
+    // POSITIVE CONTROL: before the copy, B refuses.
+    await expect(pages(planeB.store, {
+      descriptor, maxBytes: 64, grants: planeB.grants, callerScope: planeA.scope, cursor: firstA.nextCursor ?? '',
+    })).rejects.toMatchObject({ code: 'pagination-realm-denied' })
+
+    // THE ATTACK: one file copy, no crypto.
+    copyFileSync(
+      join(planeA.store.root, STORE_REALM_FILE_NAME),
+      join(planeB.store.root, STORE_REALM_FILE_NAME),
+    )
+    const ctx = new Context()
+    new AttachmentLocal(ctx, { dshHome: planeB.home })
+    const planeBAfter = new AttachmentArtifactStore(ctx.attachments, planeB.indexRoot)
+    // B really did adopt A's realm, so the arm is about the KEY and not about a copy
+    // that silently failed.
+    expect(await planeBAfter.ensureRealm()).toBe(await planeA.store.ensureRealm())
+
+    // THE ARM: the realm now matches and the cursor is still refused, because the KEY
+    // does not. The refusal is a MAC failure, which is the stronger step.
+    await expect(pages(planeBAfter, {
+      descriptor, maxBytes: 64, grants: planeB.grants, callerScope: planeA.scope, cursor: firstA.nextCursor ?? '',
+    })).rejects.toMatchObject({ code: 'pagination-cursor-invalid' })
+    await expect(pages(planeBAfter, {
+      descriptor, maxBytes: 64, grants: planeB.grants, callerScope: planeA.scope, cursor: firstA.nextCursor ?? '',
+    })).rejects.toThrow(/MAC does not verify/u)
   })
 })

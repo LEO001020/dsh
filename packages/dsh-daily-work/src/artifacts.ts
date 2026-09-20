@@ -112,7 +112,7 @@
  *   event committed, object missing        -> INTEGRITY ERROR. Never an empty string.
  *   effect happened, save failed           -> UNKNOWN. Never re-execute to "fix the log".
  */
-import { createHash, createHmac, randomUUID, timingSafeEqual } from 'node:crypto'
+import { createHash, createHmac, randomBytes, randomUUID, timingSafeEqual } from 'node:crypto'
 import { createReadStream } from 'node:fs'
 // MERGE: the union of both writers' `node:fs/promises` needs -- R7 added
 // `appendFile` and `statPath` (the refusal journal and the object-identity
@@ -172,8 +172,96 @@ export const ARTIFACT_STORE_VERSION = 'v1'
  * while actually being a restart bug, because a legitimate paging walk that spans
  * a restart would fail. The realm is therefore created with `wx` (exclusive
  * create) and a concurrent creator rereads the winner's value.
+ *
+ * WHAT THE REALM IS NOT: IT IS NOT A SECRET, AND IT IS NOT TAMPER-PROOF.
+ *
+ * Stated here because the earlier version of this comment argued for a file over a
+ * path hash and never said so. The realm is an identity that a cursor CARRIES and
+ * that a refusal NAMES, so it is deliberately disclosed; and it is an ordinary file
+ * in the store root, so anyone who can write that directory can copy another
+ * store's realm in. The realm therefore distinguishes two stores under a HONEST
+ * store root; it does not by itself make a cursor unforgeable, and it never did.
+ * The unforgeability is the CURSOR KEY's job ({@link STORE_CURSOR_KEY_FILE_NAME}),
+ * which is a separate file precisely so that the value which is disclosed and the
+ * value which must not be cannot be confused.
  */
 export const STORE_REALM_FILE_NAME = 'store-realm.json'
+
+/**
+ * The file inside a store root that holds the key this store MACs page cursors with.
+ *
+ * THE DEFECT THIS EXISTS FOR. The cursor MAC was keyed by `cursorSecretOf`, which
+ * was `id:sha256:ownerScope:grantRevision` -- four DESCRIPTOR fields. The descriptor
+ * is handed to the caller by `data:fs.capture` and sent back on every page call, so
+ * the "host secret" was a deterministic function of data the caller already held: a
+ * caller could mint a cursor the host never issued, name any position, and be
+ * served. The HMAC construction was correct; the key was public. A key that is
+ * DERIVED from anything the caller holds is not a key, so the key has to be MINTED
+ * and STORED rather than computed.
+ *
+ * WHY A FILE IN THE STORE ROOT AND NOT A CONSTANT OR AN ENVIRONMENT VARIABLE.
+ *
+ * A compiled-in constant is in the repository, so every deployment would share one
+ * key and any reader of the source could forge. An environment variable is better
+ * but not sufficient: it is absent by default, and a deployment that did not set it
+ * would silently fall back to something -- which is how this class of defect
+ * recurs. The store root is the one place that is (a) already required to exist,
+ * (b) already the durable boundary for everything the store owns, and (c) NOT
+ * reachable by a caller, because the caller reaches the store through `data:*`
+ * bridge methods and the FS policy, never through a path the host hands out.
+ *
+ * WHY IT IS A SEPARATE FILE FROM THE REALM, AND WHY BOTH ARE NEEDED.
+ *
+ * They answer different questions and have different disclosure. The REALM is an
+ * IDENTITY: it must be comparable, so it travels inside the cursor and is named in
+ * refusals (a cross-store refusal is only actionable if it says which store it was
+ * issued for). The KEY is a SECRET: it must never leave the process, so it is in
+ * neither the cursor nor any message. Keeping them in one file would mean the file
+ * that is deliberately disclosed in refusal text also held the secret; keeping them
+ * in two files means the disclosed value and the undisclosed value cannot be
+ * confused by a later reader.
+ *
+ * WHAT IT DOES NOT DEFEND AGAINST, stated rather than implied. A caller who can
+ * READ this file (or run code in the host process) is inside the trust boundary --
+ * the OS user account is the execution authority boundary for this product. The
+ * property this file establishes is narrower and is the one that was missing: a
+ * caller who holds a descriptor, a cursor and the store's public refusals still
+ * cannot produce a cursor the host will accept.
+ *
+ * WHY IT SURVIVES A RESTART. Created with `wx` and never rewritten, exactly like
+ * the realm, so a walk that spans a restart keeps working. A per-boot random key
+ * would read as a security property and be a restart bug.
+ */
+export const STORE_CURSOR_KEY_FILE_NAME = 'store-cursor-key.json'
+
+/**
+ * The shortest key this store will MAC cursors with.
+ *
+ * 43 base64url characters is exactly 32 bytes, which is what `readOrCreateStoreCursorKey`
+ * mints. The bound exists so a TRUNCATED or hand-edited key file is a refusal rather
+ * than a silently weakened MAC: without it, replacing a 32-byte key with `"a"` would
+ * leave every arm green while making the key guessable in one try. Enforced on READ,
+ * not only on create, because the read is where an edited file arrives.
+ */
+export const MIN_CURSOR_KEY_CHARS = 43
+
+/**
+ * The persisted cursor-key record.
+ *
+ * `cursorKey` is the MAC key and is NEVER serialized into a cursor, a refusal, a
+ * log line or an error message. `keyId` is a non-secret label, so an operator can
+ * tell two keys apart in a diagnosis without the key itself being printable.
+ */
+interface StoreCursorKeyRecord {
+  /** The MAC key. Secret: never logged, never returned, never put in a token. */
+  cursorKey: string
+  /** A non-secret digest prefix, so a diagnosis can name the key without revealing it. */
+  keyId: string
+  /** When the key was minted. Informational: it is never used in a decision. */
+  createdAt: string
+  /** The on-disk layout version this key was created under. */
+  storeVersion: string
+}
 
 /** The persisted realm record. `realmId` is opaque; nothing derives meaning from it. */
 interface StoreRealmRecord {
@@ -311,9 +399,16 @@ export interface IoCounters {
  *
  * `spillStore` has only `put`. The audit's rule is to add the narrow missing
  * contract rather than a general object-storage platform, so this interface is
- * deliberately six methods and no more: no bucket lifecycle, no replication, no
+ * deliberately seven methods and no more: no bucket lifecycle, no replication, no
  * arbitrary metadata query, no second content-addressing scheme (the digest IS
  * the address, exactly as the attachment provider derives it).
+ *
+ * WHY `cursorKey()` IS ON THIS INTERFACE RATHER THAN DERIVED BY THE PAGER. The key
+ * a cursor is MACed with is a property of the STORE, not of the request: it must be
+ * minted once, kept durable, and never be a function of anything a caller supplies.
+ * `pages()` receives an `ArtifactStore` and no secret, so a key the pager could
+ * compute is a key a caller can compute -- which is the D-1 defect exactly. Making
+ * it a store method puts the secret behind the same boundary as the bytes.
  */
 export interface ArtifactStore {
   /** The root of this project's artifact INDEX. Used as the durable boundary for syncs. */
@@ -324,10 +419,26 @@ export interface ArtifactStore {
    * A content address cannot distinguish two stores that hold the same bytes, so
    * the realm is the part of a cursor's identity that the address cannot carry.
    * It is a property of the store's ROOT and survives a process restart.
+   *
+   * NOT a secret and NOT tamper-proof: it is carried in the cursor and named in
+   * refusals by design. See {@link STORE_REALM_FILE_NAME}.
    */
   readonly realmId: string
   /** Resolve the realm identity, creating it on first use. Idempotent. */
   ensureRealm(): Promise<string>
+  /**
+   * The MAC key this store issues cursors with, minted once and kept durable.
+   *
+   * SECRET. It must never be placed in a cursor, a refusal record, a log line or an
+   * error message, and a caller of this method is responsible for that. It is a
+   * store method rather than a parameter so that the pager never has to be handed a
+   * key that a caller could also compute.
+   *
+   * Idempotent, and safe against a concurrent creator by the same `wx` protocol the
+   * realm uses, so two processes over one store agree on ONE key and a cursor minted
+   * before a restart still verifies after it.
+   */
+  cursorKey(): Promise<string>
   /**
    * Assert that the object at `artifact` still satisfies a recorded identity,
    * BEFORE any of its bytes are served.
@@ -477,6 +588,129 @@ async function readStoreRealmRecord(path: string): Promise<StoreRealmRecord | un
 }
 
 /**
+ * The non-secret label for a key, so a diagnosis can name it without printing it.
+ *
+ * A digest prefix is enough to tell two keys apart and is useless for forging: it
+ * is a one-way function of a 256-bit random value.
+ */
+function keyIdOf(key: string): string {
+  return `key_${createHash('sha256').update(key).digest('hex').slice(0, 16)}`
+}
+
+/**
+ * Read the durable cursor key of a store root, creating it on first use.
+ *
+ * THE SAME `wx` PROTOCOL AS THE REALM, for the same two reasons: two processes
+ * opening one store must agree on ONE key (a plain write would let the second
+ * creator overwrite the first, and every cursor the first process minted would stop
+ * verifying), and a per-boot key would be a restart bug wearing a security
+ * property's clothes.
+ *
+ * A MALFORMED KEY FILE IS A REFUSAL, never a silent regeneration -- regenerating
+ * would invalidate every cursor this store ever issued, and would ALSO look exactly
+ * like the fix working. The distinction between "the store refuses because its key
+ * is unreadable" and "the store refuses because the token was forged" has to stay
+ * visible, so the two produce different codes: this is `artifact-integrity-error`,
+ * a forged token is `pagination-cursor-invalid`.
+ *
+ * A KEY SHORTER THAN THE MINIMUM IS ALSO A REFUSAL. A truncated or hand-edited key
+ * is a weak key, and accepting it would silently downgrade the MAC while every
+ * arm still passed.
+ *
+ * @param root - the store root.
+ * @returns the key, stable for the lifetime of this directory.
+ */
+async function readOrCreateStoreCursorKey(root: string): Promise<string> {
+  const path = join(root, STORE_CURSOR_KEY_FILE_NAME)
+  const existing = await readStoreCursorKeyRecord(path)
+  if (existing !== undefined) return existing.cursorKey
+  const created: StoreCursorKeyRecord = {
+    // 32 bytes of CSPRNG output, base64url-encoded. Minted here, never derived from
+    // a descriptor, a path, a realm or any other value a caller can obtain.
+    cursorKey: randomBytes(32).toString('base64url'),
+    keyId: '',
+    createdAt: new Date().toISOString(),
+    storeVersion: ARTIFACT_STORE_VERSION,
+  }
+  created.keyId = keyIdOf(created.cursorKey)
+  await mkdir(root, { recursive: true })
+  try {
+    // mode 0o600: the key is readable by the owning account only. This is defence in
+    // depth, not the boundary -- the OS account is the boundary -- but a key file
+    // that is world-readable would be a gratuitous widening.
+    await writeFile(path, `${JSON.stringify(created, null, 2)}\n`, { encoding: 'utf8', flag: 'wx', mode: 0o600 })
+    return created.cursorKey
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === 'EEXIST') {
+      // Another process created the key between our read and our write. Its key
+      // wins: the file is the store's, not this process's.
+      const winner = await readStoreCursorKeyRecord(path)
+      if (winner !== undefined) return winner.cursorKey
+    }
+    throw new ArtifactError(
+      `artifact store ${root} has no readable cursor key and one could not be created: `
+      + `${error instanceof Error ? error.message : String(error)}`,
+      'artifact-integrity-error',
+      { cause: error },
+    )
+  }
+}
+
+/**
+ * Read and validate the cursor-key record, or `undefined` when the file is absent.
+ *
+ * The error messages deliberately name the PATH and never the VALUE. A message that
+ * echoed a malformed key would put key material into a refusal record, a log and a
+ * bridge response -- the exact leak the secret is supposed to make impossible.
+ */
+async function readStoreCursorKeyRecord(path: string): Promise<StoreCursorKeyRecord | undefined> {
+  let text: string
+  try {
+    text = await readFile(path, 'utf8')
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === 'ENOENT') return undefined
+    throw new ArtifactError(
+      `the store cursor key file ${path} exists but could not be read: `
+      + `${error instanceof Error ? error.message : String(error)}`,
+      'artifact-integrity-error',
+      { cause: error },
+    )
+  }
+  let parsed: unknown
+  try {
+    parsed = JSON.parse(text)
+  } catch (error) {
+    throw new ArtifactError(
+      `the store cursor key file ${path} is not valid JSON; refusing to mint a new key, because a new key would `
+      + 'invalidate every cursor this store ever issued while looking like a security property',
+      'artifact-integrity-error',
+      { cause: error },
+    )
+  }
+  const record = parsed as Partial<StoreCursorKeyRecord>
+  if (typeof record.cursorKey !== 'string' || record.cursorKey.length === 0) {
+    throw new ArtifactError(
+      `the store cursor key file ${path} carries no cursorKey; refusing to mint a new key for the same reason`,
+      'artifact-integrity-error',
+    )
+  }
+  if (record.cursorKey.length < MIN_CURSOR_KEY_CHARS) {
+    throw new ArtifactError(
+      `the store cursor key file ${path} carries a key of ${record.cursorKey.length} characters, below the `
+      + `${MIN_CURSOR_KEY_CHARS}-character minimum; a truncated key is a weakened MAC, so it is refused rather `
+      + 'than accepted',
+      'artifact-integrity-error',
+    )
+  }
+  return {
+    cursorKey: record.cursorKey,
+    keyId: typeof record.keyId === 'string' ? record.keyId : keyIdOf(record.cursorKey),
+    createdAt: typeof record.createdAt === 'string' ? record.createdAt : '',
+    storeVersion: typeof record.storeVersion === 'string' ? record.storeVersion : '',
+  }
+}
+
+/**
  * A local, content-addressed artifact store built on DSH's publication primitive.
  * One durable index entry: the facts needed to ADDRESS a published object again
  * from a later process, and nothing else.
@@ -589,6 +823,15 @@ export class AttachmentArtifactStore implements ArtifactStore {
    * one object can never drift from the file on disk within a process.
    */
   private realm: string | undefined
+  /**
+   * The MAC key this store issues cursors with.
+   *
+   * SECRET, and memoized for the process lifetime exactly like the realm: a store
+   * may be constructed before its root exists, and reading the key per page would
+   * put a file read on the paging hot path. Never returned from a public accessor
+   * other than {@link cursorKey}, and never placed in a cursor or a message.
+   */
+  private cursorKeyValue: string | undefined
   /** In-memory mirror of the index, so the hot path does not re-read the disk. */
   private readonly index = new Map<string, ArtifactIndexEntry>()
 
@@ -649,6 +892,32 @@ export class AttachmentArtifactStore implements ArtifactStore {
     const realm = await readOrCreateStoreRealm(this.root)
     this.realm = realm
     return realm
+  }
+
+  /**
+   * Resolve (creating if absent) the MAC key this store issues cursors with.
+   *
+   * THE DEFECT THIS EXISTS FOR. The key used to be `cursorSecretOf(descriptor)` --
+   * `id:sha256:ownerScope:grantRevision`, four descriptor fields. The descriptor is
+   * handed to the caller by `data:fs.capture` and sent back on every page call, so
+   * the key was a function of data the caller held and a correctly-signed forgery
+   * was accepted (measured: `qualification/results/S16-cursor-authority/s16-before.json`).
+   * A key that is DERIVED from anything the caller holds is not a key. This one is
+   * MINTED from the CSPRNG and STORED in the store root, which a caller reaches only
+   * through `data:*` methods and never as a path.
+   *
+   * Idempotent and memoized, so the paging hot path performs no file read per page
+   * after the first. Safe against a concurrent creator by the `wx` protocol, so two
+   * processes over one store agree on ONE key.
+   *
+   * @returns the key. SECRET: callers must not log it, echo it in a refusal, or put
+   *   it in a token. It exists to be handed to `CursorAuthority` and nowhere else.
+   */
+  async cursorKey(): Promise<string> {
+    if (this.cursorKeyValue !== undefined) return this.cursorKeyValue
+    const key = await readOrCreateStoreCursorKey(this.root)
+    this.cursorKeyValue = key
+    return key
   }
 
   /**
@@ -764,6 +1033,11 @@ export class AttachmentArtifactStore implements ArtifactStore {
     // it lazily at paging time would leave a window in which a capture succeeds
     // and a cursor cannot be minted.
     await this.ensureRealm()
+    // The same argument for the cursor KEY, and it is not a formality: if the key
+    // could not be created, the failure has to land HERE, on a capture that can be
+    // retried and reported, rather than on a later page read that would look like a
+    // forged token. A store that can publish must be able to issue cursors.
+    await this.cursorKey()
     const quota = this.quotaBytes
     let streamed = 0
     async function* bounded(): AsyncIterable<Uint8Array> {
@@ -1414,19 +1688,38 @@ const CURSOR_SEPARATOR = '.'
 /**
  * The host-side cursor authority.
  *
- * THE MAC IS OVER THE WHOLE TUPLE, INCLUDING THE REALM. The previous signature was
- * `sha256(secret + payload)` where the secret was derived from the descriptor, so
- * the signature proved only that whoever minted the token knew the descriptor --
- * and a descriptor is not a secret, it is the thing being paged. It is now an HMAC
- * over a CANONICAL, FIELD-ORDERED serialization of every bound field, so a cursor
- * cannot be re-signed for another realm, another object, another revision or
- * another position by anyone who has not got the host secret.
+ * THE MAC IS OVER THE WHOLE TUPLE, INCLUDING THE REALM, AND IS KEYED BY A SECRET
+ * THE STORE MINTS. The signature was once `sha256(secret + payload)` where the
+ * secret was derived from the descriptor, so it proved only that whoever minted the
+ * token knew the descriptor -- and a descriptor is not a secret, it is the thing
+ * being paged. It is now an HMAC-SHA256 over every bound field, so a cursor cannot
+ * be re-signed for another realm, another object, another revision or another
+ * position without the key.
  *
- * WHY THE PAYLOAD IS RE-SERIALIZED CANONICALLY RATHER THAN SIGNED AS RECEIVED. If
- * the MAC covered the raw received bytes, a token could carry a valid MAC while its
- * parsed fields differed from the bytes signed (duplicate keys, different key
- * order, different number spelling). Signing the canonical form means the verified
- * bytes and the fields the pager uses are the same bytes.
+ * WHAT WAS STILL WRONG UNTIL D-1 WAS FIXED, recorded because the prose here claimed
+ * the opposite and a reader would have believed it. The HMAC change fixed the
+ * CONSTRUCTION and left the KEY public: the secret passed to this constructor was
+ * `cursorSecretOf(descriptor)` -- `id:sha256:ownerScope:grantRevision`, four fields
+ * of an object `data:fs.capture` hands to the caller. So a caller could re-derive
+ * the key and mint a cursor the host never issued, and one was accepted and served
+ * (`qualification/results/S16-cursor-authority/s16-before.json`, position 64 -> 500).
+ * The key now comes from `ArtifactStore.cursorKey()`: 32 CSPRNG bytes minted once and
+ * kept in the store root, which the caller reaches only through `data:*` methods and
+ * never as a path. This class does not care where the key came from; it is the
+ * CALLER of this class (`pages()`) that must not derive it from the request, and the
+ * arms in `data11-cursor-realm.test.ts` and `data16-cursor-key-authority.test.ts`
+ * pin that.
+ *
+ * WHAT IS SIGNED IS EXACTLY WHAT IS PARSED. `verify` signs the payload SUBSTRING it
+ * is about to parse, so the bytes the MAC covers and the bytes that are decoded are
+ * the same bytes by construction, and no duplicate-key or number-spelling trick can
+ * make them differ. This is deliberately NOT the same thing as re-serializing the
+ * parsed object canonically: `mint` emits `JSON.stringify(full)` in the interface's
+ * field order, but a token in another key order verifies too, because `verify` signs
+ * the received text rather than a normalization of it. The earlier version of this
+ * comment claimed a canonical re-serialization that was never implemented, and a
+ * sorted-key forgery was accepted under it (measured, same probe). The property that
+ * matters is the one stated above, and it holds.
  */
 export class CursorAuthority {
   private readonly secret: string
@@ -1573,12 +1866,29 @@ export class CursorAuthority {
   }
 
   /**
-   * The MAC over the canonical payload.
+   * The MAC over the received payload.
    *
-   * HMAC-SHA256 keyed by the host secret, not a bare hash of `secret + payload`:
-   * a length-extension or a concatenation ambiguity is not available against HMAC,
-   * and the secret is the only thing standing between a caller and a self-minted
-   * cursor naming any position in any artifact.
+   * HMAC-SHA256 keyed by the store's cursor key, not a bare hash of
+   * `secret + payload`: a length-extension or a concatenation ambiguity is not
+   * available against HMAC. WHAT THIS DOES AND DOES NOT BUY, stated because the
+   * earlier version of this comment claimed a protection that did not exist.
+   *
+   * It buys: a token cannot be produced or altered by anyone who does not hold the
+   * key, and the key is now a store-minted secret (`ArtifactStore.cursorKey()`) that
+   * is NOT derivable from the descriptor, the cursor or any refusal. So the MAC is
+   * the thing standing between a caller and a self-minted cursor naming any position
+   * in any artifact -- which is what the old sentence said while the key was
+   * `cursorSecretOf(descriptor)`, four public descriptor fields, making the sentence
+   * false. A caller who can READ the store's key file, or run code in the host
+   * process, is inside the trust boundary and is not defended against; see
+   * {@link STORE_CURSOR_KEY_FILE_NAME}.
+   *
+   * It does NOT buy: a binding on its own. A correctly signed token still has to have
+   * every field compared against a live value (`assertRealm`, `assertBindings`, the
+   * digest and watermark checks), because the MAC proves only who minted the token,
+   * never that the token still describes the world. `position` is the field with no
+   * live counterpart -- it is the caller's chosen resume point and is checked only by
+   * the MAC, which is exactly why a public key made it forgeable.
    */
   private sign(payload: string): string {
     return createHmac('sha256', this.secret).update(payload).digest('base64url')
@@ -1656,13 +1966,20 @@ function revisionOf(descriptor: ObservationDescriptor): string {
  *
  * THE READ ORDER IS THE POINT, and it is enforced in this order:
  *
- *   1. parse and verify the cursor (MAC over the whole tuple)
+ *   1. parse and verify the cursor (MAC over the whole tuple, keyed by the
+ *      STORE's minted secret -- not by anything the caller supplied)
  *   2. compare the REALM -- the store's own identity, which a content address
  *      cannot carry
  *   3. resolve the exact reference (the descriptor's grant, scope and object)
  *   4. verify the descriptor/revision/content identity of the object BEFORE
  *      reading it
  *   5. only then read the range/page
+ *
+ * Step 1's key is what D-1 was about. It was `cursorSecretOf(descriptor)`, four
+ * fields of an object the caller is handed, so step 1 verified "the caller knew the
+ * descriptor" and every later step compared the cursor against the CALLER'S OWN
+ * input. The key now comes from `store.cursorKey()`, so step 1 answers the question
+ * the order assumes it answers: did this STORE mint these bytes?
  *
  * The failing shape this replaces was "openRange, then discover it was the wrong
  * artifact": `store.openRange` was called directly, so the content check that
@@ -1697,11 +2014,6 @@ export async function pages(
   // The realm is resolved BEFORE anything else, because step 2 needs it and a
   // store that cannot state its identity cannot safely serve a cursor at all.
   const storeRealmId = await store.ensureRealm()
-  // The MAC secret is still derived from the descriptor, so a cursor is only
-  // mintable by a host holding the descriptor. The REALM is bound as a SIGNED
-  // FIELD, not as part of the secret: two stores that share a descriptor must still
-  // produce cursors that do not verify against each other.
-  const authority = new CursorAuthority(cursorSecretOf(descriptor), descriptor.schemaVersion)
 
   /**
    * Record and throw. ONE helper, so no refusal path can bypass the sink: a
@@ -1734,23 +2046,98 @@ export async function pages(
     throw error
   }
 
+  // ---- THE MAC KEY COMES FROM THE STORE, NOT FROM THE DESCRIPTOR.
+  //
+  // D-1's fix, and the whole authority model in one line. The key used to be
+  // `cursorSecretOf(descriptor)` -- four descriptor fields, and the descriptor is
+  // handed to the caller. A caller could therefore re-derive the key and mint a
+  // cursor the host never issued; measured, a forged `position` was accepted and
+  // served (`qualification/results/S16-cursor-authority/s16-before.json`).
+  //
+  // `store.cursorKey()` is a CSPRNG value minted once and kept in the store root,
+  // which the caller reaches only through `data:*` methods -- never as a path. So
+  // the MAC now answers the question it always claimed to answer: "did a holder of
+  // THIS STORE's secret produce these bytes?", not "did the caller know the
+  // descriptor?".
+  //
+  // The REALM remains a SIGNED FIELD as well, not part of the key. Two stores that
+  // share a descriptor (and so share every other binding) must still produce cursors
+  // that do not verify against each other, and that is what the signed realm does --
+  // now as a second, independent line rather than as the only one.
+  //
+  // A STORE WHOSE KEY CANNOT BE RESOLVED IS A RECORDED REFUSAL, not a raw throw.
+  // The refusal's step is derived with `refusalStepOf` so the sink here and the
+  // journal `RecordingPageProvider` writes agree by construction rather than by
+  // two hand-written claims that can drift.
+  let authority: CursorAuthority
+  try {
+    authority = new CursorAuthority(await store.cursorKey(), descriptor.schemaVersion)
+  } catch (error) {
+    const failure = asArtifactError(error, 'the store cursor key could not be resolved')
+    refuse(failure, refusalStepOf(failure))
+  }
+
   // ---- STEP 1: parse/verify the cursor. Nothing in it is believed yet.
   //
   // Runs FIRST, before the descriptor's authority is even consulted, because the
   // order is the contract: a caller presenting a token that is not host-minted
   // should learn that before it learns anything about the store's contents.
+  //
+  // A CONSEQUENCE OF THE D-1 FIX, and the reason this catch is not a one-liner. The
+  // MAC key is per-store now, so a cursor minted by ANOTHER store does not verify
+  // here at all: it fails the MAC and would be reported as a parse failure. That is
+  // a STRONGER refusal (the token is rejected before its contents are read, and
+  // without trusting anything in it), but collapsing it into `pagination-cursor-
+  // invalid` would lose two things the refusal record exists to keep apart: "a
+  // cursor from another store was replayed" and "a malformed or tampered token
+  // arrived", which is exactly the distinction `pagination-realm-denied` was added
+  // for, and which the product-level R7 probe branches on
+  // (`qualification/results/R7-cursor-realm/r7-cursor-realm-probe.mjs`).
+  //
+  // So a MAC failure is classified by what the token CLAIMS, without believing it,
+  // and the classification decides only WHICH REFUSAL the caller is told about --
+  // never whether the request is served. Both branches refuse.
+  //
+  // THE MESSAGE NAMES NO REALM, and that is deliberate. A request that failed the
+  // MAC is UNAUTHENTICATED, so answering it with an identity would be handing the
+  // serving store's realm to anyone who can send a garbage token -- a disclosure
+  // this fix would otherwise have closed. Step 2 below still names both realms,
+  // because there the MAC DID verify and the diagnosis is worth the disclosure to a
+  // caller who legitimately holds another store's cursor. The rule is: no identity
+  // out of an unauthenticated request, full diagnosis out of an authenticated one.
   let cursor: PageCursor | undefined
   if (request.cursor !== undefined) {
     try {
       cursor = authority.verify(request.cursor)
     } catch (error) {
-      refuse(asArtifactError(error, 'pagination cursor could not be verified'), 'parse')
+      const claimedRealm = realmClaimOf(request.cursor)
+      if (claimedRealm !== undefined && claimedRealm !== storeRealmId) {
+        refuse(new ArtifactError(
+          'pagination cursor names a different store realm than the one serving this request, and its MAC does '
+          + 'not verify under this store\'s cursor key; a cursor is not a bearer token and cannot be replayed '
+          + 'against another store',
+          'pagination-realm-denied',
+          { realmRefused: true, cause: error },
+        ), 'realm', { cursorRealmId: claimedRealm })
+      }
+      refuse(asArtifactError(error, 'pagination cursor could not be verified'), 'parse', {
+        cursorRealmId: realmClaimOf(request.cursor),
+      })
     }
     // ---- STEP 2: compare the REALM, before resolving the reference.
     //
     // This is the check the defect was missing. A cursor from another store names a
     // valid content address this store may hold, so nothing downstream can tell the
     // two stores apart -- only the store's own identity can.
+    //
+    // WHAT IT GUARDS NOW, after D-1. With a per-store MAC key, a token from a store
+    // with a DIFFERENT key is already refused at step 1. This check is the second,
+    // independent line and it is the one that fires when the keys are the SAME: a
+    // store root cloned whole (both files), a deployment that provisioned one key
+    // into two roots, or a caller who copied the key file. The realm still separates
+    // those stores, so the binding is not redundant -- but it is no longer the only
+    // thing standing between a caller and another store's pages, and the arm that
+    // exercises it is `data11-cursor-realm.test.ts`'s shared-key block.
     try {
       authority.assertRealm(cursor, storeRealmId)
     } catch (error) {
@@ -1891,22 +2278,6 @@ function realmClaimOf(token: string): string | undefined {
 }
 
 /**
- * A cursor's MAC secret, derived from the descriptor.
- *
- * Deriving it rather than storing a random secret keeps the cursor mintable
- * without extra state while still being host-only: a caller cannot mint a valid
- * cursor without the descriptor, and the descriptor is host-authored.
- *
- * NOTE WHAT IT IS NOT: it is not the store identity. Two stores that hold the same
- * object share this secret, which is precisely why the realm had to become a
- * signed FIELD -- deriving the secret from the descriptor could never distinguish
- * the two stores, because the descriptor is the same for both.
- */
-function cursorSecretOf(descriptor: ObservationDescriptor): string {
-  return `${descriptor.id}:${descriptor.captured.sha256}:${descriptor.authority.ownerScope}:${descriptor.authority.grantRevision}`
-}
-
-/**
  * Drive a whole paging walk with a monotonicity guard.
  *
  * This is the function a native `data.pages` call runs. It exists so the stall
@@ -2020,11 +2391,19 @@ export class RecordingPageProvider implements PageProvider {
       return await this.inner.next(request, counters)
     } catch (error) {
       if (error instanceof ArtifactError) {
+        // The realm the cursor CLAIMED, when it named one. `pages()` records this on
+        // its own sink path, so carrying it here keeps the durable evidence the same
+        // whichever route refused: `page()` uses the sink, `walk()` uses this
+        // decorator, and a reader of the journal should not be able to tell which one
+        // produced a record. Unverified, exactly as on the sink path -- it is read
+        // from the token without the MAC having accepted it, and it decides nothing.
+        const cursorRealmId = request.cursor === undefined ? undefined : realmClaimOf(request.cursor)
         await this.journal.recordRefusal({
           code: error.code,
           reason: error.message,
           storeRealmId: await this.journal.realmId(),
           observationId: request.descriptor.id,
+          ...cursorRealmId === undefined ? {} : { cursorRealmId },
           step: refusalStepOf(error),
           at: new Date().toISOString(),
         })

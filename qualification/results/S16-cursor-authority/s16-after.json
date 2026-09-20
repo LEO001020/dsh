@@ -1,0 +1,90 @@
+{
+  "probe": "S16 D-1/D-2 AFTER — the same correctly-signed forgeries, refused",
+  "measuredAt": "2026-09-20T11:45:21.978Z",
+  "node": "v24.18.0",
+  "identity": {
+    "worktree": "D:/DSH/work/wt-s16",
+    "branch": "wt/s16",
+    "artifactsTsSha256": "a2ec38f24489ca95e4a1d961598343525e9c942cb14d2f86c238f3672f4cb7ae",
+    "observationsTsSha256": "26cee3d334770aaf105a0f87794763aaf3c5e07929fc33bfc6ebe6f45e1c63eb"
+  },
+  "attacks": {
+    "positionForgeryOldKey": {
+      "refused": true,
+      "code": "pagination-cursor-invalid",
+      "name": "ArtifactError",
+      "realmRefused": null,
+      "message": "pagination cursor MAC does not verify",
+      "messageNamesARealm": false
+    },
+    "crossStoreHonestCursor": {
+      "refused": true,
+      "code": "pagination-realm-denied",
+      "name": "ArtifactError",
+      "realmRefused": true,
+      "message": "pagination cursor names a different store realm than the one serving this request, and its MAC does not verify under this store's cursor key; a cursor is not a bearer token and cannot be replayed against another store",
+      "messageNamesARealm": false
+    },
+    "crossStoreForgeryOldKey": {
+      "refused": true,
+      "code": "pagination-cursor-invalid",
+      "name": "ArtifactError",
+      "realmRefused": null,
+      "message": "pagination cursor MAC does not verify",
+      "messageNamesARealm": false
+    },
+    "crossStoreForgeryRealKey": {
+      "refused": true,
+      "code": "pagination-realm-denied",
+      "name": "ArtifactError",
+      "realmRefused": true,
+      "message": "pagination cursor was issued for store realm \"sha256:c70d708ced03…(len 42)\", not \"sha256:c3000fd18f5f…(len 42)\"; a cursor is not a bearer token and cannot be replayed against another store",
+      "messageNamesARealm": true
+    },
+    "realmCopyOnlyAfter": {
+      "refused": true,
+      "code": "pagination-cursor-invalid",
+      "name": "ArtifactError",
+      "realmRefused": null,
+      "message": "pagination cursor MAC does not verify",
+      "messageNamesARealm": false
+    },
+    "wholeRootCloneAfter": {
+      "refused": false,
+      "offset": 64,
+      "bytes": 64,
+      "wholeRootCloneAccepted": true
+    }
+  },
+  "properties": {
+    "honestWalkStillWorks": true,
+    "honestWalkReturnsArtifactBytes": true,
+    "oldDerivationIsNotTheKey": true,
+    "keyIsNotDerivableFromDescriptor": true,
+    "keyShape": {
+      "length": 43,
+      "sha256": "a2fbc1234c1da276e7fcf1aa0906f09eb9ece1844bac8963bdaf9356fc5d26fe"
+    },
+    "keyAbsentFromCursor": true,
+    "keyAbsentFromRefusalJournal": true,
+    "wholeRootCloneIsOutOfScope": true,
+    "keyIsMemoized": true,
+    "keyDiffersBetweenStores": true,
+    "keySurvivesReopen": true,
+    "keyFile": {
+      "name": "store-cursor-key.json",
+      "hasCursorKey": true,
+      "recordCarriesNoRealm": true,
+      "realmRecordCarriesNoKey": true
+    },
+    "truncatedKeyRefused": {
+      "refused": true,
+      "code": "artifact-integrity-error",
+      "name": "ArtifactError",
+      "realmRefused": null,
+      "message": "the store cursor key file C:\\Users\\hzq00\\AppData\\Local\\Temp\\s16a-trunc-RSlxju\\artifacts\\store-cursor-key.json carries a key of 5 characters, below the 43-character minimum; a truncated key is a weakened MAC, so it is refused rather than accepted",
+      "messageNamesARealm": false
+    },
+    "minimumKeyLength": 43
+  }
+}

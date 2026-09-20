@@ -1,0 +1,106 @@
+S16: fix D-1 -- the cursor MAC key is minted by the store, not derived from the descriptor
+
+THE DEFECT. cursorSecretOf(descriptor) was
+`${id}:${sha256}:${ownerScope}:${grantRevision}` -- four DESCRIPTOR fields. The
+descriptor is returned to the caller by data:fs.capture (data-bridge.ts:255) and sent
+back on every page call, so the MAC key was a deterministic function of data the
+caller already held. A correctly-signed forgery was accepted and served (offset 500).
+The HMAC construction was right; the key was public.
+
+THE FIX, and why this shape. A key DERIVED from anything the caller holds is not a
+key, so the key is MINTED and STORED:
+  - new `store-cursor-key.json` in the store root, 32 CSPRNG bytes (base64url, 43
+    chars), created with `wx` and never rewritten -- the same protocol the realm
+    uses, so two processes over one root agree on ONE key and a walk survives a
+    restart;
+  - `ArtifactStore.cursorKey()` is the narrow contract addition, so the secret lives
+    behind the same boundary as the bytes. `pages()` receives an ArtifactStore and no
+    secret, so a key it could COMPUTE is a key a caller can compute -- which is D-1;
+  - `put()` resolves the key alongside the realm, so a store that can publish can
+    issue cursors, and a key failure lands on a retryable capture rather than on a
+    later page read that would look like a forged token;
+  - a key file that is malformed, empty or SHORTER THAN 43 CHARS is refused rather
+    than regenerated or accepted. Regenerating would invalidate every cursor while
+    looking like the fix working; accepting a truncated key would silently weaken the
+    MAC with every arm still green.
+
+CANDIDATES REJECTED, with the weakness that ruled each out (the brief asked for this
+to be decided from the code, not picked):
+  - the descriptor (the defect): public by construction.
+  - a compiled-in constant: in the repository, shared by every deployment, and a
+    reader of the source could forge.
+  - the realm id: DISCLOSED -- it is carried in the cursor and named in refusals, and
+    the refusal message returned both realms verbatim (artifacts.ts:1516-1517 ->
+    data-bridge.ts). A key derived from it is public. Kept as a signed FIELD instead.
+  - an env var: absent by default, and a deployment that did not set it would silently
+    fall back -- this defect class exactly.
+  - host-process memory only: correct for forgery, but per-boot, so it breaks a walk
+    that spans a restart. That is the failure the realm design already documents.
+
+D-2, ESTABLISHED RATHER THAN ASSUMED. The realm file is still MACed by nothing, but
+the fix means the realm is no longer the ONLY store identity: a copied realm alone no
+longer grants acceptance, because the key still differs. Measured: before the fix the
+copy was ACCEPTED (s16-before.json realmCopyAfter); after, it is refused with
+`pagination-cursor-invalid`. THE RESIDUE IS MEASURED AND STATED, not implied: copying
+BOTH files (a whole-root clone) DOES let the clone accept the original's cursors
+(s16-after.json wholeRootCloneAfter). That is out of scope -- a caller who can write
+both files has the store -- and it is recorded rather than left to be found.
+
+A CONSEQUENCE I HAD TO HANDLE, because it would have looked like a regression. With a
+per-store key a cross-store token now fails at STEP 1 (the MAC), so it never reaches
+the realm comparison at step 2 -- and 7 existing arms that assert
+`pagination-realm-denied` went red. That refusal is STRONGER, but collapsing it into
+`pagination-cursor-invalid` would lose the distinction `pagination-realm-denied` was
+introduced for (artifacts.ts:312-321) and which the product R7 probe branches on. So a
+MAC failure is classified by what the token CLAIMS without believing it, and the
+classification decides only WHICH refusal the caller is told about, never whether the
+request is served. The message names NO REALM: an unauthenticated request must not be
+answered with an identity, which closes the disclosure amplifier that made the old
+cross-store forgery need no prior knowledge. Step 2 still names both realms, because
+there the MAC verified.
+
+PROSE CORRECTED, since the brief requires stating what IS enforced:
+  - the sign() comment claimed "the secret is the only thing standing between a caller
+    and a self-minted cursor" while the key was public. It now says what the MAC buys,
+    what it does not (a binding -- every field still needs a live comparison), and
+    that position is the field with no live counterpart;
+  - the class doc claimed the payload is "RE-SERIALIZED CANONICALLY". It is not:
+    `verify` signs the substring it then parses, so verified bytes == parsed fields
+    hold by construction, but a token in ANOTHER KEY ORDER verifies too. Measured: the
+    sorted-key control was ACCEPTED before the fix (s16-before.json sortedKeyControl),
+    so that sentence described a mechanism that was never implemented;
+  - the realm file's doc argued for a file over a path hash and never said the file is
+    copyable. It now states that the realm is an identity, not a secret, and not
+    tamper-proof.
+
+ARMS THAT WOULD HAVE CAUGHT IT. The reason 32 green cases missed this: every existing
+arm TAMPERS with the token, so all of them trip the MAC -- proving the MAC is
+computed, not that it protects anything. Added, each with positive controls asserted
+OUTSIDE the refusal assertion:
+  - a CORRECTLY SIGNED forgery of `position` (the field with no live counterpart) ->
+    refused, and the refusal is named as the MAC;
+  - a CORRECTLY SIGNED forgery of `storeRealmId` -> refused, AND the refusal must not
+    name a realm;
+  - the key's provenance: not the old derivation, containing none of the descriptor
+    fields, not a digest of them;
+  - a SHARED-KEY block, because the realm check would otherwise be dead code: two
+    stores sharing a key still refuse a cross-realm cursor, and the refusal is
+    RECORDED through the production provider with both realms named;
+  - D-2 re-measured: a copied realm alone no longer grants acceptance.
+The sorted-key token is kept as the CONTROL that a malformed-token refusal proves
+nothing about the key -- the trap that cost the root agent an attempt.
+
+One inconsistency fixed while measuring: RecordingPageProvider (the walk route) wrote
+a refusal WITHOUT cursorRealmId while pages()'s sink path preserved it, so the same
+refusal produced different durable evidence depending on which route refused.
+
+DATA-11's own oracle arms all still hold: different store refused, different revision
+refused, refusals recorded for every type, realm stable across a real OS restart, and
+a cursor minted before a restart resumes after it.
+
+TEST_RESULTS: node node_modules/vitest/vitest.mjs run src/data11-cursor-realm.test.ts
+  -> 37 passed / 0 failed  (was 32 before this change; 5 arms added)
+Identity measured under: D:/DSH/work/wt-s16 wt/s16, artifacts.ts sha256
+a2ec38f24489ca95e4a1d961598343525e9c942cb14d2f86c238f3672f4cb7ae.
+BEFORE/AFTER: qualification/results/S16-cursor-authority/s16-before.json vs
+s16-after.json.

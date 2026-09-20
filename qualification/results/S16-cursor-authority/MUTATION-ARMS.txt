@@ -1,0 +1,49 @@
+pristine artifacts.ts sha256: 6941542cc3115b9830035cba4b89c26083a70859a1ee4c65bc89787165b1a00a
+
+=== M1 key derived from the descriptor (the D-1 regression) ===
+  data11-cursor-realm.test.ts ->  Test Files  1 failed (1)       Tests  3 failed | 34 passed (37) 
+  data16-cursor-key-authority.test.ts ->  Test Files  1 failed (1)       Tests  1 failed | 14 passed (15) 
+
+=== M2 key derived from the realm (a disclosed value) ===
+  data11-cursor-realm.test.ts ->  Test Files  1 failed (1)       Tests  1 failed | 36 passed (37) 
+  data16-cursor-key-authority.test.ts ->  Test Files  1 failed (1)       Tests  1 failed | 14 passed (15) 
+
+=== M3 position not covered by the MAC ===
+  data11-cursor-realm.test.ts ->  Test Files  1 failed (1)       Tests  9 failed | 28 passed (37) 
+  data16-cursor-key-authority.test.ts ->  Test Files  1 failed (1)       Tests  2 failed | 13 passed (15) 
+
+=== M4 truncated key accepted ===
+  data11-cursor-realm.test.ts ->  Test Files  1 passed (1)       Tests  37 passed (37) 
+  data16-cursor-key-authority.test.ts ->  Test Files  1 failed (1)       Tests  1 failed | 14 passed (15) 
+
+=== M5 malformed key regenerated instead of refused ===
+  data11-cursor-realm.test.ts ->  Test Files  1 failed (1)       Tests  2 failed | 35 passed (37) 
+  data16-cursor-key-authority.test.ts ->  Test Files  1 failed (1)       Tests  4 failed | 11 passed (15) 
+
+=== M6 key leaked into a refusal message ===
+  data11-cursor-realm.test.ts ->  Test Files  1 passed (1)       Tests  37 passed (37) 
+  data16-cursor-key-authority.test.ts ->  Test Files  1 failed (1)       Tests  1 failed | 14 passed (15) 
+
+=== M7 key not memoized (per-call file read) ===
+  data11-cursor-realm.test.ts ->  Test Files  1 passed (1)       Tests  37 passed (37) 
+  data16-cursor-key-authority.test.ts ->  Test Files  1 failed (1)       Tests  1 failed | 14 passed (15) 
+
+=== M8 per-boot key (a restart bug wearing a security property) ===
+  data11-cursor-realm.test.ts ->  Test Files  1 failed (1)       Tests  2 failed | 35 passed (37) 
+  data16-cursor-key-authority.test.ts ->  Test Files  1 failed (1)       Tests  2 failed | 13 passed (15) 
+
+=== M9 realm comparison disabled ===
+  data11-cursor-realm.test.ts ->  Test Files  1 failed (1)       Tests  1 failed | 36 passed (37) 
+  data16-cursor-key-authority.test.ts ->  Test Files  1 passed (1)       Tests  15 passed (15) 
+
+=== M10 realm field minted as a constant ===
+  data11-cursor-realm.test.ts ->  Test Files  1 failed (1)       Tests  14 failed | 23 passed (37) 
+  data16-cursor-key-authority.test.ts ->  Test Files  1 failed (1)       Tests  2 failed | 13 passed (15) 
+
+=== M0 no-op control (both files must stay GREEN) ===
+  data11-cursor-realm.test.ts ->  Test Files  1 passed (1)       Tests  37 passed (37) 
+  data16-cursor-key-authority.test.ts ->  Test Files  1 passed (1)       Tests  15 passed (15) 
+
+=== RESTORED ===
+artifacts.ts sha256 after all mutations: 6941542cc3115b9830035cba4b89c26083a70859a1ee4c65bc89787165b1a00a
+matches pristine: yes
