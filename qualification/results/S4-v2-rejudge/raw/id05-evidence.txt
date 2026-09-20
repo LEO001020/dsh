@@ -1,0 +1,65 @@
+=== S4 ID-05 EVIDENCE (measured 2026-09-20, worktree D:\DSH\work\wt-s4 @ fef7612) ===
+
+--- CLAUSE 1: clean tree exits 0 under tsconfig.check.json (tests INCLUDED) ---
+$ node <pinned>/node_modules/typescript/bin/tsc -p tsconfig.check.json   [cwd=packages/dsh-daily-work]
+EXIT=0
+$ node <pinned>/node_modules/typescript/bin/tsc -p tsconfig.check.json   [cwd=packages/dsh-ipython]
+EXIT=0
+
+--- CLAUSE 2: the injected error makes the compile FAIL ---
+$ cp src/capacity.test.ts /tmp/s4-id05-orig.ts   # sha256 52cbe802ecdbbdf9118a7324a8672b33fbed276c0b308163a57f029585940926
+$ printf '\nconst S4_INJECTED: number = "not a number"\nexport default S4_INJECTED\n' >> src/capacity.test.ts
+$ node <pinned>/node_modules/typescript/bin/tsc -p tsconfig.check.json   [cwd=packages/dsh-daily-work]
+src/capacity.test.ts(2144,7): error TS2322: Type 'string' is not assignable to type 'number'.
+EXIT=2
+
+--- CONTROL ARM (the oracle names it): the SAME error under tsconfig.json ---
+$ node <pinned>/node_modules/typescript/bin/tsc -p tsconfig.json --noEmit   [cwd=packages/dsh-daily-work]
+EXIT=0   <-- MISSED IT, because that config excludes src/**/*.test.ts
+$ cp /tmp/s4-id05-orig.ts src/capacity.test.ts ; git diff --stat -> empty (byte-exact restore)
+
+--- THE ONE OFFICIAL COMMAND ---
+$ node helpers/typecheck.mjs        [cwd=repo root]
+tsc: D:\DSH\src\dsh-src\node_modules\typescript\bin\tsc   version: Version 6.0.3
+packages: dsh-daily-work, dsh-ipython
+  dsh-daily-work: covers 92 files (39 production + 53 test) -> exit 0 in 5387ms
+  dsh-ipython:    covers 24 files (13 production + 11 test) -> exit 0 in 1707ms
+EXIT=0
+
+--- CLAUSE 3: the `as never` clause, DECIDED BY EXPERIMENT ---
+Non-test `as never` occurrences (real casts only, prose excluded), 9 total:
+  packages/dsh-daily-work/src/durability-runner.ts:37  await ctx.plugin(Storage, {} as never)          <-- CONFIG POSITION, idiom (b)
+  packages/dsh-daily-work/src/durability-runner.ts:38  await ctx.plugin(storageJsonPlugin as never, { root } as never)
+  packages/dsh-daily-work/src/durability-runner.ts:39  await ctx.plugin(storageDomainPlugin as never, { backend: 'json' } as never)
+  packages/dsh-daily-work/src/durability-runner.ts:65  root: {...} as never
+  packages/dsh-daily-work/src/data-plane.ts:720        attachmentId: input.attachmentId as never,
+  packages/dsh-daily-work/src/v4-scope-probe.ts:75     attachmentId: 'cafebabe' as never,
+  packages/dsh-ipython/src/v4-bridge-probe.ts:222      attachmentId: 'aaaaaaaa' as never,
+  packages/dsh-ipython/src/v4-bridge-probe.ts:236      } as never)
+  packages/dsh-ipython/src/v4-bridge-probe.ts:365      ctx.tools.get('v4_target' as never)
+
+EXPERIMENT 1 (idiom (a) is noise): remove the PLUGIN-position casts at :38,:39, keep the config casts
+  -> tsconfig.check.json EXIT=2
+     src/durability-runner.ts(38,48): error TS2345: Argument of type '{ root: string; }' is not assignable to parameter of type 'never'.
+     src/durability-runner.ts(39,50): error TS2345: Argument of type '{ backend: string; }' is not assignable to parameter of type 'never'.
+EXPERIMENT 2 (idiom (a) alone IS noise): remove BOTH plugin AND config casts at :38,:39
+  -> tsconfig.check.json EXIT=0    <-- the plugin cast was indeed noise
+EXPERIMENT 3 (idiom (b) MASKS a true diagnostic) -- isolated to line 37:
+  (3a) sed '37s/await ctx.plugin(Storage, {} as never)/await ctx.plugin(Storage)/'
+       -> EXIT=0    <-- the ARGUMENT should be OMITTED; the cast was pure noise here
+  (3b) sed '37s/await ctx.plugin(Storage, {} as never)/await ctx.plugin(Storage, {})/'
+       -> EXIT=2
+          src/durability-runner.ts(37,29): error TS2345: Argument of type '{}' is not assignable to parameter of type 'undefined'.
+       <-- THIS IS VERBATIM THE DIAGNOSTIC THE V2 ORACLE NAMES. The cast MASKS it.
+EXPERIMENT 4: data-plane.ts:720 `input.attachmentId as never` removed
+  -> EXIT=0    <-- noise, not a masker
+Restored byte-exact after every experiment (git diff --stat empty).
+
+--- CLAUSE 4: `as any` ---
+real `as any` in non-test src: 0. The two grep hits are prose
+(programmatic-scope.ts:375 comment) and a scanner regex (dep-gates.test.ts:501).
+`as never` was NOT traded for `as any`: 0 real `as any` anywhere in non-test src.
+
+--- CLAUSE 5: no private symbol deep-imported across a package boundary ---
+grep -rnE "from '@deepseek-ai/[a-z0-9-]+/(src|lib)/" packages/*/src/*.ts | grep -v '.test.'
+-> ZERO hits.

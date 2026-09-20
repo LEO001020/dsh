@@ -1,0 +1,41 @@
+# S4 ID-01 overlay: the model route is redirected to a KEYLESS local adapter so
+# the first tool call can be driven without a live provider.
+#
+# THIS FILE IS V1's id01-overlay.yml WITH EVERY PATH REWRITTEN AT THIS WORKTREE.
+# The row set, the disabled rows and the mock route are UNCHANGED. The two
+# instruments it names are this writer's copies (s4-id01-adapter.mjs,
+# s4-id01-probe.mjs); the v1 originals and the copies' digests are recorded in
+# runs/id01/verdict.json so the divergence is visible rather than assumed.
+#
+# NO PAID API BUDGET IS CONSUMED. compatibility.lock.json carries
+# runtime_authorization.live_provider_budget_authorized: false, so every run
+# that uses this file is a CONTROLLED LOCAL ROUTE, not a provider measurement.
+# It proves the tool / transport / identity chain; it does not prove a provider
+# integration.
+#
+# IT INSERTS NO TOOL ROW. The only inserted rows are the mock route adapter and
+# the probe, so the catalog the probe reads is the catalog the PRODUCT composes.
+
+- id: llm-deepseek
+  disabled: true
+
+- id: agent-default-model
+  config:
+    provider: t17-mock
+    model: t17-mock
+
+- id: session-persistence-jsonl
+  config:
+    root: !!js process.env.T17_SESSION_ROOT
+    compression: none
+
+- id: agent-instructions
+  disabled: true
+
+- insert:
+    - id: t17-first-call-adapter
+      name: 'D:/DSH/work/wt-s4/qualification/results/S4-v2-rejudge/probe/s4-id01-adapter.mjs'
+
+- insert:
+    - id: s4-id01-probe
+      name: 'D:/DSH/work/wt-s4/qualification/results/S4-v2-rejudge/probe/s4-id01-probe.mjs'

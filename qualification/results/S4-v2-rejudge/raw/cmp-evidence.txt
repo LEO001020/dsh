@@ -1,0 +1,131 @@
+=== S4 CMP-02 / CMP-04 EVIDENCE, measured 2026-09-20 in D:\DSH\work\wt-s4 ===
+Branch wt/s4, HEAD fef7612fa427ce04aed8a329dd22a80fd8fc8e77
+Home D:/DSH/home/s4. ONE real composed boot, read for both cases.
+
+ORACLES (v2 definition, verbatim):
+
+CMP-02: "A row with `id: sandbox-policy` is present (NOT deleted), its configured mode
+is `danger-full-access`, and its `workspaceRoot` resolves to an absolute path. The row
+being absent is a specific known failure: it leaves seven entries pending and drives the
+tool face to zero."
+
+CMP-04: "The model-visible tool surface is intact and named, and the tool count is
+MEASURED AND RECORDED IN THE EVIDENCE rather than pinned in this oracle. The catalog for
+one real Session, measured through a probe that INSERTS NO TOOL ROW, must show `ipython`
+present, `work` present, `pwsh` absent, `error` null, and `presetRoots` naming the home
+that was actually booted. ... The measured count is recorded verbatim in the evidence,
+together with the full measured name set, so a change in composition is VISIBLE as a
+diff without being a failure of this case."
+
+########################################################################
+# 1. THE RUN
+########################################################################
+$ node qualification/results/S4-v2-rejudge/probe/s4-cmp-driver.mjs
+repo: D:/DSH/work/wt-s4 ; home: D:/DSH/home/s4
+profile links: dsh-daily-work=link:D:/DSH/work/wt-s4/packages/dsh-daily-work |
+               dsh-ipython=link:D:/DSH/work/wt-s4/packages/dsh-ipython
+profile links all point at THIS worktree: true
+plugin install: exit=0
+port: 6873  portReleased: true  timedOut: false  exitCode: null
+checks_passed: 16/16
+verdict: PASS
+
+CMP-02 (four clauses):
+  a row with id sandbox-policy is present (NOT deleted)  -> rowPresent true, rowFiberState 2 (ACTIVE)
+  its configured mode is danger-full-access              -> configAsComposed
+       {"mode":"danger-full-access","workspaceRoot":{"__jsExpr":"process.cwd()"}}
+  its workspaceRoot resolves to an absolute path         -> "C:\\Windows\\Temp"
+       (resolveWithNoSession {"mode":"danger-full-access","workspaceRoot":"C:\\Windows\\Temp"})
+  the EFFECTIVE mode for a REAL session                  -> defaultMode "danger-full-access",
+       perSession [{sessionId "session-812f85b5-...", override null,
+                    resolved "danger-full-access", resolvedWorkspaceRoot "D:/DSH/work/wt-s4"}]
+
+CMP-04 (all five named clauses):
+  a real Session was created   -> session-812f85b5-c9a2-4e82-957e-9ef4a615dcf6, agentPresent true
+  ipython is PRESENT           -> true
+  work is PRESENT              -> true
+  pwsh is ABSENT               -> true (pwshPresent false)
+  the probe error is null      -> null
+  presetRoots names the home actually booted ->
+       ["D:\\DSH\\src\\dsh-src\\packages\\preset\\agent-presets\\presets\\",
+        "D:/DSH/home/s4/profiles/daily/presets/",
+        "D:\\DSH\\home\\s4\\.agent-presets"]
+
+THE MEASURED COUNT, recorded verbatim as the oracle requires (NOT pinned):
+  toolCount 27
+  namesSorted ["ask_user_question","create_goal","edit","exit_plan_mode","get_goal",
+    "glob","grep","interrupt_agent","ipython","job_kill","job_list","job_output",
+    "list_agents","present","read","read_image","send_message","skill","subagent",
+    "subagent_fork","todo_write","update_goal","web_fetch","web_search","work",
+    "workflow","write"]
+  This agrees with the archived identity.json's agent_tool_count of 27.
+
+########################################################################
+# 2. WHY THIS IS A PRODUCT MEASUREMENT AND NOT AN OVERLAY ARTIFACT
+########################################################################
+qualification/results/S4-v2-rejudge/probe/s4-cmp-overlay.yml inserts EXACTLY ONE row —
+the probe itself. It restates NO product row. In particular it does NOT restate
+`sandbox`, `sandbox-policy`, `approval` or `subagent`, and that is load-bearing rather
+than an omission: each is the SUBJECT of a case in this family, and restating one would
+make the probe measure its own row instead of the profile's (G-FIX-12). There is also no
+`webserver` row: boot-harness.mjs appends its own port overlay LAST and restates all four
+keys the row needs, because a patch REPLACES the target row's whole `config` object.
+
+The probe file is a COPY of qualification/runners/verify-cmp-composition.mjs with exactly
+THREE changes, verified by diff --strip-trailing-cr:
+  29  export const name = 'verify-cmp-composition'  ->  's4-cmp-probe'
+  34  the default DSH_PROBE_OUT path                ->  under S4-v2-rejudge/runs/cmp/
+  289 the session cwd D:/DSH/work/dsh-native-daily   ->  D:/DSH/work/wt-s4
+Everything else, including every assertion and every measurement, is unchanged.
+
+########################################################################
+# 3. FALSIFICATION — TWO ARMS, and the FIRST was too coarse
+########################################################################
+ARM 1 (runs/cmp-negative/): `sandbox-policy` DISABLED, plus `tool-pwsh` re-enabled.
+  checks_passed: 8/16   verdict: FAIL
+  FAIL the probe recorded no error
+       "RemoteError: agent-presets: preset \"daily-standard\" failed to mount:
+        2 row(s) did not activate:
+        workflow-ptc (dsh-workflow-ptc): waiting for ptcRuntime, sandboxPolicy
+        tool-workflow (dsh-tool-workflow): waiting for workflowEngine"
+  FAIL CMP-02: its workspaceRoot resolves to an absolute path   (workspaceRoot null)
+  FAIL CMP-02: the EFFECTIVE mode for a real session            (defaultMode null, perSession [])
+  FAIL CMP-04: a real Session was created                       (sessionId null)
+  FAIL CMP-04: ipython is PRESENT / work is PRESENT
+  FAIL CMP-04: the tool count was MEASURED                      (toolCount null)
+  This CONFIRMS CMP-02's named failure mode: disabling the row leaves dependent rows
+  PENDING (workflow-ptc waiting on sandboxPolicy) and collapses the tool face.
+
+  BUT IT DOES NOT FALSIFY THE `pwsh ABSENT` CLAUSE, and saying so is the point:
+  `ok CMP-04: pwsh is ABSENT` is listed as PASS in this arm — because the catalog was
+  EMPTY (toolCount null), and an empty catalog contains no pwsh either. A clause that
+  passes vacuously is not evidence for the clause. So a second arm was needed.
+
+ARM 2 (runs/cmp-pwsh-control/): `tool-pwsh` re-enabled ONLY, nothing else changed.
+  checks_passed: 15/16   verdict: FAIL
+  FAIL CMP-04: pwsh is ABSENT from the model-visible catalog
+  measured toolCount: 28  (the clean run measures 27)
+  namesSorted now contains "pwsh" and the rest of the set is unchanged
+  EXACTLY ONE check moved, on a NON-EMPTY catalog. That is what makes the `pwsh absent`
+  clause load-bearing rather than vacuous, and it independently reproduces the v1
+  CMP-04/CMP-13 contradiction's arithmetic: v1's oracle pinned 28 because `pwsh` was
+  present, and commit 35c829d disabled it, giving 27.
+
+WHAT THE CONTROL ESTABLISHES, AND WHAT IT DOES NOT: it establishes that the driver's
+clauses discriminate. It does NOT establish that the CLEAN run's 27 is a product fact
+rather than an overlay artifact — that rests on the overlay's own content, archived
+beside the verdict with its sha256 recorded in it.
+
+########################################################################
+# 4. THE v1 CONTRADICTION, AND WHY THIS IS NOT A REPAIR OF A SPEC DEFECT
+########################################################################
+v1's CMP-04 FAILed because its oracle pinned `toolCountAgentKey is 28` and required `pwsh`
+PRESENT, while CMP-13 requires `pwsh` ABSENT and PASSES on the same measurement. The v2
+provenance records the rewrite (authority D1) and lists the dropped assertions explicitly:
+"toolCountAgentKey is 28" and "pwsh is present", with why_not_a_loss: "Both dropped
+assertions are recorded as dropped, and the measured count they pinned is still required
+in evidence." THIS WRITER EDITED NEITHER ORACLE. The v1 contradiction is preserved in the
+frozen spec and asserted in the provenance record
+(v1_contradiction_preserved.cases = [CMP-04, CMP-13], v1_verdicts_unchanged CMP-04 FAIL /
+CMP-13 PASS). The control arm above is what turns "the pin encoded a composition fact"
+from a claim into a measurement.

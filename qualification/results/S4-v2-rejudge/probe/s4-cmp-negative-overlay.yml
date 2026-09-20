@@ -1,0 +1,22 @@
+# S4 CMP-02 / CMP-04 NEGATIVE ARM.
+#
+# CMP-02's oracle names a SPECIFIC known failure: "The row being absent is a
+# specific known failure: it leaves seven entries pending and drives the tool face
+# to zero." CMP-04 names `pwsh` absent as a clause. This overlay makes BOTH
+# defects present at once, so the driver's own checks must go red:
+#
+#   1. `sandbox-policy` is DISABLED  -> CMP-02's row clause must read absent, and
+#      the tool face must collapse (seven rows inject `sandboxPolicy`).
+#   2. `tool-pwsh` is RE-ENABLED      -> CMP-04's `pwsh absent` clause must go red.
+#
+# THIS IS A CONTROL, NOT A PRODUCT CHANGE. It is a patch file passed on the
+# command line; nothing in the repository is edited.
+- id: sandbox-policy
+  disabled: true
+
+- id: tool-pwsh
+  disabled: false
+
+- insert:
+    - id: s4-cmp-probe
+      name: 'D:/DSH/work/wt-s4/qualification/results/S4-v2-rejudge/probe/s4-cmp-probe.mjs'

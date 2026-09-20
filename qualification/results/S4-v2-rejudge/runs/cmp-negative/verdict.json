@@ -1,0 +1,185 @@
+{
+  "cases": [
+    "CMP-02",
+    "CMP-04"
+  ],
+  "measured_at": "2026-09-20T10:54:00.898Z",
+  "worktree": "D:/DSH/work/wt-s4",
+  "head": "fef7612fa427ce04aed8a329dd22a80fd8fc8e77",
+  "home": "D:/DSH/home/s4",
+  "profile": {
+    "links": [
+      {
+        "name": "dsh-daily-work",
+        "target": "link:D:/DSH/work/wt-s4/packages/dsh-daily-work"
+      },
+      {
+        "name": "dsh-ipython",
+        "target": "link:D:/DSH/work/wt-s4/packages/dsh-ipython"
+      }
+    ],
+    "linksPointHere": true
+  },
+  "instrument": {
+    "driver": "99dc81e5cb8c9a1777d4bd0b3d24511d3970a4c2abec300eef6ee57be9658c8e",
+    "probe": "93361e49320252b67cd989c0d0a9ee86e08be35c9199f68c4152879319080875",
+    "probe_original": "eb91b4e85cf93a6d5d2052c02a7f902d1edf1eb94bcd5a23dcbdb22417fc66c2",
+    "overlay": "3ca419088961f907dfdb3b10e3384bb91623209c6f59b9c9f1429a17f7669e4d",
+    "overlay_note": "the probe row ONLY; no sandbox/sandbox-policy/approval/subagent row is restated, so each subject is read from the PROFILE composition rather than from the overlay"
+  },
+  "boot": {
+    "port": 12861,
+    "portReleased": true,
+    "timedOut": false,
+    "exitCode": null
+  },
+  "cmp02": {
+    "rowPresent": true,
+    "rowFiberState": null,
+    "configAsComposed": {
+      "mode": "danger-full-access",
+      "workspaceRoot": {
+        "__jsExpr": "process.cwd()"
+      }
+    },
+    "configuredMode": "danger-full-access",
+    "defaultMode": null,
+    "workspaceRoot": null,
+    "workspaceRootIsAbsolute": false,
+    "resolveWithNoSession": null,
+    "perSession": [],
+    "ptcSandboxMode": null,
+    "fsSandboxMode": null,
+    "shellSandboxMode": null
+  },
+  "cmp04": {
+    "sessionCreated": false,
+    "sessionId": null,
+    "agentPresent": null,
+    "toolCount": null,
+    "namesSorted": [],
+    "ipythonPresent": false,
+    "workPresent": false,
+    "pwshPresent": false,
+    "error": "RemoteError: agent-presets: preset \"daily-standard\" failed to mount: 2 row(s) did not activate:\nworkflow-ptc (@deepseek-ai/dsh-workflow-ptc): waiting for ptcRuntime, sandboxPolicy\ntool-workflow (@deepseek-ai/dsh-tool-workflow): waiting for workflowEngine (D:\\DSH\\home\\s4\\profiles\\daily\\presets\\daily-standard\\agent.cordis.yml)",
+    "presetRoots": [
+      "D:\\DSH\\src\\dsh-src\\packages\\preset\\agent-presets\\presets\\",
+      "D:/DSH/home/s4/profiles/daily/presets/",
+      "D:\\DSH\\home\\s4\\.agent-presets"
+    ],
+    "presetRootsNameBootedHome": true
+  },
+  "checks": [
+    {
+      "name": "the probe wrote its result",
+      "ok": true,
+      "observed": "present"
+    },
+    {
+      "name": "the result names the home this driver booted",
+      "ok": true,
+      "observed": {
+        "roots": [
+          "D:\\DSH\\src\\dsh-src\\packages\\preset\\agent-presets\\presets\\",
+          "D:/DSH/home/s4/profiles/daily/presets/",
+          "D:\\DSH\\home\\s4\\.agent-presets"
+        ]
+      }
+    },
+    {
+      "name": "the boot did not time out",
+      "ok": true
+    },
+    {
+      "name": "the host was killed and the port released",
+      "ok": true
+    },
+    {
+      "name": "the probe recorded no error",
+      "ok": false,
+      "observed": "RemoteError: agent-presets: preset \"daily-standard\" failed to mount: 2 row(s) did not activate:\nworkflow-ptc (@deepseek-ai/dsh-workflow-ptc): waiting for ptcRuntime, sandboxPolicy\ntool-workflow (@deepseek-ai/dsh-tool-workflow): waiting for workflowEngine (D:\\DSH\\home\\s4\\profiles\\daily\\presets\\daily-standard\\agent.cordis.yml)"
+    },
+    {
+      "name": "CMP-02: a row with id sandbox-policy is present (NOT deleted)",
+      "ok": true,
+      "observed": {
+        "rowPresent": true,
+        "rowFiberState": null
+      }
+    },
+    {
+      "name": "CMP-02: its configured mode is danger-full-access",
+      "ok": true,
+      "observed": {
+        "configuredMode": "danger-full-access",
+        "configAsComposed": {
+          "mode": "danger-full-access",
+          "workspaceRoot": {
+            "__jsExpr": "process.cwd()"
+          }
+        }
+      }
+    },
+    {
+      "name": "CMP-02: its workspaceRoot resolves to an absolute path",
+      "ok": false,
+      "observed": {
+        "workspaceRoot": null,
+        "resolveWithNoSession": null
+      }
+    },
+    {
+      "name": "CMP-02: the EFFECTIVE mode for a real session is danger-full-access",
+      "ok": false,
+      "observed": {
+        "defaultMode": null,
+        "perSession": []
+      }
+    },
+    {
+      "name": "CMP-04: a real Session was created",
+      "ok": false,
+      "observed": {
+        "sessionId": null,
+        "agentPresent": null
+      }
+    },
+    {
+      "name": "CMP-04: ipython is PRESENT on the model-visible catalog",
+      "ok": false
+    },
+    {
+      "name": "CMP-04: work is PRESENT on the model-visible catalog",
+      "ok": false
+    },
+    {
+      "name": "CMP-04: pwsh is ABSENT from the model-visible catalog",
+      "ok": true
+    },
+    {
+      "name": "CMP-04: the probe error is null",
+      "ok": false,
+      "observed": "RemoteError: agent-presets: preset \"daily-standard\" failed to mount: 2 row(s) did not activate:\nworkflow-ptc (@deepseek-ai/dsh-workflow-ptc): waiting for ptcRuntime, sandboxPolicy\ntool-workflow (@deepseek-ai/dsh-tool-workflow): waiting for workflowEngine (D:\\DSH\\home\\s4\\profiles\\daily\\presets\\daily-standard\\agent.cordis.yml)"
+    },
+    {
+      "name": "CMP-04: presetRoots names the home that was actually booted",
+      "ok": true,
+      "observed": [
+        "D:\\DSH\\src\\dsh-src\\packages\\preset\\agent-presets\\presets\\",
+        "D:/DSH/home/s4/profiles/daily/presets/",
+        "D:\\DSH\\home\\s4\\.agent-presets"
+      ]
+    },
+    {
+      "name": "CMP-04: the tool count was MEASURED and is recorded verbatim",
+      "ok": false,
+      "observed": {
+        "toolCount": null,
+        "namesSorted": []
+      }
+    }
+  ],
+  "checksPassed": 8,
+  "checksTotal": 16,
+  "verdict": "FAIL"
+}

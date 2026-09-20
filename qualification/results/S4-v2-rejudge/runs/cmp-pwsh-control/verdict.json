@@ -1,0 +1,263 @@
+{
+  "cases": [
+    "CMP-02",
+    "CMP-04"
+  ],
+  "measured_at": "2026-09-20T10:54:13.045Z",
+  "worktree": "D:/DSH/work/wt-s4",
+  "head": "fef7612fa427ce04aed8a329dd22a80fd8fc8e77",
+  "home": "D:/DSH/home/s4",
+  "profile": {
+    "links": [
+      {
+        "name": "dsh-daily-work",
+        "target": "link:D:/DSH/work/wt-s4/packages/dsh-daily-work"
+      },
+      {
+        "name": "dsh-ipython",
+        "target": "link:D:/DSH/work/wt-s4/packages/dsh-ipython"
+      }
+    ],
+    "linksPointHere": true
+  },
+  "instrument": {
+    "driver": "99dc81e5cb8c9a1777d4bd0b3d24511d3970a4c2abec300eef6ee57be9658c8e",
+    "probe": "93361e49320252b67cd989c0d0a9ee86e08be35c9199f68c4152879319080875",
+    "probe_original": "eb91b4e85cf93a6d5d2052c02a7f902d1edf1eb94bcd5a23dcbdb22417fc66c2",
+    "overlay": "baca537768f28dbbe8ec19256bef68e1045e900a664235f082fc21fe1926289f",
+    "overlay_note": "the probe row ONLY; no sandbox/sandbox-policy/approval/subagent row is restated, so each subject is read from the PROFILE composition rather than from the overlay"
+  },
+  "boot": {
+    "port": 10381,
+    "portReleased": true,
+    "timedOut": false,
+    "exitCode": null
+  },
+  "cmp02": {
+    "rowPresent": true,
+    "rowFiberState": 2,
+    "configAsComposed": {
+      "mode": "danger-full-access",
+      "workspaceRoot": {
+        "__jsExpr": "process.cwd()"
+      }
+    },
+    "configuredMode": "danger-full-access",
+    "defaultMode": "danger-full-access",
+    "workspaceRoot": "C:\\Windows\\Temp",
+    "workspaceRootIsAbsolute": true,
+    "resolveWithNoSession": {
+      "mode": "danger-full-access",
+      "workspaceRoot": "C:\\Windows\\Temp"
+    },
+    "perSession": [
+      {
+        "sessionId": "session-d0cf0e9c-999f-4ec1-89e6-e72f0398dd98",
+        "override": null,
+        "resolved": "danger-full-access",
+        "resolvedWorkspaceRoot": "D:/DSH/work/wt-s4"
+      }
+    ],
+    "ptcSandboxMode": "danger-full-access",
+    "fsSandboxMode": null,
+    "shellSandboxMode": null
+  },
+  "cmp04": {
+    "sessionCreated": true,
+    "sessionId": "session-d0cf0e9c-999f-4ec1-89e6-e72f0398dd98",
+    "agentPresent": true,
+    "toolCount": 28,
+    "namesSorted": [
+      "ask_user_question",
+      "create_goal",
+      "edit",
+      "exit_plan_mode",
+      "get_goal",
+      "glob",
+      "grep",
+      "interrupt_agent",
+      "ipython",
+      "job_kill",
+      "job_list",
+      "job_output",
+      "list_agents",
+      "present",
+      "pwsh",
+      "read",
+      "read_image",
+      "send_message",
+      "skill",
+      "subagent",
+      "subagent_fork",
+      "todo_write",
+      "update_goal",
+      "web_fetch",
+      "web_search",
+      "work",
+      "workflow",
+      "write"
+    ],
+    "ipythonPresent": true,
+    "workPresent": true,
+    "pwshPresent": true,
+    "error": null,
+    "presetRoots": [
+      "D:\\DSH\\src\\dsh-src\\packages\\preset\\agent-presets\\presets\\",
+      "D:/DSH/home/s4/profiles/daily/presets/",
+      "D:\\DSH\\home\\s4\\.agent-presets"
+    ],
+    "presetRootsNameBootedHome": true
+  },
+  "checks": [
+    {
+      "name": "the probe wrote its result",
+      "ok": true,
+      "observed": "present"
+    },
+    {
+      "name": "the result names the home this driver booted",
+      "ok": true,
+      "observed": {
+        "roots": [
+          "D:\\DSH\\src\\dsh-src\\packages\\preset\\agent-presets\\presets\\",
+          "D:/DSH/home/s4/profiles/daily/presets/",
+          "D:\\DSH\\home\\s4\\.agent-presets"
+        ]
+      }
+    },
+    {
+      "name": "the boot did not time out",
+      "ok": true
+    },
+    {
+      "name": "the host was killed and the port released",
+      "ok": true
+    },
+    {
+      "name": "the probe recorded no error",
+      "ok": true,
+      "observed": null
+    },
+    {
+      "name": "CMP-02: a row with id sandbox-policy is present (NOT deleted)",
+      "ok": true,
+      "observed": {
+        "rowPresent": true,
+        "rowFiberState": 2
+      }
+    },
+    {
+      "name": "CMP-02: its configured mode is danger-full-access",
+      "ok": true,
+      "observed": {
+        "configuredMode": "danger-full-access",
+        "configAsComposed": {
+          "mode": "danger-full-access",
+          "workspaceRoot": {
+            "__jsExpr": "process.cwd()"
+          }
+        }
+      }
+    },
+    {
+      "name": "CMP-02: its workspaceRoot resolves to an absolute path",
+      "ok": true,
+      "observed": {
+        "workspaceRoot": "C:\\Windows\\Temp",
+        "resolveWithNoSession": {
+          "mode": "danger-full-access",
+          "workspaceRoot": "C:\\Windows\\Temp"
+        }
+      }
+    },
+    {
+      "name": "CMP-02: the EFFECTIVE mode for a real session is danger-full-access",
+      "ok": true,
+      "observed": {
+        "defaultMode": "danger-full-access",
+        "perSession": [
+          {
+            "sessionId": "session-d0cf0e9c-999f-4ec1-89e6-e72f0398dd98",
+            "override": null,
+            "resolved": "danger-full-access",
+            "resolvedWorkspaceRoot": "D:/DSH/work/wt-s4"
+          }
+        ]
+      }
+    },
+    {
+      "name": "CMP-04: a real Session was created",
+      "ok": true,
+      "observed": {
+        "sessionId": "session-d0cf0e9c-999f-4ec1-89e6-e72f0398dd98",
+        "agentPresent": true
+      }
+    },
+    {
+      "name": "CMP-04: ipython is PRESENT on the model-visible catalog",
+      "ok": true
+    },
+    {
+      "name": "CMP-04: work is PRESENT on the model-visible catalog",
+      "ok": true
+    },
+    {
+      "name": "CMP-04: pwsh is ABSENT from the model-visible catalog",
+      "ok": false
+    },
+    {
+      "name": "CMP-04: the probe error is null",
+      "ok": true,
+      "observed": null
+    },
+    {
+      "name": "CMP-04: presetRoots names the home that was actually booted",
+      "ok": true,
+      "observed": [
+        "D:\\DSH\\src\\dsh-src\\packages\\preset\\agent-presets\\presets\\",
+        "D:/DSH/home/s4/profiles/daily/presets/",
+        "D:\\DSH\\home\\s4\\.agent-presets"
+      ]
+    },
+    {
+      "name": "CMP-04: the tool count was MEASURED and is recorded verbatim",
+      "ok": true,
+      "observed": {
+        "toolCount": 28,
+        "namesSorted": [
+          "ask_user_question",
+          "create_goal",
+          "edit",
+          "exit_plan_mode",
+          "get_goal",
+          "glob",
+          "grep",
+          "interrupt_agent",
+          "ipython",
+          "job_kill",
+          "job_list",
+          "job_output",
+          "list_agents",
+          "present",
+          "pwsh",
+          "read",
+          "read_image",
+          "send_message",
+          "skill",
+          "subagent",
+          "subagent_fork",
+          "todo_write",
+          "update_goal",
+          "web_fetch",
+          "web_search",
+          "work",
+          "workflow",
+          "write"
+        ]
+      }
+    }
+  ],
+  "checksPassed": 15,
+  "checksTotal": 16,
+  "verdict": "FAIL"
+}

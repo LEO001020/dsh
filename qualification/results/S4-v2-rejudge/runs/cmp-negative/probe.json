@@ -1,0 +1,1021 @@
+{
+  "probe": "V2-cmp-composition",
+  "ranAt": "2026-09-20T10:53:59.072Z",
+  "presetRoots": [
+    {
+      "path": "D:\\DSH\\src\\dsh-src\\packages\\preset\\agent-presets\\presets\\",
+      "trust": "system"
+    },
+    {
+      "path": "D:/DSH/home/s4/profiles/daily/presets/",
+      "trust": "system"
+    },
+    {
+      "path": "D:\\DSH\\home\\s4\\.agent-presets",
+      "trust": "user"
+    }
+  ],
+  "presetDefaultId": "daily-standard",
+  "error": "RemoteError: agent-presets: preset \"daily-standard\" failed to mount: 2 row(s) did not activate:\nworkflow-ptc (@deepseek-ai/dsh-workflow-ptc): waiting for ptcRuntime, sandboxPolicy\ntool-workflow (@deepseek-ai/dsh-tool-workflow): waiting for workflowEngine (D:\\DSH\\home\\s4\\profiles\\daily\\presets\\daily-standard\\agent.cordis.yml)",
+  "sandbox": {
+    "policyServicePresent": false,
+    "sandboxServicePresent": true,
+    "policyRowInLoader": true,
+    "policyRowFiberState": null,
+    "policyRowConfigAsComposed": {
+      "mode": "danger-full-access",
+      "workspaceRoot": {
+        "__jsExpr": "process.cwd()"
+      }
+    },
+    "defaultMode": null,
+    "workspaceRoot": null,
+    "resolvedWorkspaceRoot": null,
+    "resolveWithNoSession": null,
+    "perSession": [],
+    "ptcRuntimePresent": false,
+    "ptcSandboxMode": null,
+    "fsSandboxMode": null,
+    "shellSandboxMode": null
+  },
+  "approval": {
+    "servicePresent": true,
+    "configuredPolicy": "never",
+    "sessionOverride": null,
+    "effectivePolicyForSession": null,
+    "permissionPresetsServicePresent": false,
+    "permissionRowDisabled": true,
+    "uiPermissionRowDisabled": true,
+    "policyToolGuesses": [],
+    "modelCatalogHasPolicyTool": null,
+    "hostApiSetPolicyAttempt": null,
+    "policyAfterHostApiAttempt": null
+  },
+  "patchedRows": [
+    {
+      "id": "sandbox-policy",
+      "name": "@deepseek-ai/dsh-sandbox-policy",
+      "disabled": true,
+      "fiberState": null,
+      "configKeys": [
+        "mode",
+        "workspaceRoot"
+      ],
+      "config": {
+        "mode": "danger-full-access",
+        "workspaceRoot": {
+          "__jsExpr": "process.cwd()"
+        }
+      }
+    },
+    {
+      "id": "approval",
+      "name": "@deepseek-ai/dsh-user-approval",
+      "disabled": false,
+      "fiberState": 2,
+      "configKeys": [
+        "policy"
+      ],
+      "config": {
+        "policy": "never"
+      }
+    },
+    {
+      "id": "subagent",
+      "name": "@deepseek-ai/dsh-subagent",
+      "disabled": false,
+      "fiberState": 2,
+      "configKeys": [
+        "maxActiveSubagents",
+        "maxDepth"
+      ],
+      "config": {
+        "maxActiveSubagents": 10,
+        "maxDepth": 1
+      }
+    },
+    {
+      "id": "agent-presets",
+      "name": "@deepseek-ai/dsh-agent-presets",
+      "disabled": false,
+      "fiberState": 2,
+      "configKeys": [
+        "default",
+        "roots",
+        "includeShippedRoot",
+        "includeUserRoot"
+      ],
+      "config": {
+        "default": "daily-standard",
+        "roots": [
+          {
+            "path": {
+              "__jsExpr": "new URL('presets/', ctx.baseUrl).pathname.replace(/^\\/([A-Za-z]:)/, '$1')"
+            },
+            "trust": "system"
+          }
+        ],
+        "includeShippedRoot": true,
+        "includeUserRoot": true
+      }
+    }
+  ],
+  "presets": [],
+  "roots": {
+    "created": [],
+    "interleaved": null
+  },
+  "registration": {
+    "loaderEntryCount": 178,
+    "rowIdCounts": {
+      "daily-work-host": 1,
+      "daily-history": 1,
+      "daily-data-plane": 1,
+      "daily-writers": 1,
+      "daily-programmatic-scope": 1,
+      "daily-no-sandbox-contract": 1,
+      "daily-web-search": 1,
+      "daily-work-tool-protocol-guards": 1,
+      "ipython-kernel-host": 1,
+      "sandbox-policy": 1,
+      "sandbox": 1,
+      "approval": 1,
+      "permission": 1,
+      "ui-permission": 1,
+      "fs-sandbox": 1,
+      "fs-local": 1,
+      "pwsh-sandbox": 1,
+      "pwsh-local": 1,
+      "agent-presets": 1,
+      "subagent": 1
+    },
+    "duplicateRegistrationWarnings": [],
+    "toolRowOwners": {
+      "pwshSandboxRowDisabled": true,
+      "tool-pwsh": {
+        "name": "@deepseek-ai/dsh-tool-pwsh",
+        "disabled": false,
+        "fiberState": 2
+      },
+      "tool-fs": {
+        "name": "@deepseek-ai/dsh-tool-fs",
+        "disabled": true,
+        "fiberState": null
+      },
+      "fsSandboxRowDisabled": true,
+      "fsLocalRowFiberState": 2,
+      "pwshLocalRowFiberState": 2
+    },
+    "presetCompositions": [
+      {
+        "id": "standard",
+        "isDefault": false,
+        "broken": null,
+        "rowIds": [
+          "persona",
+          "agent-instructions",
+          "tool-bash",
+          "tool-pwsh",
+          "tool-fs",
+          "tool-fs-search",
+          "tool-jobs",
+          "skill-filesystem",
+          "tool-skill",
+          "command-goal",
+          "tool-goal",
+          "plan-mode",
+          "compaction-basic",
+          "command-compact",
+          "tool-result-pruner",
+          "tool-subagent-control",
+          "tool-subagent-list-agents",
+          "tool-subagent",
+          "tool-subagent-fork",
+          "tool-subagent-codex",
+          "tool-subagent-claude-code",
+          "workflow-ptc",
+          "tool-workflow",
+          "tool-ralph",
+          "tool-ask-user",
+          "tool-todo",
+          "tool-web",
+          "present",
+          "tool-plugin-manager"
+        ],
+        "rowNamesById": {
+          "persona": "@deepseek-ai/dsh-persona",
+          "agent-instructions": "@deepseek-ai/dsh-agent-instructions",
+          "tool-bash": "@deepseek-ai/dsh-tool-bash",
+          "tool-pwsh": "@deepseek-ai/dsh-tool-pwsh",
+          "tool-fs": "@deepseek-ai/dsh-tool-fs",
+          "tool-fs-search": "@deepseek-ai/dsh-tool-fs-search",
+          "tool-jobs": "@deepseek-ai/dsh-tool-jobs",
+          "skill-filesystem": "@deepseek-ai/dsh-skill-filesystem",
+          "tool-skill": "@deepseek-ai/dsh-tool-skill",
+          "command-goal": "@deepseek-ai/dsh-command-goal",
+          "tool-goal": "@deepseek-ai/dsh-tool-goal",
+          "plan-mode": "@deepseek-ai/dsh-plan-mode",
+          "compaction-basic": "@deepseek-ai/dsh-compaction-basic",
+          "command-compact": "@deepseek-ai/dsh-command-compact",
+          "tool-result-pruner": "@deepseek-ai/dsh-compaction-tool-result-pruner",
+          "tool-subagent-control": "@deepseek-ai/dsh-tool-subagent-control",
+          "tool-subagent-list-agents": "@deepseek-ai/dsh-tool-subagent-control/list-agents",
+          "tool-subagent": "@deepseek-ai/dsh-tool-subagent",
+          "tool-subagent-fork": "@deepseek-ai/dsh-tool-subagent",
+          "tool-subagent-codex": "@deepseek-ai/dsh-tool-subagent",
+          "tool-subagent-claude-code": "@deepseek-ai/dsh-tool-subagent",
+          "workflow-ptc": "@deepseek-ai/dsh-workflow-ptc",
+          "tool-workflow": "@deepseek-ai/dsh-tool-workflow",
+          "tool-ralph": "@deepseek-ai/dsh-tool-ralph",
+          "tool-ask-user": "@deepseek-ai/dsh-tool-ask-user",
+          "tool-todo": "@deepseek-ai/dsh-tool-todo",
+          "tool-web": "@deepseek-ai/dsh-tool-web",
+          "present": "@deepseek-ai/dsh-tool-present",
+          "tool-plugin-manager": "@deepseek-ai/dsh-plugin-manager/tools"
+        },
+        "rowsEnabled": [
+          {
+            "id": "persona",
+            "enabled": true
+          },
+          {
+            "id": "agent-instructions",
+            "enabled": true
+          },
+          {
+            "id": "tool-bash",
+            "enabled": false
+          },
+          {
+            "id": "tool-pwsh",
+            "enabled": true
+          },
+          {
+            "id": "tool-fs",
+            "enabled": true
+          },
+          {
+            "id": "tool-fs-search",
+            "enabled": true
+          },
+          {
+            "id": "tool-jobs",
+            "enabled": true
+          },
+          {
+            "id": "skill-filesystem",
+            "enabled": true
+          },
+          {
+            "id": "tool-skill",
+            "enabled": true
+          },
+          {
+            "id": "command-goal",
+            "enabled": true
+          },
+          {
+            "id": "tool-goal",
+            "enabled": true
+          },
+          {
+            "id": "plan-mode",
+            "enabled": true
+          },
+          {
+            "id": "compaction-basic",
+            "enabled": true
+          },
+          {
+            "id": "command-compact",
+            "enabled": true
+          },
+          {
+            "id": "tool-result-pruner",
+            "enabled": true
+          },
+          {
+            "id": "tool-subagent-control",
+            "enabled": true
+          },
+          {
+            "id": "tool-subagent-list-agents",
+            "enabled": true
+          },
+          {
+            "id": "tool-subagent",
+            "enabled": true
+          },
+          {
+            "id": "tool-subagent-fork",
+            "enabled": true
+          },
+          {
+            "id": "tool-subagent-codex",
+            "enabled": false
+          },
+          {
+            "id": "tool-subagent-claude-code",
+            "enabled": false
+          },
+          {
+            "id": "workflow-ptc",
+            "enabled": true
+          },
+          {
+            "id": "tool-workflow",
+            "enabled": true
+          },
+          {
+            "id": "tool-ralph",
+            "enabled": false
+          },
+          {
+            "id": "tool-ask-user",
+            "enabled": true
+          },
+          {
+            "id": "tool-todo",
+            "enabled": true
+          },
+          {
+            "id": "tool-web",
+            "enabled": true
+          },
+          {
+            "id": "present",
+            "enabled": true
+          },
+          {
+            "id": "tool-plugin-manager",
+            "enabled": false
+          }
+        ],
+        "rowCount": 29
+      },
+      {
+        "id": "ptc",
+        "isDefault": false,
+        "broken": null,
+        "rowIds": [
+          "persona",
+          "agent-instructions",
+          "tool-bash",
+          "tool-pwsh",
+          "tool-fs",
+          "tool-fs-search",
+          "tool-jobs",
+          "skill-filesystem",
+          "tool-skill",
+          "command-goal",
+          "tool-goal",
+          "plan-mode",
+          "compaction-basic",
+          "command-compact",
+          "tool-result-pruner",
+          "tool-subagent-control",
+          "tool-subagent-list-agents",
+          "tool-subagent",
+          "tool-subagent-fork",
+          "tool-subagent-codex",
+          "tool-subagent-claude-code",
+          "workflow-ptc",
+          "tool-workflow",
+          "tool-ralph",
+          "tool-ask-user",
+          "tool-todo",
+          "tool-web",
+          "tool-presentation",
+          "present",
+          "tool-plugin-manager"
+        ],
+        "rowNamesById": {
+          "persona": "@deepseek-ai/dsh-persona",
+          "agent-instructions": "@deepseek-ai/dsh-agent-instructions",
+          "tool-bash": "@deepseek-ai/dsh-tool-bash",
+          "tool-pwsh": "@deepseek-ai/dsh-tool-pwsh",
+          "tool-fs": "@deepseek-ai/dsh-tool-fs",
+          "tool-fs-search": "@deepseek-ai/dsh-tool-fs-search",
+          "tool-jobs": "@deepseek-ai/dsh-tool-jobs",
+          "skill-filesystem": "@deepseek-ai/dsh-skill-filesystem",
+          "tool-skill": "@deepseek-ai/dsh-tool-skill",
+          "command-goal": "@deepseek-ai/dsh-command-goal",
+          "tool-goal": "@deepseek-ai/dsh-tool-goal",
+          "plan-mode": "@deepseek-ai/dsh-plan-mode",
+          "compaction-basic": "@deepseek-ai/dsh-compaction-basic",
+          "command-compact": "@deepseek-ai/dsh-command-compact",
+          "tool-result-pruner": "@deepseek-ai/dsh-compaction-tool-result-pruner",
+          "tool-subagent-control": "@deepseek-ai/dsh-tool-subagent-control",
+          "tool-subagent-list-agents": "@deepseek-ai/dsh-tool-subagent-control/list-agents",
+          "tool-subagent": "@deepseek-ai/dsh-tool-subagent",
+          "tool-subagent-fork": "@deepseek-ai/dsh-tool-subagent",
+          "tool-subagent-codex": "@deepseek-ai/dsh-tool-subagent",
+          "tool-subagent-claude-code": "@deepseek-ai/dsh-tool-subagent",
+          "workflow-ptc": "@deepseek-ai/dsh-workflow-ptc",
+          "tool-workflow": "@deepseek-ai/dsh-tool-workflow",
+          "tool-ralph": "@deepseek-ai/dsh-tool-ralph",
+          "tool-ask-user": "@deepseek-ai/dsh-tool-ask-user",
+          "tool-todo": "@deepseek-ai/dsh-tool-todo",
+          "tool-web": "@deepseek-ai/dsh-tool-web",
+          "tool-presentation": "@deepseek-ai/dsh-agent-tool-presentation",
+          "present": "@deepseek-ai/dsh-tool-present",
+          "tool-plugin-manager": "@deepseek-ai/dsh-plugin-manager/tools"
+        },
+        "rowsEnabled": [
+          {
+            "id": "persona",
+            "enabled": true
+          },
+          {
+            "id": "agent-instructions",
+            "enabled": true
+          },
+          {
+            "id": "tool-bash",
+            "enabled": false
+          },
+          {
+            "id": "tool-pwsh",
+            "enabled": true
+          },
+          {
+            "id": "tool-fs",
+            "enabled": true
+          },
+          {
+            "id": "tool-fs-search",
+            "enabled": true
+          },
+          {
+            "id": "tool-jobs",
+            "enabled": true
+          },
+          {
+            "id": "skill-filesystem",
+            "enabled": true
+          },
+          {
+            "id": "tool-skill",
+            "enabled": true
+          },
+          {
+            "id": "command-goal",
+            "enabled": true
+          },
+          {
+            "id": "tool-goal",
+            "enabled": true
+          },
+          {
+            "id": "plan-mode",
+            "enabled": true
+          },
+          {
+            "id": "compaction-basic",
+            "enabled": true
+          },
+          {
+            "id": "command-compact",
+            "enabled": true
+          },
+          {
+            "id": "tool-result-pruner",
+            "enabled": true
+          },
+          {
+            "id": "tool-subagent-control",
+            "enabled": true
+          },
+          {
+            "id": "tool-subagent-list-agents",
+            "enabled": true
+          },
+          {
+            "id": "tool-subagent",
+            "enabled": true
+          },
+          {
+            "id": "tool-subagent-fork",
+            "enabled": true
+          },
+          {
+            "id": "tool-subagent-codex",
+            "enabled": false
+          },
+          {
+            "id": "tool-subagent-claude-code",
+            "enabled": false
+          },
+          {
+            "id": "workflow-ptc",
+            "enabled": false
+          },
+          {
+            "id": "tool-workflow",
+            "enabled": false
+          },
+          {
+            "id": "tool-ralph",
+            "enabled": false
+          },
+          {
+            "id": "tool-ask-user",
+            "enabled": true
+          },
+          {
+            "id": "tool-todo",
+            "enabled": true
+          },
+          {
+            "id": "tool-web",
+            "enabled": true
+          },
+          {
+            "id": "tool-presentation",
+            "enabled": true
+          },
+          {
+            "id": "present",
+            "enabled": true
+          },
+          {
+            "id": "tool-plugin-manager",
+            "enabled": false
+          }
+        ],
+        "rowCount": 30
+      },
+      {
+        "id": "minimal",
+        "isDefault": false,
+        "broken": null,
+        "rowIds": [
+          "persona",
+          "pty",
+          "terminal-bash",
+          "persistent-bash",
+          "terminal-pwsh",
+          "persistent-pwsh"
+        ],
+        "rowNamesById": {
+          "persona": "@deepseek-ai/dsh-persona",
+          "pty": "@deepseek-ai/dsh-terminal",
+          "terminal-bash": "@deepseek-ai/dsh-terminal-bash",
+          "persistent-bash": "@deepseek-ai/dsh-tool-bash-persistent",
+          "terminal-pwsh": "@deepseek-ai/dsh-terminal-bash",
+          "persistent-pwsh": "@deepseek-ai/dsh-tool-pwsh-persistent"
+        },
+        "rowsEnabled": [
+          {
+            "id": "persona",
+            "enabled": true
+          },
+          {
+            "id": "pty",
+            "enabled": true
+          },
+          {
+            "id": "terminal-bash",
+            "enabled": false
+          },
+          {
+            "id": "persistent-bash",
+            "enabled": false
+          },
+          {
+            "id": "terminal-pwsh",
+            "enabled": true
+          },
+          {
+            "id": "persistent-pwsh",
+            "enabled": true
+          }
+        ],
+        "rowCount": 6
+      },
+      {
+        "id": "cordis",
+        "isDefault": false,
+        "broken": null,
+        "rowIds": [
+          "persona",
+          "agent-instructions",
+          "tool-bash",
+          "tool-pwsh",
+          "tool-fs",
+          "tool-fs-search",
+          "tool-jobs",
+          "command-goal",
+          "tool-goal",
+          "plan-mode",
+          "compaction-basic",
+          "command-compact",
+          "tool-result-pruner",
+          "tool-subagent-control",
+          "tool-subagent-list-agents",
+          "tool-subagent",
+          "tool-subagent-fork",
+          "tool-subagent-codex",
+          "tool-subagent-claude-code",
+          "workflow-ptc",
+          "tool-workflow",
+          "tool-ralph",
+          "tool-ask-user",
+          "tool-todo",
+          "tool-web",
+          "tool-cordis",
+          "skill-filesystem",
+          "tool-skill",
+          "present",
+          "tool-plugin-manager"
+        ],
+        "rowNamesById": {
+          "persona": "@deepseek-ai/dsh-persona",
+          "agent-instructions": "@deepseek-ai/dsh-agent-instructions",
+          "tool-bash": "@deepseek-ai/dsh-tool-bash",
+          "tool-pwsh": "@deepseek-ai/dsh-tool-pwsh",
+          "tool-fs": "@deepseek-ai/dsh-tool-fs",
+          "tool-fs-search": "@deepseek-ai/dsh-tool-fs-search",
+          "tool-jobs": "@deepseek-ai/dsh-tool-jobs",
+          "command-goal": "@deepseek-ai/dsh-command-goal",
+          "tool-goal": "@deepseek-ai/dsh-tool-goal",
+          "plan-mode": "@deepseek-ai/dsh-plan-mode",
+          "compaction-basic": "@deepseek-ai/dsh-compaction-basic",
+          "command-compact": "@deepseek-ai/dsh-command-compact",
+          "tool-result-pruner": "@deepseek-ai/dsh-compaction-tool-result-pruner",
+          "tool-subagent-control": "@deepseek-ai/dsh-tool-subagent-control",
+          "tool-subagent-list-agents": "@deepseek-ai/dsh-tool-subagent-control/list-agents",
+          "tool-subagent": "@deepseek-ai/dsh-tool-subagent",
+          "tool-subagent-fork": "@deepseek-ai/dsh-tool-subagent",
+          "tool-subagent-codex": "@deepseek-ai/dsh-tool-subagent",
+          "tool-subagent-claude-code": "@deepseek-ai/dsh-tool-subagent",
+          "workflow-ptc": "@deepseek-ai/dsh-workflow-ptc",
+          "tool-workflow": "@deepseek-ai/dsh-tool-workflow",
+          "tool-ralph": "@deepseek-ai/dsh-tool-ralph",
+          "tool-ask-user": "@deepseek-ai/dsh-tool-ask-user",
+          "tool-todo": "@deepseek-ai/dsh-tool-todo",
+          "tool-web": "@deepseek-ai/dsh-tool-web",
+          "tool-cordis": "@deepseek-ai/dsh-tool-cordis",
+          "skill-filesystem": "@deepseek-ai/dsh-skill-filesystem",
+          "tool-skill": "@deepseek-ai/dsh-tool-skill",
+          "present": "@deepseek-ai/dsh-tool-present",
+          "tool-plugin-manager": "@deepseek-ai/dsh-plugin-manager/tools"
+        },
+        "rowsEnabled": [
+          {
+            "id": "persona",
+            "enabled": true
+          },
+          {
+            "id": "agent-instructions",
+            "enabled": true
+          },
+          {
+            "id": "tool-bash",
+            "enabled": false
+          },
+          {
+            "id": "tool-pwsh",
+            "enabled": true
+          },
+          {
+            "id": "tool-fs",
+            "enabled": true
+          },
+          {
+            "id": "tool-fs-search",
+            "enabled": true
+          },
+          {
+            "id": "tool-jobs",
+            "enabled": true
+          },
+          {
+            "id": "command-goal",
+            "enabled": true
+          },
+          {
+            "id": "tool-goal",
+            "enabled": true
+          },
+          {
+            "id": "plan-mode",
+            "enabled": true
+          },
+          {
+            "id": "compaction-basic",
+            "enabled": true
+          },
+          {
+            "id": "command-compact",
+            "enabled": true
+          },
+          {
+            "id": "tool-result-pruner",
+            "enabled": true
+          },
+          {
+            "id": "tool-subagent-control",
+            "enabled": true
+          },
+          {
+            "id": "tool-subagent-list-agents",
+            "enabled": true
+          },
+          {
+            "id": "tool-subagent",
+            "enabled": true
+          },
+          {
+            "id": "tool-subagent-fork",
+            "enabled": true
+          },
+          {
+            "id": "tool-subagent-codex",
+            "enabled": false
+          },
+          {
+            "id": "tool-subagent-claude-code",
+            "enabled": false
+          },
+          {
+            "id": "workflow-ptc",
+            "enabled": true
+          },
+          {
+            "id": "tool-workflow",
+            "enabled": true
+          },
+          {
+            "id": "tool-ralph",
+            "enabled": false
+          },
+          {
+            "id": "tool-ask-user",
+            "enabled": true
+          },
+          {
+            "id": "tool-todo",
+            "enabled": true
+          },
+          {
+            "id": "tool-web",
+            "enabled": true
+          },
+          {
+            "id": "tool-cordis",
+            "enabled": true
+          },
+          {
+            "id": "skill-filesystem",
+            "enabled": true
+          },
+          {
+            "id": "tool-skill",
+            "enabled": true
+          },
+          {
+            "id": "present",
+            "enabled": true
+          },
+          {
+            "id": "tool-plugin-manager",
+            "enabled": true
+          }
+        ],
+        "rowCount": 30
+      },
+      {
+        "id": "daily-standard",
+        "isDefault": true,
+        "broken": null,
+        "rowIds": [
+          "persona",
+          "agent-instructions",
+          "tool-bash",
+          "tool-pwsh",
+          "tool-fs",
+          "tool-fs-search",
+          "tool-jobs",
+          "skill-filesystem",
+          "tool-skill",
+          "command-goal",
+          "tool-goal",
+          "plan-mode",
+          "compaction-basic",
+          "command-compact",
+          "tool-result-pruner",
+          "tool-subagent-control",
+          "tool-subagent-list-agents",
+          "tool-subagent",
+          "tool-subagent-fork",
+          "tool-subagent-codex",
+          "tool-subagent-claude-code",
+          "workflow-ptc",
+          "tool-workflow",
+          "tool-ralph",
+          "tool-ask-user",
+          "tool-todo",
+          "tool-web",
+          "present",
+          "tool-plugin-manager",
+          "daily-work-tools",
+          "daily-work-command",
+          "ipython-tool"
+        ],
+        "rowNamesById": {
+          "persona": "@deepseek-ai/dsh-persona",
+          "agent-instructions": "@deepseek-ai/dsh-agent-instructions",
+          "tool-bash": "@deepseek-ai/dsh-tool-bash",
+          "tool-pwsh": "@deepseek-ai/dsh-tool-pwsh",
+          "tool-fs": "@deepseek-ai/dsh-tool-fs",
+          "tool-fs-search": "@deepseek-ai/dsh-tool-fs-search",
+          "tool-jobs": "@deepseek-ai/dsh-tool-jobs",
+          "skill-filesystem": "@deepseek-ai/dsh-skill-filesystem",
+          "tool-skill": "@deepseek-ai/dsh-tool-skill",
+          "command-goal": "@deepseek-ai/dsh-command-goal",
+          "tool-goal": "@deepseek-ai/dsh-tool-goal",
+          "plan-mode": "@deepseek-ai/dsh-plan-mode",
+          "compaction-basic": "@deepseek-ai/dsh-compaction-basic",
+          "command-compact": "@deepseek-ai/dsh-command-compact",
+          "tool-result-pruner": "@deepseek-ai/dsh-compaction-tool-result-pruner",
+          "tool-subagent-control": "@deepseek-ai/dsh-tool-subagent-control",
+          "tool-subagent-list-agents": "@deepseek-ai/dsh-tool-subagent-control/list-agents",
+          "tool-subagent": "@deepseek-ai/dsh-tool-subagent",
+          "tool-subagent-fork": "@deepseek-ai/dsh-tool-subagent",
+          "tool-subagent-codex": "@deepseek-ai/dsh-tool-subagent",
+          "tool-subagent-claude-code": "@deepseek-ai/dsh-tool-subagent",
+          "workflow-ptc": "@deepseek-ai/dsh-workflow-ptc",
+          "tool-workflow": "@deepseek-ai/dsh-tool-workflow",
+          "tool-ralph": "@deepseek-ai/dsh-tool-ralph",
+          "tool-ask-user": "@deepseek-ai/dsh-tool-ask-user",
+          "tool-todo": "@deepseek-ai/dsh-tool-todo",
+          "tool-web": "@deepseek-ai/dsh-tool-web",
+          "present": "@deepseek-ai/dsh-tool-present",
+          "tool-plugin-manager": "@deepseek-ai/dsh-plugin-manager/tools",
+          "daily-work-tools": "dsh-daily-work/tools",
+          "daily-work-command": "dsh-daily-work/command",
+          "ipython-tool": "dsh-ipython/tool"
+        },
+        "rowsEnabled": [
+          {
+            "id": "persona",
+            "enabled": true
+          },
+          {
+            "id": "agent-instructions",
+            "enabled": true
+          },
+          {
+            "id": "tool-bash",
+            "enabled": false
+          },
+          {
+            "id": "tool-pwsh",
+            "enabled": false
+          },
+          {
+            "id": "tool-fs",
+            "enabled": true
+          },
+          {
+            "id": "tool-fs-search",
+            "enabled": true
+          },
+          {
+            "id": "tool-jobs",
+            "enabled": true
+          },
+          {
+            "id": "skill-filesystem",
+            "enabled": true
+          },
+          {
+            "id": "tool-skill",
+            "enabled": true
+          },
+          {
+            "id": "command-goal",
+            "enabled": true
+          },
+          {
+            "id": "tool-goal",
+            "enabled": true
+          },
+          {
+            "id": "plan-mode",
+            "enabled": true
+          },
+          {
+            "id": "compaction-basic",
+            "enabled": true
+          },
+          {
+            "id": "command-compact",
+            "enabled": true
+          },
+          {
+            "id": "tool-result-pruner",
+            "enabled": true
+          },
+          {
+            "id": "tool-subagent-control",
+            "enabled": true
+          },
+          {
+            "id": "tool-subagent-list-agents",
+            "enabled": true
+          },
+          {
+            "id": "tool-subagent",
+            "enabled": true
+          },
+          {
+            "id": "tool-subagent-fork",
+            "enabled": true
+          },
+          {
+            "id": "tool-subagent-codex",
+            "enabled": false
+          },
+          {
+            "id": "tool-subagent-claude-code",
+            "enabled": false
+          },
+          {
+            "id": "workflow-ptc",
+            "enabled": true
+          },
+          {
+            "id": "tool-workflow",
+            "enabled": true
+          },
+          {
+            "id": "tool-ralph",
+            "enabled": false
+          },
+          {
+            "id": "tool-ask-user",
+            "enabled": true
+          },
+          {
+            "id": "tool-todo",
+            "enabled": true
+          },
+          {
+            "id": "tool-web",
+            "enabled": true
+          },
+          {
+            "id": "present",
+            "enabled": true
+          },
+          {
+            "id": "tool-plugin-manager",
+            "enabled": false
+          },
+          {
+            "id": "daily-work-tools",
+            "enabled": true
+          },
+          {
+            "id": "daily-work-command",
+            "enabled": true
+          },
+          {
+            "id": "ipython-tool",
+            "enabled": true
+          }
+        ],
+        "rowCount": 32
+      }
+    ]
+  },
+  "loaderInactive": [
+    {
+      "id": "ptc-runtime",
+      "name": "@deepseek-ai/dsh-ptc-runtime-node",
+      "state": 0
+    },
+    {
+      "id": "terminal-controller",
+      "name": "@deepseek-ai/dsh-api-terminal-controller",
+      "state": 0
+    },
+    {
+      "id": "workspace-files",
+      "name": "@deepseek-ai/dsh-api-workspace-files",
+      "state": 0
+    },
+    {
+      "id": "ui-deliverables",
+      "name": "@deepseek-ai/dsh-client-ui-deliverables",
+      "state": 0
+    },
+    {
+      "id": "daily-no-sandbox-contract",
+      "name": "dsh-daily-work/no-sandbox-contract",
+      "state": 1
+    }
+  ]
+}

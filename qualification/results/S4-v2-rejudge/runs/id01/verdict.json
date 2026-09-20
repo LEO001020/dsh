@@ -1,0 +1,277 @@
+{
+  "case_id": "ID-01",
+  "measured_at": "2026-09-20T10:52:56.847Z",
+  "worktree": "D:/DSH/work/wt-s4",
+  "branch": "wt/s4",
+  "head": "fef7612fa427ce04aed8a329dd22a80fd8fc8e77",
+  "home": "D:/DSH/home/s4",
+  "launcher": "D:/DSH/src/dsh-src/apps/cli/lib/bin.js",
+  "instrument": {
+    "this_driver": "6d1b17d8aa574642f4063f72375a938f30b59bc78bd232796833bd537fc16d37",
+    "this_probe": "4cb24c59a2694148def34dc6308b7c739835a3ac2e02e04ebff7b09914f71bc1",
+    "this_recorder": "ff1b6ba41cb611f3dad03efb9e2ef023575df042f5c6978aa57eae6df3df342d",
+    "this_adapter": "01b2a254628fa01414a513c631add16fff3687f6c770ab16b670c2a68014591b",
+    "v1_original_probe": "387f610ece5e2a0549c124b9bc975f2fe3f95004dd3880a5d5dc0fe595468574",
+    "v1_original_adapter": "01b2a254628fa01414a513c631add16fff3687f6c770ab16b670c2a68014591b"
+  },
+  "rebuilds": [
+    {
+      "package": "packages/dsh-daily-work",
+      "exitCode": 0,
+      "ms": 2119,
+      "error": null
+    },
+    {
+      "package": "packages/dsh-ipython",
+      "exitCode": 0,
+      "ms": 1490,
+      "error": null
+    }
+  ],
+  "buildFreshness": {
+    "dsh-daily-work": {
+      "newestLibMtimeMs": 1789901566808.4148,
+      "newestLibMtime": "2026-09-20T10:52:46.808Z",
+      "newestSrcMtimeMs": 1789901546185.0254,
+      "newestSrcMtime": "2026-09-20T10:52:26.185Z",
+      "libNewerThanSrc": true,
+      "buildDigest": {
+        "fileCount": 39,
+        "digest": "0ba18557e7bfd0484e7ee3e5ebd458954f6d30bd4b3e877a6be045a3a0abd626"
+      }
+    },
+    "dsh-ipython": {
+      "newestLibMtimeMs": 1789901568297.7566,
+      "newestLibMtime": "2026-09-20T10:52:48.297Z",
+      "newestSrcMtimeMs": 1789900054065.684,
+      "newestSrcMtime": "2026-09-20T10:27:34.065Z",
+      "libNewerThanSrc": true,
+      "buildDigest": {
+        "fileCount": 13,
+        "digest": "3bef21cc83a127d71d875128211331fd9cd9eece8676d944459890299f6b2a9a"
+      }
+    }
+  },
+  "profile": {
+    "links": [
+      {
+        "name": "dsh-daily-work",
+        "target": "link:D:/DSH/work/wt-s4/packages/dsh-daily-work"
+      },
+      {
+        "name": "dsh-ipython",
+        "target": "link:D:/DSH/work/wt-s4/packages/dsh-ipython"
+      }
+    ],
+    "linksPointHere": true,
+    "repoPatchSha": "0e8e370e06375ad4a289fa36f783232dde4159a69844422d6363b874af7445f2",
+    "installedPatchSha": "0e8e370e06375ad4a289fa36f783232dde4159a69844422d6363b874af7445f2"
+  },
+  "boot": {
+    "port": 11942,
+    "portReleased": true,
+    "timedOut": false,
+    "exitCode": null
+  },
+  "graph": {
+    "rows": 723,
+    "distinctSpecifiers": 222,
+    "fromBuilt": 221,
+    "fromSource": 0,
+    "fromOther": 1,
+    "underPackagesLib": 213,
+    "underVendorLib": 7,
+    "underNodeModules": 1,
+    "sourceResolutions": [],
+    "mixedSpecifiers": [],
+    "outsideCheckout": [],
+    "jsonManifestReads": [
+      [
+        "@deepseek-ai/dsh-web-frontend/package.json",
+        "D:\\DSH\\src\\dsh-src\\apps\\web\\package.json"
+      ]
+    ],
+    "otherUnclassified": []
+  },
+  "checks": [
+    {
+      "name": "the probe wrote its result",
+      "ok": true
+    },
+    {
+      "name": "the result names the home this driver booted",
+      "ok": true,
+      "observed": "D:\\DSH\\src\\dsh-src\\packages\\preset\\agent-presets\\presets\\ | D:/DSH/home/s4/profiles/daily/presets/ | D:\\DSH\\home\\s4\\.agent-presets"
+    },
+    {
+      "name": "the probe recorded no error",
+      "ok": true,
+      "observed": []
+    },
+    {
+      "name": "the installed profile patch is the repository one",
+      "ok": true
+    },
+    {
+      "name": "every rebuilt package compiled",
+      "ok": true,
+      "observed": [
+        "packages/dsh-daily-work=0",
+        "packages/dsh-ipython=0"
+      ]
+    },
+    {
+      "name": "the built lib/ is newer than src/, so the boot is not running a stale build",
+      "ok": true,
+      "observed": {
+        "dsh-daily-work": {
+          "lib": "2026-09-20T10:52:46.808Z",
+          "src": "2026-09-20T10:52:26.185Z"
+        },
+        "dsh-ipython": {
+          "lib": "2026-09-20T10:52:48.297Z",
+          "src": "2026-09-20T10:27:34.065Z"
+        }
+      }
+    },
+    {
+      "name": "sha256 of the launcher equals deployment.inputs.artifact_sha256",
+      "ok": true,
+      "observed": {
+        "launcherSha256": "69c49c871735dc7ee81ec51f266bbec129f075fd5066e046374f4b13ab02a705",
+        "lockedArtifactSha256": "69c49c871735dc7ee81ec51f266bbec129f075fd5066e046374f4b13ab02a705"
+      }
+    },
+    {
+      "name": "the probe confirms the running process IS that launcher",
+      "ok": true,
+      "observed": {
+        "runningArgv1Realpath": "D:\\DSH\\src\\dsh-src\\apps\\cli\\lib\\bin.js",
+        "lockedRealpath": "D:\\DSH\\src\\dsh-src\\apps\\cli\\lib\\bin.js",
+        "runningMatchesLockedRealpath": true,
+        "launcherSha256MatchesLockedArtifact": true
+      }
+    },
+    {
+      "name": "the boot did not time out",
+      "ok": true
+    },
+    {
+      "name": "the host was killed and the port released",
+      "ok": true
+    },
+    {
+      "name": "a real Session was created",
+      "ok": true,
+      "observed": {
+        "sessionId": "session-e4d8d1de-c131-4d1b-87d6-13188eadd1e8",
+        "agentPreset": "daily-standard"
+      }
+    },
+    {
+      "name": "the turn completed rather than hanging",
+      "ok": true,
+      "observed": {
+        "turnWaitMs": 1885,
+        "turnTimedOut": false,
+        "turnEndReason": "completed"
+      }
+    },
+    {
+      "name": "the first tool call SUCCEEDED",
+      "ok": true,
+      "observed": {
+        "toolCallRequested": {
+          "name": "read",
+          "callId": "t17-first-call"
+        },
+        "toolResultSeen": true,
+        "toolResultIsError": false,
+        "turnEndReason": "completed"
+      }
+    },
+    {
+      "name": "the tool result carries the file's own text, so the call reached a real tool body",
+      "ok": true,
+      "observed": {
+        "expected": "S4_ID01_FIRST_TOOL_CALL_ROUND_TRIP",
+        "observed": "<path>D:\\DSH\\work\\wt-s4\\qualification\\results\\S4-v2-rejudge\\runs\\id01\\first-call-input.txt</path>\n<type>file</type>\n<content>\n1: S4_ID01_FIRST_TOOL_CALL_ROUND_TRIP\n\n(End of file - total 1 lines)\n</content>"
+      }
+    },
+    {
+      "name": "the success is not merely `--help`",
+      "ok": true
+    },
+    {
+      "name": "the turn did NOT die on the module-identity symptom",
+      "ok": true,
+      "observed": "absent -- the turn did not die on a scheduler symbol index"
+    },
+    {
+      "name": "the singleton verdict is a single BUILT instance per peer",
+      "ok": true,
+      "observed": {
+        "peersChecked": 6,
+        "hostInstancesFromBuiltEntry": 6,
+        "hostInstancesFromSourceEntry": 0,
+        "hostInstancesFromNeitherCandidate": [],
+        "mixedSourceAndBuilt": false,
+        "pass": true
+      }
+    },
+    {
+      "name": "the graph was recorded and is non-empty",
+      "ok": true,
+      "observed": {
+        "rows": 723,
+        "graphReadError": null
+      }
+    },
+    {
+      "name": "no @deepseek-ai specifier resolved to a source (.ts) file",
+      "ok": true,
+      "observed": {
+        "fromBuilt": 221,
+        "fromSource": 0,
+        "fromOther": 1,
+        "offenders": []
+      }
+    },
+    {
+      "name": "no specifier resolved to two different files (no mixed graph within a specifier)",
+      "ok": true,
+      "observed": []
+    },
+    {
+      "name": "every resolved file is inside the pinned checkout",
+      "ok": true,
+      "observed": []
+    },
+    {
+      "name": "the only non-lib resolution is the web app manifest read",
+      "ok": true,
+      "observed": {
+        "manifestReads": [
+          [
+            "@deepseek-ai/dsh-web-frontend/package.json",
+            "D:\\DSH\\src\\dsh-src\\apps\\web\\package.json"
+          ]
+        ],
+        "unclassified": []
+      }
+    },
+    {
+      "name": "the resolved files sit under the checkout lib/ trees (packages, vendor or node_modules)",
+      "ok": true,
+      "observed": {
+        "fromBuilt": 221,
+        "packages": 213,
+        "vendor": 7,
+        "node_modules": 1
+      }
+    }
+  ],
+  "checksPassed": 23,
+  "checksTotal": 23,
+  "verdict": "PASS"
+}

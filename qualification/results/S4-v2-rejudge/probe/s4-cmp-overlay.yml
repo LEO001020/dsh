@@ -1,0 +1,16 @@
+# S4 CMP-02 / CMP-04 overlay: the PROBE ONLY.
+#
+# COPIED FROM qualification/runners/verify-cmp-composition.patch.yml WITH THE
+# PATH REWRITTEN AT THIS WORKTREE. The row set is UNCHANGED.
+#
+# NO `sandbox`, `sandbox-policy`, `approval` OR `subagent` ROW IS RESTATED, and
+# that is load-bearing rather than an omission: each is the SUBJECT of a case in
+# this family. Restating any of them would make the probe measure its own row
+# instead of the profile's -- the weaker-oracle mistake recorded as G-FIX-12.
+#
+# NO `webserver` ROW either: boot-harness.mjs appends its own port overlay LAST
+# and restates all four keys the row needs, because a patch REPLACES the target
+# row's whole `config` object rather than merging into it.
+- insert:
+    - id: s4-cmp-probe
+      name: 'D:/DSH/work/wt-s4/qualification/results/S4-v2-rejudge/probe/s4-cmp-probe.mjs'
