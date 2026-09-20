@@ -427,6 +427,46 @@ describe('P9 IPY-LATE-VISIBLE: late output is delivered separately, never merged
     expect(Buffer.byteLength(noticeText, 'utf8')).toBeLessThan(TEST_BOUNDS.totalBytes * 8)
   }, 300_000)
 
+  it('a background print does NOT wake the model: the write is held, and nothing is delivered until a cell runs', async () => {
+    const agent = agentFor('p9-no-wake')
+
+    // Count every context the registry ferries, from the pipeline rather than
+    // from the tool's own account.
+    const ferried: string[] = []
+    ctx.on('tools/result', exec => { ferried.push(`${exec.name}:${String(exec.callId)}`) })
+
+    const a = await callIpython(agent, [
+      'import threading, time',
+      'def background():',
+      '    time.sleep(4)',
+      '    print("P9-NO-WAKE-MARK")',
+      'threading.Thread(target=background, daemon=True).start()',
+      'print("cell-A-settled")',
+    ].join('\n'))
+    expect(a.outcome).toBe('ok')
+    const callsAfterA = ferried.length
+
+    // The thread prints with NO cell running. V5 section 10's first rule is that
+    // this must not itself produce a model turn.
+    await sleep(6000)
+
+    // THE MEASUREMENT. The registry saw NO new execution -- a print is not a tool
+    // call, and nothing in the delivery path can manufacture one. A background
+    // write cannot start a turn because the only code that reaches the model is
+    // the `ipython` tool's own return path, and that code ran zero more times.
+    expect(ferried.length, 'a background print must not dispatch anything').toBe(callsAfterA)
+
+    // The write is HELD, not lost and not delivered: it is sitting in this
+    // Session's queue, waiting for the next boundary. That is the difference
+    // between "does not wake the model" and "drops the output".
+    const held = (service as KernelService).lateNoticeAccount(agent)
+    expect(held?.held).toBe(1)
+    expect((service as KernelService).drainLateNotices(agent)).toHaveLength(1)
+    // And the queue is empty again only because THIS arm drained it, not because
+    // the boundary delivered it: `ferried` did not grow.
+    expect(ferried.length).toBe(callsAfterA)
+  }, 300_000)
+
   it('notices are SESSION-scoped: another Session cannot drain them', async () => {
     const agentA = agentFor('p9-session-a')
     const agentB = agentFor('p9-session-b')
