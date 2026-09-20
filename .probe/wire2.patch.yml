@@ -1,0 +1,13 @@
+- insert:
+    - id: wire-w1-deferred-throw
+      name: 'D:/DSH/work/wt-r1/.probe/wire-w1-deferred-throw.mjs'
+    - id: wire-w1-deferred-healthy
+      name: 'D:/DSH/work/wt-r1/.probe/wire-w1-deferred-healthy.mjs'
+    - id: wire-w1-deferred-missing
+      name: 'D:/DSH/work/wt-r1/.probe/wire-w1-deferred-missing.mjs'
+    - id: wire-w2-row-inject-throw
+      name: 'D:/DSH/work/wt-r1/.probe/wire-w2-row-inject-throw.mjs'
+      inject: ['sandboxPolicy']
+    - id: wire-w2-row-inject-healthy
+      name: 'D:/DSH/work/wt-r1/.probe/wire-w2-row-inject-healthy.mjs'
+      inject: ['sandboxPolicy']

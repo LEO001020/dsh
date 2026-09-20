@@ -1,0 +1,23 @@
+{
+ "ranAt": "2026-09-20T02:19:48.221Z",
+ "subject": "wiring candidates for the startup boundary: loud on violation, safe when the dependency never mounts",
+ "port": 6665,
+ "exitCode": null,
+ "timedOut": true,
+ "elapsedMs": null,
+ "stdout": "dsh web: http://127.0.0.1:6665/?token=hoku41PSiibKBRufMuaOMgDoerlSVdyphrXUZ8HC_vw\n",
+ "stderr": "",
+ "activationWarningLine": null,
+ "p1ChildThrowListedOnStderr": false,
+ "p1MarkerAnywhere": false,
+ "p2HealthyListed": false,
+ "p3MissingServiceListed": false,
+ "p3MarkerAnywhere": false,
+ "webUrlPrinted": true,
+ "VERDICT": {
+  "P1: awaiting a child fiber whose callback throws is LOUD (entry FAILED, named on stderr)": false,
+  "P2: the same wiring on a HEALTHY callback stays quiet (no false alarm)": true,
+  "P3: awaiting a child fiber whose dependency never mounts does NOT hang the boot": true,
+  "P3: the never-mounted dependency is named on stderr": false
+ }
+}

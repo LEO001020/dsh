@@ -1,0 +1,22 @@
+{
+ "ranAt": "2026-09-20T09:46:18.547Z",
+ "subject": "W1 (deferred await, then throw from apply) vs W2 (row-level inject, direct throw)",
+ "port": 8071,
+ "exitCode": null,
+ "timedOut": true,
+ "stdout": "dsh web: http://127.0.0.1:8071/?token=ADRhwWKOkHay6kKC4J5RAqgHgFKGvdTnAAQEJxMvbs0\n",
+ "stderr": "dsh: warning: 2 entries did not activate\nwire-w1-deferred-throw (file:///D:/DSH/work/wt-r1/.probe/wire-w1-deferred-throw.mjs): Error: W1-DEFERRED-THROW-MARKER\n    at Object.apply [as callback] (file:///D:/DSH/work/wt-r1/.probe/wire-w1-deferred-throw.mjs:16:9)\n    at async Fiber._reload (file:///D:/DSH/src/dsh-src/vendor/cordis/lib/index.js:1356:5)\n    at async Fiber.await (file:///D:/DSH/src/dsh-src/vendor/cordis/lib/index.js:1400:24)\nwire-w2-row-inject-throw (file:///D:/DSH/work/wt-r1/.probe/wire-w2-row-inject-throw.mjs): Error: W2-ROW-INJECT-THROW-MARKER\n    at new apply (file:///D:/DSH/work/wt-r1/.probe/wire-w2-row-inject-throw.mjs:9:9)\n    at Fiber.execute (file:///D:/DSH/src/dsh-src/vendor/cordis/lib/index.js:1068:24)\n    at file:///D:/DSH/src/dsh-src/vendor/cordis/lib/index.js:1142:34\n    at file:///D:/DSH/home/r1/profiles/daily/#wire-w2-row-inject-throw\n    at file:///D:/DSH/home/r1/profiles/daily/#include\n",
+ "activationWarningLine": "warning: 2 entries did not activate",
+ "w1ThrowListed": true,
+ "w1HealthyListed": false,
+ "w2ThrowListed": true,
+ "w2HealthyListed": false,
+ "webUrlPrinted": true,
+ "VERDICT": {
+  "W1: throw from apply after awaiting the dependency is LOUD": true,
+  "W1: HEALTHY control stays quiet (no false alarm)": true,
+  "W2: row-level inject with a direct throw is LOUD": true,
+  "W2: HEALTHY control stays quiet": true,
+  "the boot still served (a violating entry did not stop the process)": true
+ }
+}

@@ -1,0 +1,3 @@
+- insert:
+    - id: measure-mount-latency
+      name: 'D:/DSH/work/wt-r1/.probe/measure-mount-latency.mjs'

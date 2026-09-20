@@ -1332,11 +1332,17 @@ describe('ECO-07: the stock control arm is not secretly modified, and the variab
    * no non-comment line), so the executable composition is unchanged -- but the
    * file digest moves regardless, which is exactly why this pin is a literal.
    *
+   * It moved a THIRD time when R1's `approval` consumer inventory (V3 F1) landed
+   * as a comment block on that same row. Again comment-only, again re-derived
+   * rather than absorbed -- and the two consecutive moves are the argument FOR
+   * keeping this as a literal: a computed digest would have silently agreed with
+   * both.
+   *
    * THE STALENESS IS THE POINT OF THIS TEST, so the pin is kept as a literal
    * rather than computed. A digest that were recomputed at runtime would agree
    * with whatever the file happened to contain and would catch nothing.
    */
-  const DAILY_PATCH_SHA256 = '33d46a6b68d2a4e0ece5d3405401e059e437355ae2207af4635423fe286538ac'
+  const DAILY_PATCH_SHA256 = '0e8e370e06375ad4a289fa36f783232dde4159a69844422d6363b874af7445f2'
 
   it('the stock arm declares no plugin rows, and its files hash to the committed values', () => {
     // "A control group that has been quietly modified is not a control group."

@@ -1,0 +1,25 @@
+{
+ "ranAt": "2026-09-20T07:52:04.046Z",
+ "subject": "W1 (deferred + throw from apply) vs W2 (row-level inject + direct throw)",
+ "port": 9270,
+ "exitCode": null,
+ "timedOut": true,
+ "stdout": "",
+ "stderr": "",
+ "activationWarningLine": null,
+ "w1ThrowListed": false,
+ "w1MarkerAnywhere": false,
+ "w1HealthyListed": false,
+ "w1MissingListed": false,
+ "w2ThrowListed": false,
+ "w2MarkerAnywhere": false,
+ "w2HealthyListed": false,
+ "webUrlPrinted": false,
+ "VERDICT": {
+  "W1: a throw from apply body AFTER awaiting the dependency is LOUD": false,
+  "W1: HEALTHY control stays quiet": true,
+  "W1: a never-mounting dependency does not hang the boot (no unhandled pending entry)": false,
+  "W2: a row-level inject with a direct throw is LOUD": false,
+  "W2: HEALTHY control stays quiet": true
+ }
+}

@@ -1,10 +1,10 @@
 {
  "label": "correct-deployment",
  "boot": {
-  "port": 3657,
+  "port": 2366,
   "exitCode": null,
-  "stdout": "dsh web: http://127.0.0.1:3657/?token=OryaMpmU9QcdpHDXzi_5f4TL_9dez0LWNrMG8xxcljs\n",
-  "stderr": "dsh: warning: 1 entry did not activate\nverify-trusted-local-negative-arm (file:///D:/DSH/work/wt-r1/.probe/verify-trusted-local-negative-arm.mjs): Error: probe-complete\n    at Object.apply [as callback] (file:///D:/DSH/work/wt-r1/.probe/verify-trusted-local-negative-arm.mjs:247:9)\n    at async Fiber._reload (file:///D:/DSH/src/dsh-src/vendor/cordis/lib/index.js:1356:5)\n",
+  "stdout": "dsh web: http://127.0.0.1:2366/?token=kZylMy2oJAzlc-T7-8XhXYLk31PDU6K7T8UktFVKCwk\n",
+  "stderr": "dsh: warning: 1 entry did not activate\nverify-trusted-local-negative-arm (file:///D:/DSH/work/wt-r1/.probe/verify-trusted-local-negative-arm.mjs): Error: probe-complete\n    at Object.apply [as callback] (file:///D:/DSH/work/wt-r1/.probe/verify-trusted-local-negative-arm.mjs:259:9)\n    at async Fiber._reload (file:///D:/DSH/src/dsh-src/vendor/cordis/lib/index.js:1356:5)\n",
   "timedOut": false,
   "portReleased": true
  },

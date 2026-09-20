@@ -1270,6 +1270,45 @@ function report(checks: ContractCheck[]): ContractReport {
 }
 
 /**
+ * How long the startup boundary waits for `sandboxPolicy` before checking anyway.
+ *
+ * MEASURED, not guessed: on a real boot of the composed daily profile the service
+ * was readable 193 ms after `apply` started (via the service announcement) and
+ * 275 ms via an inject callback
+ * (`qualification/results/R1-trusted-local/mount-latency.json`). This bound is an
+ * order of magnitude above that, so it is a stall detector rather than a race
+ * participant: on a healthy deployment it never elapses.
+ *
+ * WHY A BOUND IS REQUIRED RATHER THAN A PLAIN `await`. An `apply` that never
+ * resolves stops `loader.await()` from returning, so `boot()` never reaches
+ * `auditStartupEntries` and the process prints nothing on either stream --
+ * MEASURED with a never-mounting dependency, and it suppressed the activation
+ * audit for every sibling entry too. Timing out instead lets the check run and
+ * report the absent service, which is the honest outcome.
+ */
+export const STARTUP_POLICY_WAIT_MS = 3_000
+
+/**
+ * Resolve once `sandboxPolicy` is readable, or when the bound elapses.
+ *
+ * The returned promise NEVER rejects and always settles: the caller's next step
+ * is the contract check, which is what decides the verdict. A wait that rejected
+ * would replace a readable report with one transport error, which is the
+ * distinction this guard keeps making between "the graph is wrong" and "the graph
+ * cannot be read".
+ *
+ * @param ctx - the live context to poll.
+ * @param timeoutMs - the maximum wait, in milliseconds.
+ * @returns after the service appears or the bound elapses.
+ */
+async function waitForPolicy(ctx: Context, timeoutMs: number): Promise<void> {
+  const deadline = Date.now() + timeoutMs
+  while (ctx.get('sandboxPolicy') === undefined && Date.now() < deadline) {
+    await new Promise<void>(resolve => { setTimeout(resolve, 25) })
+  }
+}
+
+/**
  * Mount the deployment self-check, and wire the three boundaries V3 F2 names.
  *
  * `inject` is empty ON PURPOSE, and that is load-bearing rather than tidy: this
@@ -1284,9 +1323,12 @@ function report(checks: ContractCheck[]): ContractReport {
  * So the boundaries are registered on the plugin's own mount, and each one is
  * reachable by a real product path:
  *
- *   - `startup`: this `apply` runs after the whole tree settles, so the
- *     deployment-level checks are evaluated against the COMPOSED graph rather
- *     than against a partially-mounted one.
+ *   - `startup`: `apply` itself is async and its rejection belongs to the
+ *     ENTRY's own fiber, which is what DSH's activation audit reports. The check
+ *     runs after a BOUNDED wait for `sandboxPolicy`, so it is evaluated against
+ *     the composed graph rather than a partially-mounted one -- see the boundary
+ *     comment in {@link apply} for why the wait is bounded and why a discarded
+ *     child fiber made this boundary silent.
  *   - `session-resume`: `agent/created` carries `source`, whose value is
  *     `'resume'` for a persisted load (`packages/core/agent/src/runtime-types.ts:125`).
  *     That event is SERIAL (`:261`), so a throwing listener rejects the
@@ -1304,40 +1346,79 @@ function report(checks: ContractCheck[]): ContractReport {
  *
  * @param ctx - the host context that owns this extension.
  */
-export function apply(ctx: Context): void {
+export async function apply(ctx: Context): Promise<void> {
   const service = new NoSandboxContractService(ctx)
 
   // ── boundary 1: STARTUP ───────────────────────────────────────────────────
   //
-  // REGISTERED THROUGH `ctx.inject(['sandboxPolicy'], ...)`, AND THAT IS THE
-  // WHOLE REASON THIS BOUNDARY WORKS. The first version of this ran the check
-  // directly in `apply`, and it reported THREE failures for a CORRECT
-  // deployment: `apply` fires when THIS row mounts, which is before `fs`,
-  // `shell` and `ipython` have published, so the guard read a half-mounted graph
-  // and called it degraded. That is a false alarm in the direction that destroys
-  // trust in the guard, and the boot log is kept in
-  // `qualification/results/R1-trusted-local/composition-after-first-attempt.*`.
+  // THE REFUSAL MUST BE RAISED FROM `apply`'s OWN BODY. That is a MEASURED
+  // requirement, not a style choice, and the first version of this boundary got
+  // it wrong in a way that made the guard SILENT.
   //
-  // `ctx.inject` creates a CHILD fiber that waits for its named services, which
-  // is the DSH-native way to order a check after a dependency (the pattern
-  // `sandbox-policy` itself uses at `:141` for `systemPrompt`). It does NOT make
-  // this plugin's own row `pending`: a child fiber is not a loader entry, so it
-  // cannot appear in `auditStartupEntries`' inactive list. The plugin's static
-  // `inject` therefore stays EMPTY, which is what keeps the guard able to observe
-  // a graph where services are legitimately absent.
+  // WHAT WAS WRONG. It was written as `ctx.inject(['sandboxPolicy'], cb)` with
+  // the fiber DISCARDED, on the reasoning that a child fiber orders the check
+  // after its dependency without making the row `pending`. The ordering half of
+  // that is true; the loudness half is not. `ctx.inject` returns a CHILD fiber,
+  // and DSH's activation audit classifies by the ENTRY's fiber state
+  // (`packages/boot/app-boot/src/index.ts:769-802`: ACTIVE is fine, FAILED is
+  // reported with its error, PENDING as "waiting for services"). A throw inside a
+  // DISCARDED child leaves the entry ACTIVE, so the refusal reached NO process
+  // channel at all. MEASURED, both in-process and on a real boot:
   //
-  // The subject is the POLICY ROW, which is exactly what spec case CMP-02's
-  // oracle names and the only thing knowable this early.
-  ctx.inject(['sandboxPolicy'], (scope: Context) => {
-    // A refusal here THROWS inside the child fiber. That fails the child, which
-    // is reported by the loader's own audit, and the mode is never switched back.
-    service.checkBoundarySync('startup')
-    scope.logger('no-sandbox-contract').info(
-      'startup contract satisfied: sandbox policy is %s, workspaceRoot %s',
-      String(service.observe().defaultMode),
-      String(service.observe().workspaceRoot),
-    )
-  })
+  //   - in-process, `ctx.plugin` + `ctx.inject` with a throwing callback:
+  //     parentEntryFiberState ACTIVE, no unhandled rejection, nothing logged.
+  //   - on a real boot of the composed daily profile with NO probe in the tree:
+  //     `qualification/results/R1-trusted-local/loudness-verdict.json` -- the
+  //     reverted (`workspace-write`) boot produced the SAME EMPTY STDERR as the
+  //     healthy control. `verdict` there states it as a boolean and `diagnosis`
+  //     reads "SILENT".
+  //
+  // That is the exact defect class this guard exists to catch, reproduced inside
+  // the guard: a deployment that LOOKS alive while the contract is violated. So
+  // the check now runs in `apply`'s own async body and its rejection belongs to
+  // the ENTRY's fiber. Re-measured after the change, on a real boot, with the
+  // healthy arm as the control: the violating entry is named on stderr under
+  // "N entries did not activate", and the healthy arm stays quiet
+  // (`qualification/results/R1-trusted-local/loudness-after-fix.json`).
+  //
+  // WHY THE WAIT IS BOUNDED, AND WHY IT IS NOT A ROW-LEVEL `inject`. Two
+  // constraints pull in opposite directions and both are load-bearing:
+  //
+  //   (a) the check must run AFTER `sandboxPolicy` mounts. Running it at `apply`
+  //       time reads a half-mounted graph and reported THREE false violations for
+  //       a CORRECT deployment; that boot log is kept as
+  //       `qualification/results/R1-trusted-local/composition-after-first-attempt.*`.
+  //   (b) the plugin's static `inject` must stay EMPTY, because `inject` is a
+  //       READINESS GATE: naming `sandboxPolicy` there would leave this row
+  //       `pending` on exactly the degraded graph it exists to report (and a
+  //       pending row is the measured `toolCount: 0` precondition).
+  //
+  // So the ordering comes from a bounded wait inside `apply`, and the bound is
+  // MEASURED rather than guessed: `sandboxPolicy` was readable 193 ms after
+  // `apply` started, via the service announcement, and 275 ms via an inject
+  // callback (`qualification/results/R1-trusted-local/mount-latency.json`). The
+  // bound below is an order of magnitude above that.
+  //
+  // WHY IT MUST BE BOUNDED AT ALL. An `apply` that never resolves is not a
+  // harmless wait: `EntryTree.getTasks()` includes the entry's in-flight apply
+  // promise and `loader.await()` loops on those tasks (`vendor/loader/src/
+  // config/tree.ts:43-51`), so `boot()` never reaches `auditStartupEntries` and
+  // the process prints NOTHING on either stream. MEASURED: an arm that awaited a
+  // never-mounting service produced empty stdout and empty stderr and never bound
+  // its web port -- it suppressed the activation audit for EVERY entry, including
+  // the healthy siblings. A timed-out wait instead falls through to the check,
+  // which reports the missing service as the violation it is.
+  await waitForPolicy(ctx, STARTUP_POLICY_WAIT_MS)
+
+  // A refusal here THROWS, rejecting `apply` and failing the ENTRY, which is what
+  // the loader's audit reports and what `installFailLoud` escalates. The mode is
+  // never switched back: see {@link BoundaryDisposition}.
+  service.checkBoundarySync('startup')
+  ctx.logger('no-sandbox-contract').info(
+    'startup contract satisfied: sandbox policy is %s, workspaceRoot %s',
+    String(service.observe().defaultMode),
+    String(service.observe().workspaceRoot),
+  )
 
   // ── boundary 2: SESSION RESUME ────────────────────────────────────────────
   //

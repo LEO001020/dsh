@@ -1,6 +1,6 @@
 {
  "probe": "verify-trusted-local-negative-arm",
- "ranAt": "2026-09-20T01:41:37.490Z",
+ "ranAt": "2026-09-20T09:56:40.722Z",
  "presetRoots": [
   {
    "path": "D:\\DSH\\src\\dsh-src\\packages\\preset\\agent-presets\\presets\\",
@@ -18,68 +18,24 @@
  "injectedMode": "workspace-write",
  "error": null,
  "startup": {
-  "contractServicePresent": true,
+  "contractServicePresent": false,
   "defaultMode": "workspace-write",
-  "reportOk": false,
-  "violations": [
-   "sandboxPolicy.defaultMode",
-   "ptcRuntime.sandboxMode"
-  ],
-  "checks": [
-   {
-    "id": "sandboxPolicy.defaultMode",
-    "ok": false,
-    "observed": "'workspace-write'"
-   },
-   {
-    "id": "sandboxPolicy.defaultMode.provenance",
-    "ok": true,
-    "observed": "unobservable (the service carries the value, not its provenance)"
-   },
-   {
-    "id": "fs.provider",
-    "ok": true,
-    "observed": "LocalFileSystem (sandboxMode: undefined (does not confine))"
-   },
-   {
-    "id": "shell.provider",
-    "ok": true,
-    "observed": "PwshLocalExecutor (sandboxMode: undefined (does not confine))"
-   },
-   {
-    "id": "ptcRuntime.sandboxMode",
-    "ok": false,
-    "observed": "mounted, sandboxMode: 'workspace-write'"
-   },
-   {
-    "id": "ipython.present",
-    "ok": true,
-    "observed": "ctx.ipython is mounted"
-   },
-   {
-    "id": "ssh.absent",
-    "ok": true,
-    "observed": "ssh: absent; sshSubprocess: absent"
-   },
-   {
-    "id": "wsl.absent",
-    "ok": true,
-    "observed": "no wsl service is mounted"
-   }
-  ],
-  "refusedByExplicitCall": true,
-  "refusalMessage": "trusted-local contract violated at the startup boundary: 1 check(s) failed. This deployment is NOT the intended trusted-local graph, so product execution stops here rather than continuing under a mode nobody chose. The mode is NOT switched back automatically: that would hide a real configuration change.\n  startup.sandboxPolicy.mode: 'workspace-write' -- the deployment default is 'workspace-write', which CONFINES. Under trusted-local this is a FALSE STATEMENT ABOUT THE MODEL'S PERMISSIONS: the same resolved policy renders the model-facing sentence (sandbox-policy/src/index.ts:42-56) and gates the PTC confine decision (ptc-runtime-node/src/index.ts:224). Note the observability limit: 'read-only' here is indistinguishable from an unset config, because Config's schema default is 'read-only' (:113)."
+  "reportOk": null,
+  "violations": [],
+  "checks": [],
+  "refusedByExplicitCall": null,
+  "refusalMessage": null,
+  "serviceAbsentBecauseEntryFailed": true,
+  "note": "ctx.noSandboxContract is NOT published on this graph, which is the LOUD outcome rather than a missing reading: the guard entry itself failed at apply (the refusal throws from apply's own body), so DSH's activation audit reports it under \"N entries did not activate\" on stderr. The driver merges that stderr into this artifact as `bootEvidence`; `loudness-after-fix.json` carries the probe-free verdict."
  },
  "session": {
-  "sessionId": "session-626c526b-0392-4b29-986b-bf0776b8a132",
+  "sessionId": "session-e700ee73-f116-4fca-9ada-89690d083a75",
   "defaultModeBefore": "workspace-write",
   "overrideAfterAppend": "workspace-write",
   "resolvedAfterAppend": "workspace-write",
-  "reportOk": false,
-  "violations": [
-   "session.override"
-  ],
-  "checkObserved": "session session-626c526b-0392-4b29-986b-bf0776b8a132: overrideOf = 'workspace-write', resolve() = 'workspace-write'",
+  "reportOk": null,
+  "violations": [],
+  "checkObserved": null,
   "modeWasRestored": "defaultMode itself moved -- this arm did NOT restore it"
  },
  "narration": {
@@ -92,12 +48,18 @@
  },
  "ptc": {
   "runCodeOnSurface": false,
-  "guardRefusal": "REFUSED by the contract guard",
+  "guardRefusal": "NOT refused by the contract guard",
   "callOutcome": {
    "threw": false,
    "isError": true,
-   "message": "trusted-local contract: refusing 'workflow' because this call resolves to sandbox mode 'workspace-write' (defaultMode 'workspace-write', session override 'workspace-write'), not 'danger-full-access'. The PTC runtime confines unless the mode is exactly 'danger-full-access', so this call would fence while the rest of the deployment does not. The mode is NOT switched back automatically -- that would hide a real configuration change."
+   "message": "invalid arguments: missing required property \"meta\""
   },
   "workflowOnSurface": true
+ },
+ "bootEvidence": {
+  "stderr": "dsh: warning: 2 entries did not activate\ndaily-no-sandbox-contract (dsh-daily-work/no-sandbox-contract): Error: trusted-local contract violated at the startup boundary: 1 check(s) failed. This deployment is NOT the intended trusted-local graph, so product execution stops here rather than continuing under a mode nobody chose. The mode is NOT switched back automatically: that would hide a real configuration change.\n  startup.sandboxPolicy.mode: 'workspace-write' -- the deployment default is 'workspace-write', which CONFINES. Under trusted-local this is a FALSE STATEMENT ABOUT THE MODEL'S PERMISSIONS: the same resolved policy renders the model-facing sentence (sandbox-policy/src/index.ts:42-56) and gates the PTC confine decision (ptc-runtime-node/src/index.ts:224). Note the observability limit: 'read-only' here is indistinguishable from an unset config, because Config's schema default is 'read-only' (:113).\n    at NoSandboxContractService.checkBoundarySync (file:///D:/DSH/work/wt-r1/packages/dsh-daily-work/lib/no-sandbox-contract.js:785:19)\n    at Object.apply [as callback] (file:///D:/DSH/work/wt-r1/packages/dsh-daily-work/lib/no-sandbox-contract.js:1139:13)\n    at async Fiber._reload (file:///D:/DSH/src/dsh-src/vendor/cordis/lib/index.js:1356:5)\nverify-trusted-local-negative-arm (file:///D:/DSH/work/wt-r1/.probe/verify-trusted-local-negative-arm.mjs): Error: probe-complete\n    at Object.apply [as callback] (file:///D:/DSH/work/wt-r1/.probe/verify-trusted-local-negative-arm.mjs:259:9)\n    at async Fiber._reload (file:///D:/DSH/src/dsh-src/vendor/cordis/lib/index.js:1356:5)\n",
+  "guardEntryNamedOnStderr": true,
+  "refusalTextOnStderr": true,
+  "activationWarningLine": "warning: 2 entries did not activate"
  }
 }

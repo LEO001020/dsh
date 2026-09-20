@@ -1,0 +1,41 @@
+{
+ "ranAt": "2026-09-20T09:48:10.798Z",
+ "subject": "is a CONFINING mode loud at process level, with no probe in the tree?",
+ "arms": {
+  "healthy": {
+   "label": "healthy",
+   "patches": [],
+   "port": 3809,
+   "exitCode": null,
+   "timedOut": true,
+   "served": true,
+   "activationWarningLine": null,
+   "guardEntryNamedOnStderr": false,
+   "refusalTextOnStderr": false,
+   "stderr": "",
+   "stdout": "dsh web: http://127.0.0.1:3809/?token=7vPt6zEzloSN9EPMAlBTr-_CmdP6vLqVpvxqQjE5N8M\n"
+  },
+  "reverted": {
+   "label": "reverted-mode",
+   "patches": [
+    "D:/DSH/work/wt-r1/.probe/revert-sandbox-mode.patch.yml"
+   ],
+   "port": 6689,
+   "exitCode": null,
+   "timedOut": true,
+   "served": true,
+   "activationWarningLine": null,
+   "guardEntryNamedOnStderr": false,
+   "refusalTextOnStderr": false,
+   "stderr": "",
+   "stdout": "dsh web: http://127.0.0.1:6689/?token=DwNRqVssnoMTDfmPcvK9yl3WxZ-i_b2jBjJ6w3iaEh4\n"
+  }
+ },
+ "verdict": {
+  "healthy boot is quiet (control: the warning line is absent)": true,
+  "reverted boot names the guard entry on stderr": false,
+  "reverted boot carries the refusal text on stderr": false,
+  "reverted boot is DISTINGUISHABLE from the healthy boot on stderr": false
+ },
+ "diagnosis": "SILENT: the confining mode produced the SAME stderr as the healthy control, so the guard refused nothing the operator can see. The startup boundary is NOT loud."
+}

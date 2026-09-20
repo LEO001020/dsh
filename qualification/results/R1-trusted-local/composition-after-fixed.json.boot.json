@@ -1,9 +1,9 @@
 {
- "label": "after",
+ "label": "after-fixed",
  "boot": {
-  "port": 14312,
+  "port": 5627,
   "exitCode": null,
-  "stdout": "dsh web: http://127.0.0.1:14312/?token=3owLsLbhu0O3j3l-ivF7vW6duMEYCAmBdCHOKdSTeZQ\n",
+  "stdout": "dsh web: http://127.0.0.1:5627/?token=PqoRu3fPe7FD9qvUvv8fcQVuc6TeL8jqIoLjTeJAAB0\n",
   "stderr": "dsh: warning: 1 entry did not activate\nverify-trusted-local-composition (file:///D:/DSH/work/wt-r1/.probe/verify-trusted-local-composition.mjs): Error: probe-complete\n    at Object.apply [as callback] (file:///D:/DSH/work/wt-r1/.probe/verify-trusted-local-composition.mjs:300:9)\n    at async Fiber._reload (file:///D:/DSH/src/dsh-src/vendor/cordis/lib/index.js:1356:5)\n",
   "timedOut": false,
   "portReleased": true
