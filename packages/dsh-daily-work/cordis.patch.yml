@@ -229,14 +229,35 @@
 # is weaker than its scenario passes while the product is broken.
 #
 # The service registers as `ctx.dailyData`. Its intended model-facing caller is
-# the M3 `python_exec`/`ipython` worker's `data.capture_file` / `data.pages`
-# tools; the service is the stable seam that worker binds to, and it is complete
-# and probeable without it.
+# the M3 `python_exec`/`ipython` worker's `dsh.data.*` namespace; the service is
+# the stable seam that worker binds to, and it is complete and probeable without
+# it.
 #
-# `artifactRoot` is deliberately NOT set here. The service derives its root from
-# the storage domain's own configured root, so artifacts live beside the records
-# that reference them. Setting it in the patch would create a second, separately
-# configured tree to keep in sync.
+# `artifactRoot` IS set here, and that is a CORRECTION rather than a preference.
+# It was previously omitted with the comment "the service derives its root from the
+# storage domain's own configured root". MEASURED (G-SEAM-63, from R2-F11F10's
+# finding, re-verified here): that derivation could never succeed. The mounted
+# `storageDomain` is a `DomainFacility` whose `Domain` handle is declared at
+# `packages/storage/storage-domain/src/domain.ts:97-119` as exactly `name`,
+# `global`, `table(name)` and `close()` -- there is NO `root` member, and no source
+# file in `storage-domain/src` mentions one. The lookup therefore always returned
+# `undefined` and the store silently resolved the RELATIVE `data-artifacts` against
+# the process cwd. The consequence was real: two hosts launched from different
+# directories wrote to different stores while sharing one run record, a `cd`
+# between boots relocated the store, and it explains the stray `data-artifacts/`
+# directory that appeared inside the pinned checkout.
+#
+# Reading the BACKEND's root is not available through a public seam either,
+# verified at the pin: `StorageBackend` (`storage/src/backend.ts:17-27`) declares
+# only `kv?` and `close()`, and `JsonStorageBackend`'s root is a TypeScript
+# `private`. So the location is STATED here rather than inferred.
+#
+# `!!js dshHomePath(...)` is the SAME expression the shipped base bundle uses for
+# `sessions` and `storages` (`packages/bundle/base/cordis.patch.yml`), and
+# `dshHomePath` is published by `app-boot` with `ctx.provide` at
+# `packages/boot/app-boot/src/index.ts:940`. It resolves against `$DSH_HOME` (or the
+# OS default `~/.dsh`), NEVER the cwd, so the artifact store lands under the home
+# that owns the run record rather than in a second, cwd-dependent tree.
 - insert:
     - id: daily-data-plane
       name: dsh-daily-work/data-host
@@ -255,6 +276,16 @@
         # Per-artifact ceiling. Exceeding it is a recorded retention gap and a
         # `partial` observation -- never a silent fallback to unbounded inline.
         quotaBytes: 268435456
+        # THE ARTIFACT LOCATION, STATED RATHER THAN INFERRED. Omitting this made
+        # the store's location an accident of the launch directory.
+        artifactRoot: !!js dshHomePath('data-artifacts')
+        # Concurrent host-side reads against one provider. HOST-OWNED and
+        # deliberately conservative: it is below every shipped parallelism
+        # default in this repository (the registry's own `maxParallelSubCalls`
+        # default is 10; `native-call.ts` defaults to 8), so the read plane can
+        # never be the component that saturates a provider. This is
+        # CAPABILITY-LEVEL read concurrency, NOT ToolRuntime sibling scheduling.
+        readConcurrency: 4
 
 # ---------------------------------------------------------------------------
 # DIFFERENCE 6 (mandatory): mount the public programmatic-call scope service.

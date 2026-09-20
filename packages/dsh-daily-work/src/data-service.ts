@@ -43,8 +43,10 @@
 import type { Context } from '@deepseek-ai/cordis'
 import { Service } from '@deepseek-ai/cordis'
 import { defineDomain, domainTable, type Domain, type DomainFacility } from '@deepseek-ai/dsh-storage-domain'
+import { isAbsolute } from 'node:path'
 import { z } from 'zod'
 import {
+  ArtifactError,
   ArtifactStorePageProvider,
   DEFAULT_ARTIFACT_QUOTA_BYTES,
   DEFAULT_PAGE_BYTES,
@@ -65,6 +67,7 @@ import {
   type IoCounters,
   type SessionReferenceLog,
 } from './artifacts.ts'
+import { DataReadLimiter, DEFAULT_DATA_READ_CONCURRENCY } from './data-concurrency.ts'
 import {
   GrantTable,
   parseObservation,
@@ -72,6 +75,8 @@ import {
   type JsonValue,
   type ObservationDescriptor,
 } from './observations.ts'
+import type { DataPlane } from './data-plane.ts'
+import { DataPlane as DataPlaneImpl } from './data-plane.ts'
 
 /** The domain name. Doubles as the backend unit name, so it must match UNIT_NAME_RE. */
 export const DATA_DOMAIN_NAME = 'dsh_daily_data'
@@ -131,6 +136,16 @@ export interface DataServiceConfig {
   ownerScope?: string
   /** The execution world recorded on descriptors. */
   executionWorld?: string
+  /**
+   * Concurrent host-side reads the `dsh.data` plane may issue against one
+   * provider. HOST-OWNED: it is a construction input and is not reachable from a
+   * request, so a model cannot widen its own fan-out.
+   *
+   * Conservative by default (see `DEFAULT_DATA_READ_CONCURRENCY`) and deliberately
+   * below every shipped parallelism default in this repository. Benchmark before
+   * raising it.
+   */
+  readConcurrency?: number
 }
 
 /** The default owner scope when config names none. */
@@ -156,6 +171,7 @@ export class DataPlaneService extends Service {
   private readonly config: DataServiceConfig
   private domain: Domain<typeof dataDomainSpec> | undefined
   private log: StorageReferenceLog | undefined
+  private dataPlane: DataPlane | undefined
 
   constructor(ctx: Context, config: DataServiceConfig = {}) {
     super(ctx, 'dailyData')
@@ -166,10 +182,37 @@ export class DataPlaneService extends Service {
     // The artifact root is a host-chosen private directory. It is NOT a path the
     // kernel supplies: a kernel-chosen root would let model-authored Python place
     // objects wherever it liked, which is the FS-policy bypass the audit forbids.
+    //
+    // A FALLBACK IS RECORDED, NOT SILENT. When neither an explicit `artifactRoot`
+    // nor the host's `dshHomePath` helper is available, the root is the relative
+    // `data-artifacts` and its location depends on the launch directory. That is a
+    // real limitation, so it is written to the host log at construction rather
+    // than left for an operator to discover as a stray directory.
     this.store = new LocalArtifactStore(
-      config.artifactRoot ?? defaultArtifactRoot(ctx),
+      defaultArtifactRoot(ctx, config.artifactRoot, relative => {
+        this._artifactRootFallback = relative
+        ctx.logger?.warn(
+          `dsh-daily-data: no artifactRoot configured and no dshHomePath helper is mounted, so the artifact `
+          + `store resolves the RELATIVE path "${relative}" against the process cwd (${process.cwd()}). `
+          + 'Two hosts launched from different directories will write to different stores while sharing one '
+          + 'run record. Configure artifactRoot explicitly, or boot through app-boot so dshHomePath is provided.',
+        )
+      }),
       { quotaBytes: config.quotaBytes ?? DEFAULT_ARTIFACT_QUOTA_BYTES },
     )
+  }
+
+  private _artifactRootFallback: string | undefined
+
+  /**
+   * The relative root the store fell back to, when it did.
+   *
+   * Exposed so a probe can ASSERT whether the cwd-dependent path was taken rather
+   * than inferring it from a log line. `undefined` means a real, cwd-independent
+   * root was resolved.
+   */
+  get artifactRootFallback(): string | undefined {
+    return this._artifactRootFallback
   }
 
   /** Open the reference domain. Idempotent per instance. */
@@ -185,6 +228,10 @@ export class DataPlaneService extends Service {
 
   /** Close the domain handle. */
   async close(): Promise<void> {
+    // The plane holds pinned history observation leases, so it is released BEFORE
+    // the domain: an undisposed lease keeps a prepared Session pinned in the
+    // observation reader's cache for the process lifetime.
+    this.disposePlane()
     const domain = this.domain
     this.domain = undefined
     this.log = undefined
@@ -228,6 +275,16 @@ export class DataPlaneService extends Service {
     mediaType?: string
     observationId?: string
     requestedRange?: { offset: number; length?: number }
+    /**
+     * Override how the source bytes are read back.
+     *
+     * Forwarded so a caller can BOUND the read to a requested window rather than
+     * only annotating the coverage claim. Without this, a `requestedRange` recorded
+     * what was asked for while the store still published the whole file -- measured:
+     * a `{offset:1024, length:512}` request over a 4096-byte file produced a
+     * 4096-byte artifact.
+     */
+    readChunks?: Parameters<typeof captureFile>[0]['readChunks']
     /** A kernel payload. A forged host fact is REFUSED, not merged. */
     claim?: unknown
     signal?: AbortSignal
@@ -244,6 +301,7 @@ export class DataPlaneService extends Service {
       ...input.observationId !== undefined ? { observationId: input.observationId } : {},
       ...input.mediaType !== undefined ? { mediaType: input.mediaType } : {},
       ...input.requestedRange !== undefined ? { requestedRange: input.requestedRange } : {},
+      ...input.readChunks !== undefined ? { readChunks: input.readChunks } : {},
       ...input.claim !== undefined ? { claim: input.claim } : {},
       ...input.signal !== undefined ? { signal: input.signal } : {},
       // The checkpoint is the caller's durable boundary. It runs AFTER the
@@ -367,42 +425,130 @@ export class DataPlaneService extends Service {
   parseObservation(value: unknown): ObservationDescriptor {
     return parseObservation(value, this.grants)
   }
+
+  /**
+   * The cell-bound `dsh.data` request plane.
+   *
+   * WHY A SHARED INSTANCE AND NOT ONE PER CELL.
+   *
+   * The plane's limiter bounds the TOTAL concurrent reads this deployment issues
+   * against one provider. A per-cell limiter would multiply the bound by the
+   * number of live cells, which is precisely the unbounded fan-out the limiter
+   * exists to prevent.
+   *
+   * The module cycle is broken by a TYPE-ONLY import in `data-plane.ts`
+   * (`import type { DataPlaneService }`), which `verbatimModuleSyntax` erases, so
+   * there is no runtime edge back into this module. The plane therefore receives
+   * the service as a constructor parameter rather than reaching for it.
+   *
+   * @returns the plane, constructed once and reused.
+   */
+  plane(): DataPlane {
+    this.dataPlane ??= new DataPlaneImpl(this.ctx, this, {
+      readConcurrency: this.config.readConcurrency ?? DEFAULT_DATA_READ_CONCURRENCY,
+      pageBytes: this.config.pageBytes ?? this.pageBytes,
+    })
+    return this.dataPlane
+  }
+
+  /** Release every pinned history scan the plane is holding. Idempotent. */
+  disposePlane(): void {
+    this.dataPlane?.dispose()
+    this.dataPlane = undefined
+  }
 }
 
 /**
  * The default artifact root.
  *
- * INTENDED: derive the root from the storage domain's own configured root, so
- * artifacts live beside the records that reference them rather than in a second,
- * separately-configured tree.
+ * WHY THIS FUNCTION WAS REWRITTEN (G-SEAM-63 / R2-F11F10's finding, re-verified here).
  *
- * WHAT ACTUALLY HAPPENS, measured rather than assumed (R5): the `storageDomain`
- * service the profile mounts is a `DomainFacility`, and it has **no `root`
- * property at all** — the root belongs to the BACKEND
- * (`@deepseek-ai/dsh-storage-json` takes `root` as its own required config). The
- * `configured` branch below is therefore UNREACHABLE against the shipped service,
- * and a real boot resolves the relative fallback `data-artifacts`, which lands
- * against the process cwd. The M4 boot probe recorded exactly that
- * (`qualification/results/R5-data/profile-boot.json` → `"artifactRoot":"data-artifacts"`).
+ * The previous version did:
  *
- * The branch is kept rather than deleted because it is the correct behaviour for a
- * deployment that DOES expose a root (a future or third-party facility), and
- * deleting it would silently make a configured deployment fall back too. What is
- * NOT claimed is that it is in use today. The real fix — a storage-domain change or
- * a config-supplied root — is recorded as an open gap (G-R5-04) and deliberately
- * not attempted from this module, because guessing a path is the failure this
- * function's own comment warns about.
+ *     const configured = (ctx.get('storageDomain') as { root?: string } | undefined)?.root
+ *     if (typeof configured === 'string' && configured.length > 0) return `${configured}/data-artifacts`
+ *     return 'data-artifacts'
  *
- * The fallback is a RELATIVE path on purpose: it is never world-readable and never
- * an absolute path a kernel could name, but it IS tied to the process cwd, which is
- * a real limitation and is stated rather than implied.
+ * **That guard could never be true.** The mounted `storageDomain` is a
+ * `DomainFacility`, whose `Domain` handle is declared at
+ * `packages/storage/storage-domain/src/domain.ts:97-119` as exactly `name`,
+ * `global`, `table(name)` and `close()`. There is no `root` member, and no source
+ * file in `storage-domain/src` mentions one. So the lookup always returned
+ * `undefined` and the store ALWAYS resolved the relative `data-artifacts` against
+ * the process cwd.
+ *
+ * WHY "READ THE BACKEND'S REAL ROOT" IS NOT THE FIX.
+ *
+ * That was the intended repair and it is NOT AVAILABLE through a public seam.
+ * Verified at the pin: `StorageBackend` (`storage/src/backend.ts:17-27`) declares
+ * only `kv?` and `close()`; `BackendRegistry.get(name)` returns that interface;
+ * and `JsonStorageBackend`'s root is `constructor(private readonly root: string)`
+ * (`storage-json/src/index.ts:46`) -- a TypeScript `private`, not reachable at
+ * runtime by anything outside the class. Reaching it would require either an
+ * upstream change or a cast that reads a private field, and a cast that reads a
+ * field the type says does not exist is exactly the defect this function is being
+ * fixed for. So the honest options were a loud refusal or an explicit host path.
+ *
+ * WHAT THIS FUNCTION DOES INSTEAD, in order:
+ *
+ *   1. An explicitly configured `artifactRoot` wins. A deployment that names a
+ *      location gets that location, and it must be ABSOLUTE -- a relative
+ *      configured root would reproduce the cwd accident with an extra step.
+ *   2. Otherwise derive from `dshHomePath`, the HOST-provided path helper that
+ *      `app-boot` publishes with `ctx.provide('dshHomePath', dshHomePath)`
+ *      (`packages/boot/app-boot/src/index.ts:940`). This is the same seam the
+ *      SHIPPED bundle uses for `storages` and `sessions`
+ *      (`packages/bundle/base/cordis.patch.yml`, `root: !!js dshHomePath(...)`),
+ *      so the artifact store lands beside the records that reference it rather
+ *      than in a second, separately-configured tree. It resolves against
+ *      `$DSH_HOME` (or the OS default `~/.dsh`), NOT the cwd, so two hosts
+ *      launched from different directories share one store and a `cd` between
+ *      boots cannot relocate it.
+ *   3. If neither is available -- no configured root and no host helper, which
+ *      happens in an in-process unit test that mounts this service directly --
+ *      the fallback is the relative `data-artifacts`, and it is LOUD: the service
+ *      records it as a warning naming the cwd dependence at construction time
+ *      rather than leaving the location an accident. A test that wants a fixed
+ *      location passes `artifactRoot`, which every test in this repository does.
+ *
+ * WHAT IS STILL NOT CLAIMED. The `dshHomePath` seam is resolved by NAME through
+ * `ctx.get`, so a deployment that boots without `app-boot` does not have it. That
+ * is why step 3 exists and why it warns rather than throwing: a service that
+ * refused to construct would turn a missing path helper into a boot failure for
+ * every deployment, which is a larger blast radius than the defect.
+ *
+ * @param ctx - the host context.
+ * @param configured - an explicit `artifactRoot`, when the deployment named one.
+ * @param onFallback - called with the resolved relative root when neither source
+ *   was available, so the caller can record the cwd dependence where it is
+ *   observable.
+ * @returns the artifact store root.
+ * @throws when a configured root is present but not absolute.
  */
-function defaultArtifactRoot(ctx: Context): string {
-  const configured = (ctx.get('storageDomain') as { root?: string } | undefined)?.root
-  if (typeof configured === 'string' && configured.length > 0) {
-    return `${configured}/data-artifacts`
+export function defaultArtifactRoot(
+  ctx: Context,
+  configured?: string,
+  onFallback?: (relative: string) => void,
+): string {
+  if (configured !== undefined) {
+    if (!isAbsolute(configured)) {
+      throw new Error(
+        `data plane: artifactRoot "${configured}" is not absolute. A relative artifact root resolves against `
+        + 'the process cwd, so the store would move when the host is launched from a different directory -- '
+        + 'which is the defect this check exists to prevent.',
+      )
+    }
+    return configured
   }
-  return 'data-artifacts'
+  // The host-provided helper. Read by NAME because it is a `provide`d value, not
+  // a service with a static `inject` key, so property access has no typed form.
+  const homePath = ctx.get('dshHomePath') as ((...segments: string[]) => string) | undefined
+  if (typeof homePath === 'function') {
+    return homePath('data-artifacts')
+  }
+  const relative = 'data-artifacts'
+  onFallback?.(relative)
+  return relative
 }
 
 /**
