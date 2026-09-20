@@ -149,8 +149,10 @@ reasonably trust the field name.
 
 The root agent reported `IPY-06` failing with `BROKER_FAILURE: RuntimeError:
 Kernel didn't respond in 60 seconds` and hypothesised that the injected
-`status()` calls broke the restart. **That hypothesis is refuted by experiment**
-— recorded in `experiment-restart-single-variable.txt`.
+`status()` calls broke the restart. **That hypothesis is refuted by experiment**:
+the raw transcript of the decisive round is
+`experiment-restart-single-variable.txt`, and all four rounds plus the analysis
+are in `experiment-restart-analysis.md`.
 
 All arms, `[measured]`:
 
