@@ -1374,7 +1374,15 @@ def main():
             # knows the reply exceeded the transport bound rather than that the
             # broker broke. The cell itself already ran -- this is the delivery
             # that failed, and saying so is what keeps the two facts distinct.
+            #
+            # AND IT IS COUNTED, which it was not. This is the REPLY path: the cell
+            # completed, its result exists, and the result is what could not be
+            # framed -- so the whole delivery is lost, not one frame of it. The
+            # per-cell sink is already gone by now (`execute` clears it in its
+            # `finally`), so the count goes to the broker tally rather than to a
+            # `CellResult` that no longer exists to carry it.
             log("execute reply exceeded the frame bound: %s" % exc)
+            broker._note_transport_drop(exc)
             reply(request_id, False, str(exc), code="FRAME_TOO_LARGE")
         except Exception as exc:  # noqa: BLE001
             log("execute failed: %s" % traceback.format_exc()[-1200:])
