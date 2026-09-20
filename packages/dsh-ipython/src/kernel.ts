@@ -45,6 +45,7 @@ import {
   type KernelStatus,
   type LateOutput,
 } from './protocol.ts'
+import { jupyterRuntimeDir } from './runtime-root.ts'
 
 /** One kernel's identity: session, execution world, environment, and generation. */
 export interface KernelIdentity {
@@ -277,6 +278,23 @@ export class KernelHost {
         // own variable because the broker starts the kernel as a grandchild and
         // `KernelManager` does not inherit the broker's cwd for it.
         DSH_IPYTHON_KERNEL_CWD: this.options.kernelWorkingDirectory ?? this.options.workingDirectory,
+        // WHERE THE JUPYTER CONNECTION FILE GOES (V5 §11.4, P12).
+        //
+        // `jupyter_client` writes the connection file through
+        // `jupyter_core.paths.jupyter_runtime_dir()`, which is NOT derived from
+        // the broker's cwd. MEASURED with this variable unset:
+        // `%APPDATA%\jupyter\runtime` -- outside the package AND outside
+        // `$DSH_HOME`, shared with every other Jupyter on the account. That file
+        // carries the HMAC key authorising execution on the kernel's sockets, so
+        // leaving it unmanaged means the scratch tree can look perfectly clean
+        // while the capability-bearing file sits somewhere no part of this
+        // deployment controls.
+        //
+        // Pinned to the scratch directory's own `jupyter/` subdirectory rather
+        // than a shared runtime dir, so two kernels cannot produce one
+        // unattributable connection file. The directory is created by
+        // `KernelService.entryFor` before the host starts.
+        JUPYTER_RUNTIME_DIR: jupyterRuntimeDir(this.options.workingDirectory),
         PYTHONUNBUFFERED: '1',
         PYTHONIOENCODING: 'utf-8',
       },

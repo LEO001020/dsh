@@ -27,12 +27,21 @@
       "types": "./lib/protocol.d.ts",
       "default": "./lib/protocol.js"
     },
+    "./runtime-root": {
+      "types": "./lib/runtime-root.d.ts",
+      "default": "./lib/runtime-root.js"
+    },
+    "./doctor": {
+      "types": "./lib/python-doctor.d.ts",
+      "default": "./lib/python-doctor.js"
+    },
     "./package.json": "./package.json"
   },
   "files": [
     "lib/**/*.js",
     "lib/**/*.d.ts",
     "src/broker.py",
+    "requirements.lock.txt",
     "cordis.patch.yml"
   ],
   "dsh": {

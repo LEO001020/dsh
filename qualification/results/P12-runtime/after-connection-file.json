@@ -1,0 +1,14 @@
+{
+  "probe": "P12 connection file location (measured while the kernel is alive)",
+  "dshHome": "D:\\DSH\\home\\p12",
+  "defaultKernelRoot": "D:\\DSH\\home\\p12\\runtime\\ipython",
+  "jupyterRuntimeDirEnv": null,
+  "kernelAlive": true,
+  "connectionFilesUnderDshHome": [],
+  "connectionFilesUnderPackage": [],
+  "connectionFilesUnderUserProfile": [],
+  "userProfileJupyterRuntimeDir": "E:\\zcode-labs\\zloop-home\\AppData\\Roaming\\jupyter\\runtime",
+  "errors": [],
+  "transport": "tcp",
+  "curveKeysPresent": true
+}

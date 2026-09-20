@@ -1,0 +1,43 @@
+# Pinned Python requirements for the DSH-owned kernel environment (V5 §11.3).
+#
+# WHAT THIS FILE IS FOR. V5 §11.3's preferred deployment is a DSH-owned venv at
+# `$DSH_HOME/runtime/python`, bootstrapped by a doctor step that "installs pinned
+# jupyter/IPython requirements from a checked-in lock/requirements file". This is
+# that file. It exists so the interpreter a kernel runs under is REPRODUCIBLE
+# rather than whatever happened to be installed system-wide -- the environment
+# digest binds the actual versions, and an unpinned install would make every
+# fresh bootstrap a different environment under the same digest.
+#
+# WHY THESE EXACT PINS. They are the versions MEASURED present in the system
+# interpreter on the qualification machine (CPython 3.14.3), which is the
+# environment every kernel measurement in this project has been taken under:
+#
+#     ipython 9.16.1   ipykernel 7.3.0   jupyter_client 8.10.0   pyzmq 27.2.0
+#     jupyter_core 5.9.1   traitlets 5.16.1   tornado 6.5.8
+#
+# `==` rather than `>=` deliberately. A floor would let a future bootstrap pick
+# up a different ipykernel and change the kernel's behaviour with no change to
+# this repository; the pin is what makes the environment digest meaningful.
+#
+# WHY THE TRANSITIVE PINS ARE LISTED RATHER THAN LEFT TO THE RESOLVER. The four
+# named in V5 §11.3 (IPython, ipykernel, jupyter_client, pyzmq) are what the
+# BROKER imports directly. The other three are the ones whose versions actually
+# reach a cell: `jupyter_core` decides where the connection file is written,
+# `traitlets` backs the kernel's config surface, and `tornado` carries the
+# kernel's IOPub loop. A bootstrap that pinned only the direct four would still
+# be able to change the connection-file location out from under the runtime
+# layout in `runtime-root.ts`.
+#
+# WHAT IS NOT HERE, and why. No `--hash` pins: producing them requires
+# downloading the wheels, which is exactly the network operation this round has
+# no authorized budget for. Without hashes this file is a version lock, not a
+# supply-chain lock -- it pins WHICH version, not WHICH ARTIFACT. That distinction
+# is recorded in `qualification/results/P12-runtime/` rather than left for a
+# reader to assume, because "pinned requirements" is otherwise easy to over-read.
+ipython==9.16.1
+ipykernel==7.3.0
+jupyter_client==8.10.0
+pyzmq==27.2.0
+jupyter_core==5.9.1
+traitlets==5.16.1
+tornado==6.5.8
