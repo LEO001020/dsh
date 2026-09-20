@@ -1,11 +1,11 @@
 {
   "driver": "p6-surface-driver",
   "slice": "P6 — the model-facing child-creation surface, before and after",
-  "ranAt": "2026-09-20T13:14:03.434Z",
-  "mode": "replay",
+  "ranAt": "2026-09-20T13:14:43.155Z",
+  "mode": "boot",
   "bootedSides": {
-    "before": false,
-    "after": false
+    "before": true,
+    "after": true
   },
   "homes": {
     "before": "D:/DSH/home/p6-surface-before/profiles/daily",
@@ -15,31 +15,43 @@
   "cwd": "C:/Windows/Temp",
   "boots": {
     "before": {
-      "port": null,
-      "portReleased": null,
+      "port": 2069,
+      "portReleased": true,
       "exitCode": null,
-      "timedOut": null,
+      "timedOut": false,
       "probeError": null,
       "artifactUsed": "D:/DSH/work/wt-p6/qualification/results/P6-surface/catalog-before.json",
       "partial": false,
-      "activationWarnings": null,
+      "activationWarnings": [],
       "buildIdentity": {
-        "artifacts": null,
-        "changedDuringBoot": null
+        "artifacts": {
+          "packages/dsh-daily-work/lib/host-plugin.js": "fb553116e31cde9e8230fe7d1fc97bf00b9c783b201579c9e0758da262b8f888",
+          "packages/dsh-daily-work/lib/capacity.js": "04dcb60367afa5134903a7569e01a7eb0f60961db563475826361c6f113bc359",
+          "packages/dsh-daily-work/lib/tools.js": "d024715f9bda05ff91290a3224d44bc661f399b8faf3863af235e4d8ad9073fb",
+          "packages/dsh-ipython/lib/kernel-plugin.js": "819e1476fe701c1bb91016b589c1cb19a622a8bee535076cc8f24a8790296d0a",
+          "packages/dsh-ipython/lib/host-plugin.js": "d91aba164c8143fdb1d0c8f4913598a51daf67f8dc2bea2c7afd02998cd87e7e"
+        },
+        "changedDuringBoot": []
       }
     },
     "after": {
-      "port": null,
-      "portReleased": null,
+      "port": 2620,
+      "portReleased": true,
       "exitCode": null,
-      "timedOut": null,
+      "timedOut": false,
       "probeError": null,
       "artifactUsed": "D:/DSH/work/wt-p6/qualification/results/P6-surface/catalog-after.json",
       "partial": false,
-      "activationWarnings": null,
+      "activationWarnings": [],
       "buildIdentity": {
-        "artifacts": null,
-        "changedDuringBoot": null
+        "artifacts": {
+          "packages/dsh-daily-work/lib/host-plugin.js": "fb553116e31cde9e8230fe7d1fc97bf00b9c783b201579c9e0758da262b8f888",
+          "packages/dsh-daily-work/lib/capacity.js": "04dcb60367afa5134903a7569e01a7eb0f60961db563475826361c6f113bc359",
+          "packages/dsh-daily-work/lib/tools.js": "d024715f9bda05ff91290a3224d44bc661f399b8faf3863af235e4d8ad9073fb",
+          "packages/dsh-ipython/lib/kernel-plugin.js": "819e1476fe701c1bb91016b589c1cb19a622a8bee535076cc8f24a8790296d0a",
+          "packages/dsh-ipython/lib/host-plugin.js": "d91aba164c8143fdb1d0c8f4913598a51daf67f8dc2bea2c7afd02998cd87e7e"
+        },
+        "changedDuringBoot": []
       }
     }
   },
@@ -439,7 +451,7 @@
       "error": null,
       "isError": false,
       "errorCode": null,
-      "cellText": "outcome: ok\nkernel epoch: 1\n--- stdout ---\nP6_BRIDGE=[{\"error\": \"UNKNOWN_TOOL: unknown tool \\\"subagent\\\"\", \"outcome\": \"REFUSED\", \"tool\": \"subagent\"}, {\"error\": \"UNKNOWN_TOOL: unknown tool \\\"subagent_fork\\\"\", \"outcome\": \"REFUSED\", \"tool\": \"subagent_fork\"}, {\"error\": \"UNKNOWN_TOOL: unknown tool \\\"subagent_codex\\\"\", \"outcome\": \"REFUSED\", \"tool\": \"subagent_codex\"}, {\"error\": \"UNKNOWN_TOOL: unknown tool \\\"subagent_claude_code\\\"\", \"outcome\": \"REFUSED\", \"tool\": \"subagent_claude_code\"}, {\"error\": \"UNKNOWN_TOOL: unknown tool \\\"workflow\\\"\", \"outcome\": \"REFUSED\", \"tool\": \"workflow\"}, {\"error\": \"UNKNOWN_TOOL: unknown tool \\\"ralph\\\"\", \"outcome\": \"REFUSED\", \"tool\": \"ralph\"}]\n\n[1 shell frame(s) for other requests were ignored while waiting for this cell. They did not complete it.]",
+      "cellText": "outcome: ok\nkernel epoch: 1\n--- stdout ---\nP6_BRIDGE=[{\"error\": \"UNKNOWN_TOOL: unknown tool \\\"subagent\\\"\", \"outcome\": \"REFUSED\", \"tool\": \"subagent\"}, {\"error\": \"UNKNOWN_TOOL: unknown tool \\\"subagent_fork\\\"\", \"outcome\": \"REFUSED\", \"tool\": \"subagent_fork\"}, {\"error\": \"UNKNOWN_TOOL: unknown tool \\\"subagent_codex\\\"\", \"outcome\": \"REFUSED\", \"tool\": \"subagent_codex\"}, {\"error\": \"UNKNOWN_TOOL: unknown tool \\\"subagent_claude_code\\\"\", \"outcome\": \"REFUSED\", \"tool\": \"subagent_claude_code\"}, {\"error\": \"UNKNOWN_TOOL: unknown tool \\\"workflow\\\"\", \"outcome\": \"REFUSED\", \"tool\": \"workflow\"}, {\"error\": \"UNKNOWN_TOOL: unknown tool \\\"ralph\\\"\", \"outcome\": \"REFUSED\", \"tool\": \"ralph\"}]\n",
       "anyExecuted": false
     },
     "before": {
@@ -449,12 +461,12 @@
         {
           "outcome": "EXECUTED",
           "tool": "subagent",
-          "value": "{'kind': 'continuable', 'subagentId': '315d1c6a-b868-4723-818d-d9609c6dff5d'}"
+          "value": "{'kind': 'continuable', 'subagentId': 'ce5817a4-2f23-45f3-9ef5-0c5a1fd7caa3'}"
         },
         {
           "outcome": "EXECUTED",
           "tool": "subagent_fork",
-          "value": "{'kind': 'continuable', 'subagentId': '0e0e916b-3af4-4859-8487-0e5aa88f91ae'}"
+          "value": "{'kind': 'continuable', 'subagentId': '4f771154-5a42-428a-b2dc-8468d9ac94e6'}"
         },
         {
           "error": "UNKNOWN_TOOL: unknown tool \"subagent_codex\"",
@@ -480,7 +492,7 @@
       "error": null,
       "isError": false,
       "errorCode": null,
-      "cellText": "outcome: ok\nkernel epoch: 1\n--- stdout ---\nP6_BRIDGE=[{\"outcome\": \"EXECUTED\", \"tool\": \"subagent\", \"value\": \"{'kind': 'continuable', 'subagentId': '315d1c6a-b868-4723-818d-d9609c6dff5d'}\"}, {\"outcome\": \"EXECUTED\", \"tool\": \"subagent_fork\", \"value\": \"{'kind': 'continuable', 'subagentId': '0e0e916b-3af4-4859-8487-0e5aa88f91ae'}\"}, {\"error\": \"UNKNOWN_TOOL: unknown tool \\\"subagent_codex\\\"\", \"outcome\": \"REFUSED\", \"tool\": \"subagent_codex\"}, {\"error\": \"UNKNOWN_TOOL: unknown tool \\\"subagent_claude_code\\\"\", \"outcome\": \"REFUSED\", \"tool\": \"subagent_claude_code\"}, {\"error\": \"INVALID_ARGS: invalid arguments: missing required property \\\"script\\\"; missing required property \\\"meta\\\"\", \"outcome\": \"REFUSED\", \"tool\": \"workflow\"}, {\"error\": \"UNKNOWN_TOOL: unknown tool \\\"ralph\\\"\", \"outcome\": \"REFUSED\", \"tool\": \"ralph\"}]\n\n[1 shell frame(s) for other requests were ignored while waiting for this cell. They did not complete it.]",
+      "cellText": "outcome: ok\nkernel epoch: 1\n--- stdout ---\nP6_BRIDGE=[{\"outcome\": \"EXECUTED\", \"tool\": \"subagent\", \"value\": \"{'kind': 'continuable', 'subagentId': 'ce5817a4-2f23-45f3-9ef5-0c5a1fd7caa3'}\"}, {\"outcome\": \"EXECUTED\", \"tool\": \"subagent_fork\", \"value\": \"{'kind': 'continuable', 'subagentId': '4f771154-5a42-428a-b2dc-8468d9ac94e6'}\"}, {\"error\": \"UNKNOWN_TOOL: unknown tool \\\"subagent_codex\\\"\", \"outcome\": \"REFUSED\", \"tool\": \"subagent_codex\"}, {\"error\": \"UNKNOWN_TOOL: unknown tool \\\"subagent_claude_code\\\"\", \"outcome\": \"REFUSED\", \"tool\": \"subagent_claude_code\"}, {\"error\": \"INVALID_ARGS: invalid arguments: missing required property \\\"script\\\"; missing required property \\\"meta\\\"\", \"outcome\": \"REFUSED\", \"tool\": \"workflow\"}, {\"error\": \"UNKNOWN_TOOL: unknown tool \\\"ralph\\\"\", \"outcome\": \"REFUSED\", \"tool\": \"ralph\"}]\n\n[1 shell frame(s) for other requests were ignored while waiting for this cell. They did not complete it.]",
       "anyExecuted": true
     }
   },
@@ -567,7 +579,17 @@
     }
   },
   "substrateSeam": {
-    "before": null,
+    "before": {
+      "servicePresent": true,
+      "startContinuableIsCallable": true,
+      "startIsCallable": true,
+      "registeredProviders": [
+        "spawn",
+        "fork"
+      ],
+      "agentsCreateIsCallable": true,
+      "note": "these seams are reachable from an IN-PROCESS caller holding a Context; the model-facing catalog measured above does not expose them"
+    },
     "after": {
       "servicePresent": true,
       "startContinuableIsCallable": true,
@@ -596,15 +618,14 @@
     "keptRowsStayEnabled": true,
     "noUnexpectedToolsAdded": true,
     "presetSurvivedTheDisable": true,
-    "buildsStableDuringBothBoots": null,
+    "buildsStableDuringBothBoots": true,
     "bridgeArmDidNotExecute": true,
     "substrateSeamStillPresent": true,
     "substrateSeamStillCallable": true,
-    "substrateSeamHasProviders": true
+    "substrateSeamHasProviders": true,
+    "substrateSeamUnchangedByTheDisable": true
   },
   "failedAssertions": [],
-  "notRunAssertions": [
-    "buildsStableDuringBothBoots"
-  ],
+  "notRunAssertions": [],
   "verdict": "PASS"
 }

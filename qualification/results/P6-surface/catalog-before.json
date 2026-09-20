@@ -1,9 +1,9 @@
 {
   "probe": "p6-surface",
-  "ranAt": "2026-09-20T13:09:24.744Z",
+  "ranAt": "2026-09-20T13:14:30.071Z",
   "profileName": "unknown",
   "agentPreset": "daily-standard",
-  "sessionId": "session-e071755e-ee9e-4028-bffa-144be90fac34",
+  "sessionId": "session-c9127977-af83-487a-98ad-bf46830db22e",
   "tools": [
     "ask_user_question",
     "create_goal",
@@ -88,7 +88,7 @@
       "errorCode": null,
       "errorName": null,
       "message": "",
-      "contentText": "started subagent 74de0bbb-7c01-4d70-9117-db6f1e0cb7a7",
+      "contentText": "started subagent b614c1ab-9ea9-4fe0-99a1-1a2ba2c47c22",
       "settled": true,
       "dispatchedButUnsettled": false
     },
@@ -100,7 +100,7 @@
       "errorCode": null,
       "errorName": null,
       "message": "",
-      "contentText": "started subagent b7dff2dc-d89e-4f04-953e-866dadf78aee",
+      "contentText": "started subagent 7b4beb09-f0db-45a8-bb27-42e3c3dc5f25",
       "settled": true,
       "dispatchedButUnsettled": false
     },
@@ -161,12 +161,12 @@
       {
         "outcome": "EXECUTED",
         "tool": "subagent",
-        "value": "{'kind': 'continuable', 'subagentId': '315d1c6a-b868-4723-818d-d9609c6dff5d'}"
+        "value": "{'kind': 'continuable', 'subagentId': 'ce5817a4-2f23-45f3-9ef5-0c5a1fd7caa3'}"
       },
       {
         "outcome": "EXECUTED",
         "tool": "subagent_fork",
-        "value": "{'kind': 'continuable', 'subagentId': '0e0e916b-3af4-4859-8487-0e5aa88f91ae'}"
+        "value": "{'kind': 'continuable', 'subagentId': '4f771154-5a42-428a-b2dc-8468d9ac94e6'}"
       },
       {
         "error": "UNKNOWN_TOOL: unknown tool \"subagent_codex\"",
@@ -192,7 +192,7 @@
     "error": null,
     "isError": false,
     "errorCode": null,
-    "cellText": "outcome: ok\nkernel epoch: 1\n--- stdout ---\nP6_BRIDGE=[{\"outcome\": \"EXECUTED\", \"tool\": \"subagent\", \"value\": \"{'kind': 'continuable', 'subagentId': '315d1c6a-b868-4723-818d-d9609c6dff5d'}\"}, {\"outcome\": \"EXECUTED\", \"tool\": \"subagent_fork\", \"value\": \"{'kind': 'continuable', 'subagentId': '0e0e916b-3af4-4859-8487-0e5aa88f91ae'}\"}, {\"error\": \"UNKNOWN_TOOL: unknown tool \\\"subagent_codex\\\"\", \"outcome\": \"REFUSED\", \"tool\": \"subagent_codex\"}, {\"error\": \"UNKNOWN_TOOL: unknown tool \\\"subagent_claude_code\\\"\", \"outcome\": \"REFUSED\", \"tool\": \"subagent_claude_code\"}, {\"error\": \"INVALID_ARGS: invalid arguments: missing required property \\\"script\\\"; missing required property \\\"meta\\\"\", \"outcome\": \"REFUSED\", \"tool\": \"workflow\"}, {\"error\": \"UNKNOWN_TOOL: unknown tool \\\"ralph\\\"\", \"outcome\": \"REFUSED\", \"tool\": \"ralph\"}]\n\n[1 shell frame(s) for other requests were ignored while waiting for this cell. They did not complete it.]",
+    "cellText": "outcome: ok\nkernel epoch: 1\n--- stdout ---\nP6_BRIDGE=[{\"outcome\": \"EXECUTED\", \"tool\": \"subagent\", \"value\": \"{'kind': 'continuable', 'subagentId': 'ce5817a4-2f23-45f3-9ef5-0c5a1fd7caa3'}\"}, {\"outcome\": \"EXECUTED\", \"tool\": \"subagent_fork\", \"value\": \"{'kind': 'continuable', 'subagentId': '4f771154-5a42-428a-b2dc-8468d9ac94e6'}\"}, {\"error\": \"UNKNOWN_TOOL: unknown tool \\\"subagent_codex\\\"\", \"outcome\": \"REFUSED\", \"tool\": \"subagent_codex\"}, {\"error\": \"UNKNOWN_TOOL: unknown tool \\\"subagent_claude_code\\\"\", \"outcome\": \"REFUSED\", \"tool\": \"subagent_claude_code\"}, {\"error\": \"INVALID_ARGS: invalid arguments: missing required property \\\"script\\\"; missing required property \\\"meta\\\"\", \"outcome\": \"REFUSED\", \"tool\": \"workflow\"}, {\"error\": \"UNKNOWN_TOOL: unknown tool \\\"ralph\\\"\", \"outcome\": \"REFUSED\", \"tool\": \"ralph\"}]\n\n[1 shell frame(s) for other requests were ignored while waiting for this cell. They did not complete it.]",
     "anyExecuted": true
   },
   "rowEnablement": [
@@ -422,6 +422,17 @@
         "childId"
       ]
     }
+  },
+  "substrateSeam": {
+    "servicePresent": true,
+    "startContinuableIsCallable": true,
+    "startIsCallable": true,
+    "registeredProviders": [
+      "spawn",
+      "fork"
+    ],
+    "agentsCreateIsCallable": true,
+    "note": "these seams are reachable from an IN-PROCESS caller holding a Context; the model-facing catalog measured above does not expose them"
   },
   "presetRoots": [
     "D:/DSH/home/p6-surface-before/profiles/daily/presets/",

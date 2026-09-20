@@ -511,6 +511,16 @@ const assertions = {
   // A seam with no provider would be present in signature and absent in fact,
   // so the registry is part of the claim rather than a detail.
   substrateSeamHasProviders: (after.probe?.substrateSeam?.registeredProviders ?? []).length > 0,
+  // AND THE CHANGE DID NOT TOUCH THE SEAM. Present on BOTH sides means the
+  // difference between them is exactly the model-facing rows and nothing
+  // underneath -- which is the precise form of "this removes the surface, not
+  // the capability". Comparing the two provider lists makes it checkable rather
+  // than a sentence.
+  substrateSeamUnchangedByTheDisable:
+    (before.probe?.substrateSeam?.servicePresent ?? null) === (after.probe?.substrateSeam?.servicePresent ?? null)
+    && JSON.stringify(before.probe?.substrateSeam?.registeredProviders ?? null)
+      === JSON.stringify(after.probe?.substrateSeam?.registeredProviders ?? null)
+    && (after.probe?.substrateSeam?.servicePresent ?? null) !== null,
 }
 
 /**
