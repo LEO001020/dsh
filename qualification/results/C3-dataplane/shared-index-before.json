@@ -1,0 +1,64 @@
+{
+  "probe": "c3-shared-index",
+  "label": "before",
+  "measuredAt": "2026-09-20T15:33:36.127Z",
+  "identity": {
+    "srcArtifactsTs": "3e781b38b8e31dd4769e32ea1fd9f2858375139984896f038c3abc918f8e789a",
+    "libArtifactsJs": "8220d779717a6515a64cb5df01388ea5b04a5e062307bbbca1c9d6877feb7da9"
+  },
+  "arms": {
+    "capture": {
+      "sha256": "c4ed8ed5d26fc4cd0e8e6a00aa3917153e491e481a7b74d606068eecfe2a3a74",
+      "bytes": 419,
+      "realmOfA": "realm_3d3cfc6d-eb8e-4429-bfea-21112e340fa4"
+    },
+    "firstPageFromA": {
+      "bytes": 64,
+      "offset": 0,
+      "sha256": "629ea030eb9bfd6bb2d610a83b3470076e579229be3065b760f376bb9bd9780e",
+      "isTheArtifact": true,
+      "hasCursor": true
+    },
+    "storeB": {
+      "realmOfB": "realm_3d3cfc6d-eb8e-4429-bfea-21112e340fa4",
+      "sameRealmAsA": true,
+      "sameKeyAsA": true,
+      "sameIndexRoot": true
+    },
+    "cursorFromAOnB": {
+      "refused": true,
+      "code": "artifact-integrity-error",
+      "name": "ArtifactError",
+      "message": "artifact artifact:sha256:c4ed8ed5d26fc4cd0e8e6a00aa3917153e491e481a7b74d606068eecfe2a3a74 is referenced but absent from the store; refusing before any byte is read",
+      "yieldedIsTheNamedArtifact": null
+    },
+    "controlOwnStore": {
+      "refused": false,
+      "bytes": 64,
+      "sha256": "ffe054fe7ae0cb6dc65c3af9b61d5209f439851db43d0ba5997337df154668eb",
+      "offset": 64
+    },
+    "byteHomes": {
+      "aFiles": [
+        "/attachments/v1/file-objects/c4/c4ed8ed5d26fc4cd0e8e6a00aa3917153e491e481a7b74d606068eecfe2a3a74",
+        "/attachments/v1/files/c4/c4ed8ed5d26fc4cd0e8e6a00aa3917153e491e481a7b74d606068eecfe2a3a74/artifact"
+      ]
+    },
+    "storeBHoldDifferentBytesUnderSameAddress": true,
+    "cursorFromAOnBWrongBytes": {
+      "refused": true,
+      "code": "artifact-integrity-error",
+      "name": "ArtifactError",
+      "message": "artifact artifact:sha256:c4ed8ed5d26fc4cd0e8e6a00aa3917153e491e481a7b74d606068eecfe2a3a74 is recorded as c4ed8ed5d26fc4cd0e8e6a00aa3917153e491e481a7b74d606068eecfe2a3a74 (419 bytes) but the stored object hashes to c39e3217736230c6cede30c5ab7958ea7cb5e7ab37f34cb1045cff85854b04a1 (419 bytes read); the bytes are not the artifact that was recorded",
+      "yieldedIsTheNamedArtifact": null
+    }
+  },
+  "verdicts": {
+    "controlOwnStoreServes": true,
+    "sharedRealmAcrossHomes": true,
+    "sharedKeyAcrossHomes": true,
+    "cursorServedByStoreItWasNotIssuedFor": false,
+    "crossHomeYieldedWrongBytes": false,
+    "ORACLE_HOLDS": true
+  }
+}
