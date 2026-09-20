@@ -1,0 +1,25 @@
+# ID-06 pinned-checkout state, re-measured by root
+# date: 2026-09-20T15:13:38Z
+# repo: D:\DSH\src\dsh-src
+
+== git rev-parse HEAD ==
+ddefc45fbc7f8e46dd73185e68295696d1297887
+
+== git status --porcelain (expect EMPTY) ==
+(end of porcelain output -- zero lines above means clean)
+
+== porcelain line count ==
+0
+
+== the file that was reported modified ==
+git hash-object  : c05787d931870defacfdfcb4feca85f4ae733d8e
+HEAD:<path> blob : c05787d931870defacfdfcb4feca85f4ae733d8e
+
+== byte-level line-ending state ==
+bytes 7086 CRLF 0 bareLF 165
+
+== check-source-plane ==
+[ok  ] git status --porcelain is empty: nothing tracked-modified, nothing staged,
+       and no generated state written into the checkout
+
+source plane: CLEAN -- a qualification run may start.
