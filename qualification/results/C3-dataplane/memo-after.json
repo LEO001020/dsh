@@ -1,0 +1,63 @@
+{
+  "probe": "c3-memo",
+  "label": "after",
+  "measuredAt": "2026-09-20T15:40:29.528Z",
+  "identity": {
+    "srcArtifactsTs": "78f634cc158da13b401cd59a8ec1e1429301758f4675815d788154551fc0b38a",
+    "libArtifactsJs": "a9ccbcfe95957a304d7a9a63b736fda36198dc43e413fed8dfca897fc06fc703"
+  },
+  "arms": {
+    "capture": {
+      "bytes": 908,
+      "sha256": "1959faf57b16e7566778429f8a07def9b482ad60f6aa9586fe117be073d24d8d"
+    },
+    "pinnedMtime": {
+      "mtimeMs": 1789918829000,
+      "isWholeSecond": true
+    },
+    "firstPage": {
+      "refused": false,
+      "bytes": 64,
+      "sha256": "3fe388082e31d84336c5de9bfd721cd18c7697db5cedf0508df65736fdb2f564",
+      "hasCursor": true,
+      "isTheNamedArtifactPrefix": true
+    },
+    "replacement": {
+      "sameLength": true,
+      "sameMtimeMs": true,
+      "stampMatches": true,
+      "storedSha256": "3229b5c9c3901e92c2af100e6329786ec70ef055cc0ab033f992ca6974f54ecb",
+      "descriptorSha256": "1959faf57b16e7566778429f8a07def9b482ad60f6aa9586fe117be073d24d8d",
+      "bytesAreTheNamedArtifact": false
+    },
+    "cursorAfterReplacement": {
+      "refused": true,
+      "yieldedIsTheNamedArtifact": false,
+      "refusals": [
+        {
+          "code": "artifact-integrity-error",
+          "step": "identity"
+        }
+      ],
+      "code": "artifact-integrity-error",
+      "message": "artifact artifact:sha256:1959faf57b16e7566778429f8a07def9b482ad60f6aa9586fe117be073d24d8d is recorded as 1959faf57b16e7566778429f8a07def9b482ad60f6aa9586fe117be073d24d8d (908 bytes) but the stored object hashes to 3229b5c9c3901e92c2af100e6329786ec70ef055cc0ab033f992ca6974f54ecb (908 bytes read); the bytes are not the artifact that was recorded"
+    },
+    "resolveReference": {
+      "refused": true,
+      "code": "artifact-orphaned",
+      "message": "observation artifact:sha256:1959faf57b16e7566778429f8a07def9b482ad60f6aa9586fe117be073d24d8d has no committed Session reference; any object on disk is an orphan, not a delivered observation"
+    },
+    "freshStoreColdMemo": {
+      "refused": true,
+      "code": "artifact-integrity-error"
+    }
+  },
+  "verdicts": {
+    "pinnedStampIsReproducible": true,
+    "replacementIsNotTheNamedArtifact": true,
+    "cursorServedReplacedBytes": false,
+    "resolveReferenceRefused": true,
+    "coldMemoRefusesTheReplacement": true,
+    "PAGING_IS_THE_WEAKER_ROUTE": false
+  }
+}
