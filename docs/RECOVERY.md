@@ -6,10 +6,16 @@
 > positive control), so a run cannot be created by any user action on the
 > composed profile. Recovery of a managed run is therefore **not exercisable
 > end to end today**, and every recovery claim below is a statement about the
-> mechanism rather than about the product. Two of the mechanisms are additionally
-> unreachable on their own terms, stated where they appear: the epoch guard
-> (step 2) and the reconciliation path (`recovery.ts` / `reconcile.ts` have no
-> production importer). The measurements are real; the reachability is not.
+> mechanism rather than about the product. The reconciliation path is
+> additionally unreachable on its own terms: `recovery.ts` and `reconcile.ts`
+> have no production importer. The measurements are real; the reachability is
+> not.
+>
+> **A third mechanism this caveat used to list — the epoch guard at step 2 — no
+> longer exists.** It was **deleted rather than wired** (F8 / REC-09 / REC-10;
+> `qualification/results/R9-recovery-topology/`), and step 2 below now records
+> what IS enforced in its place. It is listed here rather than silently dropped
+> because a removed claim and a claim that was never made must not look alike.
 
 ## The five positions are not the same event
 
@@ -42,20 +48,32 @@ States may be merged by type in an implementation, but test coverage must not be
 
 1. Verify **deployment identity**, `schemaVersion`, and whether the old process
    can still produce effects.
-2. **An old epoch is never reused — but be precise about what enforces that.**
-   The guard that would refuse a stale-epoch settlement
-   (`applyWorkerSettlement` in `recovery.ts`) is real and tested and is **not
-   reachable from any production path**: `recovery.ts` has no non-test importer,
-   the function has no caller outside its own module and its test, and nothing
-   bumps or reads the record's `epoch` after `initialRunRecord` sets it to 1. So
-   the field is **inert in the product**, and a callback carrying a stale epoch
-   cannot today be rejected *on epoch grounds*. What IS enforced is **object
-   identity** (`tool-protocol-guards.ts` compares the calling Agent against the
-   live registry), which covers the in-process resume case; a run re-adopted
-   across a **process** boundary has no epoch enforcement. An earlier revision of
-   this file stated the requirement as if it were the implementation — that is
-   the defect shape `docs/DELETE-AUDIT.md` §3.8 records three times, and
-   `record.ts:410-437` now says so in the schema itself.
+2. **An old epoch is never reused — and there is no longer an epoch to reuse.**
+   This step used to describe a real, tested guard (`applyWorkerSettlement` in
+   `recovery.ts`) that refused a stale-epoch settlement but was unreachable from
+   any production path. The topology measurement closed that question in the
+   other direction: **the guard, its `WorkerSettlement` type, its
+   `RefusalLedger` over the separate `dsh_daily_work_refusals` domain, and the
+   run record's `epoch` field were all DELETED rather than wired**, because
+   wiring them would have meant inventing a cross-process settlement producer
+   (`recovery.ts:188-255` states the measurement; `record.ts:410-441` states the
+   schema decision). The reason is sharper than unreachability: **no production
+   call site targets a terminal task state**, and the state the product actually
+   leaves an unsettled task in — `unknown`, with its reservation held — has no
+   production exit (`host.ts:2232-2238` and `host.ts:2261-2267` write `unknown`
+   with `releaseReservation: false`; `admit` refuses a slot-holding task,
+   `host.ts:1442-1450`; `relaunchPrepared` refuses anything not `prepared`,
+   `recovery.ts:103-113`). A settlement is the act of LEAVING an in-flight
+   state, and that write has no production call site in any generation, stale or
+   current. **What IS enforced instead is object identity**
+   (`tool-protocol-guards.ts` compares the calling Agent against the live
+   registry by OBJECT, `ctx.agents.get(id) === owner`), which covers the
+   in-process resume case — a case the product can reach. A run re-adopted
+   across a **process** boundary has no generation fencing, and **v2 does not
+   claim it**: the v1 cases REC-09 and REC-10 stay FAIL historically, and the
+   mechanism is recorded as a NON-CLAIM rather than as a fix.
+   (`docs/DELETE-AUDIT.md` §3.8.1 records the earlier, wider claim and its
+   correction; `record.ts:410-441` now says so in the schema itself.)
 3. For every reserved `childId`, query the existing Session / descriptor / Inbox
    / actual request and result.
 4. Pending input that never entered a request is recovered by **DSH natively**;

@@ -5,8 +5,8 @@
   "deployment_identity": "ece4037a9d5bbb014aa5a8395ed15531715a11949f2aa687166fcfeb5717576f",
   "summary": {
     "total": 104,
-    "PASS": 85,
-    "FAIL": 2,
+    "PASS": 84,
+    "FAIL": 3,
     "RUNNING": 0,
     "BLOCKED_EXTERNAL": 1,
     "NOT_RUN": 10,

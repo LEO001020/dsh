@@ -1706,7 +1706,7 @@ describe('UPG-08: the daily verdict, COMPUTED from the per-gate results', () => 
     { id: 'SEC-03', status: 'FAIL', summary: 'A confined child completes a real HTTP round trip to loopback and CONNECTS to a LAN address; DNS resolves public and private names. No OS or gateway boundary intercepts.', evidence: 'qualification/results/M9.3-security-denial/FINDINGS.md' },
     { id: 'SEC-04', status: 'PASS', summary: 'Address policy refuses loopback/link-local/private/mapped/transition classes; a mixed answer set is refused whole; cross-origin and credentialed redirects are refused; the transport pins the validated set.', evidence: 'packages/dsh-daily-work/src/sec-gates.test.ts' },
     { id: 'SEC-05', status: 'PASS', summary: 'A symlink escape is refused with FS_SANDBOX_DENIED at the canonical-target boundary; the outside file is byte-identical; containment compares dev/ino when spellings differ.', evidence: 'packages/dsh-daily-work/src/sec-gates.test.ts' },
-    { id: 'SEC-06', status: 'FAIL', summary: 'The run-record epoch guard exists and is tested but has NO production importer: the field is inert (G-SEAM-21). The kernel park/reset half is NOT_RUN (no kernel plane).', evidence: 'docs/GAPS.md#G-SEAM-21' },
+    { id: 'SEC-06', status: 'FAIL', summary: 'The run-record epoch guard was DELETED, not wired: the guard, its WorkerSettlement type, its RefusalLedger and the run record\'s epoch field are all gone, because the guard\'s input cannot be constructed on any production path (no production call site writes a terminal state; unknown has no production exit). So the gate is UNMET and is a recorded NON-CLAIM, not a fix (G-SEAM-21, F8/REC-09/REC-10). The kernel park/reset half is NOT_RUN (no kernel plane).', evidence: 'docs/GAPS.md#G-SEAM-21' },
     { id: 'SEC-07', status: 'PASS', summary: 'No source claims a cell id isolates malicious code; the transport limit (plaintext TCP by default) is recorded; cross-Session and host refusals hold.', evidence: 'qualification/results/M11-ipython/TRANSPORT-FINDINGS.md' },
     { id: 'SEC-08', status: 'NOT_RUN', summary: 'No runtime role migration exists; isolation is by separate store plus the home lock, which is the mechanism this deployment has. The architecture requires a separate execution world per read-permission domain, which is not built.', evidence: 'docs/GAPS.md' },
     // UPG
@@ -1774,6 +1774,67 @@ describe('UPG-08: the daily verdict, COMPUTED from the per-gate results', () => 
     expect(notRun.sort()).toEqual(['DEP-04', 'SEC-08', 'UPG-08'])
     // And the one external block.
     expect(GATES.filter(row => row.status === 'BLOCKED_EXTERNAL').map(row => row.id)).toEqual(['UPG-07'])
+  })
+
+  it('SEC-06 says DELETED, not "exists but unreachable", and the tree agrees with the row', () => {
+    // THIS ASSERTION REPLACES A FALSE ONE, and the replacement is a real check
+    // rather than a deletion. The row used to read "the run-record epoch guard
+    // EXISTS and is tested but has NO production importer: the field is inert".
+    // That was true when written and R9 then DELETED the guard, the
+    // `WorkerSettlement` type, the `RefusalLedger`, the `dsh_daily_work_refusals`
+    // domain and the record's `epoch` field. The row kept asserting the existence
+    // of a mechanism that no longer exists, and it passed because a summary
+    // STRING is not a measurement -- the same oracle-weaker-than-its-scenario
+    // class this project has recorded more than twelve times.
+    //
+    // So the row is asserted against the TREE, not against itself: if a future
+    // edit resurrects the guard, or if the summary drifts back to claiming it
+    // exists, this fails.
+    const sec06 = GATES.find(row => row.id === 'SEC-06')!
+    expect(sec06.status).toBe('FAIL')
+    expect(sec06.summary, 'SEC-06 must say DELETED').toContain('DELETED')
+    expect(sec06.summary, 'SEC-06 must not claim the guard exists').not.toContain('guard exists')
+
+    // The tree side of the same claim, over production source with comments
+    // stripped (the deletion is DOCUMENTED in comments, and that documentation
+    // must survive -- so comments may name the deleted symbols, code may not).
+    //
+    // The enumeration is the ONE R9 derived for the same purpose, rather than a
+    // fresh hand-picked list: `kernel-lifecycle.ts` carries a KERNEL epoch, which
+    // is a DIFFERENT field that shares the word (G-SEAM-43) and is excluded by
+    // name. MEASURED on this tree: it is the only production file with any
+    // `epoch` word in code at all.
+    const src = join(REPO_ROOT, 'packages', 'dsh-daily-work', 'src')
+    const production = readdirSync(src).filter(f => f.endsWith('.ts') && !f.endsWith('.test.ts'))
+    const epochInCode: string[] = []
+    const deletedSymbolsInCode: string[] = []
+    for (const file of production) {
+      const code = readFileSync(join(src, file), 'utf8')
+        .split(/\r?\n/u)
+        .filter(line => !/^\s*(?:\/\/|\*|\/\*)/u.test(line))
+        .join('\n')
+      if (file !== 'kernel-lifecycle.ts' && /\bepoch\b/u.test(code)) epochInCode.push(file)
+      if (/applyWorkerSettlement|RefusalLedger|WorkerSettlement/u.test(code)) deletedSymbolsInCode.push(file)
+    }
+    expect(epochInCode, 'no production module may read or write a RUN epoch').toEqual([])
+    expect(deletedSymbolsInCode, 'the deleted settlement machinery must not survive in code').toEqual([])
+    // The positive control that keeps the two empty results from being an empty
+    // negative of a broken scan: the KERNEL epoch IS present, in the one file the
+    // exclusion names. If the scan stopped working, this would go empty too.
+    const kernelCode = readFileSync(join(src, 'kernel-lifecycle.ts'), 'utf8')
+      .split(/\r?\n/u)
+      .filter(line => !/^\s*(?:\/\/|\*|\/\*)/u.test(line))
+      .join('\n')
+    expect(kernelCode, 'control: the KERNEL epoch must still be found').toMatch(/\bepoch\b/u)
+    // The record's schema is the load-bearing half: the field must not be declared.
+    const recordCode = readFileSync(join(src, 'record.ts'), 'utf8')
+      .split(/\r?\n/u)
+      .filter(line => !/^\s*(?:\/\/|\*|\/\*)/u.test(line))
+      .join('\n')
+    expect(recordCode, 'the run record schema must not declare an epoch').not.toMatch(/epoch/u)
+    // And the documented removal is present, so a reader learns why rather than
+    // finding a silent gap.
+    expect(readFileSync(join(src, 'record.ts'), 'utf8')).toContain('THERE IS NO `epoch` FIELD HERE')
   })
 
   it('the external blocker is named exactly, with its source file', () => {

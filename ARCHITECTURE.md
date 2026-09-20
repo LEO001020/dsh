@@ -51,7 +51,12 @@ is DSH's existing AgentLoop.
   machine and the coalesced drain.
 - `dsh-daily-work/tools` — mounted in the agent preset. Registers the `work` tool
   as an agent-scoped consumer. It holds **no** cross-session mutable state; every
-  operation resolves the exact live Agent and run epoch.
+  operation resolves the exact live Agent **by object identity**
+  (`tool-protocol-guards.ts`). This line used to read "and run epoch": the run
+  record has no `epoch` field and there is deliberately no run-epoch check here
+  (`host.ts:23-25`, `record.ts:410-441`), because the topology measurement showed
+  no production path can present a stale-epoch settlement
+  (`qualification/results/R9-recovery-topology/`).
 
 Different lifetimes are mounted separately. That is not the same as splitting into
 multiple software products — it is one package with two entry points.

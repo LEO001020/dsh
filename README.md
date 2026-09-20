@@ -187,10 +187,13 @@ arm, in `qualification/results/R2-F10F11/mutation-test.txt`.
 
 ## What is actually proven
 
-**85 of 104 gates PASS, 2 are honest FAILs**, with the delivery package's checker
+**84 of 104 gates PASS, 3 are honest FAILs**, with the delivery package's checker
 reporting **zero structural errors** on the report. Every PASS carries at least
 one evidence file whose sha256 is recorded, and the generator refuses to emit a
-PASS with no evidence on disk. The load-bearing results:
+PASS with no evidence on disk. **D10 is the third FAIL and it is new**: it had
+been PASS since before R9 deleted the settlement guard its note described, and it
+was re-judged when that was found (`docs/DELETE-AUDIT.md` §3.8.1). The
+load-bearing results:
 
 - **Ten children are admitted through the real `ctx.subagents.startContinuable`
   seam on the production AgentLoop**, with a real Session each, and the ceiling
@@ -272,8 +275,8 @@ Read `docs/GAPS.md` for the full list. The ones that matter most:
   artifact is kept separately at `qualification/specs/frozen/` because the live
   file's digest changes as verdicts are filed — the pin names the authored
   artifact, and `helpers/doctor.py` plus `verify-identity.py` both check that.
-  **No PASS is inherited**: the older 104-case report and its 85 PASSes are valid
-  evidence for the OLD identity only.
+  **No PASS is inherited**: the older 104-case report and its PASSes (84 after
+  this round's D10 correction) are valid evidence for the OLD identity only.
 - **The deployment is not confined, and one seam still says otherwise.** The
   execution plane is unconfined — measured: `PwshLocalExecutor`, `LocalFileSystem`,
   the permission plane disabled, approval policy `never`. But
@@ -293,29 +296,46 @@ Read `docs/GAPS.md` for the full list. The ones that matter most:
 - **Concurrent `drain` callers over-admit past the target, and `capacityDeficit`
   reads 0** (`G-SEAM-45`), so the overshoot is invisible to the reader that exists
   to catch it. Measured with zero real children.
-- **The epoch guard is unreachable** (`G-SEAM-21`), so the run record's `epoch` is
-  inert; and the KERNEL epoch, which does advance, is a different field with the
-  same name (`G-SEAM-43`).
+- **The epoch guard was DELETED rather than wired** (`G-SEAM-21`, closed by
+  deletion under F8 / REC-09 / REC-10): the run record has **no `epoch` field**
+  at all, and neither does any guard read one. This is a **NON-CLAIM**, not a
+  fix — v2 does not claim that a settlement from a superseded generation is
+  fenced across a process boundary, because no production path can construct
+  one (no production call site targets a terminal task state, and the state the
+  product leaves an unsettled task in — `unknown`, reservation held — has no
+  production exit). What IS enforced is object identity for the in-process
+  resume case (`tool-protocol-guards.ts`). The KERNEL epoch, which does advance
+  on kernel death and is reachable, is a different field that shares the name
+  (`G-SEAM-43`). See `qualification/results/R9-recovery-topology/`.
 - **No live paid run.** `live_provider_budget_authorized` is `false`. A key being
   present would not authorize large paid evaluation.
 
 ## Promotion decision
 
 `NOT_READY`. Re-read from `qualification/gates.json` rather than copied from an
-earlier revision of this file: **104 old-spec cases = PASS 85 · NOT_RUN 10 ·
-FAIL 2 · BLOCKED_EXTERNAL 1 · NOT_APPLICABLE 6**, of which the **88 mandatory**
-split **75 PASS, 10 `NOT_RUN`, 2 `FAIL`, 1 `BLOCKED_EXTERNAL`**. The 13 non-PASS
-mandatory gates are `A12`, `C01`, `E01`, `E02`, `E06`, `E12`, `R01`, `U01`, `U02`,
-`U03`, `U04`, `U05`, `U06`, each with its reason in `docs/DELIVERY.md` §9.
+earlier revision of this file: **104 old-spec cases = PASS 84 · NOT_RUN 10 ·
+FAIL 3 · BLOCKED_EXTERNAL 1 · NOT_APPLICABLE 6**, of which the **88 mandatory**
+split **74 PASS, 10 `NOT_RUN`, 3 `FAIL`, 1 `BLOCKED_EXTERNAL`**. The 14 non-PASS
+mandatory gates are `A12`, `C01`, `D10`, `E01`, `E02`, `E06`, `E12`, `R01`, `U01`,
+`U02`, `U03`, `U04`, `U05`, `U06`, each with its reason in `docs/DELIVERY.md` §9.
+**`D10` moved from PASS to FAIL in this round**, and it is not a new defect: R9
+deleted the settlement guard and the `epoch` field that D10's PASS note
+described, and the row was re-judged once that was found. The verdict was already
+`NOT_READY` either way — the change is to the report's honesty, not to the
+decision.
 Nothing in this repository is certified for daily use, and the gate report says so
 in its own vocabulary rather than in a footnote.
 
 The external blocker is named exactly: `compatibility.lock.json` →
 `runtime_authorization.live_provider_budget_authorized` is **`false`**. It holds
 `C01` at `BLOCKED_EXTERNAL` and blocks the paid halves of the new spec's
-`ECO-07`/`ECO-08`/`UPG-07`. The two `FAIL`s are platform facts, not unbuilt work:
-the Windows sandbox seam has no read lever (`E01`) and no network vocabulary
-(`E06`), so they cannot be closed on this host at all.
+`ECO-07`/`ECO-08`/`UPG-07`. **Two** of the `FAIL`s are platform facts, not unbuilt
+work: the Windows sandbox seam has no read lever (`E01`) and no network vocabulary
+(`E06`), so they cannot be closed on this host at all. **The third, `D10`, is a
+withdrawn claim rather than a platform limit**: the guarantee it names is not
+delivered and is no longer claimed (the guard and the `epoch` field were deleted
+under F8 / REC-09 / REC-10), so it is a FAIL in the honest sense that the oracle
+is not satisfied — and it stays FAIL rather than becoming a PASS or a gap.
 
 The `NOT_READY` above is against the **old** spec. Against the new 112-case spec
 the state is simpler and worse: **all 112 cases are `NOT_RUN`** (verified against

@@ -143,7 +143,7 @@ Everything else in `src/` is **not** reachable from an export at `2d4534f`:
 | `effects.ts` | `effects.test.ts` | `qualification/results/M9.20-real-tasks/u06-rollback.mjs` (dynamic `import()`) | `dsh_daily_effects` domain, `EFFECT_SCHEMA_VERSION = 1` |
 | `verify.ts` | `verify.test.ts`, `real-tasks.test.ts`, `verification-gates.test.ts` | `qualification/runners/acceptance.mjs` (dynamic `import()`) | none; emits `dsh-daily-work/acceptance-receipt@1` JSON |
 | `reconcile.ts` | 6 test files + `durability-runner.ts` | none | none |
-| `recovery.ts` | `durability-records.test.ts` | none | `dsh_daily_work_refusals` domain (`RefusalLedger`) |
+| `recovery.ts` | `durability-records.test.ts` (imports `relaunchPrepared` only) | none | **none — the `dsh_daily_work_refusals` domain and its `RefusalLedger` were DELETED** (F8 / REC-09 / REC-10; §3.8.1). The module now exports exactly `RelaunchOutcome` and `relaunchPrepared`, neither of which mentions an epoch. |
 | `durability-runner.ts` | none (a CLI entry by `node --import tsx`) | `docs/OPERATIONS.md` documents the command | none |
 
 **`verify.ts` has since left this table**: the current graph shows it reachable via
@@ -192,7 +192,7 @@ still has no cross-process protection. This is recorded in README's
 |---|---|---|
 | `record.ts` | `dsh_daily_work` domain v1, table `runs` | Already KEEP. Listed here for completeness: the run record is the only durable artifact this project owns. **Its field set changed during this audit — see §2.5.** |
 | `effects.ts` | `dsh_daily_effects` domain v1, table `operations` | **Read compatibility or an explicit tombstone.** The domain facility refuses to open on a record that does not match its schema — measured, in `qualification/results/M9.20-real-tasks/u06-rollback.mjs` step R8a: `DomainError: domain 'dsh_daily_effects': stored record 'eff_…' in table 'operations' does not match its schema`. Removing `effects.ts` without a migration therefore makes a store that contains effect records **unopenable by any version that keeps the domain**, and makes the records unreadable by any version that drops it. |
-| `recovery.ts` | `dsh_daily_work_refusals` domain (`RefusalLedger`) | Same shape, smaller blast radius: refusal diagnostics are written to a *separate* domain by design (so a refusal can never be mistaken for authority). Dropping it loses diagnostic history, not authority. **Note:** this module is also the third instance of the not-reachable defect class — see §3.8.1. |
+| `recovery.ts` | ~~`dsh_daily_work_refusals` domain (`RefusalLedger`)~~ **none: DELETED** | This row is superseded. The `RefusalLedger` and its separate domain were **deleted rather than wired** under F8 / REC-09 / REC-10 (§3.8.1): the guard they supported guarded a path that does not exist. There is therefore no refusal history to preserve or migrate, and no `dsh_daily_work_refusals` store to open. `recovery.ts` retains only `relaunchPrepared`, which is a DIFFERENT claim (gate D03) and is deliberately kept. **Note:** the module is still the third instance of the not-reachable defect class for its remaining half — see §3.8.1. |
 
 ### 2.3 PROPOSE-DELETE
 
@@ -221,7 +221,7 @@ no loss of evidence.
 | `verify.ts` | 1163 | Not reachable from any export, yet it is the M9.1 acceptance runner with 36 tests and a CLI in `qualification/runners/acceptance.mjs`. The architecture wants an independent verification authority; today that authority is a **qualification-time tool**, not a product surface. Either it becomes a product path (a tool the run can invoke) or it is honestly labelled qualification-only. Both are defensible; the graph does not choose. |
 | `launch-port.ts` | 100 | **Resolved during this audit.** At `42c2485` it was DEAD; at `2d4534f` it is PROD. See §3.2.2. |
 | `reconcile.ts` | 238 | Not reachable from production, but it is the module that decides `unknown` vs `not_started` after an interruption, and `host.ts` has no call into it. `recovery.ts` depends on its decisions. Same question as `verify.ts`: product path or qualification-only. |
-| `recovery.ts` | 423 | Not reachable from production, and this is the **third instance of the defect class in §3.8**: it holds the run-`epoch` guard, so the epoch is inert in the product. Its header states it exists to close gate D03 ("a reconciled `prepared` task would otherwise sit there forever"). If reconciliation is not wired into the host, D03's PASS describes the mechanism, not a live recovery path. |
+| `recovery.ts` | 255 | Not reachable from production. **Its `epoch` guard half has since been DELETED** (F8 / REC-09 / REC-10 — §3.8.1); the module now exports only `relaunchPrepared`, which its header states exists to close gate D03 ("a reconciled `prepared` task would otherwise sit there forever"). Reconciliation is still not wired into the host, so D03's PASS describes the mechanism, not a live recovery path. |
 
 ### 2.5 The run record's field set, and the `continuation` addition
 
@@ -235,6 +235,11 @@ continuation?          <- ADDED by 982e82b, OPTIONAL
 budget · tasks · outbox · lastReconciledRefs · terminalTombstones
 createdAt · updatedAt
 ```
+
+**`epoch` was in that list and is no longer in the schema.** It was removed under
+F8 / REC-09 / REC-10 (§3.8.1) along with the guard that read it. The removal is
+read-compatible: a stored record that still carries the old key parses, and the
+extra key is dropped. The current field list is therefore the above minus `epoch`.
 
 **The `continuation` field is new and optional, and the optionality is
 load-bearing rather than cosmetic.** `continuationHandoverSchema` holds
@@ -451,8 +456,11 @@ session-history store. `grep -rn "history"` over the non-test sources returns:
 
 The package's only persistence is the `dsh_daily_work` run record (task
 assignment, budget, outbox, tombstones) and, in the not-on-the-product-path
-modules, `dsh_daily_effects` and `dsh_daily_work_refusals`. None of them stores
-session events. `SessionQueryEngine` appears in the test tree only, mounted as a
+modules, `dsh_daily_effects`. **The `dsh_daily_work_refusals` domain named in
+earlier revisions of this sentence has been DELETED** with its `RefusalLedger`
+under F8 / REC-09 / REC-10 (§3.8.1); it was never opened by any product path, and
+nothing was persisted under it. None of these stores session events.
+`SessionQueryEngine` appears in the test tree only, mounted as a
 dependency because `ctx.subagents.listChildren` needs it to read child Sessions
 back (`concurrency.test.ts:132-135`, `isolation.test.ts:146-149`).
 
@@ -645,7 +653,7 @@ class rather than as unrelated notes. **Four** separate mechanisms were found
 |---|---|---|---|---|
 | 1 | `launch-port.ts` / `setLaunchPort` | `42c2485` | **Fixed** — `2d4534f` + test `b8f1ef2` | A `submit` recorded a task, marked it `unknown` with `no launch port installed`, and launched nothing. The composed profile could not start a single child. |
 | 2 | `takeContinuation` | `42c2485` | **Fixed** — `982e82b` | The Goal round-driver was never disarmed by a run, so **two continuation owners** could drive one root. |
-| 3 | `recovery.ts` (`applyWorkerSettlement`) — the run `epoch` guard | verified at `982e82b` | **OPEN** | The run record's `epoch` field is **inert in the product**. See §3.8.1. |
+| 3 | `recovery.ts` (`applyWorkerSettlement`) — the run `epoch` guard | verified at `982e82b`; **resolved at `6bfc810`** | **CLOSED BY DELETION** — `6bfc810` + `00421ec` (F8 / REC-09 / REC-10) | The guard was not wired and the field was not marked unused: the guard, its `WorkerSettlement` type, its `RefusalLedger` and the run record's `epoch` field were **deleted**, because the topology measurement showed the guard's input cannot be constructed on any production path. The v1 cases REC-09/REC-10 stay FAIL, and v2 records a NON-CLAIM. See §3.8.1. |
 | 4 | `packages/dsh-ipython` — the whole package, with no `dsh.bundle.patch` | M11 | **Fixed** — bundle patch, `lib/`, preset row | The package compiled and passed 38/39 tests while no profile could load it; the model would never have seen an `ipython` tool. See §3.6. |
 
 **Two more instances of the same shape are open and are NOT this class**, because
@@ -676,11 +684,29 @@ Anything in step 3 whose only callers are tests is a candidate for this class.
 **It should be run as a standing check**, because the three instances were found by
 reading a graph, not by running a suite.
 
-#### 3.8.1 The run `epoch` field is inert in the product — the third instance
+#### 3.8.1 The run `epoch` field WAS inert in the product — the third instance (CLOSED BY DELETION; the finding is preserved below as history)
+
+> **RESOLVED, AND NOT BY THE ROUTE THIS SECTION RECOMMENDS.** The finding below is
+> preserved as written (it is the audit's own record of how the defect was found),
+> but its "Next executable repair action" is **superseded**. The repair taken was
+> the *second* option this section already named — mark the field unused and drop
+> the claim — except that it went further: **the guard, its `WorkerSettlement`
+> type, its `RefusalLedger` over `dsh_daily_work_refusals`, and the `epoch` field
+> itself were all DELETED** (`6bfc810`, corrected by `00421ec`). The reason is
+> sharper than the unreachability recorded here: the topology measurement
+> (`qualification/results/R9-recovery-topology/`) showed the guard's **input
+> cannot be constructed on any production path**, because no production call site
+> targets a terminal task state and the state the product actually leaves an
+> unsettled task in — `unknown`, reservation held — has no production exit. So
+> wiring `applyWorkerSettlement` would have meant inventing a settlement producer,
+> which the audit forbids. **v2 does not claim the guarantee**, and the v1 cases
+> REC-09/REC-10 stay FAIL. Read the rest of this section as history, not as a plan.
 
 **The architecture's requirement.** `record.ts:410-414` documents `epoch` as
 *"Monotonic run epoch. Bumped when a run is re-adopted by a new host generation. A
 callback carrying a stale epoch must be rejected rather than silently accepted."*
+**This comment no longer exists**: `record.ts:410-441` now records that there is
+no `epoch` field and why it was removed.
 
 **What actually exists.** The guard is real, and it is correct:
 
@@ -733,20 +759,26 @@ enforceable today; the epoch is an unused field."*
 (`ctx.agents.get(id) === owner`), which is a real monotonic check for the
 in-process resume case and is mounted at the host plane. So the *stale-owner*
 problem is covered; the *stale-generation-across-a-process-boundary* problem is
-not, and the epoch field is the vestigial promise of it.
+not, and **v2 does not claim it** — the `epoch` field that was the vestigial
+promise of it has been deleted rather than left in place.
 
-**Next executable repair action.** Wire `applyWorkerSettlement` into whatever
-path actually receives a worker settlement — the same shape as `982e82b` for the
-handover, and for the same reason: it must be called where the exact live run and
-the exact live root are in hand. If there is genuinely no settlement path yet in
-the product, then the honest fix is the other direction: **mark `epoch` as unused
-in `record.ts`**, delete the "must be rejected" sentence, and keep the guard as
-qualification-only — because a documented enforcement that no code performs is
-worse than an admitted gap. Either resolution is acceptable; leaving the field
-documented as enforced while the guard is unreachable is not.
+**Next executable repair action (SUPERSEDED — see the note at the top of §3.8.1).**
+This section recommended wiring `applyWorkerSettlement`, or else marking `epoch`
+unused and keeping the guard as qualification-only. **Neither was taken.** The
+resolution was the stronger form of the second option: the guard, its type, its
+refusal ledger, its separate domain and the `epoch` field were all deleted
+(`6bfc810`, `00421ec`), because the topology measurement showed the guard's input
+cannot be constructed at all — there is no settlement producer to wire it to, and
+the state the product leaves an unsettled task in has no production exit. The
+replacement is a **NON-CLAIM**, not a control:
+`qualification/results/R9-recovery-topology/` carries the graph, the
+falsification control, and the measured `unknown`-has-no-exit probe.
 
-**Status of the finding:** OPEN, and it is the third instance of the class. It was
-not fixed by `982e82b` and no commit addresses it as of that snapshot.
+**Status of the finding:** **CLOSED BY DELETION** (was OPEN). It was the third
+instance of the class when recorded; the deletion is the project's decision that
+the mechanism should not exist, which is a different outcome from wiring it. The
+v1 cases REC-09/REC-10 remain FAIL as the historical record of what was asked for
+and never delivered.
 
 #### 3.8.2 Two more modules joined the not-reachable set
 
@@ -793,29 +825,47 @@ non-transferable:
    that exact check gives **127 references, 127 match, 0 missing, 0 stale**: all
    three rows record `615adaad87d29e3c…`, which is the file's current digest. The
    `1f1408e7…` value was the older one and the rows had already been regenerated
-   (consistent with G-FIX-11's regeneration of `gates.json`). The retraction is
-   recorded as **G-VER-05** in `docs/GAPS.md` rather than quietly deleted, because
+   (consistent with G-FIX-11's regeneration of `gates.json`). **The total is now
+   `125` rather than `127`**, because the D10 re-judgement removed that row's two
+   evidence references with its `PASS` (a non-PASS row carries no `evidence` key
+   in this report's shape); the two paths are named inside D10's note. The
+   retraction is recorded as **G-VER-05** in `docs/GAPS.md` rather than quietly
+   deleted, because
    an unverified negative claim is worth as little as an unverified positive one —
    and this one had already been copied into `README.md` and `docs/DELIVERY.md`,
    where it is now also corrected.
 
 **Current true counts, read from `qualification/gates.json` on disk** (re-read for
 this delivery pass, not copied from an earlier revision; the deployment identity
-those PASS rows carry is `ece4037a…`):
+those PASS rows carry is `ece4037a…`). **`D10` was re-judged from `PASS` to `FAIL`
+in the S2 pass** — see the note under the table:
 
 | Status | Count | Of which mandatory (`required_for: daily_ready`, 88 total) |
 |---|---|---|
-| PASS | 85 | 75 |
+| PASS | 84 | 74 |
 | NOT_RUN | 10 | 10 |
-| FAIL | 2 | 2 |
+| FAIL | 3 | 3 |
 | BLOCKED_EXTERNAL | 1 | 1 |
 | NOT_APPLICABLE | 6 | 0 (all `required_for: conditional`) |
 | **Total** | **104** | **88** |
 
+**Why `D10` moved, and why it stays a FAIL rather than becoming a gap.** D10's
+PASS note asserted that "a real guard now refuses a stale-generation settlement,
+with diagnostic evidence going to a SEPARATE domain (`dsh_daily_work_refusals`)".
+R9 then **deleted** that guard, its `RefusalLedger` and that domain (§3.8.1), and
+the row was never re-judged — so it had been passing on a statement that was no
+longer true. Its frozen oracle requires the authoritative write to be REFUSED and
+the attempt RETAINED as diagnostic evidence; neither exists in the current tree.
+`FAIL` is the honest value: the requirement is unmet and the absence is
+*demonstrated*, which is the same discipline E01/E06 are held to. The v1 cases
+`REC-09`/`REC-10` already read FAIL for the same mechanism, so this also makes the
+two reports agree. `gates-summary.json` was updated in step so the two files
+cannot disagree.
+
 The 10 `offline_qualified` gates are all PASS; the 6 `conditional` gates are all
-`NOT_APPLICABLE`. The 13 non-PASS mandatory gates are `A12`, `C01`, `E01`, `E02`,
-`E06`, `E12`, `R01`, `U01`, `U02`, `U03`, `U04`, `U05`, `U06`; each one's reason is
-tabulated in `docs/DELIVERY.md` §9, and the verdict basis is restated in
+`NOT_APPLICABLE`. The 14 non-PASS mandatory gates are `A12`, `C01`, `D10`, `E01`,
+`E02`, `E06`, `E12`, `R01`, `U01`, `U02`, `U03`, `U04`, `U05`, `U06`; each one's
+reason is tabulated in `docs/DELIVERY.md` §9, and the verdict basis is restated in
 `qualification/results/R9-delivery/CLAIM-CHECK.md`.
 
 ### 4.2 PASSes the new architecture makes obsolete
