@@ -29,7 +29,7 @@
     },
     "readError": null,
     "stderrTail": "",
-    "stdoutTail": "dsh web: http://127.0.0.1:9465/?token=TPN_VBKQ5CWUhNBXos5snVUSf6z8Jhf2Kf-cwVf3Z_Q\n"
+    "stdoutTail": "dsh web: http://127.0.0.1:9465/?token=<redacted>\n"
   },
   "negative": {
     "label": "ledger-domain-occupied",
@@ -57,7 +57,7 @@
     },
     "readError": null,
     "stderrTail": "",
-    "stdoutTail": "dsh web: http://127.0.0.1:9936/?token=-ck_CyHgOy3_2kSY7xy_UQPng5qVx1HQUtdlTAtkfGs\n"
+    "stdoutTail": "dsh web: http://127.0.0.1:9936/?token=<redacted>\n"
   },
   "positiveClaims": {
     "serviceResolved": true,

@@ -12,7 +12,7 @@
     "port": 13824,
     "exitCode": null,
     "timedOut": false,
-    "stdoutTail": "dsh web: http://127.0.0.1:13824/?token=MZEm5BBN40y_zv9oMlDWpWwbfVEjOurpwjaYI2VcNzk\n",
+    "stdoutTail": "dsh web: http://127.0.0.1:13824/?token=<redacted>\n",
     "stderrTail": ""
   },
   "probeResult": {

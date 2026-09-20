@@ -3,7 +3,7 @@
  "boot": {
   "port": 7417,
   "exitCode": null,
-  "stdout": "dsh web: http://127.0.0.1:7417/?token=GjkNtkXlZ70jlG8xjOOT-I-p5BoYS0sNHpuzOqhRITA\n",
+  "stdout": "dsh web: http://127.0.0.1:7417/?token=<redacted>\n",
   "stderr": "dsh: warning: 1 entry did not activate\nverify-trusted-local-composition (file:///D:/DSH/work/wt-c7/.probe/verify-trusted-local-composition.mjs): Error: probe-complete\n    at Object.apply [as callback] (file:///D:/DSH/work/wt-c7/.probe/verify-trusted-local-composition.mjs:300:9)\n    at async Fiber._reload (file:///D:/DSH/src/dsh-src/vendor/cordis/lib/index.js:1356:5)\n",
   "timedOut": false,
   "portReleased": true
