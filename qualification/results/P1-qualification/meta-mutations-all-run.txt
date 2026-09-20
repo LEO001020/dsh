@@ -1,0 +1,35 @@
+--- META-SUMMARY ---
+  [HELD] summary exit=1 full exit=1 agree=True summary begins VALIDATION=FAIL=True | corrupted ID-01:qualification/results/V1-identity/GATES.md | control(unmutated) prints EXITCODE 1: True
+--- META-DATA-ROUTE ---
+  [HELD] routing branches matching 'data:' in bridge.ts = 0; the gate is RED on this tree, which is the correct verdict and the one V5 fact 7 records (root measured 0). A gate that could not go red here could not go red on a DISCONNECTED branch either. The assembled data e2e that V5 §4.3 names belongs to V5 §5's slice and is NOT_RUN here.
+--- META-CURSOR ---
+  [HELD] baseline exit=0 (green=True); with the constant-key mutation exit=1 (RED=True); restored sha256=3e781b38b8e31dd4...
+--- META-GRAPH ---
+  [HELD] baseline exit=1 RED=True (identity_fresh=False recorded=533c8cb08b2ccd7f... recomputed=709a0fcee45b45f4...); named-stale-candidate refused=True (exit=1)
+--- META-IMPORT ---
+  [HELD] static scan sees the hidden import: False (must be False -- a variable-held specifier is invisible to it); runtime resolution succeeds: True (must be True). The premise of META-IMPORT holds: a text scanner cannot see this import and a runtime check can. The runtime-resolved graph CHECK that would use this against the real product is NOT_RUN -- no such runner exists in this tree yet.
+--- META-ZERO ---
+  [HELD] acceptance exit=1 (must be nonzero); outcome='fail'
+--- META-SKIP ---
+  [HELD] acceptance exit=1 (must be nonzero); outcome='all_skipped'
+--- META-TIMEOUT ---
+  [HELD] acceptance exit=1 (must be nonzero); outcome='timeout'
+--- META-MARKUP ---
+  [HELD] semantic predicate unmoved by markup: True; the OLD markup-pinned predicate WOULD have moved: True (which is the defect this arm exists to keep visible); real sec-gates.test.ts exit=0 green=True | [2m      Tests [22m [1m[32m46 passed[39m[22m[90m (46)[39m
+[2m   Start at [22m 20:59:06
+[2m   Duration [22m 28.70s[2m (transform 454ms, setup 0ms, import 397ms, tests 28.14s, environment 0ms)[22m
+--- META-CONSUMER ---
+  [HELD] baseline REACHABLE=32; after removing one import line from host.ts the newly-unreachable module(s) = ['src/counting.ts'] (reachable now 31); host.ts restored sha256=a1384deced322d51...
+
+META-MUTATIONS: 10/10 arm(s) held in 40.8s
+  [HELD] META-SUMMARY: one evidence/hash problem makes BOTH --summary and the full path exit nonzero
+  [HELD] META-DATA-ROUTE: the data-route reachability gate reports RED when the bridge's data branch is absent
+  [HELD] META-CURSOR: re-introducing the descriptor-derived key makes the cursor-key authority gate RED
+  [HELD] META-GRAPH: a stale graph/identity artifact makes release-gate's freshness check RED
+  [HELD] META-IMPORT: a variable-held specifier is invisible to a text scan but caught by runtime resolution
+  [HELD] META-ZERO: a run that selects 0 tests cannot PASS, even with a zero exit code
+  [HELD] META-SKIP: an all-skipped run cannot PASS
+  [HELD] META-TIMEOUT: a runner timeout cannot PASS
+  [HELD] META-MARKUP: a capitalisation/Markdown-only change does NOT fail a semantic gate (must stay GREEN)
+  [HELD] META-CONSUMER: removing the last non-test importer of a module makes the reachability gate RED
+META-MUTATIONS=PASS every arm produced the required observation

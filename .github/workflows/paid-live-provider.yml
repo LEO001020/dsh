@@ -1,0 +1,127 @@
+# The paid / live-provider gate — SEPARATE, MANUAL, and BLOCKED_EXTERNAL by default.
+#
+# WHY THIS IS A SEPARATE FILE AND NOT A JOB IN `post-integration.yml`.
+#
+# V5 §17 splits it out for one reason: a workflow that can spend money must not run
+# on a push. If the paid gate lived in the post-integration workflow, then every push
+# to any branch — including a writer's throwaway branch, including a push made to test
+# something unrelated — would be a decision about whether to spend the user's budget.
+# That decision belongs to the user, is made once, and is recorded.
+#
+# =================================================================================
+# THIS WORKFLOW DOES NOT RUN, AND THAT IS THE INTENDED STATE.
+#
+# It triggers ONLY on `workflow_dispatch`, so nothing but a human pressing the button
+# can start it. Its first step refuses unless an explicit authorization variable is
+# set AND the lock's own authorization flag agrees. Measured on this tree:
+#
+#     compatibility.lock.json -> runtime_authorization.live_provider_budget_authorized
+#     = false
+#
+# so even a human pressing the button gets BLOCKED_EXTERNAL, which is the honest
+# status and the one the release gate records. The gate is not "not implemented"; it
+# is implemented and refusing, which is what makes the refusal a measurement rather
+# than an absence.
+#
+# NO CREDENTIAL IS READ, REQUESTED, OR PRINTED HERE. The workflow declares no secret
+# and its steps echo no key. A paid gate that printed a key to authorize itself would
+# have published the credential in a public log to save one step.
+# =================================================================================
+
+name: paid-live-provider
+
+on:
+  # MANUAL ONLY. No push, no pull_request, no schedule: nothing automatic can spend
+  # the budget. A schedule would be a standing authorization nobody gave.
+  workflow_dispatch:
+    inputs:
+      authorization:
+        description: >-
+          Set to exactly 'authorized-live-provider-budget' to acknowledge that you
+          are authorizing real provider spend for this run. Anything else refuses.
+        required: true
+        default: 'NOT-AUTHORIZED'
+      budget_note:
+        description: 'Free-text record of the authorization (who authorized it, and the ceiling).'
+        required: true
+        default: 'no authorization recorded'
+
+permissions:
+  contents: read
+
+jobs:
+  paid-gate:
+    name: live provider gate (BLOCKED_EXTERNAL unless authorized)
+    runs-on: windows-latest
+    timeout-minutes: 120
+    defaults:
+      run:
+        shell: pwsh
+
+    steps:
+      - name: '1. checkout'
+        uses: actions/checkout@v4
+
+      - name: '2. refuse unless the authorization is explicit and agrees with the lock'
+        # TWO INDEPENDENT GATES, and both must open. Either one alone is insufficient:
+        #
+        #  * the dispatch input is a HUMAN act, so it cannot happen by accident;
+        #  * the lock flag is the RECORDED state of the deployment, so a human cannot
+        #    widen the deployment's own authorization by typing a word into a form.
+        #
+        # The lock's flag is the authority. The input is the acknowledgement. A design
+        # where the input alone sufficed would let anyone with push access spend the
+        # user's budget by dispatching a workflow, which is exactly the widening V5's
+        # final promotion rule forbids ("no direct model child-creation bypass" is the
+        # same shape of rule: authority is not widened by a caller).
+        run: |
+          $lock = Get-Content compatibility.lock.json | ConvertFrom-Json
+          $authorized = $lock.runtime_authorization.live_provider_budget_authorized
+          Write-Host "lock says live_provider_budget_authorized = $authorized"
+          Write-Host "dispatch acknowledgement = ${{ inputs.authorization }}"
+          Write-Host "budget note: ${{ inputs.budget_note }}"
+
+          if ($authorized -ne $true) {
+            Write-Host ''
+            Write-Host 'BLOCKED_EXTERNAL: the deployment lock does not authorize live provider spend.'
+            Write-Host 'This is the correct and expected state. To change it, the user must authorize'
+            Write-Host 'the budget, the lock must record that authorization with an amount and a'
+            Write-Host 'currency, and only then may this workflow proceed.'
+            Write-Host 'NO CREDENTIAL WAS READ AND NO PROVIDER WAS CONTACTED.'
+            exit 1
+          }
+          if ('${{ inputs.authorization }}' -ne 'authorized-live-provider-budget') {
+            Write-Host 'BLOCKED_EXTERNAL: the dispatch did not carry the authorization acknowledgement.'
+            exit 1
+          }
+          Write-Host 'AUTHORIZED: both gates opened. Proceeding to the live gate.'
+
+      - name: '3. record the authorization before spending anything'
+        # Written first, so that a crash mid-run still leaves the authorization on
+        # record. An authorization recorded AFTER the spend is a rationalization.
+        run: |
+          New-Item -ItemType Directory -Force -Path qualification/results/P1-qualification | Out-Null
+          @{
+            workflow = 'paid-live-provider'
+            authorized_at = (Get-Date).ToUniversalTime().ToString('o')
+            budget_note = '${{ inputs.budget_note }}'
+            actor = '${{ github.actor }}'
+            ref = '${{ github.ref }}'
+            sha = '${{ github.sha }}'
+          } | ConvertTo-Json | Set-Content qualification/results/P1-qualification/live-authorization.json
+          Get-Content qualification/results/P1-qualification/live-authorization.json
+
+      - name: '4. the live gate itself'
+        # NOT RUN LOCALLY, AND NOT RUN HERE. This is the step that would drive a real
+        # provider through a real child, and it is deliberately left as a refusal until
+        # the authorization above exists. Writing an executable body here would be
+        # writing a step nobody has run and nobody is authorized to run, which is the
+        # definition of an unvalidated claim.
+        #
+        # The cases this step would decide are named in the spec and currently
+        # BLOCKED_EXTERNAL: IPY-08 (a natural activation end rebinds or reports loss)
+        # and the T5 layer generally.
+        run: |
+          Write-Host 'LIVE GATE: not implemented; requires an authorized budget first.'
+          Write-Host 'The cases it would decide are currently BLOCKED_EXTERNAL in the spec.'
+          exit 1

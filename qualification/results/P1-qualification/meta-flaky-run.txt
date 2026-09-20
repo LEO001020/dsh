@@ -1,0 +1,24 @@
+META-FLAKY: 6 arm(s)
+  [HELD] A 3 PASS + 1 FAIL on one candidate is FLAKY and blocks
+          verdict=FLAKY blocks=True
+  [HELD] B 40 subsequent GREEN reruns do NOT erase the prior FAIL
+          verdict=FLAKY pass=43 fail=1
+  [HELD] C two different candidates (one green, one red) is NOT FLAKY
+          verdict=STABLE_FAIL (want STABLE_FAIL)
+  [HELD] D a case with no observations is UNOBSERVED, never PASS
+          verdict=UNOBSERVED
+  [HELD] E a clear naming the SAME candidate is refused, so the case stays FLAKY
+          refused=True verdict=FLAKY problems=2
+  [HELD] F an honest clear (new candidate + causal fix + hashed evidence) clears it, and the original FAIL stays in the ledger
+          verdict=CLEARED fail_observations_retained=True problems=[]
+META-FLAKY=PASS every arm held
+
+exit=0
+
+NOTE ON ARM C, which FAILED on its first run and is kept here as the measurement.
+The fallback branch in stability.py returned FLAKY for "no single triple is mixed,
+but failures exist". Arm C reached it with two DIFFERENT candidates, one green and
+one red, and got FLAKY -- which is wrong: that is not one candidate behaving
+unstably, it is two candidates with two different results. The branch now returns
+STABLE_FAIL and says why. This is the one defect in my own gate that the meta-test
+found, and it was found by arm C rather than by review.

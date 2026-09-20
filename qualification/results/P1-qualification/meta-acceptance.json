@@ -1,0 +1,45 @@
+{
+  "arms": [
+    {
+      "name": "META-ZERO",
+      "required": "a run that selects 0 tests cannot PASS, even with a zero exit code",
+      "held": true,
+      "detail": "acceptance exit=1 (must be nonzero); outcome='fail'",
+      "commands": [
+        "node qualification/runners/acceptance.mjs META-ZERO.json --out META-ZERO-receipt.json"
+      ]
+    },
+    {
+      "name": "META-SKIP",
+      "required": "an all-skipped run cannot PASS",
+      "held": true,
+      "detail": "acceptance exit=1 (must be nonzero); outcome='all_skipped'",
+      "commands": [
+        "node qualification/runners/acceptance.mjs META-SKIP.json --out META-SKIP-receipt.json"
+      ]
+    },
+    {
+      "name": "META-TIMEOUT",
+      "required": "a runner timeout cannot PASS",
+      "held": true,
+      "detail": "acceptance exit=1 (must be nonzero); outcome='timeout'",
+      "commands": [
+        "node qualification/runners/acceptance.mjs META-TIMEOUT.json --out receipt.json (deadline 4s, runner sleeps 60s)"
+      ]
+    },
+    {
+      "name": "META-CONSUMER",
+      "required": "removing the last non-test importer of a module makes the reachability gate RED",
+      "held": true,
+      "detail": "baseline REACHABLE=32; after removing one import line from host.ts the newly-unreachable module(s) = ['src/counting.ts'] (reachable now 31); host.ts restored sha256=a1384deced322d51...",
+      "commands": [
+        "node qualification/runners/import-graph.mjs packages/dsh-daily-work (baseline)",
+        "node qualification/runners/import-graph.mjs packages/dsh-daily-work (with the last importer of one reachable module removed)",
+        "python -c \"count src/ references to that module\"",
+        "remove host.ts lines 33-42 (10-line import block for counting.ts)"
+      ]
+    }
+  ],
+  "held": 4,
+  "total": 4
+}

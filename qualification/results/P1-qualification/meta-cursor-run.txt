@@ -1,0 +1,6 @@
+--- META-CURSOR ---
+  [HELD] baseline exit=0 (green=True); with the constant-key mutation exit=1 (RED=True); restored sha256=3e781b38b8e31dd4...
+
+META-MUTATIONS: 1/1 arm(s) held in 4.0s
+  [HELD] META-CURSOR: re-introducing the descriptor-derived key makes the cursor-key authority gate RED
+META-MUTATIONS=PASS every arm produced the required observation

@@ -1,0 +1,81 @@
+P1 / V5 4.1 -- THE --summary FALSE GREEN, BEFORE AND AFTER
+==========================================================
+Measured on this worktree (D:\DSH\work\wt-p1, branch wt/p1). Exit codes captured
+without a pipe in between, which is the discipline the original finding used
+(qualification/results/ROOT-round2/verify-spec-summary-false-pass.md).
+
+BEFORE -- commit 2e1b2c2, the published HEAD
+--------------------------------------------
+$ python qualification/runners/verify-spec.py --summary  > out 2>&1 ; echo $?
+0
+  CACHE/OBSERVABILITY    PASS=6
+  ...
+  BLOCKED_EXTERNAL=1, FAIL=13, PASS=95
+
+$ python qualification/runners/verify-spec.py            > out 2>&1 ; echo $?
+1
+spec      acceptance-spec.trusted-local-v1.json
+identity  533c8cb08b2ccd7f...
+cases     109
+  BLOCKED_EXTERNAL=1, FAIL=13, PASS=95
+
+verify-spec: 317 problem(s).
+
+THE DEFECT: --summary exits 0 while the full path exits 1 with 317 problems. The
+summary is not wrong about what it prints (the tally really is 95/13/1), but it
+prints a PASS-shaped line and exits 0 WHILE 317 binding problems exist. A CI step
+or a reader that runs --summary gets a green light and stops.
+
+AFTER -- commit 229d075, this slice
+-----------------------------------
+$ python qualification/runners/verify-spec.py --summary  > out 2>&1 ; echo $?
+1
+VALIDATION=FAIL problems=317 cases=109 identity=533c8cb08b2ccd7f
+  ...
+  BLOCKED_EXTERNAL=1, FAIL=13, PASS=95
+verify-spec: 317 problem(s) -- the counts above are NOT a verdict; run without
+--summary to see them.
+
+$ python qualification/runners/verify-spec.py            > out 2>&1 ; echo $?
+1
+VALIDATION=FAIL problems=317 cases=109 identity=533c8cb08b2ccd7f
+spec      acceptance-spec.trusted-local-v1.json
+...
+verify-spec: 317 problem(s).
+
+THE MEASUREMENT THAT MATTERS: the full path still reports EXACTLY 317. The
+problem count did not move, so the refactor preserved validation semantics rather
+than changing them. Only the summary path's willingness to lie about it changed.
+
+BOTH RENDERERS NOW AGREE: same exit code (1), same problem count (317), same
+first machine-readable line (VALIDATION=FAIL problems=317 cases=109
+identity=533c8cb08b2ccd7f). A consumer that greps one string gets the same answer
+from either path.
+
+EXIT CODE 2 -- the "validator cannot run" path, verified directly
+----------------------------------------------------------------
+$ python -c "... validate_everything(spec_path=Path('nope/missing.json')) ..."
+missing spec -> exit 2 | CANNOT_RUN | no spec at nope\missing.json
+$ python -c "... validate_everything(spec_path=<file containing '{not json'>) ..."
+bad json    -> exit 2 | CANNOT_RUN | the spec is unreadable: Expecting property
+                                  name enclosed in double quotes
+$ python -c "... validate_everything() ..."
+real spec   -> exit 1 | FAIL | problems 317
+
+So all three exit codes are reachable and distinct: 0 only when mechanically
+valid, 1 when any problem exists, 2 when the validator cannot run.
+
+WHY IT IS STRUCTURAL AND NOT A PATCHED RETURN VALUE
+---------------------------------------------------
+Changing `return 0` to `return 1` would have fixed the exit code while leaving the
+structure that produced it: a second path through the function that decides its
+own answer without consulting the checks. All checking now lives in
+validate_everything(), which returns one ValidationResult, and both renderers are
+pure consumers of it. Neither renderer performs any validation, so neither can
+return early. The only way to reach a renderer is to have already validated
+everything.
+
+CONFIRMED INDEPENDENTLY BY META-SUMMARY, which is the runnable form of this table:
+it corrupts one evidence sha256 on a COPY of the spec and requires BOTH renderers
+to exit nonzero and to AGREE. Measured: summary exit=1, full exit=1, agree=True,
+summary begins VALIDATION=FAIL. See meta-mutations-all-run.txt.

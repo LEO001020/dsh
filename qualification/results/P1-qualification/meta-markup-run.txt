@@ -1,0 +1,8 @@
+--- META-MARKUP ---
+  [HELD] semantic predicate unmoved by markup: True; the OLD markup-pinned predicate WOULD have moved: True (which is the defect this arm exists to keep visible); real sec-gates.test.ts exit=0 green=True | [2m      Tests [22m [1m[32m46 passed[39m[22m[90m (46)[39m
+[2m   Start at [22m 20:57:31
+[2m   Duration [22m 26.48s[2m (transform 616ms, setup 0ms, import 567ms, tests 25.65s, environment 0ms)[22m
+
+META-MUTATIONS: 1/1 arm(s) held in 27.0s
+  [HELD] META-MARKUP: a capitalisation/Markdown-only change does NOT fail a semantic gate (must stay GREEN)
+META-MUTATIONS=PASS every arm produced the required observation

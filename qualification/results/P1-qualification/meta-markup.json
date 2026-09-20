@@ -1,0 +1,16 @@
+{
+  "arms": [
+    {
+      "name": "META-MARKUP",
+      "required": "a capitalisation/Markdown-only change does NOT fail a semantic gate (must stay GREEN)",
+      "held": true,
+      "detail": "semantic predicate unmoved by markup: True; the OLD markup-pinned predicate WOULD have moved: True (which is the defect this arm exists to keep visible); real sec-gates.test.ts exit=0 green=True | \u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m46 passed\u001b[39m\u001b[22m\u001b[90m (46)\u001b[39m\n\u001b[2m   Start at \u001b[22m 20:57:31\n\u001b[2m   Duration \u001b[22m 26.48s\u001b[2m (transform 616ms, setup 0ms, import 567ms, tests 25.65s, environment 0ms)\u001b[22m",
+      "commands": [
+        "python -c \"re.search(r'confirmed by measurement', s, re.I)\" on both renderings",
+        "node node_modules/vitest/vitest.mjs run src/sec-gates.test.ts (real gate, unchanged)"
+      ]
+    }
+  ],
+  "held": 1,
+  "total": 1
+}
