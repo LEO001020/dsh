@@ -1,0 +1,51 @@
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.8 [39m[90mD:/DSH/work/dsh-native-daily/packages/dsh-daily-work[39m
+
+ [32m✓[39m src/programmatic-scope.test.ts[2m > [22mBRG-01: the same tool through native, PTC and the scope is one pipeline[2m > [22mproduces the SAME canonical value on all three routes[32m 15[2mms[22m[39m
+ [32m✓[39m src/programmatic-scope.test.ts[2m > [22mBRG-01: the same tool through native, PTC and the scope is one pipeline[2m > [22ma monotonic GUARD denies the scope exactly as it denies a native call[32m 4[2mms[22m[39m
+ [32m✓[39m src/programmatic-scope.test.ts[2m > [22mBRG-01: the same tool through native, PTC and the scope is one pipeline[2m > [22man `ask` decision reaches the scope and a denial is not a bypass[32m 2[2mms[22m[39m
+ [32m✓[39m src/programmatic-scope.test.ts[2m > [22mBRG-01: the same tool through native, PTC and the scope is one pipeline[2m > [22ma real ApprovalService denial reaches the scope as a denial[32m 6[2mms[22m[39m
+ [32m✓[39m src/programmatic-scope.test.ts[2m > [22mBRG-01: the same tool through native, PTC and the scope is one pipeline[2m > [22mpost-execute policy replaces the value on the scope route too[32m 2[2mms[22m[39m
+ [32m✓[39m src/programmatic-scope.test.ts[2m > [22mBRG-01: the same tool through native, PTC and the scope is one pipeline[2m > [22ma canonical value violating the declared output schema fails on the scope route[32m 2[2mms[22m[39m
+ [32m✓[39m src/programmatic-scope.test.ts[2m > [22mBRG-01: the same tool through native, PTC and the scope is one pipeline[2m > [22mMEASURES the scheduling difference from run_code instead of claiming identity[32m 24[2mms[22m[39m
+ [32m✓[39m src/programmatic-scope.test.ts[2m > [22mBRG-01: the same tool through native, PTC and the scope is one pipeline[2m > [22mthe scope does NOT bypass the ptc presentation collapse[32m 3[2mms[22m[39m
+ [32m✓[39m src/programmatic-scope.test.ts[2m > [22mBRG-02: revoking a tool mid-scope takes effect on the next call[2m > [22ma tool unregistered while the scope is open fails its next call[32m 2[2mms[22m[39m
+ [32m✓[39m src/programmatic-scope.test.ts[2m > [22mBRG-02: revoking a tool mid-scope takes effect on the next call[2m > [22mnames() is a LIVE read, and revocation is visible through it[32m 3[2mms[22m[39m
+ [32m✓[39m src/programmatic-scope.test.ts[2m > [22mBRG-02: revoking a tool mid-scope takes effect on the next call[2m > [22ma tool unregistered by its own disposer is gone from the next call[32m 2[2mms[22m[39m
+ [32m✓[39m src/programmatic-scope.test.ts[2m > [22mBRG-03: value delivery returns the declared canonical type, never a reference[2m > [22mreturns the declared T and is never an ArtifactRef[32m 4[2mms[22m[39m
+ [32m✓[39m src/programmatic-scope.test.ts[2m > [22mBRG-03: value delivery returns the declared canonical type, never a reference[2m > [22mover-budget value delivery throws with the retained reference and does NOT re-execute[32m 3[2mms[22m[39m
+ [32m✓[39m src/programmatic-scope.test.ts[2m > [22mBRG-04: reference delivery executes exactly once and references the post-policy result[2m > [22mruns the tool EXACTLY ONCE and returns a reference to the final value[32m 2[2mms[22m[39m
+ [32m✓[39m src/programmatic-scope.test.ts[2m > [22mBRG-04: reference delivery executes exactly once and references the post-policy result[2m > [22mthe reference carries the POST-POLICY value, not the pre-policy one[32m 2[2mms[22m[39m
+ [32m✓[39m src/programmatic-scope.test.ts[2m > [22mBRG-04: reference delivery executes exactly once and references the post-policy result[2m > [22mvalue and reference delivery of the same tool are the same execution result[32m 2[2mms[22m[39m
+ [32m✓[39m src/programmatic-scope.test.ts[2m > [22mBRG-05: a value policy removed is not recoverable through a reference[2m > [22ma post-policy BLOCK leaves no recoverable original in the store[32m 2[2mms[22m[39m
+ [32m✓[39m src/programmatic-scope.test.ts[2m > [22mBRG-05: a value policy removed is not recoverable through a reference[2m > [22ma policy that REPLACES a sensitive value leaves only the replacement retrievable[32m 2[2mms[22m[39m
+ [32m✓[39m src/programmatic-scope.test.ts[2m > [22mBRG-05: a value policy removed is not recoverable through a reference[2m > [22ma blocked call retains nothing even under reference delivery[32m 3[2mms[22m[39m
+ [32m✓[39m src/programmatic-scope.test.ts[2m > [22mBRG-06: a wrapper never waits for a slot from the pool it already holds[2m > [22mMANY concurrent wrapped calls complete without exhausting the pool[32m 4[2mms[22m[39m
+ [32m✓[39m src/programmatic-scope.test.ts[2m > [22mBRG-06: a wrapper never waits for a slot from the pool it already holds[2m > [22mre-entrancy: a nested call may itself open a nested call, many levels deep[32m 4[2mms[22m[39m
+ [32m✓[39m src/programmatic-scope.test.ts[2m > [22mBRG-06: a wrapper never waits for a slot from the pool it already holds[2m > [22man EXCLUSIVE tool forms a real barrier for top-level calls[32m 85[2mms[22m[39m
+ [32m✓[39m src/programmatic-scope.test.ts[2m > [22mBRG-06: a wrapper never waits for a slot from the pool it already holds[2m > [22ma concurrency-safe tool DOES overlap, so the cap is not just serialization[32m 32[2mms[22m[39m
+ [32m✓[39m src/programmatic-scope.test.ts[2m > [22mBRG-06: a wrapper never waits for a slot from the pool it already holds[2m > [22mthe cap is respected: maxParallel 2 never runs three at once[32m 92[2mms[22m[39m
+ [32m✓[39m src/programmatic-scope.test.ts[2m > [22mBRG-06: a wrapper never waits for a slot from the pool it already holds[2m > [22mCANCEL DRAINS: closing with calls in flight settles them and reports every disposition[32m 63[2mms[22m[39m
+ [32m✓[39m src/programmatic-scope.test.ts[2m > [22mBRG-07: a close with calls still in flight never leaves work running[2m > [22mqueued-unstarted calls are REFUSED with a recorded disposition when no handoff exists[32m 62[2mms[22m[39m
+ [32m✓[39m src/programmatic-scope.test.ts[2m > [22mBRG-07: a close with calls still in flight never leaves work running[2m > [22ma host JOBS HANDOFF takes ownership instead of refusing, and the job id is recorded[32m 63[2mms[22m[39m
+ [32m✓[39m src/programmatic-scope.test.ts[2m > [22mBRG-07: a close with calls still in flight never leaves work running[2m > [22mclose resolves only AFTER in-flight work has settled, not before[32m 92[2mms[22m[39m
+ [32m✓[39m src/programmatic-scope.test.ts[2m > [22mBRG-07: a close with calls still in flight never leaves work running[2m > [22mclose is idempotent and reports no second disposition for any call[32m 2[2mms[22m[39m
+ [32m✓[39m src/programmatic-scope.test.ts[2m > [22mBRG-07: a close with calls still in flight never leaves work running[2m > [22minvoking after close is refused, not silently queued[32m 2[2mms[22m[39m
+ [32m✓[39m src/programmatic-scope.test.ts[2m > [22mBRG-07: a close with calls still in flight never leaves work running[2m > [22mthe host service closes every live scope on teardown[32m 3[2mms[22m[39m
+ [32m✓[39m src/programmatic-scope.test.ts[2m > [22mBRG-08: control notices keep their semantics; bulk payloads do not enter context[2m > [22ma security additionalContext reaches the enclosing execution, bounded[32m 4[2mms[22m[39m
+ [32m✓[39m src/programmatic-scope.test.ts[2m > [22mBRG-08: control notices keep their semantics; bulk payloads do not enter context[2m > [22mconcludeTurn is preserved from a nested success and NOT from a policy-blocked one[32m 3[2mms[22m[39m
+ [32m✓[39m src/programmatic-scope.test.ts[2m > [22mBRG-08: control notices keep their semantics; bulk payloads do not enter context[2m > [22ma BULK image does NOT automatically enter model context; it is retained as a reference[32m 4[2mms[22m[39m
+ [32m✓[39m src/programmatic-scope.test.ts[2m > [22mBRG-08: control notices keep their semantics; bulk payloads do not enter context[2m > [22mthe control and content slots are SEPARATE: one call can fill both[32m 3[2mms[22m[39m
+ [32m✓[39m src/programmatic-scope.test.ts[2m > [22mBRG-08: control notices keep their semantics; bulk payloads do not enter context[2m > [22mpast the direct bound, notices are COALESCED into one bounded record, not dropped[32m 4[2mms[22m[39m
+ [32m✓[39m src/programmatic-scope.test.ts[2m > [22mBRG-08: control notices keep their semantics; bulk payloads do not enter context[2m > [22mdefer-images reproduces stock run_code content behaviour, for comparison[32m 4[2mms[22m[39m
+ [32m✓[39m src/programmatic-scope.test.ts[2m > [22mstock run_code keeps its exact semantics (no regression from the extraction)[2m > [22mrun_code still logs one dispatch event per sub-call and returns the curated output[32m 5[2mms[22m[39m
+ [32m✓[39m src/programmatic-scope.test.ts[2m > [22mstock run_code keeps its exact semantics (no regression from the extraction)[2m > [22mrun_code still refuses a model-direct native call under ptc mode[32m 3[2mms[22m[39m
+ [32m✓[39m src/programmatic-scope.test.ts[2m > [22mstock run_code keeps its exact semantics (no regression from the extraction)[2m > [22mrun_code still maps a pre-aborted outer signal to the canonical cancellation code[32m 2[2mms[22m[39m
+ [32m✓[39m src/programmatic-scope.test.ts[2m > [22mstock run_code keeps its exact semantics (no regression from the extraction)[2m > [22mrun_code still forwards a nested concludeTurn onto its own successful result[32m 3[2mms[22m[39m
+ [32m✓[39m src/programmatic-scope.test.ts[2m > [22mstock run_code keeps its exact semantics (no regression from the extraction)[2m > [22mrun_code still defers a nested image-bearing result onto its own result[32m 4[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[32m42 passed[39m[22m[90m (42)[39m
+[2m   Start at [22m 08:06:33
+[2m   Duration [22m 1.14s[2m (transform 272ms, setup 0ms, import 339ms, tests 630ms, environment 0ms)[22m
+
