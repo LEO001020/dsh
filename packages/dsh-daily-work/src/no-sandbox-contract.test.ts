@@ -502,42 +502,89 @@ describe('the guard has a production entry point, so a profile can actually moun
 })
 
 // ---------------------------------------------------------------------------
-// The one claim the deployment does NOT satisfy — asserted, not softened
+// The defect that WAS here — closed, and the marker removed
 // ---------------------------------------------------------------------------
 
-describe('G-SEAM-33: the deployment default contradicts the stated trust model', () => {
-  it.fails('the profile pins the sandbox mode to the trusted-local value the architecture claims', () => {
-    // THE DEFECT THIS CASE PINS, and why the assertion is at FULL STRENGTH.
+describe('G-SEAM-33: the profile declares the trusted-local mode', () => {
+  it('the profile pins the sandbox mode to the trusted-local value the architecture claims', () => {
+    // THIS CASE WAS `it.fails` AND IS NOW A PASSING ASSERTION, which is the
+    // self-clearing behaviour its own comment predicted. It was written as an
+    // expected failure while the profile had no `sandbox-policy` row, so the
+    // shipped bundle's `mode: !!js process.env.DSH_PERMISSION_MODE ??
+    // 'workspace-write'` (`packages/bundle/base/cordis.patch.yml:218`) stood and
+    // the deployment resolved to a CONFINING mode. The marker existed so the
+    // claim stayed at FULL STRENGTH without the guard certifying the defect.
     //
-    // The architecture decision is "no sandbox: `danger-full-access`". The
-    // composed deployment does NOT declare it: `profiles/daily-candidate/
-    // cordis.patch.yml` has no `sandbox-policy` row, so the shipped bundle's
-    // `mode: !!js process.env.DSH_PERMISSION_MODE ?? 'workspace-write'`
-    // (`packages/bundle/base/cordis.patch.yml:218`) stands. MEASURED on a real
-    // boot, three independent times: `sandboxPolicyDefaultMode: "workspace-write"`
-    // (`qualification/results/T2-fs/boot.json`, `ROOT-verification/
-    // sandbox-policy-mode.json`).
+    // The row now exists, so the marker is REMOVED rather than left in place: an
+    // `it.fails` that unexpectedly passes is reported by vitest as a FAILURE, and
+    // that is what forced this edit — the mechanism worked exactly as documented.
+    // Leaving the marker would have made a correct deployment red.
     //
-    // Two consequences, both read in source rather than inferred:
-    //   (a) `sandbox-policy/src/index.ts:46-47` injects a system-prompt line
-    //       telling the model "Current DSH file policy: workspace-write ... may
-    //       modify files under the session workspace" — a false statement about
-    //       its own authority;
-    //   (b) `ptc-runtime-node/src/index.ts:224` confines unless the mode is
-    //       EXACTLY `danger-full-access`, so PTC is the one path that would still
-    //       fence.
-    //
-    // WHY `it.fails` AND NOT A WEAKENED `toBe('workspace-write')`. Weakening the
-    // assertion to the current value would make the guard certify the defect: it
-    // would report "the deployment declares what it should" while the deployment
-    // declared something else. Marking it an expected failure keeps the claim at
-    // full strength AND keeps the suite honest, and it is self-clearing: the
-    // moment someone declares the row, this case turns RED as an unexpectedly
-    // passing test and forces the marker's removal. A passing assertion cannot
-    // hide behind it.
+    // WHAT THIS CASE DOES AND DOES NOT ESTABLISH. It is a FILE-LEVEL assertion:
+    // the composed profile declares `mode: danger-full-access`. It does NOT
+    // establish that the running deployment resolves to it — that is what the
+    // boot-measured pair does (`qualification/results/R1-trusted-local/
+    // composition-before.json` vs `composition-after.json`, and the explicit
+    // loudness verdicts `loudness-verdict.json` / `loudness-after-fix.json`).
     const profile = readText(PROFILE_PATCH)
     const policy = rowBlock(profile, 'sandbox-policy')
     expect(policy, 'the profile must declare the sandbox mode the architecture claims').toBeDefined()
     expect(policy).toContain(`mode: ${TRUSTED_LOCAL_MODE}`)
+    // BOTH KEYS, because a patch REPLACES the target row's whole `config` object.
+    // Stating only `mode` would drop `workspaceRoot`, whose schema has no default,
+    // and the row would fail validation — the trap this project has already been
+    // bitten by once (the `subagent` comment on DIFFERENCE 1 records it).
+    expect(policy, 'workspaceRoot has no schema default; omitting it fails validation')
+      .toContain('workspaceRoot')
+  })
+})
+
+// ---------------------------------------------------------------------------
+// The wiring defect found while finishing this slice — pinned so it cannot return
+// ---------------------------------------------------------------------------
+
+describe('the startup boundary is LOUD, and that is a wiring property', () => {
+  it('`apply` is async and runs the startup check in its OWN body', () => {
+    // THE DEFECT THIS PINS, and it is the worst kind this project has: the guard
+    // reproduced the silent degradation it exists to catch.
+    //
+    // The startup boundary was written as `ctx.inject(['sandboxPolicy'], cb)` with
+    // the returned fiber DISCARDED. `ctx.inject` creates a CHILD fiber, and DSH's
+    // activation audit classifies by the ENTRY's fiber state
+    // (`packages/boot/app-boot/src/index.ts:769-802`). A throw inside a DISCARDED
+    // child leaves the entry ACTIVE, so the refusal reached NO process channel.
+    // MEASURED on a real boot with no probe in the tree: the reverted
+    // (`workspace-write`) deployment produced the SAME EMPTY STDERR as the healthy
+    // control (`qualification/results/R1-trusted-local/loudness-verdict.json`,
+    // whose `diagnosis` reads "SILENT").
+    //
+    // The fix is structural: the check runs in `apply`'s own async body, so its
+    // rejection belongs to the ENTRY. This case asserts the SHAPE, because the
+    // shape is the whole fix and a future "tidy-up" that moves the check back
+    // into a discarded child fiber would silently restore the defect while every
+    // behavioural assertion above still passed.
+    const source = readText(join(REPO_ROOT, 'packages', 'dsh-daily-work', 'src', 'no-sandbox-contract.ts'))
+    expect(source, 'apply must be async so its rejection fails the entry').toMatch(/export async function apply\(ctx: Context\): Promise<void>/u)
+    expect(source, 'the startup check must run in apply, not in a discarded child fiber')
+      .toMatch(/service\.checkBoundarySync\('startup'\)/u)
+    // And the plugin's static inject must STILL be empty: naming `sandboxPolicy`
+    // there would leave this row pending on exactly the degraded graph it exists
+    // to report. Both halves matter — the loud wiring must not have been bought
+    // with a readiness gate.
+    expect(inject).toEqual([])
+  })
+
+  it('the wait for `sandboxPolicy` is BOUNDED, because an unsettled apply suppresses every diagnostic', () => {
+    // WHY THE BOUND IS LOAD-BEARING. `EntryTree.getTasks()` includes an entry's
+    // in-flight apply promise and `loader.await()` loops on those tasks
+    // (`vendor/loader/src/config/tree.ts:43-51`), so an `apply` that never
+    // resolves stops `boot()` from ever reaching `auditStartupEntries`. MEASURED:
+    // an arm that awaited a never-mounting service printed NOTHING on either
+    // stream and never bound its web port, suppressing the activation audit for
+    // every sibling entry too. A timeout instead lets the check run and report the
+    // absent service, which is the honest outcome.
+    const source = readText(join(REPO_ROOT, 'packages', 'dsh-daily-work', 'src', 'no-sandbox-contract.ts'))
+    expect(source).toMatch(/STARTUP_POLICY_WAIT_MS/u)
+    expect(source, 'the wait must be bounded by a deadline, not unbounded').toMatch(/Date\.now\(\) < deadline/u)
   })
 })
