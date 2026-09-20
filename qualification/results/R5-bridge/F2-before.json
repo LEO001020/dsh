@@ -1,0 +1,50 @@
+{
+  "instrument": "r5-f2-before",
+  "tree": "D:\\DSH\\work\\wt-r5\\packages\\dsh-ipython",
+  "identity": {
+    "packageRoot": "D:\\DSH\\work\\wt-r5\\packages\\dsh-ipython",
+    "measuredFrom": "src/*.ts",
+    "bridgeClientDigest": "11997"
+  },
+  "exportsRoots": [
+    "src/host-plugin.ts",
+    "src/ipython-tool.ts",
+    "src/kernel-plugin.ts",
+    "src/kernel.ts",
+    "src/protocol.ts"
+  ],
+  "reachableModules": [
+    "src/host-plugin.ts",
+    "src/ipython-tool.ts",
+    "src/kernel-plugin.ts",
+    "src/kernel.ts",
+    "src/protocol.ts"
+  ],
+  "f2": {
+    "bridgeReachableFromExports": false,
+    "nativeCallReachableFromExports": false,
+    "newBridgeServerProductionCallSites": [],
+    "nonTestImportersOfBridge": [
+      "native-call.ts"
+    ],
+    "nonTestImportersOfNativeCall": [],
+    "verdict": "UNREACHABLE — the mechanism exists and no product path reaches it (F2 / G-SEAM-34)."
+  },
+  "br07": {
+    "words": [
+      "disposition",
+      "jobId",
+      "handoff"
+    ],
+    "countsOnBridgeRoute": {
+      "disposition": 0,
+      "jobId": 0,
+      "handoff": 0
+    },
+    "countsOnScopeRoute": {
+      "disposition": 21,
+      "jobId": 5,
+      "handoff": 7
+    }
+  }
+}
