@@ -43,7 +43,7 @@ import { fileURLToPath } from 'node:url'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { KernelHost, KernelOutcomeUnknownError } from './kernel.ts'
 import { KernelService } from './kernel-plugin.ts'
-import { encodeFrame, FrameDecoder, MAX_FRAME_BYTES } from './protocol.ts'
+import { asBrokerMessage, encodeFrame, FrameDecoder, MAX_FRAME_BYTES } from './protocol.ts'
 import { MemoryBridgeLedger } from './bridge-ledger.ts'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
@@ -1100,6 +1100,17 @@ describe('IPY-15: the kernel transport is authenticated and frames are bounded',
     // The connection file path is discovered from the kernel's own argv rather
     // than guessed: the stimulus names connection-file permissions, and those can
     // only be read from the real file.
+    //
+    // WHY `st_mode` IS RECORDED BUT NOT ASSERTED AS "THE PERMISSIONS". On Windows
+    // CPython SYNTHESIZES the mode bits from the read-only attribute. Measured: a
+    // freshly created ordinary file in %TEMP% reports `0o666` with `S_IROTH` set,
+    // so `0o666` here does not mean "world-readable" -- it is what every regular
+    // file reports. Reading it as a permission would be a real number given a
+    // false meaning, which is this project's most-recorded defect class. The
+    // ENFORCED permission is an ACL, and `win32_restrict_file_to_user` is what
+    // jupyter_client applies (`jupyter_core/paths.py:600`, called from
+    // `secure_write`, `paths.py:1080`). The ACL is measured separately, by the
+    // host, in `s6-ipy15.test.ts` -- not asserted from these bits.
     const connInfo = await h.execute([
       'import json, os, stat, sys',
       'path = None',
@@ -1115,12 +1126,15 @@ describe('IPY-15: the kernel transport is authenticated and frames are bounded',
       '        doc = json.load(handle)',
       '    info["has_curve_publickey"] = "curve_publickey" in doc',
       '    info["has_curve_secretkey"] = "curve_secretkey" in doc',
+      // PRESENCE AND LENGTH ONLY. The key's value authorises execution and is
+      // never extracted here, so it cannot reach an artifact or a log.
       '    info["key_nonempty"] = bool(doc.get("key"))',
+      '    info["key_length_chars"] = len(doc.get("key") or "")',
       '    info["transport_in_file"] = doc.get("transport")',
+      '    info["signature_scheme"] = doc.get("signature_scheme")',
       '    mode = stat.S_IMODE(os.stat(path).st_mode)',
       '    info["connection_file_mode_octal"] = oct(mode)',
-      '    info["connection_file_readable_by_owner"] = bool(mode & stat.S_IRUSR)',
-      '    info["connection_file_world_readable"] = bool(mode & stat.S_IROTH)',
+      '    info["os_name"] = os.name',
       'print("IPY15:" + json.dumps(info, sort_keys=True))',
     ].join('\n'))
     expect(connInfo.outcome).toBe('ok')
@@ -1147,15 +1161,49 @@ describe('IPY-15: the kernel transport is authenticated and frames are bounded',
     header.writeUInt32BE(MAX_FRAME_BYTES + 1, 0)
     decoder.push(header)
 
-    // ---- (3) is the COUNT reachable? --------------------------------------
-    // `droppedFrames` is the field the spec's "with a count" clause names. Measured
-    // against the real cell result of a normal cell, plus a source-level check for
-    // a producer of that count.
+    // ---- (3) is the refusal NAMED, and is the legacy COUNT reachable? ------
+    // The v1 oracle's "with a count" clause names `droppedFrames`. The v2 decision
+    // (D2) keeps fail-hard and replaces that with a STRUCTURED refusal, so both
+    // are measured: the structured path is asserted, and the legacy count is
+    // recorded as the fact it is.
     const normal = await h.execute('print("ipy15-normal-cell")')
     const brokerSource = await readFile(BROKER, 'utf8')
     const noteDroppedCallSites = (brokerSource.match(/note_dropped_frame\s*\(/g) ?? []).length - 1
     const rendererHasDropBranch = (await readFile(resolve(HERE, 'ipython-tool.ts'), 'utf8'))
       .includes('droppedFrames > 0')
+    // The structured refusal must be REACHABLE BY NAME, not merely present as a
+    // string: the code and the class are what the host reads.
+    const brokerDefinesFrameLimitError = brokerSource.includes('class FrameLimitError')
+    const brokerEmitsStructuredRefusal = brokerSource.includes('"code": "FRAME_TOO_LARGE"')
+    // A malformed refusal would be worse than none: the host validates every field
+    // and would report a protocol violation instead of a bounded refusal.
+    const structuredEventDecodes = (() => {
+      try {
+        const decoded = asBrokerMessage({
+          type: 'event', event: 'transport_refused', epoch: 1,
+          code: 'FRAME_TOO_LARGE', detail: 'declared frame length 5 exceeds the limit',
+          limitBytes: MAX_FRAME_BYTES, declaredBytes: MAX_FRAME_BYTES + 1,
+        })
+        return decoded.type === 'event' && decoded.event === 'transport_refused'
+          && decoded.limitBytes === MAX_FRAME_BYTES
+      } catch {
+        return false
+      }
+    })()
+    // The CONTROL arm for that check: an event missing its bound must be REFUSED.
+    // Without this, `structuredEventDecodes: true` could come from a validator
+    // that accepts anything.
+    const malformedRefusalRejected = (() => {
+      try {
+        asBrokerMessage({
+          type: 'event', event: 'transport_refused', epoch: 1,
+          code: 'FRAME_TOO_LARGE', detail: 'no limitBytes here',
+        })
+        return false
+      } catch {
+        return true
+      }
+    })()
 
     console.log('[V3-MEASURED] IPY-15 ' + JSON.stringify({
       transport: status.transport,
@@ -1165,15 +1213,27 @@ describe('IPY-15: the kernel transport is authenticated and frames are bounded',
       connectionFileHasCurvePublic: info['has_curve_publickey'] ?? null,
       connectionFileHasCurveSecret: info['has_curve_secretkey'] ?? null,
       connectionFileModeOctal: info['connection_file_mode_octal'] ?? null,
-      connectionFileWorldReadable: info['connection_file_world_readable'] ?? null,
+      connectionFileModeIsPlatformArtifact: info['os_name'] === 'nt',
+      // The key's LENGTH and presence only. Its value authorises execution and is
+      // deliberately never extracted, so it cannot reach this log or an artifact.
+      connectionFileKeyPresent: info['key_nonempty'] ?? null,
+      connectionFileKeyLengthChars: info['key_length_chars'] ?? null,
+      signatureScheme: info['signature_scheme'] ?? null,
       maxFrameBytes: MAX_FRAME_BYTES,
       overLimitRejectedOnEncode,
       overLimitRejectedOnDecode: decodeFailures.length > 0,
       decodeFailureMessage: decodeFailures[0] ?? null,
       normalCellDroppedFrames: normal.stdout.droppedFrames,
-      // THE FINDING: the count exists as a field but has no producer.
+      // THE LEGACY COUNT: the field exists and has no producer. Recorded as the
+      // honest state; v2 does not require it (D2) and the structured refusal below
+      // is what replaces it.
       noteDroppedFrameDefinitionCount: noteDroppedCallSites,
       rendererHasUnreachableDropBranch: rendererHasDropBranch,
+      // THE STRUCTURED REFUSAL (what v2 requires instead).
+      brokerDefinesFrameLimitError,
+      brokerEmitsStructuredRefusal,
+      structuredEventDecodes,
+      malformedRefusalRejected,
     }))
 
     // (1) The transport is TCP or IPC WITH curve keys. Plaintext TCP would be the
@@ -1182,13 +1242,17 @@ describe('IPY-15: the kernel transport is authenticated and frames are bounded',
     expect(status.curveKeysPresent).toBe(true)
     expect(status.plaintextWarningSeen).toBe(false)
 
-    // (2) The connection file the kernel was given carries BOTH curve keys, and
-    //     its permissions are recorded rather than asserted -- the spec's stimulus
-    //     names them, and on this platform they are the owner's own file.
+    // (2) The connection file the kernel was given carries BOTH curve keys. Its
+    //     mode bits are RECORDED, NOT ASSERTED: on Windows they are synthesized
+    //     from the read-only attribute and read `0o666` for every regular file, so
+    //     asserting them would assert a platform artifact. The ENFORCED permission
+    //     is an ACL and is measured by `s6-ipy15.test.ts`, which is the gate that
+    //     can run `icacls`.
     expect(info['connection_file']).toBeTruthy()
     expect(info['has_curve_publickey']).toBe(true)
     expect(info['has_curve_secretkey']).toBe(true)
-    expect(info['connection_file_readable_by_owner']).toBe(true)
+    expect(info['key_nonempty']).toBe(true)
+    expect(info['transport_in_file']).toBe(status.transport)
 
     // (3) An over-limit frame is REFUSED in both directions, and the refusal is
     //     reported as a FAILURE rather than as an empty result. This is the
@@ -1197,11 +1261,22 @@ describe('IPY-15: the kernel transport is authenticated and frames are bounded',
     expect(decodeFailures.length).toBeGreaterThan(0)
     expect(decodeFailures[0]).toContain('exceeds')
 
-    // (4) THE HONEST HALF. `droppedFrames` is present on every cell result and is
-    //     structurally 0, because `note_dropped_frame` has no caller: the count
-    //     the spec asks for cannot currently be non-zero. Asserted so the gap is
-    //     pinned here rather than left as a comment, and so that wiring a producer
-    //     fails this gate and has to be stated.
+    // (4) THE STRUCTURED REFUSAL IS REACHABLE AND ITS SHAPE IS VALIDATED. This is
+    //     the v2 requirement that replaces the legacy count: a refusal that NAMES
+    //     the limit, on a path the host actually decodes.
+    expect(brokerDefinesFrameLimitError).toBe(true)
+    expect(brokerEmitsStructuredRefusal).toBe(true)
+    expect(structuredEventDecodes).toBe(true)
+    // The control arm: a refusal WITHOUT its bound must be refused, so the check
+    // above cannot pass on a validator that accepts anything.
+    expect(malformedRefusalRejected).toBe(true)
+
+    // (5) THE LEGACY COUNT, PINNED AS THE HONEST STATE. `droppedFrames` is present
+    //     on every cell result and is structurally 0, because `note_dropped_frame`
+    //     has no caller. v2 does NOT require this count (decision D2 removed it),
+    //     and the structured refusal in (4) is what replaces it. Asserted so the
+    //     gap stays pinned rather than becoming a comment, and so that wiring a
+    //     producer fails this gate and has to be stated.
     expect(normal.stdout.droppedFrames).toBe(0)
     expect(noteDroppedCallSites).toBe(0)
     expect(rendererHasDropBranch).toBe(true)

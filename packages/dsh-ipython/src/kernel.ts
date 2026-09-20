@@ -108,9 +108,21 @@ export const DEFAULT_INTERRUPT_GRACE_MS = 5_000
 
 /** A kernel operation failed at the transport or broker level, not inside the cell. */
 export class KernelTransportError extends Error {
-  constructor(message: string) {
+  /**
+   * The broker's machine-readable code, when the failure came from a reply.
+   *
+   * WHY A FIELD AND NOT ONLY THE MESSAGE. `FRAME_TOO_LARGE` is a bounded,
+   * expected refusal that a caller can act on; `BROKER_FAILURE` is not. A caller
+   * that had to match on prose to tell them apart would break on any rewording,
+   * so the code is carried structurally. `undefined` means the failure did not
+   * originate in a broker reply (a local refusal, a timeout, a dead process).
+   */
+  readonly code?: string
+
+  constructor(message: string, code?: string) {
     super(message)
     this.name = 'KernelTransportError'
+    if (code !== undefined) this.code = code
   }
 }
 
@@ -158,6 +170,13 @@ export class KernelHost {
   private startPromise: Promise<KernelStatus> | undefined
   private readonly late: Array<LateOutput & { epoch: number }> = []
   private exitedDetail: string | undefined
+  private readonly controlErrors: string[] = []
+  private readonly refusals: Array<{
+    code: string
+    detail: string
+    limitBytes: number
+    declaredBytes?: number
+  }> = []
   private readonly options: KernelHostOptions
 
   constructor(options: KernelHostOptions) {
@@ -275,6 +294,19 @@ export class KernelHost {
       error => { this.failAll(new KernelTransportError(`broker process failed: ${String(error)}`)) },
     )
 
+    // THE CONTROL CHANNEL NEEDS AN 'error' LISTENER, AND THIS IS NOT DEFENSIVE.
+    // Node's `EventEmitter` THROWS on an unhandled 'error' event. Writing to a
+    // control pipe whose peer has exited raises `Error: write EOF` on the socket,
+    // and with no listener that exception is uncaught -- it takes down the whole
+    // host process, which in this product is the model's own process. Measured:
+    // an over-limit frame makes the broker exit 2, and the next write then raised
+    // exactly that uncaught error. Recording it here converts a process-killing
+    // event into a fact the caller is told.
+    control.on('error', (error: Error) => {
+      this.controlErrors.push(String(error))
+      this.failAll(new KernelTransportError(`broker control channel failed: ${String(error)}`))
+    })
+
     const status = await this.request<KernelStatus>('start')
     this.epoch = status.epoch
     this.lastStatus = status
@@ -325,6 +357,20 @@ export class KernelHost {
         this.options.onLateOutput?.(entry)
       } else if (message.event === 'kernel_exited') {
         this.options.onKernelExited?.(message.detail, message.epoch)
+      } else if (message.event === 'transport_refused') {
+        // A BOUNDED REFUSAL, RECORDED AND NOT TREATED AS A CRASH. The broker emits
+        // this before abandoning the control stream, because a frame whose
+        // declared length exceeds the bound leaves no trustworthy next boundary.
+        // It is stored rather than rejected into the pending entries: the refusal
+        // belongs to the STREAM, not to one request, and attributing it to
+        // whichever request happened to be in flight would misreport a transport
+        // fact as a cell failure.
+        this.refusals.push({
+          code: message.code,
+          detail: message.detail,
+          limitBytes: message.limitBytes,
+          ...message.declaredBytes === undefined ? {} : { declaredBytes: message.declaredBytes },
+        })
       }
       return
     }
@@ -337,7 +383,15 @@ export class KernelHost {
     this.pending.delete(message.id)
     clearTimeout(pending.timer)
     if (message.ok) pending.resolve(message.result)
-    else pending.reject(new KernelTransportError(`${message.error.code}: ${message.error.message}`))
+    else {
+      // The broker's code is carried structurally, not only inside the message.
+      // `FRAME_TOO_LARGE` is a bounded refusal a caller can act on; a caller that
+      // had to match prose to find it would break on any rewording.
+      pending.reject(new KernelTransportError(
+        `${message.error.code}: ${message.error.message}`,
+        message.error.code,
+      ))
+    }
   }
 
   private async request<T>(op: BrokerRequest['op'], fields: Partial<BrokerRequest> = {}, timeoutMs = 180_000): Promise<T> {
@@ -346,8 +400,31 @@ export class KernelHost {
     if (handle === undefined || control === undefined) {
       throw new KernelTransportError('the broker is not running')
     }
+
+    // THE BROKER IS ALREADY GONE. `onProcessExit` rejects the entries that exist
+    // WHEN IT FIRES, so a request issued afterwards would register a fresh entry
+    // that nothing can ever reject; its only escape is its own timer. Measured:
+    // the exit is registered 212 ms after the over-limit frame, and a cell sent
+    // after that took 62 015 ms to fail with `broker did not answer execute
+    // within 62000 ms` -- the full `execute` budget, spent learning something the
+    // host already knew. In this product the host is the model's own process, so
+    // that is a wedged turn. Refusing immediately costs nothing and loses nothing:
+    // the fact is already established and already carries its own detail.
+    if (this.exitedDetail !== undefined) {
+      throw new KernelTransportError(`the broker is not running: ${this.exitedDetail}`)
+    }
+
+    // ENCODE BEFORE REGISTERING, and this ordering is the fix for a real leak.
+    // `encodeFrame` refuses a payload over `MAX_FRAME_BYTES`. When it was
+    // evaluated inside the `control.write(...)` call below, the refusal threw out
+    // of `request` with the pending entry already registered and its timer still
+    // armed -- measured: the refusal escaped as `FrameError` correctly, and then
+    // `shutdown`'s `failAll` rejected the orphaned entry into nothing, producing
+    // an unhandled rejection. Encoding first means a refused frame never has an
+    // entry to leak.
     const id = randomUUID()
-    const request: BrokerRequest = { id, op, ...fields }
+    const frame = encodeFrame({ id, op, ...fields } as BrokerRequest)
+
     const promise = new Promise<unknown>((resolve, reject) => {
       const timer = setTimeout(() => {
         this.pending.delete(id)
@@ -358,7 +435,22 @@ export class KernelHost {
       timer.unref?.()
       this.pending.set(id, { resolve, reject, timer })
     })
-    control.write(encodeFrame(request))
+    try {
+      control.write(frame)
+    } catch (error) {
+      // A SYNCHRONOUS WRITE FAILURE MUST NOT LEAK ITS ENTRY EITHER. The async
+      // case is covered by the channel's 'error' listener; this is the throwing
+      // case, and leaving the entry behind would arm a timer for a request that
+      // was never sent.
+      const entry = this.pending.get(id)
+      if (entry !== undefined) {
+        clearTimeout(entry.timer)
+        this.pending.delete(id)
+      }
+      throw error instanceof KernelTransportError
+        ? error
+        : new KernelTransportError(`the broker control channel rejected a ${op} request: ${String(error)}`)
+    }
     return await promise as T
   }
 
@@ -497,6 +589,33 @@ export class KernelHost {
   /** The broker's stderr, for a crash report. */
   get brokerDiagnostics(): string {
     return this.diagnostics
+  }
+
+  /**
+   * Control-channel errors observed so far, newest last.
+   *
+   * A control channel whose peer has exited raises `write EOF` on every write.
+   * Those are recorded rather than thrown as uncaught exceptions, so a reader can
+   * tell "the channel failed" from "the broker never answered".
+   */
+  get controlChannelErrors(): readonly string[] {
+    return this.controlErrors
+  }
+
+  /**
+   * Transport refusals the broker reported, newest last.
+   *
+   * The one this module can produce today is `FRAME_TOO_LARGE`: a frame that
+   * violated {@link MAX_FRAME_BYTES}. It is a bounded refusal with a name, which
+   * is what the v2 oracle decision (D2) requires in place of a bare count.
+   */
+  get transportRefusals(): readonly {
+    code: string
+    detail: string
+    limitBytes: number
+    declaredBytes?: number
+  }[] {
+    return this.refusals
   }
 
   /** The exit detail, when the broker died on its own. */
