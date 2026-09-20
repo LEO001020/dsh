@@ -1360,6 +1360,147 @@ def graph_realpath_check(observation: dict[str, Any]) -> tuple[list[str], list[s
     return problems, notes, detail
 
 
+def compare_manifests(old_path: Path, new_path: Path) -> tuple[list[str], list[str], dict[str, Any]]:
+    """ID-FRESH: a build that differs must be REJECTED against an older identity.
+
+    V5 section 18 names this case and gives it one line:
+
+        ID-FRESH   current runtime graph/build differs -> old identity rejected.
+
+    WHY THIS FUNCTION HAS TO EXIST FOR THE MANIFEST TO MEAN ANYTHING. Computing two
+    identities is not the same as REJECTING a stale one. Without a consumer that
+    compares them, an old identity is a string that happens to differ from a new
+    string, and nothing in the release path notices. That is this project's
+    most-recorded defect -- the mechanism exists, is correct, and nothing calls it --
+    so the consumer is written here rather than assumed to arrive later.
+
+    WHAT IT DECIDES, and the two failure modes are reported separately because they
+    call for different actions:
+
+      * RUNTIME identity differs -> the DEPLOYMENT changed (a profile, a preset, a
+        built package, the graph, the catalog, the environment). Every verdict bound
+        to the old identity is invalid and must be RE-MEASURED.
+      * only the CONTRACT identity differs -> the deployment is UNCHANGED and the
+        contract moved (an oracle, a dependency, or a runner digest). The existing
+        measurements may still apply; RE-QUALIFY the contract.
+
+    A single combined hash cannot distinguish those, and this project's own
+    qualification-identity.py records why that matters: "A reader who sees only the
+    second failure learns 'the contract moved, re-qualify the contract'; a reader who
+    sees the first learns 'the deployment moved, re-measure'."
+
+    THE COMMIT-MOVED-ONLY CASE IS REPORTED, NOT TREATED AS DRIFT. `implementation_commit`
+    is a runtime input, so every commit moves the identity -- including a commit that
+    changed nothing else. A reader told only "runtime moved, RE-MEASURE" would re-run a
+    boot to learn that nothing changed. So the changed FIELDS are named, and a
+    commit-only move is visibly different from an artifact move.
+    """
+    problems: list[str] = []
+    notes: list[str] = []
+    detail: dict[str, Any] = {}
+
+    def load(path: Path, label: str) -> dict[str, Any] | None:
+        try:
+            return json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError) as exc:
+            problems.append(f"the {label} manifest is unreadable ({path}): {exc}")
+            return None
+
+    old = load(old_path, "old")
+    new = load(new_path, "new")
+    if old is None or new is None:
+        return problems, notes, detail
+
+    old_rt = old.get("runtime_deployment_identity")
+    new_rt = new.get("runtime_deployment_identity")
+    old_ct = (old.get("qualification_contract") or {}).get("qualification_contract_identity")
+    new_ct = (new.get("qualification_contract") or {}).get("qualification_contract_identity")
+
+    if old_rt is None or new_rt is None:
+        problems.append(
+            "one of the manifests carries no RuntimeDeploymentIdentity, so ID-FRESH cannot "
+            "be decided. An identity that was never computable (a load-bearing gap) must not "
+            "be compared as if it were a value.")
+        return problems, notes, detail
+
+    detail["old_runtime_identity"] = old_rt
+    detail["new_runtime_identity"] = new_rt
+    detail["old_contract_identity"] = old_ct
+    detail["new_contract_identity"] = new_ct
+    detail["runtime_moved"] = old_rt != new_rt
+    detail["contract_moved"] = old_ct != new_ct
+    detail["old_commit"] = (old.get("build") or {}).get("project_git_commit")
+    detail["new_commit"] = (new.get("build") or {}).get("project_git_commit")
+
+    if old_rt == new_rt:
+        notes.append(
+            "the RuntimeDeploymentIdentity is IDENTICAL: the two manifests describe the same "
+            "build.")
+        if old_ct == new_ct:
+            notes.append("The QualificationContractIdentity is also identical: nothing moved.")
+            return problems, notes, detail
+        # A CONTRACT-ONLY MOVE IS STILL A REJECTION, and the first version of this
+        # function got that wrong -- found by the CONTRACT control, which expected
+        # exit 1 and observed 0.
+        #
+        # The reasoning that produced the bug: "the deployment did not change, so
+        # nothing is stale". The reasoning that corrects it: RESULT AND EVIDENCE FILES
+        # BIND TO QualificationContractIdentity (V5 section 14). So a contract move
+        # invalidates every filed result exactly as a runtime move does -- the
+        # difference is WHY and therefore WHAT TO DO, not WHETHER to reject.
+        #
+        # Collapsing the two into one exit code would lose the distinction; collapsing
+        # them into one MESSAGE would too. So the rejection is the same and the reason
+        # is different, which is the whole value of having split the hash in the first
+        # place: "re-qualify the contract" and "re-measure the deployment" are
+        # different actions and a reader must be told which.
+        detail["why"] = (
+            "STALE, CONTRACT MOVED ONLY: the deployment is unchanged and the contract moved -- "
+            "an oracle, a dependency, or a runner digest. Filed results bind to the contract "
+            "identity, so they are stale. RE-QUALIFY the contract; the existing measurements "
+            "may still apply under reuse, and NO re-measurement of the deployment is needed.")
+        problems.append(
+            f"ID-FRESH: the QualificationContractIdentity CHANGED ({str(old_ct)[:16]}... -> "
+            f"{str(new_ct)[:16]}...) while the RuntimeDeploymentIdentity did NOT. "
+            + detail["why"])
+        return problems, notes, detail
+
+    # The runtime identity moved. WHICH FIELDS, so a commit-only move is visible.
+    old_build = old.get("build") or {}
+    new_build = new.get("build") or {}
+    changed = sorted(
+        key for key in set(old_build) | set(new_build)
+        if old_build.get(key) != new_build.get(key)
+    )
+    artifact_fields = [f for f in changed if f not in ("project_git_commit", "project_git_tree")]
+    commit_only = sorted(changed) == ["project_git_commit", "project_git_tree"]
+    detail["changed_build_fields"] = changed
+    detail["changed_artifact_fields"] = artifact_fields
+    detail["commit_moved_only"] = commit_only
+
+    if commit_only:
+        detail["why"] = (
+            "STALE, COMMIT MOVED ONLY: the implementation revision changed and every other "
+            "runtime input is byte-identical, so the deployment is materially the same and the "
+            "previous measurements still describe it. This is the expected state at a writer's "
+            "tip. RE-DERIVE the identity (cheap); RE-MEASURE only if an artifact field appears "
+            "in changed_artifact_fields.")
+    else:
+        detail["why"] = (
+            "STALE, RUNTIME MOVED: runtime inputs other than the commit changed, so the "
+            "measurements no longer describe this build. RE-MEASURE. Changed: "
+            + ", ".join(artifact_fields))
+
+    # THE REFUSAL ITSELF. This is the case V5 section 18 names, and it is reported as
+    # a PROBLEM (exit 1) rather than a note, because a release that reuses the old
+    # verdicts under a changed runtime identity is the failure the case exists for.
+    problems.append(
+        f"ID-FRESH: the RuntimeDeploymentIdentity CHANGED ({str(old_rt)[:16]}... -> "
+        f"{str(new_rt)[:16]}...), so every verdict bound to the old identity is stale. "
+        + detail["why"])
+    return problems, notes, detail
+
+
 # ---------------------------------------------------------------------------
 def main() -> int:
     parser = argparse.ArgumentParser(description="generate the BuildManifest and the split identities")
@@ -1369,6 +1510,9 @@ def main() -> int:
                         help="a fresh observation.json from run-p14-manifest.mjs")
     parser.add_argument("--graph-realpath-check", default=None,
                         help="run ONLY the GRAPH-REALPATH gate over an observation")
+    parser.add_argument("--id-fresh-check", nargs=2, default=None, metavar=("OLD", "NEW"),
+                        help="ID-FRESH (V5 section 18): compare two manifests and REJECT the "
+                             "old identity when the runtime deployment moved")
     parser.add_argument("--write", action="store_true",
                         help="write the manifest into the results directory (refused without --from-observation)")
     parser.add_argument("--json", action="store_true", help="print the manifest as JSON")
@@ -1389,6 +1533,18 @@ def main() -> int:
         print("")
         print("every requirement in compatibility.expected.json holds on this machine.")
         print("This checks REQUIREMENTS. It does not boot anything and is not a qualification.")
+        return 0
+
+    if args.id_fresh_check:
+        old_path, new_path = (Path(p) for p in args.id_fresh_check)
+        problems, notes, detail = compare_manifests(old_path, new_path)
+        print(json.dumps({"id_fresh": {"problems": problems, "notes": notes, "detail": detail}}, indent=2))
+        if problems:
+            print("")
+            print(f"ID-FRESH: {len(problems)} problem(s) -- the old identity must NOT be reused.")
+            return 1
+        print("")
+        print("ID-FRESH: the two manifests describe the same runtime deployment.")
         return 0
 
     if args.graph_realpath_check:
