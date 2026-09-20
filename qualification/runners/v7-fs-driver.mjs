@@ -43,8 +43,28 @@ import { fileURLToPath } from 'node:url'
 import { dirname as __dirnameOf, join as __joinOf } from 'node:path'
 const REPO = __joinOf(__dirnameOf(fileURLToPath(import.meta.url)), '..', '..').replace(/\\/g, '/')
 
-const RESULT_DIR = `${REPO}/qualification/results/V7-fs`
-const HOME = 'D:/DSH/home/v7-fs'
+/**
+ * THE RUN'S OWN LOCATION, PARAMETERISED.
+ *
+ * WHY THIS IS OVERRIDABLE. This driver's results directory is not scratch space:
+ * `boot.json` and `VERDICT.json` under it are FILED EVIDENCE, cited by case ids in
+ * the acceptance spec. A measurement taken at a NEW identity therefore cannot
+ * reuse them -- it would overwrite the record a previous identity's verdict cites,
+ * which is the corruption class this project records as G-SEAM-66. So the home,
+ * the result directory and the fixture root are read from the environment, and the
+ * DEFAULTS are exactly the previous literals: a run that sets nothing behaves
+ * identically to before.
+ *
+ *   V7_HOME          the DSH_HOME to boot (default D:/DSH/home/v7-fs)
+ *   V7_RESULT_DIR    where boot.json / VERDICT.json / transcript.txt go
+ *   V7_FIXTURE_ROOT  where the probe builds its workspace/outside-workspace pair
+ *                    (read by `v7-fs-probe.mjs`, which DESTROYS and rebuilds it)
+ *
+ * THE CHECK LIST IS NOT PARAMETERISED, deliberately: one instrument, one set of
+ * oracle clauses, whichever identity the run is taken at.
+ */
+const RESULT_DIR = (process.env.V7_RESULT_DIR ?? `${REPO}/qualification/results/V7-fs`).replace(/\\/g, '/')
+const HOME = (process.env.V7_HOME ?? 'D:/DSH/home/v7-fs').replace(/\\/g, '/')
 const PROFILE = 'daily'
 const PROFILE_SRC = `${REPO}/profiles/daily-candidate`
 const PROFILE_DIR = `${HOME}/profiles/${PROFILE}`
@@ -128,6 +148,34 @@ function statMtime(path) {
  * `link:` dependencies. Without it the profile's bundles do not resolve and the
  * boot fails with `cannot resolve profile bundle "dsh-daily-work"` -- a property
  * of the install step, not of the composition.
+ *
+ * ── THE WORKTREE TRAP, MEASURED HERE AND FIXED HERE ─────────────────────────
+ *
+ * The committed `profiles/daily-candidate/package.json` names the MAIN tree in
+ * both `link:` targets, deliberately (see that file's `_comment_linkTargets`:
+ * the literal is the needle `helpers/new-writer.ps1` searches for). So copying
+ * the profile into a WORKTREE's home and installing it makes every `dsh-daily-work`
+ * row resolve `D:/DSH/work/dsh-native-daily/packages/dsh-daily-work` -- a DIFFERENT
+ * checkout -- while the driver believes it booted its own tree.
+ *
+ * THIS WAS MEASURED, not anticipated. The first run of this driver from
+ * `D:/DSH/work/wt-c8` reported
+ *
+ *     probe_error: RemoteError: agent-presets: preset "daily-standard" failed to
+ *     mount: 1 row(s) did not activate: daily-work-command (dsh-daily-work/command):
+ *     never started
+ *
+ * with `toolCount` 24 against the filed run's 27 (`subagent`, `subagent_fork` and
+ * `workflow` missing). Every one of those three is a row this round's preset edit
+ * DISABLES, and `daily-work-command` is a row this round ADDS -- so the boot was
+ * executing the main tree's `dsh-daily-work`, whose `lib/command-work.js` does not
+ * exist. That is the G-SEAM-29 / G-SEAM-36 / G-SEAM-61 class: a run reporting a
+ * finding about a tree it does not own.
+ *
+ * The remedy is the same rewrite `helpers/new-writer.ps1` performs at provisioning
+ * time, re-applied here because this function OVERWRITES the provisioned
+ * `package.json`. It is applied to the INSTALLED COPY only, and it is a no-op when
+ * this tree IS the main tree, so the main-tree run is unchanged.
  */
 function freshInstall() {
   const result = {}
@@ -136,6 +184,18 @@ function freshInstall() {
   mkdirSync(`${HOME}/profiles`, { recursive: true })
   cpSync(PROFILE_SRC, PROFILE_DIR, { recursive: true })
   result.replacedExisting = existed
+
+  // Re-point the link: targets at THIS tree. The needle is the main-tree literal
+  // the committed file carries on purpose; replacing it with a relative path or a
+  // placeholder would make `new-writer.ps1`'s own replace find nothing.
+  const pkgJsonPath = `${PROFILE_DIR}/package.json`
+  const MAIN_TREE_LITERAL = 'D:/DSH/work/dsh-native-daily'
+  const before = readFileSync(pkgJsonPath, 'utf8')
+  const after = before.split(MAIN_TREE_LITERAL).join(REPO)
+  result.linkTargetsRewritten = before !== after
+  result.repoRoot = REPO
+  if (after !== before) writeFileSync(pkgJsonPath, after, 'utf8')
+
   try {
     const stdout = execFileSync(process.execPath, [LAUNCHER, 'plugin', '--profile', PROFILE, 'install'], {
       cwd: PROFILE_DIR,
@@ -251,11 +311,16 @@ const boot = await bootAndWait({
   profile: PROFILE,
   patches: [materialiseOverlay(
     `${REPO}/qualification/runners/v7-fs.patch.yml`,
-    `${REPO}/qualification/results/V7-fs/v7-fs.materialised.patch.yml`,
+    `${RESULT_DIR}/v7-fs.materialised.patch.yml`,
     `${REPO}/qualification/runners/v7-fs-probe.mjs`,
   )],
   outPath: OUT,
   cwd: FOREIGN_CWD,
+  // The probe DESTROYS and rebuilds its fixture pair on every run, so it must be
+  // told where to build it -- otherwise a measurement at a new identity would
+  // delete the fixtures under the filed V7 evidence. Defaulted in the probe to the
+  // same literal as before, so this changes nothing for a run that sets nothing.
+  env: { V7_FIXTURE_ROOT: process.env.V7_FIXTURE_ROOT ?? `${REPO}/qualification/results/V7-fs` },
 })
 
 say(`boot_cwd: ${FOREIGN_CWD} (deliberately foreign to the profile directory)`)

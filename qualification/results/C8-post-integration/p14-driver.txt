@@ -1,0 +1,29 @@
+build dsh-daily-work: lib=2026-09-20T15:10:03.035Z src=2026-09-20T14:56:59.057Z fresh=true libFiles=41
+build dsh-ipython: lib=2026-09-20T15:10:04.896Z src=2026-09-20T14:56:59.079Z fresh=true libFiles=26
+overlay materialised: D:/DSH/work/wt-c8/qualification/results/C8-post-integration/p14-manifest.patch.yml
+
+port: 13809  released: true  timedOut: false  exitCode: null
+
+--- checks ---
+ok   the boot did not time out
+ok   the port was released
+ok   the probe wrote its result
+ok   the probe result parses
+ok   the result describes the home this driver booted
+ok   the probe reported no internal error
+ok   the loader tree SETTLED before it was read
+ok   a real resolver was reachable
+ok   the resolved graph is non-empty
+ok   every row either resolved to a realpath or is a loader builtin
+ok   the extension rows are present and resolved
+ok   a real Session was created, so an empty catalog would mean something
+ok   the per-Agent catalog is non-empty
+ok   the catalog carries an order digest
+ok   the catalog carries a schema digest
+ok   the probe row is ABSENT from the catalog it measured
+ok   the probe row is ABSENT from the graph it digested
+ok   every package build is newer than its source
+
+checks_passed: 18/18
+verdict: OBSERVED
+wrote D:/DSH/work/wt-c8/qualification/results/C8-post-integration/observation.json

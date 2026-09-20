@@ -1,0 +1,2227 @@
+{
+  "schema_version": 1,
+  "kind": "P14_FRESH_RUNTIME_OBSERVATION_NOT_A_DSH_ARTIFACT",
+  "_what_this_is": [
+    "The freshly observed runtime facts a BuildManifest is computed from, produced by",
+    "a live boot of the exact built candidate. It is an INPUT to the manifest, and it",
+    "is kept beside it so the manifest can be recomputed without booting again.",
+    "",
+    "It is NOT a manifest and NOT an identity. It carries the observation and the",
+    "conditions under which it was taken; the generator decides whether those",
+    "conditions permit an identity to be computed from it."
+  ],
+  "ran_at": "2026-09-20T15:11:30.093Z",
+  "verdict": "OBSERVED",
+  "revision": {
+    "commit": "93f88babaeea172fc3434cde6f4b838a0d861154",
+    "tree": "30b242a5da4ebe31cb6f480ab8c23f490f4d53a7",
+    "branch": "wt/c8",
+    "dirty": true,
+    "dirty_path_count": 2,
+    "read_at": "OBSERVATION time, by the driver, from its own repo root"
+  },
+  "build_fingerprint": {
+    "D:/DSH/src/dsh-src/apps/cli/lib/bin.js": "69c49c871735dc7ee81ec51f266bbec129f075fd5066e046374f4b13ab02a705",
+    "D:/DSH/work/wt-c8/profiles/daily-candidate/cordis.patch.yml": "e12edffbbf69d531454f83a242863b7586e65f222f7c2f8c4151bf4918b43114",
+    "D:/DSH/work/wt-c8/profiles/daily-candidate/presets/daily-standard/agent.cordis.yml": "db31885e4688f443c701077fc2e388b05565c3021f747a634e3fe0581a2d2eb0",
+    "D:/DSH/work/wt-c8/packages/dsh-ipython/src/broker.py": "07c8d8cf9e1bb1d25f0f20a2913a6ec415d5e250c9997c39be140ef9531af691",
+    "D:/DSH/work/wt-c8/packages/dsh-daily-work/src/dsh_data_client.py": "e7d49c8b2c1811dfc47f74491f0cd2f61a3c0c3ae577497d0d0423581f58c39c",
+    "D:/DSH/work/wt-c8/packages/dsh-ipython/lib/bridge.js": "696c1e830d2764d6c3f9bb1ecc5fa11774c11f46a5afb5bc0359e6c0ce13ff4d"
+  },
+  "driver": {
+    "path": "qualification/runners/run-p14-manifest.mjs",
+    "sha256": "8f34585fbad7cdcde88d9da53d1cb30259a1504b99e13f1c3f7d9a419ac11552",
+    "repo_root": "D:/DSH/work/wt-c8",
+    "launcher": "D:/DSH/src/dsh-src/apps/cli/lib/bin.js",
+    "launcher_sha256": "69c49c871735dc7ee81ec51f266bbec129f075fd5066e046374f4b13ab02a705",
+    "dsh_src": "D:/DSH/src/dsh-src",
+    "home": "D:/DSH/home/c8",
+    "profile": "daily",
+    "port": 13809,
+    "port_released": true,
+    "timed_out": false,
+    "exit_code": null,
+    "boot_cwd": "C:/Windows/Temp",
+    "probe_source": "D:/DSH/work/wt-c8/qualification/runners/p14-manifest-probe.mjs",
+    "probe_source_sha256": "2fd76930aff5d23fc09edc8e966234c997521005465642037c025800640f5e9a",
+    "overlay": "D:/DSH/work/wt-c8/qualification/results/C8-post-integration/p14-manifest.patch.yml",
+    "overlay_sha256": "7b2525b0abed63369b519e0207ff0c81c5f1fb9323b9d4ce8cb1272f03cfc9e6"
+  },
+  "build_freshness": {
+    "dsh-daily-work": {
+      "newestLibMtimeMs": 1789917003035.056,
+      "newestLibMtime": "2026-09-20T15:10:03.035Z",
+      "libFileCount": 41,
+      "newestSrcMtimeMs": 1789916219057.2976,
+      "newestSrcMtime": "2026-09-20T14:56:59.057Z",
+      "srcFileCount": 102,
+      "libNewerThanSrc": true,
+      "libTree": {
+        "digest": "4972782eb4cd0c4c2c813306ed8fed00535916db066f32c8d2c24d965464c0bc",
+        "fileCount": 82
+      }
+    },
+    "dsh-ipython": {
+      "newestLibMtimeMs": 1789917004896.639,
+      "newestLibMtime": "2026-09-20T15:10:04.896Z",
+      "libFileCount": 26,
+      "newestSrcMtimeMs": 1789916219079.427,
+      "newestSrcMtime": "2026-09-20T14:56:59.079Z",
+      "srcFileCount": 47,
+      "libNewerThanSrc": true,
+      "libTree": {
+        "digest": "8b687890635385ec966bc0f0cd974d624e0799532fe9befff84771f9da0dfe99",
+        "fileCount": 52
+      }
+    }
+  },
+  "probe": {
+    "probe": "p14-manifest",
+    "schemaVersion": 1,
+    "ranAt": "2026-09-20T15:11:28.234Z",
+    "dshHome": "D:/DSH/home/c8",
+    "presetRoots": [
+      {
+        "path": "D:/DSH/home/c8/profiles/daily/presets/",
+        "trust": "system"
+      },
+      {
+        "path": "D:\\DSH\\home\\c8\\.agent-presets",
+        "trust": "user"
+      }
+    ],
+    "presetDefaultId": "daily-standard",
+    "nodeVersion": "v24.18.0",
+    "execPath": "C:\\Program Files\\nodejs\\node.exe",
+    "cwd": "C:\\Windows\\Temp",
+    "error": null,
+    "settle": {
+      "method": "poll loader.entries() for non-ACTIVE non-disabled entries, excluding this probe row",
+      "excludedOwnRowId": "p14-manifest-probe",
+      "timeoutMs": 30000,
+      "settled": true,
+      "waitedMs": 109,
+      "entryCount": 178,
+      "stillMoving": [],
+      "note": "loader.await() is NOT used: it waits on this probe's own fiber inertia and would deadlock."
+    },
+    "resolver": {
+      "version": "v2",
+      "shape": "resolveSync(baseUrl, {specifier})"
+    },
+    "graph": {
+      "rowCount": 177,
+      "activeRowCount": 146,
+      "resolvedRowCount": 176,
+      "unresolvedRows": [],
+      "rows": [
+        {
+          "key": "agent",
+          "name": "@deepseek-ai/dsh-agent",
+          "fiberState": 2,
+          "active": true,
+          "resolvedUrl": "file:///D:/DSH/src/dsh-src/packages/core/agent/lib/index.js",
+          "realpath": "D:/DSH/src/dsh-src/packages/core/agent/lib/index.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "agent-default-model",
+          "name": "@deepseek-ai/dsh-agent-default-model",
+          "fiberState": 2,
+          "active": true,
+          "resolvedUrl": "file:///D:/DSH/src/dsh-src/packages/core/agent-default-model/lib/index.js",
+          "realpath": "D:/DSH/src/dsh-src/packages/core/agent-default-model/lib/index.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "agent-instructions",
+          "name": "@deepseek-ai/dsh-agent-instructions",
+          "fiberState": null,
+          "active": false,
+          "resolvedUrl": "file:///D:/DSH/src/dsh-src/packages/context/agent-instructions/lib/index.js",
+          "realpath": "D:/DSH/src/dsh-src/packages/context/agent-instructions/lib/index.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "agent-loop",
+          "name": "@deepseek-ai/dsh-agent-loop",
+          "fiberState": 2,
+          "active": true,
+          "resolvedUrl": "file:///D:/DSH/src/dsh-src/packages/core/agent-loop/lib/index.js",
+          "realpath": "D:/DSH/src/dsh-src/packages/core/agent-loop/lib/index.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "agent-presets",
+          "name": "@deepseek-ai/dsh-agent-presets",
+          "fiberState": 2,
+          "active": true,
+          "resolvedUrl": "file:///D:/DSH/src/dsh-src/packages/preset/agent-presets/lib/index.js",
+          "realpath": "D:/DSH/src/dsh-src/packages/preset/agent-presets/lib/index.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "api-remotes",
+          "name": "@deepseek-ai/dsh-api-remotes",
+          "fiberState": 2,
+          "active": true,
+          "resolvedUrl": "file:///D:/DSH/src/dsh-src/packages/api/remotes/lib/index.js",
+          "realpath": "D:/DSH/src/dsh-src/packages/api/remotes/lib/index.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "approval",
+          "name": "@deepseek-ai/dsh-user-approval",
+          "fiberState": 2,
+          "active": true,
+          "resolvedUrl": "file:///D:/DSH/src/dsh-src/packages/interaction/user-approval/lib/index.js",
+          "realpath": "D:/DSH/src/dsh-src/packages/interaction/user-approval/lib/index.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "attachment-local",
+          "name": "@deepseek-ai/dsh-attachment-local",
+          "fiberState": 2,
+          "active": true,
+          "resolvedUrl": "file:///D:/DSH/src/dsh-src/packages/attachment/attachment-local/lib/index.js",
+          "realpath": "D:/DSH/src/dsh-src/packages/attachment/attachment-local/lib/index.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "auto-id:@deepseek-ai/dsh-client-ui-directory-picker-native#1",
+          "name": "@deepseek-ai/dsh-client-ui-directory-picker-native",
+          "fiberState": 2,
+          "active": true,
+          "resolvedUrl": "file:///D:/DSH/src/dsh-src/packages/client/ui-directory-picker-native/lib/index.js",
+          "realpath": "D:/DSH/src/dsh-src/packages/client/ui-directory-picker-native/lib/index.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "auto-id:@deepseek-ai/dsh-host-directory-picker-native#1",
+          "name": "@deepseek-ai/dsh-host-directory-picker-native",
+          "fiberState": 2,
+          "active": true,
+          "resolvedUrl": "file:///D:/DSH/src/dsh-src/packages/host/directory-picker-native/lib/index.js",
+          "realpath": "D:/DSH/src/dsh-src/packages/host/directory-picker-native/lib/index.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "bash-sandbox",
+          "name": "@deepseek-ai/dsh-bash-sandbox",
+          "fiberState": null,
+          "active": false,
+          "resolvedUrl": "file:///D:/DSH/src/dsh-src/packages/shell/bash-sandbox/lib/index.js",
+          "realpath": "D:/DSH/src/dsh-src/packages/shell/bash-sandbox/lib/index.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "client-hmr",
+          "name": "@deepseek-ai/dsh-client-hmr",
+          "fiberState": 2,
+          "active": true,
+          "resolvedUrl": "file:///D:/DSH/src/dsh-src/packages/client/hmr/lib/index.js",
+          "realpath": "D:/DSH/src/dsh-src/packages/client/hmr/lib/index.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "command-compact",
+          "name": "@deepseek-ai/dsh-command-compact",
+          "fiberState": null,
+          "active": false,
+          "resolvedUrl": "file:///D:/DSH/src/dsh-src/packages/compaction/command-compact/lib/index.js",
+          "realpath": "D:/DSH/src/dsh-src/packages/compaction/command-compact/lib/index.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "command-feedback",
+          "name": "@deepseek-ai/dsh-command-feedback",
+          "fiberState": 2,
+          "active": true,
+          "resolvedUrl": "file:///D:/DSH/src/dsh-src/packages/feedback/command-feedback/lib/index.js",
+          "realpath": "D:/DSH/src/dsh-src/packages/feedback/command-feedback/lib/index.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "command-goal",
+          "name": "@deepseek-ai/dsh-command-goal",
+          "fiberState": null,
+          "active": false,
+          "resolvedUrl": "file:///D:/DSH/src/dsh-src/packages/goal/command-goal/lib/index.js",
+          "realpath": "D:/DSH/src/dsh-src/packages/goal/command-goal/lib/index.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "commands",
+          "name": "@deepseek-ai/dsh-commands",
+          "fiberState": 2,
+          "active": true,
+          "resolvedUrl": "file:///D:/DSH/src/dsh-src/packages/interaction/commands/lib/index.js",
+          "realpath": "D:/DSH/src/dsh-src/packages/interaction/commands/lib/index.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "compaction-basic",
+          "name": "@deepseek-ai/dsh-compaction-basic",
+          "fiberState": null,
+          "active": false,
+          "resolvedUrl": "file:///D:/DSH/src/dsh-src/packages/compaction/compaction-basic/lib/index.js",
+          "realpath": "D:/DSH/src/dsh-src/packages/compaction/compaction-basic/lib/index.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "connection",
+          "name": "@deepseek-ai/dsh-client-connection",
+          "fiberState": 2,
+          "active": true,
+          "resolvedUrl": "file:///D:/DSH/src/dsh-src/packages/client/connection/lib/index.js",
+          "realpath": "D:/DSH/src/dsh-src/packages/client/connection/lib/index.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "cordis-client-runner",
+          "name": "@deepseek-ai/dsh-cordis-client-runner",
+          "fiberState": 2,
+          "active": true,
+          "resolvedUrl": "file:///D:/DSH/src/dsh-src/packages/extensions/cordis-client-runner/lib/index.js",
+          "realpath": "D:/DSH/src/dsh-src/packages/extensions/cordis-client-runner/lib/index.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "cordis-host-runner",
+          "name": "@deepseek-ai/dsh-cordis-host-runner",
+          "fiberState": 2,
+          "active": true,
+          "resolvedUrl": "file:///D:/DSH/src/dsh-src/packages/extensions/cordis-host-runner/lib/index.js",
+          "realpath": "D:/DSH/src/dsh-src/packages/extensions/cordis-host-runner/lib/index.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "credentials",
+          "name": "@deepseek-ai/dsh-credentials-local",
+          "fiberState": 2,
+          "active": true,
+          "resolvedUrl": "file:///D:/DSH/src/dsh-src/packages/credentials/credentials-local/lib/index.js",
+          "realpath": "D:/DSH/src/dsh-src/packages/credentials/credentials-local/lib/index.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "daily-data-plane",
+          "name": "dsh-daily-work/data-host",
+          "fiberState": 2,
+          "active": true,
+          "resolvedUrl": "file:///D:/DSH/work/wt-c8/packages/dsh-daily-work/lib/data-plugin.js",
+          "realpath": "D:/DSH/work/wt-c8/packages/dsh-daily-work/lib/data-plugin.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "daily-history",
+          "name": "dsh-daily-work/history",
+          "fiberState": 2,
+          "active": true,
+          "resolvedUrl": "file:///D:/DSH/work/wt-c8/packages/dsh-daily-work/lib/history-plugin.js",
+          "realpath": "D:/DSH/work/wt-c8/packages/dsh-daily-work/lib/history-plugin.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "daily-no-sandbox-contract",
+          "name": "dsh-daily-work/no-sandbox-contract",
+          "fiberState": 2,
+          "active": true,
+          "resolvedUrl": "file:///D:/DSH/work/wt-c8/packages/dsh-daily-work/lib/no-sandbox-contract.js",
+          "realpath": "D:/DSH/work/wt-c8/packages/dsh-daily-work/lib/no-sandbox-contract.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "daily-programmatic-scope",
+          "name": "dsh-daily-work/programmatic-scope",
+          "fiberState": 2,
+          "active": true,
+          "resolvedUrl": "file:///D:/DSH/work/wt-c8/packages/dsh-daily-work/lib/programmatic-scope-plugin.js",
+          "realpath": "D:/DSH/work/wt-c8/packages/dsh-daily-work/lib/programmatic-scope-plugin.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "daily-web-search",
+          "name": "dsh-daily-work/web-search",
+          "fiberState": 2,
+          "active": true,
+          "resolvedUrl": "file:///D:/DSH/work/wt-c8/packages/dsh-daily-work/lib/web-search-plugin.js",
+          "realpath": "D:/DSH/work/wt-c8/packages/dsh-daily-work/lib/web-search-plugin.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "daily-work-host",
+          "name": "dsh-daily-work/host",
+          "fiberState": 2,
+          "active": true,
+          "resolvedUrl": "file:///D:/DSH/work/wt-c8/packages/dsh-daily-work/lib/host-plugin.js",
+          "realpath": "D:/DSH/work/wt-c8/packages/dsh-daily-work/lib/host-plugin.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "daily-work-tool-protocol-guards",
+          "name": "dsh-daily-work/tool-protocol-guards",
+          "fiberState": 2,
+          "active": true,
+          "resolvedUrl": "file:///D:/DSH/work/wt-c8/packages/dsh-daily-work/lib/tool-protocol-guards.js",
+          "realpath": "D:/DSH/work/wt-c8/packages/dsh-daily-work/lib/tool-protocol-guards.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "daily-writers",
+          "name": "dsh-daily-work/writers",
+          "fiberState": 2,
+          "active": true,
+          "resolvedUrl": "file:///D:/DSH/work/wt-c8/packages/dsh-daily-work/lib/writers-plugin.js",
+          "realpath": "D:/DSH/work/wt-c8/packages/dsh-daily-work/lib/writers-plugin.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "deepseek-llm-api-extensions",
+          "name": "@deepseek-ai/dsh-deepseek-llm-api-extensions",
+          "fiberState": 2,
+          "active": true,
+          "resolvedUrl": "file:///D:/DSH/src/dsh-src/packages/llm/deepseek-llm-api-extensions/lib/index.js",
+          "realpath": "D:/DSH/src/dsh-src/packages/llm/deepseek-llm-api-extensions/lib/index.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "directory-picker",
+          "name": "@deepseek-ai/dsh-host-directory-picker-auto",
+          "fiberState": 2,
+          "active": true,
+          "resolvedUrl": "file:///D:/DSH/src/dsh-src/packages/host/directory-picker-auto/lib/index.js",
+          "realpath": "D:/DSH/src/dsh-src/packages/host/directory-picker-auto/lib/index.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "file-reference-local",
+          "name": "@deepseek-ai/dsh-file-reference-local",
+          "fiberState": 2,
+          "active": true,
+          "resolvedUrl": "file:///D:/DSH/src/dsh-src/packages/context/file-reference-local/lib/index.js",
+          "realpath": "D:/DSH/src/dsh-src/packages/context/file-reference-local/lib/index.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "file-upload",
+          "name": "@deepseek-ai/dsh-client-file-upload",
+          "fiberState": 2,
+          "active": true,
+          "resolvedUrl": "file:///D:/DSH/src/dsh-src/packages/client/file-upload/lib/index.js",
+          "realpath": "D:/DSH/src/dsh-src/packages/client/file-upload/lib/index.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "fs-local",
+          "name": "@deepseek-ai/dsh-fs-local",
+          "fiberState": 2,
+          "active": true,
+          "resolvedUrl": "file:///D:/DSH/src/dsh-src/packages/fs/fs-local/lib/index.js",
+          "realpath": "D:/DSH/src/dsh-src/packages/fs/fs-local/lib/index.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "fs-observation-policy",
+          "name": "@deepseek-ai/dsh-fs-observation-policy",
+          "fiberState": 2,
+          "active": true,
+          "resolvedUrl": "file:///D:/DSH/src/dsh-src/packages/fs/fs-observation-policy/lib/index.js",
+          "realpath": "D:/DSH/src/dsh-src/packages/fs/fs-observation-policy/lib/index.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "fs-sandbox",
+          "name": "@deepseek-ai/dsh-fs-sandbox",
+          "fiberState": null,
+          "active": false,
+          "resolvedUrl": "file:///D:/DSH/src/dsh-src/packages/fs/fs-sandbox/lib/index.js",
+          "realpath": "D:/DSH/src/dsh-src/packages/fs/fs-sandbox/lib/index.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "goal",
+          "name": "@deepseek-ai/dsh-goal",
+          "fiberState": 2,
+          "active": true,
+          "resolvedUrl": "file:///D:/DSH/src/dsh-src/packages/goal/goal/lib/index.js",
+          "realpath": "D:/DSH/src/dsh-src/packages/goal/goal/lib/index.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "goal-round-driver",
+          "name": "@deepseek-ai/dsh-goal-round-driver",
+          "fiberState": 2,
+          "active": true,
+          "resolvedUrl": "file:///D:/DSH/src/dsh-src/packages/goal/goal-round-driver/lib/index.js",
+          "realpath": "D:/DSH/src/dsh-src/packages/goal/goal-round-driver/lib/index.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "hmr",
+          "name": "@deepseek-ai/dsh-hmr",
+          "fiberState": 2,
+          "active": true,
+          "resolvedUrl": "file:///D:/DSH/src/dsh-src/packages/boot/hmr/lib/index.js",
+          "realpath": "D:/DSH/src/dsh-src/packages/boot/hmr/lib/index.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "image-offload",
+          "name": "@deepseek-ai/dsh-compaction-image-offload",
+          "fiberState": 2,
+          "active": true,
+          "resolvedUrl": "file:///D:/DSH/src/dsh-src/packages/compaction/compaction-image-offload/lib/index.js",
+          "realpath": "D:/DSH/src/dsh-src/packages/compaction/compaction-image-offload/lib/index.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "include",
+          "name": "cordis:include",
+          "fiberState": 2,
+          "active": true,
+          "resolvedUrl": null,
+          "realpath": null,
+          "loaderBuiltin": true,
+          "resolveError": null
+        },
+        {
+          "key": "ipython-kernel-host",
+          "name": "dsh-ipython/host",
+          "fiberState": 2,
+          "active": true,
+          "resolvedUrl": "file:///D:/DSH/work/wt-c8/packages/dsh-ipython/lib/host-plugin.js",
+          "realpath": "D:/DSH/work/wt-c8/packages/dsh-ipython/lib/host-plugin.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "jobs",
+          "name": "@deepseek-ai/dsh-jobs-local",
+          "fiberState": 2,
+          "active": true,
+          "resolvedUrl": "file:///D:/DSH/src/dsh-src/packages/jobs/jobs-local/lib/index.js",
+          "realpath": "D:/DSH/src/dsh-src/packages/jobs/jobs-local/lib/index.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "llm",
+          "name": "@deepseek-ai/dsh-llm",
+          "fiberState": 2,
+          "active": true,
+          "resolvedUrl": "file:///D:/DSH/src/dsh-src/packages/llm/llm/lib/index.js",
+          "realpath": "D:/DSH/src/dsh-src/packages/llm/llm/lib/index.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "llm-deepseek",
+          "name": "@deepseek-ai/dsh-llm-deepseek",
+          "fiberState": 2,
+          "active": true,
+          "resolvedUrl": "file:///D:/DSH/src/dsh-src/packages/llm/llm-deepseek/lib/index.js",
+          "realpath": "D:/DSH/src/dsh-src/packages/llm/llm-deepseek/lib/index.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "llm-pi-ai",
+          "name": "@deepseek-ai/dsh-llm-pi-ai",
+          "fiberState": 2,
+          "active": true,
+          "resolvedUrl": "file:///D:/DSH/src/dsh-src/packages/llm/llm-pi-ai/lib/index.js",
+          "realpath": "D:/DSH/src/dsh-src/packages/llm/llm-pi-ai/lib/index.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "llm-retry",
+          "name": "@deepseek-ai/dsh-llm-retry",
+          "fiberState": 2,
+          "active": true,
+          "resolvedUrl": "file:///D:/DSH/src/dsh-src/packages/llm/llm-retry/lib/index.js",
+          "realpath": "D:/DSH/src/dsh-src/packages/llm/llm-retry/lib/index.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "locale",
+          "name": "@deepseek-ai/dsh-client-locale",
+          "fiberState": 2,
+          "active": true,
+          "resolvedUrl": "file:///D:/DSH/src/dsh-src/packages/client/locale/lib/index.js",
+          "realpath": "D:/DSH/src/dsh-src/packages/client/locale/lib/index.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "mcp-resources",
+          "name": "@deepseek-ai/dsh-mcp-resources",
+          "fiberState": 2,
+          "active": true,
+          "resolvedUrl": "file:///D:/DSH/src/dsh-src/packages/mcp/mcp-resources/lib/index.js",
+          "realpath": "D:/DSH/src/dsh-src/packages/mcp/mcp-resources/lib/index.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "message-feedback",
+          "name": "@deepseek-ai/dsh-message-feedback",
+          "fiberState": 2,
+          "active": true,
+          "resolvedUrl": "file:///D:/DSH/src/dsh-src/packages/feedback/message-feedback/lib/index.js",
+          "realpath": "D:/DSH/src/dsh-src/packages/feedback/message-feedback/lib/index.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "modules",
+          "name": "@deepseek-ai/dsh-client-modules",
+          "fiberState": 2,
+          "active": true,
+          "resolvedUrl": "file:///D:/DSH/src/dsh-src/packages/client/modules/lib/index.js",
+          "realpath": "D:/DSH/src/dsh-src/packages/client/modules/lib/index.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "office-to-pdf",
+          "name": "@deepseek-ai/dsh-office-to-pdf",
+          "fiberState": 2,
+          "active": true,
+          "resolvedUrl": "file:///D:/DSH/src/dsh-src/packages/document/office-to-pdf/lib/index.js",
+          "realpath": "D:/DSH/src/dsh-src/packages/document/office-to-pdf/lib/index.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "open-in-app",
+          "name": "@deepseek-ai/dsh-host-open-in-app",
+          "fiberState": 2,
+          "active": true,
+          "resolvedUrl": "file:///D:/DSH/src/dsh-src/packages/host/open-in-app/lib/index.js",
+          "realpath": "D:/DSH/src/dsh-src/packages/host/open-in-app/lib/index.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "permission",
+          "name": "@deepseek-ai/dsh-permission-presets",
+          "fiberState": null,
+          "active": false,
+          "resolvedUrl": "file:///D:/DSH/src/dsh-src/packages/interaction/permission-presets/lib/index.js",
+          "realpath": "D:/DSH/src/dsh-src/packages/interaction/permission-presets/lib/index.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "plan-mode",
+          "name": "@deepseek-ai/dsh-plan-mode",
+          "fiberState": null,
+          "active": false,
+          "resolvedUrl": "file:///D:/DSH/src/dsh-src/packages/plan/plan-mode/lib/index.js",
+          "realpath": "D:/DSH/src/dsh-src/packages/plan/plan-mode/lib/index.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "plugin-inventory",
+          "name": "@deepseek-ai/dsh-host-plugin-inventory",
+          "fiberState": 2,
+          "active": true,
+          "resolvedUrl": "file:///D:/DSH/src/dsh-src/packages/host/plugin-inventory/lib/index.js",
+          "realpath": "D:/DSH/src/dsh-src/packages/host/plugin-inventory/lib/index.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "plugin-manager",
+          "name": "@deepseek-ai/dsh-plugin-manager",
+          "fiberState": 2,
+          "active": true,
+          "resolvedUrl": "file:///D:/DSH/src/dsh-src/packages/boot/plugin-manager/lib/index.js",
+          "realpath": "D:/DSH/src/dsh-src/packages/boot/plugin-manager/lib/index.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "plugin-package-inventory-deepseek",
+          "name": "@deepseek-ai/dsh-plugin-package-inventory-deepseek",
+          "fiberState": 2,
+          "active": true,
+          "resolvedUrl": "file:///D:/DSH/src/dsh-src/packages/llm/plugin-package-inventory-deepseek/lib/index.js",
+          "realpath": "D:/DSH/src/dsh-src/packages/llm/plugin-package-inventory-deepseek/lib/index.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "ptc-runtime",
+          "name": "@deepseek-ai/dsh-ptc-runtime-node",
+          "fiberState": 2,
+          "active": true,
+          "resolvedUrl": "file:///D:/DSH/src/dsh-src/packages/ptc-runtime/ptc-runtime-node/lib/index.js",
+          "realpath": "D:/DSH/src/dsh-src/packages/ptc-runtime/ptc-runtime-node/lib/index.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "pwsh-local",
+          "name": "@deepseek-ai/dsh-pwsh-local",
+          "fiberState": 2,
+          "active": true,
+          "resolvedUrl": "file:///D:/DSH/src/dsh-src/packages/shell/pwsh-local/lib/index.js",
+          "realpath": "D:/DSH/src/dsh-src/packages/shell/pwsh-local/lib/index.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "pwsh-sandbox",
+          "name": "@deepseek-ai/dsh-pwsh-sandbox",
+          "fiberState": null,
+          "active": false,
+          "resolvedUrl": "file:///D:/DSH/src/dsh-src/packages/shell/pwsh-sandbox/lib/index.js",
+          "realpath": "D:/DSH/src/dsh-src/packages/shell/pwsh-sandbox/lib/index.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "repeat-tool-reminder",
+          "name": "@deepseek-ai/dsh-repeat-tool-reminder",
+          "fiberState": 2,
+          "active": true,
+          "resolvedUrl": "file:///D:/DSH/src/dsh-src/packages/guard/repeat-tool-reminder/lib/index.js",
+          "realpath": "D:/DSH/src/dsh-src/packages/guard/repeat-tool-reminder/lib/index.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "resources",
+          "name": "@deepseek-ai/dsh-client-resources",
+          "fiberState": 2,
+          "active": true,
+          "resolvedUrl": "file:///D:/DSH/src/dsh-src/packages/client/resources/lib/index.js",
+          "realpath": "D:/DSH/src/dsh-src/packages/client/resources/lib/index.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "sandbox",
+          "name": "@deepseek-ai/dsh-sandbox-local",
+          "fiberState": 2,
+          "active": true,
+          "resolvedUrl": "file:///D:/DSH/src/dsh-src/packages/sandbox/sandbox-local/lib/index.js",
+          "realpath": "D:/DSH/src/dsh-src/packages/sandbox/sandbox-local/lib/index.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "sandbox-policy",
+          "name": "@deepseek-ai/dsh-sandbox-policy",
+          "fiberState": 2,
+          "active": true,
+          "resolvedUrl": "file:///D:/DSH/src/dsh-src/packages/sandbox/sandbox-policy/lib/index.js",
+          "realpath": "D:/DSH/src/dsh-src/packages/sandbox/sandbox-policy/lib/index.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "session",
+          "name": "@deepseek-ai/dsh-session",
+          "fiberState": 2,
+          "active": true,
+          "resolvedUrl": "file:///D:/DSH/src/dsh-src/packages/core/session/lib/index.js",
+          "realpath": "D:/DSH/src/dsh-src/packages/core/session/lib/index.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "session-checkpoint-policy",
+          "name": "@deepseek-ai/dsh-session-checkpoint-policy",
+          "fiberState": 2,
+          "active": true,
+          "resolvedUrl": "file:///D:/DSH/src/dsh-src/packages/session/session-checkpoint-policy/lib/index.js",
+          "realpath": "D:/DSH/src/dsh-src/packages/session/session-checkpoint-policy/lib/index.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "session-controller",
+          "name": "@deepseek-ai/dsh-api-session-controller",
+          "fiberState": 2,
+          "active": true,
+          "resolvedUrl": "file:///D:/DSH/src/dsh-src/packages/api/session-controller/lib/index.js",
+          "realpath": "D:/DSH/src/dsh-src/packages/api/session-controller/lib/index.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "session-log-deepseek",
+          "name": "@deepseek-ai/dsh-session-log-deepseek",
+          "fiberState": 2,
+          "active": true,
+          "resolvedUrl": "file:///D:/DSH/src/dsh-src/packages/session/session-log-deepseek/lib/index.js",
+          "realpath": "D:/DSH/src/dsh-src/packages/session/session-log-deepseek/lib/index.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "session-log-download",
+          "name": "@deepseek-ai/dsh-session-log-export",
+          "fiberState": 2,
+          "active": true,
+          "resolvedUrl": "file:///D:/DSH/src/dsh-src/packages/session-query/session-log-export/lib/index.js",
+          "realpath": "D:/DSH/src/dsh-src/packages/session-query/session-log-export/lib/index.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "session-persistence-jsonl",
+          "name": "@deepseek-ai/dsh-session-persistence-jsonl",
+          "fiberState": 2,
+          "active": true,
+          "resolvedUrl": "file:///D:/DSH/src/dsh-src/packages/session/session-persistence-jsonl/lib/index.js",
+          "realpath": "D:/DSH/src/dsh-src/packages/session/session-persistence-jsonl/lib/index.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "session-projection",
+          "name": "@deepseek-ai/dsh-session-projection",
+          "fiberState": 2,
+          "active": true,
+          "resolvedUrl": "file:///D:/DSH/src/dsh-src/packages/session/session-projection/lib/index.js",
+          "realpath": "D:/DSH/src/dsh-src/packages/session/session-projection/lib/index.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "session-projection-cache",
+          "name": "@deepseek-ai/dsh-session-projection-cache",
+          "fiberState": 2,
+          "active": true,
+          "resolvedUrl": "file:///D:/DSH/src/dsh-src/packages/session/session-projection-cache/lib/index.js",
+          "realpath": "D:/DSH/src/dsh-src/packages/session/session-projection-cache/lib/index.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "session-query-sqlite",
+          "name": "@deepseek-ai/dsh-session-query-sqlite",
+          "fiberState": 2,
+          "active": true,
+          "resolvedUrl": "file:///D:/DSH/src/dsh-src/packages/session-query/session-query-sqlite/lib/index.js",
+          "realpath": "D:/DSH/src/dsh-src/packages/session-query/session-query-sqlite/lib/index.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "session-reference",
+          "name": "@deepseek-ai/dsh-session-reference",
+          "fiberState": 2,
+          "active": true,
+          "resolvedUrl": "file:///D:/DSH/src/dsh-src/packages/context/session-reference/lib/index.js",
+          "realpath": "D:/DSH/src/dsh-src/packages/context/session-reference/lib/index.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "session-stats",
+          "name": "@deepseek-ai/dsh-session-stats",
+          "fiberState": 2,
+          "active": true,
+          "resolvedUrl": "file:///D:/DSH/src/dsh-src/packages/session/session-stats/lib/index.js",
+          "realpath": "D:/DSH/src/dsh-src/packages/session/session-stats/lib/index.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "session-telemetry-otel",
+          "name": "@deepseek-ai/dsh-session-telemetry-otel",
+          "fiberState": 2,
+          "active": true,
+          "resolvedUrl": "file:///D:/DSH/src/dsh-src/packages/session/session-telemetry-otel/lib/index.js",
+          "realpath": "D:/DSH/src/dsh-src/packages/session/session-telemetry-otel/lib/index.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "session-title",
+          "name": "@deepseek-ai/dsh-session-title",
+          "fiberState": 2,
+          "active": true,
+          "resolvedUrl": "file:///D:/DSH/src/dsh-src/packages/session/session-title/lib/index.js",
+          "realpath": "D:/DSH/src/dsh-src/packages/session/session-title/lib/index.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "session-title-llm",
+          "name": "@deepseek-ai/dsh-session-title-first-prompt-llm",
+          "fiberState": 2,
+          "active": true,
+          "resolvedUrl": "file:///D:/DSH/src/dsh-src/packages/session/session-title-first-prompt-llm/lib/index.js",
+          "realpath": "D:/DSH/src/dsh-src/packages/session/session-title-first-prompt-llm/lib/index.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "session-turn-outline",
+          "name": "@deepseek-ai/dsh-session-turn-outline",
+          "fiberState": 2,
+          "active": true,
+          "resolvedUrl": "file:///D:/DSH/src/dsh-src/packages/session/session-turn-outline/lib/index.js",
+          "realpath": "D:/DSH/src/dsh-src/packages/session/session-turn-outline/lib/index.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "settings",
+          "name": "@deepseek-ai/dsh-settings-file",
+          "fiberState": 2,
+          "active": true,
+          "resolvedUrl": "file:///D:/DSH/src/dsh-src/packages/settings/settings-file/lib/index.js",
+          "realpath": "D:/DSH/src/dsh-src/packages/settings/settings-file/lib/index.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "settings-controller",
+          "name": "@deepseek-ai/dsh-api-settings-controller",
+          "fiberState": 2,
+          "active": true,
+          "resolvedUrl": "file:///D:/DSH/src/dsh-src/packages/api/settings-controller/lib/index.js",
+          "realpath": "D:/DSH/src/dsh-src/packages/api/settings-controller/lib/index.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "shell-env",
+          "name": "@deepseek-ai/dsh-shell-env",
+          "fiberState": 2,
+          "active": true,
+          "resolvedUrl": "file:///D:/DSH/src/dsh-src/packages/shell/shell-env/lib/index.js",
+          "realpath": "D:/DSH/src/dsh-src/packages/shell/shell-env/lib/index.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "skill",
+          "name": "@deepseek-ai/dsh-skill",
+          "fiberState": 2,
+          "active": true,
+          "resolvedUrl": "file:///D:/DSH/src/dsh-src/packages/skill/skill/lib/index.js",
+          "realpath": "D:/DSH/src/dsh-src/packages/skill/skill/lib/index.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "skill-badge",
+          "name": "@deepseek-ai/dsh-skill-badge",
+          "fiberState": null,
+          "active": false,
+          "resolvedUrl": "file:///D:/DSH/src/dsh-src/packages/skill/skill-badge/lib/index.js",
+          "realpath": "D:/DSH/src/dsh-src/packages/skill/skill-badge/lib/index.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "skill-filesystem",
+          "name": "@deepseek-ai/dsh-skill-filesystem",
+          "fiberState": null,
+          "active": false,
+          "resolvedUrl": "file:///D:/DSH/src/dsh-src/packages/skill/skill-filesystem/lib/index.js",
+          "realpath": "D:/DSH/src/dsh-src/packages/skill/skill-filesystem/lib/index.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "spill-local",
+          "name": "@deepseek-ai/dsh-spill-local",
+          "fiberState": 2,
+          "active": true,
+          "resolvedUrl": "file:///D:/DSH/src/dsh-src/packages/spill/spill-local/lib/index.js",
+          "realpath": "D:/DSH/src/dsh-src/packages/spill/spill-local/lib/index.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "spill-policy",
+          "name": "@deepseek-ai/dsh-spill-policy",
+          "fiberState": 2,
+          "active": true,
+          "resolvedUrl": "file:///D:/DSH/src/dsh-src/packages/spill/spill-policy/lib/index.js",
+          "realpath": "D:/DSH/src/dsh-src/packages/spill/spill-policy/lib/index.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "storage",
+          "name": "@deepseek-ai/dsh-storage",
+          "fiberState": 2,
+          "active": true,
+          "resolvedUrl": "file:///D:/DSH/src/dsh-src/packages/storage/storage/lib/index.js",
+          "realpath": "D:/DSH/src/dsh-src/packages/storage/storage/lib/index.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "storage-domain",
+          "name": "@deepseek-ai/dsh-storage-domain",
+          "fiberState": 2,
+          "active": true,
+          "resolvedUrl": "file:///D:/DSH/src/dsh-src/packages/storage/storage-domain/lib/index.js",
+          "realpath": "D:/DSH/src/dsh-src/packages/storage/storage-domain/lib/index.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "storage-json",
+          "name": "@deepseek-ai/dsh-storage-json",
+          "fiberState": 2,
+          "active": true,
+          "resolvedUrl": "file:///D:/DSH/src/dsh-src/packages/storage/storage-json/lib/index.js",
+          "realpath": "D:/DSH/src/dsh-src/packages/storage/storage-json/lib/index.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "subagent",
+          "name": "@deepseek-ai/dsh-subagent",
+          "fiberState": 2,
+          "active": true,
+          "resolvedUrl": "file:///D:/DSH/src/dsh-src/packages/subagent/subagent/lib/index.js",
+          "realpath": "D:/DSH/src/dsh-src/packages/subagent/subagent/lib/index.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "subagent-fork-in-process",
+          "name": "@deepseek-ai/dsh-subagent-fork-in-process",
+          "fiberState": 2,
+          "active": true,
+          "resolvedUrl": "file:///D:/DSH/src/dsh-src/packages/subagent/subagent-fork-in-process/lib/index.js",
+          "realpath": "D:/DSH/src/dsh-src/packages/subagent/subagent-fork-in-process/lib/index.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "subagent-model-selection-settings",
+          "name": "@deepseek-ai/dsh-tool-subagent/model-selection-settings",
+          "fiberState": 2,
+          "active": true,
+          "resolvedUrl": "file:///D:/DSH/src/dsh-src/packages/subagent/tool-subagent/lib/model-selection-settings.js",
+          "realpath": "D:/DSH/src/dsh-src/packages/subagent/tool-subagent/lib/model-selection-settings.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "subagent-spawn-in-process",
+          "name": "@deepseek-ai/dsh-subagent-spawn-in-process",
+          "fiberState": 2,
+          "active": true,
+          "resolvedUrl": "file:///D:/DSH/src/dsh-src/packages/subagent/subagent-spawn-in-process/lib/index.js",
+          "realpath": "D:/DSH/src/dsh-src/packages/subagent/subagent-spawn-in-process/lib/index.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "subprocess",
+          "name": "@deepseek-ai/dsh-subprocess-local",
+          "fiberState": 2,
+          "active": true,
+          "resolvedUrl": "file:///D:/DSH/src/dsh-src/packages/subprocess/subprocess-local/lib/index.js",
+          "realpath": "D:/DSH/src/dsh-src/packages/subprocess/subprocess-local/lib/index.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "system-prompt",
+          "name": "@deepseek-ai/dsh-system-prompt",
+          "fiberState": 2,
+          "active": true,
+          "resolvedUrl": "file:///D:/DSH/src/dsh-src/packages/core/system-prompt/lib/index.js",
+          "realpath": "D:/DSH/src/dsh-src/packages/core/system-prompt/lib/index.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "terminal-controller",
+          "name": "@deepseek-ai/dsh-api-terminal-controller",
+          "fiberState": 2,
+          "active": true,
+          "resolvedUrl": "file:///D:/DSH/src/dsh-src/packages/api/terminal-controller/lib/index.js",
+          "realpath": "D:/DSH/src/dsh-src/packages/api/terminal-controller/lib/index.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "timeout-policy",
+          "name": "@deepseek-ai/dsh-tool-call-timeout-policy",
+          "fiberState": 2,
+          "active": true,
+          "resolvedUrl": "file:///D:/DSH/src/dsh-src/packages/guard/timeout-policy/lib/index.js",
+          "realpath": "D:/DSH/src/dsh-src/packages/guard/timeout-policy/lib/index.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "timer",
+          "name": "@deepseek-ai/cordis-plugin-timer",
+          "fiberState": 2,
+          "active": true,
+          "resolvedUrl": "file:///D:/DSH/src/dsh-src/vendor/timer/lib/index.js",
+          "realpath": "D:/DSH/src/dsh-src/vendor/timer/lib/index.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "token-meter",
+          "name": "@deepseek-ai/dsh-token-meter",
+          "fiberState": 2,
+          "active": true,
+          "resolvedUrl": "file:///D:/DSH/src/dsh-src/packages/llm/token-meter/lib/index.js",
+          "realpath": "D:/DSH/src/dsh-src/packages/llm/token-meter/lib/index.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "tool-bash",
+          "name": "@deepseek-ai/dsh-tool-bash",
+          "fiberState": null,
+          "active": false,
+          "resolvedUrl": "file:///D:/DSH/src/dsh-src/packages/shell/tool-bash/lib/index.js",
+          "realpath": "D:/DSH/src/dsh-src/packages/shell/tool-bash/lib/index.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "tool-fs",
+          "name": "@deepseek-ai/dsh-tool-fs",
+          "fiberState": null,
+          "active": false,
+          "resolvedUrl": "file:///D:/DSH/src/dsh-src/packages/fs/tool-fs/lib/index.js",
+          "realpath": "D:/DSH/src/dsh-src/packages/fs/tool-fs/lib/index.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "tool-fs-search",
+          "name": "@deepseek-ai/dsh-tool-fs-search",
+          "fiberState": null,
+          "active": false,
+          "resolvedUrl": "file:///D:/DSH/src/dsh-src/packages/fs/tool-fs-search/lib/index.js",
+          "realpath": "D:/DSH/src/dsh-src/packages/fs/tool-fs-search/lib/index.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "tool-goal",
+          "name": "@deepseek-ai/dsh-tool-goal",
+          "fiberState": null,
+          "active": false,
+          "resolvedUrl": "file:///D:/DSH/src/dsh-src/packages/goal/tool-goal/lib/index.js",
+          "realpath": "D:/DSH/src/dsh-src/packages/goal/tool-goal/lib/index.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "tool-jobs",
+          "name": "@deepseek-ai/dsh-tool-jobs",
+          "fiberState": null,
+          "active": false,
+          "resolvedUrl": "file:///D:/DSH/src/dsh-src/packages/jobs/tool-jobs/lib/index.js",
+          "realpath": "D:/DSH/src/dsh-src/packages/jobs/tool-jobs/lib/index.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "tool-plugin-manager",
+          "name": "@deepseek-ai/dsh-plugin-manager/tools",
+          "fiberState": null,
+          "active": false,
+          "resolvedUrl": "file:///D:/DSH/src/dsh-src/packages/boot/plugin-manager/lib/types/tools.js",
+          "realpath": "D:/DSH/src/dsh-src/packages/boot/plugin-manager/lib/types/tools.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "tool-pwsh",
+          "name": "@deepseek-ai/dsh-tool-pwsh",
+          "fiberState": null,
+          "active": false,
+          "resolvedUrl": "file:///D:/DSH/src/dsh-src/packages/shell/tool-pwsh/lib/index.js",
+          "realpath": "D:/DSH/src/dsh-src/packages/shell/tool-pwsh/lib/index.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "tool-ralph",
+          "name": "@deepseek-ai/dsh-tool-ralph",
+          "fiberState": null,
+          "active": false,
+          "resolvedUrl": "file:///D:/DSH/src/dsh-src/packages/workflow/tool-ralph/lib/index.js",
+          "realpath": "D:/DSH/src/dsh-src/packages/workflow/tool-ralph/lib/index.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "tool-result-pruner",
+          "name": "@deepseek-ai/dsh-compaction-tool-result-pruner",
+          "fiberState": null,
+          "active": false,
+          "resolvedUrl": "file:///D:/DSH/src/dsh-src/packages/compaction/compaction-tool-result-pruner/lib/index.js",
+          "realpath": "D:/DSH/src/dsh-src/packages/compaction/compaction-tool-result-pruner/lib/index.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "tool-skill",
+          "name": "@deepseek-ai/dsh-tool-skill",
+          "fiberState": null,
+          "active": false,
+          "resolvedUrl": "file:///D:/DSH/src/dsh-src/packages/skill/tool-skill/lib/index.js",
+          "realpath": "D:/DSH/src/dsh-src/packages/skill/tool-skill/lib/index.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "tool-subagent",
+          "name": "@deepseek-ai/dsh-tool-subagent",
+          "fiberState": null,
+          "active": false,
+          "resolvedUrl": "file:///D:/DSH/src/dsh-src/packages/subagent/tool-subagent/lib/index.js",
+          "realpath": "D:/DSH/src/dsh-src/packages/subagent/tool-subagent/lib/index.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "tool-subagent-control",
+          "name": "@deepseek-ai/dsh-tool-subagent-control",
+          "fiberState": null,
+          "active": false,
+          "resolvedUrl": "file:///D:/DSH/src/dsh-src/packages/subagent/tool-subagent-control/lib/index.js",
+          "realpath": "D:/DSH/src/dsh-src/packages/subagent/tool-subagent-control/lib/index.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "tool-subagent-fork",
+          "name": "@deepseek-ai/dsh-tool-subagent",
+          "fiberState": null,
+          "active": false,
+          "resolvedUrl": "file:///D:/DSH/src/dsh-src/packages/subagent/tool-subagent/lib/index.js",
+          "realpath": "D:/DSH/src/dsh-src/packages/subagent/tool-subagent/lib/index.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "tool-subagent-list-agents",
+          "name": "@deepseek-ai/dsh-tool-subagent-control/list-agents",
+          "fiberState": null,
+          "active": false,
+          "resolvedUrl": "file:///D:/DSH/src/dsh-src/packages/subagent/tool-subagent-control/lib/types/list-agents.js",
+          "realpath": "D:/DSH/src/dsh-src/packages/subagent/tool-subagent-control/lib/types/list-agents.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "tool-todo",
+          "name": "@deepseek-ai/dsh-tool-todo",
+          "fiberState": null,
+          "active": false,
+          "resolvedUrl": "file:///D:/DSH/src/dsh-src/packages/todo/tool-todo/lib/index.js",
+          "realpath": "D:/DSH/src/dsh-src/packages/todo/tool-todo/lib/index.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "tool-web",
+          "name": "@deepseek-ai/dsh-tool-web",
+          "fiberState": null,
+          "active": false,
+          "resolvedUrl": "file:///D:/DSH/src/dsh-src/packages/web/tool-web/lib/index.js",
+          "realpath": "D:/DSH/src/dsh-src/packages/web/tool-web/lib/index.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "tool-workflow",
+          "name": "@deepseek-ai/dsh-tool-workflow",
+          "fiberState": null,
+          "active": false,
+          "resolvedUrl": "file:///D:/DSH/src/dsh-src/packages/workflow/tool-workflow/lib/index.js",
+          "realpath": "D:/DSH/src/dsh-src/packages/workflow/tool-workflow/lib/index.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "tools",
+          "name": "@deepseek-ai/dsh-tools",
+          "fiberState": 2,
+          "active": true,
+          "resolvedUrl": "file:///D:/DSH/src/dsh-src/packages/core/tools/lib/index.js",
+          "realpath": "D:/DSH/src/dsh-src/packages/core/tools/lib/index.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "typert",
+          "name": "@deepseek-ai/dsh-typert-registry",
+          "fiberState": 2,
+          "active": true,
+          "resolvedUrl": "file:///D:/DSH/src/dsh-src/packages/typert/registry/lib/index.js",
+          "realpath": "D:/DSH/src/dsh-src/packages/typert/registry/lib/index.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "typert-gateway",
+          "name": "@deepseek-ai/dsh-api-gateway",
+          "fiberState": 2,
+          "active": true,
+          "resolvedUrl": "file:///D:/DSH/src/dsh-src/packages/api/gateway/lib/index.js",
+          "realpath": "D:/DSH/src/dsh-src/packages/api/gateway/lib/index.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "typert-loader",
+          "name": "@deepseek-ai/dsh-typert-loader",
+          "fiberState": 2,
+          "active": true,
+          "resolvedUrl": "file:///D:/DSH/src/dsh-src/packages/typert/loader/lib/index.js",
+          "realpath": "D:/DSH/src/dsh-src/packages/typert/loader/lib/index.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "ui-agent-preset",
+          "name": "@deepseek-ai/dsh-client-ui-agent-preset",
+          "fiberState": 2,
+          "active": true,
+          "resolvedUrl": "file:///D:/DSH/src/dsh-src/packages/client/ui-agent-preset/lib/index.js",
+          "realpath": "D:/DSH/src/dsh-src/packages/client/ui-agent-preset/lib/index.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "ui-approval",
+          "name": "@deepseek-ai/dsh-client-ui-approval",
+          "fiberState": 2,
+          "active": true,
+          "resolvedUrl": "file:///D:/DSH/src/dsh-src/packages/client/ui-approval/lib/index.js",
+          "realpath": "D:/DSH/src/dsh-src/packages/client/ui-approval/lib/index.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "ui-attachment",
+          "name": "@deepseek-ai/dsh-client-ui-attachment",
+          "fiberState": 2,
+          "active": true,
+          "resolvedUrl": "file:///D:/DSH/src/dsh-src/packages/client/ui-attachment/lib/index.js",
+          "realpath": "D:/DSH/src/dsh-src/packages/client/ui-attachment/lib/index.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "ui-brand-official",
+          "name": "@deepseek-ai/dsh-client-ui-brand-official",
+          "fiberState": 2,
+          "active": true,
+          "resolvedUrl": "file:///D:/DSH/src/dsh-src/packages/client/ui-brand-official/lib/index.js",
+          "realpath": "D:/DSH/src/dsh-src/packages/client/ui-brand-official/lib/index.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "ui-chat",
+          "name": "@deepseek-ai/dsh-client-ui-chat",
+          "fiberState": 2,
+          "active": true,
+          "resolvedUrl": "file:///D:/DSH/src/dsh-src/packages/client/ui-chat/lib/index.js",
+          "realpath": "D:/DSH/src/dsh-src/packages/client/ui-chat/lib/index.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "ui-commands",
+          "name": "@deepseek-ai/dsh-client-ui-commands",
+          "fiberState": 2,
+          "active": true,
+          "resolvedUrl": "file:///D:/DSH/src/dsh-src/packages/client/ui-commands/lib/index.js",
+          "realpath": "D:/DSH/src/dsh-src/packages/client/ui-commands/lib/index.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "ui-conversation",
+          "name": "@deepseek-ai/dsh-client-ui-conversation",
+          "fiberState": 2,
+          "active": true,
+          "resolvedUrl": "file:///D:/DSH/src/dsh-src/packages/client/ui-conversation/lib/index.js",
+          "realpath": "D:/DSH/src/dsh-src/packages/client/ui-conversation/lib/index.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "ui-cordis",
+          "name": "@deepseek-ai/dsh-client-ui-cordis",
+          "fiberState": 2,
+          "active": true,
+          "resolvedUrl": "file:///D:/DSH/src/dsh-src/packages/extensions/ui-cordis/lib/index.js",
+          "realpath": "D:/DSH/src/dsh-src/packages/extensions/ui-cordis/lib/index.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "ui-deliverables",
+          "name": "@deepseek-ai/dsh-client-ui-deliverables",
+          "fiberState": 2,
+          "active": true,
+          "resolvedUrl": "file:///D:/DSH/src/dsh-src/packages/client/ui-deliverables/lib/index.js",
+          "realpath": "D:/DSH/src/dsh-src/packages/client/ui-deliverables/lib/index.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "ui-goal",
+          "name": "@deepseek-ai/dsh-client-ui-goal",
+          "fiberState": 2,
+          "active": true,
+          "resolvedUrl": "file:///D:/DSH/src/dsh-src/packages/client/ui-goal/lib/index.js",
+          "realpath": "D:/DSH/src/dsh-src/packages/client/ui-goal/lib/index.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "ui-input-trigger",
+          "name": "@deepseek-ai/dsh-client-ui-input-trigger",
+          "fiberState": 2,
+          "active": true,
+          "resolvedUrl": "file:///D:/DSH/src/dsh-src/packages/client/ui-input-trigger/lib/index.js",
+          "realpath": "D:/DSH/src/dsh-src/packages/client/ui-input-trigger/lib/index.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "ui-jobs",
+          "name": "@deepseek-ai/dsh-client-ui-jobs",
+          "fiberState": 2,
+          "active": true,
+          "resolvedUrl": "file:///D:/DSH/src/dsh-src/packages/client/ui-jobs/lib/index.js",
+          "realpath": "D:/DSH/src/dsh-src/packages/client/ui-jobs/lib/index.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "ui-layout",
+          "name": "@deepseek-ai/dsh-client-ui-layout",
+          "fiberState": 2,
+          "active": true,
+          "resolvedUrl": "file:///D:/DSH/src/dsh-src/packages/client/ui-layout/lib/index.js",
+          "realpath": "D:/DSH/src/dsh-src/packages/client/ui-layout/lib/index.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "ui-message-feedback",
+          "name": "@deepseek-ai/dsh-client-ui-message-feedback",
+          "fiberState": 2,
+          "active": true,
+          "resolvedUrl": "file:///D:/DSH/src/dsh-src/packages/client/ui-message-feedback/lib/index.js",
+          "realpath": "D:/DSH/src/dsh-src/packages/client/ui-message-feedback/lib/index.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "ui-model-selection",
+          "name": "@deepseek-ai/dsh-client-ui-model-selection",
+          "fiberState": 2,
+          "active": true,
+          "resolvedUrl": "file:///D:/DSH/src/dsh-src/packages/client/ui-model-selection/lib/index.js",
+          "realpath": "D:/DSH/src/dsh-src/packages/client/ui-model-selection/lib/index.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "ui-open-in-app",
+          "name": "@deepseek-ai/dsh-client-ui-open-in-app",
+          "fiberState": 2,
+          "active": true,
+          "resolvedUrl": "file:///D:/DSH/src/dsh-src/packages/client/ui-open-in-app/lib/index.js",
+          "realpath": "D:/DSH/src/dsh-src/packages/client/ui-open-in-app/lib/index.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "ui-permission",
+          "name": "@deepseek-ai/dsh-client-ui-permission-presets",
+          "fiberState": null,
+          "active": false,
+          "resolvedUrl": "file:///D:/DSH/src/dsh-src/packages/client/ui-permission-presets/lib/index.js",
+          "realpath": "D:/DSH/src/dsh-src/packages/client/ui-permission-presets/lib/index.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "ui-plan",
+          "name": "@deepseek-ai/dsh-client-ui-plan",
+          "fiberState": 2,
+          "active": true,
+          "resolvedUrl": "file:///D:/DSH/src/dsh-src/packages/client/ui-plan/lib/index.js",
+          "realpath": "D:/DSH/src/dsh-src/packages/client/ui-plan/lib/index.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "ui-plugin-manager",
+          "name": "@deepseek-ai/dsh-client-ui-plugin-manager",
+          "fiberState": 2,
+          "active": true,
+          "resolvedUrl": "file:///D:/DSH/src/dsh-src/packages/client/ui-plugin-manager/lib/index.js",
+          "realpath": "D:/DSH/src/dsh-src/packages/client/ui-plugin-manager/lib/index.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "ui-reference",
+          "name": "@deepseek-ai/dsh-client-ui-reference",
+          "fiberState": 2,
+          "active": true,
+          "resolvedUrl": "file:///D:/DSH/src/dsh-src/packages/client/ui-reference/lib/index.js",
+          "realpath": "D:/DSH/src/dsh-src/packages/client/ui-reference/lib/index.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "ui-renderer",
+          "name": "@deepseek-ai/dsh-client-ui-renderer",
+          "fiberState": 2,
+          "active": true,
+          "resolvedUrl": "file:///D:/DSH/src/dsh-src/packages/client/ui-renderer/lib/index.js",
+          "realpath": "D:/DSH/src/dsh-src/packages/client/ui-renderer/lib/index.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "ui-schedule",
+          "name": "@deepseek-ai/dsh-client-ui-schedule",
+          "fiberState": null,
+          "active": false,
+          "resolvedUrl": "file:///D:/DSH/src/dsh-src/packages/client/ui-schedule/lib/index.js",
+          "realpath": "D:/DSH/src/dsh-src/packages/client/ui-schedule/lib/index.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "ui-session",
+          "name": "@deepseek-ai/dsh-client-ui-session",
+          "fiberState": 2,
+          "active": true,
+          "resolvedUrl": "file:///D:/DSH/src/dsh-src/packages/client/ui-session/lib/index.js",
+          "realpath": "D:/DSH/src/dsh-src/packages/client/ui-session/lib/index.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "ui-settings",
+          "name": "@deepseek-ai/dsh-client-ui-settings",
+          "fiberState": 2,
+          "active": true,
+          "resolvedUrl": "file:///D:/DSH/src/dsh-src/packages/client/ui-settings/lib/index.js",
+          "realpath": "D:/DSH/src/dsh-src/packages/client/ui-settings/lib/index.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "ui-settings-general",
+          "name": "@deepseek-ai/dsh-client-ui-settings-general",
+          "fiberState": 2,
+          "active": true,
+          "resolvedUrl": "file:///D:/DSH/src/dsh-src/packages/client/ui-settings-general/lib/index.js",
+          "realpath": "D:/DSH/src/dsh-src/packages/client/ui-settings-general/lib/index.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "ui-settings-models",
+          "name": "@deepseek-ai/dsh-client-ui-settings-models",
+          "fiberState": 2,
+          "active": true,
+          "resolvedUrl": "file:///D:/DSH/src/dsh-src/packages/client/ui-settings-models/lib/index.js",
+          "realpath": "D:/DSH/src/dsh-src/packages/client/ui-settings-models/lib/index.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "ui-settings-plugin-inventory",
+          "name": "@deepseek-ai/dsh-client-ui-settings-plugin-inventory",
+          "fiberState": 2,
+          "active": true,
+          "resolvedUrl": "file:///D:/DSH/src/dsh-src/packages/client/ui-settings-plugin-inventory/lib/index.js",
+          "realpath": "D:/DSH/src/dsh-src/packages/client/ui-settings-plugin-inventory/lib/index.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "ui-settings-plugins",
+          "name": "@deepseek-ai/dsh-client-ui-settings-plugins",
+          "fiberState": 2,
+          "active": true,
+          "resolvedUrl": "file:///D:/DSH/src/dsh-src/packages/client/ui-settings-plugins/lib/index.js",
+          "realpath": "D:/DSH/src/dsh-src/packages/client/ui-settings-plugins/lib/index.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "ui-settings-unarchive-sessions",
+          "name": "@deepseek-ai/dsh-client-ui-settings-unarchive-sessions",
+          "fiberState": 2,
+          "active": true,
+          "resolvedUrl": "file:///D:/DSH/src/dsh-src/packages/client/ui-settings-unarchive-sessions/lib/index.js",
+          "realpath": "D:/DSH/src/dsh-src/packages/client/ui-settings-unarchive-sessions/lib/index.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "ui-sidebar",
+          "name": "@deepseek-ai/dsh-client-ui-sidebar",
+          "fiberState": 2,
+          "active": true,
+          "resolvedUrl": "file:///D:/DSH/src/dsh-src/packages/client/ui-sidebar/lib/index.js",
+          "realpath": "D:/DSH/src/dsh-src/packages/client/ui-sidebar/lib/index.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "ui-sidebar-browser",
+          "name": "@deepseek-ai/dsh-client-ui-sidebar-browser",
+          "fiberState": 2,
+          "active": true,
+          "resolvedUrl": "file:///D:/DSH/src/dsh-src/packages/client/ui-sidebar-browser/lib/index.js",
+          "realpath": "D:/DSH/src/dsh-src/packages/client/ui-sidebar-browser/lib/index.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "ui-sidebar-documentpreview",
+          "name": "@deepseek-ai/dsh-client-ui-sidebar-documentpreview",
+          "fiberState": 2,
+          "active": true,
+          "resolvedUrl": "file:///D:/DSH/src/dsh-src/packages/client/ui-sidebar-documentpreview/lib/index.js",
+          "realpath": "D:/DSH/src/dsh-src/packages/client/ui-sidebar-documentpreview/lib/index.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "ui-sidebar-files",
+          "name": "@deepseek-ai/dsh-client-ui-sidebar-files",
+          "fiberState": 2,
+          "active": true,
+          "resolvedUrl": "file:///D:/DSH/src/dsh-src/packages/client/ui-sidebar-files/lib/index.js",
+          "realpath": "D:/DSH/src/dsh-src/packages/client/ui-sidebar-files/lib/index.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "ui-sidebar-right",
+          "name": "@deepseek-ai/dsh-client-ui-sidebar-right",
+          "fiberState": 2,
+          "active": true,
+          "resolvedUrl": "file:///D:/DSH/src/dsh-src/packages/client/ui-sidebar-right/lib/index.js",
+          "realpath": "D:/DSH/src/dsh-src/packages/client/ui-sidebar-right/lib/index.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "ui-sidebar-terminal",
+          "name": "@deepseek-ai/dsh-client-ui-sidebar-terminal",
+          "fiberState": 2,
+          "active": true,
+          "resolvedUrl": "file:///D:/DSH/src/dsh-src/packages/client/ui-sidebar-terminal/lib/index.js",
+          "realpath": "D:/DSH/src/dsh-src/packages/client/ui-sidebar-terminal/lib/index.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "ui-skill",
+          "name": "@deepseek-ai/dsh-client-ui-skill",
+          "fiberState": 2,
+          "active": true,
+          "resolvedUrl": "file:///D:/DSH/src/dsh-src/packages/client/ui-skill/lib/index.js",
+          "realpath": "D:/DSH/src/dsh-src/packages/client/ui-skill/lib/index.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "ui-subagent",
+          "name": "@deepseek-ai/dsh-client-ui-subagent",
+          "fiberState": 2,
+          "active": true,
+          "resolvedUrl": "file:///D:/DSH/src/dsh-src/packages/client/ui-subagent/lib/index.js",
+          "realpath": "D:/DSH/src/dsh-src/packages/client/ui-subagent/lib/index.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "ui-theme",
+          "name": "@deepseek-ai/dsh-client-ui-theme",
+          "fiberState": 2,
+          "active": true,
+          "resolvedUrl": "file:///D:/DSH/src/dsh-src/packages/client/ui-theme/lib/index.js",
+          "realpath": "D:/DSH/src/dsh-src/packages/client/ui-theme/lib/index.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "ui-tool",
+          "name": "@deepseek-ai/dsh-client-ui-tool",
+          "fiberState": 2,
+          "active": true,
+          "resolvedUrl": "file:///D:/DSH/src/dsh-src/packages/client/ui-tool/lib/index.js",
+          "realpath": "D:/DSH/src/dsh-src/packages/client/ui-tool/lib/index.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "ui-trajectory",
+          "name": "@deepseek-ai/dsh-client-ui-trajectory",
+          "fiberState": 2,
+          "active": true,
+          "resolvedUrl": "file:///D:/DSH/src/dsh-src/packages/client/ui-trajectory/lib/index.js",
+          "realpath": "D:/DSH/src/dsh-src/packages/client/ui-trajectory/lib/index.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "ui-user-questions",
+          "name": "@deepseek-ai/dsh-client-ui-user-questions",
+          "fiberState": 2,
+          "active": true,
+          "resolvedUrl": "file:///D:/DSH/src/dsh-src/packages/client/ui-user-questions/lib/index.js",
+          "realpath": "D:/DSH/src/dsh-src/packages/client/ui-user-questions/lib/index.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "ui-workflow-run",
+          "name": "@deepseek-ai/dsh-client-ui-workflow-run",
+          "fiberState": 2,
+          "active": true,
+          "resolvedUrl": "file:///D:/DSH/src/dsh-src/packages/client/ui-workflow-run/lib/index.js",
+          "realpath": "D:/DSH/src/dsh-src/packages/client/ui-workflow-run/lib/index.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "ui-workspace",
+          "name": "@deepseek-ai/dsh-client-ui-workspace",
+          "fiberState": 2,
+          "active": true,
+          "resolvedUrl": "file:///D:/DSH/src/dsh-src/packages/client/ui-workspace/lib/index.js",
+          "realpath": "D:/DSH/src/dsh-src/packages/client/ui-workspace/lib/index.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "user-questions",
+          "name": "@deepseek-ai/dsh-user-questions",
+          "fiberState": 2,
+          "active": true,
+          "resolvedUrl": "file:///D:/DSH/src/dsh-src/packages/interaction/user-questions/lib/index.js",
+          "realpath": "D:/DSH/src/dsh-src/packages/interaction/user-questions/lib/index.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "web",
+          "name": "@deepseek-ai/dsh-web",
+          "fiberState": 2,
+          "active": true,
+          "resolvedUrl": "file:///D:/DSH/src/dsh-src/packages/web/web/lib/index.js",
+          "realpath": "D:/DSH/src/dsh-src/packages/web/web/lib/index.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "web-fetch-http",
+          "name": "@deepseek-ai/dsh-web-fetch-http",
+          "fiberState": 2,
+          "active": true,
+          "resolvedUrl": "file:///D:/DSH/src/dsh-src/packages/web/web-fetch-http/lib/index.js",
+          "realpath": "D:/DSH/src/dsh-src/packages/web/web-fetch-http/lib/index.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "web-runtime",
+          "name": "@deepseek-ai/dsh-web-app",
+          "fiberState": 2,
+          "active": true,
+          "resolvedUrl": "file:///D:/DSH/src/dsh-src/packages/bundle/web-app/lib/index.js",
+          "realpath": "D:/DSH/src/dsh-src/packages/bundle/web-app/lib/index.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "web-search-deepseek",
+          "name": "@deepseek-ai/dsh-web-search-deepseek",
+          "fiberState": 2,
+          "active": true,
+          "resolvedUrl": "file:///D:/DSH/src/dsh-src/packages/web/web-search-deepseek/lib/index.js",
+          "realpath": "D:/DSH/src/dsh-src/packages/web/web-search-deepseek/lib/index.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "web-startup",
+          "name": "@deepseek-ai/dsh-web-app/startup",
+          "fiberState": 2,
+          "active": true,
+          "resolvedUrl": "file:///D:/DSH/src/dsh-src/packages/bundle/web-app/lib/startup.js",
+          "realpath": "D:/DSH/src/dsh-src/packages/bundle/web-app/lib/startup.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "webserver",
+          "name": "@deepseek-ai/dsh-host-webserver",
+          "fiberState": 2,
+          "active": true,
+          "resolvedUrl": "file:///D:/DSH/src/dsh-src/packages/host/webserver/lib/index.js",
+          "realpath": "D:/DSH/src/dsh-src/packages/host/webserver/lib/index.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "workflow-ptc",
+          "name": "@deepseek-ai/dsh-workflow-ptc",
+          "fiberState": null,
+          "active": false,
+          "resolvedUrl": "file:///D:/DSH/src/dsh-src/packages/workflow/workflow-ptc/lib/index.js",
+          "realpath": "D:/DSH/src/dsh-src/packages/workflow/workflow-ptc/lib/index.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "workspace",
+          "name": "@deepseek-ai/dsh-workspace",
+          "fiberState": 2,
+          "active": true,
+          "resolvedUrl": "file:///D:/DSH/src/dsh-src/packages/workspace/workspace/lib/index.js",
+          "realpath": "D:/DSH/src/dsh-src/packages/workspace/workspace/lib/index.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "workspace-changes",
+          "name": "@deepseek-ai/dsh-workspace-changes",
+          "fiberState": 2,
+          "active": true,
+          "resolvedUrl": "file:///D:/DSH/src/dsh-src/packages/deliverables/workspace-changes/lib/index.js",
+          "realpath": "D:/DSH/src/dsh-src/packages/deliverables/workspace-changes/lib/index.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "workspace-controller",
+          "name": "@deepseek-ai/dsh-api-workspace-controller",
+          "fiberState": 2,
+          "active": true,
+          "resolvedUrl": "file:///D:/DSH/src/dsh-src/packages/api/workspace-controller/lib/index.js",
+          "realpath": "D:/DSH/src/dsh-src/packages/api/workspace-controller/lib/index.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        },
+        {
+          "key": "workspace-files",
+          "name": "@deepseek-ai/dsh-api-workspace-files",
+          "fiberState": 2,
+          "active": true,
+          "resolvedUrl": "file:///D:/DSH/src/dsh-src/packages/api/workspace-files/lib/index.js",
+          "realpath": "D:/DSH/src/dsh-src/packages/api/workspace-files/lib/index.js",
+          "loaderBuiltin": false,
+          "resolveError": null
+        }
+      ],
+      "digest": "0beaf1be49398da7020f48abb36e50cd0c8e20e215a1aea69041283304a8ade3",
+      "rowsDigest": "a137dfdf1692b60437d821498cf96ebaab60db96bbc61ee47e8874136d5d7d23",
+      "realpathDigest": "d97d2b57d23dbf8ecdc4534aad2e68364b3d7878e46ca64ab3a11eca5369fc70",
+      "autoGeneratedIdRows": {
+        "count": 2,
+        "modules": [
+          "@deepseek-ai/dsh-client-ui-directory-picker-native",
+          "@deepseek-ai/dsh-host-directory-picker-native"
+        ],
+        "why": "vendor/loader/src/config/tree.ts:54 assigns `options.id = Math.random().toString(16).slice(2, 10)` to any row that declares no id, so these ids differ on every boot. They are keyed by MODULE in the digest, and the raw ids are recorded here rather than discarded, so the substitution is visible. The rows are NOT dropped: their presence and activation are real facts this digest must cover.",
+        "rawIdsObservedThisBoot": [
+          "526ce5c4",
+          "6b88b18a"
+        ]
+      },
+      "builtinRowCount": 1,
+      "measuredAfterSettle": true
+    },
+    "extensionRows": [
+      {
+        "key": "daily-data-plane",
+        "name": "dsh-daily-work/data-host",
+        "realpath": "D:/DSH/work/wt-c8/packages/dsh-daily-work/lib/data-plugin.js",
+        "active": true,
+        "resolveError": null
+      },
+      {
+        "key": "daily-history",
+        "name": "dsh-daily-work/history",
+        "realpath": "D:/DSH/work/wt-c8/packages/dsh-daily-work/lib/history-plugin.js",
+        "active": true,
+        "resolveError": null
+      },
+      {
+        "key": "daily-no-sandbox-contract",
+        "name": "dsh-daily-work/no-sandbox-contract",
+        "realpath": "D:/DSH/work/wt-c8/packages/dsh-daily-work/lib/no-sandbox-contract.js",
+        "active": true,
+        "resolveError": null
+      },
+      {
+        "key": "daily-programmatic-scope",
+        "name": "dsh-daily-work/programmatic-scope",
+        "realpath": "D:/DSH/work/wt-c8/packages/dsh-daily-work/lib/programmatic-scope-plugin.js",
+        "active": true,
+        "resolveError": null
+      },
+      {
+        "key": "daily-web-search",
+        "name": "dsh-daily-work/web-search",
+        "realpath": "D:/DSH/work/wt-c8/packages/dsh-daily-work/lib/web-search-plugin.js",
+        "active": true,
+        "resolveError": null
+      },
+      {
+        "key": "daily-work-host",
+        "name": "dsh-daily-work/host",
+        "realpath": "D:/DSH/work/wt-c8/packages/dsh-daily-work/lib/host-plugin.js",
+        "active": true,
+        "resolveError": null
+      },
+      {
+        "key": "daily-work-tool-protocol-guards",
+        "name": "dsh-daily-work/tool-protocol-guards",
+        "realpath": "D:/DSH/work/wt-c8/packages/dsh-daily-work/lib/tool-protocol-guards.js",
+        "active": true,
+        "resolveError": null
+      },
+      {
+        "key": "daily-writers",
+        "name": "dsh-daily-work/writers",
+        "realpath": "D:/DSH/work/wt-c8/packages/dsh-daily-work/lib/writers-plugin.js",
+        "active": true,
+        "resolveError": null
+      },
+      {
+        "key": "ipython-kernel-host",
+        "name": "dsh-ipython/host",
+        "realpath": "D:/DSH/work/wt-c8/packages/dsh-ipython/lib/host-plugin.js",
+        "active": true,
+        "resolveError": null
+      }
+    ],
+    "catalog": {
+      "sessionCreated": true,
+      "sessionId": "session-2ef317f0-8d58-4011-880e-a387675cf250",
+      "sessionCwd": "D:/DSH/work/wt-c8",
+      "toolCount": 24,
+      "namesInHeaderOrder": [
+        "work",
+        "read",
+        "write",
+        "edit",
+        "glob",
+        "grep",
+        "job_output",
+        "job_list",
+        "job_kill",
+        "skill",
+        "ask_user_question",
+        "web_search",
+        "web_fetch",
+        "present",
+        "ipython",
+        "read_image",
+        "send_message",
+        "interrupt_agent",
+        "list_agents",
+        "todo_write",
+        "get_goal",
+        "create_goal",
+        "update_goal",
+        "exit_plan_mode"
+      ],
+      "namesSorted": [
+        "ask_user_question",
+        "create_goal",
+        "edit",
+        "exit_plan_mode",
+        "get_goal",
+        "glob",
+        "grep",
+        "interrupt_agent",
+        "ipython",
+        "job_kill",
+        "job_list",
+        "job_output",
+        "list_agents",
+        "present",
+        "read",
+        "read_image",
+        "send_message",
+        "skill",
+        "todo_write",
+        "update_goal",
+        "web_fetch",
+        "web_search",
+        "work",
+        "write"
+      ],
+      "schemaDigest": "e652e6dccca056a421658af82f8584551e4d6d81735880558f6394237e9341e2",
+      "orderDigest": "32393eca3edb7d7fcfc3b9f519ae89cf8de86c585ca19618ec08600348c9f863",
+      "hasRunCode": false,
+      "error": null
+    },
+    "selectedRowConfigs": {
+      "agent-default-model": {
+        "name": "@deepseek-ai/dsh-agent-default-model",
+        "config": {
+          "provider": "deepseek-official",
+          "model": "deepseek-flash"
+        },
+        "note": "`options.config` is the value the LOADER was given, including `!!js` expressions as `{__jsExpr: ...}`. It is NOT the schema-resolved config: a key the row omits has its schema default applied at plugin construction, which the probe cannot read without reaching into the plugin instance. So a reader must not read a missing key here as \"no value\" -- see the report's named gap on resolved defaults."
+      },
+      "sandbox-policy": {
+        "name": "@deepseek-ai/dsh-sandbox-policy",
+        "config": {
+          "mode": "danger-full-access",
+          "workspaceRoot": {
+            "__jsExpr": "process.cwd()"
+          }
+        },
+        "note": "`options.config` is the value the LOADER was given, including `!!js` expressions as `{__jsExpr: ...}`. It is NOT the schema-resolved config: a key the row omits has its schema default applied at plugin construction, which the probe cannot read without reaching into the plugin instance. So a reader must not read a missing key here as \"no value\" -- see the report's named gap on resolved defaults."
+      },
+      "subagent": {
+        "name": "@deepseek-ai/dsh-subagent",
+        "config": {
+          "maxActiveSubagents": 30,
+          "maxDepth": 1
+        },
+        "note": "`options.config` is the value the LOADER was given, including `!!js` expressions as `{__jsExpr: ...}`. It is NOT the schema-resolved config: a key the row omits has its schema default applied at plugin construction, which the probe cannot read without reaching into the plugin instance. So a reader must not read a missing key here as \"no value\" -- see the report's named gap on resolved defaults."
+      },
+      "tools": {
+        "name": "@deepseek-ai/dsh-tools",
+        "config": {
+          "mode": {
+            "__jsExpr": "process.env.DSH_TOOLS_MODE"
+          }
+        },
+        "note": "`options.config` is the value the LOADER was given, including `!!js` expressions as `{__jsExpr: ...}`. It is NOT the schema-resolved config: a key the row omits has its schema default applied at plugin construction, which the probe cannot read without reaching into the plugin instance. So a reader must not read a missing key here as \"no value\" -- see the report's named gap on resolved defaults."
+      },
+      "agent-loop": {
+        "name": "@deepseek-ai/dsh-agent-loop",
+        "config": {
+          "agents": []
+        },
+        "note": "`options.config` is the value the LOADER was given, including `!!js` expressions as `{__jsExpr: ...}`. It is NOT the schema-resolved config: a key the row omits has its schema default applied at plugin construction, which the probe cannot read without reaching into the plugin instance. So a reader must not read a missing key here as \"no value\" -- see the report's named gap on resolved defaults."
+      },
+      "webserver": {
+        "name": "@deepseek-ai/dsh-host-webserver",
+        "config": {
+          "host": {
+            "__jsExpr": "ctx.webStartup.host ?? '127.0.0.1'"
+          },
+          "port": 13809,
+          "compression": "gzip",
+          "compressionLevel": 1
+        },
+        "note": "`options.config` is the value the LOADER was given, including `!!js` expressions as `{__jsExpr: ...}`. It is NOT the schema-resolved config: a key the row omits has its schema default applied at plugin construction, which the probe cannot read without reaching into the plugin instance. So a reader must not read a missing key here as \"no value\" -- see the report's named gap on resolved defaults."
+      },
+      "agent-presets": {
+        "name": "@deepseek-ai/dsh-agent-presets",
+        "config": {
+          "default": "daily-standard",
+          "roots": [
+            {
+              "path": {
+                "__jsExpr": "new URL('presets/', ctx.baseUrl).pathname.replace(/^\\/([A-Za-z]:)/, '$1')"
+              },
+              "trust": "system"
+            }
+          ],
+          "includeShippedRoot": false,
+          "includeUserRoot": true
+        },
+        "note": "`options.config` is the value the LOADER was given, including `!!js` expressions as `{__jsExpr: ...}`. It is NOT the schema-resolved config: a key the row omits has its schema default applied at plugin construction, which the probe cannot read without reaching into the plugin instance. So a reader must not read a missing key here as \"no value\" -- see the report's named gap on resolved defaults."
+      },
+      "daily-work-host": {
+        "name": "dsh-daily-work/host",
+        "config": {
+          "targetChildren": 10,
+          "maxDepth": 1,
+          "subagentProvider": "spawn",
+          "budgetCeiling": 200,
+          "currency": "USD",
+          "priceVersion": "unversioned-2026-09-19"
+        },
+        "note": "`options.config` is the value the LOADER was given, including `!!js` expressions as `{__jsExpr: ...}`. It is NOT the schema-resolved config: a key the row omits has its schema default applied at plugin construction, which the probe cannot read without reaching into the plugin instance. So a reader must not read a missing key here as \"no value\" -- see the report's named gap on resolved defaults."
+      },
+      "ipython-kernel-host": {
+        "name": "dsh-ipython/host",
+        "config": {
+          "pythonExecutable": {
+            "[object Object]": "dshHomePath('runtime', 'python', 'bin', 'python'))"
+          },
+          "executionWorld": "local",
+          "outputCapBytes": 262144,
+          "cellTimeoutMs": 120000,
+          "interruptGraceMs": 5000
+        },
+        "note": "`options.config` is the value the LOADER was given, including `!!js` expressions as `{__jsExpr: ...}`. It is NOT the schema-resolved config: a key the row omits has its schema default applied at plugin construction, which the probe cannot read without reaching into the plugin instance. So a reader must not read a missing key here as \"no value\" -- see the report's named gap on resolved defaults."
+      }
+    },
+    "baseUrl": "file:///D:/DSH/home/c8/profiles/daily/"
+  },
+  "checks": [
+    {
+      "label": "the boot did not time out",
+      "ok": true,
+      "detail": "timedOut=false"
+    },
+    {
+      "label": "the port was released",
+      "ok": true,
+      "detail": "portReleased=true"
+    },
+    {
+      "label": "the probe wrote its result",
+      "ok": true,
+      "detail": "D:/DSH/work/wt-c8/qualification/results/C8-post-integration/observation.json"
+    },
+    {
+      "label": "the probe result parses",
+      "ok": true,
+      "detail": "parsed"
+    },
+    {
+      "label": "the result describes the home this driver booted",
+      "ok": true,
+      "detail": "expected=D:/DSH/home/c8 roots=D:/DSH/home/c8/profiles/daily/presets/|D:\\DSH\\home\\c8\\.agent-presets"
+    },
+    {
+      "label": "the probe reported no internal error",
+      "ok": true,
+      "detail": "null"
+    },
+    {
+      "label": "the loader tree SETTLED before it was read",
+      "ok": true,
+      "detail": "settled=true waitedMs=109 stillMoving=[]"
+    },
+    {
+      "label": "a real resolver was reachable",
+      "ok": true,
+      "detail": "{\"version\":\"v2\",\"shape\":\"resolveSync(baseUrl, {specifier})\"}"
+    },
+    {
+      "label": "the resolved graph is non-empty",
+      "ok": true,
+      "detail": "rows=177 resolved=176"
+    },
+    {
+      "label": "every row either resolved to a realpath or is a loader builtin",
+      "ok": true,
+      "detail": "rows=177 resolved=176 builtins=1 unresolved=[]"
+    },
+    {
+      "label": "the extension rows are present and resolved",
+      "ok": true,
+      "detail": "[\"dsh-daily-work/data-host -> D:/DSH/work/wt-c8/packages/dsh-daily-work/lib/data-plugin.js\",\"dsh-daily-work/history -> D:/DSH/work/wt-c8/packages/dsh-daily-work/lib/history-plugin.js\",\"dsh-daily-work/no-sandbox-contract -> D:/DSH/work/wt-c8/packages/dsh-daily-work/lib/no-sandbox-contract.js\",\"dsh-daily-work/programmatic-scope -> D:/DSH/work/wt-c8/packages/dsh-daily-work/lib/programmatic-scope-plugin.js\",\"dsh-daily-work/web-search -> D:/DSH/work/wt-c8/packages/dsh-daily-work/lib/web-search-plugin.js\",\"dsh-daily-work/host -> D:/DSH/work/wt-c8/packages/dsh-daily-work/lib/host-plugin.js\",\"dsh-daily-work/tool-protocol-guards -> D:/DSH/work/wt-c8/packages/dsh-daily-work/lib/tool-protocol-guards.js\",\"dsh-daily-work/writers -> D:/DSH/work/wt-c8/packages/dsh-daily-work/lib/writers-plugin.js\",\"dsh-ipython/host -> D:/DSH/work/wt-c8/packages/dsh-ipython/lib/host-plugin.js\"]"
+    },
+    {
+      "label": "a real Session was created, so an empty catalog would mean something",
+      "ok": true,
+      "detail": "sessionCreated=true id=\"session-2ef317f0-8d58-4011-880e-a387675cf250\" error=null"
+    },
+    {
+      "label": "the per-Agent catalog is non-empty",
+      "ok": true,
+      "detail": "tools=24"
+    },
+    {
+      "label": "the catalog carries an order digest",
+      "ok": true,
+      "detail": "\"32393eca3edb7d7fcfc3b9f519ae89cf8de86c585ca19618ec08600348c9f863\""
+    },
+    {
+      "label": "the catalog carries a schema digest",
+      "ok": true,
+      "detail": "\"e652e6dccca056a421658af82f8584551e4d6d81735880558f6394237e9341e2\""
+    },
+    {
+      "label": "the probe row is ABSENT from the catalog it measured",
+      "ok": true,
+      "detail": "[\"work\",\"read\",\"write\",\"edit\",\"glob\",\"grep\",\"job_output\",\"job_list\",\"job_kill\",\"skill\",\"ask_user_question\",\"web_search\",\"web_fetch\",\"present\",\"ipython\",\"read_image\",\"send_message\",\"interrupt_agent\",\"list_agents\",\"todo_write\",\"get_goal\",\"create_goal\",\"update_goal\",\"exit_plan_mode\"]"
+    },
+    {
+      "label": "the probe row is ABSENT from the graph it digested",
+      "ok": true,
+      "detail": "[]"
+    },
+    {
+      "label": "every package build is newer than its source",
+      "ok": true,
+      "detail": "{\"dsh-daily-work\":true,\"dsh-ipython\":true}"
+    }
+  ],
+  "failures": []
+}

@@ -1,0 +1,24 @@
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.8 [39m[90mD:/DSH/work/wt-c8/packages/dsh-ipython[39m
+
+ [2m[90m↓[39m[22m src/v3-spec-gates.test.ts[2m > [22mIPY-01: a real IPython shell, not a CPython imitation[2m > [22mget_ipython() and a magic both work IN ONE CELL through the service
+ [2m[90m↓[39m[22m src/v3-spec-gates.test.ts[2m > [22mIPY-02: the namespace persists across cells[2m > [22mcell 2 uses a DataFrame, a function and an import it does NOT define
+ [2m[90m↓[39m[22m src/v3-spec-gates.test.ts[2m > [22mIPY-03: top-level await works with no wrapper[2m > [22man asyncio task and a native tool call both settle at top level, unwrapped
+ [2m[90m↓[39m[22m src/v3-spec-gates.test.ts[2m > [22mIPY-04: an exception leaves partial state and does not claim rollback[2m > [22mthe assignment survives, the traceback is present, and the MODEL TEXT claims no rollback
+ [2m[90m↓[39m[22m src/v3-spec-gates.test.ts[2m > [22mIPY-05: stdin is disabled and fails fast[2m > [22minput() and getpass() each fail promptly and do NOT hold the execution slot
+ [2m[90m↓[39m[22m src/v3-spec-gates.test.ts[2m > [22mIPY-06: only the matching reply and idle settle a cell[2m > [22mforeign frames are ignored AND COUNTED, and a restart mid-sequence is a new epoch
+ [2m[90m↓[39m[22m src/v3-spec-gates.test.ts[2m > [22mIPY-11: the kernel cwd is the project root[2m > [22ma real project root is reported verbatim and a relative path resolves inside it
+ [2m[90m↓[39m[22m src/v3-spec-gates.test.ts[2m > [22mIPY-12: output is bounded and the loss is stated[2m > [22mthe model text says TRUNCATED, names the true total and the spill path, and the cap is recorded
+ [2m[90m↓[39m[22m src/v3-spec-gates.test.ts[2m > [22mIPY-13: late output is classified separately and never rides another cell[2m > [22mCLAUSE 1 PASSES: a post-return write is late/unattributed and never rides a later cell
+ [2m[90m↓[39m[22m src/v3-spec-gates.test.ts[2m > [22mIPY-13: late output is classified separately and never rides another cell[2m > [22mCLAUSE 2: a write DURING a later cell is undecidable, not attributed
+[90mstdout[2m | src/v3-spec-gates.test.ts[2m > [22m[2mIPY-14: kernel death is visible and nothing is replayed[2m > [22m[2mthe model text reports a NEW epoch, the LOST state, no replay, and the Session survives
+[22m[39m[V3-MEASURED] IPY-14 {"epochBefore":1,"epochAfter":2,"pidBefore":21424,"pidAfter":33900,"pidReplaced":true,"generationReported":true,"generationReason":"the kernel process is gone; see C:\\Users\\hzq00\\AppData\\Local\\Temp\\dsh-ipython-v3-2ybTiw\\c2be2e281ba0928732c80a8e056adce3\\0\\kernel.err","volatileStateLost":true,"reportedAsThrow":false,"modelTextMentionsNewEpoch":true,"modelTextSaysLOST":true,"modelTextSaysNothingReplayed":true,"sessionStillRegistered":true,"survivorReadBack":"ipy14_precious present: False"}
+
+ [32m✓[39m src/v3-spec-gates.test.ts[2m > [22mIPY-14: kernel death is visible and nothing is replayed[2m > [22mthe model text reports a NEW epoch, the LOST state, no replay, and the Session survives[33m 7672[2mms[22m[39m
+ [2m[90m↓[39m[22m src/v3-spec-gates.test.ts[2m > [22mIPY-15: the kernel transport is authenticated and frames are bounded[2m > [22mthe transport is curve-encrypted, and an over-limit frame is LOST with a count
+
+[2m Test Files [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[32m1 passed[39m[22m[2m | [22m[33m11 skipped[39m[90m (12)[39m
+[2m   Start at [22m 23:15:02
+[2m   Duration [22m 8.32s[2m (transform 364ms, setup 0ms, import 483ms, tests 7.67s, environment 0ms)[22m
+

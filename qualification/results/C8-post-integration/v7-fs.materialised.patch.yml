@@ -1,0 +1,41 @@
+# Overlay for the V7 FILESYSTEM-family boot probe (spec FS-01..FS-06).
+#
+# Loaded ON TOP of the `daily-candidate` profile, so the probe runs inside a real
+# composed profile boot rather than a hand-mounted context. It ADDS ONE ROW and
+# changes nothing else.
+#
+# WHY NOTHING ELSE IS IN HERE. Every FS oracle is about the PRODUCT's composition
+# and the PRODUCT's behaviour: the mounted fs backend, the artifact store's root,
+# the disclosure the deployment makes about itself. A probe that supplied any of
+# those would be measuring its own fixture. In particular:
+#
+#   - NO `sandbox` / `sandbox-policy` row. `sandboxPolicy` is injected by seven
+#     other rows and is a readiness gate, so restating or removing it reproduces
+#     the measured `toolCount: 0` failure (FACT F) and would look exactly like the
+#     regression these cases exist to detect. FS-01 measures the policy's own
+#     `defaultMode` AS COMPOSED, so touching the row would destroy the fact.
+#   - NO `fs` / `fs-sandbox` / `fs-local` row. DIFFERENCE 3 of the profile is the
+#     provider swap under test; supplying it here would make the probe measure
+#     itself instead of the product (the G-FIX-04 / G-FIX-12 weaker-oracle class).
+#   - NO `webserver` row. `boot-harness.mjs` appends a port overlay LAST and
+#     restates all four keys the row needs (`host`, `port`, `compression`,
+#     `compressionLevel`), because a patch REPLACES the target row's whole
+#     `config` object rather than merging into it. A second writer here would
+#     compete with the harness for the same row for no benefit.
+- insert:
+    - id: verify-v7-fs
+      name: 'D:/DSH/work/wt-c8/qualification/runners/v7-fs-probe.mjs'
+
+# THIS FILE IS A TEMPLATE, NOT A RUNNABLE OVERLAY. The probe row's `name:` is a
+# PLACEHOLDER rewritten at run time to the RUNNING tree's own probe file. A cordis
+# `name:` is a MODULE SPECIFIER and an absolute one is imported as-is
+# (`packages/boot/app-boot/src/index.ts:521`,
+# `vendor/loader/src/config/tree.ts:122-126`), so a committed literal makes any
+# other checkout's boot EXECUTE the main tree's probe -- cross-tree code execution.
+# A relative `name:` is not a substitute: the loader resolves it against the
+# PROFILE directory, not this file. See `qualification/runners/overlay.mjs`.
+# TO RUN THIS OVERLAY, materialise it with the running tree's own probe:
+#   import { materialiseOverlay } from './overlay.mjs'
+#   materialiseOverlay('<this file>', '<your results dir>/x.patch.yml', '<your probe>.mjs')
+# Running it AS-IS fails loudly with an unresolvable module, which is deliberate:
+# a loud failure beats silently executing another checkout's probe.

@@ -1,0 +1,31 @@
+RuntimeDeploymentIdentity      0fe2d373d073691fa72c6e08108f23ddd2b16ada61b049248db0d530866736a1
+QualificationContractIdentity  5bd8ee5b1809ad8dc4b70e63e8f1bf6b444c88b9e96b51a5d9a99d6c6b46efa4
+contract_id                    trusted-local-v3.5bd8ee5b1809
+identity_computable            True
+
+project commit                 93f88babaeea172fc3434cde6f4b838a0d861154
+project tree                   30b242a5da4ebe31cb6f480ab8c23f490f4d53a7
+dirty                          None (None path(s))
+bound to                       THE COMMIT RECORDED HERE, read at OBSERVATION time. Not the current HEAD of this or any other checkout: twelve writers edit this tree concurrently, so the commit moves under the measurement and the manifest states which one it saw.
+graph rows                     177 (active 146, resolved 176, builtins 1)
+graph realpath digest          d97d2b57d23dbf8ecdc4534aad2e68364b3d7878e46ca64ab3a11eca5369fc70
+tool catalog                   24 tools, run_code=False
+presentation mode (derived)    native
+hard child cap (requirement)   30
+gaps                           0
+wrote D:\DSH\work\wt-c8\qualification\results\trusted-local-v3.5bd8ee5b1809\build-manifest.json
+RuntimeDeploymentIdentity      0fe2d373d073691fa72c6e08108f23ddd2b16ada61b049248db0d530866736a1
+QualificationContractIdentity  5bd8ee5b1809ad8dc4b70e63e8f1bf6b444c88b9e96b51a5d9a99d6c6b46efa4
+contract_id                    trusted-local-v3.5bd8ee5b1809
+identity_computable            True
+
+project commit                 93f88babaeea172fc3434cde6f4b838a0d861154
+project tree                   30b242a5da4ebe31cb6f480ab8c23f490f4d53a7
+dirty                          None (None path(s))
+bound to                       THE COMMIT RECORDED HERE, read at OBSERVATION time. Not the current HEAD of this or any other checkout: twelve writers edit this tree concurrently, so the commit moves under the measurement and the manifest states which one it saw.
+graph rows                     177 (active 146, resolved 176, builtins 1)
+graph realpath digest          d97d2b57d23dbf8ecdc4534aad2e68364b3d7878e46ca64ab3a11eca5369fc70
+tool catalog                   24 tools, run_code=False
+presentation mode (derived)    native
+hard child cap (requirement)   30
+gaps                           0

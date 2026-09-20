@@ -1,0 +1,20 @@
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.8 [39m[90mD:/DSH/work/wt-c8/packages/dsh-ipython[39m
+
+ [2m[90m↓[39m[22m src/faults.test.ts[2m > [22mrequirement 8: interrupt, then reuse the kernel[2m > [22ma CPU loop is interrupted, KeyboardInterrupt is reported, and the kernel is reusable
+ [2m[90m↓[39m[22m src/faults.test.ts[2m > [22mrequirement 8: interrupt, then reuse the kernel[2m > [22man interrupt of an await-suspended cell reports unknown and resets, never a false success
+ [2m[90m↓[39m[22m src/faults.test.ts[2m > [22mrequirement 10: a flooding cell cannot OOM the host[2m > [22mhundreds of MB of stdout is capped, reported truncated, and spilled
+ [2m[90m↓[39m[22m src/faults.test.ts[2m > [22mrequirement 10: a flooding cell cannot OOM the host[2m > [22ma cell under the cap reports no truncation, so the flag is not always-on
+ [2m[90m↓[39m[22m src/faults.test.ts[2m > [22mrequirement 10: a flooding cell cannot OOM the host[2m > [22ma giant display payload is bounded too, not just stdout
+ [32m✓[39m src/faults.test.ts[2m > [22mrequirement 11: kernel death changes the generation[2m > [22mkilling the kernel reports a NEW epoch and a lost-state notice[33m 6824[2mms[22m[39m
+ [32m✓[39m src/faults.test.ts[2m > [22mrequirement 11: kernel death changes the generation[2m > [22mafter the death is reported, the replacement kernel is usable and empty[33m 6312[2mms[22m[39m
+ [2m[90m↓[39m[22m src/faults.test.ts[2m > [22mIPY-07: a cell that overruns the budget is classified, and its state loss is stated[2m > [22ma timeout reports unknown with a NEW epoch and a replaced kernel, never a false success
+ [2m[90m↓[39m[22m src/faults.test.ts[2m > [22mIPY-07: a cell that overruns the budget is classified, and its state loss is stated[2m > [22mthe replacement kernel after a timeout is genuinely usable
+ [2m[90m↓[39m[22m src/faults.test.ts[2m > [22mIPY-07: restart replaces the kernel and preserves its working directory[2m > [22mrestart advances the epoch, replaces the process, loses the namespace, and keeps the cwd
+ [2m[90m↓[39m[22m src/faults.test.ts[2m > [22mIPY-12: the cap bounds the cell projection, and a direct fd-1 write is a measured boundary[2m > [22mstdout written through the cell's own fd 1 is NOT capped, and is recorded as such
+
+[2m Test Files [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[32m2 passed[39m[22m[2m | [22m[33m9 skipped[39m[90m (11)[39m
+[2m   Start at [22m 23:16:10
+[2m   Duration [22m 13.64s[2m (transform 249ms, setup 0ms, import 360ms, tests 13.14s, environment 0ms)[22m
+

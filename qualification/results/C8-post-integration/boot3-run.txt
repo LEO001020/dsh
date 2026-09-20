@@ -1,0 +1,7 @@
+port=6771 released=true timedOut=false
+activationCountMatch=none entryCount=178 inactive=[{"id":"hmr","name":"@deepseek-ai/dsh-hmr","disabled":false,"fiberState":1,"missing":[]}] postAuditInactive=[]
+approvalPolicy=never shellSandboxModeUndefined=true
+checks=13/16
+FAIL: [CMP-01] the live loader audit reports ZERO inactive entries (mid-apply) -- observed: [{"id":"hmr","name":"@deepseek-ai/dsh-hmr","disabled":false,"fiberState":1,"missing":[]}]
+FAIL: [CMP-01] the probe's own activation-warning count is 0 -- observed: 1
+FAIL: [CMP-01] every assertion inside the shared probe passed -- observed: false

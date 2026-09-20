@@ -1,0 +1,181 @@
+{
+  "probe": "V2-composition boot1-surface",
+  "ranAt": "2026-09-20T15:22:03.421Z",
+  "command": "node D:/DSH/work/wt-c8/../src/dsh-src/apps/cli/lib/bin.js --profile daily --patch D:/DSH/work/wt-c8/qualification/runners/verify-deliverable-surface.patch.yml --patch <freeport>.yml --no-open",
+  "cwd": "C:/",
+  "dshHome": "D:/DSH/home/c8",
+  "port": 6336,
+  "portReleased": true,
+  "timedOut": false,
+  "exitCode": null,
+  "inputDigests": {
+    "installedProfilePatch": "e12edffbbf69d531454f83a242863b7586e65f222f7c2f8c4151bf4918b43114",
+    "repoProfilePatch": "e12edffbbf69d531454f83a242863b7586e65f222f7c2f8c4151bf4918b43114",
+    "installedPreset": "db31885e4688f443c701077fc2e388b05565c3021f747a634e3fe0581a2d2eb0",
+    "repoPreset": "db31885e4688f443c701077fc2e388b05565c3021f747a634e3fe0581a2d2eb0",
+    "workBundlePatch": "4cb2095194c20280c1b27204c464af7dd7a8ce55e599bc403698a228b6f10355",
+    "ipythonBundlePatch": "f169f231bd1af3f569264dde980d94e4f95f3cde922e2a6459f330dfd740a9a7",
+    "workLibHost": "628594433894e3f61083a78568a6b55b23d2b19904d8dcbb48bc597776a81aa5",
+    "ipythonLibTool": "c734c57efc6aaab1051f78bf58a1ad7f6fc4cc1429495bf4526e715c509bde5e",
+    "overlay": "1d081ed0dda0f6c55cbe2c57e929f8913903c931b7b42ed2c39ad844b970e5ea"
+  },
+  "activationWarningLines": [],
+  "fatal": null,
+  "result": {
+    "profileBooted": true,
+    "profileName": "daily-candidate (installed as \"daily\")",
+    "presetDefaultId": "daily-standard",
+    "presetRoots": [
+      {
+        "path": "D:/DSH/home/c8/profiles/daily/presets/",
+        "trust": "system"
+      },
+      {
+        "path": "D:\\DSH\\home\\c8\\.agent-presets",
+        "trust": "user"
+      }
+    ],
+    "kernelServicePresent": true,
+    "workServicePresent": true,
+    "dataServicePresent": true,
+    "historyServicePresent": true,
+    "programmaticScopePresent": true,
+    "sessionCreated": true,
+    "sessionId": "session-43ca580d-52e6-4fa2-bc32-dd3f3b9090d1",
+    "toolCountAgentKey": 24,
+    "toolCountContextKey": 0,
+    "ipythonToolPresent": true,
+    "ipythonParameterNames": [
+      "code"
+    ],
+    "ipythonIsOnlyParameter": true,
+    "workToolPresent": true,
+    "forbiddenLifecycleTools": [],
+    "tools": [
+      "ask_user_question",
+      "create_goal",
+      "edit",
+      "exit_plan_mode",
+      "get_goal",
+      "glob",
+      "grep",
+      "interrupt_agent",
+      "ipython",
+      "job_kill",
+      "job_list",
+      "job_output",
+      "list_agents",
+      "present",
+      "read",
+      "read_image",
+      "send_message",
+      "skill",
+      "todo_write",
+      "update_goal",
+      "web_fetch",
+      "web_search",
+      "work",
+      "write"
+    ],
+    "error": null,
+    "presetsListed": [
+      {
+        "id": "daily-standard",
+        "trust": "system",
+        "broken": null
+      }
+    ]
+  },
+  "checks": [
+    {
+      "label": "the probe result describes the home this driver booted",
+      "ok": true,
+      "detail": "D:/DSH/home/c8/profiles/daily/presets/ | D:\\DSH\\home\\c8\\.agent-presets"
+    },
+    {
+      "label": "the boot did not time out",
+      "ok": true,
+      "detail": "false"
+    },
+    {
+      "label": "the port was released",
+      "ok": true,
+      "detail": "true"
+    },
+    {
+      "label": "the boot log carries no \"did not activate\"/\"waiting for services\"/\"failed to mount\" line",
+      "ok": true,
+      "detail": "no matching line"
+    },
+    {
+      "label": "the probe reported no error",
+      "ok": true,
+      "detail": "null"
+    },
+    {
+      "label": "CMP-04 toolCountAgentKey is 28",
+      "ok": false,
+      "detail": "24"
+    },
+    {
+      "label": "CMP-04 pwsh is present",
+      "ok": false,
+      "detail": "[\"ask_user_question\",\"create_goal\",\"edit\",\"exit_plan_mode\",\"get_goal\",\"glob\",\"grep\",\"interrupt_agent\",\"ipython\",\"job_kill\",\"job_list\",\"job_output\",\"list_agents\",\"present\",\"read\",\"read_image\",\"send_message\",\"skill\",\"todo_write\",\"update_goal\",\"web_fetch\",\"web_search\",\"work\",\"write\"]"
+    },
+    {
+      "label": "CMP-04 ipython is present",
+      "ok": true,
+      "detail": "true"
+    },
+    {
+      "label": "CMP-04 work is present",
+      "ok": true,
+      "detail": "true"
+    },
+    {
+      "label": "CMP-13 no shell-equivalent tool is in the daily catalog",
+      "ok": true,
+      "detail": "[]"
+    },
+    {
+      "label": "CMP-13 ipython is present in the same catalog",
+      "ok": true,
+      "detail": "true"
+    },
+    {
+      "label": "CMP-13 the full measured name set is recorded",
+      "ok": true,
+      "detail": "24 names"
+    },
+    {
+      "label": "CMP-11 the preset root is the INSTALLED profile directory",
+      "ok": true,
+      "detail": "[{\"path\":\"D:/DSH/home/c8/profiles/daily/presets/\",\"trust\":\"system\"},{\"path\":\"D:\\\\DSH\\\\home\\\\c8\\\\.agent-presets\",\"trust\":\"user\"}]"
+    },
+    {
+      "label": "CMP-11 the overlay inserted no tool row (only the probe row)",
+      "ok": true,
+      "detail": "overlay names only the probe row"
+    },
+    {
+      "label": "CMP-05 the profile-derived root is ABSOLUTE",
+      "ok": true,
+      "detail": "D:/DSH/home/c8/profiles/daily/presets/"
+    },
+    {
+      "label": "CMP-05 daily-standard resolves from that root",
+      "ok": true,
+      "detail": "[{\"id\":\"daily-standard\",\"trust\":\"system\",\"broken\":null}]"
+    },
+    {
+      "label": "CMP-05 the default preset id is daily-standard",
+      "ok": true,
+      "detail": "daily-standard"
+    }
+  ],
+  "failures": [
+    "CMP-04 toolCountAgentKey is 28 -- observed: 24",
+    "CMP-04 pwsh is present -- observed: [\"ask_user_question\",\"create_goal\",\"edit\",\"exit_plan_mode\",\"get_goal\",\"glob\",\"grep\",\"interrupt_agent\",\"ipython\",\"job_kill\",\"job_list\",\"job_output\",\"list_agents\",\"present\",\"read\",\"read_image\",\"send_message\",\"skill\",\"todo_write\",\"update_goal\",\"web_fetch\",\"web_search\",\"work\",\"write\"]"
+  ],
+  "ok": false
+}
