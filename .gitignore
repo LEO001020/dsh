@@ -43,3 +43,112 @@ qualification/results/**/node_modules/
 # holds nothing a reader needs and shows up as an untracked directory in a tree
 # where untracked files have meant real defects (G-SEAM-30, G-SEAM-42).
 __pycache__/
+
+# ===========================================================================
+# CREDENTIALS AND KEY MATERIAL
+# ===========================================================================
+#
+# WHY THIS BLOCK EXISTS. A post-publication credential scan
+# (`docs/decisions/AUDIT-REQUEST-2026-09-20-v3-status.md` section 8.6) found NO
+# active leak -- zero untracked-and-unignored credential-shaped files, and the
+# deleted-but-published history blobs content-scanned clean -- and then recorded
+# the gap that remains: this file had NO credential patterns at all. The scan's
+# own words are that the real credential store for this project is named in
+# `docs/GAPS.md` as `$DSH_HOME/.credentials.yaml`, and that the file "simply does
+# not exist on this machine today". That is the whole argument for adding these
+# now: the risk is PROSPECTIVE, and a pattern costs one line while a committed
+# key costs a rotation. A `.gitignore` cannot leak anything; its absence can.
+#
+# THE HARD PART IS NOT ADDING PATTERNS, IT IS NOT ADDING WRONG ONES. A line that
+# silently excludes a file the repository needs is a worse defect than the one
+# being fixed here, because the tree still LOOKS complete -- the same failure
+# shape as the clone bug below, and as the `packages/dsh-ipython/` omission this
+# file already documents at the top. So every pattern in this block was checked
+# against the tracked set with `git ls-files -- <pattern>`; all of them return
+# ZERO tracked matches. The check is recorded per pattern below.
+#
+# Environment files. `.env` and `.env.*` are the shape `DEEPSEEK_API_KEY` and
+# `EXA_API_KEY` would arrive in -- the two providers this project registers
+# (`web-provenance` rows `deepseek-official` / `daily-search`, each carrying an
+# `apiKeyEnv`). Both are ABSENT on this machine, which is exactly why the pattern
+# is cheap insurance rather than a fix for a live leak.
+#
+# DELIBERATELY NOT `*.env`. The broad form was tested and it MATCHES A TRACKED
+# FILE: `qualification/fixtures/canary/outside/canary-credential-shaped.env`, the
+# fabricated canary that `security-denial.test.ts` and `sec-gates.test.ts` read to
+# prove a secret-shaped file outside the workspace root is handled correctly.
+# Verified: with `*.env` in a scratch `.gitignore`, `git check-ignore --no-index
+# canary-credential-shaped.env` exits 0 -- the fixture WOULD be ignored. It is
+# already tracked, so nothing breaks today, but the next canary a writer adds
+# would vanish from `git status` silently. The narrow form matches the fixture
+# not at all and still catches the real thing.
+.env
+.env.*
+#
+# Private key and certificate material. Checked: zero tracked matches for `*.pem`
+# and `*.key`. The pinned DSH checkout needs no key file to build or run, and this
+# repository generates none.
+*.pem
+*.key
+#
+# Other key-container formats, added because they are the same class and cost
+# nothing. All checked, zero tracked matches: `*.p12`, `*.pfx`, `*.jks`, `*.ppk`,
+# `*.keystore`.
+*.p12
+*.pfx
+*.jks
+*.ppk
+*.keystore
+#
+# The project's OWN credential store, named in `docs/GAPS.md` as
+# `$DSH_HOME/.credentials.yaml`. `$DSH_HOME` is outside the repository by design,
+# so this pattern should never match anything -- it is here for the case where a
+# developer copies a home directory into a scratch checkout, or overrides
+# `DSH_HOME` to a path inside the tree. `*` rather than `.yaml` because the store
+# is named by convention, not by extension, and a `.credentials.json` or
+# `.credentials` would carry the same material. Checked: zero tracked matches.
+.credentials*
+#
+# Tool credential files for the package managers and CLIs this project actually
+# uses: pnpm/npm (`package.json` + `pnpm typecheck` are the official commands),
+# pip (the shipped `dsh_data_client.py`), and git itself. These carry registry
+# and host tokens in the same files as harmless config, which is why they are
+# commonly committed by accident. Checked: zero tracked matches -- in particular
+# this repository ships no `.npmrc`, so the root `pnpm` commands rely on the
+# global config and nothing here changes them.
+.npmrc
+.pypirc
+.netrc
+.git-credentials
+#
+# The artifact store's durable cursor key. `STORE_CURSOR_KEY_FILE_NAME` is
+# `store-cursor-key.json` (`packages/dsh-daily-work/src/artifacts.ts:235`): 32
+# CSPRNG bytes that sign every page cursor this deployment issues. It is a real
+# secret and it is written into the STORE ROOT, which is normally `$DSH_HOME`
+# (outside the tree). But `defaultArtifactRoot` has a documented fallback to the
+# RELATIVE `data-artifacts` when neither an explicit root nor the host's
+# `dshHomePath` helper is mounted (`data-service.ts:553-600`), and a relative
+# root resolves against the process cwd. So there IS a code path by which a live
+# key file lands inside the working tree, and it is the same "the store moved
+# because the cwd moved" defect that function's own comment describes.
+#
+# `/data-artifacts/` is ROOT-ANCHORED on purpose. Unanchored, it would also match
+# the TRACKED evidence path
+# `qualification/results/V7-fs/workspace/data-artifacts/objects/07d894c4...`,
+# which is a real artifact fixture of the FS family. Verified both directions in a
+# scratch repo: the root-level `data-artifacts/objects/...` is ignored, the
+# tracked V7-fs path is NOT. `store-cursor-key.json` is left unanchored because
+# the key is written beside whatever store root is in use, at any depth.
+/data-artifacts/
+store-cursor-key.json
+#
+# CONSIDERED AND DELIBERATELY REJECTED: `kernel-*.json`, the shape
+# `jupyter_client` gives its connection file, which carries a live HMAC signing
+# key. The pattern is NOT safe here: `git ls-files -- 'kernel-*.json'` returns
+# `qualification/results/ROOT-verification/kernel-cwd.json` and two siblings --
+# tracked evidence whose names begin with `kernel-`. A glob cannot distinguish
+# them from a connection file, so adding it would silently exclude real evidence
+# to guard a file that `jupyter_client` writes to the runtime directory, not to
+# the repository. Rejected on the evidence rather than on taste; if a connection
+# file is ever found inside the tree, the right fix is to anchor the pattern to
+# the directory it actually appears in, not to widen this glob.
