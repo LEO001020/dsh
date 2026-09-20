@@ -610,7 +610,7 @@ class Broker:
         # See the block above `DSH_BACKGROUND_ORIGIN` for why the fix lives in
         # the kernel. Written before the launch so the file exists when the
         # kernel reads its argv.
-        bootstrap_path, bootstrap_marker = write_attribution_bootstrap(work_dir)
+        bootstrap_path, _ = write_attribution_bootstrap(work_dir)
         self._attribution_bootstrap_path = bootstrap_path
         self._attribution_bootstrap_loaded = False
         extra_arguments = ["--IPKernelApp.exec_files=" + json.dumps([bootstrap_path])]
@@ -677,7 +677,7 @@ class Broker:
         # argv we passed: an `exec_files` that silently failed would leave the
         # kernel running with the old, wrong attribution and no other symptom.
         # The status reports it so a caller can tell the two apart.
-        self._attribution_bootstrap_loaded = os.path.exists(bootstrap_marker)
+        self._attribution_bootstrap_loaded = self._attribution_marker_exists()
         if not self._attribution_bootstrap_loaded:
             log(
                 "the IPY-13 attribution bootstrap did NOT load; output written by a "
@@ -1073,12 +1073,49 @@ class Broker:
         self._km.interrupt_kernel()
         return {"interrupted": True, "alive": True, "epoch": self._epoch}
 
+    def _attribution_marker_exists(self):
+        """Whether the bootstrap marker is present. The ONE place that is read."""
+        if self._attribution_bootstrap_path is None:
+            return False
+        return os.path.exists(
+            self._attribution_bootstrap_path.replace(
+                ATTRIBUTION_BOOTSTRAP_NAME, ATTRIBUTION_MARKER_NAME
+            )
+        )
+
+    def _invalidate_attribution_marker(self):
+        """Remove the bootstrap marker so the NEXT kernel must write its own.
+
+        WHY THIS IS NEEDED FOR A RESTART. `KernelManager.restart_kernel` re-runs
+        with the saved `_launch_args` (`jupyter_client/manager.py:686-688`), which
+        includes our `extra_arguments`, so the bootstrap IS re-injected -- measured
+        (`qualification/results/S5-ipy13/s5-ipy13-restart-probe.json`: the
+        straddler is undecidable after a restart too). But the marker file from
+        the FIRST kernel survives the restart, so a restart whose re-injection
+        FAILED would still read as loaded. That is a stale report, and a stale
+        report is the exact failure this field exists to prevent: the whole point
+        of reading a marker rather than trusting the argv we passed is to detect a
+        silent non-load. Removing it first makes the post-restart read a fact
+        about the NEW kernel.
+        """
+        if self._attribution_bootstrap_path is None:
+            return
+        marker = self._attribution_bootstrap_path.replace(
+            ATTRIBUTION_BOOTSTRAP_NAME, ATTRIBUTION_MARKER_NAME
+        )
+        try:
+            os.remove(marker)
+        except OSError:
+            pass
+        self._attribution_bootstrap_loaded = False
+
     def restart(self, request):
         if self._km is None:
             raise ProtocolError("kernel is not started")
         self._stop_io()
         with self._sink_lock:
             self._sink = None
+        self._invalidate_attribution_marker()
         self._km.restart_kernel(now=True)
         self._kc = self._km.client()
         self._kc.start_channels()
@@ -1087,6 +1124,15 @@ class Broker:
         self._router.start()
         self._epoch += 1
         self._start_pump()
+        # Re-read the marker the NEW kernel wrote. Not assumed from the first
+        # kernel's: see `_invalidate_attribution_marker`.
+        time.sleep(0.4)
+        self._attribution_bootstrap_loaded = self._attribution_marker_exists()
+        if not self._attribution_bootstrap_loaded:
+            log(
+                "the IPY-13 attribution bootstrap did NOT reload after the restart; "
+                "out-of-thread output will be attributed to whichever cell runs next"
+            )
         return self.status()
 
     def shutdown(self, request):

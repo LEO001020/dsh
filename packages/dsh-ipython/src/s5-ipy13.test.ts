@@ -215,6 +215,39 @@ describe('IPY-13: late output is classified separately and never rides another c
     const rawEntry = lateAll.find(entry => entry.text.includes('IPY13-RAW-THREAD-WRITE'))
     expect(rawEntry?.cellId).toBe(DSH_BACKGROUND_ORIGIN)
 
+    // ---- ARM F: THE BOOTSTRAP SURVIVES A RESTART, AND IS RE-REPORTED --------
+    // `KernelManager.restart_kernel` re-runs with the saved `_launch_args`, so
+    // the bootstrap SHOULD be re-injected. "Should" is not evidence, and a
+    // restart that quietly lost it would restore the defect for the rest of the
+    // Session's life -- so it is measured here.
+    const restarted = await h.restart()
+    expect(restarted.attributionBootstrapLoaded).toBe(true)
+
+    const afterRestartA = await h.execute([
+      'import threading, time',
+      'def straddler2():',
+      '    time.sleep(1.2)',
+      '    print("IPY13-POST-RESTART-STRADDLER")',
+      'threading.Thread(target=straddler2, daemon=True).start()',
+      'print("post-restart-cellA-settled")',
+    ].join('\n'))
+    expect(afterRestartA.outcome).toBe('ok')
+
+    const afterRestartB = await h.execute([
+      'import time',
+      'for i in range(4):',
+      '    print("post-restart-tick", i, flush=True)',
+      '    time.sleep(0.4)',
+      'print("post-restart-cellB-settled")',
+    ].join('\n'))
+    expect(afterRestartB.outcome).toBe('ok')
+    expect(afterRestartB.stdout.text).not.toContain('IPY13-POST-RESTART-STRADDLER')
+    expect(afterRestartB.stdout.text).toContain('post-restart-cellB-settled')
+
+    await sleep(400)
+    const lateAfterRestart = h.drainLateOutput().map(entry => entry.text).join('')
+    expect(lateAfterRestart).toContain('IPY13-POST-RESTART-STRADDLER')
+
     await h.shutdown()
     host = undefined
   }, 300_000)
