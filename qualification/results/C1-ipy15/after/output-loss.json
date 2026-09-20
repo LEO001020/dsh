@@ -10,7 +10,7 @@
   "arm1_resultFrameUnderBound": true,
   "arm2_capBytes": 8388608,
   "arm2_bytesPrinted": 4718592,
-  "arm2_waitedMs": 144,
+  "arm2_waitedMs": 157,
   "arm2_kind": "error",
   "arm2_errorName": "KernelTransportError",
   "arm2_errorMessage": "FRAME_TOO_LARGE: frame of 4718913 bytes exceeds the limit",
@@ -42,7 +42,28 @@
   "arm5_after_stdout_truncated": false,
   "arm5_after_stdout_totalBytes": 11,
   "arm5_host_transportRefusals": 0,
-  "arm5_brokerDiagnostics_pumpFrameFailed": true,
+  "arm5_brokerDiagnostics_pumpFrameFailed": false,
   "arm5_brokerDiagnostics_hasLimit": true,
-  "arm5_bytesWritten": 4456448
+  "arm5_bytesWritten": 4456448,
+  "arm5_transportDroppedFrames": 1,
+  "arm5_lossIsRecorded": true,
+  "arm6_tallyFieldPresent_before": true,
+  "arm6_tally_before": 0,
+  "arm6_stimulusOutcome": "error",
+  "arm6_tallyFieldPresent_after": true,
+  "arm6_tally_after": 1,
+  "arm6_tallyIsReadableAndNonZero": true,
+  "arm6_tallyDeclaredInHostTypes": true,
+  "arm7_outcome": "ok",
+  "arm7_displayEntries": 2,
+  "arm7_displayTruncatedFlags": [
+    true,
+    true
+  ],
+  "arm7_displayTextBytes": [
+    65536,
+    65536
+  ],
+  "arm7_displayNeverDropped_claimHolds": true,
+  "arm7_stdout_droppedFrames": 0
 }
