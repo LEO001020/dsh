@@ -81,7 +81,8 @@ async function main(): Promise<void> {
   // `os.path.realpath` does NOT collapse, and the half P11's test does not cover.
   let pywDigest: string | null = null
   let pywError: string | null = null
-  if (existsSync(PYTHON_W)) {
+  const pywPresent = existsSync(PYTHON_W)
+  if (pywPresent) {
     try {
       pywDigest = await digestFor({ ...base, pythonExecutable: PYTHON_W })
     } catch (error) {
@@ -139,7 +140,8 @@ async function main(): Promise<void> {
       'fields that differ between python.exe and pythonw.exe': differingFields,
     },
     verdict,
-    pythonwError,
+    pythonwError: pywError,
+    pythonwPresent: pywPresent,
     note:
       'arm2b measures whether V5 11.2\'s required `sys_executable_realpath` field '
       + 'collapses pythonw.exe onto python.exe. os.path.realpath does not resolve '
