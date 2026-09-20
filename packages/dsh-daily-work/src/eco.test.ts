@@ -1358,8 +1358,27 @@ describe('ECO-07: the stock control arm is not secretly modified, and the variab
    * THE STALENESS IS THE POINT OF THIS TEST, so the pin is kept as a literal
    * rather than computed. A digest that were recomputed at runtime would agree
    * with whatever the file happened to contain and would catch nothing.
+   *
+   * RE-DERIVED 2026-09-20 (round-3 closure), and the tripwire is why. The pin was
+   * 4e3aa20cbc23b8cedbfc7205aac0756f37e1107a4ee556d38760dc3769ceedeb and the file
+   * now hashes to e12edffbbf69d531454f83a242863b7586e65f222f7c2f8c4151bf4918b43114.
+   * The change is JUSTIFIED, not absorbed: two commits moved the file, both
+   * deliberate and both recorded --
+   *   3c2b190  "P0.7: set the upstream continuable pool to the deployment limit
+   *             (30)", which is the pool size CAP-01 and UPG-07 require
+   *   8941ad5  "S1: offer only our single mode (includeShippedRoot: false)", which
+   *             removes the shipped-root rows so the deployment offers one mode
+   * The same digest is the `host_profile_digest` identity input, so this pin and
+   * the deployment identity move together; the re-derivation and its arithmetic are
+   * recorded in compatibility.lock.json's identity_note and in
+   * qualification/results/C0-identity/rederive.txt.
+   *
+   * NOTE FOR THE NEXT READER: 8941ad5 edited THIS FILE and still missed this
+   * constant, which is how the pin came to be stale. That is the tripwire working
+   * as designed -- it failed loudly rather than agreeing with the tree -- but it is
+   * also why the value is worth re-checking whenever the profile patch moves.
    */
-  const DAILY_PATCH_SHA256 = '4e3aa20cbc23b8cedbfc7205aac0756f37e1107a4ee556d38760dc3769ceedeb'
+  const DAILY_PATCH_SHA256 = 'e12edffbbf69d531454f83a242863b7586e65f222f7c2f8c4151bf4918b43114'
 
   it('the stock arm declares no plugin rows, and its files hash to the committed values', () => {
     // "A control group that has been quietly modified is not a control group."

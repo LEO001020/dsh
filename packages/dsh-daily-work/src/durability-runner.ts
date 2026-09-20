@@ -17,9 +17,13 @@
  *   node --import tsx src/durability-runner.ts parent <storeDir> <reportPath>
  */
 import { Context } from '@deepseek-ai/cordis'
+import type { Agent } from '@deepseek-ai/dsh-agent'
+import AgentLoop from '@deepseek-ai/dsh-agent-loop'
+import { mountAgentLoopTestDependencies } from '@deepseek-ai/dsh-agent-loop-testkit'
 import Storage from '@deepseek-ai/dsh-storage'
 import * as storageDomainPlugin from '@deepseek-ai/dsh-storage-domain'
 import * as storageJsonPlugin from '@deepseek-ai/dsh-storage-json'
+import { SessionId } from '@deepseek-ai/dsh-session'
 import { spawn } from 'node:child_process'
 import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
@@ -32,7 +36,7 @@ const RUN_ID = 'run-durability'
 const TASK_COUNT = 4
 
 /** Mount the real storage domain over `root` and return an open work service. */
-async function openService(root: string): Promise<{ ctx: Context; service: WorkService }> {
+async function openService(root: string): Promise<{ ctx: Context; service: WorkService; rootAgent: Agent }> {
   const ctx = new Context()
   // NO CONFIG-POSITION `as never`. ID-05's clause (b) names this exact line as the
   // idiom that MASKS a true diagnostic: with the cast, `ctx.plugin(Storage, {} as
@@ -50,6 +54,15 @@ async function openService(root: string): Promise<{ ctx: Context; service: WorkS
   // the first place (`GetPluginConfig<never>` is `never`).
   await ctx.plugin(storageJsonPlugin, { root })
   await ctx.plugin(storageDomainPlugin, { backend: 'json' })
+  // The REAL AgentLoop, so `createRun` can be given a real `Agent`. This replaces a
+  // fabricated `{ session: { header: { id } } }` literal that needed `as never` to
+  // compile -- see the note on `createRun` below.
+  await mountAgentLoopTestDependencies(ctx)
+  await ctx.plugin(AgentLoop, { agents: [] })
+  const rootAgent = await ctx.agentLoop.create(SessionId('root-session'), {
+    provider: 'mock',
+    model: 'mock',
+  })
   const service = new WorkService(ctx, {
     targetChildren: 10,
     maxDepth: 1,
@@ -62,7 +75,7 @@ async function openService(root: string): Promise<{ ctx: Context; service: WorkS
     priceVersion: 'durability-v1',
   })
   await service.open()
-  return { ctx, service }
+  return { ctx, service, rootAgent }
 }
 
 /**
@@ -72,25 +85,22 @@ async function openService(root: string): Promise<{ ctx: Context; service: WorkS
  * to flush. Whatever is on disk when the kill lands is what the test observes.
  */
 async function runChild(storeDir: string, reportPath: string): Promise<void> {
-  const { service } = await openService(storeDir)
+  const { service, rootAgent } = await openService(storeDir)
   await service.createRun({
     runId: RUN_ID,
-    // KNOWN MASK, DELIBERATELY NOT FIXED HERE -- see the S10 ID-05 findings.
+    // A REAL `Agent` from the production AgentLoop, so no cast is needed. This used
+    // to be `{ session: { header: { id: 'root-session' } } } as never`, and the S10
+    // ID-05 findings recorded it as `MASK -- REPORTED, NOT FIXED` because
+    // `createRun` takes a real `Agent` whose `session` is the `Session` CLASS with
+    // 24 required members, so the literal reported TS2740 and the cast hid it.
     //
-    // `createRun` takes a real `Agent`, and `Agent.session` is the `Session` CLASS,
-    // not a structural literal: it has 24 required members (`log`,
-    // `surfaceManager`, `surface`, `inheritedEventCount`, ...). The literal below
-    // is a fabricated header, so removing this cast is NOT a one-line fix -- it
-    // reports, measured:
-    //     TS2740: Type '{ id: SessionId; header: {...} }' is missing the
-    //             following properties from type 'Session': log, surfaceManager,
-    //             surface, inheritedEventCount, and 19 more.
-    // The honest fix is to mount the real AgentLoop in this rig and use
-    // `ctx.agentLoop.create(SessionId('root-session'), ...)` as the sibling rigs do
-    // (`concurrency.test.ts:151`). That is a topology change to a crash rig whose
-    // child is SIGKILLed mid-run, and it is outside ID-05's type-level scope. The
-    // cast is therefore LEFT IN PLACE and reported rather than silently widened.
-    root: { session: { header: { id: 'root-session' } } } as never,
+    // The baseline named the honest fix and deferred it as "a topology change to a
+    // crash rig". That estimate was too pessimistic: `openService` now mounts the
+    // real AgentLoop the same way the sibling rigs do, which is two lines, and the
+    // crash semantics are untouched -- this rig still SIGKILLs the child mid-run and
+    // observes only what reached disk. Mounting more services changes WHAT the child
+    // can do, not WHEN it dies.
+    root: rootAgent,
     authorizationRef: 'auth-durability',
     targetChildren: 10,
   })
