@@ -1,0 +1,33 @@
+{
+ "probe": "verify-session-resume-boundary",
+ "phase": "resume",
+ "ranAt": "2026-09-20T09:52:28.707Z",
+ "presetRoots": [
+  {
+   "path": "D:\\DSH\\src\\dsh-src\\packages\\preset\\agent-presets\\presets\\",
+   "trust": "system"
+  },
+  {
+   "path": "D:/DSH/home/r1/profiles/daily/presets/",
+   "trust": "system"
+  },
+  {
+   "path": "D:\\DSH\\home\\r1\\.agent-presets",
+   "trust": "user"
+  }
+ ],
+ "confiningMode": "workspace-write",
+ "error": null,
+ "resume": {
+  "sessionId": "session-4c6c58aa-ac17-4751-aa14-5f3e7b80518b",
+  "expectedOverride": "workspace-write",
+  "defaultMode": "danger-full-access",
+  "agentLiveBefore": false,
+  "outcome": {
+   "kind": "error-result",
+   "error": "resume failed for session \"session-4c6c58aa-ac17-4751-aa14-5f3e7b80518b\": Error: trusted-local contract violated at the session-resume boundary: 2 check(s) failed. This deployment is NOT the intended trusted-local graph, so product execution stops here rather than continuing under a mode nobody chose. The mode is NOT switched back automatically: that would hide a real configuration change.\n  session.override: session session-4c6c58aa-ac17-4751-aa14-5f3e7b80518b: overrideOf = 'workspace-write', resolve() = 'workspace-write' -- this session carries a 'workspace-write' override, so resolve() returns 'workspace-write' -- a CONFINED mode -- even though the deployment default is 'danger-full-access'. The deployment is trusted-local; this session is not. The override is durable session history and must be MIGRATED (its owner's decision), not silently rewritten by a self-check.\n  narration.sandbox-policy: sandbox:policy: \"Current DSH file policy: workspace-write. Any available operation enforced by the DSH file sandbox may modify files under the session workspace: \\\"D:/DSH/work/wt-r1\\\". Some platform temporary areas may also be writable.\" -- the model is told 'workspace-write' about its own file authority while the deployment claims trusted-local. This is a FALSE STATEMENT ABOUT THE MODEL'S PERMISSIONS, not a cosmetic mismatch: the model plans around a fence that does not exist. The sentence is rendered from the SAME resolved policy the PTC confine decision reads (sandbox-policy/src/index.ts:42-56), so this and a confining mode are the same defect seen twice."
+  },
+  "refused": true,
+  "agentLiveAfter": false
+ }
+}

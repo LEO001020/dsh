@@ -1,6 +1,6 @@
 {
  "probe": "verify-trusted-local-negative-arm",
- "ranAt": "2026-09-20T01:41:20.370Z",
+ "ranAt": "2026-09-20T09:56:48.560Z",
  "presetRoots": [
   {
    "path": "D:\\DSH\\src\\dsh-src\\packages\\preset\\agent-presets\\presets\\",
@@ -68,7 +68,7 @@
   "refusalMessage": null
  },
  "session": {
-  "sessionId": "session-b481ae78-f7b8-42c5-bb83-3b6c0883ae27",
+  "sessionId": "session-4d6e92f5-933c-4594-817a-d438d3c2432a",
   "defaultModeBefore": "danger-full-access",
   "overrideAfterAppend": "workspace-write",
   "resolvedAfterAppend": "workspace-write",
@@ -76,7 +76,7 @@
   "violations": [
    "session.override"
   ],
-  "checkObserved": "session session-b481ae78-f7b8-42c5-bb83-3b6c0883ae27: overrideOf = 'workspace-write', resolve() = 'workspace-write'",
+  "checkObserved": "session session-4d6e92f5-933c-4594-817a-d438d3c2432a: overrideOf = 'workspace-write', resolve() = 'workspace-write'",
   "modeWasRestored": "defaultMode unchanged (this arm only wrote a session event, as the guard requires)"
  },
  "narration": {
@@ -96,5 +96,11 @@
    "message": "trusted-local contract: refusing 'workflow' because this call resolves to sandbox mode 'workspace-write' (defaultMode 'danger-full-access', session override 'workspace-write'), not 'danger-full-access'. The PTC runtime confines unless the mode is exactly 'danger-full-access', so this call would fence while the rest of the deployment does not. The mode is NOT switched back automatically -- that would hide a real configuration change."
   },
   "workflowOnSurface": true
+ },
+ "bootEvidence": {
+  "stderr": "dsh: warning: 1 entry did not activate\nverify-trusted-local-negative-arm (file:///D:/DSH/work/wt-r1/.probe/verify-trusted-local-negative-arm.mjs): Error: probe-complete\n    at Object.apply [as callback] (file:///D:/DSH/work/wt-r1/.probe/verify-trusted-local-negative-arm.mjs:259:9)\n    at async Fiber._reload (file:///D:/DSH/src/dsh-src/vendor/cordis/lib/index.js:1356:5)\n",
+  "guardEntryNamedOnStderr": false,
+  "refusalTextOnStderr": false,
+  "activationWarningLine": "warning: 1 entry did not activate"
  }
 }

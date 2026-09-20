@@ -1,6 +1,6 @@
 {
  "probe": "verify-trusted-local-composition",
- "ranAt": "2026-09-20T09:51:06.362Z",
+ "ranAt": "2026-09-20T09:54:50.544Z",
  "presetRoots": [
   {
    "path": "D:\\DSH\\src\\dsh-src\\packages\\preset\\agent-presets\\presets\\",
@@ -43,7 +43,7 @@
   "perSession": [
    {
     "label": "daily-standard",
-    "sessionId": "session-45c09dd5-0ee5-46a6-a8cc-9c8943e46d25",
+    "sessionId": "session-4a833a76-aaaa-4b4e-bcbb-7747a18218a3",
     "agentPreset": "daily-standard",
     "agentPresent": true,
     "override": null,

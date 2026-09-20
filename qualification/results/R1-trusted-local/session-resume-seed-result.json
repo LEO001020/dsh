@@ -1,0 +1,28 @@
+{
+ "probe": "verify-session-resume-boundary",
+ "phase": "seed",
+ "ranAt": "2026-09-20T09:52:23.623Z",
+ "presetRoots": [
+  {
+   "path": "D:\\DSH\\src\\dsh-src\\packages\\preset\\agent-presets\\presets\\",
+   "trust": "system"
+  },
+  {
+   "path": "D:/DSH/home/r1/profiles/daily/presets/",
+   "trust": "system"
+  },
+  {
+   "path": "D:\\DSH\\home\\r1\\.agent-presets",
+   "trust": "user"
+  }
+ ],
+ "confiningMode": "workspace-write",
+ "error": null,
+ "seeded": {
+  "sessionId": "session-4c6c58aa-ac17-4751-aa14-5f3e7b80518b",
+  "agentPresent": true,
+  "overrideAfterAppend": "workspace-write",
+  "resolvedAfterAppend": "workspace-write",
+  "durableLogWritten": true
+ }
+}

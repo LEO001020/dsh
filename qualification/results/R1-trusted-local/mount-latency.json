@@ -1,0 +1,21 @@
+{
+ "probe": "measure-mount-latency",
+ "applyStartedAt": 1789897523647,
+ "samples": [
+  {
+   "via": "synchronous read",
+   "present": false,
+   "msAfterApplyStart": 0
+  },
+  {
+   "via": "internal/service",
+   "service": "sandboxPolicy",
+   "msAfterApplyStart": 193
+  },
+  {
+   "via": "inject callback",
+   "msAfterApplyStart": 275
+  }
+ ],
+ "sandboxPolicyMode": "danger-full-access"
+}
