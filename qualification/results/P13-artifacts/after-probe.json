@@ -1,0 +1,78 @@
+{
+  "frameLimitBytes": 4194304,
+  "inlineValueBytes": 4096,
+  "armA_belowFrameLimit": {
+    "outcome": "ok",
+    "stdout": [
+      "A_TYPE:Artifact",
+      "A_PATH:C:\\Users\\hzq00\\AppData\\Local\\Temp\\p13-probe-8NUC8o\\artifacts\\03fb639faff61eb227bd77a217630bc373261ae401674c91d05f50ad450eff92.json",
+      "A_PATH_IS_STR:True",
+      "A_OS_PATH_EXISTS:True",
+      "A_DIRECT_OPEN_OK:True",
+      "A_PARENT_WRITABLE:True",
+      "A_IS_UNDER_SESSION_CWD:True"
+    ]
+  },
+  "armB_aboveFrameLimit": {
+    "outcome": "ok",
+    "stdout": [
+      "B_TYPE:Artifact",
+      "B_BYTES:5242891",
+      "B_VERIFY:True",
+      "B_LEN:5242880"
+    ],
+    "stderrTail": [
+      ""
+    ]
+  },
+  "armC_argumentsOverFrameLimit": {
+    "outcome": "ok",
+    "stdout": [
+      "C_ARGS_JSON_BYTES:5242892",
+      "C_FRAME_LIMIT:4194304",
+      "C_RAISED:yes",
+      "C_CODE:ARGUMENTS_TOO_LARGE",
+      "C_TYPE:BridgeError"
+    ]
+  },
+  "armD_artifactDirectory": {
+    "path": "C:\\Users\\hzq00\\AppData\\Local\\Temp\\p13-probe-8NUC8o\\artifacts",
+    "fileCount": 3,
+    "files": {
+      "03fb639faff61eb227bd77a217630bc373261ae401674c91d05f50ad450eff92.json": 8203,
+      "19f38515e9c6ccb30cda263454a5e82b9a028aeed19a176befa43828115e3736.json": 5242891,
+      "dsh_bridge_client.py": 17849
+    },
+    "surfaceOnBridgeServer": {
+      "hasQuota": false,
+      "hasGc": false,
+      "hasArtifactStoreRef": false
+    }
+  },
+  "armE_unifiedRetentionPort": {
+    "outcome": "ok",
+    "stdout": [
+      "E_TYPE:Artifact",
+      "E_PLANE:unified",
+      "E_ARTIFACT_PREFIXED:True",
+      "E_PATH_IS_NONE:True",
+      "E_HAS_NO_RAW_PATH_ATTR:True",
+      "E_LOAD_REFUSED:yes",
+      "E_LOAD_CODE:ARTIFACT_NOT_A_PATH",
+      "E_VERIFY_NO_PATH:True",
+      "E_REPR:Artifact(plane=unified, bytes=8203, sha256=03fb639faff6...)"
+    ],
+    "stderrTail": [
+      ""
+    ],
+    "portCalls": [
+      {
+        "artifact": "artifact:sha256:03fb639faff61eb227bd77a217630bc373261ae401674c91d05f50ad450eff92",
+        "bytes": 8203
+      }
+    ],
+    "scratchDirectoryEntries": [
+      "dsh_bridge_client.py"
+    ]
+  }
+}
