@@ -518,6 +518,107 @@ describe('R5-BR-07: dispositions, the half that was missing', () => {
       .rejects.toThrow(/only handed-to-jobs/u)
   }, 30_000)
 
+  it('a lease WITH a handoff writes `handed-to-jobs` and names the job; the producer is exercised', async () => {
+    // WHY THIS ARM EXISTS. The arm above tests the LEDGER's rules for
+    // `handed-to-jobs`; it never drives the PRODUCER, which lives in the lease
+    // (`settleQueuedCalls`). So the branch that CHOOSES between the two arms was
+    // unexercised: a regression that always took the `abandoned-unstarted` arm --
+    // exactly the arm the default composition takes, so the mistake would be
+    // invisible in production -- would have left every test green.
+    //
+    // The fixture is the same shape as the real one: one call dispatched and
+    // blocked, one accepted behind it, and a close that disposes the second. The
+    // ONLY difference from the real composition is that `handoffToJobs` is set,
+    // which is precisely the configuration the reachability verdict is about.
+    let entered = 0
+    const handed: Array<{ subCallId: string, name: string }> = []
+    const ledger = new MemoryBridgeLedger()
+    const bridge = new BridgeServer({ artifactDirectory: join(root, 'ledger-handoff') })
+    await bridge.start()
+    const lease = bridge.mintLease({
+      sessionId: 'r5-handoff', cellId: 'cell-1', epoch: 1,
+      outerCallId: 'outer-handoff', rootCallId: 'outer-handoff',
+      ledger,
+      // The host handoff: it OWNS the call now and returns the job's id.
+      handoffToJobs: call => {
+        handed.push({ subCallId: call.subCallId, name: call.name })
+        return { jobId: 'job-77' }
+      },
+      handler: async () => {
+        entered += 1
+        await new Promise<void>(resolveDelay => {
+          const timer = setTimeout(resolveDelay, 30_000)
+          lease.signal.addEventListener('abort', () => { clearTimeout(timer); resolveDelay() }, { once: true })
+        })
+        return { ok: true, value: { ran: true } }
+      },
+    })
+
+    const first = lease.invoke({ requestId: 'req-a', tool: 'r5_slow', arguments: {}, cellId: 'cell-1', epoch: 1, leaseId: lease.id })
+    for (let i = 0; i < 200 && entered === 0; i += 1) await new Promise(r => setTimeout(r, 10))
+    expect(entered).toBe(1)
+    const second = lease.invoke({ requestId: 'req-b', tool: 'r5_queued', arguments: { x: 1 }, cellId: 'cell-1', epoch: 1, leaseId: lease.id })
+    await new Promise(r => setTimeout(r, 50))
+
+    await lease.close('completed', 'the cell settled')
+    await Promise.allSettled([first, second])
+
+    // THE PRODUCER RAN, and it was handed the HOST's identity for the call, so
+    // the job's owner can correlate it with the ledger row rather than guessing.
+    expect(handed).toHaveLength(1)
+    expect(handed[0]?.subCallId).toBe('outer-handoff:ipython:2')
+    expect(handed[0]?.name).toBe('r5_queued')
+
+    // THE ROW: `handed-to-jobs` WITH the job id, on the durable record.
+    const row = ledger.get('outer-handoff:ipython:2')
+    expect(row?.disposition).toBe('handed-to-jobs')
+    expect(row?.jobId).toBe('job-77')
+    // And the call really was never dispatched: the handoff took ownership
+    // instead of the lease running it.
+    expect(entered).toBe(1)
+    // The two arms are distinguished on the SAME fixture: with the handoff, this
+    // row is NOT abandoned-unstarted.
+    expect(row?.disposition).not.toBe('abandoned-unstarted')
+    await bridge.close()
+  }, 60_000)
+
+  it('settled vs cancelled is decided by the CLOSE, not by whether the result was an abort', async () => {
+    // R5's stated rule, asserted directly because the production composition
+    // makes the two cases look alike. The rule is: a call that FINISHED BEFORE
+    // the close began is `settled`, whatever its outcome -- including a tool that
+    // failed with its own error, and including a call whose result happens to be
+    // an ABORTED error. Only "was the lease closing when this returned" decides.
+    //
+    // The counterexample this rules out: inferring `cancelled` from
+    // `result.isError`. A tool that legitimately fails would then be recorded as a
+    // shutdown, and an operator reading the ledger would see cancellations that
+    // never happened while real tool failures were misattributed to the close.
+    const ledger = new MemoryBridgeLedger()
+    const bridge = new BridgeServer({ artifactDirectory: join(root, 'ledger-settled-rule') })
+    await bridge.start()
+    const lease = bridge.mintLease({
+      sessionId: 'r5-settled-rule', cellId: 'cell-1', epoch: 1,
+      outerCallId: 'outer-rule', rootCallId: 'outer-rule',
+      ledger,
+      // A handler that FAILS. Its outcome is an error, and the call nevertheless
+      // finished while the lease was OPEN, so it must be `settled`.
+      handler: async () => ({ ok: false, error: { code: 'TOOL_FAILED', message: 'the tool failed on its own' } }),
+    })
+
+    const outcome = await lease.invoke({ requestId: 'req-fail', tool: 'r5_failing', arguments: {}, cellId: 'cell-1', epoch: 1, leaseId: lease.id })
+    expect(outcome.ok).toBe(false)
+    // The close happens AFTER the call already returned.
+    await lease.close('completed', 'the cell settled')
+
+    const row = ledger.get('outer-rule:ipython:1')
+    // THE RULE: an error outcome does NOT make it `cancelled`.
+    expect(row?.disposition).toBe('settled')
+    expect(row?.isError).toBe(true)
+    // `settled` carries no close reason, because it did not come from a close.
+    expect(row?.closeReason).toBeUndefined()
+    await bridge.close()
+  }, 60_000)
+
   it('a FAILED disposition write is reported, not swallowed, and CLOSED still happens', async () => {
     // FAULT INJECTION for the case a happy-path test cannot see: the ledger's
     // disposition write rejects. Before the fix, `flush` used a bare
