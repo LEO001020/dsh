@@ -3,3 +3,23 @@
 2026-09-20T18:38:55+08:00 .git/objects/pack/pack-5c410ce29dfe2bf1d5cd33ea6de28c5857bfb0f3.pack size=1461114 mtime=2026-09-19 10:51:41.768497200 +0800 sha256=1ebcea65c9a79263a75456bbfe33f0b869e2848ff50d0f4d91d1e5fd16fbad3e
 2026-09-20T18:38:56+08:00 .git/objects/pack/pack-af968131c229ce8e11bfe9b98e36cac4656c2e60.pack size=34653298 mtime=2026-09-19 10:40:55.626543600 +0800 sha256=7fad270d1f9c2e0142268e2cb2c2bbf05aee814a5e0583507036559abbac5195
 2026-09-20T18:38:56+08:00 .git/objects/pack/pack-c0fc169b5f51e445239ca34eff50a80549658b4f.pack size=26613708 mtime=2026-09-20 18:37:22.730535400 +0800 sha256=b0501a04cbe38f46f020dce50de2e85993222b6eef2faa9a3b61ef01e97ae96a
+
+## FINAL RE-CHECK at end of writer S12's session
+# captured: 2026-09-20T18:59:28+08:00
+# oracle fields, re-read:
+#   git status --porcelain ->  M packages/deliverables/workspace-changes/src/index.ts
+#   git rev-parse HEAD     -> ddefc45fbc7f8e46dd73185e68295696d1297887
+# (both IDENTICAL to the first read; the .git pack writes did not move either)
+
+# pack inventory (mtime | size | sha256-prefix | name)
+2026-09-19 10:41:25 | 32 | e3b8709ac0e404ee | pack-029d08823bd8a8eab510ad6ac75c823cfd3ed31e.pack
+2026-09-19 10:51:41 | 1461114 | 1ebcea65c9a79263 | pack-5c410ce29dfe2bf1d5cd33ea6de28c5857bfb0f3.pack
+2026-09-20 18:41:31 | 130682 | e626721320569315 | pack-681ade73241f5d72f6179cfcc64b470c7403ebd5.pack
+2026-09-19 10:40:55 | 34653298 | 7fad270d1f9c2e01 | pack-af968131c229ce8e11bfe9b98e36cac4656c2e60.pack
+2026-09-20 18:37:22 | 26613708 | b0501a04cbe38f46 | pack-c0fc169b5f51e445239ca34eff50a80549658b4f.pack
+
+# TWO packs moved during wave 2:
+#   pack-c0fc169b...  18:37:22  body rewritten, .idx unchanged -> UNKNOWN_CAUSE, not S12
+#   pack-681ade73...  18:41:31  CREATED by S12's own git cat-file -e <missing> lazy fetch
+#                              (blob:none partial clone); contents = exactly the 1 blob requested
+# The three original clone packs are untouched.
