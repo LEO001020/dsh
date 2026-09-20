@@ -361,6 +361,36 @@ last_line "tools = _ToolNamespace(_channel)"`. And hashing the built `lib/bridge
 rather than `bridge.ts` is the stronger claim: a change to the TypeScript *around*
 the literal does not move a byte the kernel executes.
 
+**And the refusal path has its own controls — 13/13**,
+`qualification/results/P14-manifest/refusal-controls.json`:
+
+```
+POSITIVE          the real observation                      -> 0  (an identity IS computable)
+STALE-BUILD       a built lib/ older than its src/          -> 1
+UNSETTLED-GRAPH   the loader tree had not settled           -> 1
+EMPTY-CATALOG     the catalog is empty (a failed Session)   -> 1
+FAILED-VERDICT    the observation failed its own checks     -> 1
+NO-REVISION       the observation names no commit           -> 1
+NO-PROBE          no probe result                           -> 1
+UNRESOLVED-ROW    a composition row that did not resolve    -> 1
+NO-EXT-ROWS       no dsh-daily-work/dsh-ipython row         -> 1
+EXTRACT-MISSING-FILE  the built file does not exist         -> sha256 None + error
+EXTRACT-NO-EXPORT     the export is absent                  -> sha256 None + error
+EXTRACT-NOT-A-STRING  the export is not a string            -> sha256 None + error
+EXTRACT-POSITIVE      the real spec extracts the client     -> 11975 chars / 340 lines
+```
+
+`verdict: CONTROLS_PROVED (13/13)`. The POSITIVE arm is what makes the rest
+meaningful: a generator that refused everything would satisfy every other case.
+
+**And the first version of that controls file was MISLABELLED, which the run
+caught.** It nulled an extension row's realpath and called the case "the bridge
+Python client could not be extracted" — but that is a GRAPH-REALPATH condition, not
+an extraction condition, because the extraction reads `lib/bridge.js` directly rather
+than going through the rows. The case passed nothing and proved nothing about the
+thing it named. Fixed by importing the real function and calling it with specs that
+must fail, so it tests the real code on the real built file.
+
 ---
 
 ## 6. DEFECTS FOUND IN MY OWN WORK BY RUNNING IT
@@ -450,6 +480,8 @@ TEST_RESULT  python qualification/runners/p14-graph-realpath-controls.py
              -> CONTROLS_PROVED (8/8)
 TEST_RESULT  python qualification/runners/p14-id-fresh-controls.py
              -> CONTROLS_PROVED (8/8)
+TEST_RESULT  python qualification/runners/p14-refusal-controls.py
+             -> CONTROLS_PROVED (13/13)
 TEST_RESULT  node node_modules/vitest/vitest.mjs run src/cross-tree-paths.test.ts
              -> 7 passed / 0 failed
 TEST_RESULT  python helpers/doctor.py           -> exit 1 (the one requirement violation)
@@ -467,6 +499,7 @@ TEST_RESULT  determinism: two generations of the same observation, with a volati
 |---|---|---|
 | `compatibility.expected.json` exists and holds requirements only | **PASS** | self-reference audit: 1 sha256, allowlisted |
 | `BuildManifest` generated with every V5 §14 field | **PASS** | `identity_computable: true`, 0 gaps |
+| the generator REFUSES rather than defaults | **PASS** | 13/13 refusal controls, incl. the positive one |
 | Runtime + Contract identities computed | **PASS** | `c969808e…` / `a091cb59…` |
 | Graph freshly observed with realpaths | **PASS** | 177 rows, 176 realpaths + 1 builtin, 0 unresolved |
 | Model tool catalog/schema/order | **PASS** | 27 names, header order + schema + order digests |

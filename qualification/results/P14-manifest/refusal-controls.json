@@ -1,0 +1,137 @@
+{
+  "schema_version": 1,
+  "kind": "P14_REFUSAL_CONTROLS_NOT_A_DSH_ARTIFACT",
+  "_what_this_is": [
+    "The controls for the generator's central safety property: a problem or a",
+    "load-bearing gap makes identity_computable false and NO identity is emitted,",
+    "so a partial manifest cannot be mistaken for a complete one and no default is",
+    "ever substituted to make a hash agree.",
+    "",
+    "The POSITIVE case is what makes the rest meaningful: a generator that refused",
+    "everything would satisfy every other case."
+  ],
+  "observation_source": "D:/DSH/work/wt-p14/qualification/results/P14-manifest/observation.json",
+  "observation_ran_at": "2026-09-20T13:11:23.433Z",
+  "ran_at": "2026-09-20T21:19:33.269879",
+  "cases": [
+    {
+      "case": "POSITIVE",
+      "what": "the real observation: an identity IS computable",
+      "expected_exit": 0,
+      "observed_exit": 0,
+      "ok": true,
+      "output_tail": "3e3f42fad257d65de\nQualificationContractIdentity  5146ee996bea2de8500e029ea509cf466bbb263dae2155d0e73913ef37fe2342\ncontract_id                    trusted-local-v3.5146ee996bea\nidentity_computable            True\n\nproject commit                 c061e09dc09fa11c6b90fa7e026f54e3cf60e399\nproject tree                   2fd8448deb9e7114d4e57d5827ca28951f834e31\ndirty                          None (None path(s))\nbound to                       THE COMMIT RECORDED HERE, read at OBSERVATION time. Not the current HEAD of this or any other checkout: twelve writers edit this tree concurrently, so the commit moves under the measurement and the manifest states which one it saw.\ngraph rows                     177 (active 146, resolved 176, builtins 1)\ngraph realpath digest          5014d06e2d9c92d990fec01f47df6225a7bce93629b99b7f9aff8ca8a64c83fe\ntool catalog                   27 tools, run_code=False\npresentation mode (derived)    native\nhard child cap (requirement)   30\ngaps                           0"
+    },
+    {
+      "case": "STALE-BUILD",
+      "what": "a built lib/ older than its src/",
+      "expected_exit": 1,
+      "observed_exit": 1,
+      "ok": true,
+      "output_tail": "alse\n\nproject commit                 c061e09dc09fa11c6b90fa7e026f54e3cf60e399\nproject tree                   2fd8448deb9e7114d4e57d5827ca28951f834e31\ndirty                          None (None path(s))\nbound to                       THE COMMIT RECORDED HERE, read at OBSERVATION time. Not the current HEAD of this or any other checkout: twelve writers edit this tree concurrently, so the commit moves under the measurement and the manifest states which one it saw.\ngraph rows                     177 (active 146, resolved 176, builtins 1)\ngraph realpath digest          5014d06e2d9c92d990fec01f47df6225a7bce93629b99b7f9aff8ca8a64c83fe\ntool catalog                   27 tools, run_code=False\npresentation mode (derived)    native\nhard child cap (requirement)   30\ngaps                           0\n\nIDENTITY REFUSED:\n  - dsh-ipython: the built lib/ is NOT newer than its src/ (lib=2026-09-20T12:40:04.071Z src=2026-09-20T12:39:46.075Z), so the boot executed a build that predates the source in this tree"
+    },
+    {
+      "case": "UNSETTLED-GRAPH",
+      "what": "the loader tree had not settled when read",
+      "expected_exit": 1,
+      "observed_exit": 1,
+      "ok": true,
+      "output_tail": "RuntimeDeploymentIdentity      None\nidentity_computable            False\n\nproject commit                 c061e09dc09fa11c6b90fa7e026f54e3cf60e399\nproject tree                   2fd8448deb9e7114d4e57d5827ca28951f834e31\ndirty                          None (None path(s))\nbound to                       THE COMMIT RECORDED HERE, read at OBSERVATION time. Not the current HEAD of this or any other checkout: twelve writers edit this tree concurrently, so the commit moves under the measurement and the manifest states which one it saw.\ngraph rows                     177 (active 146, resolved 176, builtins 1)\ngraph realpath digest          5014d06e2d9c92d990fec01f47df6225a7bce93629b99b7f9aff8ca8a64c83fe\ntool catalog                   27 tools, run_code=False\npresentation mode (derived)    native\nhard child cap (requirement)   30\ngaps                           0\n\nIDENTITY REFUSED:\n  - the graph was NOT measured after the loader tree settled: a moving tree is not an identity"
+    },
+    {
+      "case": "EMPTY-CATALOG",
+      "what": "the model tool catalog is empty (a failed Session looks the same)",
+      "expected_exit": 1,
+      "observed_exit": 1,
+      "ok": true,
+      "output_tail": "RuntimeDeploymentIdentity      None\nidentity_computable            False\n\nproject commit                 c061e09dc09fa11c6b90fa7e026f54e3cf60e399\nproject tree                   2fd8448deb9e7114d4e57d5827ca28951f834e31\ndirty                          None (None path(s))\nbound to                       THE COMMIT RECORDED HERE, read at OBSERVATION time. Not the current HEAD of this or any other checkout: twelve writers edit this tree concurrently, so the commit moves under the measurement and the manifest states which one it saw.\ngraph rows                     177 (active 146, resolved 176, builtins 1)\ngraph realpath digest          5014d06e2d9c92d990fec01f47df6225a7bce93629b99b7f9aff8ca8a64c83fe\ntool catalog                   0 tools, run_code=False\npresentation mode (derived)    native\nhard child cap (requirement)   30\ngaps                           0\n\nIDENTITY REFUSED:\n  - the model tool catalog is empty: that is indistinguishable from a failed Session"
+    },
+    {
+      "case": "FAILED-VERDICT",
+      "what": "the observation failed its own driver checks",
+      "expected_exit": 1,
+      "observed_exit": 1,
+      "ok": true,
+      "output_tail": "ntity      None\nidentity_computable            False\n\nproject commit                 c061e09dc09fa11c6b90fa7e026f54e3cf60e399\nproject tree                   2fd8448deb9e7114d4e57d5827ca28951f834e31\ndirty                          None (None path(s))\nbound to                       THE COMMIT RECORDED HERE, read at OBSERVATION time. Not the current HEAD of this or any other checkout: twelve writers edit this tree concurrently, so the commit moves under the measurement and the manifest states which one it saw.\ngraph rows                     177 (active 146, resolved 176, builtins 1)\ngraph realpath digest          5014d06e2d9c92d990fec01f47df6225a7bce93629b99b7f9aff8ca8a64c83fe\ntool catalog                   27 tools, run_code=False\npresentation mode (derived)    native\nhard child cap (requirement)   30\ngaps                           0\n\nIDENTITY REFUSED:\n  - the observation's verdict is 'UNUSABLE', not 'OBSERVED'. An observation that failed its own checks cannot be the basis of an identity."
+    },
+    {
+      "case": "NO-REVISION",
+      "what": "the observation does not name the commit it was taken at",
+      "expected_exit": 1,
+      "observed_exit": 1,
+      "ok": true,
+      "output_tail": "ploymentIdentity      None\nidentity_computable            False\n\nproject commit                 None\nproject tree                   None\ndirty                          None (None path(s))\nbound to                       THE COMMIT RECORDED HERE, read at OBSERVATION time. Not the current HEAD of this or any other checkout: twelve writers edit this tree concurrently, so the commit moves under the measurement and the manifest states which one it saw.\ngraph rows                     177 (active 146, resolved 176, builtins 1)\ngraph realpath digest          5014d06e2d9c92d990fec01f47df6225a7bce93629b99b7f9aff8ca8a64c83fe\ntool catalog                   27 tools, run_code=False\npresentation mode (derived)    native\nhard child cap (requirement)   30\ngaps                           0\n\nIDENTITY REFUSED:\n  - the observation does not carry the revision it was taken at (observation.revision). Without it a manifest cannot say which build it describes -- re-run qualification/runners/run-p14-manifest.mjs."
+    },
+    {
+      "case": "NO-PROBE",
+      "what": "the observation carries no probe result",
+      "expected_exit": 1,
+      "observed_exit": 1,
+      "ok": true,
+      "output_tail": "{\n  \"problems\": [\n    \"the observation carries no probe result: no manifest can be computed from it\"\n  ]\n}\nbuild-manifest: no manifest can be computed."
+    },
+    {
+      "case": "UNRESOLVED-ROW",
+      "what": "a composition row that did not resolve to a file",
+      "expected_exit": 1,
+      "observed_exit": 1,
+      "ok": true,
+      "output_tail": " False\n\nproject commit                 c061e09dc09fa11c6b90fa7e026f54e3cf60e399\nproject tree                   2fd8448deb9e7114d4e57d5827ca28951f834e31\ndirty                          None (None path(s))\nbound to                       THE COMMIT RECORDED HERE, read at OBSERVATION time. Not the current HEAD of this or any other checkout: twelve writers edit this tree concurrently, so the commit moves under the measurement and the manifest states which one it saw.\ngraph rows                     177 (active 146, resolved 176, builtins 1)\ngraph realpath digest          5014d06e2d9c92d990fec01f47df6225a7bce93629b99b7f9aff8ca8a64c83fe\ntool catalog                   27 tools, run_code=False\npresentation mode (derived)    native\nhard child cap (requirement)   30\ngaps                           0\n\nIDENTITY REFUSED:\n  - 1 row(s) did not resolve to a file: [{\"key\": \"x\", \"name\": \"y\", \"resolveError\": \"MODULE_NOT_FOUND\"}]. A row that cannot resolve is the composition defect this graph exists to catch."
+    },
+    {
+      "case": "NO-EXT-ROWS",
+      "what": "no dsh-daily-work/dsh-ipython row, so the implementation is unidentified",
+      "expected_exit": 1,
+      "observed_exit": 1,
+      "ok": true,
+      "output_tail": "meDeploymentIdentity      None\nidentity_computable            False\n\nproject commit                 c061e09dc09fa11c6b90fa7e026f54e3cf60e399\nproject tree                   2fd8448deb9e7114d4e57d5827ca28951f834e31\ndirty                          None (None path(s))\nbound to                       THE COMMIT RECORDED HERE, read at OBSERVATION time. Not the current HEAD of this or any other checkout: twelve writers edit this tree concurrently, so the commit moves under the measurement and the manifest states which one it saw.\ngraph rows                     177 (active 146, resolved 176, builtins 1)\ngraph realpath digest          5014d06e2d9c92d990fec01f47df6225a7bce93629b99b7f9aff8ca8a64c83fe\ntool catalog                   27 tools, run_code=False\npresentation mode (derived)    native\nhard child cap (requirement)   30\ngaps                           0\n\nIDENTITY REFUSED:\n  - the observation carries no dsh-daily-work/dsh-ipython row: the manifest cannot identify the implementation it describes"
+    },
+    {
+      "case": "EXTRACT-MISSING-FILE",
+      "what": "the built file does not exist",
+      "expected": "sha256 None AND an error recorded",
+      "observed": {
+        "sha256": null,
+        "error": "packages/dsh-ipython/lib/does-not-exist.js does not exist (is the package built?)"
+      },
+      "ok": true,
+      "output_tail": "{\"sha256\": null, \"error\": \"packages/dsh-ipython/lib/does-not-exist.js does not exist (is the package built?)\"}"
+    },
+    {
+      "case": "EXTRACT-NO-EXPORT",
+      "what": "the export is absent from a file that exists",
+      "expected": "sha256 None AND an error recorded",
+      "observed": {
+        "sha256": null,
+        "error": "export is not a string: undefined"
+      },
+      "ok": true,
+      "output_tail": "{\"sha256\": null, \"error\": \"export is not a string: undefined\"}"
+    },
+    {
+      "case": "EXTRACT-NOT-A-STRING",
+      "what": "the export is not a string",
+      "expected": "sha256 None AND an error recorded",
+      "observed": {
+        "sha256": null,
+        "error": "export is not a string: undefined"
+      },
+      "ok": true,
+      "output_tail": "{\"sha256\": null, \"error\": \"export is not a string: undefined\"}"
+    },
+    {
+      "case": "EXTRACT-POSITIVE",
+      "what": "the real spec extracts the real client",
+      "expected": "a sha256 and >500 chars",
+      "observed": {
+        "sha256": "b78cc5e3bb7df19e3f0c418fae2044f843ccfa661ed624cdd56808195efbf573",
+        "chars": 11975,
+        "lines": 340
+      },
+      "ok": true,
+      "output_tail": "{\"sha256\": \"b78cc5e3bb7df19e3f0c418fae2044f843ccfa661ed624cdd56808195efbf573\", \"chars\": 11975, \"lines\": 340, \"first_line\": \"\\\"\\\"\\\"DSH native-tool bridge client, injected into the kernel by the host.\", \"last_line\": \"tools = _ToolNamespace(_channel)\", \"extracted_from\": \"packages/dsh-ipython/lib/bridge.js\", \"source_of_the_literal\": \"packages/dsh-ipython/src/bridge.ts\", \"extraction\": \"node imported the built module and hashed the VALUE of the export, so JS escape rules are not re-implemented here\", \"why\": \"the bytes the host writes to the kernel's client path and the kernel compiles with exec(comp"
+    }
+  ],
+  "verdict": "CONTROLS_PROVED",
+  "failures": []
+}
