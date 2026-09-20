@@ -1,96 +1,114 @@
 # dsh-native-daily
 
 A DSH-native personal daily system for coding and research, built on
-DeepSeek Harness. **Status: NOT READY FOR DAILY USE.** See the honest summary at
-the bottom before using anything here.
+DeepSeek Harness.
+
+> **Status: AUDIT SNAPSHOT / NOT QUALIFIED FOR DAILY USE**
+>
+> Nothing in this repository is certified for daily use. The architecture is
+> converging and the implementation is closing; the **qualification is not
+> closed**, so the release is `NOT_READY`. Read
+> [Current status](#current-status) before using anything here.
 
 ## Cloning this repository (read this first on Windows)
 
 **A plain `git clone` can fail on Windows and leave an apparently empty
-checkout.** Several evidence paths are deep, and the failure is a path-length
-limit, not a missing file: `git clone` prints `Filename too long`, exits non-zero,
-and never writes the index — so `git ls-files` returns 0 and the tree looks empty.
-
-The longest path is 222 characters, so whether it fails depends on **where you
-clone it**: a short destination such as `D:/dsh` works, a deep temporary directory
-does not.
+checkout.** The failure is a path-length limit, not a missing file.
 
 ```sh
 # either clone somewhere short...
 git clone https://github.com/LEO001020/dsh D:/dsh
-# ...or enable long paths for this clone
+# ...or enable long paths (this clone)
 git -c core.longpaths=true clone https://github.com/LEO001020/dsh D:/dsh
+# ...or enable them for every clone and checkout on this machine
+git config --global core.longpaths true
 ```
 
-Measured and narrowed in `qualification/results/ROOT-round2/clone-path-length.md`.
-
-> **Target architecture changed on 2026-09-20.** The new contract
-> (`DSH_NATIVE_IPYTHON_ARCHITECTURE_AUDIT_2026-09-20`) makes a **persistent
-> IPython kernel** the model's primary execution surface, adds a native
-> observation/artifact data plane, raises child capacity to a hard 30, and
-> requires the model-facing shell to leave the daily preset. **Most of that is now
-> built.** Measured on a fresh install booted from a foreign cwd
-> (`qualification/results/M12-deliverable-surface/surface-fresh-install.json`):
-> the composed profile's catalog holds **27 tools**, `ipython` is present with the
-> single parameter `code` and is **the only execution surface** — `pwsh` and
-> `bash` are both absent — and `work` is present. The hard capacity of 30 is
-> implemented and measured **binding in production**: a genuine `startContinuable`
-> call was refused at 30 with the refusal naming the deployment constant
-> (`qualification/results/T10-capacity/prod-capacity-report.json`).
->
-> **What is NOT done, and it is the load-bearing gap.** Two things the contract
-> requires are missing, and they are the same defect in different places: a
-> mechanism that works, with nothing in the product that calls it.
-> 1. **No user action creates a run** (`G-SEAM-31`). `WorkService.createRun` has
->    no production caller, so the model-facing `work` tool throws `this session has
->    no active run` — which means the mandatory N=10 rolling top-up cannot be
->    exercised on the composed profile. Every N=10 measurement was produced by a
->    test that calls `createRun` directly.
-> 2. **The Python cell cannot reach a DSH tool** (`G-SEAM-34`). The native bridge
->    (`bridge.ts`, `native-call.ts`) is outside the transitive closure of every
->    package entry point and `new BridgeServer` has zero production call sites. The
->    FORBIDDEN seam is correctly absent — `ctx.terminalController` appears in no
->    production file — but the sanctioned one is unwired, so today the model's
->    Python has no tool access at all.
->
-> Also absent: a tool named `python_exec` (the contract's name; this build calls it
-> `ipython`), and an N control in a UI. **The acceptance spec is
-> `qualification/specs/acceptance-spec.trusted-local-v1.json` — 109 cases, and all
-> 109 are `NOT_RUN`.** The older 104-case report
-> (`qualification/gates.json`) shares **zero** case ids with it, so no number in
-> that report is progress toward this target. See `docs/DELETE-AUDIT.md` §4.
-> Deployment identity is `0a0996f3…`; promotion is `NOT_READY`.
-
-## The acceptance spec is fully executed — read this first
-
-**109 cases, all filed: 95 PASS, 13 FAIL, 1 BLOCKED_EXTERNAL, 0 NOT_RUN**, under
-deployment identity `0a0996f3…`. The authoritative file is
-`qualification/specs/acceptance-spec.trusted-local-v1.json`; each case carries its
-own `status` and `evidence`, so read the spec rather than this summary.
+**The diagnosis matters, because the symptom is easy to misread.** `git clone`
+prints `Filename too long`, exits **128**, and never writes the index — so the
+checkout that remains looks merely *empty* rather than *broken*. The tell is:
 
 ```sh
-python qualification/runners/verify-spec.py            # spec/evidence agreement
-python qualification/runners/verify-spec.py --summary  # per-family counts
-python qualification/results/T1-spec/verify-identity.py # identity, 30/30
-python helpers/doctor.py                               # recorded inputs vs the tree
+git ls-files | wc -l     # 0 after a failed clone
 ```
 
-All four are green. **None of them judges whether an oracle was established** —
-that is a reading, and each slice's `GATES.md` is where it happens.
+If that returns 0 in a directory that has a `.git`, this is the cause, not a
+network or credential problem.
 
-**Promotion is `NOT_READY`, and the reason is not the FAIL count.** Three of the
-thirteen FAILs are reasons a user cannot use this as intended, and each is a
-mechanism that works with nothing in the product that calls it:
+**Why it happens.** The longest tracked **relative** path is 222 characters and
+**zero** tracked paths exceed 259 on their own, so the repository is inside
+Windows' `MAX_PATH` by itself. The failure is `PREFIX + 222` crossing 260, which
+is why the *destination* decides the outcome: a short root such as `D:/dsh`
+works, a deep temporary directory does not.
 
-| Defect | What a user hits |
-|---|---|
-| `G-SEAM-31` | The model-facing `work` tool throws `this session has no active run` — no user action creates a run, so the **mandatory** N=10 rolling top-up cannot be exercised on the composed profile |
-| `G-SEAM-34` | A Python cell cannot reach a DSH tool: the bridge is outside every entry point's closure. The forbidden seam is correctly absent, which makes the sanctioned one being unwired worse, because `ipython` is the only execution surface |
-| `G-SEAM-33` | The policy says `workspace-write`, so the model is told a false statement about its own authority and PTC still confines |
+Measured and narrowed, with all three arms, in
+`qualification/results/ROOT-round2/clone-path-length.md` and re-measured at
+`2e1b2c2` in `qualification/results/P15-status/CLONE-PATH-CLAIM-CHECK.md`:
 
-**The correct next step is to repair or explicitly accept each named defect** — not
-to re-run the cases, and not to promote. See `docs/GAPS.md` for all of them and
-`qualification/results/ROOT-verification/STATUS-final.md` for the index.
+| clone destination | prefix | result |
+|---|---|---|
+| `D:/v/lp-short` | 5 | exit 0, `git ls-files` = 1127 |
+| `%TEMP%/lp-deep` | 12 | **exit 128, `git ls-files` = 0** |
+| `%TEMP%/lp-long` + `core.longpaths=true` | 12 | exit 0, `git ls-files` = 1127 |
+
+**The evidence paths are not being renamed.** They encode the workspace the
+Session store scoped them to, and recorded digests reference them; rewriting them
+would falsify historical evidence. A future release package should solve this by
+publishing the source/runtime package separately from the audit evidence archive
+rather than by shortening paths — that is a packaging decision, recorded here as
+an open item, not applied.
+
+## Current status
+
+**Do not read a PASS/FAIL count out of this file.** Counts move, and this README
+previously carried several of them by hand in more than one paragraph, which is
+how a reader ends up citing a number that no longer describes the tree. The
+authoritative status is machine-readable; read it there:
+
+```sh
+# The promotion decision and the deployment identity this repo is bound to.
+python -c "import json;d=json.load(open('compatibility.lock.json'));print(d['promotion']['decision'], d['deployment']['identity'])"
+
+# Per-family case counts, read from the spec itself rather than from prose.
+python qualification/runners/verify-spec.py --summary
+
+# Which cases are not PASS, and why.
+python -c "import json;[print(c['id'],c['status']) for c in json.load(open('qualification/specs/acceptance-spec.trusted-local-v1.json'))['cases'] if c['status']!='PASS']"
+```
+
+| field | where it comes from | value at `2e1b2c2` |
+|---|---|---|
+| Promotion decision | `compatibility.lock.json` → `promotion.decision` | `NOT_READY` |
+| Deployment identity | `compatibility.lock.json` → `deployment.identity` | `533c8cb08b2ccd7f…` |
+| Acceptance spec | `compatibility.lock.json` → `promotion.spec_path` | `acceptance-spec.trusted-local-v1.json`, 109 cases |
+| Live provider budget | `compatibility.lock.json` → `runtime_authorization.live_provider_budget_authorized` | `false` |
+
+`RELEASE_DECISION.json` — the artifact V5 §22 (`P2.8`) names as the home for this
+block — **does not exist yet** (verified: it appears nowhere in this repository's
+history). Until it does, `compatibility.lock.json` is the machine-readable source
+and the commands above are how to read it. This section is deliberately a *link
+plus a command* rather than a transcription.
+
+### The two commands that are NOT green
+
+`README.md` previously stated that all four diagnostic commands were green. Two of
+them exit non-zero at `2e1b2c2`, and the reason is not a code defect — it is the
+identity having moved underneath the evidence:
+
+| command | exit | meaning |
+|---|---|---|
+| `python qualification/results/T1-spec/verify-identity.py` | **0** | all 30 checks pass; the identity recomputes from the files |
+| `python qualification/runners/verify-spec.py` | **1** | `317 problem(s)`, every one of them `evidence was filed under identity 0a0996f3… but the lock's identity is 533c8cb0…` |
+| `python helpers/doctor.py` | **1** | `host_profile_digest is STALE: pinned 0e8e370e… but cordis.patch.yml hashes to 4e3aa20c…` |
+| `python qualification/runners/build-gates.py` | not run | regenerates a report; not a read-only check |
+
+Both failures are **intended consequences of a recorded decision, not new
+breakage** — the lock's own `promotion.decision_reason` says every verdict bound
+to `0a0996f3…` is stale as evidence for `533c8cb0…`, and the profile patch gained
+a row after the identity was last derived. The consequence a reader must take is
+the important part: **the 95 PASSes are history for a superseded identity and must
+be re-measured, not inherited.** Raw output is archived in
+`qualification/results/P15-status/STATUS-MEASUREMENT.md`.
 
 ## What this is
 
@@ -101,6 +119,14 @@ It is **not** a port of any earlier orchestration project. There is exactly one
 model loop and it is DSH's. This project adds a resource controller: it decides
 whether a child may be admitted, holds a credit reservation, and keeps a
 reconciliation relation. It does not decide what work means.
+
+**Trust model: `trusted-local`.** The OS user account is the execution authority
+boundary. There is no sandbox, no WSL, no Linux VM and no SSH execution world.
+Every process this deployment starts — including the persistent IPython kernel —
+runs as the invoking user with that user's full filesystem, network and process
+visibility. **This deployment claims no confinement of reads, writes, network or
+process visibility**, and no case in the acceptance spec may be read as
+establishing one.
 
 ## Layout
 
@@ -117,58 +143,54 @@ reconciliation relation. It does not decide what work means.
 | `docs/OPERATIONS.md` | Install, run, stop, upgrade, roll back |
 | `docs/GAPS.md` | Everything missing, unverified or externally blocked |
 | `docs/exec-plans/0001-master.md` | The living plan and status log |
-| `compatibility.lock.json` | The pinned artifact and environment identity |
-| `qualification/gates.json` | All 104 gates with status and evidence (schema_version 1 — the OLD spec) |
+| `compatibility.lock.json` | The pinned artifact, the deployment identity, and the promotion decision |
+| `qualification/gates.json` | **Historical.** All 104 gates of the OLD spec (schema_version 1), bound to the superseded identity `ece4037a…`. Kept as evidence for that identity only. |
+| `qualification/specs/` | The acceptance specs. `acceptance-spec.trusted-local-v1.json` is the current one; `frozen/` holds the as-authored snapshot |
 | `qualification/results/` | One directory per slice, with real output |
 | `profiles/` | C0 (stock) and C2 (daily candidate) profile templates |
-| `packages/dsh-daily-work/` | The rolling child-work extension package (11 exports) |
-| `packages/dsh-ipython/` | The persistent-IPython extension package (5 exports) |
-| `qualification/results/R9-delivery/` | This delivery pass's claim-check, corrections and verdict basis |
+| `packages/dsh-daily-work/` | The rolling child-work extension package (12 entry points) |
+| `packages/dsh-ipython/` | The persistent-IPython extension package (5 entry points) |
 
 ## The extension packages
 
-**Two** packages now ship, and both are loaded as bundles by the composed profile:
+**Two** packages ship, and both are loaded as bundles by the composed profile:
 `packages/dsh-daily-work` (the rolling child-work controller) and
 `packages/dsh-ipython` (the persistent IPython execution surface).
 
-`packages/dsh-daily-work` exports **eleven** entry points. Five carry the
-capability this README is about:
+`packages/dsh-daily-work` declares **12 entry points** (count them rather than
+trusting this sentence:
+`python -c "import json;print(len(json.load(open('packages/dsh-daily-work/package.json'))['exports'])-1)"`).
+The ones that carry the capability this README is about:
 
 - `dsh-daily-work/host` — the host service. Mounted ONCE by the host profile.
   Owns the run record, the credit reservation and the admission state machine.
 - `dsh-daily-work/tools` — the agent-scoped `work` tool. Mounted in the agent
   preset. Holds no cross-session state.
+- `dsh-daily-work/command` — the human `/work` command: the product's
+  run-authorization entry point. Registered through DSH's **human** command
+  registry (`ctx.commands`), which resolves the handler without sending the line
+  to the model and logs `source.kind = 'user'`. This is the seam that makes a run
+  creatable by a user action; see `packages/dsh-daily-work/src/command-work.ts`.
 - `dsh-daily-work/service` — the service class, for tests and embedders.
 - `dsh-daily-work/web-search` — the ported search provider, registered through
-  `ctx.web.registerSearchProvider` so `web_search` routes to it unchanged.
+  `ctx.web.registerSearchProvider`.
 - `dsh-daily-work/tool-protocol-guards` — the exact-owner guard for `work`,
   mounted at the host plane so it applies deployment-wide.
+- `dsh-daily-work/no-sandbox-contract` — the guard that checks the deployment's
+  sandbox mode at three distinct boundaries (`startup`, `session-resume`,
+  `ptc-execution`), because a deployment can be correct at startup and changed by
+  a later session. It adds no model tool and makes no permission decision.
 
-The other six are newer and are mounted by the bundle patch: `data-host` and
-`data-service` (the observation/artifact plane), `history` (authorized history and
-web provenance), `writers` (writer isolation and integration), and
-`programmatic-scope` (the extracted nested-dispatch scope). **An earlier version
-of this README said "five mount points" and "the one extension package"; both
-numbers are now wrong**, and a reader counting exports should run
-`python -c "import json;print(len(json.load(open('packages/dsh-daily-work/package.json'))['exports']))"`
-rather than trusting prose.
+The rest are mounted by the bundle patch: `data-host` and `data-service` (the
+observation/artifact plane), `history` (authorized history and web provenance),
+`writers` (writer isolation and integration), and `programmatic-scope` (the
+extracted nested-dispatch scope).
 
 `packages/dsh-ipython` exports `host` (the kernel service), `tool` (the ONE
 model-facing `ipython` tool), `kernel`, `plugin` and `protocol`. Its model-facing
 surface is deliberately one tool with one `code` parameter — no lifecycle tool
 (`ipython_open`/`_send`/`_read`/`_status`/`_close`) is registered anywhere in the
 package, and that absence is asserted in a real boot.
-
-**The product path is wider than ten modules now.** `qualification/results/R3-unwired/import-graph.txt`
-is the current import graph, re-run at 78 `src/` files / 31 non-test modules: **25
-reachable, 6 unreachable**. The unreachable six are `durability-runner.ts`,
-`effects.ts`, `kernel-lifecycle.ts`, `perf-metrics.ts`, `reconcile.ts` and
-`recovery.ts`. **An earlier version of this README listed `launch-port.ts` and
-`recovery.ts` among the test-only modules; `launch-port.ts` is now on the product
-path** (it is a non-test importer of `host.ts` and is imported by it), and
-`verify.ts` is now reachable through the `writers` export. The older
-`docs/DELETE-AUDIT.md` §1 graph is a snapshot at `2d4534f` and says so; prefer
-`R3-unwired/import-graph.txt` when the two disagree.
 
 ## Quick start
 
@@ -185,18 +207,9 @@ vitest run
 cd ../..
 pnpm typecheck
 
-# 4. Regenerate the gate report from evidence.
-python qualification/runners/build-gates.py
+# 4. Read the status (see "Current status" above for what these report).
+python qualification/runners/verify-spec.py --summary
 ```
-
-**Test count: 1084 collected across 47 files.** Measured with `vitest list` at
-commit `a1d6e6d`. That is a **collection** count, not a passing count — no
-full-suite pass/fail run is recorded in this repository, and `vitest list` executes
-nothing. This replaces an earlier "592 across 37 files" measured at `2d4534f`,
-which was accurate for its tree and had gone stale. It is a snapshot of a tree
-under active concurrent edit, so read it as "at `a1d6e6d`", not as a standing
-claim: a mid-edit tree does not parse, and a collection count can move with no
-test added or removed.
 
 `pnpm typecheck` is **the** typecheck to cite. `tsc -p tsconfig.json` is **not**:
 it excludes `src/**/*.test.ts` and therefore exits 0 with or without a test file
@@ -205,163 +218,148 @@ exclude, and the official command drives it for every package while refusing to
 pass if a config stops including the tests. Measured both ways, with the control
 arm, in `qualification/results/R2-F10F11/mutation-test.txt`.
 
-## What is actually proven
+## What is proven, and what is not
 
-**84 of 104 gates PASS, 3 are honest FAILs**, with the delivery package's checker
-reporting **zero structural errors** on the report. Every PASS carries at least
-one evidence file whose sha256 is recorded, and the generator refuses to emit a
-PASS with no evidence on disk. **D10 is the third FAIL and it is new**: it had
-been PASS since before R9 deleted the settlement guard its note described, and it
-was re-judged when that was found (`docs/DELETE-AUDIT.md` §3.8.1). The
-load-bearing results:
+This section states **what kind of thing** each claim is, because the distinction
+is the one this project keeps getting wrong. A mechanism that works while nothing
+in the product calls it is this repository's single most-recorded defect, and it
+has been filed more than twelve times.
 
-- **Ten children are admitted through the real `ctx.subagents.startContinuable`
-  seam on the production AgentLoop**, with a real Session each, and the ceiling
-  is enforced by DSH itself and not only by this project's bookkeeping.
-- **One completion admits exactly one replacement**, without waiting for the
-  wave. Two concurrent drains on one free slot produce exactly one child.
+### Product paths that now exist and were measured on a real boot
+
+These were fixed in earlier, merged waves. Each is stated with the artifact that
+measured it; none of them is a claim about a PASS count.
+
+- **A user action creates a run.** The human `/work` command is registered in the
+  agent-scoped view and `authorizationRef` names the human command that authorized
+  the run. Measured through `CommandRuntime` on a real composed-profile boot, 33/33
+  checks: `qualification/results/R4-authorization/report-after.json`. Source:
+  `packages/dsh-daily-work/src/command-work.ts`, mounted at
+  `profiles/daily-candidate/presets/daily-standard/agent.cordis.yml:384`. The
+  model-facing `work` tool still refuses when no run exists — that refusal is the
+  authorization edge, not the defect. (Closes `G-SEAM-31`.)
+- **A Python cell reaches a DSH tool.** A real `daily` boot constructed a live
+  `BridgeServer` (`packages/dsh-ipython/src/kernel-plugin.ts:493`), the `ipython`
+  tool dispatched a nested call, the cell reported `DSH_BOUND=True`, and the
+  durable ledger recorded the call `settled` with STARTED and SETTLED both set:
+  `qualification/results/R5-bridge/composition-tier.json` and
+  `qualification/results/R5-bridge/RESULTS.md`. The ledger holds occurrence
+  records and digests, not a credential. (Closes `G-SEAM-34`.)
+- **The deployment's sandbox mode is the one it claims.** `sandbox-policy` is
+  `mode: danger-full-access` (`profiles/daily-candidate/cordis.patch.yml:607`),
+  and a real boot records `danger-full-access`:
+  `qualification/results/R1-trusted-local/composition-after.json`. The
+  `no-sandbox-contract` guard checks this at three boundaries. (Closes
+  `G-SEAM-33`.)
+- **The hard child capacity is enforced in production**, not only by this
+  project's bookkeeping: a genuine `startContinuable` call was refused at 30 with
+  the refusal naming the deployment constant
+  (`qualification/results/T10-capacity/prod-capacity-report.json`).
 - **Admission is not execution.** Every task lands in `accepted`, and an
   unobserved child is not counted as an active assignment.
 - **A run survives a real SIGKILL.** The record, every task state and the exact
   reservation were recovered from a fresh process, and reconciliation returned
   `unknown` rather than relaunching anything.
-- **The extension is loaded by the real profile resolver**, and both tools reach
-  the model: a real Session on the composed `daily-standard` preset reports **28**
-  tools including `work` **and `ipython`**. The `ipython` count is newer than the
-  `work` one — see "What is NOT proven" for why 28 supersedes an earlier 27.
-- **Cross-call state persists in a native PTY** under `workspace-write`, so
-  persistent computation works without an adapter.
-- **The acceptance runner does not trust exit codes.** Two cases with a real
-  exit code of 0 — an all-skipped suite and a zero-test run — are still non-PASS.
+- **The acceptance runner does not trust exit codes.** Two cases with a real exit
+  code of 0 — an all-skipped suite and a zero-test run — are still non-PASS.
 - **An A→B→A mutation during verification is caught by an immutable snapshot**,
-  and the in-place control arm proves endpoint hashing alone would have
-  certified the tampered run.
-- **The C0 capability gap is measured, not assumed**: every shipped profile
-  mounts `@deepseek-ai/dsh-subagent` with no config block, so N is 8. C2's patch
-  raises it to 10 and the resolved graph shows it.
+  and the in-place control arm proves endpoint hashing alone would have certified
+  the tampered run.
 
-### Proven but NOT part of the new target
+### What is NOT proven, and must not be implied
 
-Ten of those PASSes are the **M6 terminal block (T01–T10)**, whose subject is the
-native PTY as the model's execution surface — exactly what the new architecture
-removes. They are real measurements of a real mechanism, and they are not
-progress toward `python_exec`. Likewise `J01`/`J02`/`J03` were recorded
-`NOT_APPLICABLE` on the note "No dedicated kernel is implemented; the native
-terminal was qualified instead"; the new architecture makes that kernel
-mandatory, so those three become live obligations. `docs/DELETE-AUDIT.md` §4.2
-lists every obsolete PASS.
+Read `docs/GAPS.md` for the full list; it is the ledger, and it records a status
+per row. The ones that matter most:
 
-## What is NOT proven, and must not be implied
-
-Read `docs/GAPS.md` for the full list. The ones that matter most:
-
-- **The architecture is built, and the two things still missing are both the same
-  defect: a mechanism that works with nothing in the product that calls it.**
-  Measured on a fresh install following `docs/DELIVERY.md` §2, booted from a
-  foreign cwd, with a probe that adds **no** row
-  (`qualification/results/M12-deliverable-surface/surface-fresh-install.json`):
-  **27 agent-keyed tools**, `ipython` present with the single parameter `code` and
-  it is **the only execution surface** — `pwsh` and `bash` are both absent — and
-  `work` is present with `error: null`. The hard capacity of 30 is implemented and
-  measured **binding in production**: a genuine `startContinuable` call was refused
-  at 30, naming the deployment constant
-  (`qualification/results/T10-capacity/prod-capacity-report.json`).
-
-  **What is missing is reach, and it is two cases of one shape:**
-  1. **No user action creates a run** (`G-SEAM-31`). `WorkService.createRun` has no
-     production caller, so the model-facing `work` tool throws `this session has no
-     active run` and the **mandatory** N=10 rolling top-up cannot be exercised on
-     the composed profile. Every N=10 measurement came from a test that calls
-     `createRun` directly.
-  2. **The Python cell cannot reach a DSH tool** (`G-SEAM-34`). The native bridge
-     (`bridge.ts`, `native-call.ts`) is outside the transitive closure of every
-     package entry point, and `new BridgeServer` has zero production call sites.
-     The FORBIDDEN seam is correctly absent — `ctx.terminalController` appears in no
-     production file — but the sanctioned one is unwired, so today the model's
-     Python has no tool access through either path. Because `ipython` is the only
-     execution surface, this is not academic.
-
-  **This paragraph replaces an earlier one that said the shell had not left the
-  preset and that the catalog still carried `pwsh` beside `ipython`. That was true
-  when written and is false now** — commit `35c829d` disabled the `tool-pwsh` row
-  unconditionally. The count moved 27 → 28 → 27 for two different reasons, and
-  `docs/DELIVERY.md` §8.2 records the sequence, because a count that moves in both
-  directions must never be cited without its composition.
-- **The spec is 109 cases, not 112, and its verdicts are filed in place.** The
-  authoritative file is `qualification/specs/acceptance-spec.trusted-local-v1.json`
-  (`trusted-local-v1`, 109 cases, 11 families). It is a **ledger**: each case
-  carries its own `status` and `evidence`, filed as the case is established, so
-  read the spec itself rather than any count in prose. The frozen as-authored
-  artifact is kept separately at `qualification/specs/frozen/` because the live
-  file's digest changes as verdicts are filed — the pin names the authored
-  artifact, and `helpers/doctor.py` plus `verify-identity.py` both check that.
-  **No PASS is inherited**: the older 104-case report and its PASSes (84 after
-  this round's D10 correction) are valid evidence for the OLD identity only.
-- **The deployment is not confined, and one seam still says otherwise.** The
-  execution plane is unconfined — measured: `PwshLocalExecutor`, `LocalFileSystem`,
-  the permission plane disabled, approval policy `never`. But
-  `sandboxPolicy.defaultMode` is **`workspace-write`**, not `danger-full-access`
-  (`G-SEAM-33`), so the model is told a false statement about its own authority and
-  the PTC path still confines. The now-mounted `daily-no-sandbox-contract` row
-  detects this on every boot: it runs 8 deployment checks and its two failures are
-  exactly this and the PTC mode.
-- **A page cursor is refused across a different revision but not across a
-  different store** (`G-SEAM-41`), and the served bytes can hash differently from
-  the descriptor naming them — `pages()` calls `store.openRange` directly and never
-  routes through `resolveReference`'s content check.
-- **Two of the six observation-gap stages have no producer at all**
-  (`G-SEAM-40`), and a transport loss that IS counted in the ipython plane
-  (`droppedFrames`) is never wired into `acquisition.gaps` — the two planes do not
-  meet.
-- **Concurrent `drain` callers over-admit past the target, and `capacityDeficit`
-  reads 0** (`G-SEAM-45`), so the overshoot is invisible to the reader that exists
-  to catch it. Measured with zero real children.
-- **The epoch guard was DELETED rather than wired** (`G-SEAM-21`, closed by
-  deletion under F8 / REC-09 / REC-10): the run record has **no `epoch` field**
-  at all, and neither does any guard read one. This is a **NON-CLAIM**, not a
-  fix — v2 does not claim that a settlement from a superseded generation is
-  fenced across a process boundary, because no production path can construct
-  one (no production call site targets a terminal task state, and the state the
-  product leaves an unsettled task in — `unknown`, reservation held — has no
-  production exit). What IS enforced is object identity for the in-process
-  resume case (`tool-protocol-guards.ts`). The KERNEL epoch, which does advance
-  on kernel death and is reachable, is a different field that shares the name
-  (`G-SEAM-43`). See `qualification/results/R9-recovery-topology/`.
+- **No case is currently PASS for the current identity.** The 95 PASSes in the
+  trusted-local spec were filed under the superseded identity `0a0996f3…`; the
+  lock's identity is `533c8cb0…`. The lock's own record says every verdict bound
+  to the old identity is stale as evidence for the new one. **No PASS is
+  inherited**, and the FAILs must be re-judged rather than re-labelled.
+- **The kernel epoch and the run-record epoch are different fields that share a
+  name** (`G-SEAM-43`, OPEN). The kernel epoch advances on kernel death and is
+  reachable through `dsh-ipython`. The **run record has no `epoch` field at all**
+  and neither does any guard read one — the guard and the field were deleted under
+  F8 / REC-09 / REC-10. This is a **NON-CLAIM, not a fix**: v2 does not claim that
+  a settlement from a superseded generation is fenced across a process boundary,
+  because no production path can construct one. What IS enforced is object
+  identity for the in-process resume case (`tool-protocol-guards.ts`). See
+  `qualification/results/R9-recovery-topology/`.
+- **A spec self-contradiction is still open** (`G-SEAM-46`): `CMP-04` requires
+  `pwsh` present while `CMP-13` requires it absent. It is a spec defect, not a
+  product defect, and the resolution is the delivery owner's.
 - **No live paid run.** `live_provider_budget_authorized` is `false`. A key being
-  present would not authorize large paid evaluation.
+  present would not authorize large paid evaluation. Cases at layer T5 stay
+  `BLOCKED_EXTERNAL` while this is false.
+- **`ctx.web.search()` reaches a different backend than the ported provider**
+  (`G-SEAM-52`): the row is mounted, the tests pass, and the selection string
+  names another id. The mis-selection is real but currently **unobservable**,
+  because neither provider has a credential on this machine, so both report
+  `available() === false`.
+
+### Open items owned by other work in flight
+
+These are stated as open items **on purpose**. They are being changed right now by
+other work, the merge has not happened, and a claim written from any single
+worktree would be true of that worktree and false of the published tree. Nothing
+below asserts an outcome.
+
+| item | what is unresolved | where it will be decided |
+|---|---|---|
+| The model-facing tool catalog | The count and membership have moved in both directions as rows were added and disabled. **Any specific tool count is a property of one composition, not of the repository.** | The composition that resolves the preset; re-measure rather than citing a number |
+| `dsh.data` model-facing reachability | The plane's mechanism exists; whether a model call reaches it end-to-end on the assembled profile is an open measurement | `qualification/results/P5-data/` and the data-plane slices |
+| The durable READY queue and completion-driven refill | Whether a submitted assignment survives a full target, and whether a completion triggers refill without the root asking again | The rolling-N slice |
+| Work UI / default-target semantics | Whether changing a setting edits the **live** run's target or only the default for a future run | The target-semantics slice |
+| The Windows clone failure, for a future release package | Whether to publish source/runtime separately from the audit evidence archive instead of shipping the raw evidence tree in the install artifact | Release packaging; see the clone section above |
+
+### Historical: the OLD 104-gate report
+
+Everything in this subsection is **history for a superseded identity** and is kept
+because the work was real. `qualification/gates.json` holds 104 gates with **84
+PASS, 3 FAIL, 10 NOT_RUN, 6 NOT_APPLICABLE, 1 BLOCKED_EXTERNAL**. The 84 PASS rows
+carry `deployment_identity` `ece4037a…` and are valid evidence for **that identity
+only**; they are **not inherited** by the current spec. The 20 non-PASS rows carry
+no `deployment_identity` field at all — worth knowing before citing any of them,
+because a row with no identity is not bound to a candidate either way. Among them, ten are the **M6 terminal block
+(T01–T10)**, whose subject is the native PTY as the model's execution surface —
+exactly what the new architecture removes. `docs/DELETE-AUDIT.md` §4.2 lists every
+obsolete PASS.
+
+Likewise, the **112-case spec** (`qualification/specs/acceptance-spec.json`) is
+retained unchanged as history; it is the identity input for the OLD identity. All
+112 of its cases are `NOT_RUN`, and the reason the earlier revision of this file
+gave for that — "the architecture they describe is not built" — was true when
+written and is **not true of current code**: the persistent IPython surface, the
+native bridge and the capacity guard all exist now. They have simply not been
+judged under that spec, which is a different statement.
+
+The `docs/DELETE-AUDIT.md` §1 import graph is a snapshot at `2d4534f` and says so.
+It is older than the `/work` command entry point, so it does not list `./command`
+among the export roots; prefer a fresh run of
+`node qualification/runners/import-graph.mjs packages/dsh-daily-work` when the two
+disagree.
 
 ## Promotion decision
 
-`NOT_READY`. Re-read from `qualification/gates.json` rather than copied from an
-earlier revision of this file: **104 old-spec cases = PASS 84 · NOT_RUN 10 ·
-FAIL 3 · BLOCKED_EXTERNAL 1 · NOT_APPLICABLE 6**, of which the **88 mandatory**
-split **74 PASS, 10 `NOT_RUN`, 3 `FAIL`, 1 `BLOCKED_EXTERNAL`**. The 14 non-PASS
-mandatory gates are `A12`, `C01`, `D10`, `E01`, `E02`, `E06`, `E12`, `R01`, `U01`,
-`U02`, `U03`, `U04`, `U05`, `U06`, each with its reason in `docs/DELIVERY.md` §9.
-**`D10` moved from PASS to FAIL in this round**, and it is not a new defect: R9
-deleted the settlement guard and the `epoch` field that D10's PASS note
-described, and the row was re-judged once that was found. The verdict was already
-`NOT_READY` either way — the change is to the report's honesty, not to the
-decision.
-Nothing in this repository is certified for daily use, and the gate report says so
-in its own vocabulary rather than in a footnote.
+`NOT_READY`, and it is read from `compatibility.lock.json` rather than copied
+here. Two independent reasons, and neither is a PASS count:
 
-The external blocker is named exactly: `compatibility.lock.json` →
-`runtime_authorization.live_provider_budget_authorized` is **`false`**. It holds
-`C01` at `BLOCKED_EXTERNAL` and blocks the paid halves of the new spec's
-`ECO-07`/`ECO-08`/`UPG-07`. **Two** of the `FAIL`s are platform facts, not unbuilt
-work: the Windows sandbox seam has no read lever (`E01`) and no network vocabulary
-(`E06`), so they cannot be closed on this host at all. **The third, `D10`, is a
-withdrawn claim rather than a platform limit**: the guarantee it names is not
-delivered and is no longer claimed (the guard and the `epoch` field were deleted
-under F8 / REC-09 / REC-10), so it is a FAIL in the honest sense that the oracle
-is not satisfied — and it stays FAIL rather than becoming a PASS or a gap.
+1. **The identity moved and the evidence did not.** Every verdict in the
+   trusted-local spec is bound to a superseded identity. The correct next step is
+   to **re-measure**, not to re-label.
+2. **The named defects must be repaired or explicitly accepted.** V5's release
+   rule requires no FAIL, no FLAKY, no `NOT_RUN` for mandatory offline cases, no
+   invalidated evidence counted as a pass, and only explicit `BLOCKED_EXTERNAL`
+   remaining — plus post-integration CI evidence on the exact merged candidate.
+   None of that exists yet.
 
-The `NOT_READY` above is against the **old** spec. Against the new 112-case spec
-the state is simpler and worse: **all 112 cases are `NOT_RUN`** (verified against
-`qualification/specs/acceptance-spec.json`, not inherited from an earlier
-revision), because the architecture they describe is not built. Note the contrast
-that matters: the new spec's `IPY-*` family is `NOT_RUN` even though a real
-`ipython` tool now appears in a real Session's catalog. A tool being wired is not
-a case passing. See `qualification/results/M10-shrink/FINDINGS.md` for the
-promotion decision with per-gate reproduction and repair actions.
+Nothing in this repository is certified for daily use, and the machine-readable
+record says so in its own vocabulary rather than in a footnote.
+
+### How to falsify everything above
+
+Do not trust this file. It is a document, and the defect this project records most
+often is a document describing a state the code has left behind. Every claim here
+names the artifact that establishes it; re-run the artifact. Where a claim is a
+count, re-derive the count. Where a claim is "the product does X", the evidence is
+a boot, not a test that mounts the module.
