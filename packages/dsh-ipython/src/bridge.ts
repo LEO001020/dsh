@@ -472,9 +472,27 @@ export class CellLease {
     return Object.freeze([...this.reported])
   }
 
-  /** How many accepted calls have not reached a terminal state. */
+  /**
+   * How many accepted calls have not reached a terminal state.
+   *
+   * ONE COUNT PER ACCEPTED UNSETTLED LOGICAL CALL, which is `inFlight.size` and
+   * NOT `inFlight.size + queue.length`. The previous version added both and
+   * therefore DOUBLE-COUNTED every queued call: `inFlight` holds the settlement
+   * promise of every ACCEPTED call, added at publication and removed when it
+   * settles, and the FIFO `queue` holds a SUBSET of those same calls -- the ones
+   * that have not started yet. A call that is queued is in both collections, so
+   * it was counted twice: a lease with one running call and one queued call
+   * reported `pending === 3` for two logical calls. A caller reading `pending`
+   * to decide whether the lease is quiescent saw a number that counted the same
+   * call twice, which is the shape of a counter that reads wrong while every
+   * test stays green.
+   *
+   * `inFlight` is the complete set, so it is the count. The queue is NOT added
+   * because it is not a disjoint set -- see `AcceptedCall` and `invoke` for why
+   * the two are populated together.
+   */
   get pending(): number {
-    return this.inFlight.size + this.queue.length
+    return this.inFlight.size
   }
 
   private closeReason: BridgeCloseReason | undefined
