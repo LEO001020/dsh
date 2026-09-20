@@ -51,7 +51,7 @@ trusted-local：**OS 用户账户即执行权限边界**。DSH 以调用者身�
 | RECOVERY | 10 | 8 PASS, 2 FAIL |
 | IDENTITY | 6 | 3 PASS, 3 FAIL |
 | IPYTHON | 15 | 12 PASS, 2 FAIL, 1 BLOCKED |
-| NATIVE BRIDGE | 12 | 11 PASS, 1 FAIL |
+| NATIVE BRIDGE | 12 | 11 PASS, 1 FAIL（`BR-07`，见 F13） |
 | RESEARCH | 6 | 6 PASS |
 | CACHE/OBSERVABILITY | 6 | 6 PASS |
 | FILESYSTEM | 6 | 6 PASS |
@@ -73,7 +73,7 @@ trusted-local：**OS 用户账户即执行权限边界**。DSH 以调用者身�
 
 **每个 FAIL 都是一个带实测机制的发现，不是工作缺口。** 按我判定的严重度排序。
 
-### 2.1 阻断日用（3 个）
+### 2.1 阻断日用（3 个，F1–F3）
 
 这三个是同一形状：**机制正确，产品里没有调用者。**
 
@@ -93,7 +93,7 @@ trusted-local：**OS 用户账户即执行权限边界**。DSH 以调用者身�
 
 | 项 | 内容 |
 |---|---|
-| 规格 case | `BR-12`（FAIL），其余 11 个 BR case PASS 但都是**机制**结果 |
+| 规格 case | 12 个 BR case 中 11 PASS、1 FAIL（`BR-07`，见 F13）。**所有 BR case 都是机制结果**——它们问的是"bridge 行为是否正确"，答案是正确。G-SEAM-34 是关于**组合**的事实，不是任何单个 BR oracle 的失败 |
 | 实测 | `bridge.ts` 与 `native-call.ts` **在每个 package 入口点的传递闭包之外**；`new BridgeServer` **零生产调用点**。两个独立仪器一致：T7 的符号级探针 + `qualification/runners/import-graph.mjs` 的编译器级闭包 |
 | 后果 | **被禁止的** seam 正确地不存在（`ctx.terminalController` 在所有生产文件中零出现，T7 用三种方法测过）——但**被许可的**那条未接线。所以模型的 Python 今天**两条路都无法触达工具** |
 | 为何更严重 | `ipython` 是模型**唯一**的执行面（27 工具，`pwsh`/`bash` 缺失）。这不是学术问题 |
@@ -111,7 +111,7 @@ trusted-local：**OS 用户账户即执行权限边界**。DSH 以调用者身�
 | 后果 2 | `ptc-runtime-node` 在 mode **不等于** `danger-full-access` 时仍做 confine：`confined = policy.mode === 'danger-full-access' ? undefined : await this.ctx.sandbox.confine(...)`（`ptc-runtime-node/src/index.ts:224`）。PTC 是唯一仍在围栏内的路径，而它**可达**（`workflow`/PTC 工具族在组装后的 catalog 中） |
 | 已挂载的检测器 | 新接线的 `daily-no-sandbox-contract` 守卫每次启动跑 8 项部署检查，其**两个失败正是这两点** |
 
-### 2.2 真实缺陷，不阻断日用（7 个）
+### 2.2 真实缺陷，不阻断日用（10 个，F4–F13）
 
 #### F4. `G-SEAM-47` — 一个**已编译**文件 import 上游 `src/*.ts` 路径
 
@@ -199,6 +199,17 @@ trusted-local：**OS 用户账户即执行权限边界**。DSH 以调用者身�
 **`IPY-13` clause 2 FAIL — 静默错误归属。** 规格要求"在后续 cell **期间**落地的写入被报告为 undecidable 而非被归属"。实测：**被归属**。`lateCount 0`，标记出现在 cell 三的 stdout 里、位于 `tick1` 与 `tick2` 之间。机制（平台而非 broker）：`ipykernel/iostream.py` 从 `contextvars.ContextVar` 解析 stream parent，带**全局** fallback；`threading.Thread` 以空 context 启动，所以写者取全局值——最近一次设置它的 cell，也就是**更晚的**那个 cell。broker 的 router 在它掌握的信息上是正确的。clause 1（返回后的写入是 late 且不搭载任何东西）成立。
 
 **`IPY-15` FAIL — 超限帧的计数没有生产者。** `OutputBuffer.note_dropped_frame`（`broker.py:139`）——`droppedFrames` 的唯一写入者——**零调用点**，所以 `ipython-tool.ts:69` 的 renderer 分支是死代码。超限帧在**两个方向都被拒**（编码抛错、解码在缓冲前按声明长度拒绝），所以那一层没有静默丢失字节；缺的是**计数**。
+
+#### F13. `G-SEAM-54` — bridge 路由**没有 disposition 词汇**
+
+| 项 | 内容 |
+|---|---|
+| 规格 case | `BR-07`（FAIL） |
+| oracle | "Every in-flight call carries one disposition from `settled`, `cancelled`, `handed-to-jobs`, `abandoned-unstarted`，且任何交给 Jobs 的 call 要点名它的 job id。**Nothing continues silently in the background with no record.**" |
+| 实测（grep） | `disposition`、`jobId`、`handoff` 在 `packages/dsh-ipython/src/bridge.ts` 与 `native-call.ts` 中出现 **0 次**；在 `packages/dsh-daily-work/src/programmatic-scope.ts` 中出现 **21 次** |
+| 成立的那一半 | bridge 的 drain **确实**会等：一次 `revoke` 为在途 call 等了 **1499 ms**，revoke 之后的 call 被拒 `LEASE_REVOKED`。所以 lease 纪律是真的，drain 是真的——**缺的是记录** |
+| 为何"缺记录"是发现而非细节 | oracle 自己的那句话点名了失败模式："nothing continues silently in the background with no record"。drain 等 1499 ms 恰恰就是"一个 call 在后台继续而没有任何东西写它变成了什么"。读者无法从 bridge 判断那个在途 call 是 settled、cancelled 还是 abandoned |
+| 词汇可实现 | scope 路由就是证据——同一个仓库、同一个工具注册表，21 处引用之遥 |
 
 ### 2.3 BLOCKED_EXTERNAL（1 个）
 
@@ -292,4 +303,10 @@ trusted-local：**OS 用户账户即执行权限边界**。DSH 以调用者身�
 
 ## 第四部分：一句话总结
 
-**架构已建成（IPython 是模型唯一执行面，27 工具，硬上限 30 在生产中生效），109 个验收 case 全部执行（95 PASS），但晋级仍是 `NOT_READY`——因为三个 FAIL 是用户实际会撞到的：没有任何用户动作能创建 run（强制的 N=10 因此不可触发）、Python cell 无法触达任何 DSH 工具（两条路都不通）、策略模式声明 `workspace-write` 与架构矛盾（模型被喂了关于自身权限的假陈述）。请审计这 13 个 FAIL 的判定、优先级与修法，特别是 Q1–Q3 的入口选择。**
+**架构已建成（IPython 是模型唯一执行面，27 工具，硬上限 30 在生产中生效），109 个验收 case 全部执行：95 PASS / 13 FAIL / 1 BLOCKED_EXTERNAL / 0 NOT_RUN。**
+
+**晋级仍是 `NOT_READY`，理由不是 FAIL 的数量，而是其中三个 FAIL 是用户实际会撞到的：**没有任何用户动作能创建 run（强制的 N=10 因此不可触发）、Python cell 无法触达任何 DSH 工具（两条路都不通）、策略模式声明 `workspace-write` 与架构矛盾（模型被喂了关于自身权限的假陈述）。
+
+**本文件在执行中自我更正过一次**：`BR-12` 我原本按"可达性"判 FAIL，在 V4 直接测出该 oracle 的否定情形（caller 无法抬高上限）后改为 PASS。原因是"部署不可达"与"机制不正确"是两个不同的断言，用前者回答后者的 oracle 会读出与实测相反的结论。**这类更正本身就是我想请审计者检查的东西——见 Q7。**
+
+**请审计这 13 个 FAIL 的判定、优先级与修法，特别是 Q1–Q3 的入口选择。**
