@@ -396,6 +396,56 @@
 # (`packages/core/tools/src/index.ts:1702-1708`), but it denies them WITHOUT
 # logging that pair. Keeping the row costs nothing and keeps the record.
 #
+# THE CONSUMER INVENTORY V3 F1 ASKS FOR, enumerated rather than asserted. Every
+# reference to `ctx.approval` / `ctx.get('approval')` in the pinned checkout was
+# read, and each one is classified by whether it is ACTIVE in THIS composition:
+#
+#   ACTIVE, and the reason the row is kept:
+#     `ToolRuntime.serviceAsk` (packages/core/tools/src/index.ts:1702) resolves an
+#     `ask` pre-tool decision through the service, and `:1707-1708` denies
+#     WITHOUT an audit pair when it is absent. In this composition no tool
+#     currently produces `ask` (see below), so this is a PRESERVED-CAPABILITY
+#     consumer rather than a live caller: it is what keeps a future `ask`
+#     logged instead of silently denied.
+#     `ptc.ts` `peekApprover` (packages/core/tools/src/index.ts:927 ->
+#     packages/core/tools/src/ptc.ts:394) is the same seam on the `run_code`
+#     transport. `run_code` is NOT on this surface (measured), so it is likewise
+#     dormant-but-wired.
+#
+#   NOT ACTIVE in this composition, with the reason:
+#     `permission-presets` (static `inject = ['shell', 'approval', ...]`, :198) --
+#     disabled by DIFFERENCE 5. This is the ONLY hard injector of `approval` in
+#     the whole checkout, and it is the reason disabling the row is not free.
+#     `tool-fs` escalation (packages/fs/tool-fs/src/sandbox.ts:101) and
+#     `tool-pwsh`/`tool-bash` escalation (:233 / :225) -- all three gate on a
+#     mounted CONFINING backend, and after DIFFERENCES 3/4 `ctx.fs` and `ctx.shell`
+#     report no `sandboxMode`, so `sandbox_permissions` is not advertised at all.
+#     MEASURED: `escalationTools: []` on the composed surface
+#     (qualification/results/R1-trusted-local/composition-after.json).
+#     `tool-plugin-manager` (packages/boot/plugin-manager/src/tools.ts:38) --
+#     `disabled: true` in the daily preset.
+#     `hooks-claude-code` (`:241` is the only other producer of an `ask`) -- NOT
+#     mounted by any bundle patch or profile in this deployment.
+#
+#   CONCLUSION, stated plainly because V3 asks for a disposition rather than an
+#   inventory: `policy: never` IS the minimal truthful configuration for the
+#   consumers that remain, and the row is KEPT rather than removed.
+#     - The ONE hard injector is already disabled, so keeping the row adds no
+#       readiness edge that could go `pending`.
+#     - `never` is the honest value under trusted-local: the model already runs
+#       with the user's own OS authority, so an escalation prompt would ask
+#       permission for what it can already do. It also means every ask resolves
+#       `rejected` deterministically at `:268` BEFORE any answerer dispatch.
+#     - Removing the row would be strictly worse, not more minimal: the same asks
+#       would still be denied (ToolRuntime's absent-service branch) but WITHOUT
+#       the `approval/asked` + `approval/decided` pair, so the deployment would
+#       lose the audit record while gaining nothing. `policy` is the row's only
+#       key, so `never` is also the complete minimal configuration -- there is no
+#       second key to trim.
+#     - It is NOT represented anywhere as a security boundary: the trust model
+#       statement (compatibility.lock.json) names the OS user account as the
+#       execution authority boundary, and the row grants no confinement.
+#
 # NO `name` IS STATED, so the row is matched by id alone. `policy` is the ONLY
 # key the base row sets, so restating it is complete -- the whole-`config`
 # replacement rule of TRAP 4 is satisfied trivially here, and there is no second
