@@ -1,0 +1,19 @@
+=== every file in the provider carrying the module-scope `durableHomes` ===
+  [BUILT] D:/DSH/src/dsh-src/packages/attachment/attachment-local/lib/index.js
+      bytes=46886  occurrences=3  RESOLVED BY THE BOOT=true
+  [BUILT] D:/DSH/src/dsh-src/packages/attachment/attachment-local/lib/types/store.js
+      bytes=18015  occurrences=3  RESOLVED BY THE BOOT=false
+  [SOURCE] D:/DSH/src/dsh-src/packages/attachment/attachment-local/src/store.ts
+      bytes=19124  occurrences=3  RESOLVED BY THE BOOT=true
+
+=== every physical attachment-local file the boot resolved ===
+  file:///D:/DSH/src/dsh-src/packages/attachment/attachment-local/lib/index.js
+  file:///D:/DSH/src/dsh-src/packages/attachment/attachment-local/src/store.ts
+
+=== VERDICT ===
+  files in the provider carrying module-scope `durableHomes` : 3
+  of those, RESOLVED by this boot                             : 2
+      [BUILT] D:/DSH/src/dsh-src/packages/attachment/attachment-local/lib/index.js
+      [SOURCE] D:/DSH/src/dsh-src/packages/attachment/attachment-local/src/store.ts
+  any attachment-local/src/ file resolved                     : true
+  => the host holds 2 live instance(s) of that module-scope state
