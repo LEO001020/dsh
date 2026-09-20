@@ -1,0 +1,40 @@
+{
+  "scope": "S10_ID05_INJECTION_ARM",
+  "package": "dsh-daily-work",
+  "target_file": "packages/dsh-daily-work/src/authorization-path.test.ts",
+  "target_sha256_before": "0522f5469a910f80fd6a7d1d062e43481969e88e641d4fe2960968e2d483d753",
+  "injected_line_number": 61,
+  "injected_text": "const __s10InjectedTypeError: number = 's10-injected'",
+  "expected_error_code": "TS2322",
+  "arms": [
+    {
+      "config": "tsconfig.check.json",
+      "exit_code": 2,
+      "stdout": "src/authorization-path.test.ts(61,7): error TS2322: Type 'string' is not assignable to type 'number'.\n",
+      "stderr": ""
+    },
+    {
+      "config": "tsconfig.json",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    }
+  ],
+  "target_sha256_after": "0522f5469a910f80fd6a7d1d062e43481969e88e641d4fe2960968e2d483d753",
+  "restore_byte_exact": true,
+  "verdict": {
+    "check_config_caught_the_error": true,
+    "check_config_exit_code": 2,
+    "check_config_named_the_injected_line": true,
+    "build_config_missed_the_error": true,
+    "build_config_exit_code": 0,
+    "restore_byte_exact": true
+  },
+  "oracle_established": true
+}
+
+--- the injected line, from the CHECK config's diagnostics ---
+  src/authorization-path.test.ts(61,7): error TS2322: Type 'string' is not assignable to type 'number'.
+
+--- the BUILD config's diagnostics (the control arm) ---
+  exit 0; output EMPTY

@@ -24,10 +24,11 @@
  * Out:  JSON on stdout, and to $DSH_PROBE_OUT when that is set.
  */
 import { Context } from '@deepseek-ai/cordis'
+import { AttachmentId } from '@deepseek-ai/dsh-attachment'
 import Subprocess from '@deepseek-ai/dsh-subprocess-local'
 import SystemPrompt from '@deepseek-ai/dsh-system-prompt'
 import ToolRuntime, { defineTool } from '@deepseek-ai/dsh-tools'
-import { ToolCallId } from '@deepseek-ai/dsh-llm'
+import { ToolCallId, createUserMessage } from '@deepseek-ai/dsh-llm'
 import type { Agent } from '@deepseek-ai/dsh-agent'
 import { createHash } from 'node:crypto'
 import { readFileSync, writeFileSync } from 'node:fs'
@@ -219,7 +220,12 @@ async function main(): Promise<void> {
         {
           type: 'image',
           attachment: {
-            attachmentId: 'aaaaaaaa' as never,
+            // `attachmentId` is the BRANDED `AttachmentId`, not a plain string.
+            // `AttachmentId(...)` is the package's own compile-time brand
+            // constructor: same string, brand added, no validation. The previous
+            // `as never` suppressed `TS2322: Type 'string' is not assignable to
+            // type 'AttachmentId'`.
+            attachmentId: AttachmentId('aaaaaaaa'),
             mediaType: 'image/png',
             bytes: IMAGE_BYTES,
             width: 64,
@@ -230,10 +236,17 @@ async function main(): Promise<void> {
     },
     execute: async (_args, exec) => {
       bulkImageBytes += IMAGE_BYTES
-      exec.deferContext({
-        role: 'user',
+      // `deferContext` takes a real `UserMessage`, which needs the message `id`
+      // and `role` tags that `createUserMessage` stamps, plus a `source` naming
+      // the producer. Hand-building the object is what made the `as never`
+      // necessary; measured, removing that cast reports `TS2345: Argument of type
+      // '{ role: "user"; content: [...] }' is not assignable to parameter of type
+      // 'UserMessage'`. This is the same idiom the product uses
+      // (`packages/core/tools/src/ptc.ts:633`).
+      exec.deferContext(createUserMessage({
         content: [{ type: 'text', text: 'v4-notice: control context reached the enclosing call' }],
-      } as never)
+        source: { kind: 'plugin', plugin: 'v4-bridge-probe' },
+      }))
       exec.concludeTurn()
       return 'v4: notice + image returned'
     },

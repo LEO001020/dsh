@@ -1,0 +1,21 @@
+package: dsh-ipython
+non-test `as never` occurrences: 3
+
+baseline (nothing mutated): exit 0, 0 diagnostic(s)
+
+[1/3] v4-bridge-probe.ts:222 exit 2 (1 diag) restore_exact=True
+[2/3] v4-bridge-probe.ts:236 exit 2 (1 diag) restore_exact=True
+[3/3] v4-bridge-probe.ts:365 exit 0 (0 diag) restore_exact=True
+
+wrote qualification/results/S10-id05/08-removal-probe-dsh-ipython.json
+
+=== MASKED (removing the cast reveals a diagnostic) ===
+  packages/dsh-ipython/src/v4-bridge-probe.ts:222
+    source: attachmentId: 'aaaaaaaa' as never,
+    -> TS2322 (222,13): Type 'string' is not assignable to type 'AttachmentId'.
+  packages/dsh-ipython/src/v4-bridge-probe.ts:236
+    source: } as never)
+    -> TS2345 (233,25): Argument of type '{ role: "user"; content: { type: "text"; text: string; }[]; }' is not assignable to parameter of type 'UserMessage'.
+
+=== CLEAN REMOVAL (no diagnostic appears) ===
+  packages/dsh-ipython/src/v4-bridge-probe.ts:365  targetAfterTheCell: ctx.tools.get('v4_target' as never) === undefined ? 'UNREGISTERED' : 'STILL-PRESENT',

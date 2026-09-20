@@ -1,0 +1,42 @@
+D:\DSH\work\wt-s10\qualification\results\S10-id05\s10-as-never-scan.py:18: SyntaxWarning: "\s" is an invalid escape sequence. Such sequences will not work in the future. Did you mean "\\s"? A raw string is also an option.
+  The `as never` regex is `\bas\s+never\b` and it is applied to comment-stripped
+=== ID-05: the `as never` CAST, comment-stripped ===
+
+                         measured  D4 recorded   drift
+as_never_total                520          488     +32
+as_never_test                 509          478     +31
+as_never_non_test              11           10      +1
+
+=== by package ===
+  packages/dsh-daily-work
+    files 92 (39 production + 53 test)
+    casts 505 (497 test + 8 non-test)
+  packages/dsh-ipython
+    files 24 (13 production + 11 test)
+    casts 15 (12 test + 3 non-test)
+
+=== SHAPE histogram (the characterisation) ===
+  shape                test  non-test  total
+  plugin-arg            280         4    284
+  object-literal         82         2     84
+  call-argument          55         1     56
+  other                  44         0     44
+  object-property        23         3     26
+  config-arg             25         1     26
+
+=== EVERY non-test occurrence (examined exhaustively) ===
+  packages/dsh-daily-work/src/data-plane.ts
+      720  [object-property] attachmentId: input.attachmentId as never,
+  packages/dsh-daily-work/src/durability-runner.ts
+       37  [config-arg     ] await ctx.plugin(Storage, {} as never)
+       38  [plugin-arg     ] await ctx.plugin(storageJsonPlugin as never, { root } as never)
+       38  [plugin-arg     ] await ctx.plugin(storageJsonPlugin as never, { root } as never)
+       39  [plugin-arg     ] await ctx.plugin(storageDomainPlugin as never, { backend: 'json' } as never)
+       39  [plugin-arg     ] await ctx.plugin(storageDomainPlugin as never, { backend: 'json' } as never)
+       65  [object-literal ] root: { session: { header: { id: 'root-session' } } } as never,
+  packages/dsh-daily-work/src/v4-scope-probe.ts
+       75  [object-property] attachmentId: 'cafebabe' as never,
+  packages/dsh-ipython/src/v4-bridge-probe.ts
+      222  [object-property] attachmentId: 'aaaaaaaa' as never,
+      236  [object-literal ] } as never)
+      365  [call-argument  ] targetAfterTheCell: ctx.tools.get('v4_target' as never) === undefined ? 'UNREGISTERED' : 'STILL-PRESENT',

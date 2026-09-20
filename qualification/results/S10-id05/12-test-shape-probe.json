@@ -1,0 +1,212 @@
+{
+  "scope": "S10_ID05_TEST_SHAPE_PROBE",
+  "test_cast_count": 509,
+  "shape_histogram": {
+    "plugin-arg": 280,
+    "object-literal": 82,
+    "call-argument": 55,
+    "other": 44,
+    "config-arg": 25,
+    "object-property": 23
+  },
+  "probes": [
+    {
+      "shape": "plugin-arg",
+      "file": "packages/dsh-daily-work/src/authorization-path.test.ts",
+      "line": 144,
+      "text": "await ctx.plugin(storageJsonPlugin as never, { root: storeRoot } as never)",
+      "restore_byte_exact": true,
+      "exit_code": 0,
+      "diagnostic_count": 0,
+      "local_diagnostics": [],
+      "verdict": "REMOVABLE"
+    },
+    {
+      "shape": "plugin-arg",
+      "file": "packages/dsh-daily-work/src/authorization-path.test.ts",
+      "line": 144,
+      "text": "await ctx.plugin(storageJsonPlugin as never, { root: storeRoot } as never)",
+      "restore_byte_exact": true,
+      "exit_code": 2,
+      "diagnostic_count": 1,
+      "local_diagnostics": [
+        {
+          "file": "src/authorization-path.test.ts",
+          "line": 144,
+          "column": 48,
+          "code": "TS2345",
+          "message": "Argument of type '{ root: string; }' is not assignable to parameter of type 'never'."
+        }
+      ],
+      "verdict": "MASK"
+    },
+    {
+      "shape": "object-literal",
+      "file": "packages/dsh-daily-work/src/authorization-path.test.ts",
+      "line": 517,
+      "text": "await restarted.plugin(Storage, {} as never)",
+      "restore_byte_exact": true,
+      "exit_code": 2,
+      "diagnostic_count": 1,
+      "local_diagnostics": [
+        {
+          "file": "src/authorization-path.test.ts",
+          "line": 517,
+          "column": 37,
+          "code": "TS2345",
+          "message": "Argument of type '{}' is not assignable to parameter of type 'undefined'."
+        }
+      ],
+      "verdict": "MASK"
+    },
+    {
+      "shape": "object-literal",
+      "file": "packages/dsh-daily-work/src/authorization-path.test.ts",
+      "line": 518,
+      "text": "await restarted.plugin(storageJsonPlugin as never, { root: r.storeRoot } as never)",
+      "restore_byte_exact": true,
+      "exit_code": 0,
+      "diagnostic_count": 0,
+      "local_diagnostics": [],
+      "verdict": "REMOVABLE"
+    },
+    {
+      "shape": "call-argument",
+      "file": "packages/dsh-daily-work/src/control-plane.test.ts",
+      "line": 373,
+      "text": "expect((presetRealm.get('e02RootOnly' as never) as { tag: string } | undefined)?.tag).toBe('root')",
+      "restore_byte_exact": true,
+      "exit_code": 0,
+      "diagnostic_count": 0,
+      "local_diagnostics": [],
+      "verdict": "REMOVABLE"
+    },
+    {
+      "shape": "call-argument",
+      "file": "packages/dsh-daily-work/src/control-plane.test.ts",
+      "line": 378,
+      "text": "expect((ctx.get('e02RealmOwned' as never) as { tag: string } | undefined)?.tag).toBe('realm')",
+      "restore_byte_exact": true,
+      "exit_code": 0,
+      "diagnostic_count": 0,
+      "local_diagnostics": [],
+      "verdict": "REMOVABLE"
+    },
+    {
+      "shape": "other",
+      "file": "packages/dsh-daily-work/src/cost.test.ts",
+      "line": 166,
+      "text": "root: rootStub('session-root') as never,",
+      "restore_byte_exact": true,
+      "exit_code": 2,
+      "diagnostic_count": 1,
+      "local_diagnostics": [
+        {
+          "file": "src/cost.test.ts",
+          "line": 166,
+          "column": 7,
+          "code": "TS2740",
+          "message": "Type '{ session: { header: { id: string; }; }; }' is missing the following properties from type 'Agent': id, options, inbox, status, and 8 more."
+        }
+      ],
+      "verdict": "MASK"
+    },
+    {
+      "shape": "other",
+      "file": "packages/dsh-daily-work/src/cost.test.ts",
+      "line": 185,
+      "text": "root: rootStub('session-root') as never,",
+      "restore_byte_exact": true,
+      "exit_code": 2,
+      "diagnostic_count": 1,
+      "local_diagnostics": [
+        {
+          "file": "src/cost.test.ts",
+          "line": 185,
+          "column": 9,
+          "code": "TS2740",
+          "message": "Type '{ session: { header: { id: string; }; }; }' is missing the following properties from type 'Agent': id, options, inbox, status, and 8 more."
+        }
+      ],
+      "verdict": "MASK"
+    },
+    {
+      "shape": "config-arg",
+      "file": "packages/dsh-daily-work/src/capacity-v8-probe.test.ts",
+      "line": 152,
+      "text": "await ctx.plugin(Storage, {} as never)",
+      "restore_byte_exact": true,
+      "exit_code": 2,
+      "diagnostic_count": 1,
+      "local_diagnostics": [
+        {
+          "file": "src/capacity-v8-probe.test.ts",
+          "line": 152,
+          "column": 29,
+          "code": "TS2345",
+          "message": "Argument of type '{}' is not assignable to parameter of type 'undefined'."
+        }
+      ],
+      "verdict": "MASK"
+    },
+    {
+      "shape": "config-arg",
+      "file": "packages/dsh-daily-work/src/capacity.test.ts",
+      "line": 1138,
+      "text": "await ctx.plugin(Storage, {} as never)",
+      "restore_byte_exact": true,
+      "exit_code": 2,
+      "diagnostic_count": 1,
+      "local_diagnostics": [
+        {
+          "file": "src/capacity.test.ts",
+          "line": 1138,
+          "column": 31,
+          "code": "TS2345",
+          "message": "Argument of type '{}' is not assignable to parameter of type 'undefined'."
+        }
+      ],
+      "verdict": "MASK"
+    },
+    {
+      "shape": "object-property",
+      "file": "packages/dsh-daily-work/src/authorization-path.test.ts",
+      "line": 196,
+      "text": "callId: callId as never,",
+      "restore_byte_exact": true,
+      "exit_code": 2,
+      "diagnostic_count": 1,
+      "local_diagnostics": [
+        {
+          "file": "src/authorization-path.test.ts",
+          "line": 196,
+          "column": 5,
+          "code": "TS2322",
+          "message": "Type 'string' is not assignable to type 'ToolCallId'."
+        }
+      ],
+      "verdict": "MASK"
+    },
+    {
+      "shape": "object-property",
+      "file": "packages/dsh-daily-work/src/authorization-path.test.ts",
+      "line": 381,
+      "text": "callId: 'child-work' as never,",
+      "restore_byte_exact": true,
+      "exit_code": 2,
+      "diagnostic_count": 1,
+      "local_diagnostics": [
+        {
+          "file": "src/authorization-path.test.ts",
+          "line": 381,
+          "column": 7,
+          "code": "TS2322",
+          "message": "Type 'string' is not assignable to type 'ToolCallId'."
+        }
+      ],
+      "verdict": "MASK"
+    }
+  ],
+  "what_this_establishes": "Per SHAPE, whether removing the cast at ONE representative site is accepted by the checker.",
+  "what_this_does_not_establish": "Only 12 of 509 test casts were actually mutated and compiled. The remaining ones are CHARACTERISED by shape, not examined. Instances of one shape are not guaranteed to behave alike: a `ctx.plugin(x as never, cfg as never)` whose plugin declares a `Config` schema differs from one whose plugin declares none, and the operand types differ site to site. No claim is made that the count could be driven to zero without per-site review."
+}

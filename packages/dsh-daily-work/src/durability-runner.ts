@@ -34,9 +34,22 @@ const TASK_COUNT = 4
 /** Mount the real storage domain over `root` and return an open work service. */
 async function openService(root: string): Promise<{ ctx: Context; service: WorkService }> {
   const ctx = new Context()
-  await ctx.plugin(Storage, {} as never)
-  await ctx.plugin(storageJsonPlugin as never, { root } as never)
-  await ctx.plugin(storageDomainPlugin as never, { backend: 'json' } as never)
+  // NO CONFIG-POSITION `as never`. ID-05's clause (b) names this exact line as the
+  // idiom that MASKS a true diagnostic: with the cast, `ctx.plugin(Storage, {} as
+  // never)` compiles while the argument is rejected by the signature
+  // (`Argument of type '{}' is not assignable to parameter of type 'undefined'`).
+  // `Storage` is a service class with NO `Config` schema, so `Spread<never>` makes
+  // the config parameter absent -- the correct call OMITS it. Measured: with the
+  // cast removed and the argument omitted, this compiles clean.
+  await ctx.plugin(Storage)
+  // The cast on the PLUGIN argument is ID-05's clause (a): noise, because
+  // `GetPluginParameters` already infers `(ctx, config: Config)` from `apply`, so
+  // `ctx.plugin(storageJsonPlugin, { root })` type-checks the config against the
+  // plugin's OWN `Config` interface. Keeping the cast here would suppress that
+  // check -- the cast on the plugin is what made the config argument untypeable in
+  // the first place (`GetPluginConfig<never>` is `never`).
+  await ctx.plugin(storageJsonPlugin, { root })
+  await ctx.plugin(storageDomainPlugin, { backend: 'json' })
   const service = new WorkService(ctx, {
     targetChildren: 10,
     maxDepth: 1,
@@ -62,6 +75,21 @@ async function runChild(storeDir: string, reportPath: string): Promise<void> {
   const { service } = await openService(storeDir)
   await service.createRun({
     runId: RUN_ID,
+    // KNOWN MASK, DELIBERATELY NOT FIXED HERE -- see the S10 ID-05 findings.
+    //
+    // `createRun` takes a real `Agent`, and `Agent.session` is the `Session` CLASS,
+    // not a structural literal: it has 24 required members (`log`,
+    // `surfaceManager`, `surface`, `inheritedEventCount`, ...). The literal below
+    // is a fabricated header, so removing this cast is NOT a one-line fix -- it
+    // reports, measured:
+    //     TS2740: Type '{ id: SessionId; header: {...} }' is missing the
+    //             following properties from type 'Session': log, surfaceManager,
+    //             surface, inheritedEventCount, and 19 more.
+    // The honest fix is to mount the real AgentLoop in this rig and use
+    // `ctx.agentLoop.create(SessionId('root-session'), ...)` as the sibling rigs do
+    // (`concurrency.test.ts:151`). That is a topology change to a crash rig whose
+    // child is SIGKILLed mid-run, and it is outside ID-05's type-level scope. The
+    // cast is therefore LEFT IN PLACE and reported rather than silently widened.
     root: { session: { header: { id: 'root-session' } } } as never,
     authorizationRef: 'auth-durability',
     targetChildren: 10,

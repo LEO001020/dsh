@@ -1,0 +1,31 @@
+{
+  "scope": "S10_ID05_CAST_REMOVAL_PROBE",
+  "package": "dsh-ipython",
+  "baseline": {
+    "exit_code": 0,
+    "output": ""
+  },
+  "occurrence_count": 1,
+  "results": [
+    {
+      "file": "packages/dsh-ipython/src/v4-bridge-probe.ts",
+      "line": 378,
+      "column": 51,
+      "text": "targetAfterTheCell: ctx.tools.get('v4_target' as never) === undefined ? 'UNREGISTERED' : 'STILL-PRESENT',",
+      "restore_byte_exact": true,
+      "exit_code": 0,
+      "diagnostic_count": 0,
+      "local_diagnostics": [],
+      "distant_diagnostics": [],
+      "verdict": "REDUNDANT-OR-LEGITIMATE"
+    }
+  ],
+  "masks": [],
+  "clean_removals": [
+    {
+      "file": "packages/dsh-ipython/src/v4-bridge-probe.ts",
+      "line": 378,
+      "text": "targetAfterTheCell: ctx.tools.get('v4_target' as never) === undefined ? 'UNREGISTERED' : 'STILL-PRESENT',"
+    }
+  ]
+}

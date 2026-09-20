@@ -1,0 +1,26 @@
+=== the authoritative typecheck (F10 / ID-05) ===
+repo:       D:\DSH\work\wt-s10
+tsc:        D:\DSH\src\dsh-src\node_modules\typescript\bin\tsc
+tsc source: pinned checkout node_modules
+version:    Version 6.0.3
+config:     tsconfig.check.json in each package (extends tsconfig.json, clears ONLY the exclude)
+packages:   dsh-daily-work, dsh-ipython
+
+--- dsh-daily-work ---
+[ok  ] the resolved program covers 92 files (39 production + 53 test)
+[ok  ] typecheck exit 0 in 6273ms
+
+--- dsh-ipython ---
+[ok  ] the resolved program covers 24 files (13 production + 11 test)
+[ok  ] typecheck exit 0 in 1970ms
+
+--- escape-hatch gate (ID-05, non-test `as never`) ---
+[FAIL] non-test `as never` casts grew from 2 to 3. ID-05 forbids using a cast to make a gate pass: if the new cast is legitimate, add it to `justified` in qualification\results\S10-id05\as-never-baseline.json WITH the reason it is not a mask, and raise the baseline in the same commit so the justification is reviewed.
+         packages/dsh-daily-work/src/durability-runner.ts:93  root: { session: { header: { id: 'root-session' } } } as never,
+         packages/dsh-daily-work/src/v4-scope-probe.ts:82  attachmentId: 'cafebabe' as never,
+         packages/dsh-ipython/src/v4-bridge-probe.ts:378  targetAfterTheCell: ctx.tools.get('v4_target' as never) === undefined ? 'UNREGISTERED' : 'STILL-PRESENT',
+
+typecheck: FAIL -- 1 check(s) did not pass (compile, coverage, or escape hatch).
+This is the ONE official command. Do not cite `tsc -p tsconfig.json` as its
+equivalent: that config excludes src/**/*.test.ts and exits 0 with or without
+a test file present, which is the F10 / ID-05 false pass.

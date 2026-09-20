@@ -1,0 +1,46 @@
+test-file `as never` casts: 509
+
+SHAPE histogram (all of them; the probe covers the top shapes):
+  plugin-arg           280
+  object-literal        82
+  call-argument         55
+  other                 44
+  config-arg            25
+  object-property       23
+
+[plugin-arg] authorization-path.test.ts:144 exit 0 (0 diag) restore_exact=True
+[plugin-arg] authorization-path.test.ts:144 exit 2 (1 diag) restore_exact=True
+[object-literal] authorization-path.test.ts:517 exit 2 (1 diag) restore_exact=True
+[object-literal] authorization-path.test.ts:518 exit 0 (0 diag) restore_exact=True
+[call-argument] control-plane.test.ts:373 exit 0 (0 diag) restore_exact=True
+[call-argument] control-plane.test.ts:378 exit 0 (0 diag) restore_exact=True
+[other] cost.test.ts:166 exit 2 (1 diag) restore_exact=True
+[other] cost.test.ts:185 exit 2 (1 diag) restore_exact=True
+[config-arg] capacity-v8-probe.test.ts:152 exit 2 (1 diag) restore_exact=True
+[config-arg] capacity.test.ts:1138 exit 2 (1 diag) restore_exact=True
+[object-property] authorization-path.test.ts:196 exit 2 (1 diag) restore_exact=True
+[object-property] authorization-path.test.ts:381 exit 2 (1 diag) restore_exact=True
+
+wrote qualification/results/S10-id05/12-test-shape-probe.json
+
+=== per-shape result ===
+  [plugin-arg     ] REMOVABLE packages/dsh-daily-work/src/authorization-path.test.ts:144
+  [plugin-arg     ] MASK      packages/dsh-daily-work/src/authorization-path.test.ts:144
+      -> TS2345 (144,48): Argument of type '{ root: string; }' is not assignable to parameter of type 'never'.
+  [object-literal ] MASK      packages/dsh-daily-work/src/authorization-path.test.ts:517
+      -> TS2345 (517,37): Argument of type '{}' is not assignable to parameter of type 'undefined'.
+  [object-literal ] REMOVABLE packages/dsh-daily-work/src/authorization-path.test.ts:518
+  [call-argument  ] REMOVABLE packages/dsh-daily-work/src/control-plane.test.ts:373
+  [call-argument  ] REMOVABLE packages/dsh-daily-work/src/control-plane.test.ts:378
+  [other          ] MASK      packages/dsh-daily-work/src/cost.test.ts:166
+      -> TS2740 (166,7): Type '{ session: { header: { id: string; }; }; }' is missing the following properties from type 'Agent': id, options, inbox, statu
+  [other          ] MASK      packages/dsh-daily-work/src/cost.test.ts:185
+      -> TS2740 (185,9): Type '{ session: { header: { id: string; }; }; }' is missing the following properties from type 'Agent': id, options, inbox, statu
+  [config-arg     ] MASK      packages/dsh-daily-work/src/capacity-v8-probe.test.ts:152
+      -> TS2345 (152,29): Argument of type '{}' is not assignable to parameter of type 'undefined'.
+  [config-arg     ] MASK      packages/dsh-daily-work/src/capacity.test.ts:1138
+      -> TS2345 (1138,31): Argument of type '{}' is not assignable to parameter of type 'undefined'.
+  [object-property] MASK      packages/dsh-daily-work/src/authorization-path.test.ts:196
+      -> TS2322 (196,5): Type 'string' is not assignable to type 'ToolCallId'.
+  [object-property] MASK      packages/dsh-daily-work/src/authorization-path.test.ts:381
+      -> TS2322 (381,7): Type 'string' is not assignable to type 'ToolCallId'.

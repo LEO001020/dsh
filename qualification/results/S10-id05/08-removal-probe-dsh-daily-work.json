@@ -1,0 +1,49 @@
+{
+  "scope": "S10_ID05_CAST_REMOVAL_PROBE",
+  "package": "dsh-daily-work",
+  "baseline": {
+    "exit_code": 0,
+    "output": ""
+  },
+  "occurrence_count": 1,
+  "results": [
+    {
+      "file": "packages/dsh-daily-work/src/durability-runner.ts",
+      "line": 93,
+      "column": 59,
+      "text": "root: { session: { header: { id: 'root-session' } } } as never,",
+      "restore_byte_exact": true,
+      "exit_code": 2,
+      "diagnostic_count": 1,
+      "local_diagnostics": [
+        {
+          "file": "src/durability-runner.ts",
+          "line": 93,
+          "column": 34,
+          "code": "TS2322",
+          "message": "Type 'string' is not assignable to type 'SessionId'."
+        }
+      ],
+      "distant_diagnostics": [],
+      "verdict": "MASK"
+    }
+  ],
+  "masks": [
+    {
+      "file": "packages/dsh-daily-work/src/durability-runner.ts",
+      "line": 93,
+      "text": "root: { session: { header: { id: 'root-session' } } } as never,",
+      "exit_code": 2,
+      "local_diagnostics": [
+        {
+          "file": "src/durability-runner.ts",
+          "line": 93,
+          "column": 34,
+          "code": "TS2322",
+          "message": "Type 'string' is not assignable to type 'SessionId'."
+        }
+      ]
+    }
+  ],
+  "clean_removals": []
+}
