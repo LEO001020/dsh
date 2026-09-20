@@ -5,38 +5,38 @@
     "recorded": "import json as _json, IPython as _ipython\n_h = _ipython.get_ipython().history_manager\nprint(\"RECORDED=\" + _json.dumps(_h.input_hist_raw[-1]))\nprint(\"PARSED=\" + _json.dumps(_h.input_hist_parsed[-1]))",
     "recordedSha256": "f83a15f96c5e230b21e13ef46171491273c9edc5ff7d1e249cfa73a321512ef2",
     "outcome": "ok",
-    "rawText": "outcome: ok\nkernel epoch: 1\n--- stdout ---\nRECORDED=\"import json as _json, IPython as _ipython\\n_h = _ipython.get_ipython().history_manager\\nprint(\\\"RECORDED=\\\" + _json.dumps(_h.input_hist_raw[-1]))\\nprint(\\\"PARSED=\\\" + _json.dumps(_h.input_hist_parsed[-1]))\"\nPARSED=\"import json as _json, IPython as _ipython\\n_h = _ipython.get_ipython().history_manager\\nprint(\\\"RECORDED=\\\" + _json.dumps(_h.input_hist_raw[-1]))\\nprint(\\\"PARSED=\\\" + _json.dumps(_h.input_hist_parsed[-1]))\"\n\n[1 shell frame(s) for other requests were ignored while waiting for this cell. They did not complete it.]"
+    "rawText": "outcome: ok\nkernel epoch: 1\n--- stdout ---\nRECORDED=\"import json as _json, IPython as _ipython\\n_h = _ipython.get_ipython().history_manager\\nprint(\\\"RECORDED=\\\" + _json.dumps(_h.input_hist_raw[-1]))\\nprint(\\\"PARSED=\\\" + _json.dumps(_h.input_hist_parsed[-1]))\"\nPARSED=\"import json as _json, IPython as _ipython\\n_h = _ipython.get_ipython().history_manager\\nprint(\\\"RECORDED=\\\" + _json.dumps(_h.input_hist_raw[-1]))\\nprint(\\\"PARSED=\\\" + _json.dumps(_h.input_hist_parsed[-1]))\"\n"
   },
   "tracebackLine": {
     "submitted": "x = 1\ny = 2\nraise ValueError(\"boom\")",
     "outcome": "error",
     "reportedLine": 3,
-    "text": "outcome: error\nkernel epoch: 1\n--- stderr ---\n\u001b[31m---------------------------------------------------------------------------\u001b[39m\n\u001b[31mValueError\u001b[39m                                Traceback (most recent call last)\n\u001b[36mCell\u001b[39m\u001b[36m \u001b[39m\u001b[32mIn[2]\u001b[39m\u001b[32m, line 3\u001b[39m\n\u001b[32m      1\u001b[39m x = \u001b[32m1\u001b[39m\n\u001b[32m      2\u001b[39m y = \u001b[32m2\u001b[39m\n\u001b[32m----> \u001b[39m\u001b[32m3\u001b[39m \u001b[38;5;28;01mraise\u001b[39;00m ValueError(\u001b[33m\"boom\"\u001b[39m)\n\n\u001b[31mValueError\u001b[39m: boom\n\n--- error: ValueError: boom ---\n\u001b[31m---------------------------------------------------------------------------\u001b[39m\n\u001b[31mValueError\u001b[39m                                Traceback (most recent call last)\n\u001b[36mCell\u001b[39m\u001b[36m \u001b[39m\u001b[32mIn[2]\u001b[39m\u001b[32m, line 3\u001b[39m\n\u001b[32m      1\u001b[39m x = \u001b[32m1\u001b[39m\n\u001b[32m      2\u001b[39m y = \u001b[32m2\u001b[39m\n\u001b[32m----> \u001b[39m\u001b[32m3\u001b[39m \u001b[38;5;28;01mraise\u001b[39;00m ValueError(\u001b[33m\"boom\"\u001b[39m)\n\n\u001b[31mValueError\u001b[39m: boom\n[1 shell frame(s) for other requests were ignored while waiting for this cell. They did not complete it.]"
+    "text": "outcome: error\nkernel epoch: 1\n--- stderr ---\n\u001b[31m---------------------------------------------------------------------------\u001b[39m\n\u001b[31mValueError\u001b[39m                                Traceback (most recent call last)\n\u001b[36mCell\u001b[39m\u001b[36m \u001b[39m\u001b[32mIn[2]\u001b[39m\u001b[32m, line 3\u001b[39m\n\u001b[32m      1\u001b[39m x = \u001b[32m1\u001b[39m\n\u001b[32m      2\u001b[39m y = \u001b[32m2\u001b[39m\n\u001b[32m----> \u001b[39m\u001b[32m3\u001b[39m \u001b[38;5;28;01mraise\u001b[39;00m ValueError(\u001b[33m\"boom\"\u001b[39m)\n\n\u001b[31mValueError\u001b[39m: boom\n\n--- error: ValueError: boom ---\n\u001b[31m---------------------------------------------------------------------------\u001b[39m\n\u001b[31mValueError\u001b[39m                                Traceback (most recent call last)\n\u001b[36mCell\u001b[39m\u001b[36m \u001b[39m\u001b[32mIn[2]\u001b[39m\u001b[32m, line 3\u001b[39m\n\u001b[32m      1\u001b[39m x = \u001b[32m1\u001b[39m\n\u001b[32m      2\u001b[39m y = \u001b[32m2\u001b[39m\n\u001b[32m----> \u001b[39m\u001b[32m3\u001b[39m \u001b[38;5;28;01mraise\u001b[39;00m ValueError(\u001b[33m\"boom\"\u001b[39m)\n\n\u001b[31mValueError\u001b[39m: boom"
   },
   "syntaxErrorLine": {
     "submitted": "a = 1\nb = 2\ndef broken(:",
     "outcome": "error",
     "reportedLine": 3,
-    "text": "outcome: error\nkernel epoch: 1\n--- stderr ---\n  \u001b[36mCell\u001b[39m\u001b[36m \u001b[39m\u001b[32mIn[3]\u001b[39m\u001b[32m, line 3\u001b[39m\n\u001b[31m    \u001b[39m\u001b[31mdef broken(:\u001b[39m\n               ^\n\u001b[31mSyntaxError\u001b[39m\u001b[31m:\u001b[39m invalid syntax\n\n\n--- error: SyntaxError: invalid syntax (765048263.py, line 3) ---\n  \u001b[36mCell\u001b[39m\u001b[36m \u001b[39m\u001b[32mIn[3]\u001b[39m\u001b[32m, line 3\u001b[39m\n\u001b[31m    \u001b[39m\u001b[31mdef broken(:\u001b[39m\n               ^\n\u001b[31mSyntaxError\u001b[39m\u001b[31m:\u001b[39m invalid syntax\n\n[1 shell frame(s) for other requests were ignored while waiting for this cell. They did not complete it.]"
+    "text": "outcome: error\nkernel epoch: 1\n--- stderr ---\n  \u001b[36mCell\u001b[39m\u001b[36m \u001b[39m\u001b[32mIn[3]\u001b[39m\u001b[32m, line 3\u001b[39m\n\u001b[31m    \u001b[39m\u001b[31mdef broken(:\u001b[39m\n               ^\n\u001b[31mSyntaxError\u001b[39m\u001b[31m:\u001b[39m invalid syntax\n\n\n--- error: SyntaxError: invalid syntax (765048263.py, line 3) ---\n  \u001b[36mCell\u001b[39m\u001b[36m \u001b[39m\u001b[32mIn[3]\u001b[39m\u001b[32m, line 3\u001b[39m\n\u001b[31m    \u001b[39m\u001b[31mdef broken(:\u001b[39m\n               ^\n\u001b[31mSyntaxError\u001b[39m\u001b[31m:\u001b[39m invalid syntax\n"
   },
   "cellMagic": {
-    "submitted": "%%capture cap\nimport json as _json\nreport = {\"dsh_in_dir\": \"dsh\" in dir()}\ntry:\n    import dsh as _dsh\n    report['import'] = 'OK'\nexcept Exception as exc:\n    report['import'] = type(exc).__name__\nif report[\"dsh_in_dir\"]:\n    report[\"bound_lease\"] = getattr(getattr(dsh, \"_channel\", None), \"_lease\", None)\n    try:\n        report['call'] = 'SERVED:' + str(dsh.call_sync('p8_echo', {'tag': 'from-the-magic-cell'})['tag'])\n    except Exception as exc:\n        report['call'] = getattr(exc, 'code', type(exc).__name__)\nelse:\n    report['call'] = 'NO_DSH'\nwith open(\"C:/Users/hzq00/AppData/Local/Temp/p8-bind-probe-7mlpPQ/magic-report.json\", 'w', encoding='utf-8') as _h:\n    _json.dump(report, _h, sort_keys=True)",
+    "submitted": "%%capture cap\nimport json as _json\nreport = {\"dsh_in_dir\": \"dsh\" in dir()}\ntry:\n    import dsh as _dsh\n    report['import'] = 'OK'\nexcept Exception as exc:\n    report['import'] = type(exc).__name__\nif report[\"dsh_in_dir\"]:\n    report[\"bound_lease\"] = getattr(getattr(dsh, \"_channel\", None), \"_lease\", None)\n    try:\n        report['call'] = 'SERVED:' + str(dsh.call_sync('p8_echo', {'tag': 'from-the-magic-cell'})['tag'])\n    except Exception as exc:\n        report['call'] = getattr(exc, 'code', type(exc).__name__)\nelse:\n    report['call'] = 'NO_DSH'\nwith open(\"C:/Users/hzq00/AppData/Local/Temp/p8-bind-probe-v7GaUT/magic-report.json\", 'w', encoding='utf-8') as _h:\n    _json.dump(report, _h, sort_keys=True)",
     "outcome": "ok",
-    "text": "outcome: ok\nkernel epoch: 1\n[1 shell frame(s) for other requests were ignored while waiting for this cell. They did not complete it.]",
+    "text": "outcome: ok\nkernel epoch: 1",
     "insideMagic": {
-      "bound_lease": "91e86301-794e-4bbb-b429-dd186e064ce4",
+      "bound_lease": "9e4bfc9c-314e-43fb-b2ce-03b4cadcac90",
       "call": "SERVED:from-the-magic-cell",
       "dsh_in_dir": true,
       "import": "OK"
     },
-    "insideMagicRaw": "outcome: ok\nkernel epoch: 1\n--- stdout ---\nMAGIC_CELL={\"bound_lease\": \"91e86301-794e-4bbb-b429-dd186e064ce4\", \"call\": \"SERVED:from-the-magic-cell\", \"dsh_in_dir\": true, \"import\": \"OK\"}\n\n[1 shell frame(s) for other requests were ignored while waiting for this cell. They did not complete it.]"
+    "insideMagicRaw": "outcome: ok\nkernel epoch: 1\n--- stdout ---\nMAGIC_CELL={\"bound_lease\": \"9e4bfc9c-314e-43fb-b2ce-03b4cadcac90\", \"call\": \"SERVED:from-the-magic-cell\", \"dsh_in_dir\": true, \"import\": \"OK\"}\n"
   },
   "staleAfterMagic": {
     "cellA": {
       "outcome": "ok",
-      "text": "outcome: ok\nkernel epoch: 1\n--- stdout ---\nA_OK=True\n\n[1 shell frame(s) for other requests were ignored while waiting for this cell. They did not complete it.]"
+      "text": "outcome: ok\nkernel epoch: 1\n--- stdout ---\nA_OK=True\n"
     },
-    "text": "outcome: ok\nkernel epoch: 1\n--- stdout ---\nSTALE={\"call\": \"SERVED\", \"dsh_in_dir\": true}\n\n[1 shell frame(s) for other requests were ignored while waiting for this cell. They did not complete it.]",
+    "text": "outcome: ok\nkernel epoch: 1\n--- stdout ---\nSTALE={\"call\": \"SERVED\", \"dsh_in_dir\": true}\n",
     "parsed": {
       "call": "SERVED",
       "dsh_in_dir": true
@@ -45,15 +45,15 @@
   },
   "who": {
     "outcome": "ok",
-    "text": "outcome: ok\nkernel epoch: 1\n--- stdout ---\ncap\t dsh\t held\t p\t report\t x\t y\t \n\n[1 shell frame(s) for other requests were ignored while waiting for this cell. They did not complete it.]"
+    "text": "outcome: ok\nkernel epoch: 1\n--- stdout ---\ncap\t dsh\t held\t p\t report\t x\t y\t \n"
   },
   "topLevelAwait": {
     "outcome": "ok",
-    "text": "outcome: ok\nkernel epoch: 1\n--- stdout ---\nAWAIT=7\n\n[1 shell frame(s) for other requests were ignored while waiting for this cell. They did not complete it.]"
+    "text": "outcome: ok\nkernel epoch: 1\n--- stdout ---\nAWAIT=7\n"
   },
   "leasePerCell": {
-    "first": "1d449795-baf1-4776-b01c-0378fbc7bdba",
-    "second": "d6b8570e-3ea8-462a-b2c0-2d5615e94975",
+    "first": "86b53448-4e2e-4c71-ada5-5f8004edc07b",
+    "second": "25bd20c1-49f2-40e4-bd5f-6b4459ea10da",
     "differs": true
   },
   "authorityLess": {
@@ -69,6 +69,6 @@
   "identity": {
     "python": "C:/Users/hzq00/AppData/Local/Programs/Python/Python314/python.exe",
     "node": "v24.18.0",
-    "serviceRoot": "C:\\Users\\hzq00\\AppData\\Local\\Temp\\p8-bind-probe-7mlpPQ"
+    "serviceRoot": "C:\\Users\\hzq00\\AppData\\Local\\Temp\\p8-bind-probe-v7GaUT"
   }
 }
