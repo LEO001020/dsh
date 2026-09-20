@@ -1,0 +1,2 @@
+
+[P11] old digest across a REAL broker.py content change: 0526e28116906fcc -> 0526e28116906fcc (moved=false); file hash did move: true; file restored byte-identical: true

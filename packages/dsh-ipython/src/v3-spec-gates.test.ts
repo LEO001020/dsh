@@ -149,13 +149,21 @@ describe('IPY-01: a real IPython shell, not a CPython imitation', () => {
     expect(result.outcome).toBe('ok')
 
     const stdout = result.stdout.text
+    const identity = await s.status(agent)
     console.log('[V3-MEASURED] IPY-01 ' + JSON.stringify({
       outcome: result.outcome,
       shellModule: /SHELL_MODULE=(.*)/.exec(stdout)?.[1] ?? null,
       shellClass: /SHELL_CLASS=(.*)/.exec(stdout)?.[1] ?? null,
       isZmqShell: /IS_ZMQ_SHELL=(.*)/.exec(stdout)?.[1] ?? null,
       magicOutputContainsMarker: stdout.includes('ipy01_marker'),
-      ipythonVersion: (await s.status(agent))?.ipythonVersion ?? null,
+      // V5 11.2's names. `kernelImplementationVersion` is the IPYTHON version and
+      // `languageVersion` is the PYTHON version; the field this replaced was
+      // called `ipythonVersion` and carried the latter.
+      kernelImplementation: identity?.kernelImplementation ?? null,
+      kernelImplementationVersion: identity?.kernelImplementationVersion ?? null,
+      languageName: identity?.languageName ?? null,
+      languageVersion: identity?.languageVersion ?? null,
+      protocolVersion: identity?.protocolVersion ?? null,
     }))
 
     // (1) `get_ipython()` returns a REAL IPython shell object. The class name is

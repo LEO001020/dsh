@@ -1,0 +1,74 @@
+{
+  "what": "P1.4 BEFORE reproduction: the pre-fix environment digest, frozen at HEAD 2e1b2c2",
+  "tree": "D:\\DSH\\work\\wt-p11",
+  "frozenExpression": "sha256(pythonExecutable + \"\\u0000\" + process.platform + \"\\u0000\" + process.arch).slice(0,16)",
+  "digestChars": 16,
+  "digestBits": 64,
+  "platform": "win32",
+  "arch": "x64",
+  "pythonExecutable": "C:/Users/hzq00/AppData/Local/Programs/Python/Python314/python.exe",
+  "baselineDigest": "0526e28116906fcc",
+  "arms": [
+    {
+      "name": "python patch version 3.14.0 -> 3.14.1 at the SAME path",
+      "changes": "python_version",
+      "oldDigestMoves": false
+    },
+    {
+      "name": "IPython 9.x -> 10.x at the SAME path",
+      "changes": "ipython",
+      "oldDigestMoves": false
+    },
+    {
+      "name": "ipykernel upgraded at the SAME path",
+      "changes": "ipykernel",
+      "oldDigestMoves": false
+    },
+    {
+      "name": "jupyter_client upgraded at the SAME path",
+      "changes": "jupyter_client",
+      "oldDigestMoves": false
+    },
+    {
+      "name": "pyzmq upgraded at the SAME path",
+      "changes": "pyzmq",
+      "oldDigestMoves": false
+    },
+    {
+      "name": "broker.py CONTENT changed at the same path (the file that is executed)",
+      "changes": "broker_sha256",
+      "oldDigestMoves": false
+    },
+    {
+      "name": "the bridge Python client source changed (PYTHON_CLIENT_SOURCE)",
+      "changes": "bridge_python_client_sha256",
+      "oldDigestMoves": false
+    },
+    {
+      "name": "the dsh.data Python client changed (dsh_data_client.py)",
+      "changes": "data_client_sha256",
+      "oldDigestMoves": false
+    },
+    {
+      "name": "the interpreter MOVED to a different path, same build",
+      "changes": "sys_executable_realpath",
+      "oldDigestMoves": true
+    }
+  ],
+  "localFilesPresent": {
+    "broker_py": true,
+    "bridge_ts": true,
+    "data_client_py": true
+  },
+  "localFileMutation": {
+    "file": "D:\\DSH\\work\\wt-p11\\packages\\dsh-ipython\\src\\broker.py",
+    "sha256Before": "6443868b1fdee5b4970691d1a7b4f76f0ec3a0a55e94fba2982583962acb1328",
+    "sha256Mutated": "7df59fe4b3a31dc800e73f23b118d5360cc4fcda6c239214b0063e3d126a4dc7",
+    "sha256Restored": "6443868b1fdee5b4970691d1a7b4f76f0ec3a0a55e94fba2982583962acb1328",
+    "mutationVisibleInFileHash": true,
+    "restoredByteIdentical": true,
+    "oldDigestBefore": "0526e28116906fcc",
+    "oldDigestAfter": "0526e28116906fcc",
+    "oldDigestMoved": false
+  }
+}
