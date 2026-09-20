@@ -1,0 +1,102 @@
+{
+  "schema_version": 1,
+  "kind": "P14_ID_FRESH_NEGATIVE_CONTROLS_NOT_A_DSH_ARTIFACT",
+  "_what_this_is": [
+    "The negative controls for V5 section 18's ID-FRESH case. Each case mutates a",
+    "manifest IN MEMORY, RECOMPUTES the identity over the mutated build with the",
+    "generator's own algorithm, and records whether the comparison rejects it.",
+    "",
+    "Two arms are load-bearing in opposite directions: POSITIVE and QUALIFIER must",
+    "be GREEN (a gate that fires on everything is not a gate, and one that fires on",
+    "a concurrent writer's untracked file would be ignored within a day), while the",
+    "rest must be RED."
+  ],
+  "manifest_under_test": "D:/DSH/work/wt-p14/qualification/results/trusted-local-v3.a091cb594902/build-manifest.json",
+  "manifest_commit": "c061e09dc09fa11c6b90fa7e026f54e3cf60e399",
+  "runtime_identity_under_test": "c969808e7633162526b3a93d7ea398ce2e63b0e9a10fac13e3f42fad257d65de",
+  "ran_at": "2026-09-20T21:16:21.777955",
+  "cases": [
+    {
+      "case": "POSITIVE",
+      "what": "the manifest against itself",
+      "expected_exit": 0,
+      "observed_exit": 0,
+      "must_mention": null,
+      "mentioned": true,
+      "ok": true,
+      "output_tail": "{\n  \"id_fresh\": {\n    \"problems\": [],\n    \"notes\": [\n      \"the RuntimeDeploymentIdentity is IDENTICAL: the two manifests describe the same build.\",\n      \"The QualificationContractIdentity is also identical: nothing moved.\"\n    ],\n    \"detail\": {\n      \"old_runtime_identity\": \"c969808e7633162526b3a93d7ea398ce2e63b0e9a10fac13e3f42fad257d65de\",\n      \"new_runtime_identity\": \"c969808e7633162526b3a93d7ea398ce2e63b0e9a10fac13e3f42fad257d65de\",\n      \"old_contract_identity\": \"a091cb5949029fa709e67aa2cfa5767e3346e5150f055636800fab626f10f442\",\n      \"new_contract_identity\": \"a091cb5949029fa709e67aa2cfa5767e3346e5150f055636800fab626f10f442\",\n      \"runtime_moved\": false,\n      \"contract_moved\": false,\n      \"old_commit\": \"c061e09dc09fa11c6b90fa7e026f54e3cf60e399\",\n      \"new_commit\": \"c061e09dc09fa11c6b90fa7e026f54e3cf60e399\"\n    }\n  }\n}\n\nID-FRESH: the two manifests describe the same runtime deployment."
+    },
+    {
+      "case": "QUALIFIER",
+      "what": "only the dirty path count moved (a qualifier, not hashed)",
+      "expected_exit": 0,
+      "observed_exit": 0,
+      "must_mention": null,
+      "mentioned": true,
+      "ok": true,
+      "output_tail": "{\n  \"id_fresh\": {\n    \"problems\": [],\n    \"notes\": [\n      \"the RuntimeDeploymentIdentity is IDENTICAL: the two manifests describe the same build.\",\n      \"The QualificationContractIdentity is also identical: nothing moved.\"\n    ],\n    \"detail\": {\n      \"old_runtime_identity\": \"c969808e7633162526b3a93d7ea398ce2e63b0e9a10fac13e3f42fad257d65de\",\n      \"new_runtime_identity\": \"c969808e7633162526b3a93d7ea398ce2e63b0e9a10fac13e3f42fad257d65de\",\n      \"old_contract_identity\": \"a091cb5949029fa709e67aa2cfa5767e3346e5150f055636800fab626f10f442\",\n      \"new_contract_identity\": \"a091cb5949029fa709e67aa2cfa5767e3346e5150f055636800fab626f10f442\",\n      \"runtime_moved\": false,\n      \"contract_moved\": false,\n      \"old_commit\": \"c061e09dc09fa11c6b90fa7e026f54e3cf60e399\",\n      \"new_commit\": \"c061e09dc09fa11c6b90fa7e026f54e3cf60e399\"\n    }\n  }\n}\n\nID-FRESH: the two manifests describe the same runtime deployment."
+    },
+    {
+      "case": "COMMIT",
+      "what": "only the commit and tree moved",
+      "expected_exit": 1,
+      "observed_exit": 1,
+      "must_mention": "COMMIT MOVED ONLY",
+      "mentioned": true,
+      "ok": true,
+      "output_tail": "tail\": {\n      \"old_runtime_identity\": \"c969808e7633162526b3a93d7ea398ce2e63b0e9a10fac13e3f42fad257d65de\",\n      \"new_runtime_identity\": \"fbeb6483b3fa421b7f6a2a6301c7b59e511473eeaef311284d197921b25e7890\",\n      \"old_contract_identity\": \"a091cb5949029fa709e67aa2cfa5767e3346e5150f055636800fab626f10f442\",\n      \"new_contract_identity\": \"7656f08707fb0d3c33ca875117edb553c522b36c5f5856d49dbbe3c5de3ea488\",\n      \"runtime_moved\": true,\n      \"contract_moved\": true,\n      \"old_commit\": \"c061e09dc09fa11c6b90fa7e026f54e3cf60e399\",\n      \"new_commit\": \"0000000000000000000000000000000000000000\",\n      \"changed_build_fields\": [\n        \"project_git_commit\",\n        \"project_git_tree\"\n      ],\n      \"changed_artifact_fields\": [],\n      \"commit_moved_only\": true,\n      \"why\": \"STALE, COMMIT MOVED ONLY: the implementation revision changed and every other runtime input is byte-identical, so the deployment is materially the same and the previous measurements still describe it. This is the expected state at a writer's tip. RE-DERIVE the identity (cheap); RE-MEASURE only if an artifact field appears in changed_artifact_fields.\"\n    }\n  }\n}\n\nID-FRESH: 1 problem(s) -- the old identity must NOT be reused."
+    },
+    {
+      "case": "GRAPH",
+      "what": "one extension row's realpath moved to a sibling worktree",
+      "expected_exit": 1,
+      "observed_exit": 1,
+      "must_mention": "resolved_plugin_graph",
+      "mentioned": true,
+      "ok": true,
+      "output_tail": "D: runtime inputs other than the commit changed, so the measurements no longer describe this build. RE-MEASURE. Changed: resolved_plugin_graph\"\n    ],\n    \"notes\": [],\n    \"detail\": {\n      \"old_runtime_identity\": \"c969808e7633162526b3a93d7ea398ce2e63b0e9a10fac13e3f42fad257d65de\",\n      \"new_runtime_identity\": \"025b93591aba08f5c803ca2197790d1bd696fa96b802ede6882f0e9c3d1b7968\",\n      \"old_contract_identity\": \"a091cb5949029fa709e67aa2cfa5767e3346e5150f055636800fab626f10f442\",\n      \"new_contract_identity\": \"3c2e46058723adc535488e8e10556cdf4da5110deca9fee21dc1116bbd3d11a1\",\n      \"runtime_moved\": true,\n      \"contract_moved\": true,\n      \"old_commit\": \"c061e09dc09fa11c6b90fa7e026f54e3cf60e399\",\n      \"new_commit\": \"c061e09dc09fa11c6b90fa7e026f54e3cf60e399\",\n      \"changed_build_fields\": [\n        \"resolved_plugin_graph\"\n      ],\n      \"changed_artifact_fields\": [\n        \"resolved_plugin_graph\"\n      ],\n      \"commit_moved_only\": false,\n      \"why\": \"STALE, RUNTIME MOVED: runtime inputs other than the commit changed, so the measurements no longer describe this build. RE-MEASURE. Changed: resolved_plugin_graph\"\n    }\n  }\n}\n\nID-FRESH: 1 problem(s) -- the old identity must NOT be reused."
+    },
+    {
+      "case": "CATALOG",
+      "what": "one tool removed from the model catalog",
+      "expected_exit": 1,
+      "observed_exit": 1,
+      "must_mention": "model_tool_catalog",
+      "mentioned": true,
+      "ok": true,
+      "output_tail": "RUNTIME MOVED: runtime inputs other than the commit changed, so the measurements no longer describe this build. RE-MEASURE. Changed: model_tool_catalog\"\n    ],\n    \"notes\": [],\n    \"detail\": {\n      \"old_runtime_identity\": \"c969808e7633162526b3a93d7ea398ce2e63b0e9a10fac13e3f42fad257d65de\",\n      \"new_runtime_identity\": \"a4b7835389ad2d07ead59048c635bac83c31e80e1a4f4f768e5834debe6db240\",\n      \"old_contract_identity\": \"a091cb5949029fa709e67aa2cfa5767e3346e5150f055636800fab626f10f442\",\n      \"new_contract_identity\": \"960c33e5eacaf2926d5f134eb93856a01b8f426fb6fa81679e87ad045dc330ff\",\n      \"runtime_moved\": true,\n      \"contract_moved\": true,\n      \"old_commit\": \"c061e09dc09fa11c6b90fa7e026f54e3cf60e399\",\n      \"new_commit\": \"c061e09dc09fa11c6b90fa7e026f54e3cf60e399\",\n      \"changed_build_fields\": [\n        \"model_tool_catalog\"\n      ],\n      \"changed_artifact_fields\": [\n        \"model_tool_catalog\"\n      ],\n      \"commit_moved_only\": false,\n      \"why\": \"STALE, RUNTIME MOVED: runtime inputs other than the commit changed, so the measurements no longer describe this build. RE-MEASURE. Changed: model_tool_catalog\"\n    }\n  }\n}\n\nID-FRESH: 1 problem(s) -- the old identity must NOT be reused."
+    },
+    {
+      "case": "PROFILE",
+      "what": "the profile digest changed",
+      "expected_exit": 1,
+      "observed_exit": 1,
+      "must_mention": "profile",
+      "mentioned": true,
+      "ok": true,
+      "output_tail": " bound to the old identity is stale. STALE, RUNTIME MOVED: runtime inputs other than the commit changed, so the measurements no longer describe this build. RE-MEASURE. Changed: profile\"\n    ],\n    \"notes\": [],\n    \"detail\": {\n      \"old_runtime_identity\": \"c969808e7633162526b3a93d7ea398ce2e63b0e9a10fac13e3f42fad257d65de\",\n      \"new_runtime_identity\": \"ba62ebfe47c1bc7da3beef2f6c6bdae3b9de6cdf1625481c78b08c25eadec0fb\",\n      \"old_contract_identity\": \"a091cb5949029fa709e67aa2cfa5767e3346e5150f055636800fab626f10f442\",\n      \"new_contract_identity\": \"8563895770cb9eea107c9a77ec02670c81302fb5edbd6eb53a4e33144e08d8d7\",\n      \"runtime_moved\": true,\n      \"contract_moved\": true,\n      \"old_commit\": \"c061e09dc09fa11c6b90fa7e026f54e3cf60e399\",\n      \"new_commit\": \"c061e09dc09fa11c6b90fa7e026f54e3cf60e399\",\n      \"changed_build_fields\": [\n        \"profile\"\n      ],\n      \"changed_artifact_fields\": [\n        \"profile\"\n      ],\n      \"commit_moved_only\": false,\n      \"why\": \"STALE, RUNTIME MOVED: runtime inputs other than the commit changed, so the measurements no longer describe this build. RE-MEASURE. Changed: profile\"\n    }\n  }\n}\n\nID-FRESH: 1 problem(s) -- the old identity must NOT be reused."
+    },
+    {
+      "case": "CONTRACT",
+      "what": "only the contract identity moved",
+      "expected_exit": 1,
+      "observed_exit": 1,
+      "must_mention": "CONTRACT MOVED ONLY",
+      "mentioned": true,
+      "ok": true,
+      "output_tail": " under reuse, and NO re-measurement of the deployment is needed.\"\n    ],\n    \"notes\": [\n      \"the RuntimeDeploymentIdentity is IDENTICAL: the two manifests describe the same build.\"\n    ],\n    \"detail\": {\n      \"old_runtime_identity\": \"c969808e7633162526b3a93d7ea398ce2e63b0e9a10fac13e3f42fad257d65de\",\n      \"new_runtime_identity\": \"c969808e7633162526b3a93d7ea398ce2e63b0e9a10fac13e3f42fad257d65de\",\n      \"old_contract_identity\": \"a091cb5949029fa709e67aa2cfa5767e3346e5150f055636800fab626f10f442\",\n      \"new_contract_identity\": \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\n      \"runtime_moved\": false,\n      \"contract_moved\": true,\n      \"old_commit\": \"c061e09dc09fa11c6b90fa7e026f54e3cf60e399\",\n      \"new_commit\": \"c061e09dc09fa11c6b90fa7e026f54e3cf60e399\",\n      \"why\": \"STALE, CONTRACT MOVED ONLY: the deployment is unchanged and the contract moved -- an oracle, a dependency, or a runner digest. Filed results bind to the contract identity, so they are stale. RE-QUALIFY the contract; the existing measurements may still apply under reuse, and NO re-measurement of the deployment is needed.\"\n    }\n  }\n}\n\nID-FRESH: 1 problem(s) -- the old identity must NOT be reused."
+    },
+    {
+      "case": "NO-IDENTITY",
+      "what": "a manifest that never computed an identity",
+      "expected_exit": 1,
+      "observed_exit": 1,
+      "must_mention": null,
+      "mentioned": true,
+      "ok": true,
+      "output_tail": "{\n  \"id_fresh\": {\n    \"problems\": [\n      \"one of the manifests carries no RuntimeDeploymentIdentity, so ID-FRESH cannot be decided. An identity that was never computable (a load-bearing gap) must not be compared as if it were a value.\"\n    ],\n    \"notes\": [],\n    \"detail\": {}\n  }\n}\n\nID-FRESH: 1 problem(s) -- the old identity must NOT be reused."
+    }
+  ],
+  "verdict": "CONTROLS_PROVED",
+  "failures": []
+}

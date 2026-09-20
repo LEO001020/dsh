@@ -1,0 +1,85 @@
+{
+  "schema_version": 1,
+  "kind": "P14_GRAPH_REALPATH_NEGATIVE_CONTROLS_NOT_A_DSH_ARTIFACT",
+  "_what_this_is": [
+    "The negative controls for V5 section 18's GRAPH-REALPATH case. Each case",
+    "mutates the observation IN MEMORY and records the gate's exit code, so the",
+    "gate is shown to FIRE on the defect shape rather than merely to be present.",
+    "",
+    "No tree was modified: a control arm that mutated the tree would itself be the",
+    "defect class this gate is about."
+  ],
+  "observation_source": "D:/DSH/work/wt-p14/qualification/results/P14-manifest/observation.json",
+  "observation_ran_at": "2026-09-20T13:11:23.433Z",
+  "observed_in_tree": "D:/DSH/work/wt-p14",
+  "extension_rows_checked": 9,
+  "ran_at": "2026-09-20T21:14:37.057698",
+  "cases": [
+    {
+      "case": "POSITIVE",
+      "what": "the real observation: every extension row inside its own tree",
+      "expected_exit": 0,
+      "observed_exit": 0,
+      "ok": true,
+      "output_tail": "{\n  \"graph_realpath\": {\n    \"problems\": [],\n    \"notes\": [\n      \"all 9 extension row(s) resolve inside D:/DSH/work/wt-p14 and none resolves into another checkout\"\n    ],\n    \"detail\": {\n      \"observed_in_tree\": \"D:/DSH/work/wt-p14\",\n      \"observation_ran_at\": \"2026-09-20T13:11:23.433Z\",\n      \"own_tree_normalised\": \"d:/dsh/work/wt-p14\",\n      \"extension_rows_checked\": 9,\n      \"rows_outside_own_tree\": [],\n      \"rows_in_another_checkout\": []\n    }\n  }\n}\n\nGRAPH-REALPATH: every extension row resolved inside the tree that produced the observation."
+    },
+    {
+      "case": "SIBLING",
+      "what": "one extension row rewritten to a sibling worktree",
+      "expected_exit": 1,
+      "observed_exit": 1,
+      "ok": true,
+      "output_tail": "alpath\\\": \\\"D:/DSH/work/wt-s99/packages/dsh-ipython/lib/host-plugin.js\\\"}]. A boot that loads the implementation from another tree is measuring a deployment that is not this one -- the defect that forced G-SEAM-29 and G-SEAM-36 to be retracted.\",\n      \"1 extension row(s) resolve into ANOTHER CHECKOUT under DSH/work: [{\\\"name\\\": \\\"dsh-daily-work/data-host\\\", \\\"realpath\\\": \\\"D:/DSH/work/wt-s99/packages/dsh-ipython/lib/host-plugin.js\\\", \\\"other_checkout\\\": \\\"wt-s99\\\"}]. This is the GRAPH-REALPATH refusal: no literal can be correct for a repository checked out in many places at once.\",\n      \"1 resolved module(s) no longer exist on disk: [{\\\"name\\\": \\\"dsh-daily-work/data-host\\\", \\\"realpath\\\": \\\"D:/DSH/work/wt-s99/packages/dsh-ipython/lib/host-plugin.js\\\"}]\"\n    ],\n    \"notes\": [],\n    \"detail\": {\n      \"observed_in_tree\": \"D:/DSH/work/wt-p14\",\n      \"observation_ran_at\": \"2026-09-20T13:11:23.433Z\",\n      \"own_tree_normalised\": \"d:/dsh/work/wt-p14\",\n      \"extension_rows_checked\": 9,\n      \"rows_outside_own_tree\": [\n        {\n          \"name\": \"dsh-daily-work/data-host\",\n          \"realpath\": \"D:/DSH/work/wt-s99/packages/dsh-ipython/lib/host-plugin.js\"\n        }\n      ],\n      \"rows_in_another_checkout\": [\n        {\n          \"name\": \"dsh-daily-work/data-host\",\n          \"realpath\": \"D:/DSH/work/wt-s99/packages/dsh-ipython/lib/host-plugin.js\",\n          \"other_checkout\": \"wt-s99\"\n        }\n      ]\n    }\n  }\n}\n\nGRAPH-REALPATH: 3 problem(s) -- the graph did NOT come from this tree."
+    },
+    {
+      "case": "MAIN",
+      "what": "one extension row rewritten to the main tree",
+      "expected_exit": 1,
+      "observed_exit": 1,
+      "ok": true,
+      "output_tail": " OUTSIDE the tree that produced the observation (D:/DSH/work/wt-p14): [{\\\"name\\\": \\\"dsh-daily-work/data-host\\\", \\\"realpath\\\": \\\"D:/DSH/work/dsh-native-daily/packages/dsh-ipython/lib/host-plugin.js\\\"}]. A boot that loads the implementation from another tree is measuring a deployment that is not this one -- the defect that forced G-SEAM-29 and G-SEAM-36 to be retracted.\",\n      \"1 extension row(s) resolve into ANOTHER CHECKOUT under DSH/work: [{\\\"name\\\": \\\"dsh-daily-work/data-host\\\", \\\"realpath\\\": \\\"D:/DSH/work/dsh-native-daily/packages/dsh-ipython/lib/host-plugin.js\\\", \\\"other_checkout\\\": \\\"dsh-native-daily\\\"}]. This is the GRAPH-REALPATH refusal: no literal can be correct for a repository checked out in many places at once.\"\n    ],\n    \"notes\": [],\n    \"detail\": {\n      \"observed_in_tree\": \"D:/DSH/work/wt-p14\",\n      \"observation_ran_at\": \"2026-09-20T13:11:23.433Z\",\n      \"own_tree_normalised\": \"d:/dsh/work/wt-p14\",\n      \"extension_rows_checked\": 9,\n      \"rows_outside_own_tree\": [\n        {\n          \"name\": \"dsh-daily-work/data-host\",\n          \"realpath\": \"D:/DSH/work/dsh-native-daily/packages/dsh-ipython/lib/host-plugin.js\"\n        }\n      ],\n      \"rows_in_another_checkout\": [\n        {\n          \"name\": \"dsh-daily-work/data-host\",\n          \"realpath\": \"D:/DSH/work/dsh-native-daily/packages/dsh-ipython/lib/host-plugin.js\",\n          \"other_checkout\": \"dsh-native-daily\"\n        }\n      ]\n    }\n  }\n}\n\nGRAPH-REALPATH: 2 problem(s) -- the graph did NOT come from this tree."
+    },
+    {
+      "case": "BACKSLASH",
+      "what": "the sibling case in the backslash spelling",
+      "expected_exit": 1,
+      "observed_exit": 1,
+      "ok": true,
+      "output_tail": "host-plugin.js\\\"}]. A boot that loads the implementation from another tree is measuring a deployment that is not this one -- the defect that forced G-SEAM-29 and G-SEAM-36 to be retracted.\",\n      \"1 extension row(s) resolve into ANOTHER CHECKOUT under DSH/work: [{\\\"name\\\": \\\"dsh-daily-work/data-host\\\", \\\"realpath\\\": \\\"D:\\\\\\\\DSH\\\\\\\\work\\\\\\\\wt-s99\\\\\\\\packages\\\\\\\\dsh-ipython\\\\\\\\lib\\\\\\\\host-plugin.js\\\", \\\"other_checkout\\\": \\\"wt-s99\\\"}]. This is the GRAPH-REALPATH refusal: no literal can be correct for a repository checked out in many places at once.\",\n      \"1 resolved module(s) no longer exist on disk: [{\\\"name\\\": \\\"dsh-daily-work/data-host\\\", \\\"realpath\\\": \\\"D:\\\\\\\\DSH\\\\\\\\work\\\\\\\\wt-s99\\\\\\\\packages\\\\\\\\dsh-ipython\\\\\\\\lib\\\\\\\\host-plugin.js\\\"}]\"\n    ],\n    \"notes\": [],\n    \"detail\": {\n      \"observed_in_tree\": \"D:/DSH/work/wt-p14\",\n      \"observation_ran_at\": \"2026-09-20T13:11:23.433Z\",\n      \"own_tree_normalised\": \"d:/dsh/work/wt-p14\",\n      \"extension_rows_checked\": 9,\n      \"rows_outside_own_tree\": [\n        {\n          \"name\": \"dsh-daily-work/data-host\",\n          \"realpath\": \"D:\\\\DSH\\\\work\\\\wt-s99\\\\packages\\\\dsh-ipython\\\\lib\\\\host-plugin.js\"\n        }\n      ],\n      \"rows_in_another_checkout\": [\n        {\n          \"name\": \"dsh-daily-work/data-host\",\n          \"realpath\": \"D:\\\\DSH\\\\work\\\\wt-s99\\\\packages\\\\dsh-ipython\\\\lib\\\\host-plugin.js\",\n          \"other_checkout\": \"wt-s99\"\n        }\n      ]\n    }\n  }\n}\n\nGRAPH-REALPATH: 3 problem(s) -- the graph did NOT come from this tree."
+    },
+    {
+      "case": "UNRESOLVED",
+      "what": "one extension row's realpath nulled with a resolve error",
+      "expected_exit": 1,
+      "observed_exit": 1,
+      "ok": true,
+      "output_tail": "{\n  \"graph_realpath\": {\n    \"problems\": [\n      \"extension row 'dsh-daily-work/data-host' has NO realpath: its resolution failed (injected: MODULE_NOT_FOUND)\"\n    ],\n    \"notes\": [],\n    \"detail\": {\n      \"observed_in_tree\": \"D:/DSH/work/wt-p14\",\n      \"observation_ran_at\": \"2026-09-20T13:11:23.433Z\",\n      \"own_tree_normalised\": \"d:/dsh/work/wt-p14\",\n      \"extension_rows_checked\": 9,\n      \"rows_outside_own_tree\": [],\n      \"rows_in_another_checkout\": []\n    }\n  }\n}\n\nGRAPH-REALPATH: 1 problem(s) -- the graph did NOT come from this tree."
+    },
+    {
+      "case": "MISSING",
+      "what": "a resolved module that does not exist on disk",
+      "expected_exit": 1,
+      "observed_exit": 1,
+      "ok": true,
+      "output_tail": "{\n  \"graph_realpath\": {\n    \"problems\": [\n      \"1 resolved module(s) no longer exist on disk: [{\\\"name\\\": \\\"dsh-daily-work/data-host\\\", \\\"realpath\\\": \\\"D:/DSH/work/wt-p14/packages/dsh-ipython/lib/does-not-exist.js\\\"}]\"\n    ],\n    \"notes\": [],\n    \"detail\": {\n      \"observed_in_tree\": \"D:/DSH/work/wt-p14\",\n      \"observation_ran_at\": \"2026-09-20T13:11:23.433Z\",\n      \"own_tree_normalised\": \"d:/dsh/work/wt-p14\",\n      \"extension_rows_checked\": 9,\n      \"rows_outside_own_tree\": [],\n      \"rows_in_another_checkout\": []\n    }\n  }\n}\n\nGRAPH-REALPATH: 1 problem(s) -- the graph did NOT come from this tree."
+    },
+    {
+      "case": "NO-TREE",
+      "what": "the observation's repo_root removed",
+      "expected_exit": 1,
+      "observed_exit": 1,
+      "ok": true,
+      "output_tail": "{\n  \"graph_realpath\": {\n    \"problems\": [\n      \"the observation does not name the tree it was taken in (driver.repo_root): GRAPH-REALPATH cannot be decided\"\n    ],\n    \"notes\": [],\n    \"detail\": {\n      \"observed_in_tree\": null,\n      \"observation_ran_at\": \"2026-09-20T13:11:23.433Z\"\n    }\n  }\n}\n\nGRAPH-REALPATH: 1 problem(s) -- the graph did NOT come from this tree."
+    },
+    {
+      "case": "NO-EXT",
+      "what": "the extension rows removed entirely",
+      "expected_exit": 1,
+      "observed_exit": 1,
+      "ok": true,
+      "output_tail": "{\n  \"graph_realpath\": {\n    \"problems\": [\n      \"the observation carries no extension rows: there is no realpath to check\"\n    ],\n    \"notes\": [],\n    \"detail\": {\n      \"observed_in_tree\": \"D:/DSH/work/wt-p14\",\n      \"observation_ran_at\": \"2026-09-20T13:11:23.433Z\",\n      \"own_tree_normalised\": \"d:/dsh/work/wt-p14\"\n    }\n  }\n}\n\nGRAPH-REALPATH: 1 problem(s) -- the graph did NOT come from this tree."
+    }
+  ],
+  "verdict": "CONTROLS_PROVED",
+  "failures": []
+}

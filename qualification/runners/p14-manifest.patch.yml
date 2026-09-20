@@ -1,0 +1,34 @@
+# P14 MANIFEST overlay: the PROBE ONLY.
+#
+# ONE row, and it is the PROBE. There is deliberately NO tool row here, because a
+# probe that inserted a tool row would make its own catalog a measurement of the
+# OVERLAY rather than of the product -- the G-FIX-04 / G-FIX-05 / G-FIX-12 defect
+# class this project has recorded repeatedly.
+#
+# THIS FILE IS A TEMPLATE, NOT A RUNNABLE OVERLAY. The `name:` below is a
+# PLACEHOLDER and `run-p14-manifest.mjs` rewrites it at run time to this tree's own
+# `p14-manifest-probe.mjs`, writing the result beside its own evidence.
+#
+# WHY, and this is the defect this comment records. A cordis row's `name:` is a
+# MODULE SPECIFIER, and the loader turns an absolute one into a `file://` URL and
+# imports exactly that file
+# (`packages/boot/app-boot/src/index.ts:521`,
+# `vendor/loader/src/config/tree.ts:122-126`). So a committed literal naming one
+# worktree makes a boot from ANY OTHER checkout EXECUTE that worktree's probe
+# while believing it measured its own composition. That is cross-tree CODE
+# EXECUTION, not merely a cross-tree read, and no single literal can be correct for
+# a repository checked out in fifteen places at once. A relative `name:` is not a
+# substitute either: the loader resolves it against the PROFILE directory, not
+# against this file.
+#
+# THE DRIVER REFUSES TO RUN when this row is missing (`materialiseOverlay` throws),
+# so the placeholder cannot be silently dropped and a boot cannot proceed with a
+# non-existent module path.
+- insert:
+    - id: p14-manifest-probe
+      name: 'REWRITTEN-AT-RUN-TIME/p14-manifest-probe.mjs'
+# TO RUN THIS OVERLAY, materialise it with the running tree's own probe:
+#   import { materialiseOverlay } from './overlay.mjs'
+#   materialiseOverlay('<this file>', '<your results dir>/x.patch.yml', '<your probe>.mjs')
+# Running it AS-IS fails loudly with an unresolvable module, which is deliberate:
+# a loud failure beats silently executing another checkout's probe.
