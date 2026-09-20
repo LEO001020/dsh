@@ -1,0 +1,38 @@
+{
+  "probe": "S16 product reachability — DataPlaneService.page reaches the keyed authority",
+  "measuredAt": "2026-09-20T11:56:16.632Z",
+  "node": "v24.18.0",
+  "identity": {
+    "worktree": "D:/DSH/work/wt-s16",
+    "branch": "wt/s16",
+    "artifactsTsSha256": "6941542cc3115b9830035cba4b89c26083a70859a1ee4c65bc89787165b1a00a",
+    "dataServiceTsSha256": "b68a9a51d20af335766ed45bac4a633cc64a5fbcc667590795f1715085194d5c"
+  },
+  "productPath": "profile boot -> data-plugin.ts:49 -> DataPlaneService -> data-bridge fs.page -> service.page() -> pages() -> store.cursorKey()",
+  "positiveControl": {
+    "offset": 0,
+    "bytes": 64,
+    "hasCursor": true,
+    "bytesAreArtifactBytes": true
+  },
+  "honestContinuation": {
+    "offset": 64,
+    "bytes": 64
+  },
+  "forgeryThroughProductService": {
+    "refused": true,
+    "code": "pagination-cursor-invalid",
+    "message": "pagination cursor MAC does not verify"
+  },
+  "refusalRecordedByProduct": {
+    "count": 1,
+    "codes": [
+      "pagination-cursor-invalid"
+    ],
+    "steps": [
+      "parse"
+    ],
+    "note": "read back through DataPlaneService.refusals() -> the store's durable cursor-refusals.jsonl"
+  },
+  "keyAbsentFromProductJournal": true
+}
