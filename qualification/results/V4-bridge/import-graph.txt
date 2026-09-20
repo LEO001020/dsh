@@ -1,0 +1,39 @@
+=== EXPORT ROOTS (the product's entry points) ===
+  ./host                   -> src/host-plugin.ts
+  ./tool                   -> src/ipython-tool.ts
+  ./kernel                 -> src/kernel.ts
+  ./plugin                 -> src/kernel-plugin.ts
+  ./protocol               -> src/protocol.ts
+
+=== REACHABLE non-test modules (5) ===
+  ENTRY src/host-plugin.ts               via=./host
+        non-test importers: (is an entry root)
+  ENTRY src/ipython-tool.ts              via=./tool
+        non-test importers: (is an entry root)
+  ENTRY src/kernel-plugin.ts             via=./host,./plugin,./tool
+        non-test importers: src/host-plugin.ts, src/ipython-tool.ts, src/t7-measure.ts, src/v4-bridge-probe.ts
+  ENTRY src/kernel.ts                    via=./host,./kernel,./plugin,./tool
+        non-test importers: src/ipython-tool.ts, src/kernel-plugin.ts
+  ENTRY src/protocol.ts                  via=./host,./kernel,./plugin,./protocol,./tool
+        non-test importers: src/bridge.ts, src/ipython-tool.ts, src/kernel-plugin.ts, src/kernel.ts
+
+=== UNREACHABLE non-test modules (4) — THE WORK QUEUE ===
+  src/bridge.ts
+        non-test importers: src/native-call.ts, src/t7-measure.ts, src/v4-bridge-probe.ts
+        direct test importers: src/bridge-seam.test.ts, src/v3-spec-gates.test.ts
+        indirect test reachers: (NONE)
+  src/native-call.ts
+        non-test importers: src/t7-measure.ts, src/v4-bridge-probe.ts
+        direct test importers: src/bridge-seam.test.ts, src/v3-spec-gates.test.ts
+        indirect test reachers: (NONE)
+  src/t7-measure.ts
+        non-test importers: (NONE)
+        direct test importers: (NONE)
+        indirect test reachers: (NONE)
+  src/v4-bridge-probe.ts
+        non-test importers: (NONE)
+        direct test importers: (NONE)
+        indirect test reachers: (NONE)
+
+TOTAL src modules: 18  non-test: 9
+REACHABLE: 5   UNREACHABLE: 4

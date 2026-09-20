@@ -1,0 +1,54 @@
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.8 [39m[90mD:/DSH/work/dsh-native-daily/packages/dsh-ipython[39m
+
+ [32m✓[39m src/bridge-seam.test.ts[2m > [22mT7-01 the model Python path reaches ctx.tools.execute (MEASURED)[2m > [22ma cell calling dsh.call lands in the real ToolRuntime pipeline, and the value comes back[33m 2683[2mms[22m[39m
+ [32m✓[39m src/bridge-seam.test.ts[2m > [22mT7-01 the model Python path reaches ctx.tools.execute (MEASURED)[2m > [22mthe bridge is the ONLY caller: the same cell with no lease gets no tool[33m 2688[2mms[22m[39m
+ [32m✓[39m src/bridge-seam.test.ts[2m > [22mT7-02 ctx.terminalController is NOT on the model Python path (MEASURED)[2m > [22ma mounted terminalController is never touched while a cell calls a tool[33m 2874[2mms[22m[39m
+ [32m✓[39m src/bridge-seam.test.ts[2m > [22mT7-03 exactly one model loop (MEASURED)[2m > [22mN nested calls produce N dispatches and N results, with no turn taken by the bridge[33m 2679[2mms[22m[39m
+ [32m✓[39m src/bridge-seam.test.ts[2m > [22mT7-03 exactly one model loop (MEASURED)[2m > [22mthe bridge has NO turn-taking surface: no LLM client, no agent loop, no session append[32m 5[2mms[22m[39m
+ [32m✓[39m src/bridge-seam.test.ts[2m > [22mT7-04 the native-call contract (MEASURED)[2m > [22ma tool that throws reaches the cell as a structured BridgeError, not a crash[33m 2926[2mms[22m[39m
+ [32m✓[39m src/bridge-seam.test.ts[2m > [22mT7-04 the native-call contract (MEASURED)[2m > [22man UNKNOWN tool reaches the cell as UNKNOWN_TOOL[33m 3293[2mms[22m[39m
+ [32m✓[39m src/bridge-seam.test.ts[2m > [22mT7-04 the native-call contract (MEASURED)[2m > [22ma tool DENIED by a monotonic guard reaches the cell as a structured refusal[33m 3097[2mms[22m[39m
+ [32m✓[39m src/bridge-seam.test.ts[2m > [22mT7-04 the native-call contract (MEASURED)[2m > [22ma pre-execute denial that supplies a code keeps it through the bridge[33m 3003[2mms[22m[39m
+ [32m✓[39m src/bridge-seam.test.ts[2m > [22mT7-04 the native-call contract (MEASURED)[2m > [22ma call that TIMES OUT fails in the cell with TIMEOUT, and the kernel stays usable[33m 6941[2mms[22m[39m
+ [32m✓[39m src/bridge-seam.test.ts[2m > [22mT7-04 the native-call contract (MEASURED)[2m > [22ma value too large to inline comes back as an Artifact whose bytes verify[33m 2947[2mms[22m[39m
+ [32m✓[39m src/bridge-seam.test.ts[2m > [22mT7-05 forged authority is refused, not ignored (MEASURED)[2m > [22ma frame naming agent is refused FORGED_AUTHORITY and the tool is never dispatched[32m 7[2mms[22m[39m
+ [32m✓[39m src/bridge-seam.test.ts[2m > [22mT7-05 forged authority is refused, not ignored (MEASURED)[2m > [22mthe same frame WITHOUT the forged field IS served, so the refusal is targeted[32m 6[2mms[22m[39m
+ [32m✓[39m src/bridge-seam.test.ts[2m > [22mT7-07 the bridge is UNWIRED from the product (MEASURED — this is a FAIL)[2m > [22mthe package entry points do not reach bridge.ts or native-call.ts[32m 5[2mms[22m[39m
+ [31m×[39m src/bridge-seam.test.ts[2m > [22mT7-07 the bridge is UNWIRED from the product (MEASURED — this is a FAIL)[2m > [22mnothing outside this package names the bridge symbols[32m 34[2mms[22m[39m
+[31m   → expected [ { …(2) } ] to deeply equal [][39m
+ [32m✓[39m src/bridge-seam.test.ts[2m > [22mT7-08 the forbidden seam is ABSENT from this package (MEASURED)[2m > [22mno source file in the package names terminalController, and the composition never mounts one[32m 7[2mms[22m[39m
+ [32m✓[39m src/bridge-seam.test.ts[2m > [22mT7-08 the forbidden seam is ABSENT from this package (MEASURED)[2m > [22mthe kernel namespace a cell sees carries no terminal handle either[33m 2916[2mms[22m[39m
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 1 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m src/bridge-seam.test.ts[2m > [22mT7-07 the bridge is UNWIRED from the product (MEASURED — this is a FAIL)[2m > [22mnothing outside this package names the bridge symbols
+[31m[1mAssertionError[22m: expected [ { …(2) } ] to deeply equal [][39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- [][39m
+[31m+ [[39m
+[31m+   {[39m
+[31m+     "file": "packages/dsh-ipython/src/v4-bridge-probe.ts",[39m
+[31m+     "symbol": "new BridgeServer",[39m
+[31m+   },[39m
+[31m+ ][39m
+
+[36m [2m❯[22m src/bridge-seam.test.ts:[2m1098:22[22m[39m
+    [90m1096|[39m     [90m// mean a bridge is actually started somewhere.[39m
+    [90m1097|[39m     const starters = productionHits.filter(hit => hit.symbol === 'new …
+    [90m1098|[39m     [34mexpect[39m(starters)[33m.[39m[34mtoEqual[39m([])
+    [90m   |[39m                      [31m^[39m
+    [90m1099|[39m
+    [90m1100|[39m     [90m// And no composition file names the package's bridge path at all.[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m1 failed[39m[22m[2m | [22m[1m[32m16 passed[39m[22m[90m (17)[39m
+[2m   Start at [22m 08:14:06
+[2m   Duration [22m 36.65s[2m (transform 287ms, setup 0ms, import 362ms, tests 36.11s, environment 0ms)[22m
+

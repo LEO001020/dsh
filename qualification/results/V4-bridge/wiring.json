@@ -1,0 +1,86 @@
+{
+  "root": "D:/DSH/work/dsh-native-daily",
+  "filesScanned": 110,
+  "bridgeModuleImporters": [
+    "packages/dsh-ipython/src/bridge-seam.test.ts",
+    "packages/dsh-ipython/src/native-call.ts",
+    "packages/dsh-ipython/src/t7-measure.ts",
+    "packages/dsh-ipython/src/v3-spec-gates.test.ts",
+    "packages/dsh-ipython/src/v4-bridge-probe.ts"
+  ],
+  "nativeCallModuleImporters": [
+    "packages/dsh-ipython/src/bridge-seam.test.ts",
+    "packages/dsh-ipython/src/t7-measure.ts",
+    "packages/dsh-ipython/src/v3-spec-gates.test.ts",
+    "packages/dsh-ipython/src/v4-bridge-probe.ts"
+  ],
+  "symbolCallSites": {
+    "createNativeCallHandler": [
+      "packages/dsh-ipython/src/bridge-seam.test.ts",
+      "packages/dsh-ipython/src/native-call.ts",
+      "packages/dsh-ipython/src/t7-measure.ts",
+      "packages/dsh-ipython/src/v3-spec-gates.test.ts",
+      "packages/dsh-ipython/src/v4-bridge-probe.ts"
+    ],
+    "new BridgeServer": [
+      "packages/dsh-ipython/src/bridge-seam.test.ts",
+      "packages/dsh-ipython/src/t7-measure.ts",
+      "packages/dsh-ipython/src/v3-spec-gates.test.ts",
+      "packages/dsh-ipython/src/v4-bridge-probe.ts"
+    ],
+    "mintLease": [
+      "packages/dsh-ipython/src/bridge-seam.test.ts",
+      "packages/dsh-ipython/src/bridge.ts",
+      "packages/dsh-ipython/src/t7-measure.ts",
+      "packages/dsh-ipython/src/v3-spec-gates.test.ts",
+      "packages/dsh-ipython/src/v4-bridge-probe.ts"
+    ],
+    "renderBridgePreamble": [
+      "packages/dsh-ipython/src/bridge-seam.test.ts",
+      "packages/dsh-ipython/src/bridge.ts"
+    ],
+    "canPrependPreamble": [
+      "packages/dsh-ipython/src/bridge.ts"
+    ]
+  },
+  "classes": {
+    "entryFiles": [
+      "packages/dsh-daily-work/src/host-plugin.ts",
+      "packages/dsh-ipython/src/host-plugin.ts",
+      "packages/dsh-ipython/src/ipython-tool.ts",
+      "packages/dsh-ipython/src/kernel-plugin.ts",
+      "packages/dsh-ipython/src/kernel.ts",
+      "packages/dsh-ipython/src/protocol.ts"
+    ],
+    "probeFiles": [
+      "packages/dsh-ipython/src/t7-measure.ts",
+      "packages/dsh-ipython/src/v4-bridge-probe.ts"
+    ],
+    "testFilesNamingBridge": [
+      "packages/dsh-ipython/src/bridge-seam.test.ts",
+      "packages/dsh-ipython/src/v3-spec-gates.test.ts"
+    ]
+  },
+  "verdict": {
+    "productionCallSites": {
+      "createNativeCallHandler": [
+        "packages/dsh-ipython/src/native-call.ts"
+      ],
+      "new BridgeServer": [],
+      "mintLease": [
+        "packages/dsh-ipython/src/bridge.ts"
+      ],
+      "renderBridgePreamble": [
+        "packages/dsh-ipython/src/bridge.ts"
+      ],
+      "canPrependPreamble": [
+        "packages/dsh-ipython/src/bridge.ts"
+      ]
+    },
+    "productionImportersOfBridge": [
+      "packages/dsh-ipython/src/native-call.ts"
+    ],
+    "productionImportersOfNativeCall": [],
+    "bridgeIsStartedInProduction": false
+  }
+}

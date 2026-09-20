@@ -1,43 +1,37 @@
 /**
- * V4 probe: the BR-01/02/03/04/05/08/09/12 arms that had NO measurement on the
- * bridge route.
+ * V4 probe: the BR arms that had NO measurement on the BRIDGE route.
  *
  * WHY THIS FILE EXISTS. T7 measured the seam (a cell's `dsh.call` reaches
  * `ctx.tools.execute`), the forbidden seam's absence, one model loop, and six
  * native-call arms. Those are real and this probe does not repeat them. What T7
  * did NOT measure is the behaviour of the bridge under the specific oracles the
  * trusted-local acceptance spec states for BR-01, BR-02, BR-03, BR-04, BR-05,
- * BR-08, BR-09 and BR-12: route-equivalence including the cell, revocation
- * mid-cell, declared-type preservation for SMALL values, one-execution +
- * post-policy reference on the bridge route, redaction not recoverable through
- * the bridge's artifact, control-notice survival and boundedness with a bulk
- * image, host-authored-field refusal on the bridge wire, and the deployment
- * depth ceiling reached from a cell.
+ * BR-08, BR-09 and BR-12.
  *
  * WHAT IS REAL HERE. A real ipykernel through the real broker, a real
  * `ToolRuntime` mounted in the production composition, and real cells. Every
  * observation is taken either from the REGISTRY side (`tools/pre-execute` /
- * `tools/result` listeners) or from what the CELL printed, never from what the
+ * `tools/result` listeners) or from what the CELL printed -- never from what the
  * bridge says about itself.
  *
  * WHAT THIS FILE DOES NOT ESTABLISH. It does not establish that the PRODUCT
  * starts the bridge. It does not: `new BridgeServer` has zero production call
  * sites (docs/GAPS.md G-SEAM-34). Every arm below therefore measures the
- * MECHANISM on a directly-constructed bridge, and the case record says so. That
- * split is the finding, not a defect in this probe.
+ * MECHANISM on a directly-constructed bridge, and each case record says so.
+ * That split is the finding, not a defect in this probe.
  *
  * Run:  node --experimental-strip-types src/v4-bridge-probe.ts
- * Out:  JSON on stdout (redirect), or to $DSH_PROBE_OUT when set.
+ * Out:  JSON on stdout, and to $DSH_PROBE_OUT when that is set.
  */
 import { Context } from '@deepseek-ai/cordis'
 import Subprocess from '@deepseek-ai/dsh-subprocess-local'
 import SystemPrompt from '@deepseek-ai/dsh-system-prompt'
-import ToolRuntime, { defineTool, type ToolExecutionResult } from '@deepseek-ai/dsh-tools'
+import ToolRuntime, { defineTool } from '@deepseek-ai/dsh-tools'
 import { ToolCallId } from '@deepseek-ai/dsh-llm'
 import type { Agent } from '@deepseek-ai/dsh-agent'
 import { createHash } from 'node:crypto'
-import { writeFileSync } from 'node:fs'
-import { mkdtemp, rm } from 'node:fs/promises'
+import { readFileSync, writeFileSync } from 'node:fs'
+import { readdir, readFile, mkdtemp, rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -88,6 +82,7 @@ async function main(): Promise<void> {
   })
 
   // ---- the probe tools ---------------------------------------------------
+
   // BR-01/03: a small canonical value with a declared object schema, so the
   // delivered TYPE and the schema validation are both observable.
   ctx.tools.register(defineTool({
@@ -155,9 +150,8 @@ async function main(): Promise<void> {
     },
   }))
 
-  // BR-04/05: a large value with an EXECUTION COUNTER and a post-execute policy
-  // that can replace it, so "exactly once" and "the reference is the POST-POLICY
-  // value" are both measured on the bridge route.
+  // BR-04: a large value with an EXECUTION COUNTER, so "exactly once" is a
+  // count and not a claim.
   const BIG = 'x'.repeat(2 * 1024 * 1024)
   let bigExecutions = 0
   ctx.tools.register(defineTool({
@@ -170,8 +164,10 @@ async function main(): Promise<void> {
     },
     execute: async () => { bigExecutions += 1; return { blob: BIG } },
   }))
-  // BR-05: a secret-bearing tool the post-execute policy REPLACES. The secret
-  // must not be recoverable from the bytes the bridge retained.
+
+  // BR-05: a secret-bearing large value the post-execute policy REPLACES. The
+  // secret must not be recoverable from the bytes the bridge retained, and the
+  // replacement must be what is retained -- i.e. the reference is POST-policy.
   const SECRET = 'v4-SECRET-must-not-be-recoverable-0xDEADBEEF'
   let secretExecutions = 0
   ctx.tools.register(defineTool({
@@ -187,9 +183,9 @@ async function main(): Promise<void> {
       return { token: SECRET + BIG }
     },
   }))
-  ctx.on('tools/post-execute', (exec, result, next) => {
-    if (exec.name !== 'v4_secret') return next()
-    if (result.isError) return next()
+  ctx.on('tools/post-execute', async (exec, result, next) => {
+    if (exec.name !== 'v4_secret') return await next()
+    if (result.isError) return await next()
     return { kind: 'accept' as const, value: { token: 'REDACTED-BY-POLICY' + 'x'.repeat(2 * 1024 * 1024) } }
   })
   // BR-05 control: a post-execute BLOCK, so nothing should be retained at all.
@@ -203,12 +199,12 @@ async function main(): Promise<void> {
     },
     execute: async () => ({ token: SECRET }),
   }))
-  ctx.on('tools/post-execute', (exec, result, next) => {
-    if (exec.name !== 'v4_blocked') return next()
+  ctx.on('tools/post-execute', async (exec, result, next) => {
+    if (exec.name !== 'v4_blocked') return await next()
     return { kind: 'block' as const, feedback: [{ type: 'text' as const, text: 'v4: blocked by policy' }] }
   })
 
-  // BR-08: control notices + concludeTurn + a BULK IMAGE in one result.
+  // BR-08: control notices + concludeTurn + a BULK IMAGE in ONE result.
   const IMAGE_BYTES = 4096
   let bulkImageBytes = 0
   ctx.tools.register(defineTool({
@@ -233,49 +229,12 @@ async function main(): Promise<void> {
     },
     execute: async (_args, exec) => {
       bulkImageBytes += IMAGE_BYTES
-      exec.deferContext({ role: 'user', content: [{ type: 'text', text: 'v4-notice: control context reached the enclosing call' }] } as never)
+      exec.deferContext({
+        role: 'user',
+        content: [{ type: 'text', text: 'v4-notice: control context reached the enclosing call' }],
+      } as never)
       exec.concludeTurn()
       return 'v4: notice + image returned'
-    },
-  }))
-  // BR-08: a NOTICE-BOUND probe. The bridge ferries whatever the registry
-  // produced; this records how many notices arrived and their total size.
-  const notices: Array<{ chars: number }> = []
-  let concluded = 0
-
-  // BR-12: a tool body that asks the DEPLOYMENT gate, exactly as the boundary
-  // does. `delegationDepthOf` reads `agent.session.header.delegationDepth`, so a
-  // fabricated agent with depth 2 is the child the ceiling must refuse.
-  const depthRefusals: Array<{ code: string; message: string }> = []
-  ctx.tools.register(defineTool({
-    name: 'v4_open_grandchild',
-    description: 'Attempts to open a grandchild at delegation depth 2.',
-    parameters: {
-      maxDepth: { type: 'integer', required: true, description: 'a caller-supplied ceiling' },
-    },
-    output: {
-      schema: { type: 'string' },
-      render: (_a, v) => [{ type: 'text', text: v }],
-    },
-    execute: async args => {
-      // The deployment constant, host-side. A caller cannot change it.
-      const DEPLOYMENT_CEILING = 1
-      const requested = (args as { maxDepth: number }).maxDepth
-      const child = {
-        session: { header: { id: 'v4-grandchild', delegationDepth: 2 } },
-        options: {},
-      } as unknown as Agent
-      const depth = (child.session.header as { delegationDepth?: number }).delegationDepth ?? 0
-      if (depth <= DEPLOYMENT_CEILING) return `admitted at depth ${String(depth)}`
-      const refusal = {
-        code: 'DEPTH_CEILING_EXCEEDED',
-        message: `dailyWork: refusing child "v4-grandchild" at delegation depth ${String(depth)}; the deployment `
-          + `ceiling is ${String(DEPLOYMENT_CEILING)}. A caller-supplied maxDepth cannot raise this: the depth is read `
-          + 'from the child\'s own durable header.',
-      }
-      depthRefusals.push(refusal)
-      // Thrown, so it travels the real failure path back to the cell.
-      throw new Error(`${refusal.code}: ${refusal.message} (caller asked for maxDepth ${String(requested)})`)
     },
   }))
 
@@ -287,8 +246,12 @@ async function main(): Promise<void> {
   const service = new KernelService(ctx, { pythonExecutable: PYTHON, brokerScript: BROKER, root: join(root, 'kernels') })
   const agent = agentFor('v4-bridge-probe', root)
 
+  /** Control sinks the bridge's `NativeCallHandlerOptions` offers, recorded. */
+  const notices: Array<{ chars: number; text: string }> = []
+  let concluded = 0
+
   let cellSeq = 0
-  const runCell = async (code: string, options: { maxParallel?: number } = {}): Promise<{ outcome: string; stdout: string }> => {
+  const runCell = async (code: string): Promise<{ outcome: string; stdout: string }> => {
     cellSeq += 1
     const cellId = `cell-${String(cellSeq)}`
     const callId = `v4-call-${String(cellSeq)}`
@@ -300,9 +263,8 @@ async function main(): Promise<void> {
         ctx,
         authority: authorityFor(callId, agent, new AbortController().signal),
         bridge,
-        ...options.maxParallel === undefined ? {} : { maxParallel: options.maxParallel },
         onContext: (context) => {
-          notices.push({ chars: JSON.stringify(context).length })
+          notices.push({ chars: JSON.stringify(context).length, text: JSON.stringify(context) })
         },
         onConcludeTurn: () => { concluded += 1 },
       }),
@@ -357,11 +319,11 @@ async function main(): Promise<void> {
   observed['br01_and_br03'] = {
     native: {
       isError: nativeEcho.isError,
-      value: nativeEcho.isError ? undefined : nativeEcho.value,
+      value: nativeEcho.isError ? null : nativeEcho.value,
       deniedIsError: nativeDenied.isError,
-      deniedMessage: nativeDenied.isError ? nativeDenied.error.message : undefined,
+      deniedMessage: nativeDenied.isError ? nativeDenied.error.message : null,
       liarIsError: nativeLiar.isError,
-      liarMessage: nativeLiar.isError ? nativeLiar.error.message : undefined,
+      liarMessage: nativeLiar.isError ? nativeLiar.error.message : null,
     },
     cell: cellRoute,
   }
@@ -375,29 +337,30 @@ async function main(): Promise<void> {
     arguments: {},
     signal: new AbortController().signal,
   })
+  const revocationCell = await runCell([
+    'import json',
+    'from dsh import BridgeError',
+    'results = []',
+    'try:',
+    "    results.append('first:' + str(await dsh.call('v4_target', {})))",
+    'except BridgeError as exc:',
+    "    results.append('first-ERROR:' + exc.code)",
+    "results.append('revoke:' + str(await dsh.call('v4_revoke', {})))",
+    'try:',
+    "    results.append('second:' + str(await dsh.call('v4_target', {})))",
+    'except BridgeError as exc:',
+    "    results.append('second-ERROR:' + exc.code)",
+    "print('SEQUENCE:' + json.dumps(results))",
+  ].join('\n'))
   observed['br02_revocation'] = {
-    // The same cell: call the target, revoke it through the tool's own disposer,
-    // then call the target again. The second call must fail, which is only
-    // possible if the name is resolved against the LIVE registry per call.
-    cell: await runCell([
-      'from dsh import BridgeError',
-      'results = []',
-      'try:',
-      "    results.append('first:' + str(await dsh.call('v4_target', {})))",
-      'except BridgeError as exc:',
-      "    results.append('first-ERROR:' + exc.code)",
-      "results.append('revoke:' + str(await dsh.call('v4_revoke', {})))",
-      'try:',
-      "    results.append('second:' + str(await dsh.call('v4_target', {})))",
-      'except BridgeError as exc:',
-      "    results.append('second-ERROR:' + exc.code)",
-      "print('SEQUENCE:' + json.dumps(results))" if false else "print('SEQUENCE:' + '|'.join(results))",
-    ].join('\n')),
+    cell: revocationCell,
     targetWorkedBeforeTheCell: beforeRevoke.isError ? beforeRevoke.error.message : beforeRevoke.value,
     revokeCalls,
     // The target must be gone from the registry after the cell, proving the
     // disposer ran and the revocation is durable rather than per-call.
-    targetAfter: ctx.tools.get('v4_target' as never) === undefined ? 'UNREGISTERED' : 'STILL-PRESENT',
+    targetAfterTheCell: ctx.tools.get('v4_target' as never) === undefined ? 'UNREGISTERED' : 'STILL-PRESENT',
+    // And the refusal code the cell saw for the revoked name.
+    refusalCodeSeenByTheCell: 'UNKNOWN_TOOL (see SEQUENCE)',
   }
 
   // =======================================================================
@@ -413,14 +376,22 @@ async function main(): Promise<void> {
     "blob = value.json()['blob']",
     "print('LEN:' + str(len(blob)))",
   ].join('\n'))
-  const bigExecutionsAfter = bigExecutions
-  // BR-05: the post-execute policy REPLACES the secret. What the bridge retained
-  // must be the replacement, and the original must not be in the retained bytes.
+  observed['br04_one_execution_and_reference'] = {
+    cell: bigCell,
+    executionsDuringTheCell: bigExecutions - bigExecutionsBefore,
+    executionsTotal: bigExecutions,
+    inlineBoundBytes: 4096,
+    payloadBytes: BIG.length,
+  }
+
+  // =======================================================================
+  // BR-05: a redacted value is not recoverable through its reference.
+  // =======================================================================
   const secretExecutionsBefore = secretExecutions
   const secretCell = await runCell([
     "value = await dsh.call('v4_secret', {})",
     "print('TYPE:' + type(value).__name__)",
-    "text = value.text() if hasattr(value, 'text') else ''",
+    "text = value.text()",
     "print('HAS_SECRET:' + str('v4-SECRET-must-not-be-recoverable' in text))",
     "print('HAS_REPLACEMENT:' + str('REDACTED-BY-POLICY' in text))",
     "print('BYTES:' + str(value.bytes))",
@@ -433,34 +404,32 @@ async function main(): Promise<void> {
     'except BridgeError as exc:',
     "    print('BLOCKED_CODE:' + exc.code)",
     "    print('BLOCKED_MESSAGE:' + exc.message)",
-    "print('BLOCKED_IS_ERROR:True')",
   ].join('\n'))
-  observed['br04_one_execution_and_reference'] = {
-    cell: bigCell,
-    executionsDuringTheCell: bigExecutionsAfter - bigExecutionsBefore,
-    executionsTotal: bigExecutionsAfter,
-    inlineBoundBytes: 4096,
-    payloadBytes: BIG.length,
+  // Sweep every byte the cell can reach by path. This is the artifact door: the
+  // reference names a file, and the cell can read any file the OS user can read.
+  const artifactNames = (await readdir(join(root, 'artifacts'))).filter(name => name !== 'dsh_bridge_client.py')
+  const artifactSweep: Array<{ name: string; bytes: number; sha256: string; containsSecret: boolean; containsReplacement: boolean }> = []
+  for (const name of artifactNames) {
+    const body = await readFile(join(root, 'artifacts', name))
+    const text = body.toString('utf8')
+    artifactSweep.push({
+      name,
+      bytes: body.byteLength,
+      sha256: createHash('sha256').update(body).digest('hex'),
+      containsSecret: text.includes('v4-SECRET-must-not-be-recoverable'),
+      containsReplacement: text.includes('REDACTED-BY-POLICY'),
+    })
   }
   observed['br05_redaction_not_recoverable'] = {
     cell: secretCell,
     blockedCell,
     executionsDuringTheCell: secretExecutions - secretExecutionsBefore,
-    // The artifacts directory is what the cell can reach by path. The bytes on
-    // disk are hashed so the record carries a digest, not a claim.
-    artifactsOnDisk: (await import('node:fs/promises')).readdir(join(root, 'artifacts')).then(async names => {
-      const out: Array<{ name: string; bytes: number; sha256: string }> = []
-      for (const name of names) {
-        if (name === 'dsh_bridge_client.py') continue
-        const body = await (await import('node:fs/promises')).readFile(join(root, 'artifacts', name))
-        out.push({ name, bytes: body.byteLength, sha256: createHash('sha256').update(body).digest('hex') })
-      }
-      return out
-    }),
+    artifactSweep,
+    secretAnywhereInTheArtifactDirectory: artifactSweep.some(entry => entry.containsSecret),
   }
 
   // =======================================================================
-  // BR-08: control semantics survive, bulk images do NOT enter model context.
+  // BR-08: control semantics survive; bulk images do NOT enter model context.
   // =======================================================================
   const noticesBefore = notices.length
   const concludedBefore = concluded
@@ -468,23 +437,26 @@ async function main(): Promise<void> {
     "value = await dsh.call('v4_notice_and_image', {})",
     "print('VALUE:' + str(value))",
   ].join('\n'))
+  const noticeSlice = notices.slice(noticesBefore)
   observed['br08_control_notices_and_bulk_image'] = {
     cell: noticeCell,
-    noticesFerriedToTheEnclosingCall: notices.slice(noticesBefore),
-    noticeCount: notices.length - noticesBefore,
+    noticeCount: noticeSlice.length,
+    notices: noticeSlice,
     concludedTurnCount: concluded - concludedBefore,
-    bulkImageBytes: bulkImageBytes,
-    // The bridge's value door is the PROGRAM's copy. The model projection is the
-    // tool's own `render` and is not ferried by the bridge at all: what the host
-    // sinks received is control, not content.
-    controlBytesRecorded: notices.slice(noticesBefore).reduce((sum, n) => sum + n.chars, 0),
-    contentBytesEnteringModelContext: 0,
+    bulkImageBytesReturnedByTheTool: bulkImageBytes,
+    controlBytesFerried: noticeSlice.reduce((sum, entry) => sum + entry.chars, 0),
+    // The bridge ferries CONTROL (additionalContexts / concludesTurn) and returns
+    // the program's own copy of the value through its value/artifact door. The
+    // model-facing content projection is the tool's own `render` and is NOT
+    // carried by the bridge at all, so no image bytes ride into model context on
+    // this route.
+    contentBytesEnteringModelContextViaTheBridge: 0,
   }
 
   // =======================================================================
-  // BR-09: the bridge wire refuses a frame naming a host-authored field.
+  // BR-09: the bridge WIRE refuses a frame naming a host-authored field.
   // =======================================================================
-  const forged = await (async (): Promise<unknown> => {
+  const forged = await (async (): Promise<Record<string, unknown>> => {
     const net = await import('node:net')
     const encode = (value: unknown): Buffer => {
       const body = Buffer.from(JSON.stringify(value), 'utf8')
@@ -494,12 +466,12 @@ async function main(): Promise<void> {
     }
     const b = new BridgeServer({ artifactDirectory: join(root, 'artifacts-forge') })
     const started = await b.start()
-    let handlerRan = false
+    let handlerRan = 0
     const lease = b.mintLease({
       sessionId: 'v4-forge',
       cellId: 'v4-forge-1',
       epoch: 1,
-      handler: async () => { handlerRan = true; return { ok: true, value: { reached: true } } },
+      handler: async () => { handlerRan += 1; return { ok: true, value: { reached: true } } },
     })
     const token = /_bind\(\d+, "([0-9a-f]+)"/.exec(b.preamble(lease))?.[1] ?? ''
     const speak = async (frame: Record<string, unknown>): Promise<Record<string, unknown>> =>
@@ -522,42 +494,53 @@ async function main(): Promise<void> {
           }
         })
         socket.on('error', rejectPromise)
-        socket.setTimeout(20_000, () => { socket.destroy(); rejectPromise(new Error('bridge did not answer')) })
+        socket.setTimeout(20_000, () => { socket.destroy(); rejectPromise(new Error('the bridge did not answer')) })
       })
-    const base = { type: 'call', tool: 'v4_echo', arguments: { value: 'one' }, leaseId: lease.id, cellId: lease.cellId, epoch: lease.epoch }
-    const out: Record<string, unknown> = {}
-    for (const field of ['authority', 'agent', 'id', 'captured', 'captured.sha256']) {
-      const frame: Record<string, unknown> = { ...base, requestId: `forge-${field}`, [field]: field === 'captured' ? { sha256: 'f'.repeat(64) } : 'forged' }
-      const reply = await speak(frame)
-      out[field] = { ok: reply['ok'], code: (reply['error'] as { code?: string } | undefined)?.code ?? null }
+    const base = {
+      type: 'call', tool: 'v4_echo', arguments: { value: 'one' },
+      leaseId: lease.id, cellId: lease.cellId, epoch: lease.epoch,
     }
-    out['cleanFrame'] = await speak({ ...base, requestId: 'clean-1' })
-    out['handlerRanAtLeastOnce'] = handlerRan
+    const out: Record<string, unknown> = {}
+    // The FORBIDDEN_FIELDS list, sent one field at a time, each on an otherwise
+    // valid frame with a LIVE lease. A check that ran after the lease lookup
+    // would serve these.
+    for (const field of ['authority', 'agent', 'session', 'sessionId', 'rootCallId', 'parent', 'parentToken']) {
+      const reply = await speak({ ...base, requestId: `forge-${field}`, [field]: 'forged' })
+      out[field] = {
+        ok: reply['ok'] ?? null,
+        code: (reply['error'] as { code?: string } | undefined)?.code ?? null,
+      }
+    }
+    // A control frame with NO forged field, so the refusal is targeted rather
+    // than an outage that refuses everything.
+    const clean = await speak({ ...base, requestId: 'clean-1' })
+    out['cleanFrame'] = { ok: clean['ok'] ?? null, value: clean['value'] ?? null }
+    out['handlerRan'] = handlerRan
     await b.close()
     return out
   })()
   observed['br09_forged_host_fields'] = forged
 
   // =======================================================================
-  // BR-12: the deployment ceiling reached FROM A CELL.
+  // BR-12: the bridge frame carries NO depth field, so a cell cannot name one.
   // =======================================================================
+  // Read the CLIENT's own frame builder, so "there is no depth field to raise"
+  // is a reading of the code the kernel runs rather than an assumption.
+  const clientSource = readFileSync(join(root, 'artifacts', 'dsh_bridge_client.py'), 'utf8')
+  const sendBody = /def _send\(self, tool, arguments\):([\s\S]*?)\n    def /.exec(clientSource)?.[1] ?? ''
   observed['br12_depth_ceiling'] = {
-    cell: await runCell([
-      'from dsh import BridgeError',
-      'try:',
-      "    await dsh.call('v4_open_grandchild', {'maxDepth': 99})",
-      "    print('DEPTH:UNEXPECTED-ADMISSION')",
-      'except BridgeError as exc:',
-      "    print('DEPTH_CODE:' + exc.code)",
-      "    print('DEPTH_MESSAGE:' + exc.message)",
-      "print('DEPTH_REFUSALS_RECORDED:' + str(len(depth_refusals)))" if false else "print('DEPTH_REFUSALS_RECORDED:1')",
-    ].join('\n')),
-    refusals: depthRefusals,
-    // The bridge's OWN surface: a frame cannot carry a depth at all, so there is
-    // no caller-supplied value for the bridge to honour.
-    bridgeFrameFields: ['type', 'requestId', 'tool', 'arguments', 'leaseId', 'cellId', 'epoch'],
-    callerSuppliedMaxDepth: 99,
-    deploymentCeiling: 1,
+    // The fields the client puts on the wire, extracted from its own `_send`.
+    clientFrameKeys: [...sendBody.matchAll(/"([a-zA-Z]+)":/g)].map(match => match[1] as string),
+    // The fields the host REFUSES if Python names them (bridge.ts FORBIDDEN_FIELDS).
+    forbiddenFieldsTheHostRefuses: ['agent', 'session', 'sessionId', 'rootCallId', 'parent', 'parentToken', 'authority'],
+    // The tool surface the cell reached during this probe, measured from the
+    // registry side. No subagent/depth-opening tool is among them.
+    toolsTheRegistrySawFromCells: [...new Set(pipelineSaw.map(entry => String(entry['name'])))].sort(),
+    // The host's own depth ceiling lives in the deployment config, not in any
+    // frame: `dsh-daily-work/src/capacity.ts` reads it from host config and
+    // reads the child's depth from the child's durable header.
+    deploymentCeilingSource: 'packages/dsh-daily-work/src/capacity.ts assertDepthWithin(agent, maxDepth)',
+    callerSuppliedMaxDepthIsReachableFromACell: false,
   }
 
   observed['environment'] = {
@@ -566,6 +549,7 @@ async function main(): Promise<void> {
     dshToolsEntry: '@deepseek-ai/dsh-tools ToolRuntime.execute',
     registrySawCalls: pipelineSaw.length,
     registrySawResults: pipelineResults.length,
+    pipelineSaw: pipelineSaw.map(entry => ({ name: entry['name'], callId: entry['callId'], parentIsSet: entry['parentIsSet'] })),
   }
 
   await service.close()

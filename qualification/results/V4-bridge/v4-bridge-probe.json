@@ -1,0 +1,238 @@
+{
+  "bridge": {
+    "boundPort": 14073,
+    "inlineValueBytes": 4096
+  },
+  "br01_and_br03": {
+    "native": {
+      "isError": false,
+      "value": {
+        "marker": "v4-registry-materialized",
+        "value": "one",
+        "count": 7,
+        "flag": true
+      },
+      "deniedIsError": true,
+      "deniedMessage": "v4 guard: this argument is revoked by policy",
+      "liarIsError": true,
+      "liarMessage": "tool \"v4_liar\" returned invalid output: \"value.smuggled\" is not a declared property (additionalProperties: false)"
+    },
+    "cell": {
+      "outcome": "ok",
+      "stdout": "CELL_TYPE:dict\nCELL_IS_ARTIFACT:False\nCELL_VALUE:{\"count\":7,\"flag\":true,\"marker\":\"v4-registry-materialized\",\"value\":\"one\"}\nCELL_FIELD_TYPES:{\"count\": \"int\", \"flag\": \"bool\", \"marker\": \"str\", \"value\": \"str\"}\nCELL_DENIED_CODE:TOOL_FAILED\nCELL_DENIED_MESSAGE:v4 guard: this argument is revoked by policy\nCELL_LIAR_MESSAGE:tool \"v4_liar\" returned invalid output: \"value.smuggled\" is not a declared property (additionalProperties: false)"
+    }
+  },
+  "br02_revocation": {
+    "cell": {
+      "outcome": "ok",
+      "stdout": "SEQUENCE:[\"first:v4-target-still-registered\", \"revoke:revoked-after-1\", \"second-ERROR:UNKNOWN_TOOL\"]"
+    },
+    "targetWorkedBeforeTheCell": "v4-target-still-registered",
+    "revokeCalls": 1,
+    "targetAfterTheCell": "UNREGISTERED",
+    "refusalCodeSeenByTheCell": "UNKNOWN_TOOL (see SEQUENCE)"
+  },
+  "br04_one_execution_and_reference": {
+    "cell": {
+      "outcome": "ok",
+      "stdout": "TYPE:Artifact\nVERIFY:True\nBYTES:2097163\nSHA:ee9a114f87647fd58bc81a6461e79cb5dcbf7c0627cf5dc47c43ad8974213d1b\nLEN:2097152"
+    },
+    "executionsDuringTheCell": 1,
+    "executionsTotal": 1,
+    "inlineBoundBytes": 4096,
+    "payloadBytes": 2097152
+  },
+  "br05_redaction_not_recoverable": {
+    "cell": {
+      "outcome": "ok",
+      "stdout": "TYPE:Artifact\nHAS_SECRET:False\nHAS_REPLACEMENT:True\nBYTES:2097182"
+    },
+    "blockedCell": {
+      "outcome": "ok",
+      "stdout": "BLOCKED_CODE:TOOL_FAILED\nBLOCKED_MESSAGE:v4: blocked by policy"
+    },
+    "executionsDuringTheCell": 1,
+    "artifactSweep": [
+      {
+        "name": "b917888045241f67aee13d2c42dd4fc49edb7f5be0c9c966933e04ce99b180a7.json",
+        "bytes": 2097182,
+        "sha256": "b917888045241f67aee13d2c42dd4fc49edb7f5be0c9c966933e04ce99b180a7",
+        "containsSecret": false,
+        "containsReplacement": true
+      },
+      {
+        "name": "ee9a114f87647fd58bc81a6461e79cb5dcbf7c0627cf5dc47c43ad8974213d1b.json",
+        "bytes": 2097163,
+        "sha256": "ee9a114f87647fd58bc81a6461e79cb5dcbf7c0627cf5dc47c43ad8974213d1b",
+        "containsSecret": false,
+        "containsReplacement": false
+      }
+    ],
+    "secretAnywhereInTheArtifactDirectory": false
+  },
+  "br08_control_notices_and_bulk_image": {
+    "cell": {
+      "outcome": "ok",
+      "stdout": "VALUE:v4: notice + image returned"
+    },
+    "noticeCount": 1,
+    "notices": [
+      {
+        "chars": 106,
+        "text": "{\"role\":\"user\",\"content\":[{\"type\":\"text\",\"text\":\"v4-notice: control context reached the enclosing call\"}]}"
+      }
+    ],
+    "concludedTurnCount": 1,
+    "bulkImageBytesReturnedByTheTool": 4096,
+    "controlBytesFerried": 106,
+    "contentBytesEnteringModelContextViaTheBridge": 0
+  },
+  "br09_forged_host_fields": {
+    "authority": {
+      "ok": false,
+      "code": "FORGED_AUTHORITY"
+    },
+    "agent": {
+      "ok": false,
+      "code": "FORGED_AUTHORITY"
+    },
+    "session": {
+      "ok": false,
+      "code": "FORGED_AUTHORITY"
+    },
+    "sessionId": {
+      "ok": false,
+      "code": "FORGED_AUTHORITY"
+    },
+    "rootCallId": {
+      "ok": false,
+      "code": "FORGED_AUTHORITY"
+    },
+    "parent": {
+      "ok": false,
+      "code": "FORGED_AUTHORITY"
+    },
+    "parentToken": {
+      "ok": false,
+      "code": "FORGED_AUTHORITY"
+    },
+    "cleanFrame": {
+      "ok": true,
+      "value": {
+        "reached": true
+      }
+    },
+    "handlerRan": 1
+  },
+  "br12_depth_ceiling": {
+    "clientFrameKeys": [
+      "type",
+      "requestId",
+      "tool",
+      "arguments",
+      "leaseId",
+      "cellId",
+      "epoch"
+    ],
+    "forbiddenFieldsTheHostRefuses": [
+      "agent",
+      "session",
+      "sessionId",
+      "rootCallId",
+      "parent",
+      "parentToken",
+      "authority"
+    ],
+    "toolsTheRegistrySawFromCells": [
+      "v4_big",
+      "v4_blocked",
+      "v4_echo",
+      "v4_liar",
+      "v4_notice_and_image",
+      "v4_revoke",
+      "v4_secret",
+      "v4_target"
+    ],
+    "deploymentCeilingSource": "packages/dsh-daily-work/src/capacity.ts assertDepthWithin(agent, maxDepth)",
+    "callerSuppliedMaxDepthIsReachableFromACell": false
+  },
+  "environment": {
+    "python": "C:/Users/hzq00/AppData/Local/Programs/Python/Python314/python.exe",
+    "broker": "D:\\DSH\\work\\dsh-native-daily\\packages\\dsh-ipython\\src\\broker.py",
+    "dshToolsEntry": "@deepseek-ai/dsh-tools ToolRuntime.execute",
+    "registrySawCalls": 14,
+    "registrySawResults": 14,
+    "pipelineSaw": [
+      {
+        "name": "v4_echo",
+        "callId": "v4-native-echo",
+        "parentIsSet": false
+      },
+      {
+        "name": "v4_echo",
+        "callId": "v4-native-denied",
+        "parentIsSet": false
+      },
+      {
+        "name": "v4_liar",
+        "callId": "v4-native-liar",
+        "parentIsSet": false
+      },
+      {
+        "name": "v4_echo",
+        "callId": "v4-call-1:bridge:1",
+        "parentIsSet": true
+      },
+      {
+        "name": "v4_echo",
+        "callId": "v4-call-1:bridge:2",
+        "parentIsSet": true
+      },
+      {
+        "name": "v4_liar",
+        "callId": "v4-call-1:bridge:3",
+        "parentIsSet": true
+      },
+      {
+        "name": "v4_target",
+        "callId": "v4-target-before",
+        "parentIsSet": false
+      },
+      {
+        "name": "v4_target",
+        "callId": "v4-call-2:bridge:1",
+        "parentIsSet": true
+      },
+      {
+        "name": "v4_revoke",
+        "callId": "v4-call-2:bridge:2",
+        "parentIsSet": true
+      },
+      {
+        "name": "v4_target",
+        "callId": "v4-call-2:bridge:3",
+        "parentIsSet": true
+      },
+      {
+        "name": "v4_big",
+        "callId": "v4-call-3:bridge:1",
+        "parentIsSet": true
+      },
+      {
+        "name": "v4_secret",
+        "callId": "v4-call-4:bridge:1",
+        "parentIsSet": true
+      },
+      {
+        "name": "v4_blocked",
+        "callId": "v4-call-5:bridge:1",
+        "parentIsSet": true
+      },
+      {
+        "name": "v4_notice_and_image",
+        "callId": "v4-call-6:bridge:1",
+        "parentIsSet": true
+      }
+    ]
+  }
+}
