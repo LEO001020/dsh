@@ -29,12 +29,46 @@
 # reset it to the schema default, and a later upstream default change would not
 # be reflected. Both keys are therefore stated explicitly.
 #
-# `maxDepth: 1` is deliberate and load-bearing: it allows the ten direct children
-# and forbids them from opening unbilled grandchildren.
+# ── THE VALUE IS 30, NOT THE USER'S TARGET N (V5 §8) ────────────────────────
+#
+# This row sets DSH's own CONTINUABLE POOL SIZE, and the audit's instruction is
+# to set it to the deployment's physical limit rather than to the sustained
+# target. The two are different numbers and conflating them is a real defect:
+#
+#   - The sustained TARGET `N` is a USER choice in 1..30. It lives in the
+#     `daily-work` settings section (`target-setting.ts`) and is written into
+#     each RunRecord. `WorkService` admits against it.
+#   - This row is the UPSTREAM POOL: `pool.reserve(this.maxActiveSubagents())`
+#     (`packages/subagent/subagent/src/continuation-activation.ts:481-489`).
+#
+# With this at 10 and the host ledger at 30, a user who chose N=20 would get 10
+# children and a run that believed its ceiling was 30 — DSH's pool would be the
+# binding constraint while the accounting said otherwise. That is the same
+# class of untruth as a model-facing creation bypass: the numbers stop
+# describing the process. Setting it to the physical limit removes the
+# spurious second ceiling; the run's target remains the thing that limits work.
+#
+# WHAT THIS DOES **NOT** FIX, stated because the opposite is easy to assume.
+# The upstream pool is PER ROOT, not host-wide: it is a
+# `WeakMap<Agent, ActivationPool>` keyed by the root
+# (`continuation-activation.ts:180`, `rootPool()` at :605), so two roots each
+# get a full pool and 2 x 30 = 60 is upstream-possible. Raising this number
+# therefore does NOT bound the host. The host bound is THIS PROJECT's ledger —
+# `HARD_CHILD_CAPACITY = 30` in `packages/dsh-daily-work/src/capacity.ts`, a
+# single host-wide gate on `agent/created` that refuses the 31st child
+# regardless of which root asked. That gate is kept exactly as it is: V5 §8
+# calls it a deployment-level defence and the cross-root accounting layer, and
+# it is the only thing here that is host-wide. See docs/GAPS.md G-SEAM-19,
+# which records the per-root pool as an UPSTREAM fact that this change does not
+# touch.
+#
+# `maxDepth: 1` is deliberate and load-bearing: it allows the direct children
+# and forbids them from opening grandchildren.
 - id: subagent
   config:
-    # The user's chosen N. Root is NOT counted in this number.
-    maxActiveSubagents: 10
+    # DSH's continuable pool size = the deployment's physical limit (V5 §8).
+    # The sustained target N is a separate, user-chosen number in 1..30.
+    maxActiveSubagents: 30
     # 1 = direct children only. Grandchildren would escape the same metering.
     maxDepth: 1
 
