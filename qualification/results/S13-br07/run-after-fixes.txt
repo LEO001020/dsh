@@ -1,0 +1,131 @@
+{
+  "scope": "S13 / BR-07 composition-tier driver",
+  "tree": "D:\\DSH\\work\\wt-s13",
+  "home": "D:/DSH/home/s13",
+  "profile": "daily",
+  "patch": "D:\\DSH\\work\\wt-s13\\qualification\\results\\S13-br07\\s13-br07.patch.yml",
+  "outPath": "D:\\DSH\\work\\wt-s13\\qualification\\results\\S13-br07\\composition-tier.json",
+  "port": 5377,
+  "portReleased": true,
+  "hostExitCode": null,
+  "timedOut": false,
+  "resultRead": true,
+  "resultError": null,
+  "result": {
+    "scope": "S13 / BR-07: dispositions actually written when a real boot returns a cell with calls in flight",
+    "profileBooted": true,
+    "presetDefaultId": "daily-standard",
+    "presetRoots": [
+      "D:\\DSH\\src\\dsh-src\\packages\\preset\\agent-presets\\presets\\",
+      "D:/DSH/home/s13/profiles/daily/presets/",
+      "D:\\DSH\\home\\s13\\.agent-presets"
+    ],
+    "kernelServicePresent": true,
+    "sessionCreated": true,
+    "sessionId": "session-56d72a8c-47be-4ba0-83b0-271fe561c53e",
+    "ipythonToolPresent": true,
+    "toolCountAgentKey": 29,
+    "bridgePresentAfterBoot": false,
+    "bridgeEndpointPort": null,
+    "bridgeLeasesAtRestAtStart": null,
+    "bridgePresentAfterCell": true,
+    "bridgeEndpointPortAfterCell": 9012,
+    "kernelEpochBeforeCell": 0,
+    "kernelEpoch": 1,
+    "kernelLifecycle": "READY",
+    "toolCallDispatched": true,
+    "toolCallOutcome": "ok",
+    "cellPrinted": "outcome: ok\nkernel epoch: 1\n--- stdout ---\nRETURNING_WITH_A_IN_FLIGHT=True\nRETURNING_WITH_B_IN_FLIGHT=True\n\n[1 shell frame(s) for other requests were ignored while waiting for this cell. They did not complete it.]",
+    "returnedWithAInFlight": "True",
+    "returnedWithBInFlight": "True",
+    "registryDispatches": [
+      {
+        "name": "s13_slow_inflight",
+        "callId": "s13-br07-outer-1:ipython:1"
+      }
+    ],
+    "slowEntered": 1,
+    "queuedToolEntered": 0,
+    "ledgerDurable": true,
+    "ledgerRowsViaApi": 2,
+    "ledgerDispositionsViaApi": [
+      {
+        "subCallId": "s13-br07-outer-1:ipython:1",
+        "name": "s13_slow_inflight",
+        "disposition": "cancelled",
+        "jobId": null,
+        "closeReason": "completed",
+        "started": true,
+        "settled": true
+      },
+      {
+        "subCallId": "s13-br07-outer-1:ipython:2",
+        "name": "s13_queued_behind",
+        "disposition": "abandoned-unstarted",
+        "jobId": null,
+        "closeReason": "completed",
+        "started": true,
+        "settled": false
+      }
+    ],
+    "ledgerUnrecordedFailures": [],
+    "ledgerFilePath": "D:\\DSH\\home\\s13\\storages\\dsh_ipython_bridge_ledger.json",
+    "ledgerFileReadable": true,
+    "ledgerFileRows": 2,
+    "ledgerDispositionsViaFile": [
+      {
+        "subCallId": "s13-br07-outer-1:ipython:1",
+        "name": "s13_slow_inflight",
+        "disposition": "cancelled",
+        "jobId": null,
+        "closeReason": "completed",
+        "started": true,
+        "settled": true
+      },
+      {
+        "subCallId": "s13-br07-outer-1:ipython:2",
+        "name": "s13_queued_behind",
+        "disposition": "abandoned-unstarted",
+        "jobId": null,
+        "closeReason": "completed",
+        "started": true,
+        "settled": false
+      }
+    ],
+    "apiAndFileAgree": true,
+    "unknownOutcomeCount": 0,
+    "unknownOutcomeRows": [],
+    "unknownByNaiveSettledAtFilter": [
+      "s13-br07-outer-1:ipython:2"
+    ],
+    "jobsServicePresent": true,
+    "jobsServiceNames": [
+      "start",
+      "list",
+      "get",
+      "read",
+      "kill",
+      "wait",
+      "onJobDone",
+      "onJobsChanged",
+      "attachController",
+      "servesOwner",
+      "activeJobCount",
+      "listenersFor",
+      "expect",
+      "assertAccess",
+      "snapshot",
+      "changedFor",
+      "notifyChanged",
+      "settle",
+      "ensureOwnerCleanup",
+      "disposeOwned",
+      "disposeAll",
+      "cancelForTeardown"
+    ],
+    "leasesAtRestAfter": 0,
+    "error": null
+  },
+  "stderrTail": "",
+  "stdoutTail": "e\":\"READY\",\"toolCallDispatched\":true,\"toolCallOutcome\":\"ok\",\"cellPrinted\":\"outcome: ok\\nkernel epoch: 1\\n--- stdout ---\\nRETURNING_WITH_A_IN_FLIGHT=True\\nRETURNING_WITH_B_IN_FLIGHT=True\\n\\n[1 shell frame(s) for other requests were ignored while waiting for this cell. They did not complete it.]\",\"returnedWithAInFlight\":\"True\",\"returnedWithBInFlight\":\"True\",\"registryDispatches\":[{\"name\":\"s13_slow_inflight\",\"callId\":\"s13-br07-outer-1:ipython:1\"}],\"slowEntered\":1,\"queuedToolEntered\":0,\"ledgerDurable\":true,\"ledgerRowsViaApi\":2,\"ledgerDispositionsViaApi\":[{\"subCallId\":\"s13-br07-outer-1:ipython:1\",\"name\":\"s13_slow_inflight\",\"disposition\":\"cancelled\",\"jobId\":null,\"closeReason\":\"completed\",\"started\":true,\"settled\":true},{\"subCallId\":\"s13-br07-outer-1:ipython:2\",\"name\":\"s13_queued_behind\",\"disposition\":\"abandoned-unstarted\",\"jobId\":null,\"closeReason\":\"completed\",\"started\":true,\"settled\":false}],\"ledgerUnrecordedFailures\":[],\"ledgerFilePath\":\"D:\\\\DSH\\\\home\\\\s13\\\\storages\\\\dsh_ipython_bridge_ledger.json\",\"ledgerFileReadable\":true,\"ledgerFileRows\":2,\"ledgerDispositionsViaFile\":[{\"subCallId\":\"s13-br07-outer-1:ipython:1\",\"name\":\"s13_slow_inflight\",\"disposition\":\"cancelled\",\"jobId\":null,\"closeReason\":\"completed\",\"started\":true,\"settled\":true},{\"subCallId\":\"s13-br07-outer-1:ipython:2\",\"name\":\"s13_queued_behind\",\"disposition\":\"abandoned-unstarted\",\"jobId\":null,\"closeReason\":\"completed\",\"started\":true,\"settled\":false}],\"apiAndFileAgree\":true,\"unknownOutcomeCount\":0,\"unknownOutcomeRows\":[],\"unknownByNaiveSettledAtFilter\":[\"s13-br07-outer-1:ipython:2\"],\"jobsServicePresent\":true,\"jobsServiceNames\":[\"start\",\"list\",\"get\",\"read\",\"kill\",\"wait\",\"onJobDone\",\"onJobsChanged\",\"attachController\",\"servesOwner\",\"activeJobCount\",\"listenersFor\",\"expect\",\"assertAccess\",\"snapshot\",\"changedFor\",\"notifyChanged\",\"settle\",\"ensureOwnerCleanup\",\"disposeOwned\",\"disposeAll\",\"cancelForTeardown\"],\"leasesAtRestAfter\":0,\"error\":null}\ndsh web: http://127.0.0.1:5377/?token=x00NYIU67kOQTCgHe8j7jV97XWhfaybJX_0F2cchOy4\n"
+}

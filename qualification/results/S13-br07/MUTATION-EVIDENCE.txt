@@ -1,0 +1,140 @@
+S13 / BR-07 — MUTATION AND FAIL-FIRST EVIDENCE, VERBATIM
+========================================================
+
+Every entry is a real run on D:\DSH\work\wt-s13, packages/dsh-ipython, with the
+production file mutated and then RESTORED. The restore is proven by an empty
+`git diff` on the mutated file, recorded per entry.
+
+The discipline being satisfied (round-2 brief §3.2/§3.3): a guard that never fires
+and a guard that is absent produce identical evidence, so each gate below was
+shown RED with the production code broken, and GREEN after restoring.
+
+
+--- M1: the disposition-write failure must be REPORTED, not swallowed --------
+Gate:  r5-product-bridge.test.ts > "a FAILED disposition write is reported,
+       not swallowed, and CLOSED still happens"
+File mutated: src/bridge.ts, `flush()` — reintroduced the pre-fix shape: the
+       rejected write is discarded (`continue`) instead of being retained in
+       `unrecorded`.
+
+  FAIL  ... > a FAILED disposition write is reported, not swallowed, and CLOSED still happens
+  AssertionError: expected undefined to be defined
+   ❯ src/r5-product-bridge.test.ts:555:21
+    554|     expect(refusals).toBe(1)
+    555|     expect(failure).toBeDefined()
+  Test Files  1 failed (1)
+       Tests  1 failed | 24 skipped (25)
+
+  INTERPRETATION: `close()` reported NOTHING while still reaching CLOSED — the
+  exact "continues silently with no record" outcome BR-07 forbids, one level down.
+
+Restore: `cp` back, `git diff --stat src/bridge.ts` -> empty.
+Green after restore:
+  ✓ ... > a FAILED disposition write is reported, not swallowed, and CLOSED still happens
+  Tests  1 passed | 24 skipped (25)
+Contrast arm (same path, working ledger, must report nothing):
+  ✓ ... > a healthy close records every disposition and reports no failure
+
+
+--- M2: the `handed-to-jobs` PRODUCER branch (bridge.ts:649) -----------------
+Gate:  "a lease WITH a handoff writes `handed-to-jobs` and names the job; the
+       producer is exercised"
+File mutated: src/bridge.ts — `const handed = undefined` (always take the
+       `abandoned-unstarted` arm, i.e. exactly what the default composition does,
+       which is why the regression would be invisible in production).
+
+  FAIL  ... > a lease WITH a handoff writes `handed-to-jobs` and names the job; the producer is exercised
+  AssertionError: expected [] to have a length of 1 but got +0
+  Test Files  1 failed (1)
+       Tests  1 failed | 26 skipped (27)
+
+Restore: `cp` back, `git diff --stat src/bridge.ts` -> empty.
+Green after restore: ✓ 1 passed | 26 skipped (27)
+
+
+--- M3: the settled-vs-cancelled rule (bridge.ts:823) ------------------------
+Gate:  "settled vs cancelled is decided by the CLOSE, not by whether the result
+       was an abort"
+File mutated: src/bridge.ts — the disposition inferred from the RESULT instead
+       of the lease state:
+         disposition: outcome.ok ? 'settled' : 'cancelled'
+
+  FAIL  ... > settled vs cancelled is decided by the CLOSE, not by whether the result was an abort
+  AssertionError: expected 'cancelled' to be 'settled' // Object.is equality
+  Test Files  1 failed (1)
+       Tests  1 failed | 26 skipped (27)
+
+  INTERPRETATION: a tool failing with its own error is recorded as a shutdown —
+  the misreporting the code's own comment at bridge.ts:816-819 warns about.
+
+Restore: `cp` back, `git diff --stat src/bridge.ts` -> empty.
+Green after restore: ✓ 1 passed | 26 skipped (27)
+
+
+--- M4: `outcomeIsUnknown` / the durable crash window ------------------------
+Gate:  "a DURABLE crash window survives a restart and is still not re-sent"
+File mutated: src/bridge-ledger.ts — `outcomeIsUnknown` forced to `false`
+       (the crash window becomes invisible).
+
+  FAIL  ... > a DURABLE crash window survives a restart and is still not re-sent
+  AssertionError: expected [] to have a length of 1 but got +0
+  Test Files  1 failed (1)
+       Tests  1 failed | 27 skipped (28)
+
+Restore: `cp` back, `git diff --stat src/bridge-ledger.ts` -> empty.
+Green after restore: ✓ 1 passed | 27 skipped (28)
+
+
+--- M5: Defect 1, fail-first (the never-dispatched call as crash window) ------
+This one is recorded BEFORE the fix existed, because the arm was written first
+and run against the unfixed code:
+
+  FAIL  ... > a call that NEVER DISPATCHED is not reported as the crash window
+  AssertionError: expected [ { …(12) } ] to have a length of +0 but got 1
+   ❯ src/r5-product-bridge.test.ts:654:38
+    654|     expect(ledger.unknownOutcomes()).toHaveLength(0)
+  Test Files  1 failed (1)
+       Tests  1 failed | 24 skipped (25)
+
+After the fix: ✓ 1 passed. The contrast assertion in the same arm (a row with no
+disposition IS still reported) passes, so the fix did not empty the set.
+
+
+--- M6: Defect 2, fail-first (the settlement-write hang) ----------------------
+Both arms were first run against the UNFIXED code, then against a mutation that
+restored the pre-fix shape (the settlement write unguarded by the try/catch).
+
+Against the unfixed / pre-fix shape:
+
+  FAIL  ... > a FAILED SETTLEMENT write does not hang the caller, and IS reported
+  AssertionError: expected 'HUNG' to be 'settled' // Object.is equality
+  Test Files  1 failed (1)
+
+  FAIL  ... > a call queued behind a failed settlement still runs: one bad record is not a dead bridge
+  AssertionError: expected 'HUNG' to be 'both' // Object.is equality
+  Test Files  1 failed (1)
+
+  INTERPRETATION: the caller never settled (the 5 s race won), and the call
+  queued behind it never ran (the 8 s race won) — one unwritable settlement
+  killed the whole serial queue and hung `close()` with it.
+
+Restore: `cp` back, `git diff --stat src/bridge.ts` -> 53 insertions, 17
+deletions vs HEAD (the fix), i.e. the mutation was removed.
+Green after the fix, in the full-file run:
+  ✓ ... > a FAILED SETTLEMENT write does not hang the caller, and IS reported
+  ✓ ... > a call queued behind a failed settlement still runs: one bad record is not a dead bridge
+
+
+--- FULL FILE AFTER EVERY RESTORE -------------------------------------------
+node node_modules/vitest/vitest.mjs run src/r5-product-bridge.test.ts
+  Test Files  1 passed (1)
+       Tests  30 passed (30)
+   Duration  53.40s
+
+node helpers/typecheck.mjs
+  typecheck: PASS -- 2 package(s), complete production graph, tests included.
+  (dsh-daily-work 92 files: 39 production + 53 test; dsh-ipython 24 files:
+   13 production + 11 test)
+
+node <pinned>/typescript/bin/tsc -p tsconfig.json   (the build into lib/)
+  exit 0

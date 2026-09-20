@@ -49,6 +49,15 @@ import { Context } from '@deepseek-ai/cordis'
 import Subprocess from '@deepseek-ai/dsh-subprocess-local'
 import SystemPrompt from '@deepseek-ai/dsh-system-prompt'
 import ToolRuntime, { defineTool, type ToolExecutionResult } from '@deepseek-ai/dsh-tools'
+// The DURABLE ledger path. Mounted the way the profile's base bundle mounts it
+// (`storage` hub -> `storage-json` backend -> `storage-domain` facility), so the
+// crash-window-reopen arm below exercises the real storage domain rather than a
+// stand-in: this is the same three-row stack `packages/bundle/base/cordis.patch.yml`
+// mounts, and `openBridgeLedger` consumes the facility row exactly as the product
+// does.
+import Storage from '@deepseek-ai/dsh-storage'
+import * as storageJsonPlugin from '@deepseek-ai/dsh-storage-json'
+import * as storageDomainPlugin from '@deepseek-ai/dsh-storage-domain'
 import type { Agent } from '@deepseek-ai/dsh-agent'
 import { mkdtemp, rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
@@ -58,7 +67,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import * as ipythonTool from './ipython-tool.ts'
 import { KernelService } from './kernel-plugin.ts'
 import { BridgeServer } from './bridge.ts'
-import { MemoryBridgeLedger } from './bridge-ledger.ts'
+import { MemoryBridgeLedger, openBridgeLedger, storageFacilityOf } from './bridge-ledger.ts'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
 const BROKER = resolve(HERE, 'broker.py')
@@ -518,6 +527,107 @@ describe('R5-BR-07: dispositions, the half that was missing', () => {
       .rejects.toThrow(/only handed-to-jobs/u)
   }, 30_000)
 
+  it('a lease WITH a handoff writes `handed-to-jobs` and names the job; the producer is exercised', async () => {
+    // WHY THIS ARM EXISTS. The arm above tests the LEDGER's rules for
+    // `handed-to-jobs`; it never drives the PRODUCER, which lives in the lease
+    // (`settleQueuedCalls`). So the branch that CHOOSES between the two arms was
+    // unexercised: a regression that always took the `abandoned-unstarted` arm --
+    // exactly the arm the default composition takes, so the mistake would be
+    // invisible in production -- would have left every test green.
+    //
+    // The fixture is the same shape as the real one: one call dispatched and
+    // blocked, one accepted behind it, and a close that disposes the second. The
+    // ONLY difference from the real composition is that `handoffToJobs` is set,
+    // which is precisely the configuration the reachability verdict is about.
+    let entered = 0
+    const handed: Array<{ subCallId: string, name: string }> = []
+    const ledger = new MemoryBridgeLedger()
+    const bridge = new BridgeServer({ artifactDirectory: join(root, 'ledger-handoff') })
+    await bridge.start()
+    const lease = bridge.mintLease({
+      sessionId: 'r5-handoff', cellId: 'cell-1', epoch: 1,
+      outerCallId: 'outer-handoff', rootCallId: 'outer-handoff',
+      ledger,
+      // The host handoff: it OWNS the call now and returns the job's id.
+      handoffToJobs: call => {
+        handed.push({ subCallId: call.subCallId, name: call.name })
+        return { jobId: 'job-77' }
+      },
+      handler: async () => {
+        entered += 1
+        await new Promise<void>(resolveDelay => {
+          const timer = setTimeout(resolveDelay, 30_000)
+          lease.signal.addEventListener('abort', () => { clearTimeout(timer); resolveDelay() }, { once: true })
+        })
+        return { ok: true, value: { ran: true } }
+      },
+    })
+
+    const first = lease.invoke({ requestId: 'req-a', tool: 'r5_slow', arguments: {}, cellId: 'cell-1', epoch: 1, leaseId: lease.id })
+    for (let i = 0; i < 200 && entered === 0; i += 1) await new Promise(r => setTimeout(r, 10))
+    expect(entered).toBe(1)
+    const second = lease.invoke({ requestId: 'req-b', tool: 'r5_queued', arguments: { x: 1 }, cellId: 'cell-1', epoch: 1, leaseId: lease.id })
+    await new Promise(r => setTimeout(r, 50))
+
+    await lease.close('completed', 'the cell settled')
+    await Promise.allSettled([first, second])
+
+    // THE PRODUCER RAN, and it was handed the HOST's identity for the call, so
+    // the job's owner can correlate it with the ledger row rather than guessing.
+    expect(handed).toHaveLength(1)
+    expect(handed[0]?.subCallId).toBe('outer-handoff:ipython:2')
+    expect(handed[0]?.name).toBe('r5_queued')
+
+    // THE ROW: `handed-to-jobs` WITH the job id, on the durable record.
+    const row = ledger.get('outer-handoff:ipython:2')
+    expect(row?.disposition).toBe('handed-to-jobs')
+    expect(row?.jobId).toBe('job-77')
+    // And the call really was never dispatched: the handoff took ownership
+    // instead of the lease running it.
+    expect(entered).toBe(1)
+    // The two arms are distinguished on the SAME fixture: with the handoff, this
+    // row is NOT abandoned-unstarted.
+    expect(row?.disposition).not.toBe('abandoned-unstarted')
+    await bridge.close()
+  }, 60_000)
+
+  it('settled vs cancelled is decided by the CLOSE, not by whether the result was an abort', async () => {
+    // R5's stated rule, asserted directly because the production composition
+    // makes the two cases look alike. The rule is: a call that FINISHED BEFORE
+    // the close began is `settled`, whatever its outcome -- including a tool that
+    // failed with its own error, and including a call whose result happens to be
+    // an ABORTED error. Only "was the lease closing when this returned" decides.
+    //
+    // The counterexample this rules out: inferring `cancelled` from
+    // `result.isError`. A tool that legitimately fails would then be recorded as a
+    // shutdown, and an operator reading the ledger would see cancellations that
+    // never happened while real tool failures were misattributed to the close.
+    const ledger = new MemoryBridgeLedger()
+    const bridge = new BridgeServer({ artifactDirectory: join(root, 'ledger-settled-rule') })
+    await bridge.start()
+    const lease = bridge.mintLease({
+      sessionId: 'r5-settled-rule', cellId: 'cell-1', epoch: 1,
+      outerCallId: 'outer-rule', rootCallId: 'outer-rule',
+      ledger,
+      // A handler that FAILS. Its outcome is an error, and the call nevertheless
+      // finished while the lease was OPEN, so it must be `settled`.
+      handler: async () => ({ ok: false, error: { code: 'TOOL_FAILED', message: 'the tool failed on its own' } }),
+    })
+
+    const outcome = await lease.invoke({ requestId: 'req-fail', tool: 'r5_failing', arguments: {}, cellId: 'cell-1', epoch: 1, leaseId: lease.id })
+    expect(outcome.ok).toBe(false)
+    // The close happens AFTER the call already returned.
+    await lease.close('completed', 'the cell settled')
+
+    const row = ledger.get('outer-rule:ipython:1')
+    // THE RULE: an error outcome does NOT make it `cancelled`.
+    expect(row?.disposition).toBe('settled')
+    expect(row?.isError).toBe(true)
+    // `settled` carries no close reason, because it did not come from a close.
+    expect(row?.closeReason).toBeUndefined()
+    await bridge.close()
+  }, 60_000)
+
   it('a FAILED disposition write is reported, not swallowed, and CLOSED still happens', async () => {
     // FAULT INJECTION for the case a happy-path test cannot see: the ledger's
     // disposition write rejects. Before the fix, `flush` used a bare
@@ -584,6 +694,86 @@ describe('R5-BR-07: dispositions, the half that was missing', () => {
     expect(lease.lifecycle).toBe('CLOSED')
     expect(lease.unrecordedDispositions).toHaveLength(0)
     expect(ledger.get('outer-healthy:ipython:1')?.disposition).toBe('settled')
+    await bridge.close()
+  }, 60_000)
+
+  it('a call that NEVER DISPATCHED is not reported as the crash window', async () => {
+    // THE DEFECT THIS ARM EXISTS FOR, measured on a real `daily` boot before it
+    // was written down (S13 / BR-07, composition-tier.json).
+    //
+    // `unknownOutcomes()` filters on `settledAt === undefined` alone, and the ONLY
+    // writer of `settledAt` is `runOne` -- which is reached only when a call was
+    // actually dispatched. A call that was ACCEPTED, never dispatched, and then
+    // disposed `abandoned-unstarted` therefore carries no `settledAt` and was
+    // returned by `unknownOutcomes()` as the crash window, whose stated meaning is
+    // "the outcome is unknown". Its own disposition proves the opposite: nothing
+    // ran, so there is no unknown effect to reconcile.
+    //
+    // WHY THAT MATTERS RATHER THAN BEING PEDANTRY. The crash window is the set a
+    // human reconciles against reality, and the project's standing constraint is
+    // that an unknown effect must never be auto-replayed. A reader told "these
+    // outcomes are unknown" about calls that provably never ran is being sent to
+    // reconcile effects that cannot exist -- and the REAL crash window is diluted
+    // by every ordinary cell that returned with a call still queued, which is the
+    // ordinary case BR-07 is about.
+    //
+    // THE FIXTURE IS THE PRODUCT'S OWN DRAIN, not a hand-written row: one call is
+    // dispatched and blocks, a second is accepted behind it in the serial queue,
+    // and the close disposes the second without ever dispatching it.
+    let entered = 0
+    const ledger = new MemoryBridgeLedger()
+    const bridge = new BridgeServer({ artifactDirectory: join(root, 'ledger-unknown') })
+    await bridge.start()
+    const lease = bridge.mintLease({
+      sessionId: 'r5-unknown', cellId: 'cell-1', epoch: 1,
+      outerCallId: 'outer-unknown', rootCallId: 'outer-unknown',
+      ledger,
+      handler: async (_call, context) => {
+        entered += 1
+        await new Promise<void>(resolveDelay => {
+          const timer = setTimeout(resolveDelay, 30_000)
+          // The lease's own controller is what aborts a dispatched call.
+          const onAbort = () => { clearTimeout(timer); resolveDelay() }
+          lease.signal.addEventListener('abort', onAbort, { once: true })
+        })
+        return { ok: true, value: { ran: true, sequence: context.sequence } }
+      },
+    })
+
+    const first = lease.invoke({ requestId: 'req-a', tool: 'r5_slow', arguments: {}, cellId: 'cell-1', epoch: 1, leaseId: lease.id })
+    // Wait until the first call is genuinely INSIDE the handler, so the second is
+    // deterministically queued behind it rather than racing it.
+    for (let i = 0; i < 200 && entered === 0; i += 1) await new Promise(r => setTimeout(r, 10))
+    expect(entered).toBe(1)
+    const second = lease.invoke({ requestId: 'req-b', tool: 'r5_queued', arguments: {}, cellId: 'cell-1', epoch: 1, leaseId: lease.id })
+    // Let the second frame reach the lease so its STARTED row exists.
+    await new Promise(r => setTimeout(r, 50))
+
+    await lease.close('completed', 'the cell settled')
+    await Promise.allSettled([first, second])
+
+    // THE FIXTURE IS THE CASE: one dispatched, one never dispatched.
+    expect(ledger.get('outer-unknown:ipython:1')?.disposition).toBe('cancelled')
+    expect(ledger.get('outer-unknown:ipython:2')?.disposition).toBe('abandoned-unstarted')
+    // The never-dispatched call never ran -- this is what makes its outcome KNOWN.
+    expect(entered).toBe(1)
+
+    // THE ASSERTION THE OLD CODE FAILED: the unknown set is EMPTY. Nothing here
+    // has an unknown outcome: one call was aborted and settled, the other never
+    // started.
+    expect(ledger.unknownOutcomes()).toHaveLength(0)
+
+    // AND THE CONTRAST, so this is not satisfied by returning nothing ever: a row
+    // with NO disposition at all -- the real crash window, a dispatch whose result
+    // was never learned -- IS still reported.
+    await ledger.started({
+      subCallId: 'outer-crash:ipython:1', sessionId: 'r5-unknown', kernelEpoch: 1,
+      cellId: 'cell-1', outerCallId: 'outer-crash', rootCallId: 'outer-crash',
+      requestId: 'req-crash', argsDigest: 'a'.repeat(64), name: 'r5_mutating',
+    })
+    const unknown = ledger.unknownOutcomes()
+    expect(unknown).toHaveLength(1)
+    expect(unknown[0]?.subCallId).toBe('outer-crash:ipython:1')
     await bridge.close()
   }, 60_000)
 })
@@ -1204,5 +1394,221 @@ describe('R5-J5 continued: request-id idempotency and the crash window', () => {
     // And the unknown state is READABLE, which is what makes the crash window
     // reportable rather than silent.
     expect(typeof LedgerClass.prototype.unknownOutcomes).toBe('function')
+  }, 60_000)
+
+  it('a DURABLE crash window survives a restart and is still not re-sent', async () => {
+    // THE STRONGEST FORM OF THE NO-REPLAY CLAIM, and the one the interface-shape
+    // arm above cannot make. That arm asserts no replay PRIMITIVE exists; this one
+    // puts a real row through the real storage domain, reopens the domain over the
+    // SAME directory as a second "process" would, and shows that (a) the unknown
+    // row is still readable and (b) reopening it dispatches NOTHING.
+    //
+    // WHY REOPENING IS THE RIGHT STIMULUS. A crash is not a code path that can be
+    // invoked; the observable half of "the process died" is that the NEXT process
+    // opens the durable ledger and finds the row. If a host were going to
+    // auto-replay an unknown effect, that is the moment it would happen. So the
+    // second open is the moment to measure.
+    const dir = await mkdtemp(join(tmpdir(), 'dsh-ipython-crash-reopen-'))
+    let executed = 0
+    const openLedger = async () => {
+      const c = new Context()
+      await c.plugin(Storage)
+      await c.plugin(storageJsonPlugin as never, { root: join(dir, 'store') } as never)
+      await c.plugin(storageDomainPlugin as never, { backend: 'json' } as never)
+      const opened = await openBridgeLedger(storageFacilityOf(c))
+      expect(opened?.durable).toBe(true)
+      return { ctx: c, ledger: opened?.ledger }
+    }
+
+    // ---- process 1: a call is dispatched and its outcome is never learned ----
+    // THE CRASH IS MODELLED BY ABANDONMENT, NOT BY KILLING THE PROCESS, and the
+    // first version of this arm got that wrong in a way worth recording: it gave
+    // the handler a promise that never resolves and then called `bridge.close()`,
+    // which DRAINS -- so the test hung for its full 120 s budget. That is not a
+    // product defect; it is the lease doing exactly what it promises ("a close
+    // waits for everything it authorised"). A real crash does not wait, so the
+    // faithful model is to leave the call PENDING and never close the lease.
+    //
+    // The handler is gated instead of endless, so the fixture can be unwound at
+    // the end of the test without lying about the state observed in between.
+    let releaseHandler: () => void = () => {}
+    const gate = new Promise<void>(resolveGate => { releaseHandler = resolveGate })
+    const first = await openLedger()
+    const bridge = new BridgeServer({ artifactDirectory: join(dir, 'artifacts') })
+    await bridge.start()
+    const lease = bridge.mintLease({
+      sessionId: 'r5-crash-reopen', cellId: 'cell-1', epoch: 1,
+      outerCallId: 'outer-reopen', rootCallId: 'outer-reopen',
+      ledger: first.ledger as never,
+      handler: async () => { executed += 1; await gate; return { ok: true, value: { ran: true } } },
+    })
+    const pending = lease.invoke({ requestId: 'req-crash', tool: 'r5_mutating', arguments: { amount: 100 }, cellId: 'cell-1', epoch: 1, leaseId: lease.id })
+    for (let i = 0; i < 200 && executed === 0; i += 1) await new Promise(r => setTimeout(r, 10))
+    expect(executed).toBe(1)
+    // The STARTED row is durable BEFORE the dispatch, which is the ordering the
+    // crash window depends on. Read it back from the domain, not from memory.
+    expect(first.ledger?.get('outer-reopen:ipython:1')?.startedAt).toBeTruthy()
+    expect(first.ledger?.get('outer-reopen:ipython:1')?.settledAt).toBeUndefined()
+    // The lease is NOT closed and the call is NOT settled: the process "died"
+    // here. `pending` stays unresolved on purpose.
+    void pending.catch(() => undefined)
+
+    // ---- process 2: reopen the SAME durable store ---------------------------
+    const second = await openLedger()
+    const rows = second.ledger?.all() ?? []
+    expect(rows).toHaveLength(1)
+    const row = rows[0]
+    // THE CRASH WINDOW IS READABLE, and it is NOT misreported as a failure: the
+    // row carries its intent and no settlement.
+    expect(row?.subCallId).toBe('outer-reopen:ipython:1')
+    expect(row?.argsDigest).toMatch(/^[a-f0-9]{64}$/u)
+    expect(row?.settledAt).toBeUndefined()
+    // The row has no disposition: the lease never closed, so nothing disposed it.
+    // THIS is what distinguishes it from the abandoned call in the arm above, and
+    // it is why the predicate keys on the DISPOSITION rather than on `settledAt`.
+    expect(row?.disposition).toBeUndefined()
+    expect(second.ledger?.unknownOutcomes()).toHaveLength(1)
+    expect(second.ledger?.unknownOutcomes()[0]?.subCallId).toBe('outer-reopen:ipython:1')
+
+    // AND NOTHING WAS RE-SENT. Reopening the ledger dispatched no tool: the
+    // counter from process 1 is still 1, and process 2 registered no tool at all,
+    // so a replay would have had nowhere to go. The property under test is that
+    // the reopen path contains no dispatch -- which is a fact about the code that
+    // ran, not about a comment.
+    expect(executed).toBe(1)
+
+    // THE NEGATIVE, so this cannot pass by the ledger being unwritable: a
+    // reconciliation CAN still record the truth later. The brief requires that an
+    // unknown effect is not AUTO-replayed; it does not forbid a human or a
+    // tool-specific reconciler from settling it.
+    await second.ledger?.settled('outer-reopen:ipython:1', {
+      isError: false, resultDigest: 'a'.repeat(64), resultBytes: 2,
+    })
+    expect(second.ledger?.unknownOutcomes()).toHaveLength(0)
+
+    // UNWIND THE FIXTURE. The gate is released and the lease closed only NOW,
+    // after every observation above was taken, so the unwind cannot alter what was
+    // measured. (This is the step the first version of this arm was missing, which
+    // is why it hung; see the comment at the top of process 1.)
+    releaseHandler()
+    await lease.close('completed', 'the fixture unwinds after the observations')
+    await bridge.close()
+    await first.ctx.fiber.dispose()
+    await second.ctx.fiber.dispose()
+    await rm(dir, { recursive: true, force: true })
+  }, 120_000)
+
+  it('a FAILED SETTLEMENT write does not hang the caller, and IS reported', async () => {
+    // THE DEFECT THIS ARM FOUND, and the reason it exists.
+    //
+    // `runOne`'s docstring states: "A THROW HERE MUST STILL SETTLE THE CALLER...
+    // a host-level failure (a ledger write, a bug) would otherwise leave the
+    // accepted promise pending forever and hang the cell." That was TRUE of the
+    // handler and FALSE of the ledger write: the try/catch covered only
+    // `this.handler`, so a rejected `ledger.settled` threw out of `runOne`,
+    // `runQueue` never reached `entry.resolve`, and the accepted promise stayed
+    // pending forever.
+    //
+    // MEASURED BEFORE THE FIX: the caller had not settled after 5 s (the race
+    // below timed out with 'HUNG'), and every call queued behind it never ran
+    // either, because the queue is serial and the throw ended the loop. `close()`
+    // hung with it, since its drain awaits every in-flight promise -- so a single
+    // unwritable settlement turned a cell's whole bridge into a hang.
+    const failing = new MemoryBridgeLedger()
+    let settlementAttempts = 0
+    failing.settled = async () => {
+      settlementAttempts += 1
+      throw new Error('injected storage failure: the settlement could not be written')
+    }
+    const bridge = new BridgeServer({ artifactDirectory: join(root, 'settlement-fault') })
+    await bridge.start()
+    const lease = bridge.mintLease({
+      sessionId: 'r5-settlement-fault', cellId: 'cell-1', epoch: 1,
+      outerCallId: 'outer-settlement', rootCallId: 'outer-settlement',
+      ledger: failing,
+      handler: async () => ({ ok: true, value: { ok: true } }),
+    })
+
+    // Bounded by a race rather than by the test budget, so a regression is
+    // reported as HUNG instead of stalling the whole file.
+    const raced = await Promise.race([
+      lease.invoke({ requestId: 'req-1', tool: 'r5_ok', arguments: {}, cellId: 'cell-1', epoch: 1, leaseId: lease.id })
+        .then(outcome => ({ kind: 'settled' as const, outcome }), error => ({ kind: 'rejected' as const, error: String(error) })),
+      new Promise<{ kind: 'HUNG' }>(resolveRace => { setTimeout(() => { resolveRace({ kind: 'HUNG' }) }, 5000) }),
+    ])
+    expect(settlementAttempts).toBe(1)
+    // THE FIX: the caller is settled, with the tool's own outcome, even though the
+    // record could not be written. The call really did run and really did succeed;
+    // refusing to tell the caller that would be a different lie.
+    expect(raced.kind).toBe('settled')
+    expect((raced as { outcome: { ok: boolean } }).outcome.ok).toBe(true)
+
+    // AND THE RECORD IS HONEST ABOUT IT: no settlement, and deliberately NO
+    // disposition. A disposition here would hide the row from
+    // `unknownOutcomes()` -- the one place a reader looks for an outcome that was
+    // never established -- so the truthful shape is STARTED with neither.
+    const row = failing.get('outer-settlement:ipython:1')
+    expect(row?.startedAt).toBeTruthy()
+    expect(row?.settledAt).toBeUndefined()
+    expect(row?.disposition).toBeUndefined()
+    expect(failing.unknownOutcomes()).toHaveLength(1)
+
+    // AND THE LOSS IS REPORTED, through the same channel the disposition-write
+    // failure uses, so "is this close's record complete?" has ONE answer covering
+    // both halves of the record.
+    const failure = await lease.close('completed', 'the cell settled').then(() => undefined, (error: unknown) => error)
+    expect(failure).toBeDefined()
+    expect(String(failure)).toMatch(/could not be recorded durably/u)
+    const unrecorded = (failure as { unrecorded: Array<{ subCallId: string, reason: string }> }).unrecorded
+    expect(unrecorded).toHaveLength(1)
+    expect(unrecorded[0]?.subCallId).toBe('outer-settlement:ipython:1')
+    // The reason names the SETTLEMENT, so a reader can tell this apart from a
+    // disposition-write failure.
+    expect(unrecorded[0]?.reason).toMatch(/settlement could not be recorded/u)
+    await bridge.close()
+  }, 60_000)
+
+  it('a call queued behind a failed settlement still runs: one bad record is not a dead bridge', async () => {
+    // THE SECOND HALF OF THE SAME DEFECT. The queue is serial, so a throw out of
+    // `runOne` ended the runner loop and every call behind it was silently never
+    // dispatched. This is the arm that shows the queue SURVIVES a bad record:
+    // call 1's settlement fails, and call 2 still reaches its handler.
+    let entered = 0
+    const failing = new MemoryBridgeLedger()
+    const realSettled = failing.settled.bind(failing)
+    failing.settled = async (subCallId, settlement) => {
+      if (subCallId.endsWith(':1')) throw new Error('injected: the first settlement cannot be written')
+      await realSettled(subCallId, settlement)
+    }
+    const bridge = new BridgeServer({ artifactDirectory: join(root, 'settlement-queue') })
+    await bridge.start()
+    const lease = bridge.mintLease({
+      sessionId: 'r5-settlement-queue', cellId: 'cell-1', epoch: 1,
+      outerCallId: 'outer-queue', rootCallId: 'outer-queue',
+      ledger: failing,
+      handler: async (_call, context) => { entered += 1; return { ok: true, value: { sequence: context.sequence } } },
+    })
+
+    const raced = await Promise.race([
+      Promise.all([
+        lease.invoke({ requestId: 'req-1', tool: 'r5_a', arguments: {}, cellId: 'cell-1', epoch: 1, leaseId: lease.id }),
+        lease.invoke({ requestId: 'req-2', tool: 'r5_b', arguments: {}, cellId: 'cell-1', epoch: 1, leaseId: lease.id }),
+      ]).then(outcomes => ({ kind: 'both' as const, outcomes }), error => ({ kind: 'rejected' as const, error: String(error) })),
+      new Promise<{ kind: 'HUNG' }>(resolveRace => { setTimeout(() => { resolveRace({ kind: 'HUNG' }) }, 8000) }),
+    ])
+    expect(raced.kind).toBe('both')
+    // BOTH ran: the queue was not killed by the first call's unwritable record.
+    expect(entered).toBe(2)
+    // The second call's record is COMPLETE, because only the first settlement was
+    // made to fail.
+    expect(failing.get('outer-queue:ipython:2')?.settledAt).toBeTruthy()
+    expect(failing.get('outer-queue:ipython:2')?.disposition).toBe('settled')
+    // And the first is reported as unknown, which is the truth about it.
+    expect(failing.unknownOutcomes()).toHaveLength(1)
+    expect(failing.unknownOutcomes()[0]?.subCallId).toBe('outer-queue:ipython:1')
+
+    const failure = await lease.close('completed', 'the cell settled').then(() => undefined, (error: unknown) => error)
+    expect(failure).toBeDefined()
+    await bridge.close()
   }, 60_000)
 })

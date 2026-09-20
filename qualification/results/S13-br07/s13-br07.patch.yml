@@ -1,0 +1,16 @@
+# Verification overlay for S13's BR-07 composition-tier measurement.
+#
+# ONE row, and it is the PROBE ONLY. There is deliberately NO ipython tool row and
+# NO ipython service row: the question is what the `daily` profile's OWN
+# composition does when a cell returns with calls in flight. Adding a row would
+# prove the mechanism works when a row is present while proving nothing about the
+# product -- the G-FIX-04/G-FIX-05 shape, and the defect class F2 was.
+#
+# THE PROBE PATH IS THIS WORKTREE'S OWN, and it is under the S13 results
+# directory. R5's overlay hardcodes `D:/DSH/work/wt-r5/...`, which from any other
+# worktree loads a SIBLING writer's module -- the foreign-artifact trap this
+# project has already paid for twice (G-SEAM-29, G-SEAM-36). This file is written
+# for wt-s13 and is not a general-purpose runner.
+- insert:
+    - id: s13-br07-probe
+      name: 'D:/DSH/work/wt-s13/qualification/results/S13-br07/s13-br07-probe.mjs'

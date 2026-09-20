@@ -1,0 +1,108 @@
+{
+  "_provenance": {
+    "what": "BEFORE state of the real-boot drain measurement, captured verbatim from the run's stdout.",
+    "command": "DSH_HOME='D:\\DSH\\home\\s13' node qualification/results/S13-br07/s13-br07-driver.mjs",
+    "when": "2026-09-20, before commit 3ab6ba2",
+    "why_not_a_second_boot": "The after-run overwrote composition-tier.json, so this file is the first run's own output rather than a re-run of the old code. Re-running the OLD code is NOT reproducible from this tree any more, because the fix is committed; the reproducible form of the same before/after pair is the fail-first test run recorded in fail-first.txt and the unknownByNaiveSettledAtFilter field of composition-tier.json, which computes the OLD predicate against the CURRENT durable rows.",
+    "identity": "D:\\DSH\\work\\wt-s13, packages/dsh-ipython/lib built from this tree's src/ (tsc -p tsconfig.json, exit 0)",
+    "honest_note": "One field in this capture is an artifact of the PROBE, not a finding about the product, and it was corrected in the probe afterwards: bridgePresentAfterBoot=false / kernelEpoch=0 is a FALSE NEGATIVE -- the kernel and its bridge are created LAZILY on the first cell, and the probe read them before any cell ran. The `started`/`settled` fields in the disposition rows are the LEDGER's own stamps (`row.startedAt !== undefined` / `row.settledAt !== undefined`), read straight off the durable record. Note the two senses of `started` this makes visible: the ledger's `startedAt` is an INTENT stamp written at ACCEPTANCE (bridge.ts:551, documented 'BEFORE any mutating dispatch'), while the lease's `entry.started` boolean (bridge.ts:772) means DISPATCHED. So `started: true, settled: false` on the abandoned call is correct and is exactly the state that exposes the finding below."
+  },
+  "_NOT_CAPTURED": {
+    "why": "The first run's driver summary was read through `tail -110`, so its header fields (harness `port`, `portReleased`, `hostExitCode`, `timedOut`) were cut off above the visible window and are NOT recorded here. They are deliberately left absent rather than filled in with plausible values: the webserver port 9182 appears in the tail only as the `dsh web:` URL, which is a DIFFERENT port from the harness's chosen one, and substituting it would be a fabricated measurement. Only the probe's own `result` object, which was fully visible, is archived here.",
+    "affected_by_this": "nothing load-bearing: the finding is `unknownOutcomeCount` inside `result`, which was visible in full."
+  },
+  "result": {
+    "scope": "S13 / BR-07: dispositions actually written when a real boot returns a cell with calls in flight",
+    "profileBooted": true,
+    "presetDefaultId": "daily-standard",
+    "presetRoots": [
+      "D:\\DSH\\src\\dsh-src\\packages\\preset\\agent-presets\\presets\\",
+      "D:/DSH/home/s13/profiles/daily/presets/",
+      "D:\\DSH\\home\\s13\\.agent-presets"
+    ],
+    "kernelServicePresent": true,
+    "sessionCreated": true,
+    "sessionId": "session-5b887978-ae22-46c9-99a0-30e32fb283a6",
+    "ipythonToolPresent": true,
+    "toolCountAgentKey": 29,
+    "bridgePresentAfterBoot": false,
+    "bridgeEndpointPort": null,
+    "bridgeLeasesAtRestAtStart": null,
+    "kernelEpoch": 0,
+    "kernelLifecycle": "READY",
+    "toolCallDispatched": true,
+    "toolCallOutcome": "ok",
+    "cellPrinted": "outcome: ok\nkernel epoch: 1\n--- stdout ---\nRETURNING_WITH_A_IN_FLIGHT=True\nRETURNING_WITH_B_IN_FLIGHT=True\n\n[1 shell frame(s) for other requests were ignored while waiting for this cell. They did not complete it.]",
+    "returnedWithAInFlight": "True",
+    "returnedWithBInFlight": "True",
+    "registryDispatches": [
+      { "name": "s13_slow_inflight", "callId": "s13-br07-outer-1:ipython:1" }
+    ],
+    "slowEntered": 1,
+    "queuedToolEntered": 0,
+    "ledgerDurable": true,
+    "ledgerRowsViaApi": 2,
+    "ledgerDispositionsViaApi": [
+      {
+        "subCallId": "s13-br07-outer-1:ipython:1",
+        "name": "s13_slow_inflight",
+        "disposition": "cancelled",
+        "jobId": null,
+        "closeReason": "completed",
+        "started": true,
+        "settled": true
+      },
+      {
+        "subCallId": "s13-br07-outer-1:ipython:2",
+        "name": "s13_queued_behind",
+        "disposition": "abandoned-unstarted",
+        "jobId": null,
+        "closeReason": "completed",
+        "started": true,
+        "settled": false
+      }
+    ],
+    "ledgerUnrecordedFailures": [],
+    "ledgerFilePath": "D:\\DSH\\home\\s13\\storages\\dsh_ipython_bridge_ledger.json",
+    "ledgerFileReadable": true,
+    "ledgerFileRows": 2,
+    "ledgerDispositionsViaFile": [
+      {
+        "subCallId": "s13-br07-outer-1:ipython:1",
+        "name": "s13_slow_inflight",
+        "disposition": "cancelled",
+        "jobId": null,
+        "closeReason": "completed",
+        "started": true,
+        "settled": true
+      },
+      {
+        "subCallId": "s13-br07-outer-1:ipython:2",
+        "name": "s13_queued_behind",
+        "disposition": "abandoned-unstarted",
+        "jobId": null,
+        "closeReason": "completed",
+        "started": true,
+        "settled": false
+      }
+    ],
+    "apiAndFileAgree": true,
+    "unknownOutcomeCount": 1,
+    "jobsServicePresent": true,
+    "jobsServiceNames": [
+      "start", "list", "get", "read", "kill", "wait", "onJobDone", "onJobsChanged",
+      "attachController", "servesOwner", "activeJobCount", "listenersFor", "expect",
+      "assertAccess", "snapshot", "changedFor", "notifyChanged", "settle",
+      "ensureOwnerCleanup", "disposeOwned", "disposeAll", "cancelForTeardown"
+    ],
+    "leasesAtRestAfter": 0,
+    "error": null
+  },
+  "_THE_FINDING": {
+    "observed": "unknownOutcomeCount = 1",
+    "but": "the row it counts is s13-br07-outer-1:ipython:2, whose own durable disposition is `abandoned-unstarted`, and whose tool NEVER ENTERED (queuedToolEntered = 0, registryDispatches has one entry, for call 1 only).",
+    "so": "a call that provably never ran was reported by unknownOutcomes() as OUTCOME_UNKNOWN, i.e. as an effect whose outcome is unresolved.",
+    "cause": "unknownOutcomes() filtered on `settledAt === undefined` alone; the only writer of settledAt is runOne (bridge.ts:809), reached only when entry.started === true (bridge.ts:772). An abandoned call therefore never gets the stamp.",
+    "verdict": "DEFECT, fixed in commit 3ab6ba2 (outcomeIsUnknown), with a fail-first test."
+  }
+}
