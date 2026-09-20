@@ -41,6 +41,37 @@ the bottom before using anything here.
 > that report is progress toward this target. See `docs/DELETE-AUDIT.md` §4.
 > Deployment identity is `0a0996f3…`; promotion is `NOT_READY`.
 
+## The acceptance spec is fully executed — read this first
+
+**109 cases, all filed: 95 PASS, 13 FAIL, 1 BLOCKED_EXTERNAL, 0 NOT_RUN**, under
+deployment identity `0a0996f3…`. The authoritative file is
+`qualification/specs/acceptance-spec.trusted-local-v1.json`; each case carries its
+own `status` and `evidence`, so read the spec rather than this summary.
+
+```sh
+python qualification/runners/verify-spec.py            # spec/evidence agreement
+python qualification/runners/verify-spec.py --summary  # per-family counts
+python qualification/results/T1-spec/verify-identity.py # identity, 30/30
+python helpers/doctor.py                               # recorded inputs vs the tree
+```
+
+All four are green. **None of them judges whether an oracle was established** —
+that is a reading, and each slice's `GATES.md` is where it happens.
+
+**Promotion is `NOT_READY`, and the reason is not the FAIL count.** Three of the
+thirteen FAILs are reasons a user cannot use this as intended, and each is a
+mechanism that works with nothing in the product that calls it:
+
+| Defect | What a user hits |
+|---|---|
+| `G-SEAM-31` | The model-facing `work` tool throws `this session has no active run` — no user action creates a run, so the **mandatory** N=10 rolling top-up cannot be exercised on the composed profile |
+| `G-SEAM-34` | A Python cell cannot reach a DSH tool: the bridge is outside every entry point's closure. The forbidden seam is correctly absent, which makes the sanctioned one being unwired worse, because `ipython` is the only execution surface |
+| `G-SEAM-33` | The policy says `workspace-write`, so the model is told a false statement about its own authority and PTC still confines |
+
+**The correct next step is to repair or explicitly accept each named defect** — not
+to re-run the cases, and not to promote. See `docs/GAPS.md` for all of them and
+`qualification/results/ROOT-verification/STATUS-final.md` for the index.
+
 ## What this is
 
 An implementation of the mandatory rolling child-work capability on top of DSH's
