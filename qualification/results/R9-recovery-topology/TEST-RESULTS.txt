@@ -1,0 +1,27 @@
+=== R9 TEST RESULTS ===
+worktree D:\DSH\work\wt-r9   branch wt/r9   base a4b0838 + this change
+runner: node node_modules/vitest/vitest.mjs run <one file>  (one at a time, per the CPU rule)
+
+durability-advanced.test.ts       Tests  32 passed (32)
+durability-records.test.ts       Tests  25 passed (25)
+sec-gates.test.ts              Tests  46 passed (46)
+tool-protocol.test.ts          Tests  22 passed (22)
+isolation.test.ts              Tests  39 passed (39)
+upg-gates.test.ts              Tests  50 passed (50)
+reconcile.test.ts              Tests  18 passed (18)
+host.test.ts                   Tests  21 passed (21)
+dep-gates.test.ts              Tests  37 passed (37)
+lifecycle.test.ts              Tests  7 passed (7)
+wire-faults.test.ts            Tests  8 passed (8)
+production-port.test.ts        Tests  2 passed (2)
+
+=== TYPECHECK / BUILD ===
+tsc -p tsconfig.json --noEmit      -> exit 0 (no output)
+tsc -p tsconfig.check.json --noEmit -> exit 0 (the stricter checker the ID-05 gate uses)
+tsc -p tsconfig.json (build)        -> exit 0, lib/ rebuilt to match src/
+
+=== BOOT (assembled daily profile) ===
+DSH_HOME=D:\DSH\home\r9 node <dsh-src>/apps/cli/lib/bin.js --profile daily --no-open --port 0
+-> printed the web URL on 127.0.0.1:11867 and ran until the harness timeout killed it.
+   No 'did not activate', no error line, no reference to a refusal domain.
+--dump-config -> exit 0; the daily-work-host row activates; no refusal-domain row.

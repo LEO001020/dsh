@@ -1,0 +1,4 @@
+a4b0838568f714b09f50143012e545124f0d06b3 docs: the shared brief every V3 remediation writer reads
+5edde8a5d8d79b0a138f06818a9deb3a04ccc6c22dd7bfe1ae338c967a45f440 *packages/dsh-daily-work/src/recovery.ts
+e481105052dfbc0c9d1d341ded03dc6941d06e087f0d15a5e818876c0ce62867 *packages/dsh-daily-work/src/record.ts
+c3b1bb7e00d67b44b47626fd9fb8d283a7a387557d809ac531c39904312f8dbd *packages/dsh-daily-work/src/host.ts

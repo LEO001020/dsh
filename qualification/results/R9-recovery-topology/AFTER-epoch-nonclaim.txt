@@ -1,0 +1,64 @@
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.8 [39m[90mD:/DSH/work/wt-r9/packages/dsh-daily-work[39m
+
+ [2m[90m↓[39m[22m src/durability-advanced.test.ts[2m > [22mD02: a second host over one live store[2m > [22mmeasures what upstream actually does: no refusal, and silent loss of the loser's writes
+ [2m[90m↓[39m[22m src/durability-advanced.test.ts[2m > [22mD02: a second host over one live store[2m > [22mrefuses the second host once the deployment-boundary guard is configured
+ [2m[90m↓[39m[22m src/durability-advanced.test.ts[2m > [22mD02: a second host over one live store[2m > [22mreleases the claim on a clean close, so the next generation is not locked out
+ [2m[90m↓[39m[22m src/durability-advanced.test.ts[2m > [22mD02: a second host over one live store[2m > [22mdoes not refuse a store because its advisory note is unreadable
+ [2m[90m↓[39m[22m src/durability-advanced.test.ts[2m > [22mD12: a record version this build does not accept[2m > [22mrejects a v2-shaped run record at open instead of reading it as current
+ [2m[90m↓[39m[22m src/durability-advanced.test.ts[2m > [22mD12: a record version this build does not accept[2m > [22mrejects a malformed record rather than dropping it
+ [2m[90m↓[39m[22m src/durability-advanced.test.ts[2m > [22mD12: a record version this build does not accept[2m > [22mrejects a foreign unit version and a non-JSON medium, each with its own code
+ [2m[90m↓[39m[22m src/durability-advanced.test.ts[2m > [22mD12: a record version this build does not accept[2m > [22mopens the same directory normally once the record matches the current schema
+ [2m[90m↓[39m[22m src/durability-advanced.test.ts[2m > [22mD14: OS processes that outlive a hard kill[2m > [22mmeasures that a detached grandchild survives, and that recovery does not read that as cleanup
+ [2m[90m↓[39m[22m src/durability-advanced.test.ts[2m > [22mD14: OS processes that outlive a hard kill[2m > [22mdoes not treat a missing pid as proof that a process is gone
+ [32m✓[39m src/durability-advanced.test.ts[2m > [22mT9-A: the run epoch is DELETED, and v2 does not claim the guarantee[2m > [22mthe deleted settlement machinery has no surviving reference anywhere in the source[32m 54[2mms[22m[39m
+ [32m✓[39m src/durability-advanced.test.ts[2m > [22mT9-A: the run epoch is DELETED, and v2 does not claim the guarantee[2m > [22mthe run record no longer carries an epoch, and nothing writes or reads one[32m 15[2mms[22m[39m
+ [32m✓[39m src/durability-advanced.test.ts[2m > [22mT9-A: the run epoch is DELETED, and v2 does not claim the guarantee[2m > [22mthe DECIDING topology fact: no production call site can write a terminal task state[32m 43[2mms[22m[39m
+ [32m✓[39m src/durability-advanced.test.ts[2m > [22mT9-A: the run epoch is DELETED, and v2 does not claim the guarantee[2m > [22m`host.ts` no longer claims a per-await epoch re-check it does not perform[32m 2[2mms[22m[39m
+ [32m✓[39m src/durability-advanced.test.ts[2m > [22mT9-A: the run epoch is DELETED, and v2 does not claim the guarantee[2m > [22mthe v1 FAIL is preserved: REC-09 and REC-10 still read FAIL in the frozen spec[32m 4[2mms[22m[39m
+ [2m[90m↓[39m[22m src/durability-advanced.test.ts[2m > [22mT9-B: the effect ledger across a real state rewind[2m > [22mthe rehearsal's fixture defect is real: `kind` instead of `status` stores a record with no status
+ [2m[90m↓[39m[22m src/durability-advanced.test.ts[2m > [22mT9-B: the effect ledger across a real state rewind[2m > [22mwith the CORRECTED fixture the ledger opens and reconciles from the remote, never re-sending
+ [2m[90m↓[39m[22m src/durability-advanced.test.ts[2m > [22mT9-B: the effect ledger across a real state rewind[2m > [22mwhen the effect store IS inside the rewound tree, the local knowledge is SILENTLY GONE
+ [2m[90m↓[39m[22m src/durability-advanced.test.ts[2m > [22mT9-B: the effect ledger across a real state rewind[2m > [22ma lost reply that MAY have committed is reconciled by QUERY, and the transport is never invoked twice
+ [2m[90m↓[39m[22m src/durability-advanced.test.ts[2m > [22mT9-B: the effect ledger across a real state rewind[2m > [22mthe send decision table licenses a send from exactly two states, and BOTH are proofs about our own write order
+ [2m[90m↓[39m[22m src/durability-advanced.test.ts[2m > [22mT9-B: the effect ledger across a real state rewind[2m > [22man adapter that can be neither keyed nor queried is NOT RUN AT ALL, rather than run and left unknown
+ [2m[90m↓[39m[22m src/durability-advanced.test.ts[2m > [22mT9-B: the effect ledger across a real state rewind[2m > [22mthe PRODUCT path does not replay either: a launch that may have succeeded is quarantined, and a second drain refuses
+ [2m[90m↓[39m[22m src/durability-advanced.test.ts[2m > [22mT9-B: the effect ledger across a real state rewind[2m > [22ma FAILED ATTEMPT does not imply the effect did not happen — the two statuses are recorded separately
+ [2m[90m↓[39m[22m src/durability-advanced.test.ts[2m > [22mT9-B: the effect ledger across a real state rewind[2m > [22mno `safe_to_retry` predicate exists, and the nearest predicate refuses rather than permits
+ [2m[90m↓[39m[22m src/durability-advanced.test.ts[2m > [22mT9-C: FILESYSTEM gates FS-01..FS-06[2m > [22mFS-01: a native write is published atomically, and a refused write leaves the original intact
+ [2m[90m↓[39m[22m src/durability-advanced.test.ts[2m > [22mT9-C: FILESYSTEM gates FS-01..FS-06[2m > [22mFS-02: a stale version is REJECTED with a typed code, and a fresh one is accepted
+ [2m[90m↓[39m[22m src/durability-advanced.test.ts[2m > [22mT9-C: FILESYSTEM gates FS-01..FS-06[2m > [22mFS-03: concurrent same-target mutations are SERIALIZED — exactly one wins, the rest see the new version
+ [2m[90m↓[39m[22m src/durability-advanced.test.ts[2m > [22mT9-C: FILESYSTEM gates FS-01..FS-06[2m > [22mFS-04: exact edit semantics are preserved — literal match, ambiguity refused, missing text reported
+ [2m[90m↓[39m[22m src/durability-advanced.test.ts[2m > [22mT9-C: FILESYSTEM gates FS-01..FS-06[2m > [22mFS-05: line endings are preserved through an edit, so a CRLF file stays CRLF
+ [2m[90m↓[39m[22m src/durability-advanced.test.ts[2m > [22mT9-C: FILESYSTEM gates FS-01..FS-06[2m > [22mFS-06: a RAW PYTHON mutation is visible to the verifier from the world, not from a DSH receipt
+ [2m[90m↓[39m[22m src/durability-records.test.ts[2m > [22mD01: admission is one record transform, never a cross-key transaction[2m > [22mD01 (simulated barrier): credit, task state and outbox are written by ONE update
+ [2m[90m↓[39m[22m src/durability-records.test.ts[2m > [22mD01: admission is one record transform, never a cross-key transaction[2m > [22mD01 (simulated barrier): a refused admission leaves NO trace of either half
+ [2m[90m↓[39m[22m src/durability-records.test.ts[2m > [22mD01: admission is one record transform, never a cross-key transaction[2m > [22mD01: the record schema has no second key, so no cross-key transaction can be claimed
+ [2m[90m↓[39m[22m src/durability-records.test.ts[2m > [22mD03: a durable task+childId whose launch never happened[2m > [22mD03 (REAL KILL): a reservation that provably never launched returns to prepared, once
+ [2m[90m↓[39m[22m src/durability-records.test.ts[2m > [22mD03: a durable task+childId whose launch never happened[2m > [22mD03: a task whose outcome is unknown is NEVER relaunched, even under its reserved id
+ [2m[90m↓[39m[22m src/durability-records.test.ts[2m > [22mD03: a durable task+childId whose launch never happened[2m > [22mD03: a relaunch with a CHANGED assignment is refused rather than launched as the original
+ [2m[90m↓[39m[22m src/durability-records.test.ts[2m > [22mD03: a durable task+childId whose launch never happened[2m > [22mD03: the record keeps the reserved childId, which is what makes this recoverable at all
+ [2m[90m↓[39m[22m src/durability-records.test.ts[2m > [22mD04: the child was admitted but the parent never saved the result[2m > [22mD04 (REAL KILL + real registry): DUPLICATE_CHILD is produced by the real seam and is rethrown unchanged
+ [2m[90m↓[39m[22m src/durability-records.test.ts[2m > [22mD04: the child was admitted but the parent never saved the result[2m > [22mD04: the port refuses to record a provider-allocated id that differs from the reserved one
+ [2m[90m↓[39m[22m src/durability-records.test.ts[2m > [22mD05: pending inbox messages at the moment of the kill[2m > [22mD05 (REAL KILL): the NATIVE inbox projection restores the pending message, and nothing is injected twice
+ [2m[90m↓[39m[22m src/durability-records.test.ts[2m > [22mD05: pending inbox messages at the moment of the kill[2m > [22mD05: the native splice vocabulary is the ONLY inbox mechanism this package uses
+ [2m[90m↓[39m[22m src/durability-records.test.ts[2m > [22mD06: the claim was written and the request never went out[2m > [22mD06 (REAL KILL): a claimed-but-undispatched step is not treated as done
+ [2m[90m↓[39m[22m src/durability-records.test.ts[2m > [22mD06: the claim was written and the request never went out[2m > [22mD06: when the claim cannot be distinguished from a dispatch, the answer is unknown
+ [2m[90m↓[39m[22m src/durability-records.test.ts[2m > [22mD07: the provider received the request and the answer never came[2m > [22mD07 (REAL KILL): usage and effect stay unknown and are never assumed free or unexecuted
+ [2m[90m↓[39m[22m src/durability-records.test.ts[2m > [22mD07: the provider received the request and the answer never came[2m > [22mD07: an unprobed task is quarantined rather than assumed free
+ [2m[90m↓[39m[22m src/durability-records.test.ts[2m > [22mD08: the child persisted its artifact and the parent was never told[2m > [22mD08 (REAL KILL): recovery finds the result in the child Session instead of repeating the task
+ [2m[90m↓[39m[22m src/durability-records.test.ts[2m > [22mD09: an incomplete trailing record[2m > [22mD09 (REAL FILE DAMAGE): the upstream repair contract is used and the torn bytes are not erased by us
+ [2m[90m↓[39m[22m src/durability-records.test.ts[2m > [22mD09: an incomplete trailing record[2m > [22mD09: a malformed record is rejected loudly rather than silently treated as current
+ [32m✓[39m src/durability-records.test.ts[2m > [22mD10: the run record is authoritative across generations, and no stale settlement is claimed[2m > [22ma second generation over the same store reads exactly what the first committed[32m 37[2mms[22m[39m
+ [32m✓[39m src/durability-records.test.ts[2m > [22mD10: the run record is authoritative across generations, and no stale settlement is claimed[2m > [22mno settlement entry point exists, so there is no stale-write path to guard[32m 41[2mms[22m[39m
+ [32m✓[39m src/durability-records.test.ts[2m > [22mD10: the run record is authoritative across generations, and no stale settlement is claimed[2m > [22mreconciliation still refuses to release a slot on a mismatched child identity[32m 0[2mms[22m[39m
+ [2m[90m↓[39m[22m src/durability-records.test.ts[2m > [22mD11: a consumer opens the domain twice, and unload then reload[2m > [22mD11 (simulated barrier): one shared host handle, a correct close, and no hanging already-open
+ [2m[90m↓[39m[22m src/durability-records.test.ts[2m > [22mD11: a consumer opens the domain twice, and unload then reload[2m > [22mD11: the host plugin owns the handle through its effect, so unload releases it
+ [2m[90m↓[39m[22m src/durability-records.test.ts[2m > [22mD13: restart with the run already paused or its authorization expired[2m > [22mD13 (REAL KILL): recovery comes back EXPLICITLY PAUSED and consumes nothing
+ [2m[90m↓[39m[22m src/durability-records.test.ts[2m > [22mD13: restart with the run already paused or its authorization expired[2m > [22mD13: an expired authorization comes back paused too, and a live one does not
+
+[2m Test Files [22m [1m[32m2 passed[39m[22m[90m (2)[39m
+[2m      Tests [22m [1m[32m8 passed[39m[22m[2m | [22m[33m47 skipped[39m[90m (55)[39m
+[2m   Start at [22m 09:43:43
+[2m   Duration [22m 1.34s[2m (transform 1.31s, setup 0ms, import 1.84s, tests 199ms, environment 0ms)[22m
+
