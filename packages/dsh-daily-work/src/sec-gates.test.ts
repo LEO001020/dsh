@@ -336,7 +336,18 @@ describe('SEC-01: host HOME / DSH_HOME / proc are unreachable from BOTH paths', 
     const gaps = readFileSync(join(REPO_ROOT, 'docs', 'GAPS.md'), 'utf8')
     expect(gaps).toContain('G-SEAM-12')
     expect(flat(gaps)).toContain('A confined child **read** a canary secret outside the workspace root successfully, verbatim')
-    expect(flat(gaps)).toContain('CONFIRMED BY MEASUREMENT')
+    // ASSERTED AS THE CLAIM, NOT AS ITS MARKUP. This read
+    // `toContain('CONFIRMED BY MEASUREMENT')`, which pinned an emphasis string
+    // that the GAPS ledger's own status vocabulary forbids: its header requires
+    // every Status cell to BEGIN with a vocabulary word (OPEN / RESOLVED / FIXED
+    // / ...), so a status of `**CONFIRMED BY MEASUREMENT**` is a filing error the
+    // hygiene pass was right to normalise. The claim survived -- the row is still
+    // OPEN and still says "confirmed by measurement" -- but the ALL-CAPS emphasis
+    // did not, so the assertion now names the two facts that must not be softened:
+    // that the finding is a MEASUREMENT (not an argument), and that the entry is
+    // still OPEN (not resolved into a pass).
+    expect(flat(gaps)).toMatch(/confirmed by measurement/i)
+    expect(flat(gaps)).toMatch(/OPEN \(upstream limitation, confirmed by measurement\)/)
     // And the E01 verdict, which must not be reworded into a pass.
     const findings = readFileSync(join(REPO_ROOT, 'qualification', 'results', 'M9.3-security-denial', 'FINDINGS.md'), 'utf8')
     expect(flat(findings)).toContain('NOT_RUN — CANNOT BE CLOSED ON WINDOWS')
@@ -1923,8 +1934,13 @@ describe('SEC cross-check: the two honest FAILs are the project\'s own record, n
   it('docs/GAPS.md and the M9.3 findings both carry the FAILs', () => {
     const gaps = readFileSync(join(REPO_ROOT, 'docs', 'GAPS.md'), 'utf8')
     // G-SEAM-12 is the consolidated security finding, marked as measured.
+    //
+    // SAME CORRECTION AS THE CASE ABOVE, and for the same reason: the ledger's own
+    // status vocabulary requires a Status cell to begin with a vocabulary word, so
+    // the ALL-CAPS emphasis this pinned was a filing error the hygiene pass
+    // normalised. The MEANING is what must not be softened, so that is asserted.
     expect(gaps).toContain('| G-SEAM-12 |')
-    expect(flat(gaps)).toContain('**CONFIRMED BY MEASUREMENT**')
+    expect(flat(gaps)).toMatch(/OPEN \(upstream limitation, confirmed by measurement\)/)
     // The M9.3 verdict table carries E01 and E06 as the negative results.
     const findings = readFileSync(join(REPO_ROOT, 'qualification', 'results', 'M9.3-security-denial', 'FINDINGS.md'), 'utf8')
     expect(findings).toContain('| **E01** credential isolation | NOT_RUN | **NOT_RUN — CANNOT BE CLOSED ON WINDOWS**')
