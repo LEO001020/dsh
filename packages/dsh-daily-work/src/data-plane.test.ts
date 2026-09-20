@@ -2056,29 +2056,101 @@ describe('DataPlaneService: the production consumer the profile mounts', () => {
     }
   })
 
-  it('records the real artifact-root derivation, including the branch that cannot be taken', async () => {
-    // R5 measured that a real boot resolves `artifactRoot` to the RELATIVE
+  it('records the real artifact-root derivation: no domain root exists, so the home helper decides', async () => {
+    // R5 measured that a real boot resolved `artifactRoot` to the RELATIVE
     // `data-artifacts`, and traced why: the mounted `storageDomain` is a
     // `DomainFacility`, which declares no `root` -- the root belongs to the
-    // BACKEND. So `defaultArtifactRoot`'s "derive from the domain" branch is
-    // unreachable against the shipped service.
+    // BACKEND. That measurement was right, and it stayed on disk as the OLD
+    // reproduction.
     //
-    // This test pins the OBSERVED behaviour rather than the documented intent,
-    // because a future change that makes the branch reachable should show up as a
-    // changed assertion here rather than as a silent difference between the code
-    // comment and the product.
+    // WHAT CHANGED, and why this test no longer pins the relative fallback as the
+    // product's behaviour. The old `defaultArtifactRoot` read a `root` member the
+    // type does not have, so its "derive from the domain" branch could never be
+    // taken and the store's location was silently an accident of the launch
+    // directory. The fix derives from the host's own `dshHomePath` helper instead
+    // -- the same seam the shipped base bundle uses for `sessions` and `storages`.
+    //
+    // The assertions below therefore check three things in one run:
+    //   1. the domain root really is absent, so the old branch is DEAD (not merely
+    //      un-taken) -- this is the negative control for the fix;
+    //   2. with the host helper present, the root is the helper's, which is
+    //      cwd-independent;
+    //   3. the resolved root is NOT the storage backend's root, which is what
+    //      makes the old "artifacts live beside the records" comment false rather
+    //      than merely unverified.
     const ctx = new Context()
     await ctx.plugin(Storage)
     await ctx.plugin(storageJsonPlugin, { root: join(tempRoot('svc-root'), 'store') })
     await ctx.plugin(storageDomainPlugin, { backend: 'json' })
+    const home = tempRoot('svc-home')
+    // The host publishes this with `ctx.provide` at boot; standing it in by hand
+    // is what makes the second assertion about THIS seam rather than about a
+    // coincidence of the test process's environment.
+    ctx.provide('dshHomePath', (...segments: string[]) => join(home, ...segments))
     const service = new DataPlaneService(ctx, { ownerScope: 'project:root' })
     try {
-      // No `artifactRoot` configured: the derived value is the fallback, NOT the
-      // storage root, which is what makes the unreachable branch visible.
-      expect(service.store.root).toBe('data-artifacts')
+      // (1) The dead branch, asserted as a fact about the mounted TYPE rather than
+      // a comment: the facility exposes no root at all.
       const storageDomain = ctx.get('storageDomain') as { root?: string } | undefined
       expect(storageDomain).toBeDefined()
       expect(storageDomain?.root).toBeUndefined()
+
+      // (2) With the host helper mounted, the store lands under it -- NOT under the
+      // cwd, and not under the storage backend's root.
+      expect(service.store.root).toBe(join(home, 'data-artifacts'))
+      // (3) The recording stays empty, which is what distinguishes "a real root was
+      // resolved" from "the cwd-dependent fallback ran".
+      expect(service.artifactRootFallback).toBeUndefined()
+    } finally {
+      await ctx.fiber.dispose()
+    }
+  })
+
+  it('falls back to a RELATIVE root only when no host path helper exists, and RECORDS that it did', async () => {
+    // The fallback is not deleted, because an in-process unit test that mounts
+    // this service directly has no `app-boot` and therefore no `dshHomePath`.
+    // What changed is that it is no longer SILENT: `artifactRootFallback` names
+    // the relative path that was used, so a probe can ASSERT whether the
+    // cwd-dependent branch ran rather than inferring it from a log line.
+    const ctx = new Context()
+    await ctx.plugin(Storage)
+    await ctx.plugin(storageJsonPlugin, { root: join(tempRoot('svc-fb-store'), 'store') })
+    await ctx.plugin(storageDomainPlugin, { backend: 'json' })
+    const service = new DataPlaneService(ctx, { ownerScope: 'project:fallback' })
+    try {
+      expect(service.store.root).toBe('data-artifacts')
+      // The recording IS the fix. Without it the location is an accident.
+      expect(service.artifactRootFallback).toBe('data-artifacts')
+    } finally {
+      await ctx.fiber.dispose()
+    }
+  })
+
+  it('refuses a RELATIVE configured artifactRoot, because that reproduces the cwd accident', async () => {
+    // An explicit root is the deployment stating a location. A relative one would
+    // resolve against the process cwd exactly as the old fallback did, so the
+    // refusal names the reason rather than accepting a path that moves.
+    const ctx = new Context()
+    await ctx.plugin(Storage)
+    await ctx.plugin(storageJsonPlugin, { root: join(tempRoot('svc-rel-store'), 'store') })
+    await ctx.plugin(storageDomainPlugin, { backend: 'json' })
+    expect(() => new DataPlaneService(ctx, { ownerScope: 'project:rel', artifactRoot: 'relative/artifacts' }))
+      .toThrow(/is not absolute/u)
+    await ctx.fiber.dispose()
+  })
+
+  it('accepts an ABSOLUTE configured artifactRoot unchanged', async () => {
+    // The control for the refusal above: a legitimate explicit root is used
+    // verbatim, so the check rejects only the shape it names.
+    const ctx = new Context()
+    await ctx.plugin(Storage)
+    await ctx.plugin(storageJsonPlugin, { root: join(tempRoot('svc-abs-store'), 'store') })
+    await ctx.plugin(storageDomainPlugin, { backend: 'json' })
+    const absolute = join(tempRoot('svc-abs-artifacts'), 'artifacts')
+    const service = new DataPlaneService(ctx, { ownerScope: 'project:abs', artifactRoot: absolute })
+    try {
+      expect(service.store.root).toBe(absolute)
+      expect(service.artifactRootFallback).toBeUndefined()
     } finally {
       await ctx.fiber.dispose()
     }

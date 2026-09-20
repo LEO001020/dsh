@@ -31,15 +31,51 @@ export interface Config extends DataServiceConfig {}
  * Mount the data-plane service and return after its reference domain is open.
  *
  * @param ctx - the host context that owns this extension.
- * @param config - the deployment's artifact root and quota.
+ * @param config - the deployment's artifact root, quota and read bound.
  */
 export async function apply(ctx: Context, config: Config = {}): Promise<void> {
   const service = new DataPlaneService(ctx, config)
   // The effect owns the domain handle, so unloading waits for the reference write
   // chain to drain before releasing -- the same discipline `host-plugin.ts` uses.
+  // `close()` also releases the plane's pinned history observation leases, which is
+  // why the plane is disposed from INSIDE the service rather than from here: an
+  // undisposed lease keeps a prepared Session pinned for the process lifetime.
   ctx.effect(() => () => service.close(), 'dsh-daily-data: reference domain')
   await service.open(ctx.storageDomain)
 }
 
-export { DataPlaneService, DATA_DOMAIN_NAME, dataDomainSpec, StorageReferenceLog } from './data-service.ts'
+export { DataPlaneService, DATA_DOMAIN_NAME, dataDomainSpec, StorageReferenceLog, defaultArtifactRoot } from './data-service.ts'
 export type { DataServiceConfig } from './data-service.ts'
+export { DataPlane, DataPlaneError } from './data-plane.ts'
+export type {
+  DataCaller,
+  DataPlaneConfig,
+  FsCaptureIdentity,
+  FsCaptureResult,
+  HistoryCutIdentity,
+  HistorySearchHit,
+  HistorySearchPage,
+  PageHandle,
+  WebFetchOutcome,
+  WebSearchOutcome,
+} from './data-plane.ts'
+export {
+  DATA_METHODS,
+  DATA_TOOL_PREFIX,
+  dataCallerFromEnclosing,
+  isDataRequest,
+  routeDataRequest,
+} from './data-bridge.ts'
+export type { DataRouteOutcome, EnclosingDataAuthority } from './data-bridge.ts'
+export { DEFAULT_DATA_READ_CONCURRENCY, DataReadLimiter, mapBounded } from './data-concurrency.ts'
+export {
+  buildProjectionManifest,
+  omissionKind,
+} from './projection-manifest.ts'
+export type {
+  ProjectionManifest,
+  ProjectionManifestInput,
+  ProjectionMode,
+  ProjectionSelector,
+  ProjectionSourceRef,
+} from './projection-manifest.ts'

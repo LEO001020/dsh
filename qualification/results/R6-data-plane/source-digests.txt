@@ -1,0 +1,12 @@
+=== R6 source digests (SHA-256 over each file as committed) ===
+
+data-plane.ts                9b4753751eab8b172e41ad94814d7092ab9c551d60d6820d9abf9ed0256b8084  lines=1362
+data-service.ts              0d8fd4a27409066f5cde602a094b2e1071fe4f3720bbb228d7ae5cd4794dafe7  lines=621
+data-bridge.ts               436c0e9924ca962a5365ddcf172fd5428b445128ae11fb7c6e8e7dde08c3e77d  lines=452
+data-concurrency.ts          68d5623a62a6ede2d254a514160e8f7d3f586134b076b98b8da85e3e797b6f01  lines=185
+projection-manifest.ts       09338c48c152122a49ab8782ba38615437bbb9d35cf976401b91b65db9b4e858  lines=240
+dsh_data_client.py           c152f0adf2ea8dbe7e419cdb138eb2176be727c8c4ba76ab27d942d7ec3b0ed5  lines=454
+data-plugin.ts               5d7b3d7ef5d97c0a838ba2304084420d36fb28d3be424b9ea158a2878f823dfa  lines=81
+data-r6.test.ts              3b6541cc6c7510ffbd839cbe078bb349a19eff83073fc3ffeff4a01ecf998378  lines=1303
+
+=== generated at 2026-09-20T10:01:14 ===

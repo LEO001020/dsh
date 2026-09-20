@@ -37,3 +37,9 @@ qualification/results/**/node_modules/
 # and the packages keep their own manifests.
 /pnpm-lock.yaml
 /node_modules/
+
+# Python bytecode cache. Created by importing `dsh_data_client.py` during a test,
+# so it appears after any run that executes the shipped client under CPython. It
+# holds nothing a reader needs and shows up as an untracked directory in a tree
+# where untracked files have meant real defects (G-SEAM-30, G-SEAM-42).
+__pycache__/
