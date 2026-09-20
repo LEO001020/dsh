@@ -39,7 +39,15 @@
         # explicitly rather than taken from PATH: a kernel started against a
         # different Python would be a different environment, and the identity
         # digest in `KernelService` is derived from this path.
-        pythonExecutable: 'C:/Users/hzq00/AppData/Local/Programs/Python/Python314/python.exe'
+        #
+        # THE DEFAULT BELOW IS THIS MACHINE'S INTERPRETER, and it is a DEFAULT
+        # rather than a hardcoded path for the same reason `brokerScript` and
+        # `root` are derived: a value that names one machine makes the package
+        # unbootable on every other one. `DSH_PYTHON` overrides it, which is what
+        # a clone on a different host must set. Found by the pre-publish audit:
+        # the path was absolute with no override, so a fresh clone built and
+        # booted but could not start a kernel.
+        pythonExecutable: !!js process.env.DSH_PYTHON ?? 'C:/Users/hzq00/AppData/Local/Programs/Python/Python314/python.exe'
         # `brokerScript` and `root` are deliberately NOT SET HERE.
         #
         # They used to be absolute paths into one developer's checkout

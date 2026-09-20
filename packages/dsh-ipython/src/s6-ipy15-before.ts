@@ -30,8 +30,9 @@ const BROKER = resolve(HERE, 'broker.py')
 const PYTHON = process.env['DSH_PYTHON']
   ?? 'C:/Users/hzq00/AppData/Local/Programs/Python/Python314/python.exe'
 
+const REPO_ROOT = resolve(HERE, '..', '..', '..')
 const EVIDENCE = process.env['S6_EVIDENCE_DIR']
-  ?? 'D:/DSH/work/wt-s6/qualification/results/S6-ipy15'
+  ?? join(REPO_ROOT, 'qualification', 'results', 'S6-ipy15')
 const TAG = process.env['S6_TAG'] ?? 'before'
 
 const observed: Record<string, unknown> = {}
