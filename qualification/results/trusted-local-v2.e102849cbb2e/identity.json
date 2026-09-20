@@ -253,18 +253,8 @@
   "staleness": {
     "current_contract_identity": "e102849cbb2ead52f8816ec0cc65daf5825ae61edf40db5eaf42b86e12823579",
     "current_runtime_identity": "3ff8c1cb7f06f19f45ca87294abe6b98fc7dfa976b269d09928c4d6d855fec15",
-    "filed_results": [
-      {
-        "directory": "trusted-local-v2.e102849cbb2e",
-        "filed_contract_identity": "e102849cbb2ead52f8816ec0cc65daf5825ae61edf40db5eaf42b86e12823579",
-        "filed_runtime_identity": "3ff8c1cb7f06f19f45ca87294abe6b98fc7dfa976b269d09928c4d6d855fec15",
-        "is_current": true,
-        "contract_matches": true,
-        "runtime_matches": true,
-        "why": "current"
-      }
-    ],
-    "all_current": true,
+    "filed_results": [],
+    "all_current": null,
     "note": "`implementation_commit` is a runtime identity input, so committing a result directory moves the identity that directory names. This is intended: a result must name the revision it was measured at. The consequence to state plainly is that a result filed before the FINAL integration commit is stale by construction, and the root agent re-derives at integration."
   },
   "probe_path": "qualification/results/trusted-local-v2-identity/probe.json",
