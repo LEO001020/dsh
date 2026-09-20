@@ -164,16 +164,84 @@ export interface BridgeFailure {
 /**
  * A canonical result too large to deliver inline.
  *
- * The bytes are written to disk ONCE, by the host, from the SAME single
- * execution that produced the value -- the tool is never re-run to make a result
- * fit. Python receives a locator and reads the exact bytes back, so a bounded
- * model projection and a lossless data plane coexist without either one lying
- * about the other.
+ * The bytes were written ONCE by the host from the SAME single execution that
+ * produced the value -- the tool is never re-run to make a result fit. Python
+ * receives a typed reference and reads the exact bytes back through the project's
+ * own artifact plane, so a bounded model projection and a lossless data plane
+ * coexist without either one lying about the other.
+ *
+ * ── WHY `artifact` AND NOT `path` IS THE IDENTITY (V5 §12 / §2.P) ──────────
+ *
+ * This interface used to carry a raw host path and nothing else, and Python
+ * opened that path directly. That made the PATH the authority: nothing bound the
+ * bytes to the observation, the grant, the scope or the digest, and a caller
+ * could read, move, replace or truncate the file with its own privileges and the
+ * reference would still look valid. The digest was checked only by a method the
+ * caller chose to invoke.
+ *
+ * `artifact` is the project's own reference format (`artifact:sha256:<digest>`,
+ * `artifacts.ts:artifactRefOf`). It carries identity, so paging it goes through
+ * the unified plane's cursor, realm, quota and provenance checks rather than
+ * through whatever the filesystem happens to say.
  */
 export interface BridgeArtifact {
-  readonly path: string
+  /**
+   * The typed reference. THE identity-bearing field; `artifact:sha256:<digest>`.
+   *
+   * Present on both planes, so a reader can always tell WHICH object was meant
+   * even when the bytes were retained by the bridge's own scratch directory.
+   */
+  readonly artifact: string
+  /**
+   * Which plane retained these bytes.
+   *
+   * `unified` -- the project Artifact/Attachment store, reached through
+   * {@link BridgeArtifactRetention}. No host path is emitted at all.
+   * `bridge-scratch` -- the per-kernel directory, used only when the composition
+   * configured no retention port. Recorded rather than hidden, because a reader
+   * asking "which retention policy applied to this result?" must not have to
+   * infer it from whether a field happens to be present.
+   */
+  readonly plane: 'unified' | 'bridge-scratch'
+  /**
+   * Raw host path, ONLY on the `bridge-scratch` plane.
+   *
+   * NOT authority, and deliberately optional so that the unified plane cannot
+   * leak one by accident: a consumer that reads this must be able to name the
+   * plane it came from.
+   */
+  readonly path?: string
   readonly bytes: number
   readonly sha256: string
+}
+
+/**
+ * How the host retains one oversized exact result, as the COMPOSITION supplies it.
+ *
+ * WHY A PORT AND NOT AN IMPORT. The unified plane lives in `dsh-daily-work`
+ * (`artifacts.ts`), and `dsh-ipython` has no dependency on that package -- adding
+ * one would put the data plane's whole transitive surface under the kernel plugin
+ * and invert the layering the audit asks for. The composition mounts both, so the
+ * composition is where the ONE store is bound to this port. This is an interface,
+ * not a second registry: exactly one implementation exists, it is the project's
+ * own `AttachmentArtifactStore`, and nothing here re-implements quota, retention,
+ * provenance or paging.
+ *
+ * `put` MUST be the plane's own content-addressed write, so the returned
+ * `artifact` is the reference that plane's `pages()` accepts.
+ */
+export interface BridgeArtifactRetention {
+  /**
+   * Retain these exact bytes and return the plane's own reference.
+   *
+   * @param bytes - the canonical JSON, already serialized once by the host.
+   * @param context - which tool and call produced them, for provenance.
+   */
+  retain(bytes: Uint8Array, context: { readonly tool: string, readonly callId: string }): Promise<{
+    readonly artifact: string
+    readonly sha256: string
+    readonly bytes: number
+  }>
 }
 
 /** What the host returns for one nested call. Exactly one of the three arms. */
@@ -799,10 +867,19 @@ export class CellLease {
 
     // SETTLED, AFTER the final ToolRuntime result is known. The digest identifies
     // the delivered value without storing it, and an oversized result is already
-    // retained on disk by then, so its artifact ref is what the ledger carries.
+    // retained by then, so its artifact ref is what the ledger carries.
+    //
+    // THE LEDGER CARRIES THE TYPED REF, NOT THE HOST PATH (P13). It used to carry
+    // `outcome.artifact.path`, which put a host filesystem path into a DURABLE
+    // record -- so the one field an auditor reads to answer "which object was
+    // delivered?" named a location that any same-UID writer could replace, and
+    // named nothing about the object's identity. `artifact` is the plane's own
+    // `artifact:sha256:<digest>` reference, which is content-addressed and is the
+    // same string on both planes. This is a one-line change inside P3's region;
+    // flagged in the report rather than left for the integrator to notice.
     const digest = outcome.ok
       ? ('artifact' in outcome
-        ? { digest: outcome.artifact.sha256, bytes: outcome.artifact.bytes, artifactRef: outcome.artifact.path }
+        ? { digest: outcome.artifact.sha256, bytes: outcome.artifact.bytes, artifactRef: outcome.artifact.artifact }
         : { ...digestOf(outcome.value), artifactRef: undefined })
       : { ...digestOf({ code: outcome.error.code, message: outcome.error.message }), artifactRef: undefined }
 
@@ -877,6 +954,14 @@ export interface BridgeServerOptions {
   readonly inlineValueBytes?: number
   /** Directory the Python client is written into. Defaults to the artifact directory. */
   readonly clientDirectory?: string
+  /**
+   * The unified project Artifact/Attachment plane, when the composition mounted
+   * one. Absent, oversized results fall back to `artifactDirectory` and are
+   * reported on the `bridge-scratch` plane.
+   *
+   * A port rather than an import: see {@link BridgeArtifactRetention}.
+   */
+  readonly retention?: BridgeArtifactRetention
 }
 
 /** Absolute path of the written Python client, so a caller can log it. */
@@ -1212,12 +1297,28 @@ export class BridgeServer {
    * Materialize a canonical value for delivery to Python.
    *
    * Lossless either way. Under the inline bound the value travels in the reply
-   * frame; at or over it the exact canonical bytes are written once and the
-   * reply carries a locator. The model-facing projection is a separate matter
-   * entirely -- it is the tool's own `render`, and it is unaffected by which door
-   * the program's copy takes.
+   * frame -- unchanged, and this method does not touch that arm. At or over it
+   * the exact canonical bytes are retained ONCE and the reply carries a typed
+   * reference. The model-facing projection is a separate matter entirely -- it is
+   * the tool's own `render`, and it is unaffected by which door the program's
+   * copy takes.
+   *
+   * ── THE UNIFIED PLANE IS TRIED FIRST, AND THE FALLBACK IS RECORDED ─────────
+   *
+   * With a retention port mounted, the bytes go into the project's own
+   * Artifact/Attachment store and the reply carries that store's reference and NO
+   * host path. Without one, they go to this bridge's scratch directory and the
+   * reply says so on the `bridge-scratch` plane. The plane is a field rather than
+   * something a reader infers from a field's presence, because "which retention
+   * policy applied to this result" is exactly the question a silent fallback
+   * would make unanswerable.
+   *
+   * A RETENTION FAILURE IS NOT A FALLBACK. If the plane is mounted and refuses,
+   * the call fails with the plane's own reason. Quietly writing to scratch instead
+   * would turn a quota refusal into an untracked object, which is the behaviour
+   * §12's "no second retention/quota/provenance policy" forbids.
    */
-  deliver(tool: string, callId: string, value: unknown): NativeCallOutcome {
+  async deliver(tool: string, callId: string, value: unknown): Promise<NativeCallOutcome> {
     const text = JSON.stringify(value)
     if (text === undefined) {
       return {
@@ -1233,6 +1334,38 @@ export class BridgeServer {
       return { ok: true, value }
     }
     const digest = createHash('sha256').update(text, 'utf8').digest('hex')
+
+    if (this.options.retention !== undefined) {
+      try {
+        const retained = await this.options.retention.retain(Buffer.from(text, 'utf8'), { tool, callId })
+        // TWO INDEPENDENT DIGESTS MUST AGREE. The host hashed the bytes it
+        // serialized; the plane hashed the bytes it stored. A disagreement means
+        // the plane retained something other than what was delivered, and
+        // returning its reference would bind Python to the wrong object.
+        if (retained.sha256 !== digest) {
+          return {
+            ok: false,
+            error: {
+              code: 'ARTIFACT_DIGEST_MISMATCH',
+              message: `the unified plane retained a ${String(retained.bytes)}-byte object hashing ${retained.sha256.slice(0, 16)}…, but "${tool}" produced ${digest.slice(0, 16)}…`,
+            },
+          }
+        }
+        return {
+          ok: true,
+          artifact: { artifact: retained.artifact, plane: 'unified', bytes: retained.bytes, sha256: retained.sha256 },
+        }
+      } catch (error) {
+        return {
+          ok: false,
+          error: {
+            code: 'ARTIFACT_WRITE_FAILED',
+            message: `the ${String(bytes)}-byte result of "${tool}" was refused by the unified artifact plane: ${error instanceof Error ? error.message : String(error)}`,
+          },
+        }
+      }
+    }
+
     const path = join(this.options.artifactDirectory, `${digest}.json`)
     try {
       writeFileSync(path, text, 'utf8')
@@ -1245,9 +1378,24 @@ export class BridgeServer {
         },
       }
     }
-    void callId
-    return { ok: true, artifact: { path, bytes, sha256: digest } }
+    return {
+      ok: true,
+      artifact: { artifact: scratchArtifactRef(digest), plane: 'bridge-scratch', path, bytes, sha256: digest },
+    }
   }
+}
+
+/**
+ * The project's artifact reference format, duplicated here as a STRING FORMAT.
+ *
+ * `artifacts.ts:artifactRefOf` is the authority and this must stay byte-identical
+ * to it. It is re-stated rather than imported because `dsh-ipython` does not
+ * depend on `dsh-daily-work` and must not start: see
+ * {@link BridgeArtifactRetention} for why the store arrives as a port instead.
+ * A drift between the two is caught by a test that compares them, not by hope.
+ */
+export function scratchArtifactRef(sha256: string): string {
+  return `artifact:sha256:${sha256}`
 }
 
 /** Everything the preamble needs. All of it host-minted. */
@@ -1339,6 +1487,7 @@ import json as _json
 import os as _os
 import socket as _socket
 import struct as _struct
+import sys as _sys
 import threading as _threading
 
 _DSH_BRIDGE_VERSION = 1
@@ -1357,19 +1506,104 @@ class BridgeError(RuntimeError):
 
 
 class Artifact:
-    """A canonical result too large to travel inline.
+    """A canonical result too large to travel inline, addressed by REFERENCE.
 
-    The bytes were written ONCE by the host from the single execution that
+    The bytes were retained ONCE by the host from the single execution that
     produced them, so reading this back is not a re-run and cannot differ from
-    what the tool returned. \`load()\` returns exactly those bytes.
+    what the tool returned.
+
+    ── THE PATH IS NOT THE AUTHORITY, AND USUALLY IS NOT HERE AT ALL ──────────
+
+    This class used to expose a raw host path and open it directly. That made the
+    PATH the authority: nothing bound the bytes to the observation, the grant, the
+    scope or the digest, and any same-UID writer could replace, truncate or move
+    the file while the reference still looked valid. \`\`verify()\`\` existed, but a
+    digest you have to remember to check is not a binding.
+
+    \`\`artifact\`\` is the project's own content-addressed reference
+    (\`\`artifact:sha256:<digest>\`\`). Read the bytes through it with
+    :meth:\`pages\`, :meth:\`read_range\` or :meth:\`save_attachment\`, which go through
+    the unified plane's cursor, realm, quota and provenance checks -- so a
+    reference to an object that was replaced, or that this caller was never
+    granted, is refused by the plane rather than served by the filesystem.
+
+    \`\`path\`\` is present ONLY when the host retained the bytes on its own scratch
+    plane (\`\`plane == "bridge-scratch"\`\`), which is what happens when the
+    composition mounted no unified store. It is a convenience for a host-side
+    debugging session and NOT a capability: prefer the reference methods, and
+    check \`\`plane\`\` before using it.
     """
 
-    def __init__(self, path, size, sha256):
-        self.path = path
+    def __init__(self, artifact, size, sha256, plane="bridge-scratch", path=None):
+        self.artifact = artifact
         self.bytes = size
         self.sha256 = sha256
+        #: Which plane retained the bytes: "unified" or "bridge-scratch".
+        self.plane = plane
+        #: Raw host path, ONLY on the bridge-scratch plane. Not authority.
+        self.path = path
+
+    def _plane_client(self):
+        """The unified plane client, or a refusal that names the missing piece.
+
+        NOT a second data route. This returns the \`\`dsh.data\`\` namespace the host
+        installed on this very module, looked up AT CALL TIME so it is the same
+        client the rest of the namespace uses and so a rebind between cells is
+        honoured. A private socket, a second registry, or a re-implementation of
+        paging here would be exactly the parallel path V5 §5.1 forbids.
+        """
+        module = _sys.modules.get("dsh")
+        client = getattr(module, "data", None) if module is not None else None
+        if client is None:
+            raise BridgeError(
+                "DATA_PLANE_UNAVAILABLE",
+                "this result is addressed by reference (%s) but no dsh.data client is installed in this "
+                "kernel, so the reference cannot be paged. The host must install the data namespace in "
+                "the per-cell preamble before an oversized result can be read." % (self.artifact,),
+            )
+        return client
+
+    async def observation(self):
+        """Open this artifact as a dsh.data Observation, by reference.
+
+        Returns the host's own descriptor for the object, which is what carries
+        the identity the plane checks. This is the entry point every other
+        reference method here is built on.
+        """
+        client = self._plane_client()
+        return await client.artifacts.open(
+            attachment_id=self.artifact, name="", bytes=self.bytes,
+        )
+
+    async def pages(self, max_bytes=65536, max_pages=None):
+        """Walk the exact bytes in bounded windows, through the plane."""
+        observation = await self.observation()
+        return await observation.pages(max_bytes=max_bytes, max_pages=max_pages)
+
+    async def read_range(self, offset, length):
+        """Read one byte range through the plane, with the plane's own checks."""
+        observation = await self.observation()
+        return await observation.read_range(offset, length)
+
+    async def save_attachment(self, name=None):
+        """Copy the exact bytes into DSH's public attachment store, via the plane."""
+        observation = await self.observation()
+        return await observation.save_attachment(name=name)
 
     def load(self):
+        """The exact bytes, read from the host scratch plane.
+
+        ONLY VALID when \`\`plane == "bridge-scratch"\`\`. On the unified plane there
+        is no path to open and this raises rather than reaching for one, because
+        a silent fallback to a filesystem read is the authority confusion this
+        class exists to remove. Use :meth:\`pages\` or :meth:\`read_range\` there.
+        """
+        if self.path is None:
+            raise BridgeError(
+                "ARTIFACT_NOT_A_PATH",
+                "%s is retained on the %r plane and carries no host path; read it by reference with "
+                "pages() / read_range() / save_attachment() instead of load()" % (self.artifact, self.plane),
+            )
         with open(self.path, "rb") as handle:
             return handle.read()
 
@@ -1380,11 +1614,46 @@ class Artifact:
         return _json.loads(self.text())
 
     def verify(self):
-        """Whether the bytes on disk still hash to what the host reported."""
+        """Whether the bytes on disk still hash to what the host reported.
+
+        SCRATCH PLANE ONLY. On the unified plane the digest is checked by the
+        plane on every read, so there is nothing here to re-check and this returns
+        True without opening anything.
+        """
+        if self.path is None:
+            return True
         return _hashlib.sha256(self.load()).hexdigest() == self.sha256
 
     def __repr__(self):
-        return "Artifact(bytes=%d, sha256=%s...)" % (self.bytes, self.sha256[:12])
+        return "Artifact(plane=%s, bytes=%d, sha256=%s...)" % (self.plane, self.bytes, self.sha256[:12])
+
+
+def _artifact_from(payload):
+    """Build an Artifact from the host's reply envelope.
+
+    ONE constructor, used by both the sync and the async waiter, so the two paths
+    cannot drift into reading different fields -- which is what happened when the
+    envelope changed shape and only one site was updated.
+
+    A reply with no \`\`artifact\`\` field is a protocol disagreement, not a value:
+    the host always sends the reference, so an envelope that omits it means the
+    two sides disagree about what a large result IS. Raising a named refusal is
+    better than constructing an Artifact with a null reference that fails later,
+    at the point of use, with a message about the wrong thing.
+    """
+    if not isinstance(payload, dict) or not payload.get("artifact"):
+        raise BridgeError(
+            "ARTIFACT_ENVELOPE_INVALID",
+            "the host reported a large result without an artifact reference; the two sides disagree "
+            "about the delivery envelope",
+        )
+    return Artifact(
+        payload.get("artifact"),
+        payload.get("bytes"),
+        payload.get("sha256"),
+        payload.get("plane", "bridge-scratch"),
+        payload.get("path"),
+    )
 
 
 class _Channel:
@@ -1576,8 +1845,7 @@ class _SyncWaiter:
             raise self._error
         message = self._value or {}
         if "artifact" in message:
-            artifact = message["artifact"]
-            return Artifact(artifact.get("path"), artifact.get("bytes"), artifact.get("sha256"))
+            return _artifact_from(message["artifact"])
         return message.get("value")
 
 
@@ -1590,8 +1858,7 @@ class _AsyncWaiter:
         if self.future.done():
             return
         if "artifact" in message:
-            artifact = message["artifact"]
-            value = Artifact(artifact.get("path"), artifact.get("bytes"), artifact.get("sha256"))
+            value = _artifact_from(message["artifact"])
         else:
             value = message.get("value")
         self._loop.call_soon_threadsafe(_resolve, self.future, value)
