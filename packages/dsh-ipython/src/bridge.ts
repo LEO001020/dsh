@@ -913,14 +913,22 @@ export class CellLease {
    * `drain` can wait for it, and removed on BOTH arms. The promise held in
    * `pendingIntents` never rejects: the caller's refusal is carried by `outcome`,
    * and a rejection nobody awaited would surface as an unhandled rejection.
+   *
+   * BOTH deletions happen inside this promise's own callbacks rather than in a
+   * separate `finally`. `drain` re-checks `pendingIntents.size` on every pass of
+   * its loop, so a removal scheduled on a DIFFERENT microtask than the one
+   * `Promise.allSettled` observes could make the loop take an extra pass with an
+   * already-settled set. Removing it here keeps "this write is still pending" and
+   * "this write has resolved" the same edge.
    */
   private trackIntent(requestId: string, acceptance: Promise<unknown>): void {
-    const tracked = acceptance.then(
-      () => { this.accepting.delete(requestId) },
-      () => { this.accepting.delete(requestId) },
-    )
+    let tracked: Promise<void>
+    const clear = (): void => {
+      this.accepting.delete(requestId)
+      this.pendingIntents.delete(tracked)
+    }
+    tracked = acceptance.then(clear, clear)
     this.pendingIntents.add(tracked)
-    void tracked.finally(() => { this.pendingIntents.delete(tracked) })
   }
 
   /**
@@ -941,9 +949,17 @@ export class CellLease {
     this.closeReason ??= reason
     this.closeDetail ??= detail ?? 'the cell settled'
     if (this.closing !== undefined) return this.closing
-    // STEP 1: stop accepting new calls. Atomic in the sense that matters here --
-    // `invoke` reads `state` synchronously and there is no await between the read
-    // and the queue push, so no call can be accepted after this line runs.
+    // STEP 1: stop accepting new calls.
+    //
+    // WHAT "ATOMIC" MEANS HERE, AND WHAT IT NO LONGER MEANS. `invoke` reads
+    // `state` synchronously, and no frame that reads OPEN after this line can
+    // reach `publish`, because `publish` re-checks the state. Before Option A
+    // this comment claimed something stronger -- that there was no await between
+    // the state read and the queue push, so no call could be accepted after the
+    // flip. That is no longer true, and the difference is stated rather than
+    // left as a stale claim: a call CAN now be mid-write when the close begins.
+    // It is not accepted, because acceptance is the publish, and the publish
+    // either sees OPEN or disposes the call. See `publish` and `drain`.
     this.state = 'CLOSING'
     // STEP 2: abort every call this lease owns. A started call settles under the
     // abort; a queued call is refused before it ever reaches the registry.
