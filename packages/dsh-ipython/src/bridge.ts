@@ -806,24 +806,60 @@ export class CellLease {
         : { ...digestOf(outcome.value), artifactRef: undefined })
       : { ...digestOf({ code: outcome.error.code, message: outcome.error.message }), artifactRef: undefined }
 
-    await this.ledger.settled(entry.subCallId, {
-      isError: !outcome.ok,
-      resultDigest: digest.digest,
-      resultBytes: digest.bytes,
-      ...digest.artifactRef === undefined ? {} : { artifactRef: digest.artifactRef },
-    })
+    // A SETTLEMENT WRITE THAT FAILS MUST NOT HANG THE CALLER, and until this arm
+    // existed the docstring above was FALSE for the ledger write itself. The
+    // try/catch above covers only `this.handler`; a rejected `ledger.settled` threw
+    // straight out of `runOne`, so `runQueue` never reached `entry.resolve`, the
+    // accepted promise stayed pending forever, and `close()` hung too because its
+    // drain awaits every in-flight promise.
+    //
+    // MEASURED (S13 / BR-07) with an injected settlement failure: the caller did
+    // not settle within 5 s, and the whole queue behind it never ran. That is the
+    // exact hazard the docstring names, so this is the catch the docstring was
+    // already claiming.
+    let settlementFailure: unknown
+    try {
+      await this.ledger.settled(entry.subCallId, {
+        isError: !outcome.ok,
+        resultDigest: digest.digest,
+        resultBytes: digest.bytes,
+        ...digest.artifactRef === undefined ? {} : { artifactRef: digest.artifactRef },
+      })
+    } catch (error) {
+      settlementFailure = error
+    }
 
-    // `settled` vs `cancelled` is decided by whether the close was already under
-    // way when this call finished -- not by whether the result happens to be an
-    // ABORTED error. A tool can legitimately fail with its own error, and calling
-    // that `cancelled` would misreport a real tool failure as a shutdown.
-    this.report({
-      subCallId: entry.subCallId,
-      name: entry.call.tool,
-      disposition: this.state === 'OPEN' ? 'settled' : 'cancelled',
-      ...this.state === 'OPEN' ? {} : { closeReason: this.closeReason ?? 'completed' },
-      started: true,
-    })
+    if (settlementFailure === undefined) {
+      // `settled` vs `cancelled` is decided by whether the close was already under
+      // way when this call finished -- not by whether the result happens to be an
+      // ABORTED error. A tool can legitimately fail with its own error, and calling
+      // that `cancelled` would misreport a real tool failure as a shutdown.
+      this.report({
+        subCallId: entry.subCallId,
+        name: entry.call.tool,
+        disposition: this.state === 'OPEN' ? 'settled' : 'cancelled',
+        ...this.state === 'OPEN' ? {} : { closeReason: this.closeReason ?? 'completed' },
+        started: true,
+      })
+    } else {
+      // NO DISPOSITION IS REPORTED, and that is deliberate rather than an
+      // omission. Writing one would put a row in the ledger that says the call was
+      // disposed while its settlement is missing -- and because `outcomeIsUnknown`
+      // keys on the DISPOSITION, that row would then be HIDDEN from
+      // `unknownOutcomes()`, which is the one place a reader looks to find an
+      // outcome that was never established. Leaving the row STARTED-with-no-
+      // settlement and no disposition is the truthful shape, and it is the same
+      // shape the crash window has.
+      //
+      // The failure travels to the caller of `close()` through the SAME channel the
+      // disposition-write failure uses, so a reader who asks "is this close's
+      // record complete?" gets one answer covering both halves.
+      this.unrecorded.push({
+        subCallId: entry.subCallId,
+        disposition: this.state === 'OPEN' ? 'settled' : 'cancelled',
+        reason: `the settlement could not be recorded: ${settlementFailure instanceof Error ? settlementFailure.message : String(settlementFailure)}`,
+      })
+    }
     return outcome
   }
 }

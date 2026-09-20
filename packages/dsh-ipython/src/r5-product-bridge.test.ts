@@ -1497,4 +1497,118 @@ describe('R5-J5 continued: request-id idempotency and the crash window', () => {
     await second.ctx.fiber.dispose()
     await rm(dir, { recursive: true, force: true })
   }, 120_000)
+
+  it('a FAILED SETTLEMENT write does not hang the caller, and IS reported', async () => {
+    // THE DEFECT THIS ARM FOUND, and the reason it exists.
+    //
+    // `runOne`'s docstring states: "A THROW HERE MUST STILL SETTLE THE CALLER...
+    // a host-level failure (a ledger write, a bug) would otherwise leave the
+    // accepted promise pending forever and hang the cell." That was TRUE of the
+    // handler and FALSE of the ledger write: the try/catch covered only
+    // `this.handler`, so a rejected `ledger.settled` threw out of `runOne`,
+    // `runQueue` never reached `entry.resolve`, and the accepted promise stayed
+    // pending forever.
+    //
+    // MEASURED BEFORE THE FIX: the caller had not settled after 5 s (the race
+    // below timed out with 'HUNG'), and every call queued behind it never ran
+    // either, because the queue is serial and the throw ended the loop. `close()`
+    // hung with it, since its drain awaits every in-flight promise -- so a single
+    // unwritable settlement turned a cell's whole bridge into a hang.
+    const failing = new MemoryBridgeLedger()
+    let settlementAttempts = 0
+    failing.settled = async () => {
+      settlementAttempts += 1
+      throw new Error('injected storage failure: the settlement could not be written')
+    }
+    const bridge = new BridgeServer({ artifactDirectory: join(root, 'settlement-fault') })
+    await bridge.start()
+    const lease = bridge.mintLease({
+      sessionId: 'r5-settlement-fault', cellId: 'cell-1', epoch: 1,
+      outerCallId: 'outer-settlement', rootCallId: 'outer-settlement',
+      ledger: failing,
+      handler: async () => ({ ok: true, value: { ok: true } }),
+    })
+
+    // Bounded by a race rather than by the test budget, so a regression is
+    // reported as HUNG instead of stalling the whole file.
+    const raced = await Promise.race([
+      lease.invoke({ requestId: 'req-1', tool: 'r5_ok', arguments: {}, cellId: 'cell-1', epoch: 1, leaseId: lease.id })
+        .then(outcome => ({ kind: 'settled' as const, outcome }), error => ({ kind: 'rejected' as const, error: String(error) })),
+      new Promise<{ kind: 'HUNG' }>(resolveRace => { setTimeout(() => { resolveRace({ kind: 'HUNG' }) }, 5000) }),
+    ])
+    expect(settlementAttempts).toBe(1)
+    // THE FIX: the caller is settled, with the tool's own outcome, even though the
+    // record could not be written. The call really did run and really did succeed;
+    // refusing to tell the caller that would be a different lie.
+    expect(raced.kind).toBe('settled')
+    expect((raced as { outcome: { ok: boolean } }).outcome.ok).toBe(true)
+
+    // AND THE RECORD IS HONEST ABOUT IT: no settlement, and deliberately NO
+    // disposition. A disposition here would hide the row from
+    // `unknownOutcomes()` -- the one place a reader looks for an outcome that was
+    // never established -- so the truthful shape is STARTED with neither.
+    const row = failing.get('outer-settlement:ipython:1')
+    expect(row?.startedAt).toBeTruthy()
+    expect(row?.settledAt).toBeUndefined()
+    expect(row?.disposition).toBeUndefined()
+    expect(failing.unknownOutcomes()).toHaveLength(1)
+
+    // AND THE LOSS IS REPORTED, through the same channel the disposition-write
+    // failure uses, so "is this close's record complete?" has ONE answer covering
+    // both halves of the record.
+    const failure = await lease.close('completed', 'the cell settled').then(() => undefined, (error: unknown) => error)
+    expect(failure).toBeDefined()
+    expect(String(failure)).toMatch(/could not be recorded durably/u)
+    const unrecorded = (failure as { unrecorded: Array<{ subCallId: string, reason: string }> }).unrecorded
+    expect(unrecorded).toHaveLength(1)
+    expect(unrecorded[0]?.subCallId).toBe('outer-settlement:ipython:1')
+    // The reason names the SETTLEMENT, so a reader can tell this apart from a
+    // disposition-write failure.
+    expect(unrecorded[0]?.reason).toMatch(/settlement could not be recorded/u)
+    await bridge.close()
+  }, 60_000)
+
+  it('a call queued behind a failed settlement still runs: one bad record is not a dead bridge', async () => {
+    // THE SECOND HALF OF THE SAME DEFECT. The queue is serial, so a throw out of
+    // `runOne` ended the runner loop and every call behind it was silently never
+    // dispatched. This is the arm that shows the queue SURVIVES a bad record:
+    // call 1's settlement fails, and call 2 still reaches its handler.
+    let entered = 0
+    const failing = new MemoryBridgeLedger()
+    const realSettled = failing.settled.bind(failing)
+    failing.settled = async (subCallId, settlement) => {
+      if (subCallId.endsWith(':1')) throw new Error('injected: the first settlement cannot be written')
+      await realSettled(subCallId, settlement)
+    }
+    const bridge = new BridgeServer({ artifactDirectory: join(root, 'settlement-queue') })
+    await bridge.start()
+    const lease = bridge.mintLease({
+      sessionId: 'r5-settlement-queue', cellId: 'cell-1', epoch: 1,
+      outerCallId: 'outer-queue', rootCallId: 'outer-queue',
+      ledger: failing,
+      handler: async (_call, context) => { entered += 1; return { ok: true, value: { sequence: context.sequence } } },
+    })
+
+    const raced = await Promise.race([
+      Promise.all([
+        lease.invoke({ requestId: 'req-1', tool: 'r5_a', arguments: {}, cellId: 'cell-1', epoch: 1, leaseId: lease.id }),
+        lease.invoke({ requestId: 'req-2', tool: 'r5_b', arguments: {}, cellId: 'cell-1', epoch: 1, leaseId: lease.id }),
+      ]).then(outcomes => ({ kind: 'both' as const, outcomes }), error => ({ kind: 'rejected' as const, error: String(error) })),
+      new Promise<{ kind: 'HUNG' }>(resolveRace => { setTimeout(() => { resolveRace({ kind: 'HUNG' }) }, 8000) }),
+    ])
+    expect(raced.kind).toBe('both')
+    // BOTH ran: the queue was not killed by the first call's unwritable record.
+    expect(entered).toBe(2)
+    // The second call's record is COMPLETE, because only the first settlement was
+    // made to fail.
+    expect(failing.get('outer-queue:ipython:2')?.settledAt).toBeTruthy()
+    expect(failing.get('outer-queue:ipython:2')?.disposition).toBe('settled')
+    // And the first is reported as unknown, which is the truth about it.
+    expect(failing.unknownOutcomes()).toHaveLength(1)
+    expect(failing.unknownOutcomes()[0]?.subCallId).toBe('outer-queue:ipython:1')
+
+    const failure = await lease.close('completed', 'the cell settled').then(() => undefined, (error: unknown) => error)
+    expect(failure).toBeDefined()
+    await bridge.close()
+  }, 60_000)
 })
