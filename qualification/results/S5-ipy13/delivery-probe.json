@@ -1,0 +1,19 @@
+{
+  "toolName": "ipython",
+  "toolRegistered": 1,
+  "turn1_outcome": "ok",
+  "turn1_text": "outcome: ok\nkernel epoch: 1\n--- stdout ---\nturn1-settled\n\n[1 shell frame(s) for other requests were ignored while waiting for this cell. They did not complete it.]",
+  "turn1_text_mentions_late_marker": false,
+  "turn2_outcome": "ok",
+  "turn2_text": "outcome: ok\nkernel epoch: 1\n--- stdout ---\nturn2-settled\n\n[1 shell frame(s) for other requests were ignored while waiting for this cell. They did not complete it.]",
+  "turn2_text_mentions_late_marker": false,
+  "drainUnattributed_after_two_turns": [
+    {
+      "cellId": "39bdd6cc-81d54faa89c1b547f84f0f3b_15904_3",
+      "text": "DELIVERY-LATE-MARKER\n",
+      "epoch": 1
+    }
+  ],
+  "drainUnattributed_count": 1,
+  "verdict": "NOT DELIVERED: the late output was classified and then reached no model-facing text"
+}
