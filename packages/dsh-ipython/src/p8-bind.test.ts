@@ -483,6 +483,80 @@ describe('P8 / IPY-MAGIC-BIND: a cell magic receives a fresh capability', () => 
   }, 300_000)
 })
 
+describe('P8 / a FAILED bind stops the user cell (V5 §9 step 4)', () => {
+  it('when the bind request fails, the user\'s code does NOT run and nothing it contains takes effect', async () => {
+    // THE ORACLE: "if bind fails, do NOT execute the user code".
+    //
+    // WHY THIS ARM EXISTS AT ALL. It was added after a MUTATION TEST found it
+    // missing: replacing the `bind.outcome !== 'ok'` guard with `if (false)` left
+    // all ten other arms green. Every other arm in this file measures a bind that
+    // SUCCEEDS, so none of them could observe the refusal path -- the guard was
+    // real production behaviour with no test that could fail when it was removed.
+    //
+    // HOW THE FAILURE IS FORCED, AND WHY THIS WAY. The bind program calls
+    // `_dsh_mod._bind(...)` on the client module. The client is read from disk on
+    // first bind and cached in `sys.modules`, so a cell that REPLACES `dsh._bind`
+    // with something that raises makes the NEXT cell's bind fail inside the
+    // kernel, deterministically and without touching the host. That is the real
+    // failure mode (a broken client, a partial write) rather than a stubbed host.
+    const agent = agentFor('p8-bind-failure')
+    // A first cell so the module exists and its `_bind` can be sabotaged.
+    expect((await cell(agent, 'print("PRIME=True")')).outcome).toBe('ok')
+
+    const sabotage = await cell(agent, [
+      'def _p8_boom(*_args, **_kwargs):',
+      '    raise RuntimeError("p8: the capability bind is broken")',
+      'dsh._bind = _p8_boom',
+      'print("SABOTAGED=True")',
+    ].join('\n'))
+    expect(sabotage.outcome).toBe('ok')
+
+    // THE CELL UNDER TEST. It must NOT run: the side effect it would have is a
+    // FILE, so "did it run" is answerable from outside the kernel and cannot be
+    // confused with a cell that ran and printed nothing.
+    const marker = join(root, 'p8-bind-failure-marker.txt').replace(/\\/gu, '/')
+    const userSource = [
+      'with open(' + JSON.stringify(marker) + ', "w", encoding="utf-8") as _h:',
+      '    _h.write("the user cell ran")',
+      'print("USER_CELL_RAN=True")',
+    ].join('\n')
+
+    // The tool reports the refusal rather than throwing at the registry.
+    const refused = await cell(agent, userSource)
+    expect(refused.isError).toBe(false)
+    // THE MODEL-FACING TEXT SAYS THE CELL WAS NOT RUN, and says why.
+    expect(refused.text).toContain('refused')
+    expect(refused.text).toMatch(/NOT run/)
+    expect(refused.text).toContain('the capability bind is broken')
+    // AND THE USER'S CODE DID NOT RUN. The file does not exist, which is the
+    // observation that survives a rendering change to the message above.
+    await expect(readText(marker)).rejects.toThrow()
+    // The cell's own marker print is absent too, so this is not a rendering quirk.
+    expect(refused.text).not.toContain('USER_CELL_RAN=True')
+  }, 300_000)
+
+  it('a failed bind still closes its lease, so no capability outlives the refusal', async () => {
+    // The refusal path shares the `finally` with the success path, and this is the
+    // arm that says so: a lease left open after a refused cell would be a live
+    // capability the model never received a result for.
+    const agent = agentFor('p8-bind-failure-lease')
+    expect((await cell(agent, 'print("PRIME=True")')).outcome).toBe('ok')
+    expect((await cell(agent, [
+      'def _p8_boom(*_args, **_kwargs):',
+      '    raise RuntimeError("p8: the capability bind is broken")',
+      'dsh._bind = _p8_boom',
+      'print("SABOTAGED=True")',
+    ].join('\n'))).outcome).toBe('ok')
+
+    const refused = await cell(agent, 'print("SHOULD_NOT_RUN=True")')
+    expect(refused.text).toMatch(/NOT run/)
+    // No lease survives: the server's own table is the authority on that.
+    expect(service?.bridgeFor(agent)?.server.openLeases()).toHaveLength(0)
+    // And no exact call was ever dispatched for the refused cell.
+    expect(dispatches.filter(entry => entry.name === 'p8_echo')).toHaveLength(0)
+  }, 300_000)
+})
+
 describe('P8 / authority-less cells: a prior capability is REVOKED, not inherited', () => {
   it('an internal cell with no authority cannot reuse a previous dsh capability', async () => {
     // THE CLAIM THE OLD COMMENT MADE, measured. It said an authority-less cell has
