@@ -28,6 +28,7 @@ import { Context } from '@deepseek-ai/cordis'
 import Subprocess from '@deepseek-ai/dsh-subprocess-local'
 import SystemPrompt from '@deepseek-ai/dsh-system-prompt'
 import ToolRuntime from '@deepseek-ai/dsh-tools'
+import { ToolCallId } from '@deepseek-ai/dsh-llm'
 import type { Agent } from '@deepseek-ai/dsh-agent'
 import { mkdtemp, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
@@ -74,7 +75,7 @@ async function main(): Promise<void> {
       contexts: string[]
     }> => {
       const result = await ctx.tools.execute({
-        callId: `p9-after-${String(seq)}` as never,
+        callId: ToolCallId(`p9-after-${String(seq)}`),
         name: IPYTHON_TOOL_NAME,
         arguments: { code },
         agent: agentFor,
