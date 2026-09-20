@@ -118,8 +118,33 @@ Precedence is earliest-loss-first (`observations.ts:253-258`) and was driven in
 both insertion orders, so the reported verdict cannot be an artifact of gap
 ordering.
 
-## 3. Mutation test: the gate goes red. Three mutations, all restored.
+### 2.2 A `provider-acquisition` reason that can name a bound the provider never received
 
+The `provider-acquisition` gap's REASON interpolates the caller's `maxBodyChars`
+(`web-provenance.ts:356`: *"the provider capped the body at 1000"*). That number
+is a caller-side ANNOTATION, not a fact about the provider: `WebFetchRequest` is
+`{url}` only (`packages/web/web/src/types.ts:64-66` in the pinned checkout), so
+no per-request body cap can be transmitted. The real cap is the provider's own
+config (`web-fetch-http/src/index.ts:47`, `maxBodyChars: 100_000`).
+
+Measured (`FINDING-maxBodyChars-never-reaches-provider.txt`): a caller passing
+`maxBodyChars: 1000` produced the provider seeing exactly `{"url":"..."}` and a
+gap reason reading *"the provider capped the body at 1000"*.
+
+**Why this is a DATA-09 defect and not pedantry.** The reason is the only part of
+a gap a human or a model reads, and it asserts a cause that did not occur: the
+provider did not cap at 1000, and the number 1000 reached nothing. A reader
+diagnosing a short body would size their retry against a bound that was never in
+play. The stage is right; the CAUSE inside the reason is not.
+
+**NOT FIXED HERE, deliberately.** `web-provenance.ts` is shared with the
+history/provenance surface and the honest repair is a decision, not a one-line
+edit: either drop the caller's number from the reason and name the provider's own
+bound (which the seam does not currently expose), or mark it as the caller's
+REQUESTED bound rather than the provider's cap. Choosing between those changes
+the record's meaning, which is the caller's call and not this slice's.
+
+## 3. Mutation test: the gate goes red. Three mutations, all restored.
 Each mutation was applied to PRODUCTION code, the file run, the failure captured,
 and the file restored with `git checkout HEAD -- <path>` (verified: `git diff`
 empty afterwards, and the suite green at 47/47).
