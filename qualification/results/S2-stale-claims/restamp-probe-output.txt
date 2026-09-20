@@ -1,0 +1,20 @@
+{
+  "total": 104,
+  "PASS": 84,
+  "FAIL": 3,
+  "RUNNING": 0,
+  "BLOCKED_EXTERNAL": 1,
+  "NOT_RUN": 10,
+  "NOT_APPLICABLE": 6
+}
+generator exit code      : 0
+lock identity now        : 0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461
+identities in GENERATED  : {'0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461'}
+identities in ON DISK    : {'ece4037a9d5bbb014aa5a8395ed15531715a11949f2aa687166fcfeb5717576f'}
+
+PASS rows that would be re-stamped with the current lock identity: 84
+
+D10 generated status/identity: FAIL None
+D10 on-disk  status/identity: FAIL None
+
+temp dir (nothing in the repo was written): C:\Users\hzq00\AppData\Local\Temp\s2-gates-probe-1kslj6uj

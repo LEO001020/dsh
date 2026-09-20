@@ -1,0 +1,25 @@
+measured tree: D:/DSH/work/wt-s2/packages/dsh-daily-work/src
+production modules: 39
+
+=== 1. PRODUCTION call sites targeting a TERMINAL state ===
+   terminal states: settling | confirmed | cancelled | cancel_requested
+   writers found : NONE
+
+=== 1b. type annotations that mention a terminal state (must NOT count) ===
+    none
+
+=== 2. production modules referencing a RUN epoch (kernel excluded) ===
+    NONE
+
+=== 2b. deleted settlement symbols surviving in CODE (comments allowed) ===
+    NONE
+
+=== 3. runRecordSchema declares an epoch? ===
+    False
+   documented removal present? True
+
+=== 4. POSITIVE CONTROLS (the scan is not silently broken) ===
+   call sites found in host.ts (non-terminal): ['accepted', 'launching', 'unknown']
+   kernel-lifecycle.ts still mentions epoch : True
+
+VERDICT: FACTS HOLD

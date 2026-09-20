@@ -22,7 +22,7 @@ An invariant with no failing gate is a wish, not an invariant.
 |---|---|---|
 | INV-L1 | Every listener, timer, guard and tool registration is owned by a Cordis effect/fiber and is disposed with it. | B03 |
 | INV-L2 | load → unload → load does not double-register, leak a timer, or message a different Session. | B03 |
-| INV-L3 | Authority is bound to the exact live Agent object plus run epoch, not to a session-id string. A stale callback cannot write authoritative state. | B04, D10 |
+| INV-L3 | Authority is bound to the exact live Agent object, not to a session-id string. A stale callback cannot write authoritative state. **Scope of the claim, stated because it was once wider**: the enforcement is object identity alone (`tool-protocol-guards.ts` compares the registry entry by OBJECT, `ctx.agents.get(id) === owner`), which covers an in-process resume — a case the product can reach. A run re-adopted across a **process** boundary is NOT covered and v2 does not claim it. This invariant previously read "…plus run epoch"; that half named a field and a guard that were **deleted rather than wired** (F8 / REC-09 / REC-10 — see `qualification/results/R9-recovery-topology/`), because no production path can construct a settlement from a superseded generation. | B04, D10 |
 | INV-L4 | The plugin never awaits the same Agent's `whenIdle`/`dispose` from inside its own `agent/created` or `agent/turn-stopping` hook. | B03, F06 |
 | INV-L5 | `tools/pre-execute` waterfalls call `next`; `agent/turn-stopping` is serial and has no `next`. | B07 |
 | INV-L6 | `ctx.tools.guard()` stays synchronous and is the final deny. It never awaits a database or an approval. | B07 |

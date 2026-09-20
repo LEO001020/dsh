@@ -686,14 +686,27 @@ confinement boundary.
    now taken at `createRun` and the result is stored on the run record (optional
    `continuation` field). **Code and test tier, not boot tier.** Nothing *reads*
    `.continuation` yet, so the field records the handover rather than checking it.
-4. **The run record's `epoch` field is inert in the product.** The guard that would
-   enforce it (`applyWorkerSettlement` in `recovery.ts`) is real and tested, but
-   `recovery.ts` is **not reachable from any production path** — zero non-test
-   importers, outside the closure of every `package.json` export, and zero callers
-   outside its own module and its test. Nothing bumps `epoch` either. What is
-   enforced is object identity (`tool-protocol-guards.ts`), which covers the
-   in-process resume case. A run re-adopted across a **process** boundary has no
-   epoch enforcement today. See `docs/DELETE-AUDIT.md` §3.8.1.
+4. **The run record has NO `epoch` field and no settlement guard — DELETED, not
+   wired.** This item used to report that the field existed and was inert. It is
+   gone: the guard (`applyWorkerSettlement`), its `WorkerSettlement` type, its
+   `RefusalLedger` over the separate `dsh_daily_work_refusals` domain, and the
+   record's `epoch` field were removed under F8 / REC-09 / REC-10, because the
+   topology measurement showed the guard's input **cannot be constructed** rather
+   than merely being unreachable. Precisely: no production call site targets a
+   terminal task state, and the state the product actually leaves an unsettled
+   task in — `unknown`, reservation held — has no production exit (`host.ts:2232`,
+   `:2261` write `unknown` with `releaseReservation: false`; `admit` refuses a
+   slot-holding task at `host.ts:1442`; `relaunchPrepared` refuses anything not
+   `prepared` at `recovery.ts:103`). A settlement is the act of LEAVING an
+   in-flight state, and no production path does it. Wiring the guard would have
+   meant **inventing** a cross-process settlement producer, which the audit
+   forbids. **What is enforced is object identity**
+   (`tool-protocol-guards.ts`), which covers the in-process resume case. A run
+   re-adopted across a **process** boundary is not fenced, and **v2 does not
+   claim it** — the v1 cases REC-09/REC-10 stay FAIL, and this is a recorded
+   NON-CLAIM rather than a fix. See
+   `qualification/results/R9-recovery-topology/` and `docs/DELETE-AUDIT.md`
+   §3.8.1.
 5. **No live paid run.** `C01` is `BLOCKED_EXTERNAL`:
    `live_provider_budget_authorized: false`. A key being present would not
    authorize large paid evaluation.
@@ -841,20 +854,31 @@ from an earlier revision of this file**. The 104 old-spec cases divide
 `required_for: daily_ready` **88**, `offline_qualified` **10**, `conditional` **6**:
 
 ```
-total 104 = PASS 85 · NOT_RUN 10 · FAIL 2 · BLOCKED_EXTERNAL 1 · NOT_APPLICABLE 6
-of the 88 mandatory:  PASS 75 · NOT_RUN 10 · FAIL 2 · BLOCKED_EXTERNAL 1
+total 104 = PASS 84 · NOT_RUN 10 · FAIL 3 · BLOCKED_EXTERNAL 1 · NOT_APPLICABLE 6
+of the 88 mandatory:  PASS 74 · NOT_RUN 10 · FAIL 3 · BLOCKED_EXTERNAL 1
 of the 10 offline_qualified: all 10 PASS
 of the 6 conditional:        all 6 NOT_APPLICABLE
 promotion_decision: NOT_READY   (qualification/gates-summary.json)
 ```
 
+**`D10` moved from `PASS` to `FAIL` in this round** (85/2 → 84/3). It is not a new
+defect and it does not change the decision: the row's PASS note asserted that "a
+real guard now refuses a stale-generation settlement, with diagnostic evidence
+going to a SEPARATE domain", and R9 subsequently **deleted** that guard, its
+`RefusalLedger` and that domain. The row was never re-judged after the deletion,
+so it had been passing on a statement that was no longer true. Its frozen oracle
+(`拒绝权威写入，保留diagnostic evidence`) is not satisfied by the current tree —
+neither the refusal nor the retained evidence exists — so `FAIL` is the honest
+value. See `docs/DELETE-AUDIT.md` §3.8.1 and `docs/GAPS.md` G-SEAM-21.
+
 **Every non-PASS mandatory gate, named with its reason** — this is the full basis
-of the verdict, and there are 13 of them:
+of the verdict, and there are 14 of them:
 
 | Gate | Status | One-line reason |
 |---|---|---|
 | `A12` | `NOT_RUN` | The real daily host was never qualified end to end. PARTIAL: it booted to the CREDENTIAL boundary — real port bound, fence 401, token URL → cookie → 200 app shell, `session/create` + `session/list` round-tripped, both C2 changes in the booted graph — then stopped at `MISSING_CREDENTIAL` because no API key is present. No model turn ran. |
 | `C01` | `BLOCKED_EXTERNAL` | T1 measured (20 submitted against N=10; ten admitted, ten refused, ten distinct children each reaching a real model request); T5, the live paid run, is blocked. |
+| `D10` | `FAIL` | **Moved from `PASS` in this round.** The oracle requires a stale-generation settlement to be REFUSED and the attempt RETAINED as diagnostic evidence. R9 deleted the guard, its `RefusalLedger` and the separate `dsh_daily_work_refusals` domain (F8 / REC-09 / REC-10), so neither half is delivered. It was PASS only because the row was not re-judged after the deletion. v2 records a NON-CLAIM instead of claiming the guarantee; v1's `REC-09`/`REC-10` stay FAIL. |
 | `E01` | `FAIL` | A confined child **read** a canary secret outside the workspace root verbatim, exit 0, under both `read-only` and `workspace-write`. The boundary is writes only and the seam has no read lever in principle. |
 | `E02` | `NOT_RUN` | PARTIAL: the surface shape is proven (no terminal tool in the preset, none added here); no live model-to-control-plane probe has been run. |
 | `E06` | `FAIL` | A confined child completed a real HTTP round trip and connected to a public address under both modes. No egress control exists in the seam. |
@@ -898,24 +922,32 @@ is a request, and none of it is done:
 
 **`NOT_READY` means the system is not certified for daily use, and the report says
 so in its own vocabulary rather than in a footnote.** It does not mean the
-mechanisms are unproven — 85 gates pass, and several of them are load-bearing
+mechanisms are unproven — 84 gates pass, and several of them are load-bearing
 (ten children admitted through the real `startContinuable` seam; a run surviving a
 real `SIGKILL`; an A→B→A mutation caught by an immutable snapshot). It means the
 mandatory set is not closed.
 
 Two further things `NOT_READY` covers that a reader might otherwise miss:
 
-- **Two mandatory gates are honest FAILs, not gaps.** E01 and E06 were measured and
-  the measurement contradicts the requirement. Re-reading them as "not yet
-  verified" would understate them.
+- **Three mandatory gates are honest FAILs, not gaps.** E01 and E06 were measured
+  and the measurement contradicts the requirement. Re-reading them as "not yet
+  verified" would understate them. **D10 is the third, and it is a different kind
+  of FAIL**: not a platform limit and not unbuilt work, but a guarantee the
+  project **stopped claiming**. It stays FAIL rather than being softened to
+  `NOT_RUN`, because the mechanism it named was deleted and the oracle is
+  therefore not satisfied — the same discipline E01/E06 are held to.
 - **The old report's numbers do not carry over, and its evidence is now fully
   consistent.** Its 104 cases share **zero** ids with the new 112-case spec.
   An earlier revision of this file said "3 of 127 references no longer match the
   file on disk"; **that is no longer true and was checked rather than assumed** —
-  re-hashing all 127 evidence references in `gates.json` against disk gives
-  **127 match, 0 missing, 0 stale**. The T05/T06/T08 rows cite
-  `615adaad87d29e3c…`, which is what
-  `qualification/results/M9.2-terminal-advanced/FINDINGS.md` hashes to now. See
+  re-hashing every evidence reference in `gates.json` against disk gave
+  **127 match, 0 missing, 0 stale** at the time of that check. The T05/T06/T08
+  rows cite `615adaad87d29e3c…`, which is what
+  `qualification/results/M9.2-terminal-advanced/FINDINGS.md` hashes to now.
+  **The count is now 125, not 127**, because the D10 re-judgement (see the item
+  above) removed that row's two evidence references along with its `PASS` — the
+  report's own shape for a non-PASS row carries no `evidence` key. The two paths
+  are named inside D10's note, so nothing was lost. See
   `docs/DELETE-AUDIT.md` §4.1, and `docs/GAPS.md` G-VER-05 for the retraction.
 
 ## 10. Upgrade procedure

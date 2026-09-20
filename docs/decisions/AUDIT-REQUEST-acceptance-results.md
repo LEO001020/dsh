@@ -156,6 +156,12 @@ trusted-local：**OS 用户账户即执行权限边界**。DSH 以调用者身�
 
 #### F8. `G-SEAM-21` / `REC-09` + `REC-10` — epoch 守卫不可达
 
+> **本行的实测事实保留为历史记录，未改写。** 该 F8 的**处置已改变**：不是接线，而是**删除**（commit `6bfc810`，由 `00421ec` 修正）。
+> `applyWorkerSettlement`、其 `WorkerSettlement` 类型、其 `RefusalLedger` 与 `dsh_daily_work_refusals` 域、以及 run record 的 `epoch` 字段**全部被删除**，因为拓扑测量表明该守卫的**输入在任何生产路径上都无法构造**（不只是不可达）：没有任何生产调用点会写入终态，而产品实际留下的未决状态 `unknown`（保留 reservation）没有任何生产出口。
+> 因此 v1 的 `REC-09`/`REC-10` **保持 FAIL**，v2 记录为 **NON-CLAIM** 而非修复。
+> 证据：`qualification/results/R9-recovery-topology/`（`TOPOLOGY.md`、`TEST-LEDGER.md`、`CONTROL-FALSIFICATION.txt`、`unknown-exit-probe.txt`）。
+> 下表"未修的原因"一行所述的"没有生产 settlement 入口可接"正是删除的依据，而非接线的理由。
+
 | 项 | 内容 |
 |---|---|
 | 规格 case | `REC-09` FAIL、`REC-10` FAIL |
@@ -163,6 +169,7 @@ trusted-local：**OS 用户账户即执行权限边界**。DSH 以调用者身�
 | 在可达路径上也不可表达 | `WorkService.transition` **不接收 epoch 参数**，所以一个陈旧 epoch 的 settlement 交给它会被**静默忽略**（实测：transition 生效、reservation 释放、tombstone 写入、epoch 从未被查） |
 | `REC-09` 的 oracle 决定了它是 FAIL | oracle 写"来自被取代世代的 settlement **落地**即 NOT PASS"。而实测正是它会落地 |
 | 未修的原因 | 没有生产 settlement 入口可接；接线等于**发明一个调用者** |
+| **处置（后续）** | **删除，不接线** —— 守卫、类型、refusal ledger、独立域与 `epoch` 字段全部移除；v1 的两个 FAIL 保留为历史。`docs/DELETE-AUDIT.md` §3.8.1 已更新为 CLOSED BY DELETION |
 
 #### F9. `G-SEAM-46` — 规格**自相矛盾**
 
@@ -235,7 +242,7 @@ trusted-local：**OS 用户账户即执行权限边界**。DSH 以调用者身�
 |---|---|---|---|
 | 1 | `setLaunchPort` | 组装后的 profile 无法启动任何 child | 已修 |
 | 2 | `takeContinuation` | 两个 continuation owner 可能驱动同一个 root | 已修 |
-| 3 | `recovery.ts` epoch 守卫 | `epoch` 字段在**跨进程**场景下是惰性的 | 未修（F8） |
+| 3 | `recovery.ts` epoch 守卫 | `epoch` 字段在**跨进程**场景下是惰性的 | **已处置：删除，不接线**（F8）—— 守卫、类型、refusal ledger、独立域与 `epoch` 字段全部移除；v1 的 `REC-09`/`REC-10` 保持 FAIL，v2 记为 NON-CLAIM |
 | 4 | `ctx.dailyHistory.history(caller)` | M7 历史平面已挂载并服务授权读，**零生产消费者** | 未修 |
 | 5 | `host.ts` 的 user-cancel 重检 | 缺的是 await **之后**的重读 | 部分 |
 | 6 | M7 的 inject 回归测试没有守住它 | 从 root context 调用永不抛错 | 已修 |
@@ -270,6 +277,8 @@ trusted-local：**OS 用户账户即执行权限边界**。DSH 以调用者身�
 **Q4. F9（规格自相矛盾）该怎么收？** 两个诚实选项：(a) 用**新身份**取代规格（会作废记录在 `0a0996f3` 下的全部 95 个 PASS——所以是刻意步骤而非修复）；(b) 接受它作为**永久记录的矛盾**。**哪个对？** 如果选 (a)，是否应该把"任何归档都会改变规格字节"这个结构问题一并解决（例如把 case 定义与 verdict 拆成两个文件）？
 
 **Q5. 另外 7 个 FAIL（F4/F5/F6/F7/F8/F10/F11/F12）的优先级排序与修法。** 我目前的判断是 F5（drain 超发）和 F4（双实例）最该先修，因为它们是**静默的正确性缺陷**（超发对 deficit 读者不可见；模块状态分裂）。F8（epoch 守卫）需要先决定"跨进程 settlement 入口"是否存在。**你同意吗？**
+
+> **该问题已有答案（后续处置）。** "跨进程 settlement 入口"经测量**不存在**，而且不存在得比预想更彻底：没有任何生产调用点会写入终态，产品留下的 `unknown` 也没有生产出口。因此 F8 的处置是**删除**（`6bfc810`、`00421ec`），不是接线。见 `qualification/results/R9-recovery-topology/` 与本文件 F8 行的"处置（后续）"。
 
 **Q6. `CMP-06` 的保护是"不可达"而非"不可变"（§2.5 #12）——这算缺陷吗？** 实测：host 代码调用 `setPolicy` 确实能改。保护来自无调用者。**是否需要一个真正的守卫（拒绝运行时改 mode），还是"无调用者"就是充分的？**
 
