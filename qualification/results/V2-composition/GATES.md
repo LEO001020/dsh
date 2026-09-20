@@ -177,6 +177,16 @@ other three clauses (`ipython` present, `work` present, `error: null`) all HOLD 
 as pinned no longer describes the deployment it is pinned to**, which is a fact about the delivery
 rather than about the composition.
 
+**RESOLUTION, and who owns it.** This family declined to choose unilaterally, which was correct:
+repairing the contradiction means either superseding the spec under a **new identity** (which
+invalidates every verdict filed under `0a0996f3…`, so it is a deliberate delivery step and not a
+fix) or accepting the case as a permanent recorded contradiction. The **root agent** has since
+recorded that decision path as a `note` field on the CMP-04 case itself, so the case now carries
+both the FAIL and its own resolution ownership. `[measured]` the case at HEAD has keys
+`[evidence, family, id, layer, mandatory, note, oracle, requirement, status, stimulus]` with
+`status: "FAIL"` and the two evidence entries intact — the note was ADDED alongside the verdict,
+not substituted for it.
+
 ---
 
 ## 4. The gate table — all 14 cases

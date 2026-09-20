@@ -141,7 +141,13 @@ def main() -> int:
     if other_before != other_after:
         raise SystemExit('FATAL: a case OUTSIDE the COMPOSITION family changed -- refusing to write')
 
-    SPEC.write_text(json.dumps(spec, indent=2, ensure_ascii=False) + '\n', encoding='utf-8')
+    # NEWLINE='\n' IS LOAD-BEARING. The file on disk is LF-only (measured: 0 CRLF
+    # in the HEAD revision). Python's text mode on Windows translates every '\n'
+    # to '\r\n', which rewrites ALL 2097 lines and buries the real change -- the
+    # 14 cases' evidence -- inside a whole-file line-ending diff. A reader
+    # reviewing this commit must be able to see the actual edit.
+    with open(SPEC, 'w', encoding='utf-8', newline='\n') as handle:
+        handle.write(json.dumps(spec, indent=2, ensure_ascii=False) + '\n')
 
     written = json.loads(SPEC.read_text(encoding='utf-8'))
     for case in written['cases']:

@@ -153,8 +153,52 @@
       "requirement": "artifact identity locked",
       "stimulus": "Boot the built launcher `node apps/cli/lib/bin.js --profile daily-candidate`, then swap it for a different build or load `src/` instead of `lib/`, and repeat the first successful tool call.",
       "oracle": "The first tool call actually succeeds and the resolved module graph is recorded: every `@deepseek-ai/*` specifier resolves under `D:\\DSH\\src\\dsh-src\\packages\\*\\lib\\`, and sha256 of the launcher equals `deployment.inputs.artifact_sha256`. A run whose only success is `--help`, or whose graph mixes `src` and `lib`, is NOT PASS.",
-      "status": "NOT_RUN",
-      "evidence": []
+      "status": "FAIL",
+      "evidence": [
+        {
+          "path": "qualification/results/V1-identity/GATES.md",
+          "sha256": "ee1c2a77568c5497697d787d4e68ced064bef16a54a8e032e2e73f74b50ac50a",
+          "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+          "note": "Gate row ID-01: the oracle verbatim, the command, the measured result, the build digests, and the two defects found in this driver's own instrument."
+        },
+        {
+          "path": "qualification/results/V1-identity/ID-01-run.txt",
+          "sha256": "c51f9a3452240d747d834d021a31b6f8856132bd76813ba034db736fb87cb44c",
+          "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+          "note": "The driver transcript and all 23 checks: 22 ok, 1 FAIL (`no @deepseek-ai specifier resolved to a source (.ts) file`). Includes the rebuild exit codes, the lib-vs-src freshness comparison, and portReleased true."
+        },
+        {
+          "path": "qualification/results/V1-identity/runs/id01/verdict.json",
+          "sha256": "a70607fcbc01cc065960f6d06703d18d985917624821038c3a9fb67eb5fbc758",
+          "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+          "note": "The judged artifact: build freshness with digests, the full 223-row classified graph, the probe output, the instrument sha256s, and every check with its observed value."
+        },
+        {
+          "path": "qualification/results/V1-identity/runs/id01/graph.jsonl",
+          "sha256": "1e1f8f272d692db2ccb47e0394cdb1f1a6f02fe452250ebe994bc6b7ffb609ed",
+          "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+          "note": "The raw 724-line resolution record written from inside the booted host, each line carrying seq, atMs, specifier, url and parentURL."
+        },
+        {
+          "path": "qualification/results/V1-identity/ID-01-graph-report.txt",
+          "sha256": "07ff37f1033a0fb93ad15ed45d4e0b706aea3dfb94d1762988bd418ac24fb969",
+          "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+          "note": "The graph read back: counts, the SOURCE row, the vendor rows, and the parentURL that proves lib/artifacts.js is the importer."
+        },
+        {
+          "path": "qualification/results/V1-identity/ID-01-source-import-characterisation.txt",
+          "sha256": "e5500ccafba4744f106c7c9e74fab3dd4bd1bf80a24728de9877f9e6c8691a39",
+          "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+          "note": "The three physical copies of the flagged module, their sha256s, the shared module-scope state, and the fact that the entry bundle declares the function without exporting it."
+        },
+        {
+          "path": "qualification/results/V1-identity/ID-01-revision-compare.txt",
+          "sha256": "57257595bf62b472a099dfbbe7f3a105da23070ea42824aef4e7bf60f1467c7f",
+          "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+          "note": "The revision question decided by ts.transpileModule: the transpiled body from src/store.ts is identical to the one in lib/types/store.js, so the copies are the SAME REVISION."
+        }
+      ],
+      "note": "FAIL on the graph clause, PASS on every other clause. The boot was a real built-launcher boot (launcher sha256 69c49c87… = artifact_sha256; the probe's own argv[1] realpath = launcher_realpath), the first tool call SUCCEEDED (`read` returned the file's own text, toolResultIsError false, turnEndReason completed), and the graph was recorded from inside the host by a loader hook: 724 resolutions, 223 distinct @deepseek-ai/* specifiers, 221 from BUILT, 0 mixed. The oracle requires EVERY such specifier to resolve under packages\\*\\lib\\ and ONE does not: @deepseek-ai/dsh-attachment-local/src/store.ts resolves to D:\\DSH\\src\\dsh-src\\packages\\attachment\\attachment-local\\src\\store.ts, imported by packages/dsh-daily-work/lib/artifacts.js — the BUILT artifact, so this is the product's path, not a test's. Node 24 loads the .ts by native type stripping, which is why it worked and went unnoticed. Characterised: the package's entry (lib/index.js) INLINES its own copy of lib/types/store.js, so the host holds TWO module instances and the module-scope `const durableHomes = new Set()` is split between them; the two copies are the SAME REVISION, measured by erasing types with the TypeScript compiler itself, so the consequence is duplicated work and split state, NOT divergent behaviour. A built public path exists (lib/types/store.js); the package simply does not export publishImmutableObjectStream. CONTROLLED LOCAL ROUTE: the keyless mock adapter was used because live_provider_budget_authorized is false; the probe inserts no tool row. Rebuilt immediately before the boot (both packages exit 0, lib newer than src, recorded)."
     },
     {
       "id": "ID-02",
@@ -164,8 +208,28 @@
       "requirement": "identity recomputes from its inputs",
       "stimulus": "Recompute sha256 over `json.dumps(deployment.inputs, sort_keys=True, separators=(',',':'), ensure_ascii=True)` from the file on disk, and separately change one byte of one input and recompute.",
       "oracle": "The recomputed digest equals `deployment.identity` character for character, and the one-byte change produces a different digest. A recorded identity that no script on disk can reproduce is NOT PASS, even if it looks well-formed.",
-      "status": "NOT_RUN",
-      "evidence": []
+      "status": "PASS",
+      "evidence": [
+        {
+          "path": "qualification/results/V1-identity/GATES.md",
+          "sha256": "ee1c2a77568c5497697d787d4e68ced064bef16a54a8e032e2e73f74b50ac50a",
+          "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+          "note": "Gate row ID-02 with the exact command and both halves of the arithmetic."
+        },
+        {
+          "path": "qualification/results/V1-identity/ID-02-ID-04-identity-rederivation.txt",
+          "sha256": "8705df65baf985db26d77058a961e5265aa2074b93ad6272cb213f9e2db1f34f",
+          "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+          "note": "Section A (identity over the stored inputs) and section B (identity over inputs re-derived from disk), plus the one-byte-change arm."
+        },
+        {
+          "path": "qualification/results/V1-identity/ID-04-verify-identity-live.txt",
+          "sha256": "2b86bcb4c0dbd93cb29f838e261a2e46b1d33eed1217dff6d5165b2ce70651f1",
+          "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+          "note": "The independent verifier, 30/30 checks passed in the live tree, including that the identity recomputes and that every case id is unique."
+        }
+      ],
+      "note": "PASS. The identity recomputes from its inputs (computed = recorded = 0a0996f3…) AND, separately, recomputes from every file-named input RE-HASHED FROM DISK (same value, stale = none). Both halves are reported because they prove different things: the first proves the lock was not edited, the second proves the pins still describe the files on this machine — the failure T17 measured when host_profile_digest recomputed to a MATCH while pinning a profile revision that no longer existed. A one-byte change to host_profile_digest (5b8b… → 0b8b…) produces a different identity. Independent corroboration: qualification/results/T1-spec/verify-identity.py reports 30/30 in this live tree. Two defects in this instrument's own input map were found and fixed: it pointed dependency_lock_sha256 at a lockfile this repo does not have (the pin was correct; the map was wrong), and it compared the spec pin against the live ledger instead of the frozen as-authored snapshot the pin names."
     },
     {
       "id": "ID-03",
@@ -175,8 +239,22 @@
       "requirement": "no verdict migrates from the old specs",
       "stimulus": "Load `qualification/gates.json` (104 old cases, 85 PASS) and `qualification/specs/acceptance-spec.json` (112 old cases) alongside this file, and compare every id, name and subject.",
       "oracle": "Zero old case ids appear in this file with any status other than NOT_RUN, and zero evidence entries are carried across. The comparison is by id, by requirement name and by subject matter; a PASS that arrives without its own evidence file under this identity is NOT PASS.",
-      "status": "NOT_RUN",
-      "evidence": []
+      "status": "PASS",
+      "evidence": [
+        {
+          "path": "qualification/results/V1-identity/GATES.md",
+          "sha256": "ee1c2a77568c5497697d787d4e68ced064bef16a54a8e032e2e73f74b50ac50a",
+          "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+          "note": "Gate row ID-03, the two-clause reading, and the numbering caveat."
+        },
+        {
+          "path": "qualification/results/V1-identity/ID-03-no-inheritance.txt",
+          "sha256": "b7ba5da699738daecde4deeb2176554a582ead1f9e5f21b55fa43b2b1a6122ca",
+          "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+          "note": "The four comparisons with their counts, the Clause A offenders listed individually with their own evidence counts, and the per-family numbering documentation."
+        }
+      ],
+      "note": "PASS on the operative clause. Three comparisons plus an identity check, all measured: 0 of 36 old evidence paths reappear in this file; 0 shared ids with old gates.json; 0 evidence entries filed under a foreign identity; and 0 inherited verdicts — no non-NOT_RUN shared id lacks its own local evidence, and no NOT_RUN shared id carries evidence. IMPORTANT READING NOTE, because the oracle has two clauses and they disagree if taken literally. Clause A ('zero old case ids appear in this file with any status other than NOT_RUN') is recorded as a FACT and is NOT the decision: enforced literally it would make 38 of this spec's own cases unpassable, including VER-01, whose oracle REQUIRES a zero-test run to be measured. Clause B ('a PASS that arrives without its own evidence file under this identity is NOT PASS') is the operative test, and it is the clause that catches inheritance; the spec's own reading_notes and no_inheritance_rule state it in those terms. Both are reported so neither is silently dropped. A CAVEAT a reader needs: the by-requirement-name comparison is NOT decidable as a string comparison, because the old spec's requirement fields are Chinese ('硬30并发', '零测试') and this spec's are English — the first version of the check reported 30 'undocumented re-issues' that were purely the language difference. What IS decided is the documentation: only the VER family carries a numbering_warning. CAP, IPY, REC and RES therefore share ids with the old spec WITHOUT any statement that their numbering was carried over unchanged, so a reader comparing those ids across the two files must not assume it was. Recorded as a caveat, not smoothed into the PASS."
     },
     {
       "id": "ID-04",
@@ -186,8 +264,28 @@
       "requirement": "spec digest is pinned as an identity input",
       "stimulus": "Change one character of this spec file, then re-read `deployment.inputs.trusted_local_acceptance_spec_sha256` and the recomputed identity.",
       "oracle": "The stored digest no longer matches the file and the recomputed identity no longer matches `deployment.identity`, and a reader can detect both without trusting prose. A spec edited in place while the identity stays put is NOT PASS.",
-      "status": "NOT_RUN",
-      "evidence": []
+      "status": "PASS",
+      "evidence": [
+        {
+          "path": "qualification/results/V1-identity/GATES.md",
+          "sha256": "ee1c2a77568c5497697d787d4e68ced064bef16a54a8e032e2e73f74b50ac50a",
+          "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+          "note": "Gate row ID-04 and section 4, including the frozen-vs-live field comparison."
+        },
+        {
+          "path": "qualification/results/V1-identity/ID-02-ID-04-identity-rederivation.txt",
+          "sha256": "8705df65baf985db26d77058a961e5265aa2074b93ad6272cb213f9e2db1f34f",
+          "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+          "note": "The mutation arm with both detections, the byte-exact restore, and the live-ledger relationship showing ORACLES/STIMULI/REQUIREMENTS edited = NONE."
+        },
+        {
+          "path": "qualification/results/V1-identity/ID-04-verify-identity-live.txt",
+          "sha256": "2b86bcb4c0dbd93cb29f838e261a2e46b1d33eed1217dff6d5165b2ce70651f1",
+          "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+          "note": "The independent verifier: the frozen snapshot's digest equals the pinned input, and the live ledger has the same case ids."
+        }
+      ],
+      "note": "PASS. The pin is an identity input and both detections fire. Before the mutation the stored pin matches the file and the disk-derived identity matches the recorded identity; with ONE character changed both go false; the re-derived identity moves to a different value; and the restore is byte-exact (sha256 asserted). The mutation was applied to the file the pin NAMES — qualification/specs/frozen/acceptance-spec.trusted-local-v1.as-authored.json — and restored in a finally block. THE STRUCTURAL FACT THIS CASE TURNS ON, recorded because a reader will otherwise see the pin and the live spec disagree: the pin names a FROZEN as-authored snapshot, not the live spec file. The live file is ALSO the evidence ledger, so filing a verdict changes its bytes by design — measured, it moved e5b6a1d2 → 341464bc → c00a6345 → 97c77075 as sibling families filed evidence while the pin stayed at e5b6a1d2. Comparing the pin to the live file reports 'stale pin' for the spec doing exactly its job. What must hold instead is the property the spec's own rules demand — no oracle was edited after the fact — and that is measured: between the frozen snapshot and the live ledger, case ids are identical and the lists of changed ORACLES, STIMULI and REQUIREMENTS are all EMPTY. The only fields that differ are status, evidence and note."
     },
     {
       "id": "ID-05",
@@ -197,8 +295,58 @@
       "requirement": "public export boundary compiles under the strict config",
       "stimulus": "Compile all production packages and tests with `tsconfig.check.json` (the config that INCLUDES `src/**/*.test.ts`), then inject one type error into a test file and recompile.",
       "oracle": "The clean tree exits 0 and the injected error makes the compile FAIL. No `any` cast, no `as never`, and no non-null `!` is used to hide a genuinely undefined value; no private symbol is deep-imported across a package boundary. A green run under `tsconfig.json` alone is NOT PASS, because that config excludes the test files.",
-      "status": "NOT_RUN",
-      "evidence": []
+      "status": "FAIL",
+      "evidence": [
+        {
+          "path": "qualification/results/V1-identity/GATES.md",
+          "sha256": "ee1c2a77568c5497697d787d4e68ced064bef16a54a8e032e2e73f74b50ac50a",
+          "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+          "note": "Gate row ID-05 and section 5, with the four-arm table and the construct counts."
+        },
+        {
+          "path": "qualification/results/V1-identity/ID-05-clean-check-daily-work.txt",
+          "sha256": "b0ae7ed0c11a4b51cbb9bd970b941db05f43a9fce41118c41a8f6896a076cb6a",
+          "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+          "note": "The clean compile of packages/dsh-daily-work under tsconfig.check.json: EXIT=0, no diagnostics."
+        },
+        {
+          "path": "qualification/results/V1-identity/ID-05-clean-check-ipython.txt",
+          "sha256": "b0ae7ed0c11a4b51cbb9bd970b941db05f43a9fce41118c41a8f6896a076cb6a",
+          "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+          "note": "The clean compile of packages/dsh-ipython under tsconfig.check.json: EXIT=0, no diagnostics."
+        },
+        {
+          "path": "qualification/results/V1-identity/ID-05-mutation-arm.txt",
+          "sha256": "881b701998782e25d4302b2dd8b71169bc44d45d3b5c1c0b026eeaf0f0f9dfb8",
+          "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+          "note": "The injected type error under the check config: exit 2, TS2322 at the injected line, restore byte-exact, oracle_established true."
+        },
+        {
+          "path": "qualification/results/V1-identity/ID-05-control-arm.txt",
+          "sha256": "57bfe6ecf9bfd41f5dc4a26a752c5f45222a13a72afb41b4775d2b06e5cf97c3",
+          "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+          "note": "The control arm the oracle names: tsconfig.json exits 0 on the SAME error (it misses it) while tsconfig.check.json exits 2 and catches it, both inside one mutation window."
+        },
+        {
+          "path": "qualification/results/V1-identity/ID-05-escape-hatch-scan.txt",
+          "sha256": "02bdb56b30cdbfdd8ab0e762e73f304a3db1c0f6d1fc58aff80d7e1fa60700d2",
+          "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+          "note": "The construct scan with per-file locations and contexts, comments stripped first so a comment explaining a pattern is not counted as one. This file establishes the FAIL."
+        },
+        {
+          "path": "qualification/results/V1-identity/ID-05-src-tree-before.txt",
+          "sha256": "364fe95b79e769b712870c1fed3e2d860ef2194da50c62ec4e5e232b7ceea4b4",
+          "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+          "note": "The source tree digest before the clean compile: 79 files, digest a9ef6921…."
+        },
+        {
+          "path": "qualification/results/V1-identity/ID-05-src-tree-after-clean.txt",
+          "sha256": "364fe95b79e769b712870c1fed3e2d860ef2194da50c62ec4e5e232b7ceea4b4",
+          "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+          "note": "The same digest after: identical, so the tree did not move under the measurement."
+        }
+      ],
+      "note": "FAIL on the escape-hatch clause; every other clause PASSES. Clean tree: tsconfig.check.json exits 0 for BOTH packages. Mutation: one injected type error makes it exit 2 at exactly the injected line (TS2322), restore byte-exact. CONTROL ARM, which the oracle itself demands: the SAME injected error compiled under tsconfig.json exits 0 — it MISSES the error, because that config excludes src/**/*.test.ts — so 'a green run under tsconfig.json alone' is now a measured contrast rather than a claim in a comment. The mutation is a TYPE error deliberately: vitest runs pool 'forks' with no type-checking step, so it cannot break a concurrent sibling's run. Source tree digest pinned before and after the clean compile: identical. THE FAILURE: the oracle says 'no `any` cast, no `as never`, and no non-null `!` is used to hide a genuinely undefined value'. `as any` 0 real, `@ts-ignore`/`@ts-nocheck`/`@ts-expect-error` 0, but `as never` occurs 475 times — 469 in test files and 6 in one production file (src/durability-runner.ts:20,21,22,43). The 469 test occurrences are the ctx.plugin() signature-mismatch idiom (e.g. `await ctx.plugin(storageJsonPlugin as never, { root } as never)`) and are not hiding a genuinely undefined value, and the 6 production occurrences are in the M4 process-kill rig, which has no production importer; but the oracle names neither carve-out, so the literal condition is not met and the case is FAIL rather than argued down. THE THIRD CLAUSE IS DELIBERATELY NOT DECIDED: whether a given `!` hides a genuinely undefined value is a judgement about code, not a token match, so the scanner counts and locates all 289 non-null assertions and claims no verdict on them, and says so in its own output. Deep imports: the oracle's phrase is 'no private symbol is deep-imported across a package boundary'; 4 deep cross-package specifiers exist and their targets are DECLARED exports (the target package's exports map contains './src/*'), so the import path is public even though the symbol is not re-exported. The substantive half of the same fact is ID-01's finding that one of those deep imports reaches a .ts file at runtime."
     },
     {
       "id": "ID-06",
@@ -208,8 +356,22 @@
       "requirement": "the pinned checkout is unmodified",
       "stimulus": "Run `git status --porcelain` and `git rev-parse HEAD` inside `D:\\DSH\\src\\dsh-src`.",
       "oracle": "The working tree is clean and HEAD equals `ddefc45fbc7f8e46dd73185e68295696d1297887`. Any tracked modification, any staged change, or a moved HEAD is NOT PASS.",
-      "status": "NOT_RUN",
-      "evidence": []
+      "status": "FAIL",
+      "evidence": [
+        {
+          "path": "qualification/results/V1-identity/GATES.md",
+          "sha256": "ee1c2a77568c5497697d787d4e68ced064bef16a54a8e032e2e73f74b50ac50a",
+          "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+          "note": "Gate row ID-06 and section 6, with the per-entry characterisation."
+        },
+        {
+          "path": "qualification/results/V1-identity/ID-06-pinned-checkout-state.txt",
+          "sha256": "24f6d4616c21d49019ad3ad5f88f70bb541a51034e18383ce8023b7239d95043",
+          "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+          "note": "The raw stimulus output: both commands verbatim, both oracle fields evaluated, and the full characterisation (diff exits, blob ids, byte counts, CRLF/LF counts, the untracked file list)."
+        }
+      ],
+      "note": "FAIL: HEAD matches, the working tree is NOT clean. `git rev-parse HEAD` = ddefc45fbc7f8e46dd73185e68295696d1297887, exactly the pinned commit. `git status --porcelain` in D:\\DSH\\src\\dsh-src returns three entries: ' M packages/deliverables/workspace-changes/src/index.ts', '?? DSHhomem914/' and '?? data-artifacts/'. The oracle is unconditional — 'Any tracked modification, any staged change, or a moved HEAD is NOT PASS' — so this is FAIL. CHARACTERISED, because the entries differ in kind. (1) The tracked ' M' is a LINE-ENDING ARTIFACT, not a content change: `git diff --exit-code` returns 0 (no content delta), `git diff --cached` is empty (nothing staged), and `git hash-object` on the worktree file gives c05787d9… which EQUALS `git rev-parse HEAD:<path>` — the same blob id. The worktree file is 7251 bytes of pure CRLF; the HEAD blob is 7086 bytes of pure LF; the two are identical after CRLF→LF (measured in both directions). The checkout's .gitattributes says `* text=auto eol=lf` while the global core.autocrlf is true, and the file's mtime is 2026-09-19 19:19:47 — an earlier checkout, not this measurement. `git update-index --refresh` still reports 'needs update'. (2) `?? DSHhomem914/` is 9 untracked files: a DSH home (profiles/sdk/, sessions/…m914-sdk…, storages/…) written INSIDE the read-only reference checkout by an M9.14 measurement. (3) `?? data-artifacts/` is one content-addressed object under objects/15/. So no tracked CONTENT was modified and HEAD has not moved, but two untracked output directories pollute the checkout and the tracked entry is a tracked modification as far as the oracle and git status are concerned. Recorded as FAIL rather than argued down: whether a line-ending-only difference and untracked output should count as 'unmodified' is a judgement for the spec's owner, not for the agent that ran the stimulus."
     },
     {
       "id": "CMP-01",
@@ -235,7 +397,7 @@
         },
         {
           "path": "qualification/results/V2-composition/GATES.md",
-          "sha256": "839c5ef8f0adde08e06607a1746e081759028b75d38194c325f1c02cd85ea2e9",
+          "sha256": "5da82a0c5424bb1f729cdbc73c7cd88e772c44cb66991e970e69efa0a34e7a1b",
           "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
           "note": "Gate table section 4, row CMP-01, with the exact command and the digest table for the build/install this ran against."
         }
@@ -265,7 +427,7 @@
         },
         {
           "path": "qualification/results/V2-composition/GATES.md",
-          "sha256": "839c5ef8f0adde08e06607a1746e081759028b75d38194c325f1c02cd85ea2e9",
+          "sha256": "5da82a0c5424bb1f729cdbc73c7cd88e772c44cb66991e970e69efa0a34e7a1b",
           "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
           "note": "Gate table section 3.1 states the cause (the profile has NO sandbox-policy row; the upstream base bundle supplies mode: !!js process.env.DSH_PERMISSION_MODE ?? 'workspace-write' at packages/bundle/base/cordis.patch.yml:215-218, and DSH_PERMISSION_MODE is unset), records this as docs/GAPS.md G-SEAM-33 (OPEN, found by T5, confirmed independently by the root agent and T2), and states why it is NOT repaired here."
         }
@@ -295,7 +457,7 @@
         },
         {
           "path": "qualification/results/V2-composition/GATES.md",
-          "sha256": "839c5ef8f0adde08e06607a1746e081759028b75d38194c325f1c02cd85ea2e9",
+          "sha256": "5da82a0c5424bb1f729cdbc73c7cd88e772c44cb66991e970e69efa0a34e7a1b",
           "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
           "note": "Gate table section 4, row CMP-03, including the stated LIMIT."
         }
@@ -319,7 +481,7 @@
         },
         {
           "path": "qualification/results/V2-composition/GATES.md",
-          "sha256": "839c5ef8f0adde08e06607a1746e081759028b75d38194c325f1c02cd85ea2e9",
+          "sha256": "5da82a0c5424bb1f729cdbc73c7cd88e772c44cb66991e970e69efa0a34e7a1b",
           "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
           "note": "Gate table section 3.2 states why this FAIL is NOT repaired. The oracle CONTRADICTS CMP-13's oracle (which requires pwsh ABSENT) so both cannot hold for one catalog, and the timeline is measured from git: the spec was authored 2026-09-20 04:59:30 (f6ac93c) while tool-pwsh was disabled in the daily preset at 2026-09-20 05:18:50 (35c829d), 19 minutes LATER. The spec's own rules forbid editing an oracle after the fact, so the contradiction is recorded rather than erased. This case is evidence that the pinned spec no longer describes the deployment, NOT a defect report about the tool surface."
         }
@@ -350,7 +512,7 @@
         },
         {
           "path": "qualification/results/V2-composition/GATES.md",
-          "sha256": "839c5ef8f0adde08e06607a1746e081759028b75d38194c325f1c02cd85ea2e9",
+          "sha256": "5da82a0c5424bb1f729cdbc73c7cd88e772c44cb66991e970e69efa0a34e7a1b",
           "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
           "note": "Gate table section 4, row CMP-05."
         }
@@ -380,7 +542,7 @@
         },
         {
           "path": "qualification/results/V2-composition/GATES.md",
-          "sha256": "839c5ef8f0adde08e06607a1746e081759028b75d38194c325f1c02cd85ea2e9",
+          "sha256": "5da82a0c5424bb1f729cdbc73c7cd88e772c44cb66991e970e69efa0a34e7a1b",
           "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
           "note": "Gate table section 4, row CMP-06, which states the distinction the oracle's wording makes: the protection is UNREACHABILITY from the model, NOT immutability. Measured: the host-code route approval.setPolicy(agent, 'ask') SUCCEEDS when host code calls it (\"no throw\", policy becomes \"ask\"). The decisive read was taken BEFORE that probe ran so its own mutation cannot contaminate it."
         }
@@ -416,7 +578,7 @@
         },
         {
           "path": "qualification/results/V2-composition/GATES.md",
-          "sha256": "839c5ef8f0adde08e06607a1746e081759028b75d38194c325f1c02cd85ea2e9",
+          "sha256": "5da82a0c5424bb1f729cdbc73c7cd88e772c44cb66991e970e69efa0a34e7a1b",
           "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
           "note": "Gate table section 4, row CMP-07."
         }
@@ -446,7 +608,7 @@
         },
         {
           "path": "qualification/results/V2-composition/GATES.md",
-          "sha256": "839c5ef8f0adde08e06607a1746e081759028b75d38194c325f1c02cd85ea2e9",
+          "sha256": "5da82a0c5424bb1f729cdbc73c7cd88e772c44cb66991e970e69efa0a34e7a1b",
           "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
           "note": "Gate table section 4, row CMP-08, which states the measured constraint: the twin is a COPY whose digest equality is ASSERTED rather than assumed, and the contrast arm compares two different files -- a weaker stimulus than the oracle names, which is why the literal one was added and both are filed."
         }
@@ -470,7 +632,7 @@
         },
         {
           "path": "qualification/results/V2-composition/GATES.md",
-          "sha256": "839c5ef8f0adde08e06607a1746e081759028b75d38194c325f1c02cd85ea2e9",
+          "sha256": "5da82a0c5424bb1f729cdbc73c7cd88e772c44cb66991e970e69efa0a34e7a1b",
           "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
           "note": "Gate table section 4, row CMP-09, which records that the interleave IS the stimulus: any per-root state held in module scope would surface as a crossed id at one of the five steps, and all five succeeded."
         }
@@ -494,7 +656,7 @@
         },
         {
           "path": "qualification/results/V2-composition/GATES.md",
-          "sha256": "839c5ef8f0adde08e06607a1746e081759028b75d38194c325f1c02cd85ea2e9",
+          "sha256": "5da82a0c5424bb1f729cdbc73c7cd88e772c44cb66991e970e69efa0a34e7a1b",
           "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
           "note": "Gate table section 4, row CMP-10, which records the FALSE FINDING this measurement corrected: reading the tool rows from the ROOT loader reports them absent, because a preset's rows are mounted under a STANDING SCOPE which is a different Loader. The product's own reader for this question is the roster's compositionInventory() (packages/preset/agent-presets/src/index.ts:325)."
         }
@@ -518,7 +680,7 @@
         },
         {
           "path": "qualification/results/V2-composition/GATES.md",
-          "sha256": "839c5ef8f0adde08e06607a1746e081759028b75d38194c325f1c02cd85ea2e9",
+          "sha256": "5da82a0c5424bb1f729cdbc73c7cd88e772c44cb66991e970e69efa0a34e7a1b",
           "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
           "note": "Gate table section 4, row CMP-11, which states why this establishes what the earlier M11 evidence could NOT: verify-ipython-e2e.patch.yml INSERTED the tool row, so it proved the tool works when a row is present without proving the product carries one. This probe adds no row."
         }
@@ -542,7 +704,7 @@
         },
         {
           "path": "qualification/results/V2-composition/GATES.md",
-          "sha256": "839c5ef8f0adde08e06607a1746e081759028b75d38194c325f1c02cd85ea2e9",
+          "sha256": "5da82a0c5424bb1f729cdbc73c7cd88e772c44cb66991e970e69efa0a34e7a1b",
           "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
           "note": "Gate table section 4, row CMP-12, which records that this is a clean ONE-VARIABLE experiment: both homes were built from the same repository profile, installed the same way, and booted from the same foreign cwd with the same overlay; the only difference is the home-level patch file. The control arm is what makes this evidence rather than coincidence."
         }
@@ -572,7 +734,7 @@
         },
         {
           "path": "qualification/results/V2-composition/GATES.md",
-          "sha256": "839c5ef8f0adde08e06607a1746e081759028b75d38194c325f1c02cd85ea2e9",
+          "sha256": "5da82a0c5424bb1f729cdbc73c7cd88e772c44cb66991e970e69efa0a34e7a1b",
           "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
           "note": "Gate table section 4, row CMP-13, which states that this removes an INTERFACE and not a CAPABILITY: the kernel is unconfined and has the same file and network authority the shell had (G-SEAM-25, G-SEAM-30), so this PASS must NOT be cited as evidence that any containment exists."
         }
@@ -596,7 +758,7 @@
         },
         {
           "path": "qualification/results/V2-composition/GATES.md",
-          "sha256": "839c5ef8f0adde08e06607a1746e081759028b75d38194c325f1c02cd85ea2e9",
+          "sha256": "5da82a0c5424bb1f729cdbc73c7cd88e772c44cb66991e970e69efa0a34e7a1b",
           "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
           "note": "Gate table section 4, row CMP-14, which records TWO findings that are NOT fails of this oracle. CMP-14-F1: the recorded name is the REPOSITORY DIRECTORY name, not an install name -- measured, three homes have profiles/daily-candidate/ on disk and ALL THREE carry a DIFFERENT patch digest from the pin (c9992160, 547a59b2, ef189a8c vs 5b8b2a8e), while under the install name daily the pin matches in 6 of 13 resolutions; read as an install name the string selects a STALE profile. CMP-14-F2: a search BOUNDED to apps/cli/src found ZERO redaction-shaped lines, so the field is HAND-AUTHORED in compatibility.lock.json and there is no product mechanism that would reproduce it."
         }
