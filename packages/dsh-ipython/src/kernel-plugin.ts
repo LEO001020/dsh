@@ -680,6 +680,24 @@ export class KernelService extends Service {
   private manifestPromise: Promise<EnvironmentManifest> | undefined
 
   /**
+   * The configuration this service is currently resolving identities against.
+   *
+   * A HOST operation, and it is part of the STATUS surface rather than a
+   * convenience: V5 §14's rule is that an identity must describe the ACTUAL
+   * build, and a reader that can see a digest but not the interpreter it was
+   * derived from cannot check that claim. It is also what lets a host (or the
+   * composition-tier probe) re-resolve the environment through
+   * {@link KernelService.reconfigure} without having to re-derive the
+   * configuration it already gave this service.
+   *
+   * Returns the stored object rather than a copy, because it is typed readonly
+   * and the service never mutates it in place -- `reconfigure` REPLACES it.
+   */
+  configuration(): KernelServiceConfig {
+    return this.config
+  }
+
+  /**
    * Replace the configuration. A HOST operation; never model-reachable.
    *
    * It exists because the host can legitimately change the execution world or the
