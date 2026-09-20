@@ -316,28 +316,48 @@ export async function apply(ctx) {
     // CMP-08: two presets, mounted in parallel sessions. `daily-standard` is the
     // deployment's own preset; `daily-standard-twin` is a BYTE-IDENTICAL copy of
     // the same composition file, discovered by the roster's own directory scan
-    // when the driver has placed it. When the twin is absent the shipped
-    // `standard` preset is used as the contrast instead, and the artifact records
-    // WHICH pair was compared -- because "two presets in one process" and "two
-    // presets from ONE composition file" are different stimuli and only the
-    // second is what CMP-08's stimulus names.
+    // when the driver has placed it. The twin is placed INSIDE the profile's own
+    // preset root (`$DSH_HOME/profiles/daily/presets/`), so it is discovered by
+    // the profile's own `roots` entry and NOT by the shipped root -- which is why
+    // this stimulus survives the deployment offering only one mode.
+    //
+    // THE FALLBACK TO THE SHIPPED `standard` PRESET IS GONE, and this is a
+    // consequence of a deliberate product change rather than a convenience. The
+    // profile now sets `includeShippedRoot: false`, so `standard` is no longer on
+    // the roster and requesting it THROWS
+    // (`agent-presets: preset "standard" not found`). Asking for it would produce
+    // a contrast row whose only content is an error -- a measurement of the
+    // roster's absence rather than of CMP-08's stimulus.
+    //
+    // So the absent-twin case now records WHY there is no contrast instead of
+    // substituting a preset the deployment no longer offers. The artifact still
+    // names which pair was compared, and `contrast: null` with an explicit
+    // `contrastUnavailable` reason is honest where a shipped-preset error would
+    // have been misleading. CMP-08's LITERAL stimulus is the twin, and the twin
+    // path is unchanged.
     const daily = await sessionFor('daily-standard', undefined)
     const rosterIds = (ctx.get('agentPresets') !== undefined ? await ctx.get('agentPresets').list() : []).map(p => p.id)
     const hasTwin = rosterIds.includes('daily-standard-twin')
     let contrast = null
-    try {
-      contrast = hasTwin
-        ? await sessionFor('twin', 'daily-standard-twin')
-        : await sessionFor('standard', 'standard')
-    } catch (error) {
-      contrast = {
-        label: hasTwin ? 'twin' : 'standard',
-        requestedPreset: hasTwin ? 'daily-standard-twin' : 'standard',
-        error: error instanceof Error ? `${error.name}: ${error.message}` : String(error),
+    if (hasTwin) {
+      try {
+        contrast = await sessionFor('twin', 'daily-standard-twin')
+      } catch (error) {
+        contrast = {
+          label: 'twin',
+          requestedPreset: 'daily-standard-twin',
+          error: error instanceof Error ? `${error.name}: ${error.message}` : String(error),
+        }
       }
     }
     f.presetsPair = {
-      comparedPair: hasTwin ? 'SAME COMPOSITION FILE (daily-standard vs its byte-identical twin)' : 'DIFFERENT COMPOSITION FILES (daily-standard vs shipped standard)',
+      comparedPair: hasTwin
+        ? 'SAME COMPOSITION FILE (daily-standard vs its byte-identical twin)'
+        : 'NO CONTRAST: the twin was not placed, and the shipped `standard` fallback no longer exists',
+      contrastUnavailable: hasTwin
+        ? null
+        : 'includeShippedRoot is false on this profile, so the shipped `standard` preset is not on the roster; '
+          + 'this run placed no twin, so CMP-08 has no second preset to compare. Re-run with the twin driver.',
       rosterIds,
       sameCompositionFile: hasTwin,
     }
@@ -355,13 +375,18 @@ export async function apply(ctx) {
     // is measured here is the HOST service's identity plus whether the two
     // sessions' agents carry distinct contexts, which is the observable that
     // would differ if a preset published into the root realm instead.
+    //
+    // `contrast` is NULLABLE since the shipped fallback was removed: with no
+    // twin placed there is no second preset, and every comparison below reports
+    // `null` rather than a fabricated `false`. `false` would read as "measured,
+    // and they are NOT shared" -- a claim this run cannot make.
     f.isolation = {
-      workServiceInstancesShared: daily.agent !== undefined && contrast.agent !== undefined
+      workServiceInstancesShared: daily.agent !== undefined && contrast?.agent !== undefined
         ? daily.agent.ctx === contrast.agent.ctx
         : null,
       note: 'agent.ctx identity: `true` would mean the two presets published into the SAME realm',
       dailyCtxPresent: daily.agent?.ctx !== undefined,
-      contrastCtxPresent: contrast.agent?.ctx !== undefined,
+      contrastCtxPresent: contrast?.agent?.ctx !== undefined,
     }
 
     // CMP-06: the effective policy for a REAL session, and the model's routes to

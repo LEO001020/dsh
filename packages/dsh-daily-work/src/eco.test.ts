@@ -1338,11 +1338,28 @@ describe('ECO-07: the stock control arm is not secretly modified, and the variab
    * keeping this as a literal: a computed digest would have silently agreed with
    * both.
    *
+   * IT MOVED A FOURTH TIME, AND THIS MOVE IS A DIFFERENT KIND. The first three
+   * were COMMENT-ONLY edits, which is why each one was re-derived with the note
+   * "the executable composition is unchanged". This one is **EXECUTABLE**: one
+   * row changed, `agent-presets.config.includeShippedRoot` from `true` to
+   * `false`, so this deployment now offers only its own preset as a selectable
+   * mode. The diff between moves three and four has a non-comment line in it, and
+   * a reader comparing digests must not assume comment churn again.
+   *
+   * WHY THE TEST STILL MEANS WHAT IT MEANT. ECO-07's subject is the STOCK control
+   * arm -- "a control group that has been quietly modified is not a control
+   * group" -- and the stock arm is untouched: its patch is still the literal
+   * empty array and its bundles are still the two shipped ones, both asserted
+   * below. The daily-candidate pin is the mirror assertion: the arm UNDER TEST
+   * must also not drift silently. It has not drifted silently; it was changed
+   * deliberately, the change was re-derived here rather than absorbed, and its
+   * measurement is `qualification/results/S1-single-mode/`.
+   *
    * THE STALENESS IS THE POINT OF THIS TEST, so the pin is kept as a literal
    * rather than computed. A digest that were recomputed at runtime would agree
    * with whatever the file happened to contain and would catch nothing.
    */
-  const DAILY_PATCH_SHA256 = '0e8e370e06375ad4a289fa36f783232dde4159a69844422d6363b874af7445f2'
+  const DAILY_PATCH_SHA256 = '4e3aa20cbc23b8cedbfc7205aac0756f37e1107a4ee556d38760dc3769ceedeb'
 
   it('the stock arm declares no plugin rows, and its files hash to the committed values', () => {
     // "A control group that has been quietly modified is not a control group."

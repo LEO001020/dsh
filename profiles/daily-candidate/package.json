@@ -1,6 +1,32 @@
 {
   "name": "dsh-profile-daily-candidate",
   "private": true,
+  "_comment_linkTargets": [
+    "THE ABSOLUTE MAIN-TREE PATH BELOW IS LOAD-BEARING -- DO NOT 'CLEAN IT UP'.",
+    "Both link: targets name D:/DSH/work/dsh-native-daily on purpose. That literal",
+    "is the SEARCH STRING the provisioning rewrite looks for: helpers/new-writer.ps1:99",
+    "does `$text -replace [regex]::Escape('D:/DSH/work/dsh-native-daily'), ($wt ...)`.",
+    "Replacing these with a relative path, a placeholder, or anything",
+    "tree-independent makes that replace find NOTHING, and every provisioned writer",
+    "silently resolves the MAIN tree while believing it resolved its own -- the",
+    "G-SEAM-29 / G-SEAM-36 / G-SEAM-61 trap that has already forced retractions.",
+    "It fails SILENTLY rather than loudly, which is exactly why it is written down.",
+    "MEASURED 2026-09-20: the needle and both committed targets still match exactly",
+    "(case, slashes, no trailing slash) -- verified by extracting the Escape()",
+    "argument from new-writer.ps1 and testing each committed target against it.",
+    "WHO REWRITES IT: helpers/new-writer.ps1:91-99 copies profiles/daily-candidate",
+    "into $DSH_HOME/profiles/<name> and rewrites package.json THERE. The rewrite is",
+    "applied to the INSTALLED COPY only; this file is never modified in place.",
+    "WHO DOES NOT REWRITE IT, and why that is correct rather than a gap: the",
+    "documented operator install (docs/DELIVERY.md:170) copies FROM the main tree",
+    "(`cp -r /d/DSH/work/dsh-native-daily/profiles/daily-candidate ...`), so the",
+    "main-tree path is already the right value there. The launcher's own",
+    "missing-profile path never reaches this file:",
+    "apps/cli/src/profile-boot.ts:93-131 `initializeProfileFromDefault` copies only",
+    "the shipped template's BUNDLE LIST, not our link: targets.",
+    "So no install path exists that needs a different value, and the committed",
+    "value is simply 'the main tree's value' -- which is what it should be."
+  ],
   "dependencies": {
     "dsh-daily-work": "link:D:/DSH/work/dsh-native-daily/packages/dsh-daily-work",
     "dsh-ipython": "link:D:/DSH/work/dsh-native-daily/packages/dsh-ipython"

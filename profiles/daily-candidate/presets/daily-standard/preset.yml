@@ -1,0 +1,47 @@
+# Display metadata for the deployment's own preset -- the ONE selectable mode.
+#
+# WHY THIS FILE EXISTS, and the honest answer is "not because the roster needs
+# it". `preset.yml` is OPTIONAL: a preset directory is made a preset by
+# `agent.cordis.yml` alone (`packages/preset/agent-presets/src/discovery.ts:37`,
+# `COMPOSITION_FILE`), and every read failure of this file degrades to empty
+# metadata rather than an error (`src/metadata.ts:56-64`, and the module header
+# at `:14-16`: "A preset whose display text is missing, malformed, or unreadable
+# still mounts: presentation is not a capability").
+#
+# MEASURED, not assumed: before this file existed the deployment booted and the
+# roster listed `daily-standard` as a healthy, selectable row with `name: null`
+# (`qualification/results/S1-single-mode/roster-before.json`, field
+# `listed[4]`). So the preset was ALREADY listed without it, and nothing below
+# is required for selection to work.
+#
+# It is added because `includeShippedRoot: false` leaves exactly ONE row in the
+# picker, and that row's label is the only text a person sees. Without metadata
+# the label is the raw id `daily-standard`; the shipped presets this deployment
+# no longer offers all carried `name:` values (`标准模式`, `PTC 模式`,
+# `极简模式`, `创造模式`), so leaving ours unnamed would be a visible regression
+# in the one surface that remains. The name is written in the same language the
+# shipped ones use, because the picker renders them side by side in a bilingual
+# UI and a single English row among Chinese ones reads as a bug.
+#
+# `order: 1` is declared for the same reason the shipped set declares it: it is
+# the position WITHIN a group, lower first, and a preset with no `order` sorts
+# AFTER every preset that declares one and then alphabetically by id
+# (`src/discovery.ts:311-314`). With one row the value cannot be observed to
+# matter -- and that is stated rather than dressed up as a fix. It is declared
+# so that a second row appearing later sorts predictably instead of silently
+# jumping ahead of ours.
+#
+# `description` is the honest one-sentence summary: this preset is the full
+# coding agent plus this deployment's two extension tools, and it is the only
+# mode offered. It deliberately does NOT promise anything the composition does
+# not do -- the tool surface is decided by `agent.cordis.yml` beside this file,
+# and that is what a reader should go to for the real answer.
+#
+# SHAPE: `{ name?, description?, order? }`, hand-rolled and non-fatal
+# (`src/metadata.ts:28-39`). `id` and `trust` are NOT writable here -- `id` is
+# the directory name and `trust` comes from the root a preset is discovered
+# under, so a locally authored preset cannot claim to be a shipped one
+# (`:10-12`).
+name: 日常模式
+description: 完整的编码 Agent，外加本部署自己的 ipython 与 work 工具；这是本部署唯一可选的模式。
+order: 1

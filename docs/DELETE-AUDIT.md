@@ -1017,6 +1017,94 @@ below rather than left to be discovered.
      because a patch replaces the whole `config` object — so **the shipped root is
      still included**, which is why `standard`, `ptc`, `minimal` and `cordis` are
      all still listed alongside `daily-standard`.
+
+     **SUPERSEDED — the shipped root is no longer included.** The reasoning above
+     was correct for its time and is kept because it is the record of why the row
+     was shaped that way. It is no longer the deployment's behaviour: the row now
+     sets **`includeShippedRoot: false`**, so `standard`, `ptc`, `minimal` and
+     `cordis` are **NOT** listed, and `daily-standard` is the **only** selectable
+     mode. See the section below for the decision and its measurement.
+
+## 5a. The shipped modes are no longer offered (supersedes the note in §5)
+
+**The decision.** The user authorized keeping only this deployment's own single
+mode. The row's `includeShippedRoot` was flipped from `true` to `false` in
+`profiles/daily-candidate/cordis.patch.yml`.
+
+**What this is NOT, stated first because the sentence "the native modes were
+deleted" is false and would be a bad thing to believe.** The four shipped presets
+still exist, unmodified, inside the read-only pinned checkout
+(`packages/preset/agent-presets/presets/`). They are not ours to delete: case
+**ID-06**'s oracle requires `D:\DSH\src\dsh-src` to be unmodified, so editing
+them would trade one FAIL for a worse one. What changed is that **this
+deployment's composition no longer exposes them**. The upstream code is intact;
+the OFFERING is gone. Removing the exposure is a real, sufficient and verifiable
+change, and it is the only reading of the authorization that is compatible with
+ID-06.
+
+**What the key actually does, from the source rather than from intuition.** The
+roster composes its root list in the CONSTRUCTOR
+(`packages/preset/agent-presets/src/index.ts:182-184`):
+
+```ts
+this.resolvedRoots = [
+  ...config.includeShippedRoot ? [{ path: SHIPPED_PRESET_ROOT, trust: 'system' }] : [],
+  ...config.roots,
+  ...config.includeUserRoot ? [{ path: dshHomePath(USER_PRESET_DIR), trust: 'user' }] : [],
+]
+```
+
+The shipped root is one ELEMENT of a list, so `false` omits it from discovery; it
+does not disable a code path or break discovery. The profile's own root and the
+user root are scanned by the same `discoverPresets` walk
+(`discovery.ts:324-337`). The package's own test pins exactly this configuration
+and asserts the resolved root list is the configured roots and nothing else
+(`tests/shipped-root.spec.ts:119-129`). The schema default is `true`
+(`index.ts:114`) and a patch replaces the whole `config` object, so the key must
+be restated either way — omitting it would silently restore all four shipped
+modes.
+
+**Why the earlier note said the shipped root had to stay, and why that reason no
+longer applies.** The note in §5 recorded the root as deliberately left on. That
+was not an argument for keeping the shipped presets as MODES; it was a
+consequence of the row being written to add a root rather than replace the set,
+at a time when nothing had asked for the modes to be reduced. The authorization
+now asks, so the value changes and the comment above the row records the new
+boundary.
+
+**MEASURED, before and after, on the real installed profile** — both artifacts in
+`qualification/results/S1-single-mode/`, produced by the same command with the
+same probe, differing only in this key:
+
+| | `listedIds` from the product's own roster |
+|---|---|
+| before (`true`) | `standard, ptc, minimal, cordis, daily-standard` (5) |
+| after (`false`) | `daily-standard` (1) |
+
+`resolve()` was measured separately from `list()`, because they are different
+code paths: after the change, resolving any of the four shipped ids throws
+`RemoteError: agent-presets: preset "standard" not found (available:
+daily-standard)`, while `resolve('daily-standard')` still succeeds and a real
+Session still mounts it with `ipython` and `work` both present and zero
+activation warnings.
+
+**`includeUserRoot` deliberately stays `true`.** It is not one of the four
+"modes": it is the writable `$DSH_HOME/.agent-presets` directory the authoring
+flow writes to, and `authorable` is computed from it (`index.ts:520-522`).
+Turning it off would remove the ability to author a preset at all, which was not
+asked for. Measured: that directory does not exist on this deployment, so it
+contributes zero selectable modes today — the roster lists it as a root and gets
+nothing from it.
+
+**The gate that makes this falsifiable.** `packages/dsh-daily-work/src/
+profile-isolation.test.ts` now has a `the deployment offers exactly one
+selectable mode` block: it asserts the key's VALUE in the patch (not its
+presence), then boots the real roster with the root set the profile composes and
+asserts the resulting roster is exactly `['daily-standard']`, that all four
+shipped ids fail to resolve, and that ours does. It was mutation-tested —
+temporarily restoring `includeShippedRoot: true` turned two of its cases red
+(`expected 'true' to be 'false'`, and the roster assertion), and restoring the
+file returned 32/32 green with the patch digest byte-identical.
 - **One thing WAS deleted, in the repository rather than in the composition:**
   the duplicate `daily-work-host` insert. The profile patch and the package's own
   bundle patch both declared it, so installing the package as a bundle would have

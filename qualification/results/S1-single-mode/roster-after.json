@@ -1,0 +1,114 @@
+{
+  "profileBooted": true,
+  "roots": [
+    {
+      "path": "D:/DSH/home/s1/profiles/daily/presets/",
+      "trust": "system"
+    },
+    {
+      "path": "D:\\DSH\\home\\s1\\.agent-presets",
+      "trust": "user"
+    }
+  ],
+  "presetRoots": [
+    {
+      "path": "D:/DSH/home/s1/profiles/daily/presets/",
+      "trust": "system"
+    },
+    {
+      "path": "D:\\DSH\\home\\s1\\.agent-presets",
+      "trust": "user"
+    }
+  ],
+  "shippedRootPresent": false,
+  "listed": [
+    {
+      "id": "daily-standard",
+      "trust": "system",
+      "name": null,
+      "order": null,
+      "broken": null
+    }
+  ],
+  "listedIds": [
+    "daily-standard"
+  ],
+  "listedCount": 1,
+  "defaultId": "daily-standard",
+  "resolveOf": {
+    "standard": {
+      "resolved": false,
+      "error": "RemoteError: agent-presets: preset \"standard\" not found (available: daily-standard)"
+    },
+    "ptc": {
+      "resolved": false,
+      "error": "RemoteError: agent-presets: preset \"ptc\" not found (available: daily-standard)"
+    },
+    "minimal": {
+      "resolved": false,
+      "error": "RemoteError: agent-presets: preset \"minimal\" not found (available: daily-standard)"
+    },
+    "cordis": {
+      "resolved": false,
+      "error": "RemoteError: agent-presets: preset \"cordis\" not found (available: daily-standard)"
+    },
+    "daily-standard": {
+      "resolved": true,
+      "path": "D:\\DSH\\home\\s1\\profiles\\daily\\presets\\daily-standard\\agent.cordis.yml",
+      "trust": "system"
+    }
+  },
+  "selectionPolicy": {
+    "modeSelectionEnabled": true,
+    "authorable": true,
+    "isDefaultId": "daily-standard",
+    "projectedIds": [
+      "daily-standard"
+    ]
+  },
+  "sessionCreated": true,
+  "sessionId": "session-12ce7d93-fb0c-46bb-bb3b-6a721cd7f733",
+  "sessionAgentPreset": "daily-standard",
+  "toolCountAgentKey": 27,
+  "tools": [
+    "ask_user_question",
+    "create_goal",
+    "edit",
+    "exit_plan_mode",
+    "get_goal",
+    "glob",
+    "grep",
+    "interrupt_agent",
+    "ipython",
+    "job_kill",
+    "job_list",
+    "job_output",
+    "list_agents",
+    "present",
+    "read",
+    "read_image",
+    "send_message",
+    "skill",
+    "subagent",
+    "subagent_fork",
+    "todo_write",
+    "update_goal",
+    "web_fetch",
+    "web_search",
+    "work",
+    "workflow",
+    "write"
+  ],
+  "ipythonToolPresent": true,
+  "workToolPresent": true,
+  "error": null,
+  "projectedPresets": [
+    {
+      "id": "daily-standard",
+      "trust": "system",
+      "isDefault": true,
+      "name": null,
+      "broken": null
+    }
+  ]
+}

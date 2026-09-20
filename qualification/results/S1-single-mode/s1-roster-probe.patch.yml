@@ -1,0 +1,5 @@
+# S1 verification overlay: THE PROBE ONLY. No preset row, no agent-presets row.
+# The roster this measures is produced by the profile's own composition.
+- insert:
+    - id: s1-roster-probe
+      name: 'D:/DSH/work/wt-s1/qualification/results/S1-single-mode/s1-roster-probe.mjs'
