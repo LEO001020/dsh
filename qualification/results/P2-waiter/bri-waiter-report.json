@@ -1,0 +1,133 @@
+{
+  "instrument": "bri-waiter-probe",
+  "tree": "D:\\DSH\\work\\wt-p2",
+  "identity": {
+    "liveClientBytes": 13976,
+    "beforeClientBytes": 11975,
+    "python": "C:/Users/hzq00/AppData/Local/Programs/Python/Python314/python.exe",
+    "beforeClientIsPreFix": true,
+    "liveClientHasFixedSignature": true
+  },
+  "results": [
+    {
+      "arm": {
+        "client": "live",
+        "mode": "sync",
+        "timeoutSeconds": 10
+      },
+      "driver": {
+        "callerCleanupPops": 0,
+        "elapsedMs": 1.5225999959511682,
+        "forcedWaitMs": 0,
+        "mode": "sync",
+        "ok": true,
+        "readerLookups": 1,
+        "readerLookupsWithoutWaiter": 0,
+        "readerWaitExpired": false,
+        "registrationSendCount": 0,
+        "sends": 1,
+        "value": {
+          "marker": "BRI-WAITER",
+          "tag": "from-the-driver"
+        },
+        "waitersAfter": 0
+      }
+    },
+    {
+      "arm": {
+        "client": "before",
+        "mode": "sync",
+        "timeoutSeconds": 0.4
+      },
+      "driver": {
+        "callerCleanupPops": 1,
+        "elapsedMs": 402.14949999790406,
+        "error": {
+          "code": "TIMEOUT",
+          "message": "TIMEOUT: probe_echo did not answer within 0.4s"
+        },
+        "forcedWaitMs": 0.302100001135841,
+        "mode": "sync",
+        "ok": false,
+        "readerLookups": 1,
+        "readerLookupsWithoutWaiter": 1,
+        "readerWaitExpired": false,
+        "registrationSendCount": 1,
+        "sends": 1,
+        "waitersAfter": 0
+      }
+    },
+    {
+      "arm": {
+        "client": "live",
+        "mode": "async",
+        "timeoutSeconds": 10
+      },
+      "driver": {
+        "callerCleanupPops": 1,
+        "elapsedMs": 1.2802999990526587,
+        "forcedWaitMs": 0,
+        "mode": "async",
+        "ok": true,
+        "readerLookups": 1,
+        "readerLookupsWithoutWaiter": 0,
+        "readerWaitExpired": false,
+        "registrationSendCount": 0,
+        "sends": 1,
+        "value": {
+          "marker": "BRI-WAITER",
+          "tag": "from-the-driver"
+        },
+        "waitersAfter": 0
+      }
+    },
+    {
+      "arm": {
+        "client": "before",
+        "mode": "async",
+        "timeoutSeconds": 0.4
+      },
+      "driver": {
+        "callerCleanupPops": 1,
+        "elapsedMs": 403.64899999985937,
+        "error": {
+          "code": "TIMEOUT",
+          "message": "TIMEOUT: probe_echo did not answer within 0.4s"
+        },
+        "forcedWaitMs": 0.29540000105043873,
+        "mode": "async",
+        "ok": false,
+        "readerLookups": 1,
+        "readerLookupsWithoutWaiter": 1,
+        "readerWaitExpired": false,
+        "registrationSendCount": 1,
+        "sends": 1,
+        "waitersAfter": 0
+      }
+    },
+    {
+      "arm": {
+        "client": "live",
+        "mode": "sendfail",
+        "timeoutSeconds": 0.4
+      },
+      "driver": {
+        "callerCleanupPops": 1,
+        "elapsedMs": 0.037500001781154424,
+        "error": {
+          "code": "OSError",
+          "message": "injected send failure"
+        },
+        "forcedWaitMs": 0,
+        "mode": "sendfail",
+        "ok": false,
+        "readerLookups": 0,
+        "readerLookupsWithoutWaiter": 0,
+        "readerWaitExpired": false,
+        "registrationSendCount": 0,
+        "sends": 0,
+        "waitersAfter": 0
+      }
+    }
+  ]
+}

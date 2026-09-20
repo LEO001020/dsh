@@ -1,0 +1,76 @@
+
+ RUN  v4.1.8 D:/DSH/work/wt-p2/packages/dsh-ipython
+
+ × src/bri-waiter.test.ts > BRI-WAITER an immediate reply cannot beat waiter registration > the LIVE client returns the reply, and the waiter exists before the frame does (sync) 10151ms
+   → expected { code: 'TIMEOUT', …(1) } to be undefined
+ ✓ src/bri-waiter.test.ts > BRI-WAITER an immediate reply cannot beat waiter registration > the PRE-FIX client loses the reply -- the control arm, watched failing 544ms
+ × src/bri-waiter.test.ts > BRI-WAITER an immediate reply cannot beat waiter registration > the LIVE client returns the reply (async), and the PRE-FIX client loses it 10184ms
+   → expected { code: 'TIMEOUT', …(1) } to be undefined
+ × src/bri-waiter.test.ts > BRI-WAITER an immediate reply cannot beat waiter registration > the live source registers the waiter BEFORE it writes the frame (scheduling-free) 7ms
+   → expected undefined to be defined
+ ✓ src/bri-waiter.test.ts > BRI-WAITER an immediate reply cannot beat waiter registration > the fix fails closed when the send itself fails: no waiter is left behind 151ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/bri-waiter.test.ts > BRI-WAITER an immediate reply cannot beat waiter registration > the LIVE client returns the reply, and the waiter exists before the frame does (sync)
+AssertionError: expected { code: 'TIMEOUT', …(1) } to be undefined
+
+- Expected:
+undefined
+
++ Received:
+{
+  "code": "TIMEOUT",
+  "message": "TIMEOUT: probe_echo did not answer within 10.0s",
+}
+
+ ❯ src/bri-waiter.test.ts:227:26
+    225|
+    226|     // THE ORACLE: the value the host sent came back.
+    227|     expect(report.error).toBeUndefined()
+       |                          ^
+    228|     expect(report.ok).toBe(true)
+    229|     expect(report.value).toEqual({ marker: 'BRI-WAITER', tag: 'from-th…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  src/bri-waiter.test.ts > BRI-WAITER an immediate reply cannot beat waiter registration > the LIVE client returns the reply (async), and the PRE-FIX client loses it
+AssertionError: expected { code: 'TIMEOUT', …(1) } to be undefined
+
+- Expected:
+undefined
+
++ Received:
+{
+  "code": "TIMEOUT",
+  "message": "TIMEOUT: probe_echo did not answer within 10.0s",
+}
+
+ ❯ src/bri-waiter.test.ts:276:24
+    274|   it('the LIVE client returns the reply (async), and the PRE-FIX clien…
+    275|     const live = await runDriver('async', PYTHON_CLIENT_SOURCE, 10)
+    276|     expect(live.error).toBeUndefined()
+       |                        ^
+    277|     expect(live.ok).toBe(true)
+    278|     expect(live.value).toEqual({ marker: 'BRI-WAITER', tag: 'from-the-…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  src/bri-waiter.test.ts > BRI-WAITER an immediate reply cannot beat waiter registration > the live source registers the waiter BEFORE it writes the frame (scheduling-free)
+AssertionError: expected undefined to be defined
+ ❯ src/bri-waiter.test.ts:299:22
+    297|     // inside `_send`, the registration line must come before the send.
+    298|     const sendBody = /def _send\(self, tool, arguments, waiter\):([\s\…
+    299|     expect(sendBody).toBeDefined()
+       |                      ^
+    300|     const body = sendBody ?? ''
+    301|     const registration = body.indexOf('self._waiters[request_id] = wai…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  3 failed | 2 passed (5)
+   Start at  21:36:21
+   Duration  21.42s (transform 129ms, setup 0ms, import 210ms, tests 21.04s, environment 0ms)
+

@@ -1,0 +1,14 @@
+
+ RUN  v4.1.8 D:/DSH/work/wt-p2/packages/dsh-ipython
+
+ ✓ src/bri-waiter.test.ts > BRI-WAITER an immediate reply cannot beat waiter registration > the LIVE client returns the reply, and the waiter exists before the frame does (sync) 141ms
+ ✓ src/bri-waiter.test.ts > BRI-WAITER an immediate reply cannot beat waiter registration > the PRE-FIX client loses the reply -- the control arm, watched failing 544ms
+ ✓ src/bri-waiter.test.ts > BRI-WAITER an immediate reply cannot beat waiter registration > the LIVE client returns the reply (async), and the PRE-FIX client loses it 696ms
+ ✓ src/bri-waiter.test.ts > BRI-WAITER an immediate reply cannot beat waiter registration > the live source registers the waiter BEFORE it writes the frame (scheduling-free) 5ms
+ ✓ src/bri-waiter.test.ts > BRI-WAITER an immediate reply cannot beat waiter registration > the fix fails closed when the send itself fails: no waiter is left behind 127ms
+
+ Test Files  1 passed (1)
+      Tests  5 passed (5)
+   Start at  21:37:48
+   Duration  1.87s (transform 115ms, setup 0ms, import 198ms, tests 1.51s, environment 0ms)
+

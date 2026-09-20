@@ -593,7 +593,14 @@ async function main(): Promise<void> {
   // Read the CLIENT's own frame builder, so "there is no depth field to raise"
   // is a reading of the code the kernel runs rather than an assumption.
   const clientSource = readFileSync(join(root, 'artifacts', 'dsh_bridge_client.py'), 'utf8')
-  const sendBody = /def _send\(self, tool, arguments\):([\s\S]*?)\n    def /.exec(clientSource)?.[1] ?? ''
+  // The signature is matched with an OPTIONAL `waiter` parameter. The waiter was
+  // moved INTO `_send` so that registration and the send happen under one lock
+  // acquisition (BRI-WAITER); without the optional group this regex stopped
+  // matching and `clientFrameKeys` silently became `[]` -- a measurement
+  // degrading to empty, which reads as "the frame carries no fields" rather than
+  // as "the extractor broke". The field list is unchanged; only the signature is.
+  const sendBody = /def _send\(self, tool, arguments(?:, waiter)?\):([\s\S]*?)\n    def /.exec(clientSource)?.[1] ?? ''
+  if (sendBody === '') throw new Error('the client frame builder could not be extracted from the written client; the probe would report an empty frame')
   observed['br12_depth_ceiling'] = {
     // The fields the client puts on the wire, extracted from its own `_send`.
     clientFrameKeys: [...sendBody.matchAll(/"([a-zA-Z]+)":/g)].map(match => match[1] as string),

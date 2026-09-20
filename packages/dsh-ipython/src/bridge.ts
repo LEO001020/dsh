@@ -2339,7 +2339,31 @@ class _Channel:
         self._connect()
         return self._socket
 
-    def _send(self, tool, arguments):
+    def _send(self, tool, arguments, waiter):
+        """Register \`waiter\` and put the request on the wire under ONE lock.
+
+        WHY THE REGISTRATION LIVES IN HERE AND NOT IN THE CALLER. The reader
+        thread matches a reply to a waiter by request id, and a reply it cannot
+        match is DISCARDED rather than held. So when the waiter is registered
+        after the request is already on the wire, a reply that arrives in between
+        is dropped, and the caller then waits out its whole timeout for an answer
+        that was already delivered -- a lost reply reported as a slow host. The
+        window is not theoretical: the reader is blocked on this lock holding a
+        parsed reply while the send holds it, so the reader is the very next lock
+        holder the moment the send releases.
+
+        ONE ACQUISITION IS THE POINT. Registering and sending under the same lock
+        is what makes the ordering atomic instead of hopeful: the reader cannot
+        observe the request until after its waiter exists. This is the same rule
+        the broker's own shell channel already enforces -- \`broker.py\`'s
+        \`ShellRouter.register\` is documented "Call BEFORE sending the request",
+        and its reader counts a frame whose parent matches no waiter instead of
+        delivering it. Applying it here is consistency with that router, not a
+        new mechanism.
+
+        The waiter is built by the CALLER, because the async one has to be
+        created from the running event loop.
+        """
         with self._lock:
             sock = self._ensure_locked()
             self._counter += 1
@@ -2358,14 +2382,20 @@ class _Channel:
                     "ARGUMENTS_TOO_LARGE",
                     "the arguments for %r exceed the %d-byte frame limit" % (tool, _MAX_FRAME_BYTES),
                 )
-            sock.sendall(_HEADER.pack(len(payload)) + payload)
+            self._waiters[request_id] = waiter
+            try:
+                sock.sendall(_HEADER.pack(len(payload)) + payload)
+            except BaseException:
+                # The request never reached the wire, so no reply can arrive for
+                # it. Leaving the waiter registered would make it wait out the
+                # full timeout for a request that was never sent.
+                self._waiters.pop(request_id, None)
+                raise
         return request_id
 
     def call_sync(self, tool, arguments, timeout):
-        request_id = self._send(tool, arguments)
         waiter = _SyncWaiter()
-        with self._lock:
-            self._waiters[request_id] = waiter
+        request_id = self._send(tool, arguments, waiter)
         if not waiter.event.wait(timeout):
             with self._lock:
                 self._waiters.pop(request_id, None)
@@ -2374,10 +2404,11 @@ class _Channel:
 
     async def call_async(self, tool, arguments, timeout):
         loop = _asyncio.get_running_loop()
-        request_id = self._send(tool, arguments)
+        # Built HERE, before the send: \`create_future\` must run on the loop's own
+        # thread, and a future created after the send could be resolved by the
+        # reader before it exists -- the same lost-reply window as the sync path.
         waiter = _AsyncWaiter(loop)
-        with self._lock:
-            self._waiters[request_id] = waiter
+        request_id = self._send(tool, arguments, waiter)
         try:
             return await _asyncio.wait_for(waiter.future, timeout)
         except _asyncio.TimeoutError:
