@@ -182,6 +182,54 @@ export type NativeCallOutcome =
   | { readonly ok: true; readonly artifact: BridgeArtifact }
   | { readonly ok: false; readonly error: BridgeFailure }
 
+/**
+ * The reserved tool-name prefix that marks a `dsh.data` request (V5 §5.1).
+ *
+ * WHY THE CONSTANT IS DEFINED HERE AND NOT IMPORTED. `data-bridge.ts` owns the
+ * router and `DATA_TOOL_PREFIX` is its constant, but this package cannot import
+ * it: `dsh-ipython` does not depend on `dsh-daily-work`, the two packages are
+ * `link:`ed into a profile as siblings, and a static import of the other
+ * package's specifier does NOT resolve from this package's own realpath
+ * (MEASURED: `createRequire` from `packages/dsh-ipython/lib/bridge.js` ->
+ * `MODULE_NOT_FOUND`). The dependency direction is deliberate and documented in
+ * `data-bridge.ts`: the integration point depends on the plane, and the plane
+ * stays loadable without a kernel.
+ *
+ * So the prefix exists in two packages on purpose, and the agreement between
+ * them is held by a TEXT-level gate rather than by an import
+ * (`data-routing.test.ts` reads both sources and compares the two constants).
+ * That is the same instrument this repository already uses to bind the Python
+ * client's `_PREFIX` to `DATA_TOOL_PREFIX` without a cross-package import.
+ *
+ * A colon cannot appear in a DSH tool name, so the prefix is un-collidable by
+ * construction: a name beginning `data:` is never a tool, which is what makes
+ * "route it to the data plane" a total function rather than a convention.
+ */
+export const DATA_TOOL_PREFIX = 'data:'
+
+/** Whether a bridge call's tool name is a `dsh.data` request rather than a tool. */
+export function isDataRequest(tool: string): boolean {
+  return tool.startsWith(DATA_TOOL_PREFIX)
+}
+
+/**
+ * The second internal dispatcher a lease may hold (V5 §5.1).
+ *
+ * ONE frame shape, ONE name field, TWO internal lanes. The host supplies this
+ * alongside the exact-tool handler; a `data:*` name goes here and NEVER to
+ * `ctx.tools.execute`, because a fall-through would make an unknown data
+ * operation look like a tool call -- the exact conflation the reserved prefix
+ * exists to prevent.
+ *
+ * It returns the same `NativeCallOutcome` shape as the tool lane, so the
+ * accepted-call state machine, the idempotency table and the durable ledger are
+ * shared rather than duplicated.
+ */
+export type DataCallHandler = (
+  call: NativeCallRequest,
+  context: ExactCallContext,
+) => Promise<NativeCallOutcome>
+
 /** One nested call, as the host validated it and bound it to a live execution. */
 export interface NativeCallRequest {
   /** Python-minted, unique within the connection. A repeat is a protocol error. */
@@ -299,6 +347,21 @@ export interface CellLeaseInput {
    * ledger about which call it is running.
    */
   readonly handler: (call: NativeCallRequest, context: ExactCallContext) => Promise<NativeCallOutcome>
+  /**
+   * The SECOND internal dispatcher: `dsh.data` (V5 §5.1).
+   *
+   * ABSENT MEANS REFUSED, NEVER FALLEN THROUGH. A lease with no data handler
+   * refuses a `data:*` call with `DATA_NO_CAPABILITY`; it does NOT pass the name
+   * to `ctx.tools.execute`. A fall-through would make an unknown data operation
+   * indistinguishable from a tool call, which is the conflation the reserved
+   * prefix exists to prevent -- and it would also make a typo into a real tool
+   * dispatch.
+   *
+   * Optional because a composition may mount no data plane: the kernel service
+   * is a valid product without one, and refusing the lane is the honest outcome
+   * rather than a capability outage that takes the tool lane down with it.
+   */
+  readonly dataHandler?: DataCallHandler
   /** Cell-scoped cancellation. An aborted lease accepts no new calls. */
   readonly signal?: AbortSignal
   /** The outer model `ipython` call this lease was minted for. Recorded on every ledger row. */
@@ -366,10 +429,22 @@ export interface LeaseCallDisposition {
 }
 
 /** One accepted call's mutable state, held in the lease's FIFO. */
+/** The two internal lanes one lease dispatches to. See {@link DataCallHandler}. */
+export type BridgeLane = 'tool' | 'data'
+
 interface AcceptedCall {
   readonly call: NativeCallRequest
   readonly subCallId: string
   readonly sequence: number
+  /**
+   * WHICH INTERNAL DISPATCHER runs this call (V5 §5.1).
+   *
+   * Chosen ONCE, at acceptance, from the name's reserved prefix, and carried on
+   * the accepted call so the runner cannot disagree with the router about it. A
+   * lane re-derived at dispatch time would be a second decision point, and two
+   * decision points are how a `data:*` name ends up in the tool registry.
+   */
+  readonly lane: BridgeLane
   /** The exact normalized arguments, so a duplicate can be recognised losslessly. */
   readonly argsDigest: string
   /** Resolved with the outcome. A duplicate submission joins THIS promise. */
@@ -401,6 +476,12 @@ export class CellLease {
   readonly outerCallId: string
   readonly rootCallId: string
   private readonly handler: (call: NativeCallRequest, context: ExactCallContext) => Promise<NativeCallOutcome>
+  /**
+   * The data lane's dispatcher, or undefined when the composition mounted no
+   * data plane. See {@link CellLeaseInput.dataHandler}: absent means REFUSED,
+   * never fallen through to the tool registry.
+   */
+  private readonly dataHandler: DataCallHandler | undefined
   private readonly ledger: BridgeLedger
   private readonly handoffToJobs: CellLeaseInput['handoffToJobs']
   private readonly onDisposition: CellLeaseInput['onDisposition']
@@ -477,6 +558,7 @@ export class CellLease {
     this.outerCallId = input.outerCallId
     this.rootCallId = input.rootCallId
     this.handler = input.handler
+    this.dataHandler = input.dataHandler
     this.ledger = input.ledger
     this.handoffToJobs = input.handoffToJobs
     this.onDisposition = input.onDisposition
@@ -569,8 +651,17 @@ export class CellLease {
    * call whose durable intent was not written, and a `ledger.started` rejection
    * leaves nothing behind to roll back. See {@link accepting} for why Option B is
    * unsound on this FIFO rather than merely less tidy.
+   *
+   * THE `lane` PARAMETER IS THE ROUTER'S DECISION, NOT THIS METHOD'S (V5 §5.1).
+   * The default keeps every existing caller exactly as it was, so `invoke(call)`
+   * still means "the exact-tool lane" and no call site changes meaning. The
+   * authority checks above are IDENTICAL for both lanes on purpose: the data
+   * plane is a different dispatcher, not a different authority. The lane is
+   * carried on the ACCEPTED record, so it survives the wait for the durable
+   * write and the dispatch that follows reads the decision made here rather than
+   * re-deriving it.
    */
-  async invoke(call: NativeCallRequest): Promise<NativeCallOutcome> {
+  async invoke(call: NativeCallRequest, lane: BridgeLane = 'tool'): Promise<NativeCallOutcome> {
     if (this.state !== 'OPEN') {
       throw new LeaseRejection(
         'CELL_LEASE_EXPIRED',
@@ -663,7 +754,7 @@ export class CellLease {
     let resolve!: (outcome: NativeCallOutcome) => void
     let reject!: (error: unknown) => void
     const settled = new Promise<NativeCallOutcome>((res, rej) => { resolve = res; reject = rej })
-    const accepted: AcceptedCall = { call, subCallId, sequence: this.sequence, argsDigest: digest.digest, settled, resolve, reject, started: false }
+    const accepted: AcceptedCall = { call, subCallId, sequence: this.sequence, lane, argsDigest: digest.digest, settled, resolve, reject, started: false }
 
     // DURABLE INTENT, BEFORE PUBLICATION AND BEFORE ANY DISPATCH. Written here
     // rather than inside the runner so it happens at ACCEPTANCE: a call that is
@@ -1005,6 +1096,50 @@ export class CellLease {
   }
 
   /**
+   * Dispatch one accepted call to the lane its NAME selected (V5 §5.1).
+   *
+   * ONE bridge, ONE `CellLease` authority, TWO internal dispatchers. The lane was
+   * chosen at acceptance and is read here, never re-derived, so there is exactly
+   * one place in this file where "is this a data request" is decided.
+   *
+   * A `data:*` CALL WITH NO DATA PLANE IS REFUSED HERE, and this arm is the whole
+   * point of the routing rule: it must NOT reach `this.handler`, because that
+   * would send the name to `ctx.tools.execute` and an unknown data operation
+   * would be answered by the tool registry -- a typo becoming a tool dispatch, and
+   * a refusal that looks like a successful call to a different subsystem. The
+   * code is the data plane's own (`DATA_NO_CAPABILITY`), so a caller branching on
+   * it sees a data-plane fact rather than a tool-registry one.
+   *
+   * CONCURRENCY, STATED (V5 §5.2). Both lanes run through the SAME FIFO queue and
+   * the same accepted-call state machine, so `dsh.call` keeps exact
+   * `ctx.tools.execute()` semantics and neither lane claims ToolRuntime
+   * sibling-scheduler semantics. The bounded host-side I/O concurrency V5 permits
+   * for `dsh.data` is the read plane's own limiter
+   * (`DataReadLimiter`, `DEFAULT_DATA_READ_CONCURRENCY`), which bounds TOTAL
+   * concurrent reads per deployment. This lane does NOT add a second scheduler
+   * inside the lease, and it does not claim one.
+   */
+  private async dispatchOne(entry: AcceptedCall): Promise<NativeCallOutcome> {
+    const context: ExactCallContext = { subCallId: entry.subCallId, sequence: entry.sequence }
+    if (entry.lane !== 'data') {
+      return await this.handler(entry.call, context)
+    }
+    const dataHandler = this.dataHandler
+    if (dataHandler === undefined) {
+      return {
+        ok: false,
+        error: {
+          code: 'DATA_NO_CAPABILITY',
+          message: `"${entry.call.tool}" is a dsh.data request but this cell lease has no data plane mounted. `
+            + 'It is refused as a DATA-plane error and is deliberately NOT retried as a tool: a fall-through '
+            + 'would make an unknown data operation look like a tool call.',
+        },
+      }
+    }
+    return await dataHandler(entry.call, context)
+  }
+
+  /**
    * Run one accepted call and record its settlement and disposition.
    *
    * A THROW HERE MUST STILL SETTLE THE CALLER. The handler's own contract is to
@@ -1015,7 +1150,7 @@ export class CellLease {
   private async runOne(entry: AcceptedCall): Promise<NativeCallOutcome> {
     let outcome: NativeCallOutcome
     try {
-      outcome = await this.handler(entry.call, { subCallId: entry.subCallId, sequence: entry.sequence })
+      outcome = await this.dispatchOne(entry)
     } catch (error) {
       outcome = {
         ok: false,
@@ -1106,6 +1241,19 @@ export interface BridgeServerOptions {
   readonly inlineValueBytes?: number
   /** Directory the Python client is written into. Defaults to the artifact directory. */
   readonly clientDirectory?: string
+  /**
+   * Absolute path of the Python `dsh.data` client to install into each cell
+   * (V5 §5.3), or absent when no data plane is mounted.
+   *
+   * HOST-SET AND NEVER MODEL-REACHABLE. It is an option rather than something
+   * this package discovers, because `dsh-ipython` cannot import `dsh-daily-work`
+   * (MEASURED: `MODULE_NOT_FOUND` from its own realpath) -- the package that owns
+   * the file publishes its path through the mounted service, and the composition
+   * passes it here. Absent means the preamble installs no `dsh.data` namespace,
+   * which agrees with the routing lane refusing `data:*` with
+   * `DATA_NO_CAPABILITY`.
+   */
+  readonly dataClientPath?: string
 }
 
 /** Absolute path of the written Python client, so a caller can log it. */
@@ -1254,6 +1402,7 @@ export class BridgeServer {
       leaseId: lease.id,
       cellId: lease.cellId,
       epoch: lease.epoch,
+      ...this.options.dataClientPath === undefined ? {} : { dataClientPath: this.options.dataClientPath },
     })
   }
 
@@ -1408,6 +1557,25 @@ export class BridgeServer {
       return
     }
 
+    // ── THE ROUTING BRANCH (V5 §5.1), AND IT IS THE ONLY ONE ──────────────
+    //
+    // ONE frame shape, ONE name field, TWO internal lanes. `data:` cannot appear
+    // in a DSH tool name, so this is a total decision on the SAME frame the tool
+    // lane already validates: no second socket family, no second registry, no
+    // second cell authority, no second model tool.
+    //
+    // A `data:*` NAME NEVER REACHES `ctx.tools.execute`. That is enforced one
+    // level down in `CellLease.dispatchOne`, which refuses the data lane when no
+    // data handler is mounted rather than falling back to the tool dispatcher --
+    // so the property holds even for a lease constructed without a data plane,
+    // and not merely because this branch chose well.
+    //
+    // WHY THE LANE IS PASSED RATHER THAN THE ROUTING DONE HERE: `invoke` is the
+    // one place the authority checks (lease open, epoch, cell, idempotency) run,
+    // and the data lane must be protected by exactly those checks. Routing
+    // before `invoke` would create a path around them.
+    const lane: BridgeLane = isDataRequest(tool) ? 'data' : 'tool'
+
     let outcome: NativeCallOutcome
     try {
       outcome = await lease.invoke({
@@ -1417,7 +1585,7 @@ export class BridgeServer {
         cellId,
         epoch,
         leaseId,
-      })
+      }, lane)
     } catch (error) {
       if (error instanceof LeaseRejection) {
         this.send(connection, { type: 'result', requestId, ok: false, error: { code: error.code, message: error.message } })
@@ -1487,6 +1655,19 @@ export interface BridgePreambleInput {
   readonly leaseId: string
   readonly cellId: string
   readonly epoch: number
+  /**
+   * Absolute path of the Python `dsh.data` client to install at bind time
+   * (V5 §5.3), or absent when the composition mounted no data plane.
+   *
+   * ABSENT MEANS NOT INSTALLED, NOT "INSTALL AND FAIL LATER". With no data plane
+   * the bridge's own routing refuses `data:*` with `DATA_NO_CAPABILITY`, so a
+   * namespace without `dsh.data` is consistent with a lane that would refuse
+   * anyway. Installing a namespace whose every method is refused would tell a
+   * program the opposite of what the host will do.
+   */
+  readonly dataClientPath?: string
+  /** The API version the client must report, so a drift is refused at bind time. */
+  readonly dataApiVersion?: number
 }
 
 /**
@@ -1510,7 +1691,7 @@ export interface BridgePreambleInput {
  */
 export function renderBridgePreamble(input: BridgePreambleInput): string {
   const literal = (value: string): string => JSON.stringify(value)
-  return [
+  const lines = [
     'import sys as _dsh_sys, types as _dsh_types',
     "_dsh_mod = _dsh_sys.modules.get('dsh')",
     'if _dsh_mod is None:',
@@ -1520,10 +1701,60 @@ export function renderBridgePreamble(input: BridgePreambleInput): string {
     '    with open(' + literal(input.clientPath) + ", 'rb') as _dsh_handle:",
     '        exec(compile(_dsh_handle.read(), ' + literal(input.clientPath) + ", 'exec'), _dsh_mod.__dict__)",
     `_dsh_mod._bind(${String(input.port)}, ${literal(input.token)}, ${literal(input.leaseId)}, ${literal(input.cellId)}, ${String(input.epoch)})`,
-    'dsh = _dsh_mod',
-    'del _dsh_sys, _dsh_types, _dsh_mod',
-    '',
-  ].join('\n')
+  ]
+  if (input.dataClientPath !== undefined) {
+    // ── THE `dsh.data` INSTALL (V5 §5.3), AFTER `_bind` AND BEFORE `dsh` IS
+    //    HANDED TO THE CELL ─────────────────────────────────────────────────
+    //
+    // The ORDER is the requirement: the client binds its call channel to the
+    // CURRENT cell's capability, so installing it before `_bind` would bind the
+    // previous cell's lease -- a live capability under stale authority, which is
+    // exactly what the lease mechanism exists to prevent.
+    //
+    // THE API VERSION IS VERIFIED BEFORE THE CAPABILITY IS EXPOSED. A client from
+    // a different version disagrees about which fields are authority-bearing, so
+    // the refusal is a bind-time failure rather than a namespace that answers
+    // wrongly later. The same rule `BRIDGE_PROTOCOL_VERSION` applies to the
+    // transport, applied to the data client.
+    //
+    // THE FILE IS LOADED BY ABSOLUTE PATH FROM THE PACKAGE THAT OWNS IT (the
+    // path is resolved host-side by `DataPlaneService.dataClientPath()`), so
+    // nothing depends on the kernel's cwd or on source-tree adjacency.
+    //
+    // WHY AN EXPLICIT CALL ADAPTER RATHER THAN LETTING `install()` FIND
+    // `_channel.call_async` ITSELF. That attribute IS the bridge client's own
+    // method and its real signature is `call_async(tool, arguments, timeout)` --
+    // `timeout` has NO default (`bridge.ts` `PYTHON_CLIENT_SOURCE`). The data
+    // client calls its channel with two arguments, so the self-discovering path
+    // would raise `TypeError: call_async() missing 1 required positional
+    // argument` on EVERY `dsh.data` call while `install()` itself succeeded --
+    // precisely the "namespace whose every method fails" outcome
+    // `dsh_data_client.py` says it refuses at install time. The adapter below
+    // supplies the bridge's own `_DEFAULT_TIMEOUT`, so the two clients are joined
+    // on one explicit, readable line instead of on a signature that happens to
+    // match today.
+    lines.push(
+      `_dsh_data_path = ${literal(input.dataClientPath)}`,
+      'with open(_dsh_data_path, \'rb\') as _dsh_data_handle:',
+      '    _dsh_data_src = _dsh_data_handle.read()',
+      "_dsh_data_mod = _dsh_types.ModuleType('dsh_data_client')",
+      "    _dsh_data_mod.__dict__['__file__'] = _dsh_data_path",
+      "exec(compile(_dsh_data_src, _dsh_data_path, 'exec'), _dsh_data_mod.__dict__)",
+      "_dsh_data_api = getattr(_dsh_data_mod, 'DATA_API_VERSION', None)",
+      `if _dsh_data_api != ${String(input.dataApiVersion ?? 1)}:`,
+      '    raise RuntimeError(',
+      "        'the dsh.data client at %s reports API version %r but this host requires "
+      + `${String(input.dataApiVersion ?? 1)}`
+      + "; refusing to expose a live dsh.data capability'",
+      '        % (_dsh_data_path, _dsh_data_api))',
+      'async def _dsh_data_call(_dsh_tool, _dsh_args):',
+      '    return await _dsh_mod._channel.call_async(_dsh_tool, _dsh_args, _dsh_mod._DEFAULT_TIMEOUT)',
+      '_dsh_data_mod.install(_dsh_mod, _dsh_data_call)',
+      'del _dsh_data_path, _dsh_data_handle, _dsh_data_src, _dsh_data_mod, _dsh_data_api, _dsh_data_call',
+    )
+  }
+  lines.push('dsh = _dsh_mod', 'del _dsh_sys, _dsh_types, _dsh_mod', '')
+  return lines.join('\n')
 }
 
 /**

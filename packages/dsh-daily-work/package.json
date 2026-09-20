@@ -60,6 +60,7 @@
   "files": [
     "lib/**/*.js",
     "lib/**/*.d.ts",
+    "src/dsh_data_client.py",
     "cordis.patch.yml"
   ],
   "peerDependencies": {

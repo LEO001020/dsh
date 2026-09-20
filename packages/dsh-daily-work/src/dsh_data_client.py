@@ -44,7 +44,15 @@ request gains nothing, because the host does not read authority from the payload
 import base64 as _base64
 import json as _json
 
-__all__ = ["install", "DataError", "Observation", "PageWalk"]
+__all__ = ["install", "DataError", "Observation", "PageWalk", "DATA_API_VERSION"]
+
+#: The client's own API version, checked by the host BEFORE it exposes a live
+#: capability (V5 §5.3). A client from a different version disagrees with the
+#: host about which fields are authority-bearing, so the disagreement must be a
+#: BIND-TIME refusal rather than a namespace that answers wrongly later. Bump this
+#: whenever the request/response contract changes shape, and bump the host's
+#: expected value in the same change: the two are compared for equality.
+DATA_API_VERSION = 1
 
 #: The reserved tool-name prefix the host's router dispatches on. Must match
 #: ``DATA_TOOL_PREFIX`` in ``data-bridge.ts``; ``test-data-bridge`` asserts they
