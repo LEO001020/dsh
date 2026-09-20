@@ -7,6 +7,14 @@
  * vitest file asserts; this records the raw frames and the exact result objects
  * so a later reader can compare numbers rather than trust a tick.
  *
+ * THE ARCHIVE IS FROZEN AND THIS INSTRUMENT NO LONGER WRITES TO IT. It originally
+ * defaulted to `before.json`, and re-running it after the fix landed OVERWROTE the
+ * archived defect with the fixed behaviour -- a re-run destroying the evidence it
+ * exists to preserve, caught only because git showed the file as modified. The
+ * default output is now `before-rerun.json`; writing to the archive requires
+ * `S5_BEFORE_OUT` to name it explicitly. The archived `before.json` was restored
+ * with `git checkout` and is the measurement from the pre-fix tree.
+ *
  * WHAT IT MEASURES. The oracle's own stimulus: "A background thread writes to
  * stdout after the cell has returned; then start another cell while the thread
  * is still writing."
@@ -35,7 +43,10 @@ const HERE = dirname(fileURLToPath(import.meta.url))
 const BROKER = resolve(HERE, 'broker.py')
 const PYTHON = process.env['DSH_PYTHON'] ?? 'C:/Users/hzq00/AppData/Local/Programs/Python/Python314/python.exe'
 
-const OUT = process.env['S5_BEFORE_OUT'] ?? resolve(HERE, '..', '..', '..', 'qualification', 'results', 'S5-ipy13', 'before.json')
+// Deliberately NOT `before.json`: see the header. The archive is written only
+// when a caller names it, so a casual re-run cannot destroy it.
+const OUT = process.env['S5_BEFORE_OUT']
+  ?? resolve(HERE, '..', '..', '..', 'qualification', 'results', 'S5-ipy13', 'before-rerun.json')
 
 interface LateEntry { cellId: string, text: string, epoch: number }
 
