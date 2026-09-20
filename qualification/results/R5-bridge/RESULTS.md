@@ -68,11 +68,40 @@ so they passed 17/17 while the PRODUCT failed on the first real cell — F2's ow
 shape one layer down. Fixed in `host-plugin.ts`; the measurement is quoted in
 that file and in `KernelService`'s own `static inject`.
 
+## Does the ledger persist a capability?
+
+Root asked this because of G-SEAM-59 (the connection file lands in a temp
+directory whose ACL grants `Modify`, so a principal could replace it and
+substitute its own keys). The answer, read off the schema and the on-disk row:
+
+**No.** `bridgeCallRecordSchema` carries `subCallId`, `sessionId`,
+`kernelEpoch`, `cellId`, `outerCallId`, `rootCallId`, `requestId`, `argsDigest`,
+`name`, the two timestamps, `isError`, `resultDigest`, `resultBytes`,
+`artifactRef`, `disposition`, `jobId`, `closeReason`. The on-disk row at
+`D:\DSH\home\r5\storages\dsh_ipython_bridge_ledger.json` confirms it: no token,
+no key, no connection-file path, no curve material.
+
+What IS capability-adjacent and where it lives:
+
+- The **per-kernel bridge token** is held in memory on `BridgeServer`
+  (`kernelToken`, rotated on restart) and delivered to a cell only inside that
+  cell's preamble. It is never written to the ledger and never logged.
+- The **lease id** is a `randomUUID` held in memory, also never written.
+- The **artifact directory** for oversized results is
+  `<kernel scratch>/<session>/bridge/artifacts`, under the package's own
+  `.ipython-kernels` root — inside the tree, not in the system temp directory.
+- The **broker's connection file** is untouched by this slice; its location is
+  `broker.py`/`jupyter_client`'s business and G-SEAM-59 remains open and is NOT
+  fixed here, per Root's instruction.
+
+So the same location question does not transfer to the ledger: it persists
+occurrence records and digests, not a credential.
+
 ## Test files run (one at a time, per the brief's CPU rule)
 
 | file | result |
 |---|---|
-| `r5-product-bridge.test.ts` (new) | 17/17 |
+| `r5-product-bridge.test.ts` (new) | 21/21 |
 | `bridge-seam.test.ts` (T7-07 inverted) | 17/17 |
 | `v3-spec-gates.test.ts` | 12/12 |
 | `requirements.test.ts` | 19/19 |
@@ -83,3 +112,16 @@ that file and in `KernelService`'s own `static inject`.
 
 The full suite was NOT run: the brief forbids it, and the files touched are all
 above.
+
+## What is NOT measured
+
+- **No real model turn.** There is no LLM in the composition boot; the probe
+  calls `ctx.tools.execute` with the `ipython` tool's name, which is what the
+  agent loop does, but the model's decision to call the tool is not exercised.
+  `live_provider_budget_authorized: false` on this deployment.
+- **`handed-to-jobs` is not reachable in the default composition**, because no
+  `jobHandoff` is configured. The arm is implemented and its ledger rule is
+  tested directly; the production wiring for it is a later slice's.
+- **The ledger's durable write is proven against the JSON backend only.** A
+  different storage backend is untested.
+
