@@ -794,37 +794,64 @@ describe('UPG-04: a backup restores on a new host with verifiable identity, and 
     // publication primitive hashes WHILE streaming and hard-links into a
     // digest-derived path, so the digest is the identity and a restored object
     // can be verified rather than trusted.
-    const attachment = await import('@deepseek-ai/dsh-attachment-local/src/store.ts') as {
-      publishImmutableObjectStream(
-        root: string, data: AsyncIterable<Uint8Array>, targetFor: (sha256: string, bytes: number) => string, signal?: AbortSignal,
-      ): Promise<{ sha256: string; bytes: number }>
-    }
+    //
+    // THIS TEST USED TO DEEP-IMPORT THE PRIMITIVE'S SOURCE (`.../src/store.ts`).
+    // It now measures the SAME property through the public `ctx.attachments`
+    // capability, which is the seam the product uses -- defect F4 was exactly that
+    // a `.ts` source path appeared in the production import graph and created a
+    // second physical module instance. Measuring the property through the private
+    // module would have kept that coupling alive in a test that is cited as
+    // evidence, so the test moved with the code.
+    const { Context } = await import('@deepseek-ai/cordis')
+    const { default: AttachmentLocal } = await import('@deepseek-ai/dsh-attachment-local')
     const root = tempDir('upg04-art')
+    const ctx = new Context()
+    new AttachmentLocal(ctx, { dshHome: join(root, 'home') })
     const content = Buffer.from('UPG04-ARTIFACT-BODY-abcdef')
     const expected = createHash('sha256').update(content).digest('hex')
     async function* body(): AsyncIterable<Uint8Array> { yield content }
-    const published = await attachment.publishImmutableObjectStream(root, body(), (sha, bytes) => join(root, 'objects', sha.slice(0, 2), `${sha}-${String(bytes)}`))
-    // The host-computed digest IS the content's digest, so a restore can verify.
-    expect(published.sha256).toBe(expected)
+    const published = await ctx.attachments.saveFileStream({ data: body(), name: 'upg04-object' })
+    // The provider-computed digest IS the content's digest, so a restore can verify.
+    expect(String(published.attachmentId)).toBe(`sha256:${expected}`)
     expect(published.bytes).toBe(content.length)
-    const files: string[] = []
-    const walk = (dir: string): void => {
-      for (const entry of readdirSync(dir, { withFileTypes: true })) {
-        const full = join(dir, entry.name)
-        if (entry.isDirectory()) walk(full)
-        else files.push(full)
-      }
-    }
-    walk(root)
-    expect(files).toHaveLength(1)
     // The object's PATH contains its digest, which is what makes the identity
     // checkable without a separate index.
-    expect(files[0]).toContain(expected)
-    expect(createHash('sha256').update(readFileSync(files[0]!)).digest('hex')).toBe(expected)
-    // And the source's own contract states the properties that make it
-    // backup-safe: dedup with digest-verified EEXIST, and read-only objects.
-    const store = readFileSync(join(DSH_SRC, 'packages', 'attachment', 'attachment-local', 'src', 'store.ts'), 'utf8')
-    expect(flat(store)).toContain('Content-addressed, owner-private local attachment storage')
+    const hostPath = ctx.attachments.fileHostPath(published)
+    expect(hostPath, 'the mounted provider must be host-backed for a backup to name the object').toBeDefined()
+    expect(hostPath).toContain(expected)
+    expect(createHash('sha256').update(readFileSync(hostPath as string)).digest('hex')).toBe(expected)
+    // The stored object is READ-ONLY, which is the property that makes it safe for
+    // a backup to hard-link rather than copy: a later writer cannot mutate an
+    // object an earlier checkpoint already references.
+    //
+    // ASSERTED AS "NO WRITE BIT", not as the literal `0o400`. The provider calls
+    // `chmod(target, 0o400)`, but on Windows that maps onto the read-only file
+    // attribute and Node reports the file as `0o444` -- measured here, with a write
+    // attempt refusing `EPERM`. Asserting the literal would have been a POSIX-only
+    // test of a cross-platform property, and the property is what a backup needs.
+    const mode = statSync(hostPath as string).mode
+    expect(mode & 0o222, 'a published object must carry no write bit').toBe(0)
+    let writeRefusal = 'the write was NOT refused'
+    try {
+      writeFileSync(hostPath as string, Buffer.from('R2F4-TAMPER'))
+    } catch (error) {
+      writeRefusal = String((error as NodeJS.ErrnoException).code)
+    }
+    expect(writeRefusal, 'a published object must refuse an in-place write').toBe('EPERM')
+    expect(createHash('sha256').update(readFileSync(hostPath as string)).digest('hex')).toBe(expected)
+    // And the same bytes read back through the capability verify against the
+    // address, so a restore can check rather than trust.
+    const chunks: Buffer[] = []
+    for await (const chunk of ctx.attachments.readFileStream(published)) chunks.push(Buffer.from(chunk))
+    expect(createHash('sha256').update(Buffer.concat(chunks)).digest('hex')).toBe(expected)
+    // The provider's own contract states the property this gate turns on. The
+    // contract is read from the package's PUBLIC type surface (`lib/types/`), not
+    // from its `src/` tree: a test that reached into `src/` would reintroduce the
+    // exact source-plane coupling this change removed.
+    const declaration = readFileSync(join(DSH_SRC, 'packages', 'attachment', 'attachment-local', 'lib', 'types', 'store.d.ts'), 'utf8')
+    expect(flat(declaration)).toContain('Content-addressed, owner-private local attachment storage')
+    const fileStoreDeclaration = readFileSync(join(DSH_SRC, 'packages', 'attachment', 'attachment-local', 'lib', 'types', 'file-store.d.ts'), 'utf8')
+    expect(flat(fileStoreDeclaration)).toContain('Commit one file byte-for-byte from bounded chunks below a versioned attachment root')
   })
 
   it('the backup rehearsals this project already ran are cited, not re-invented', () => {
@@ -1359,15 +1386,22 @@ describe('UPG-06: an artifact still referenced by a Session, fork or active leas
    * close the gate by pointing at this passing test.
    */
   it('the content-addressed store HAS a correct reference-aware collector — and no production caller', async () => {
-    const { LocalArtifactStore } = await import('./artifacts.ts')
+    const { AttachmentArtifactStore } = await import('./artifacts.ts')
+    const { Context } = await import('@deepseek-ai/cordis')
+    const { default: AttachmentLocal } = await import('@deepseek-ai/dsh-attachment-local')
     const root = tempDir('upg06-gc')
-    const store = new LocalArtifactStore(root)
+    // The store's BYTES come from the mounted attachment capability (defect F4),
+    // so the provider is mounted here the way the composition mounts it. What the
+    // collector walks is the project's INDEX, which is what `pathOf` names below.
+    const ctx = new Context()
+    new AttachmentLocal(ctx, { dshHome: join(root, 'home') })
+    const store = new AttachmentArtifactStore(ctx.attachments, root)
     const body = (text: string): AsyncIterable<Uint8Array> => (async function* () { yield Buffer.from(text) })()
     const referenced = await store.put(body('REFERENCED'))
     const orphan = await store.put(body('ORPHAN'))
     const pinned = await store.put(body('PINNED'))
-    const pathOf = (sha256: string): string => join(root, 'objects', sha256.slice(0, 2), sha256)
-    // Age every object far past any grace window, so AGE cannot be what saves
+    const pathOf = (sha256: string): string => join(root, 'index', sha256.slice(0, 2), `${sha256}.json`)
+    // Age every entry far past any grace window, so AGE cannot be what saves
     // the two survivors.
     const longAgo = new Date(Date.now() - 400 * 24 * 3_600_000)
     for (const published of [referenced, orphan, pinned]) utimesSync(pathOf(published.sha256), longAgo, longAgo)
@@ -1378,7 +1412,11 @@ describe('UPG-06: an artifact still referenced by a Session, fork or active leas
     // The live reference survives, BY REASON — not by luck of ordering.
     expect(gc.skipped.some(entry => entry.artifact === referenced.artifact && entry.reason === 'referenced')).toBe(true)
     expect(existsSync(pathOf(referenced.sha256)), 'a referenced object survives an age past any grace window').toBe(true)
-    expect(createHash('sha256').update(readFileSync(pathOf(referenced.sha256))).digest('hex')).toBe(referenced.sha256)
+    // The surviving entry still NAMES the object, and the object is still readable
+    // through the capability -- so "survives" is a fact about the artifact, not
+    // about a file that happens to still exist.
+    expect(await store.stat(referenced.artifact)).toBeDefined()
+    expect(await store.verify(referenced.artifact)).toBe(true)
     // A pinned object survives too, so a caller can hold an object against GC.
     expect(gc.skipped.some(entry => entry.artifact === pinned.artifact && entry.reason === 'pinned')).toBe(true)
     expect(existsSync(pathOf(pinned.sha256))).toBe(true)
@@ -1434,35 +1472,48 @@ describe('UPG-06: an artifact still referenced by a Session, fork or active leas
     // live reference cannot be collected BY STARTUP. Recorded as the weaker of
     // the two ways to hold the property — the store is safe because nothing
     // collects it, not because a collector respects references.
+    //
+    // THE PUBLICATION GOES THROUGH THE PUBLIC CAPABILITY, as it does in the
+    // product. The sweep below is then pointed at the provider's OWN root, which is
+    // the strongest form of this test: it is the directory that actually holds the
+    // bytes, so "the object survives a sweep" is measured against the real location
+    // rather than against a project-side mirror of it.
+    const { Context } = await import('@deepseek-ai/cordis')
+    const { default: AttachmentLocal } = await import('@deepseek-ai/dsh-attachment-local')
     const root = tempDir('upg06-att')
-    const attachment = await import('@deepseek-ai/dsh-attachment-local/src/store.ts') as {
-      publishImmutableObjectStream(root: string, data: AsyncIterable<Uint8Array>, targetFor: (sha: string, bytes: number) => string): Promise<{ sha256: string }>
-    }
+    const ctx = new Context()
+    new AttachmentLocal(ctx, { dshHome: join(root, 'home') })
     const content = Buffer.from('UPG06-LIVE-REFERENCE')
     async function* body(): AsyncIterable<Uint8Array> { yield content }
-    const published = await attachment.publishImmutableObjectStream(root, body(), (sha, bytes) => join(root, 'objects', sha.slice(0, 2), `${sha}-${String(bytes)}`))
-    const objectPath = join(root, 'objects', published.sha256.slice(0, 2), `${published.sha256}-${String(content.length)}`)
-    expect(existsSync(objectPath)).toBe(true)
+    const published = await ctx.attachments.saveFileStream({ data: body(), name: 'upg06-object' })
+    const objectPath = ctx.attachments.fileHostPath(published)
+    expect(objectPath, 'the mounted provider must be host-backed for this test to sweep the real root').toBeDefined()
+    expect(existsSync(objectPath as string)).toBe(true)
 
     // Age it far past any plausible policy cutoff, then run every startup sweep
     // this deployment has, and confirm the object survives.
     const longAgo = new Date(Date.now() - 365 * 24 * 3_600_000)
-    utimesSync(objectPath, longAgo, longAgo)
+    utimesSync(objectPath as string, longAgo, longAgo)
     const spill = await import(srcUrl('packages/spill/spill-local/lib/index.js')) as {
       sweepSpillRoots(options: { roots: { path: string; pruneWhenEmpty: boolean }[]; cutoffMs: number; warn: (message: string) => void }): Promise<void>
     }
-    await spill.sweepSpillRoots({ roots: [{ path: root, pruneWhenEmpty: true }], cutoffMs: Date.now(), warn: () => {} })
+    // The sweep is pointed at the ATTACHMENT root, so a sweep that DID reach into
+    // it would be caught here. A sweep pointed at an unrelated directory would make
+    // this assertion vacuous.
+    await spill.sweepSpillRoots({ roots: [{ path: join(root, 'home'), pruneWhenEmpty: true }], cutoffMs: Date.now(), warn: () => {} })
     // The object is untouched: the attachment store's root is not a spill root
     // and nothing sweeps it.
-    expect(existsSync(objectPath), 'a content-addressed artifact has no startup collector').toBe(true)
-    expect(createHash('sha256').update(readFileSync(objectPath)).digest('hex')).toBe(published.sha256)
+    expect(existsSync(objectPath as string), 'a content-addressed artifact has no startup collector').toBe(true)
+    expect(createHash('sha256').update(readFileSync(objectPath as string)).digest('hex')).toBe(String(published.attachmentId).replace('sha256:', ''))
 
-    // The store's own contract states the properties that make it safe: objects
-    // are immutable and published read-only, so an object is either absent or
-    // exactly the content its name claims.
-    const store = readFileSync(join(DSH_SRC, 'packages', 'attachment', 'attachment-local', 'src', 'store.ts'), 'utf8')
-    expect(flat(store)).toContain('Content-addressed, owner-private local attachment storage')
-    expect(store).toMatch(/chmod|0o400/u)
+    // The provider's own PUBLIC declaration states the properties that make it
+    // safe: objects are immutable and published read-only, so an object is either
+    // absent or exactly the content its name claims. Read from `lib/types/`, not
+    // from `src/` -- a test that reached into the source tree would reintroduce the
+    // source-plane coupling defect F4 removed.
+    const declaration = readFileSync(join(DSH_SRC, 'packages', 'attachment', 'attachment-local', 'lib', 'types', 'store.d.ts'), 'utf8')
+    expect(flat(declaration)).toContain('Content-addressed, owner-private local attachment storage')
+    expect(flat(declaration)).toContain('read-only mode')
   })
 
   it('the run record holds the reference, so a live reference is a durable fact and not process state', async () => {

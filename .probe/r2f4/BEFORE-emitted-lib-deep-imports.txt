@@ -1,0 +1,5 @@
+packages/dsh-daily-work/lib/\artifacts.d.ts:143: * `@deepseek-ai/dsh-attachment-local/src/store.ts` -- the same function that
+packages/dsh-daily-work/lib/\artifacts.d.ts:635: * `@deepseek-ai/dsh-attachment-local/src/store.ts`) wraps every storage failure in
+packages/dsh-daily-work/lib/\artifacts.js:73:import { publishImmutableObjectStream } from '@deepseek-ai/dsh-attachment-local/src/store.ts';
+packages/dsh-daily-work/lib/\artifacts.js:109: * `@deepseek-ai/dsh-attachment-local/src/store.ts` -- the same function that
+packages/dsh-daily-work/lib/\artifacts.js:1112: * `@deepseek-ai/dsh-attachment-local/src/store.ts`) wraps every storage failure in

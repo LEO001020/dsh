@@ -46,9 +46,9 @@ import { defineDomain, domainTable, type Domain, type DomainFacility } from '@de
 import { z } from 'zod'
 import {
   ArtifactStorePageProvider,
+  AttachmentArtifactStore,
   DEFAULT_ARTIFACT_QUOTA_BYTES,
   DEFAULT_PAGE_BYTES,
-  LocalArtifactStore,
   buildLineIndex,
   captureFile,
   joinPages,
@@ -148,7 +148,7 @@ export const DEFAULT_EXECUTION_WORLD = 'local'
  * usable, which is the behaviour ARCHITECTURE §10/§12 requires.
  */
 export class DataPlaneService extends Service {
-  readonly store: LocalArtifactStore
+  readonly store: AttachmentArtifactStore
   readonly grants = new GrantTable()
   readonly ownerScope: string
   readonly executionWorld: string
@@ -166,7 +166,15 @@ export class DataPlaneService extends Service {
     // The artifact root is a host-chosen private directory. It is NOT a path the
     // kernel supplies: a kernel-chosen root would let model-authored Python place
     // objects wherever it liked, which is the FS-policy bypass the audit forbids.
-    this.store = new LocalArtifactStore(
+    //
+    // The BYTES go through the mounted `ctx.attachments` capability, which the
+    // composition provides (`attachment-local` is a base-bundle row). This service
+    // therefore does NOT construct a storage backend: it borrows the one the host
+    // already mounted, so there is exactly one provider instance in the process and
+    // no module-local state can be split between two copies. Defect F4 was exactly
+    // that split, reached by deep-importing the provider's source path.
+    this.store = new AttachmentArtifactStore(
+      ctx.attachments,
       config.artifactRoot ?? defaultArtifactRoot(ctx),
       { quotaBytes: config.quotaBytes ?? DEFAULT_ARTIFACT_QUOTA_BYTES },
     )

@@ -1,0 +1,21 @@
+=== R2-F4: writer provisioning gaps in a FRESH worktree ===
+date: 2026-09-20T02:09:53Z
+tree: D:\DSH\work\wt-r2f4
+
+new-writer.ps1 links (a) every @deepseek-ai/* named in src, and (b) a
+hardcoded bare-name set. Two bare names this package's TESTS need were not
+linked, so tests failed for a provisioning reason and NOT for a code reason:
+
+1. tsx        -> needed by data-plane.test.ts's SIGKILL child (`import.meta.resolve('tsx/esm')`).
+                 symptom: 'Cannot find package tsx imported from src/data-plane.test.ts'
+                 1 of 68 tests failed until linked.
+                 target: D:\DSH\src\dsh-src\node_modules\.pnpm\tsx@4.22.4\node_modules\tsx
+
+2. koffi      -> needed by homelock.ts on Windows (the DEP-06/07 FFI lock).
+                 symptom: HomeLockUnsupportedError in 6 of 37 dep-gates tests.
+                 target: D:\DSH\src\dsh-src\node_modules\.pnpm\koffi@3.1.1\node_modules\koffi
+
+BOTH are present in the MAIN checkout (D:\DSH\work\dsh-native-daily\packages\dsh-daily-work\node_modules\),
+so this is a gap in the fresh-worktree provisioner, not in the package.
+A writer who saw these failures and did not check the main checkout would
+have filed two false defects.

@@ -22,7 +22,19 @@ import type { Context } from '@deepseek-ai/cordis'
 import { DataPlaneService, type DataServiceConfig } from './data-service.ts'
 
 export const name = 'dsh-daily-data'
-export const inject = ['storageDomain']
+/**
+ * `attachments` is a HARD requirement, not a wish list.
+ *
+ * The data plane stores bytes through the public `ctx.attachments` capability
+ * instead of deep-importing a provider's source path (defect F4). `inject` is a
+ * readiness gate, so naming it here means this row activates only once the
+ * composition has actually mounted an attachment provider -- and if a deployment
+ * removed that row, the failure is a visible "waiting for services (missing:
+ * attachments)" rather than a data plane that boots and then fails on its first
+ * capture. The provider is a base-bundle row (`attachment-local`), so this adds no
+ * new deployment obligation.
+ */
+export const inject = ['storageDomain', 'attachments']
 
 /** Configuration. Every field is optional; the service supplies real defaults. */
 export interface Config extends DataServiceConfig {}
