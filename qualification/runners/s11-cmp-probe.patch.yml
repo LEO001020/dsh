@@ -16,6 +16,19 @@
 # restates every key the row needs, because a patch REPLACES the target row's
 # whole `config` object rather than merging into it. A second `webserver` patch
 # here would be a competing writer for one row.
+#
+# THE `name:` BELOW IS A TEMPLATE, NOT A PATH THAT WILL BE LOADED. A cordis `name:`
+# is a MODULE SPECIFIER, and an absolute one is imported as-is
+# (`app-boot/src/index.ts:521`), so a committed absolute path would make a boot from
+# ANY other checkout EXECUTE this tree's probe while measuring its own composition --
+# cross-tree code execution, the class `cross-tree-paths.test.ts` refuses. A relative
+# `name:` is NOT a substitute: the loader resolves it against `ctx.baseUrl`, which is
+# the PROFILE directory, not this file.
+#
+# So the driver materialises this overlay at RUN TIME through
+# `qualification/runners/overlay.mjs`, which rewrites this row to name the running
+# tree's own probe (matched by basename) and refuses loudly if it cannot. The path
+# written here is the basename carrier for that rewrite; nothing loads it directly.
 - insert:
     - id: s11-cmp-probe
-      name: 'D:/DSH/work/wt-s11/qualification/runners/s11-cmp-probe.mjs'
+      name: 'REWRITTEN-AT-RUN-TIME/s11-cmp-probe.mjs'

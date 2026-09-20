@@ -71,14 +71,19 @@
  * reporting the absence. Every other service is read through `ctx.get`, which
  * returns `undefined` honestly.
  */
+import { dirname, join } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { writeFileSync } from 'node:fs'
+
+/** The repository root of the tree THIS FILE was loaded from. */
+const REPO_ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..').replace(/\\/g, '/')
 
 export const name = 's11-cmp-probe'
 
 export const inject = ['sessionController']
 
 const OUT = process.env.DSH_PROBE_OUT
-  ?? 'D:/DSH/work/wt-s11/qualification/results/S11-cmp/probe.json'
+  ?? join(REPO_ROOT, 'qualification/results/S11-cmp/probe.json')
 
 /** The mode the trusted-local contract requires. */
 const TRUSTED_LOCAL_MODE = 'danger-full-access'

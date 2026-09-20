@@ -22,11 +22,18 @@
  * USAGE
  *   node qualification/runners/s11-cmp-verdict.mjs
  */
+import { dirname, join } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { createHash } from 'node:crypto'
 import { execFileSync } from 'node:child_process'
 
-const WORKTREE = 'D:/DSH/work/wt-s11'
+/** The repository root of the tree THIS FILE was loaded from. */
+const REPO_ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..').replace(/\\/g, '/')
+
+// DERIVED, for the same reason as the driver: a literal worktree path makes the
+// verdict depend on which checkout happened to run it.
+const WORKTREE = REPO_ROOT
 const DIR = `${WORKTREE}/qualification/results/S11-cmp`
 const HOME = 'D:/DSH/home/s11'
 

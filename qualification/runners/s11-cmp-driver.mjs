@@ -29,10 +29,19 @@
  * to a fixed path is a SHARED MUTABLE RESOURCE (G-FIX-13), and a false PASS from
  * a stale artifact is the defect that check exists to prevent.
  */
+import { dirname, join } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { bootAndWait, readResult } from './boot-harness.mjs'
 import { writeFileSync, mkdirSync } from 'node:fs'
+import { materialiseOverlay } from './overlay.mjs'
 
-const WORKTREE = 'D:/DSH/work/wt-s11'
+/** The repository root of the tree THIS FILE was loaded from. */
+const REPO_ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..').replace(/\\/g, '/')
+
+// DERIVED, not literal: a hardcoded worktree names ONE checkout, so a re-run
+// from any other tree would read or write a tree it does not own. This is the
+// class cross-tree-paths.test.ts refuses (G-SEAM-61/66).
+const WORKTREE = REPO_ROOT
 const HOME = 'D:/DSH/home/s11'
 const DIR = `${WORKTREE}/qualification/results/S11-cmp`
 
@@ -49,8 +58,24 @@ const DIR = `${WORKTREE}/qualification/results/S11-cmp`
  */
 const FOREIGN_CWD = 'C:/Windows/Temp'
 
-/** The overlay for the probe arms: ONE row, and it is the probe. */
-const PROBE_PATCH = `${WORKTREE}/qualification/runners/s11-cmp-probe.patch.yml`
+/**
+ * The overlay for the probe arms: ONE row, and it is the probe.
+ *
+ * MATERIALISED AT RUN TIME, not used as committed. The template carries a
+ * placeholder `name:` because an absolute one would make a boot from any other
+ * checkout execute THIS tree's probe while measuring its own composition
+ * (`app-boot/src/index.ts:521` imports an absolute specifier as-is), and a relative
+ * one would resolve against the PROFILE directory rather than this file. The helper
+ * rewrites the row to name this tree's own probe by basename and REFUSES if it
+ * cannot, so a missing row surfaces as a path error rather than as a composition
+ * failure that looks like a product defect.
+ */
+const PROBE_TEMPLATE = `${WORKTREE}/qualification/runners/s11-cmp-probe.patch.yml`
+const PROBE_PATCH = materialiseOverlay(
+  PROBE_TEMPLATE,
+  `${WORKTREE}/qualification/results/S11-cmp/s11-cmp-probe.materialised.patch.yml`,
+  `${WORKTREE}/qualification/runners/s11-cmp-probe.mjs`,
+)
 
 const ARMS = {
   'healthy-probe': { profile: 'daily', patches: [PROBE_PATCH], probe: true, timeoutMs: 180_000 },

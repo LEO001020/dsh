@@ -12,10 +12,15 @@
  * A mutation that merely deleted a field would also flip the group, but it would
  * not demonstrate that the check catches the REAL failure mode. This one does.
  */
+import { dirname, join } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { readFileSync, writeFileSync } from 'node:fs'
 import { execFileSync } from 'node:child_process'
 
-const DIR = 'D:/DSH/work/wt-s11/qualification/results/S11-cmp'
+/** The repository root of the tree THIS FILE was loaded from. */
+const REPO_ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..').replace(/\\/g, '/')
+
+const DIR = join(REPO_ROOT, 'qualification/results/S11-cmp')
 
 function run() {
   try {
