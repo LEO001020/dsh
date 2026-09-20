@@ -13,9 +13,25 @@
  * It is the RECORD that a retrieval produced — the part DSH's `WebFetchResult`
  * deliberately does not carry. `WebFetchResult` says `{url, statusCode, body,
  * truncated}` (`packages/web/web/src/types.ts:74-83`), and `truncated` is a
- * single boolean covering at least six different losses with different recovery
+ * single boolean covering several different losses with different recovery
  * rules (ARCHITECTURE §6). The eight WEB gates are all about those distinctions,
  * so they are modelled here.
+ *
+ * WHAT IS A LOSS AND WHAT IS NOT (DATA-09 / F7)
+ *
+ * `acquisition.gaps[]` answers one question: did the world or the pipeline give
+ * us the bytes we asked for? Four stages can answer it. Two things that v1 filed
+ * there do not:
+ *
+ *   a deliberate projection  the artifact is COMPLETE and we chose to show the
+ *                            model less of it. This is a {@link ProjectionManifest}
+ *                            now — a sibling of `acquisition`, carrying what was
+ *                            shown, what was withheld, where the rest is, and
+ *                            why. Recording it as a loss made an honest system
+ *                            look broken and a broken system look honest.
+ *   a transport failure      an over-limit frame is REFUSED before any value
+ *                            exists, so there is no partial success to
+ *                            attribute. It is an error with a code, not a gap.
  *
  * THE ONE RULE THAT MATTERS MOST
  *
@@ -70,18 +86,122 @@ export type AcquisitionCompleteness = 'complete-within-request' | 'partial' | 'u
  */
 export type GapRecovery = 'page' | 'refetch' | 'none' | 'unknown'
 
-/** One recorded loss, attributed to the stage that caused it. */
+/**
+ * One recorded loss, attributed to the stage that caused it.
+ *
+ * WHY FOUR STAGES AND NOT SIX (DATA-09 / F7, matching `observations.ts`). The
+ * field means "the world or the pipeline gave us less than we asked for", and
+ * v1's two extra names were not facts of that kind:
+ *
+ *   `model-projection`  A deliberate projection is not a loss. The artifact is
+ *                       complete; we chose to show the model less of it. It is
+ *                       a {@link ProjectionManifest} now -- a separate type with
+ *                       no `stage` and no `recovery`, so it cannot be filed as a
+ *                       gap by a caller who reaches for the wrong field.
+ *   `transport`         An over-limit frame is REFUSED, not dropped: the encoder
+ *                       refuses and the decoder refuses on the declared length
+ *                       before any value exists. A failed transport is a failed
+ *                       operation, reported as an error with a code -- there is
+ *                       no partial success to attribute, and inventing a
+ *                       producer would mean degrading a hard refusal into a
+ *                       silent drop.
+ *
+ * The two types are deliberately NOT structurally compatible: this interface has
+ * `stage` and `recovery`, the manifest has neither. A projection passed where a
+ * gap is expected is a compile error rather than a record that reads as a loss.
+ */
 export interface ProvenanceGap {
   readonly stage:
     | 'provider-acquisition'
     | 'native-acquisition'
     | 'transform'
     | 'retention'
-    | 'transport'
-    | 'model-projection'
   /** What was lost, in terms a reader can act on. Never a bare "truncated". */
   readonly reason: string
   readonly recovery: GapRecovery
+}
+
+/**
+ * A DELIBERATE projection of a complete artifact, recorded as a fact about our
+ * output rather than as a loss.
+ *
+ * WHY THIS IS A SEPARATE TYPE AND NOT A `model-projection` GAP. The distinction
+ * the whole plane turns on is that a small projection is NOT evidence of a small
+ * source. v1 recorded the projection in `acquisition.gaps[]`, the list that
+ * answers "what did the world fail to give us?" -- so a reader could not tell a
+ * provider that sent 2 KiB from an artifact we hold in full and chose to
+ * summarize. The two claims are now different types, and this one carries the
+ * facts a reader needs to check it: what was projected from, what was shown,
+ * what was withheld, where the withheld bytes are, and why.
+ *
+ * `omittedBytes` is `undefined` when the total was never established. A
+ * fabricated `0` would assert a complete projection, which is the most
+ * misleading value available; `undefined` is the honest third state.
+ */
+export interface ProjectionManifest {
+  /** The artifact this projection was computed from. */
+  readonly sourceRef: string
+  /** Where the omitted bytes can be re-read. Usually `sourceRef`; see the parent. */
+  readonly recoverableRef: string
+  /** Bytes of the source the projection carried. */
+  readonly selectedBytes: number
+  /** Items (lines, pages, records) carried, when counted. */
+  readonly selectedItems?: number
+  /** Bytes NOT carried. `undefined` when the total was never established. */
+  readonly omittedBytes?: number
+  /** Items NOT carried. `undefined` for the same reason as `omittedBytes`. */
+  readonly omittedItems?: number
+  /** Why this projection was made. Required: an unstated projection reads as a loss. */
+  readonly projectionReason: string
+}
+
+/**
+ * Build a projection manifest from measured facts.
+ *
+ * The omitted counts are DERIVED from `sourceBytes`/`sourceItems` rather than
+ * accepted, so "selected + omitted = source" holds by construction. A caller
+ * cannot report `omittedBytes: 0` for a projection it knows was partial: it does
+ * not pass the omitted count at all.
+ *
+ * @param input - the projection's measured facts.
+ * @returns the manifest.
+ */
+export function projectionManifest(input: {
+  sourceRef: string
+  recoverableRef?: string
+  selectedBytes: number
+  selectedItems?: number
+  sourceBytes?: number
+  sourceItems?: number
+  projectionReason: string
+}): ProjectionManifest {
+  return {
+    sourceRef: input.sourceRef,
+    recoverableRef: input.recoverableRef ?? input.sourceRef,
+    selectedBytes: input.selectedBytes,
+    ...input.selectedItems === undefined ? {} : { selectedItems: input.selectedItems },
+    ...input.sourceBytes === undefined
+      ? {}
+      : { omittedBytes: Math.max(0, input.sourceBytes - input.selectedBytes) },
+    ...input.sourceItems === undefined || input.selectedItems === undefined
+      ? {}
+      : { omittedItems: Math.max(0, input.sourceItems - input.selectedItems) },
+    projectionReason: input.projectionReason,
+  }
+}
+
+/**
+ * Whether a manifest describes a projection that withheld anything.
+ *
+ * THREE states, not two: `unknown` is distinct from `complete`, because
+ * "nothing was omitted" and "we never established how much was omitted" are
+ * different facts, and collapsing them is the fabrication the manifest's
+ * optional counts exist to avoid.
+ */
+export function projectionWithheld(manifest: ProjectionManifest): 'complete' | 'partial' | 'unknown' {
+  if (manifest.omittedBytes === undefined && manifest.omittedItems === undefined) return 'unknown'
+  if ((manifest.omittedBytes ?? 0) > 0 || (manifest.omittedItems ?? 0) > 0) return 'partial'
+  return 'complete'
 }
 
 /** Where the bytes came from, and when. */
@@ -122,6 +242,21 @@ export interface ProvenanceDerived {
 }
 
 /**
+ * The provenance record schema version.
+ *
+ * WHY THIS IS 2 (DATA-09 / F7), on the same reasoning as
+ * `OBSERVATION_SCHEMA_VERSION`. The gap closed set shrank from six stages to
+ * four, so a stored version-1 record is not readable under this shape: its
+ * `{stage: 'model-projection'}` entry asserts that a deliberate projection was
+ * an acquisition loss, which this module no longer expresses. Re-reading that
+ * record as if it were current would silently convert "we chose to show the
+ * model 2 KiB of a complete artifact" into "the world gave us 2 KiB".
+ *
+ * A version-1 record must be converted, not reinterpreted.
+ */
+export const PROVENANCE_SCHEMA_VERSION = 2
+
+/**
  * One web acquisition record.
  *
  * `observationId` is the identity of THIS acquisition event. Two fetches of the
@@ -130,19 +265,36 @@ export interface ProvenanceDerived {
  */
 export interface ProvenanceRecord {
   readonly observationId: string
-  readonly schemaVersion: 1
+  readonly schemaVersion: typeof PROVENANCE_SCHEMA_VERSION
   readonly source: ProvenanceSource
   readonly captured: ProvenanceCaptured
   readonly acquisition: {
     readonly completeness: AcquisitionCompleteness
     /** A claim about the REQUEST (range, top-k, watermark), never about the world. */
     readonly coverage: Record<string, unknown>
+    /**
+     * What was LOST, attributed to the stage that lost it.
+     *
+     * Deliberately does not include a projection: see {@link ProjectionManifest}.
+     * A reader that finds an empty list here has learned that nothing was lost --
+     * which is a fact about the world, and is no longer entangled with the
+     * separate question of how much of it we chose to show.
+     */
     readonly gaps: readonly ProvenanceGap[]
   }
   /** Present exactly when a derivation was produced. Raw and derived never share a hash slot. */
   readonly derived?: ProvenanceDerived
   /** The injected converter's identity, when a transform ran. */
   readonly transform?: { readonly name: string; readonly version: string }
+  /**
+   * The DELIBERATE projection of this artifact, when one was made.
+   *
+   * A sibling of `acquisition`, not a member of it: the acquisition block
+   * answers "did we get the bytes?", and this answers "how much of them did the
+   * model see?". Filing the second under the first is the conflation DATA-09
+   * removes.
+   */
+  readonly projection?: ProjectionManifest
   /**
    * Always present, always this sentence. The caveat travels with the hash so a
    * consumer cannot read `captured.sha256` without being told what it proves.
@@ -1001,6 +1153,10 @@ export function hasPdfMagic(bytes: Uint8Array): boolean {
  * @param result - the fetch result.
  * @param request - the request that produced it, plus the artifact it was stored as.
  * @param convert - optional HTML->markdown converter; omitted means no derivation.
+ * @param projection - an optional {@link ProjectionManifest} for a bounded
+ *   projection of this artifact. It is recorded as a SIBLING of `acquisition`,
+ *   never appended to `acquisition.gaps`: a deliberate projection is not a loss,
+ *   and putting it in the gap list is the conflation DATA-09 removes.
  * @returns the record and any transform gap.
  */
 export function provenanceFromFetch(
@@ -1016,6 +1172,7 @@ export function provenanceFromFetch(
     readonly lastModified?: string
   },
   convert?: { readonly convert: HtmlToMarkdown; readonly identity: { readonly name: string; readonly version: string } },
+  projection?: ProjectionManifest,
 ): { readonly record: ProvenanceRecord; readonly gaps: readonly ProvenanceGap[] } {
   const acquisition = acquisitionFromFetch(result, {
     requestedUrl: request.requestedUrl,
@@ -1045,7 +1202,7 @@ export function provenanceFromFetch(
   return {
     record: {
       observationId: `fetch:${request.provider}:${sha256(`${result.url}\u0000${request.acquiredAt}`).slice(0, 16)}`,
-      schemaVersion: 1,
+      schemaVersion: PROVENANCE_SCHEMA_VERSION,
       source: {
         kind: 'web',
         locator: result.url,
@@ -1069,6 +1226,10 @@ export function provenanceFromFetch(
       },
       ...derived === undefined ? {} : { derived },
       ...transform === undefined ? {} : { transform },
+      // A SIBLING of `acquisition`, never a member of it. The record now answers
+      // two questions separately: "did we get the bytes?" (acquisition) and "how
+      // much of them did the model see?" (projection).
+      ...projection === undefined ? {} : { projection },
       hashProves: 'object identity and integrity only; not truth, and not the correctness of any conclusion',
     },
     gaps,
@@ -1077,6 +1238,92 @@ export function provenanceFromFetch(
 
 function bodyKind(body: WebFetchBody): string {
   return body.kind === 'html' ? 'text/html' : 'text/plain'
+}
+
+// ===========================================================================
+// DATA-09: a projection is recorded as a MANIFEST, never as an acquisition gap
+// ===========================================================================
+
+/**
+ * Show the model a bounded part of a complete artifact, and RECORD that choice.
+ *
+ * THIS IS THE PRODUCER the split requires. It replaces the v1 practice of
+ * appending a `{stage: 'model-projection'}` gap, and it returns two things that
+ * are deliberately different types:
+ *
+ *   `text`      the bounded projection, safe to put in a model request.
+ *   `manifest`  the {@link ProjectionManifest} saying what was shown, what was
+ *               withheld, where the withheld bytes are, and why.
+ *
+ * The manifest is NOT appended to any gap list. That is the whole of DATA-09: a
+ * deliberate projection is a fact about our own output, and the artifact it came
+ * from is COMPLETE. Filing it as a loss would make an honest system report gaps
+ * where none exist, and would make a real provider loss -- which sits in the
+ * same list -- read as routine.
+ *
+ * `sourceBytes` IS REQUIRED, and it is the artifact's measured size rather than a
+ * guess. Without it the omitted count would be unknowable and the manifest would
+ * have to leave it `undefined`; a caller projecting a known-size artifact can
+ * always state it, so requiring it keeps the common case exact. (The
+ * `ProjectionManifest` type still permits `undefined` for a projection over an
+ * unmeasured stream -- see its note on the honest third state.)
+ *
+ * @param input - the content, its artifact identity, and the byte budget.
+ * @returns the bounded text and the manifest of what was withheld.
+ */
+export function projectUntrustedContent(input: {
+  /** The content as acquired. Not mutated; the artifact keeps every byte. */
+  readonly text: string
+  /** The artifact this text came from. Becomes `sourceRef`/`recoverableRef`. */
+  readonly artifact: string
+  /** Total bytes of the source artifact, as measured by the store. */
+  readonly sourceBytes: number
+  /** How many leading bytes the model may see. */
+  readonly maxBytes: number
+  /** Why this bound was applied. Required: an unstated bound reads as a loss. */
+  readonly projectionReason: string
+}): { readonly text: string; readonly manifest: ProjectionManifest } {
+  const selected = truncateUtf8(input.text, input.maxBytes)
+  const selectedBytes = Buffer.byteLength(selected, 'utf8')
+  return {
+    text: selected,
+    manifest: projectionManifest({
+      sourceRef: input.artifact,
+      selectedBytes,
+      sourceBytes: input.sourceBytes,
+      projectionReason: input.projectionReason,
+    }),
+  }
+}
+
+/**
+ * Truncate a string to at most `maxBytes` UTF-8 bytes, never splitting a
+ * character.
+ *
+ * A cut on a UTF-16 code unit can split a surrogate pair and leave a lone
+ * surrogate, which JSON-serializes to an invalid escape and becomes a decode
+ * error in a Python consumer. Cutting on a code-point boundary is what keeps a
+ * bounded projection from becoming a corrupt one. This mirrors
+ * `artifacts.ts:truncateUtf8` deliberately rather than importing it: that module
+ * is the artifact store and this one is the web record, and a shared helper
+ * would couple two modules that currently have no dependency in either
+ * direction.
+ *
+ * @param value - the text to bound.
+ * @param maxBytes - the ceiling, in UTF-8 bytes.
+ * @returns the text, at most `maxBytes` bytes.
+ */
+export function truncateUtf8(value: string, maxBytes: number): string {
+  if (Buffer.byteLength(value, 'utf8') <= maxBytes) return value
+  let result = ''
+  let used = 0
+  for (const character of value) {
+    const size = Buffer.byteLength(character, 'utf8')
+    if (used + size > maxBytes) break
+    result += character
+    used += size
+  }
+  return result
 }
 
 // ===========================================================================

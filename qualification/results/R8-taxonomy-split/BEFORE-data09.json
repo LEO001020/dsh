@@ -1,0 +1,133 @@
+{
+  "probe": "R8 BEFORE — the DATA-09 conflation, measured on the pre-change tree",
+  "identity": {
+    "worktree": "D:/DSH/work/wt-r8",
+    "branch": "wt/r8",
+    "measuredFrom": "packages/dsh-daily-work/src (TS source, imported through tsx)"
+  },
+  "observationSchemaVersion": 1,
+  "closedSet": [
+    "provider-acquisition",
+    "native-acquisition",
+    "transform",
+    "retention",
+    "transport",
+    "model-projection"
+  ],
+  "closedSetSize": 6,
+  "coverageVocabulary": [
+    "full-for-requested-scope",
+    "partial-provider",
+    "partial-native-acquisition",
+    "partial-transform",
+    "partial-storage",
+    "unknown"
+  ],
+  "producerCounts": {
+    "provider-acquisition": 1,
+    "native-acquisition": 1,
+    "transform": 2,
+    "retention": 3,
+    "transport": 0,
+    "model-projection": 0
+  },
+  "producerEvidence": {
+    "provider-acquisition": [
+      {
+        "file": "web-provenance.ts",
+        "line": 203,
+        "text": "stage: 'provider-acquisition',"
+      }
+    ],
+    "native-acquisition": [
+      {
+        "file": "artifacts.ts",
+        "line": 1098,
+        "text": "stage: 'native-acquisition',"
+      }
+    ],
+    "transform": [
+      {
+        "file": "web-provenance.ts",
+        "line": 348,
+        "text": "stage: 'transform',"
+      },
+      {
+        "file": "web-provenance.ts",
+        "line": 364,
+        "text": "stage: 'transform',"
+      }
+    ],
+    "retention": [
+      {
+        "file": "artifacts.ts",
+        "line": 1051,
+        "text": "stage: 'retention',"
+      },
+      {
+        "file": "artifacts.ts",
+        "line": 1154,
+        "text": "stage: 'retention',"
+      },
+      {
+        "file": "artifacts.ts",
+        "line": 1176,
+        "text": "stage: 'retention',"
+      }
+    ],
+    "transport": [],
+    "model-projection": []
+  },
+  "stagesWithNoProducer": [
+    "transport",
+    "model-projection"
+  ],
+  "stagesWithProducer": [
+    "provider-acquisition",
+    "native-acquisition",
+    "transform",
+    "retention"
+  ],
+  "producerCount": 4,
+  "conflation": {
+    "projectionIsAnAcquisitionStage": true,
+    "transportIsAnAcquisitionStage": true,
+    "whyItMatters": "a provider that sent less than we asked for, and a complete artifact we chose to summarize, are recorded in the same field with the same `recovery` vocabulary"
+  },
+  "existingProjectionRecord": {
+    "functionName": "projectForModel",
+    "keys": [
+      "artifact",
+      "artifactBytes",
+      "bytesConsumed",
+      "completeness",
+      "exhausted",
+      "gaps",
+      "observationId",
+      "pagesConsumed",
+      "sha256"
+    ],
+    "keyCount": 9,
+    "manifestFieldsExpected": [
+      "sourceRef",
+      "selectedBytes",
+      "omittedBytes",
+      "recoverableRef",
+      "projectionReason",
+      "emittedSha256"
+    ],
+    "manifestFieldsPresent": [],
+    "manifestFieldsAbsent": [
+      "sourceRef",
+      "selectedBytes",
+      "omittedBytes",
+      "recoverableRef",
+      "projectionReason",
+      "emittedSha256"
+    ],
+    "artifactBytes": 31457280,
+    "bytesConsumed": 2048,
+    "note": "a 30 MiB artifact projected to 2 KiB is reported as two counters, not as a manifest"
+  },
+  "verdict": "FAIL: 2 of 6 stages have no production producer"
+}
