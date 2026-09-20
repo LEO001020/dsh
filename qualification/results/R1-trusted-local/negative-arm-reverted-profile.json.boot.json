@@ -1,0 +1,15 @@
+{
+ "label": "reverted-profile",
+ "boot": {
+  "port": 3798,
+  "exitCode": null,
+  "stdout": "dsh web: http://127.0.0.1:3798/?token=U4ECGcw1kO8-UJokBuYE6Gke94VRW5YPrnpb_8qviHg\n",
+  "stderr": "dsh: warning: 1 entry did not activate\nverify-trusted-local-negative-arm (file:///D:/DSH/work/wt-r1/.probe/verify-trusted-local-negative-arm.mjs): Error: probe-complete\n    at Object.apply [as callback] (file:///D:/DSH/work/wt-r1/.probe/verify-trusted-local-negative-arm.mjs:247:9)\n    at async Fiber._reload (file:///D:/DSH/src/dsh-src/vendor/cordis/lib/index.js:1356:5)\n",
+  "timedOut": false,
+  "portReleased": true
+ },
+ "patches": [
+  "D:/DSH/work/wt-r1/.probe/verify-trusted-local-negative-arm.patch.yml",
+  "D:/DSH/work/wt-r1/.probe/revert-sandbox-mode.patch.yml"
+ ]
+}

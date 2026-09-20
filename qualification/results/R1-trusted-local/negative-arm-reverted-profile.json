@@ -1,0 +1,103 @@
+{
+ "probe": "verify-trusted-local-negative-arm",
+ "ranAt": "2026-09-20T01:41:37.490Z",
+ "presetRoots": [
+  {
+   "path": "D:\\DSH\\src\\dsh-src\\packages\\preset\\agent-presets\\presets\\",
+   "trust": "system"
+  },
+  {
+   "path": "D:/DSH/home/r1/profiles/daily/presets/",
+   "trust": "system"
+  },
+  {
+   "path": "D:\\DSH\\home\\r1\\.agent-presets",
+   "trust": "user"
+  }
+ ],
+ "injectedMode": "workspace-write",
+ "error": null,
+ "startup": {
+  "contractServicePresent": true,
+  "defaultMode": "workspace-write",
+  "reportOk": false,
+  "violations": [
+   "sandboxPolicy.defaultMode",
+   "ptcRuntime.sandboxMode"
+  ],
+  "checks": [
+   {
+    "id": "sandboxPolicy.defaultMode",
+    "ok": false,
+    "observed": "'workspace-write'"
+   },
+   {
+    "id": "sandboxPolicy.defaultMode.provenance",
+    "ok": true,
+    "observed": "unobservable (the service carries the value, not its provenance)"
+   },
+   {
+    "id": "fs.provider",
+    "ok": true,
+    "observed": "LocalFileSystem (sandboxMode: undefined (does not confine))"
+   },
+   {
+    "id": "shell.provider",
+    "ok": true,
+    "observed": "PwshLocalExecutor (sandboxMode: undefined (does not confine))"
+   },
+   {
+    "id": "ptcRuntime.sandboxMode",
+    "ok": false,
+    "observed": "mounted, sandboxMode: 'workspace-write'"
+   },
+   {
+    "id": "ipython.present",
+    "ok": true,
+    "observed": "ctx.ipython is mounted"
+   },
+   {
+    "id": "ssh.absent",
+    "ok": true,
+    "observed": "ssh: absent; sshSubprocess: absent"
+   },
+   {
+    "id": "wsl.absent",
+    "ok": true,
+    "observed": "no wsl service is mounted"
+   }
+  ],
+  "refusedByExplicitCall": true,
+  "refusalMessage": "trusted-local contract violated at the startup boundary: 1 check(s) failed. This deployment is NOT the intended trusted-local graph, so product execution stops here rather than continuing under a mode nobody chose. The mode is NOT switched back automatically: that would hide a real configuration change.\n  startup.sandboxPolicy.mode: 'workspace-write' -- the deployment default is 'workspace-write', which CONFINES. Under trusted-local this is a FALSE STATEMENT ABOUT THE MODEL'S PERMISSIONS: the same resolved policy renders the model-facing sentence (sandbox-policy/src/index.ts:42-56) and gates the PTC confine decision (ptc-runtime-node/src/index.ts:224). Note the observability limit: 'read-only' here is indistinguishable from an unset config, because Config's schema default is 'read-only' (:113)."
+ },
+ "session": {
+  "sessionId": "session-626c526b-0392-4b29-986b-bf0776b8a132",
+  "defaultModeBefore": "workspace-write",
+  "overrideAfterAppend": "workspace-write",
+  "resolvedAfterAppend": "workspace-write",
+  "reportOk": false,
+  "violations": [
+   "session.override"
+  ],
+  "checkObserved": "session session-626c526b-0392-4b29-986b-bf0776b8a132: overrideOf = 'workspace-write', resolve() = 'workspace-write'",
+  "modeWasRestored": "defaultMode itself moved -- this arm did NOT restore it"
+ },
+ "narration": {
+  "assembled": true,
+  "assembleError": null,
+  "policyContextPresent": true,
+  "policyContextText": "Current DSH file policy: workspace-write. Any available operation enforced by the DSH file sandbox may modify files under the session workspace: \"D:/DSH/work/wt-r1\". Some platform temporary areas may also be writable.",
+  "saysConfining": true,
+  "saysUnconfined": false
+ },
+ "ptc": {
+  "runCodeOnSurface": false,
+  "guardRefusal": "REFUSED by the contract guard",
+  "callOutcome": {
+   "threw": false,
+   "isError": true,
+   "message": "trusted-local contract: refusing 'workflow' because this call resolves to sandbox mode 'workspace-write' (defaultMode 'workspace-write', session override 'workspace-write'), not 'danger-full-access'. The PTC runtime confines unless the mode is exactly 'danger-full-access', so this call would fence while the rest of the deployment does not. The mode is NOT switched back automatically -- that would hide a real configuration change."
+  },
+  "workflowOnSurface": true
+ }
+}

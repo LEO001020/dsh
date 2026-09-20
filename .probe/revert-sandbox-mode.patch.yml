@@ -1,0 +1,12 @@
+# THE REVERTED-PROFILE ARM: put the confining mode back, the way an operator
+# reverting this change would.
+#
+# `sandbox-policy` is restated with `mode: workspace-write`. Both keys are
+# restated because a patch REPLACES the whole `config` object
+# (`vendor/include/src/index.ts:120-123`), and `workspaceRoot` has no schema
+# default -- omitting it would make the row fail validation and measure a
+# different failure than the one this arm is about.
+- id: sandbox-policy
+  config:
+    mode: workspace-write
+    workspaceRoot: !!js process.cwd()

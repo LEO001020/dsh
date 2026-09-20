@@ -405,6 +405,86 @@
     policy: never
 
 # ---------------------------------------------------------------------------
+# DIFFERENCE 7 (mandatory): declare the effective sandbox mode EXPLICITLY.
+# ---------------------------------------------------------------------------
+#
+# WHAT WAS WRONG. Until this row existed the deployment had NO `sandbox-policy`
+# row of its own, so the shipped bundle's value stood
+# (`packages/bundle/base/cordis.patch.yml:215-218`):
+#
+#     mode: !!js process.env.DSH_PERMISSION_MODE ?? 'workspace-write'
+#     workspaceRoot: !!js process.cwd()
+#
+# `DSH_PERMISSION_MODE` is unset on this machine, so the deployment resolved to
+# **`workspace-write`** -- a CONFINING mode -- while the architecture claims
+# Windows trusted-local with the OS user account as the execution authority
+# boundary. This was not a documentation defect. MEASURED on a real boot
+# (qualification/results/R1-trusted-local/composition-before.json), the mode
+# reached the model as a statement about its own authority:
+#
+#     "Current DSH file policy: workspace-write. Any available operation enforced
+#      by the DSH file sandbox may modify files under the session workspace:
+#      \"D:/DSH/work/wt-r1\". Some platform temporary areas may also be writable."
+#
+# read from the `sandbox:policy` entry of a real `ctx.systemPrompt.assemble()`,
+# which is the exact string AgentLoop folds into the request
+# (`packages/core/agent-loop/src/agent.ts:246-249`). And it had a BEHAVIOURAL
+# consequence, not merely a narrative one: `ptc-runtime-node` confines unless the
+# mode is EXACTLY `danger-full-access`
+# (`packages/ptc-runtime/ptc-runtime-node/src/index.ts:224`), so the PTC path
+# would have fenced while every other path (`fs-local`, `pwsh-local`) did not.
+#
+# WHY THE ROW STAYS MOUNTED RATHER THAN BEING DELETED. `sandboxPolicy` is
+# injected by SEVEN rows (pwsh-sandbox, ptc-runtime, terminal-controller,
+# workspace-files, ui-deliverables, permission, workflow-ptc). Deleting it leaves
+# them `pending`, which fails the preset mount and takes the model's tool face to
+# `toolCount: 0` -- MEASURED, and recorded as fact F in
+# `docs/decisions/AUDIT-REQUEST-nosandbox.md`. The spec's own oracle for this
+# (CMP-02) names that exact failure: "The row being absent is a specific known
+# failure: it leaves seven entries pending and drives the tool face to zero."
+# So the row stays and its VALUE becomes truthful.
+#
+# WHY THIS IS NOT THE "DELETE THE PROMPT LINE" REPAIR, which the audit forbids.
+# Removing only the model-facing narration would leave `workspace-write` in force
+# for the PTC confine decision and for the session fold. Both the narration AND
+# the execution fact move here, together, because they are produced by the same
+# resolved policy -- `renderPolicyContext` (`sandbox-policy/src/index.ts:42-56`)
+# is a pure function OF the mode this row sets. There is no way to keep them
+# disagreeing once the mode is right, which is the property that makes this the
+# honest repair rather than a cosmetic one.
+#
+# BOTH KEYS ARE RESTATED, and that is TRAP 4, not tidiness. A patch REPLACES the
+# target row's whole `config` object; it is not a deep merge
+# (`vendor/include/src/index.ts:120-123` assigns over the whole key). Stating
+# only `mode` would drop `workspaceRoot`, whose schema has NO default
+# (`sandbox-policy/src/index.ts:112-115`), so the row would fail validation. And
+# this project has already been bitten by a partial restatement: the comment on
+# DIFFERENCE 1 records the same trap for `subagent`.
+#
+# `workspaceRoot` KEEPS ITS SHIPPED EXPRESSION, deliberately. It is the fallback
+# root for agentless calls and for sessions without a cwd -- `resolve()` prefers
+# `session.header.cwd` (`:164-171`), so this value does not reach an ordinary
+# agent call. Restating it as the shipped `!!js process.cwd()` keeps the
+# behaviour identical to the composition this replaces; replacing it with a
+# literal would be a second, unrelated change with its own evidence burden. The
+# absolute-path requirement the spec's oracle names is enforced by the service
+# itself, which throws for a non-absolute root (`:36-39`), and it is MEASURED
+# rather than asserted: `workspaceRoot` is recorded on every boot probe.
+#
+# `mode` IS A LITERAL, NOT AN ENVIRONMENT EXPRESSION, and that is the point. The
+# bundle's expression makes the deployment's trust model depend on an unset
+# environment variable, which is how it silently became `workspace-write` in the
+# first place. A deployment that is trusted-local by construction must not be
+# one `unset` away from confining. `DSH_PERMISSION_MODE` is now deliberately NOT
+# consulted for this row: an operator who wants a confining deployment changes
+# the profile, where the change is visible and reviewable, rather than exporting
+# a variable that contradicts the profile's own stated architecture.
+- id: sandbox-policy
+  config:
+    mode: danger-full-access
+    workspaceRoot: !!js process.cwd()
+
+# ---------------------------------------------------------------------------
 # NOT changed here, on purpose.
 # ---------------------------------------------------------------------------
 #

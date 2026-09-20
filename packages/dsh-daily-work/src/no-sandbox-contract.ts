@@ -96,6 +96,57 @@ export const TRUSTED_LOCAL_MODE: SandboxMode = 'danger-full-access'
 export const ESCALATION_PARAMETERS: readonly string[] = ['sandbox_permissions', 'justification']
 
 /**
+ * The name of the context entry `sandbox-policy` contributes to the model's
+ * runtime context (`packages/sandbox/sandbox-policy/src/index.ts:143-152`).
+ *
+ * This is the ONE place where the deployment's mode becomes a statement the
+ * model reads about its own authority, so it is the exact subject of the exit
+ * criterion "the model is never told `workspace-write` while execution is
+ * trusted-local". Checking the resolved MODE is not the same check: a provider
+ * that rendered the wrong sentence for the right mode, or a second provider that
+ * added a conflicting sentence, would pass a mode-only check and still mislead
+ * the model.
+ */
+export const POLICY_CONTEXT_NAME = 'sandbox:policy'
+
+/**
+ * The literal substring `renderPolicyContext` emits for a CONFINING mode
+ * (`sandbox-policy/src/index.ts:46-47`). Matched as a substring rather than by
+ * comparing the whole sentence, because the sentence interpolates the workspace
+ * root and a whole-string comparison would be a second copy of upstream's prose
+ * that drifts silently.
+ */
+export const CONFINING_NARRATION_MARKER = 'workspace-write'
+
+/**
+ * The literal substring for the unconfined mode (`:48-49`).
+ */
+export const UNCONFINED_NARRATION_MARKER = 'danger-full-access'
+
+/**
+ * One boundary at which the contract is checked. V3 F2 names three, and they are
+ * distinct events rather than three spellings of "check it somewhere": a
+ * deployment can be correct at startup and be changed by a later session, and a
+ * session can be correct while the PTC path resolves a DIFFERENT policy for the
+ * same call.
+ */
+export type ContractBoundary = 'startup' | 'session-resume' | 'ptc-execution'
+
+/**
+ * How a boundary reacts to a violation.
+ *
+ * `refuse` THROWS and is the default for every boundary that gates further
+ * product execution. It is deliberately not "switch the mode back to full
+ * access": that would MASK a real configuration change -- someone restoring a
+ * confining mode on purpose would see a healthy boot and a silently ignored
+ * edit. The requirement is that a mutation to a non-full mode becomes a LOUD
+ * incompatible-state failure, so the operator learns the deployment is no longer
+ * the one they configured.
+ */
+export type BoundaryDisposition = 'refuse' | 'report'
+
+
+/**
  * One check's outcome. `observed` is the value the check READ, so a reader sees
  * what the graph actually contained rather than only a verdict -- a bare boolean
  * cannot be audited after the fact, and this project has been bitten by exactly
@@ -141,6 +192,16 @@ export interface ContractReport {
 export interface DeploymentObservation {
   /** `sandboxPolicy.defaultMode`, or `undefined` when the service is not mounted. */
   readonly defaultMode: SandboxMode | undefined
+  /**
+   * `sandboxPolicy.workspaceRoot` -- the absolute fallback root.
+   *
+   * Reported because CMP-02's oracle names it: "its `workspaceRoot` resolves to
+   * an absolute path". The service throws for a non-absolute value
+   * (`sandbox-policy/src/index.ts:36-39`), so a non-absolute value here would
+   * mean it arrived some other way -- which is exactly the kind of fact a
+   * contract check should not assume away.
+   */
+  readonly workspaceRoot: string | undefined
   /**
    * Where `defaultMode` came from. ALWAYS `'unobservable'` today, and stated
    * rather than inferred: the schema default and an explicit `read-only` are the
@@ -188,6 +249,39 @@ export interface SurfaceObservation {
 }
 
 /**
+ * What the MODEL is actually told about its own file authority.
+ *
+ * WHY THIS IS A SEPARATE OBSERVATION FROM THE RESOLVED MODE. The mode is a
+ * mechanical value; the narration is the sentence that reaches the model. The
+ * defect this guard was built for (G-SEAM-33 / spec case CMP-02) had BOTH wrong,
+ * but they are independently wrong-able: a deployment could resolve
+ * `danger-full-access` and still narrate confinement if a second contributor
+ * added a conflicting sentence, or if the provider were replaced. Checking the
+ * mode alone would pass that deployment while the model was still misled, which
+ * is exactly the exit criterion ("the model is never told `workspace-write`
+ * while execution is trusted-local") failing while the guard reported healthy.
+ */
+export interface NarrationObservation {
+  /** Whether a `systemPrompt` registry is mounted at all. */
+  readonly promptMounted: boolean
+  /** Whether the assembly ran. False means the narration could not be read, which is itself a finding. */
+  readonly assembled: boolean
+  /** The error text when assembly threw, so "unreadable" is not reported as "absent". */
+  readonly assembleError: string | undefined
+  /** Whether the `sandbox:policy` context entry was contributed. */
+  readonly policyContextPresent: boolean
+  /** The exact rendered text of that entry, or `undefined` when it was not contributed. */
+  readonly policyContextText: string | undefined
+  /** Every contributed context entry name, so a second conflicting contributor is visible. */
+  readonly contextNames: readonly string[]
+  /** Whether the rendered narration contains the CONFINING marker. */
+  readonly saysConfining: boolean
+  /** Whether the rendered narration contains the UNCONFINED marker. */
+  readonly saysUnconfined: boolean
+}
+
+
+/**
  * One Session's override observation -- the subtle half of the contract.
  *
  * A pure OBSERVATION carrying no verdict. Whether these three values are
@@ -223,6 +317,7 @@ export function observeDeployment(ctx: Context): DeploymentObservation {
   const ptc = ctx.get('ptcRuntime')
   return {
     defaultMode: policy?.defaultMode,
+    workspaceRoot: policy?.workspaceRoot,
     // Stated, not inferred. See the module header: the schema default and an
     // explicit `read-only` are the same value here, so this guard cannot and
     // does not claim to distinguish them.
@@ -291,6 +386,186 @@ export function observeSurface(ctx: Context, agent: Agent): SurfaceObservation |
  * depend on the thing it is checking.
  */
 const RUN_CODE_TOOL_NAME = 'run_code'
+
+/**
+ * The model-facing workflow tool, whose ENGINE is the other producer of a PTC
+ * execution.
+ *
+ * WHY THIS NAME IS IN THE GUARD, MEASURED RATHER THAN ASSUMED. Guarding only
+ * `run_code` would have made this boundary UNREACHABLE in this composition, and
+ * the reason is a composition fact that no amount of source reading replaces:
+ *
+ *   - the `tools` registry's presentation mode is its schema default `native`
+ *     (`packages/bundle/web-app/cordis.patch.yml` sets `mode: !!js
+ *     process.env.DSH_TOOLS_MODE`, which is unset here), so NO `run_code`
+ *     transport is presented. MEASURED on a real boot: the daily preset's model
+ *     surface is 27 tools and `run_code` is NOT among them
+ *     (`qualification/results/R1-trusted-local/composition-after.json`,
+ *     `ptc.runCodeOnSurface: false`).
+ *   - the `workflow` tool IS on that surface, and its engine is
+ *     `PtcWorkflowEngine`, which resolves
+ *     `runCtx.sandboxPolicy.resolve({ session: request.parent.session })`
+ *     (`packages/workflow/workflow-ptc/src/index.ts:164`) and hands that policy
+ *     to the same `ptc-runtime-node` confine decision (`:224`).
+ *
+ * So the PTC execution boundary has TWO producers, and in this deployment only
+ * the second is reachable. A guard that covered only `run_code` would have been
+ * the exact defect this project has recorded more than twelve times: a mechanism
+ * that is implemented, unit-tested, correct, and reached by nothing in the
+ * product.
+ */
+const WORKFLOW_TOOL_NAME = 'workflow'
+
+/** The tool names whose execution can reach a PTC confine decision. */
+export const PTC_BOUNDARY_TOOL_NAMES: readonly string[] = [RUN_CODE_TOOL_NAME, WORKFLOW_TOOL_NAME]
+
+/**
+ * Whether a tool name can reach a PTC confine decision.
+ *
+ * @param name - the tool name from a pending execution.
+ * @returns true for either PTC producer.
+ */
+function isPtcBoundaryTool(name: string): boolean {
+  return name === RUN_CODE_TOOL_NAME || name === WORKFLOW_TOOL_NAME
+}
+
+
+/**
+ * Read what the model is actually told about its own file authority.
+ *
+ * WHY THIS RUNS THE ASSEMBLY INSTEAD OF RESTATING THE SOURCE. The narration is a
+ * `systemPrompt.context` PROVIDER -- a closure over the live policy
+ * (`sandbox-policy/src/index.ts:143-152`), not a static string. Asserting
+ * "the provider exists and renders the right sentence for the mode" would be the
+ * weaker oracle this project keeps recording: it would still pass if the
+ * provider were never registered, or if a second contributor prepended a
+ * conflicting sentence. Running `assemble()` and reading the rendered text is
+ * the same read `AgentLoop` performs (`agent-loop/src/agent.ts:246-249` calls
+ * `assemble`, then `renderContextSections`/`joinContextSections`), so what is
+ * checked here is the value that reaches the request.
+ *
+ * The scope argument is `{ agent, scope: agent }`, exactly
+ * `assembleContextFor(agent)` (`packages/core/agent/src/dispatch.ts:174-176`).
+ * Passing a bare `{}` would assemble only GLOBAL providers and could report a
+ * missing narration for a deployment that contributes it per-agent -- a false
+ * alarm in the direction that destroys trust in the guard.
+ *
+ * @param ctx - the live context.
+ * @param agent - the Agent whose runtime context to assemble.
+ * @returns the observation. A missing registry or a throwing assembly is
+ *   REPORTED, never thrown for: "unreadable" and "absent" are different facts.
+ */
+export async function observeNarration(ctx: Context, agent: Agent): Promise<NarrationObservation> {
+  const prompt = ctx.get('systemPrompt')
+  if (prompt === undefined) {
+    return {
+      promptMounted: false,
+      assembled: false,
+      assembleError: undefined,
+      policyContextPresent: false,
+      policyContextText: undefined,
+      contextNames: [],
+      saysConfining: false,
+      saysUnconfined: false,
+    }
+  }
+  try {
+    const assembly = await prompt.assemble({ agent, scope: agent })
+    const contexts = assembly.contexts
+    const entry = contexts.find(context => context.name === POLICY_CONTEXT_NAME)
+    const text = entry?.text ?? ''
+    return {
+      promptMounted: true,
+      assembled: true,
+      assembleError: undefined,
+      policyContextPresent: entry !== undefined,
+      policyContextText: entry === undefined ? undefined : text,
+      contextNames: contexts.map(context => context.name),
+      saysConfining: text.includes(CONFINING_NARRATION_MARKER),
+      saysUnconfined: text.includes(UNCONFINED_NARRATION_MARKER),
+    }
+  } catch (error) {
+    return {
+      promptMounted: true,
+      assembled: false,
+      assembleError: error instanceof Error ? `${error.name}: ${error.message}` : String(error),
+      policyContextPresent: false,
+      policyContextText: undefined,
+      contextNames: [],
+      saysConfining: false,
+      saysUnconfined: false,
+    }
+  }
+}
+
+/**
+ * Build the model-facing narration checks.
+ *
+ * This is the check the exit criterion names in words: "the model is never told
+ * `workspace-write` while execution is trusted-local". It is deliberately
+ * separate from {@link deploymentChecks}, because a deployment can resolve the
+ * right mode and still narrate the wrong one.
+ *
+ * @param observed - the narration observation.
+ * @returns the checks, in report order.
+ */
+export function narrationChecks(observed: NarrationObservation): ContractCheck[] {
+  if (!observed.promptMounted) {
+    return [{
+      id: 'narration.registry',
+      subject: 'the system-prompt registry is mounted, so the model-facing narration can be read',
+      observed: 'ctx.systemPrompt is NOT mounted',
+      ok: false,
+      detail: 'no prompt registry, so what the model is told about its own file authority cannot be established. This is a DEPLOYMENT fact (the registry plugin is not loaded), not "the model is told nothing".',
+    }]
+  }
+  if (!observed.assembled) {
+    return [{
+      id: 'narration.assembled',
+      subject: 'the runtime context could be assembled',
+      observed: `assemble() threw: ${observed.assembleError ?? 'unknown error'}`,
+      ok: false,
+      detail: 'the assembly failed, so the narration is UNREADABLE rather than absent. Reporting this as "no confining sentence" would be the false negative this project recorded as G-FIX-06 in a new place.',
+    }]
+  }
+  return [
+    {
+      id: 'narration.sandbox-policy',
+      subject: `the model-facing runtime context says '${TRUSTED_LOCAL_MODE}', not a confining mode`,
+      observed: observed.policyContextPresent
+        ? `${POLICY_CONTEXT_NAME}: ${JSON.stringify(observed.policyContextText ?? '')}`
+        : `no '${POLICY_CONTEXT_NAME}' context entry was contributed (contexts: ${observed.contextNames.join(', ') || '(none)'})`,
+      // BOTH clauses are required. A missing entry is a violation rather than a
+      // pass, because the sentence is the deployment's only statement to the
+      // model about its own authority: its ABSENCE leaves the model uninformed,
+      // and treating "no confining sentence" as success would let a deployment
+      // pass by saying nothing.
+      ok: observed.policyContextPresent && observed.saysUnconfined && !observed.saysConfining,
+      ...observed.policyContextPresent && observed.saysUnconfined && !observed.saysConfining
+        ? {}
+        : observed.policyContextPresent && observed.saysConfining
+          ? { detail: `the model is told '${CONFINING_NARRATION_MARKER}' about its own file authority while the deployment claims trusted-local. This is a FALSE STATEMENT ABOUT THE MODEL'S PERMISSIONS, not a cosmetic mismatch: the model plans around a fence that does not exist. The sentence is rendered from the SAME resolved policy the PTC confine decision reads (sandbox-policy/src/index.ts:42-56), so this and a confining mode are the same defect seen twice.` }
+          : observed.policyContextPresent
+            ? { detail: `the '${POLICY_CONTEXT_NAME}' entry rendered but does not name '${UNCONFINED_NARRATION_MARKER}'. The deployment's own sentence must state the mode it actually runs under; an unrecognised rendering means the text and the mode have drifted apart.` }
+            : { detail: `no '${POLICY_CONTEXT_NAME}' context entry. The sandbox policy contributes the model's only statement about its own file authority; without it the model is UNINFORMED rather than correctly informed, and a reader cannot distinguish that from a policy row that failed to activate.` },
+    },
+    {
+      id: 'narration.no-conflicting-policy-context',
+      subject: 'no second context entry contradicts the sandbox policy',
+      observed: observed.contextNames.length === 0
+        ? 'no context entries at all'
+        : `contributors: ${observed.contextNames.join(', ')}`,
+      // The registry does not enforce uniqueness of the CONTRIBUTION (only of
+      // the registration name), so two rows can each contribute a sentence
+      // about permissions. A reader that only looked for the policy entry would
+      // miss a conflicting one entirely.
+      ok: observed.contextNames.filter(name => name === POLICY_CONTEXT_NAME).length <= 1,
+      ...observed.contextNames.filter(name => name === POLICY_CONTEXT_NAME).length <= 1
+        ? {}
+        : { detail: `'${POLICY_CONTEXT_NAME}' was contributed more than once, so the model receives two statements about its own file authority. The later one does not win by construction -- both reach the request.` },
+    },
+  ]
+}
 
 /** The constructor name of a service, for reporting "which provider" as a measurement. */
 function providerName(service: object): string {
@@ -419,6 +694,78 @@ export function deploymentChecks(observed: DeploymentObservation): ContractCheck
   return checks
 }
 
+/**
+ * Build the policy-level checks: the deployment's OWN declaration.
+ *
+ * THESE ARE THE STARTUP SUBJECT, and the narrowness is deliberate. The startup
+ * boundary runs the moment `sandboxPolicy` mounts, which is EARLIER than the rest
+ * of the tree: `fs`, `shell` and `ipython` have not published yet. Running the
+ * full contract there measured a half-mounted graph and reported three failures
+ * for a correct deployment (the first attempt at this boundary did exactly that,
+ * and the boot log is kept in
+ * `qualification/results/R1-trusted-local/`). So this function carries only the
+ * facts that are TRUE OF THE POLICY ROW ITSELF and are therefore knowable at
+ * that instant -- which is also the precise subject of spec case CMP-02: the row
+ * is present, its mode is `danger-full-access`, and its root is absolute.
+ *
+ * Everything about the mounted BACKENDS and the model SURFACE belongs to the
+ * session-resume and PTC boundaries, where the tree has settled and an Agent
+ * exists.
+ *
+ * @param observed - the deployment observation.
+ * @returns the checks, in report order.
+ */
+export function startupPolicyChecks(observed: DeploymentObservation): ContractCheck[] {
+  return [
+    {
+      id: 'startup.sandboxPolicy.present',
+      subject: 'a sandbox-policy row is mounted (its absence is the tool-face-zeroing failure)',
+      observed: observed.defaultMode === undefined
+        ? 'ctx.sandboxPolicy is NOT mounted'
+        : `ctx.sandboxPolicy is mounted, defaultMode '${observed.defaultMode}'`,
+      ok: observed.defaultMode !== undefined,
+      ...observed.defaultMode === undefined
+        ? { detail: 'no ctx.sandboxPolicy service. Seven rows inject sandboxPolicy (pwsh-sandbox, ptc-runtime, terminal-controller, workspace-files, ui-deliverables, permission, workflow-ptc), so its absence leaves them pending, fails the preset mount and drives the tool face to zero -- measured, and named in CMP-02\'s oracle as the specific known failure.' }
+        : {},
+    },
+    {
+      id: 'startup.sandboxPolicy.mode',
+      subject: `the deployment default sandbox mode is '${TRUSTED_LOCAL_MODE}'`,
+      observed: observed.defaultMode === undefined ? '(no policy mounted)' : `'${observed.defaultMode}'`,
+      ok: observed.defaultMode === TRUSTED_LOCAL_MODE,
+      ...observed.defaultMode === undefined || observed.defaultMode === TRUSTED_LOCAL_MODE
+        ? {}
+        : { detail: `the deployment default is '${observed.defaultMode}', which CONFINES. Under trusted-local this is a FALSE STATEMENT ABOUT THE MODEL'S PERMISSIONS: the same resolved policy renders the model-facing sentence (sandbox-policy/src/index.ts:42-56) and gates the PTC confine decision (ptc-runtime-node/src/index.ts:224). Note the observability limit: 'read-only' here is indistinguishable from an unset config, because Config's schema default is 'read-only' (:113).` },
+    },
+    {
+      id: 'startup.sandboxPolicy.workspaceRoot',
+      subject: 'the policy workspace root resolved to an absolute path',
+      observed: observed.workspaceRoot === undefined ? '(no policy mounted)' : JSON.stringify(observed.workspaceRoot),
+      ok: observed.workspaceRoot !== undefined && isAbsolutePath(observed.workspaceRoot),
+      ...observed.workspaceRoot === undefined || isAbsolutePath(observed.workspaceRoot)
+        ? {}
+        : { detail: `the policy workspace root is ${JSON.stringify(observed.workspaceRoot)}, which is not absolute. CMP-02's oracle requires an absolute root, and the service itself refuses a relative one (sandbox-policy/src/index.ts:36-39) -- so reaching here with a relative value means the value was produced some other way.` },
+    },
+  ]
+}
+
+/**
+ * Whether a path is absolute in the execution world's terms.
+ *
+ * Both spellings are accepted because this deployment is Windows and the value
+ * can arrive as `D:\...` or `D:/...`; a POSIX root is accepted so the predicate
+ * does not silently report a false violation for a non-Windows boot of the same
+ * profile. The check is deliberately structural rather than
+ * `node:path.isAbsolute`, which is platform-dependent and would make the same
+ * composed value pass or fail depending on which OS read it.
+ *
+ * @param path - the path to classify.
+ * @returns true for a drive-letter or rooted path.
+ */
+function isAbsolutePath(path: string): boolean {
+  return /^[A-Za-z]:[\\/]/.test(path) || path.startsWith('/') || path.startsWith('\\\\')
+}
+
 /** Render a possibly-absent mode for the `observed` field. */
 function formatMode(mode: SandboxMode | undefined): string {
   return mode === undefined ? 'undefined (does not confine)' : `'${mode}'`
@@ -531,6 +878,26 @@ export function sessionChecks(observed: SessionObservation): ContractCheck[] {
   ]
 }
 
+/**
+ * What one boundary last resolved to.
+ *
+ * Kept per boundary rather than as one "last report", because the question a
+ * mutation check answers is "did this CHANGE between two boundaries", and a
+ * single overwritten slot cannot answer it.
+ */
+export interface BoundaryRecord {
+  /** The boundary this record is about. */
+  readonly boundary: ContractBoundary
+  /** Whether the contract was satisfied there. */
+  readonly ok: boolean
+  /** The failing check ids there. */
+  readonly violations: readonly string[]
+  /** `sandboxPolicy.defaultMode` as read at that boundary. */
+  readonly defaultMode: SandboxMode | undefined
+  /** When the boundary was checked, for ordering. */
+  readonly checkedAt: number
+}
+
 declare module '@deepseek-ai/cordis' {
   interface Context {
     noSandboxContract: NoSandboxContractService
@@ -542,11 +909,37 @@ declare module '@deepseek-ai/cordis' {
  *
  * Every method is a read. There is no `apply`-side effect beyond registering
  * this service, and no method that mutates the graph, the tool surface, or a
- * session.
+ * session. {@link NoSandboxContractService.checkBoundary} can REFUSE (throw),
+ * which is a refusal to proceed and never a repair.
  */
 export class NoSandboxContractService extends Service {
+  /** What each boundary last resolved to. Populated by {@link checkBoundary}. */
+  private readonly boundaries = new Map<ContractBoundary, BoundaryRecord>()
+
+  /**
+   * Per-boundary dispositions. Empty means every boundary `refuse`s, which is
+   * the deployment default; a caller adds an entry only to run the guard over a
+   * graph it already knows is degraded.
+   */
+  private readonly dispositions = new Map<ContractBoundary, BoundaryDisposition>()
+
   constructor(ctx: Context) {
     super(ctx, 'noSandboxContract')
+  }
+
+  /**
+   * Set how one boundary reacts to a violation.
+   *
+   * `report` is for a deliberate read of a known-degraded graph. It is NOT a way
+   * to keep running under a confining mode: nothing here changes the mode, so a
+   * `report` disposition leaves the deployment exactly as wrong as it was and
+   * only stops the guard from throwing about it.
+   *
+   * @param boundary - the boundary to configure.
+   * @param disposition - `refuse` (the default) or `report`.
+   */
+  setBoundaryDisposition(boundary: ContractBoundary, disposition: BoundaryDisposition): void {
+    this.dispositions.set(boundary, disposition)
   }
 
   /** The deployment-level observation of the live graph. */
@@ -599,8 +992,199 @@ export class NoSandboxContractService extends Service {
   }
 
   /**
+   * Check the contract at one boundary using only the SYNCHRONOUS half, and
+   * refuse when it fails.
+   *
+   * The checks included depend on the boundary, and that is the fix for a real
+   * false alarm rather than a convenience:
+   *
+   *   - `startup` runs the POLICY-level checks only
+   *     ({@link startupPolicyChecks}). It fires when `sandboxPolicy` mounts,
+   *     which is EARLIER than `fs`/`shell`/`ipython`; the full contract there
+   *     reported three failures for a correct deployment because it read a
+   *     half-mounted graph.
+   *   - every other boundary runs the full deployment checks, because by then
+   *     the tree has settled and a missing backend IS a finding.
+   *
+   * @param boundary - the boundary being checked.
+   * @param subject - an Agent/Session, when the caller has one.
+   * @returns the report, when the disposition is `report`.
+   * @throws when the disposition is `refuse` and any check failed.
+   */
+  checkBoundarySync(
+    boundary: ContractBoundary,
+    subject: { readonly agent?: Agent; readonly session?: Session } = {},
+  ): ContractReport {
+    const observed = this.observe()
+    const checks = boundary === 'startup'
+      ? startupPolicyChecks(observed)
+      : deploymentChecks(observed)
+    if (subject.session !== undefined) checks.push(...this.checkSession(subject.session).checks)
+    if (subject.agent !== undefined) checks.push(...surfaceChecks(observeSurface(this.ctx, subject.agent)))
+    const result = report(checks)
+    this.recordBoundary(boundary, result)
+    if (!result.ok && this.boundaryDisposition(boundary) === 'refuse') {
+      const lines = result.checks
+        .filter(check => !check.ok)
+        .map(check => `  ${check.id}: ${check.observed}${check.detail === undefined ? '' : ` -- ${check.detail}`}`)
+      throw new Error(
+        `trusted-local contract violated at the ${boundary} boundary: ${String(result.violations.length)} check(s) failed. `
+        + 'This deployment is NOT the intended trusted-local graph, so product execution stops here '
+        + 'rather than continuing under a mode nobody chose. The mode is NOT switched back automatically: '
+        + 'that would hide a real configuration change.\n'
+        + lines.join('\n'),
+      )
+    }
+    return result
+  }
+
+  /**
+   * Run the model-facing narration checks for one Agent.
+   *
+   * ASYNC, because the narration is only readable by RUNNING the assembly. That
+   * is the point rather than an inconvenience: a synchronous check could only
+   * restate the source, which is the weaker oracle this project keeps recording.
+   *
+   * @param agent - the Agent whose runtime context to assemble.
+   * @returns the report.
+   */
+  async checkNarration(agent: Agent): Promise<ContractReport> {
+    return report(narrationChecks(await observeNarration(this.ctx, agent)))
+  }
+
+  /**
+   * Check the contract at one of the three boundaries V3 F2 names.
+   *
+   * THE BOUNDARIES ARE NOT THREE SPELLINGS OF "CHECK IT SOMEWHERE". Each one
+   * catches a different way the composition can stop being true:
+   *
+   *   - `startup` -- the deployment booted with a confining mode, or with a
+   *     narration that contradicts it. Caught before any model turn runs.
+   *   - `session-resume` -- a session whose DURABLE LOG carries a confining
+   *     `sandbox/mode` override. `resolve()` is
+   *     `request.mode ?? overrideOf(session) ?? defaultMode`, so a correct
+   *     deployment default does NOT migrate that session: it still resolves
+   *     confined, and only the session-level read can see it.
+   *   - `ptc-execution` -- the mode at the moment a PTC call would run. This is
+   *     the boundary where a non-full mode has a BEHAVIOURAL consequence rather
+   *     than a narrative one: `ptc-runtime-node` confines unless the mode is
+   *     exactly `danger-full-access` (`:224`).
+   *
+   * `refuse` THROWS. It does NOT repair. See {@link BoundaryDisposition}: silently
+   * restoring full access would mask the very configuration change the check
+   * exists to surface.
+   *
+   * @param boundary - which boundary is being checked.
+   * @param subject - the Agent and Session in play at that boundary, when any.
+   * @returns the report, when the disposition is `report`.
+   * @throws when the disposition is `refuse` and any check failed.
+   */
+  async checkBoundary(
+    boundary: ContractBoundary,
+    subject: { readonly agent?: Agent; readonly session?: Session } = {},
+  ): Promise<ContractReport> {
+    const checks = deploymentChecks(this.observe())
+    if (subject.session !== undefined) checks.push(...this.checkSession(subject.session).checks)
+    if (subject.agent !== undefined) {
+      checks.push(...surfaceChecks(observeSurface(this.ctx, subject.agent)))
+      checks.push(...narrationChecks(await observeNarration(this.ctx, subject.agent)))
+    }
+    const result = report(checks)
+    this.recordBoundary(boundary, result)
+    if (!result.ok && this.boundaryDisposition(boundary) === 'refuse') {
+      const lines = result.checks
+        .filter(check => !check.ok)
+        .map(check => `  ${check.id}: ${check.observed}${check.detail === undefined ? '' : ` -- ${check.detail}`}`)
+      throw new Error(
+        `trusted-local contract violated at the ${boundary} boundary: ${String(result.violations.length)} check(s) failed. `
+        + 'This deployment is NOT the intended trusted-local graph, so product execution stops here '
+        + 'rather than continuing under a mode nobody chose. The mode is NOT switched back automatically: '
+        + 'that would hide a real configuration change.\n'
+        + lines.join('\n'),
+      )
+    }
+    return result
+  }
+
+  /**
+   * The disposition for one boundary.
+   *
+   * Every boundary refuses by default, because every boundary gates product
+   * execution. `report` exists so a caller can deliberately run the guard over a
+   * KNOWN-degraded graph (a probe measuring the failure direction, or an
+   * operator's diagnostic) without the guard refusing the very read that was
+   * asked for -- which is the same reason `inject` is empty.
+   *
+   * @param boundary - the boundary being checked.
+   * @returns the disposition.
+   */
+  boundaryDisposition(boundary: ContractBoundary): BoundaryDisposition {
+    return this.dispositions.get(boundary) ?? 'refuse'
+  }
+
+  /**
+   * Record what the contract resolved to at one boundary, and warn when it is
+   * not satisfied.
+   *
+   * The record is what makes a runtime MUTATION observable. `sandboxPolicy` has
+   * no setter and no `setPolicy` method, so a mutation can only arrive by
+   * replacing the service, by re-configuring the row, or by a session appending a
+   * `sandbox/mode` event. Only the third is reachable from product code today
+   * (`setSandboxMode` is called by `permission-presets`, which this deployment
+   * disables) -- and that reachability, not any immutability, is what protects
+   * the mode (recorded as G-SEAM-50). A boundary check that only ran ONCE at boot
+   * would keep reporting the boot-time value for a graph that had since changed.
+   *
+   * @param boundary - the boundary just checked.
+   * @param result - its report.
+   */
+  private recordBoundary(boundary: ContractBoundary, result: ContractReport): void {
+    const observed = this.observe()
+    const previous = this.boundaries.get(boundary)
+    this.boundaries.set(boundary, {
+      boundary,
+      ok: result.ok,
+      violations: [...result.violations],
+      defaultMode: observed.defaultMode,
+      checkedAt: Date.now(),
+    })
+    const logger = this.ctx.logger('no-sandbox-contract')
+    if (result.ok) {
+      logger.debug('trusted-local contract satisfied at the %s boundary (%d check(s))', boundary, result.checks.length)
+      return
+    }
+    logger.error(
+      'trusted-local contract VIOLATED at the %s boundary: %s',
+      boundary,
+      result.violations.join(', '),
+    )
+    // The MUTATION arm, stated separately because it is the case a single
+    // boot-time assertion cannot see: the deployment was correct at an earlier
+    // boundary and is not any more.
+    if (previous !== undefined && previous.ok && previous.defaultMode !== observed.defaultMode) {
+      logger.error(
+        'sandbox policy CHANGED DURING THIS PROCESS: defaultMode was %s at the %s boundary and is now %s. '
+        + 'Nothing in this deployment should change it; this is a real configuration change and the contract now fails.',
+        String(previous.defaultMode),
+        previous.boundary,
+        String(observed.defaultMode),
+      )
+    }
+  }
+
+  /** What each boundary last resolved to, so a change between boundaries is observable. */
+  boundaryHistory(): readonly BoundaryRecord[] {
+    return [...this.boundaries.values()]
+  }
+
+  /**
    * Run every check that needs no Agent, plus the surface and session halves
    * when those are supplied.
+   *
+   * The narration half is NOT included here: it is async, and folding an async
+   * read into a synchronous report would either drop it silently or make the
+   * report's `ok` depend on a promise nobody awaited. {@link checkBoundary}
+   * includes it, because that is the path product execution takes.
    *
    * @param subject - the Agent and Session to include, when available.
    * @returns one combined report.
@@ -686,7 +1270,7 @@ function report(checks: ContractCheck[]): ContractReport {
 }
 
 /**
- * Mount the deployment self-check.
+ * Mount the deployment self-check, and wire the three boundaries V3 F2 names.
  *
  * `inject` is empty ON PURPOSE, and that is load-bearing rather than tidy: this
  * guard's subject is a graph where services are legitimately absent, and a hard
@@ -694,10 +1278,111 @@ function report(checks: ContractCheck[]): ContractReport {
  * to report. Every read goes through `ctx.get`, which returns `undefined` instead
  * of throwing.
  *
+ * WHY THE WIRING IS HERE AND NOT LEFT TO A CALLER. A guard with no production
+ * caller is the defect this project has recorded more than twelve times: the
+ * mechanism exists, its unit tests pass, and nothing in the product reaches it.
+ * So the boundaries are registered on the plugin's own mount, and each one is
+ * reachable by a real product path:
+ *
+ *   - `startup`: this `apply` runs after the whole tree settles, so the
+ *     deployment-level checks are evaluated against the COMPOSED graph rather
+ *     than against a partially-mounted one.
+ *   - `session-resume`: `agent/created` carries `source`, whose value is
+ *     `'resume'` for a persisted load (`packages/core/agent/src/runtime-types.ts:125`).
+ *     That event is SERIAL (`:261`), so a throwing listener rejects the
+ *     announce and the resume fails rather than proceeding.
+ *   - `ptc-execution`: a `tools.guard` on the PTC transport's own name. Guards
+ *     are the MONOTONIC slot -- they run after every `tools/pre-execute`
+ *     listener and no guard can force-allow what another denied
+ *     (`packages/core/tools/src/index.ts:1107-1123`), which is what makes the
+ *     refusal hold even if a later listener would have allowed the call.
+ *
+ * WHAT THE PTC BOUNDARY DOES *NOT* DO. It does not call `ctx.sandbox.confine`
+ * and it does not pre-empt the runtime's own decision; it refuses the CALL whose
+ * resolved policy would confine. That keeps the guard a reader of the policy
+ * rather than a second enforcement point that could disagree with the first.
+ *
  * @param ctx - the host context that owns this extension.
  */
 export function apply(ctx: Context): void {
-  new NoSandboxContractService(ctx)
+  const service = new NoSandboxContractService(ctx)
+
+  // ── boundary 1: STARTUP ───────────────────────────────────────────────────
+  //
+  // REGISTERED THROUGH `ctx.inject(['sandboxPolicy'], ...)`, AND THAT IS THE
+  // WHOLE REASON THIS BOUNDARY WORKS. The first version of this ran the check
+  // directly in `apply`, and it reported THREE failures for a CORRECT
+  // deployment: `apply` fires when THIS row mounts, which is before `fs`,
+  // `shell` and `ipython` have published, so the guard read a half-mounted graph
+  // and called it degraded. That is a false alarm in the direction that destroys
+  // trust in the guard, and the boot log is kept in
+  // `qualification/results/R1-trusted-local/composition-after-first-attempt.*`.
+  //
+  // `ctx.inject` creates a CHILD fiber that waits for its named services, which
+  // is the DSH-native way to order a check after a dependency (the pattern
+  // `sandbox-policy` itself uses at `:141` for `systemPrompt`). It does NOT make
+  // this plugin's own row `pending`: a child fiber is not a loader entry, so it
+  // cannot appear in `auditStartupEntries`' inactive list. The plugin's static
+  // `inject` therefore stays EMPTY, which is what keeps the guard able to observe
+  // a graph where services are legitimately absent.
+  //
+  // The subject is the POLICY ROW, which is exactly what spec case CMP-02's
+  // oracle names and the only thing knowable this early.
+  ctx.inject(['sandboxPolicy'], (scope: Context) => {
+    // A refusal here THROWS inside the child fiber. That fails the child, which
+    // is reported by the loader's own audit, and the mode is never switched back.
+    service.checkBoundarySync('startup')
+    scope.logger('no-sandbox-contract').info(
+      'startup contract satisfied: sandbox policy is %s, workspaceRoot %s',
+      String(service.observe().defaultMode),
+      String(service.observe().workspaceRoot),
+    )
+  })
+
+  // ── boundary 2: SESSION RESUME ────────────────────────────────────────────
+  //
+  // `agent/created` is `@mode serial` (`runtime-types.ts:259-261`), so returning
+  // a rejected promise from this listener rejects `AgentRegistry.announce` and
+  // the resume does not proceed. The check is scoped to `source === 'resume'`:
+  // a fresh session has no durable override to migrate, and refusing every new
+  // session would make the guard unusable for the case it is about.
+  ctx.on('agent/created', async ({ agent, source }) => {
+    if (source !== 'resume') return
+    const result = await service.checkBoundary('session-resume', { agent, session: agent.session })
+    if (!result.ok) {
+      // Reached only under a `report` disposition, since `refuse` throws above.
+      ctx.logger('no-sandbox-contract').error(
+        'resuming session %s under a degraded trusted-local contract: %s',
+        agent.session.id,
+        result.violations.join(', '),
+      )
+    }
+  }, { global: true })
+
+  // ── boundary 3: THE PTC EXECUTION BOUNDARY ────────────────────────────────
+  //
+  // The guard is registered on `ctx.tools` and keyed on BOTH PTC producers (see
+  // {@link PTC_BOUNDARY_TOOL_NAMES}): `run_code` when a PTC presentation mode is
+  // selected, and `workflow`, whose engine is the one this deployment actually
+  // reaches. Guarding only `run_code` would have left this boundary unreachable
+  // here -- MEASURED, `ptc.runCodeOnSurface: false` on a real boot.
+  //
+  // Registering it through the host context makes it GLOBAL; a guard registered
+  // through one agent's context would cover that agent only.
+  ctx.inject(['tools', 'sandboxPolicy'], (scope: Context) => {
+    scope.tools.guard((exec) => {
+      if (!isPtcBoundaryTool(exec.name)) return undefined
+      const policy = scope.get('sandboxPolicy')
+      if (policy === undefined) {
+        return `trusted-local contract: '${exec.name}' cannot be executed because ctx.sandboxPolicy is not mounted, so the mode this call would run under is unknown. Refusing rather than running unverified.`
+      }
+      const session = exec.agent?.session
+      const resolved = policy.resolve(session === undefined ? {} : { session })
+      if (resolved.mode === TRUSTED_LOCAL_MODE) return undefined
+      const override = session === undefined ? undefined : policy.overrideOf(session)
+      return `trusted-local contract: refusing '${exec.name}' because this call resolves to sandbox mode '${resolved.mode}' (defaultMode '${String(policy.defaultMode)}'${override === undefined ? '' : `, session override '${override}'`}), not '${TRUSTED_LOCAL_MODE}'. The PTC runtime confines unless the mode is exactly '${TRUSTED_LOCAL_MODE}', so this call would fence while the rest of the deployment does not. The mode is NOT switched back automatically -- that would hide a real configuration change.`
+    })
+  })
 }
 
 export const name = 'dsh-daily-work-no-sandbox-contract'
