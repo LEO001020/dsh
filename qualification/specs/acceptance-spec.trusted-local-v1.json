@@ -1109,7 +1109,7 @@
       "requirement": "late output is classified separately and never rides another cell",
       "stimulus": "A background thread writes to stdout after the cell has returned; then start another cell while the thread is still writing.",
       "oracle": "The post-return write is reported as late/unattributed and does not appear in any later cell's result. A write landing DURING a later cell is reported as undecidable rather than attributed. A claim that the originating cell's parent id is always preserved is NOT PASS, because it is false for a thread started with an empty context.",
-      "status": "FAIL",
+      "status": "PASS",
       "evidence": [
         {
           "path": "qualification/results/V3-ipython/run-v3-spec-gates.txt",
@@ -1122,8 +1122,15 @@
           "sha256": "949b7a27c49cf9e5a9b2cfc48bcbd20373b71009a7f2c4d2ef6417b57e694238",
           "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
           "note": "build + identity this measurement was made against: HEAD and branch, the recomputed deployment identity, and the lib/ + src/ digests. The link: homes resolve the built lib/, so a stale-build result would be visible here."
+        },
+        {
+          "path": "qualification/results/C0-remeasure/REMEASURE.md",
+          "sha256": "cafdb766924edab6f95d74b90eccbff5c98b31eca32b002ccff88c76fa1b9868",
+          "identity": "152e5c45c4aef97ba986b917077849173a66585146b67032ec7be64472c39b78",
+          "note": "ROOT'S RE-MEASUREMENT of IPY-13's two clauses, together with CAP-10, from the full serial suite run of the integrated candidate. Both clauses are printed by the project's own v3-spec-gates test as structured [V3-MEASURED] lines, so the numbers are the product's, not a re-derivation."
         }
-      ]
+      ],
+      "note": "PASS, RE-MEASURED. BOTH clauses now hold, and the second one is the clause the recorded FAIL turned on. CLAUSE 1 (a post-return write is late/unattributed and rides no later cell): lateCount 1, lateCellId carries the ORIGINATING cell id, and both the first and the second cell report containsLateText false -- so the post-return write rode no later cell. CLAUSE 2 (a write landing DURING a later cell is undecidable, not attributed): the recorded FAIL said the write WAS attributed to that cell (lateCount 0, the marker appearing inside cell three's stdout). RE-MEASURED: measuredAttributedToLaterCell FALSE, measuredLateCount 1, and the third cell's stdout contains ONLY its own ticks ('tick 0\ntick 1\ntick 2\ntick 3\ncell-three-settled') -- the marker IPY13-DURING-LATER-CELL is not in it. The measurement's own verdict field reads clause_met. WHAT CHANGED, and why it is not a weakened oracle: the upstream behaviour is UNCHANGED. ipykernel's iostream still resolves the stream parent from a contextvar with a process-wide global fallback, and threading.Thread still starts with an empty context. What changed is that the broker-side bootstrap now carries the originating cell header into cell-started threads and SENTINELS the rest -- so the global fallback is no longer accepted as an attribution. The oracle's requirement (undecidable rather than attributed) is met by refusing to guess, which is the behaviour the oracle asks for, not a relaxation of it. ALSO RECORDED: the oracle explicitly says a claim that the originating cell's parent id is ALWAYS preserved is NOT PASS, because it is false for a thread started with an empty context. This verdict does not make that claim -- the mechanism above is exactly why it does not."
     },
     {
       "id": "IPY-14",
@@ -2656,7 +2663,7 @@
       "requirement": "a completion storm neither duplicates nor misses a top-up",
       "stimulus": "Have many children complete within one event-loop interval.",
       "oracle": "No duplicate launch, no overshoot past the target, and no missed replacement; the coalesced drain is shown to be re-triggerable. The exact launch count is recorded.",
-      "status": "FAIL",
+      "status": "PASS",
       "evidence": [
         {
           "path": "qualification/results/V8-capacity/gap-probe.txt",
@@ -2687,9 +2694,15 @@
           "sha256": "f445a8ba035d10569fdbd1281bf68649f700503763383e9033091db7acdf7551",
           "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
           "what": "The gate table, section 2: the defect, its mechanism from host.ts:1242-1256, why the neighbouring CAP-09 credit check does NOT have the same hole, and why it is not fixed here (host.ts is outside this family s file ownership)."
+        },
+        {
+          "path": "qualification/results/C0-remeasure/REMEASURE.md",
+          "sha256": "cafdb766924edab6f95d74b90eccbff5c98b31eca32b002ccff88c76fa1b9868",
+          "identity": "152e5c45c4aef97ba986b917077849173a66585146b67032ec7be64472c39b78",
+          "note": "ROOT'S RE-MEASUREMENT of CAP-10 after the fix, together with IPY-13's two clauses. CAP-10 is measured against the V8 probe arm that ORIGINALLY measured the defect, so the before and after are the same instrument -- not a weaker oracle substituted after the fact. Raw arms: qualification/results/C7-remeasure/cap10-v8-arm.txt and cap10-storm-full.txt."
         }
       ],
-      "note": "FAIL, MEASURED. The oracle states \"no overshoot past the target\". WorkService.drain (host.ts:1242-1256) coalesces by awaiting an in-flight drain and then starting its OWN runDrain WITHOUT re-checking pendingDrain, so K concurrent callers resume in one microtask batch and each reads a record none of them has written yet. Measured with zero real children: freedSlots=2, concurrentRequests=3, admitted=3, four tasks holding slots against a target of three, and capacityDeficit reads 0 so the overshoot is invisible to the deficit reader. The same defect reproduces through three real children in the annotated it.fails case in capacity.test.ts. The BALANCED storm (3 freed / 3 requested) does pass, and that is recorded too. NOT fixed here: host.ts is outside this family s file ownership; the fix is to re-check pendingDrain after the await. See qualification/results/V8-capacity/GATES.md section 2."
+      "note": "PASS, RE-MEASURED against the SAME V8 probe arm that originally measured the defect. The recorded FAIL was: WorkService.drain awaited an in-flight drain and then started its OWN runDrain without re-checking pendingDrain, so K concurrent callers resumed in one microtask batch and each read a record none of them had written yet -- measured with zero real children as freedSlots=2, concurrentRequests=3, admitted=3, four tasks holding slots against a target of three, with capacityDeficit reading 0 so the overshoot was invisible to the deficit reader. FIXED by 654bace (\"close F5/CAP-10 target over-admission at the authoritative state transition\"), which replaced the coalescer with a generation/dirty leader loop: one leader per run runs passes while requestedGeneration > handledGeneration, and an arrival during a pass only advances the generation and joins the leader, so no second runDrain can start for one run. RE-MEASURED: the same arm now reads admitted=2, heldAgainstTarget3=3, deficitAfter=0 -- NO OVERSHOOT. The oracle's 'no overshoot past the target' holds. The fuller storm suite adds target=6/freedSlots=6 -> admittedInStorm=5 + 1 on retrigger = 6 held with overshoot=0; a control arm; an N+2-against-N arithmetic arm (admitted=6, launches=12, highWater=6); a duplicate arm; and a sweep across freed 3, 5 and 10 of 10, all overshoot=0. 7/7 passed. WHY THE FIX IS NOT JUST THE COALESCER: correctness does not depend on that layer. The decision lives in tryReserveAdmission's single storage-domain update, serialized by the domain's write chain, and f5-admission.test.ts drives the reservation path AROUND the leader in an arm named \"WITH THE COALESCER DEFEATED\" to show the invariant holds without it. The leader is an efficiency: it stops K callers each doing a read, a refused write and a rollback when one pass would do."
     },
     {
       "id": "CAP-11",
