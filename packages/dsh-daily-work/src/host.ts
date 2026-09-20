@@ -1126,7 +1126,33 @@ export class WorkService extends Service {
     // admitted task came back with zero tasks.
     return await this.serializeAuthorization(rootSessionId, async () => {
       const existing = this.findRunForSession(rootSessionId)
-      if (existing !== undefined) return { record: existing, created: false }
+      if (existing !== undefined) {
+        // ---- AN EXISTING RUN STILL NEEDS ITS PORT AND ITS WAKE ----------------
+        //
+        // This early return used to hand back the record and do nothing else, and
+        // that left a real hole in §7.5's recovery path. `installDefaultLaunchPort`
+        // is called from `createRun` — and this is the branch that does NOT call
+        // it — so after a restart, where the run is found rather than created,
+        // the process held a run with pending work and NO launch port. A wake in
+        // that state refuses and changes nothing (correctly), which means the
+        // pending work could never start no matter how many completions arrived.
+        //
+        // The two calls below are the fix, and they are placed HERE because this
+        // is the moment the exact live root Agent is in hand for an existing run —
+        // the same reason `createRun` binds the port where it does. The port is
+        // bound to the OBJECT, never to a session-id string, because authority
+        // must follow the object (`tool-protocol-guards.ts`).
+        //
+        // `installDefaultLaunchPort` does not overwrite an installed port, so a
+        // test's scripted port survives, and re-authorizing a live run is
+        // idempotent with respect to the port.
+        this.installDefaultLaunchPort(input.root)
+        // The wake is what makes §7.5's last clause true for a RESUMED run rather
+        // than only for a freshly created one. It is awaited so the caller's
+        // status read reflects the admission attempt this authorization made.
+        await this.requestDrain(existing.runId)
+        return { record: existing, created: false }
+      }
 
       const record = await this.createRun({
         runId: this.deriveRunId(rootSessionId, input.evidence.action),
