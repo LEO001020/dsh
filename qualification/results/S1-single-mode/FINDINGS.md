@@ -302,3 +302,50 @@ probe reads the same `@Remote('list')` projection the browser reads
   error text `(available: standard, ptc, minimal, cordis)` at `:796`. Those are
   historical records of a measured state and are outside this slice's ownership;
   they are reported rather than edited.
+
+---
+
+## 10. Ride-along: the profile's `link:` targets are load-bearing
+
+Reported by the root agent mid-slice; this file is in S1's ownership, so the
+finding and its resolution are recorded here.
+
+**The observation.** `profiles/daily-candidate/package.json:5-6` declares both
+extension packages with ABSOLUTE link targets naming
+`D:/DSH/work/dsh-native-daily` — the MAIN tree. Every writer runs in its own
+worktree, so a reader could reasonably call that a cross-tree hazard.
+
+**What the mechanism actually is, established rather than assumed.**
+
+| question | answer | evidence |
+|---|---|---|
+| How is the profile installed for a writer? | `helpers/new-writer.ps1:91` copies `profiles/daily-candidate` into `$DSH_HOME/profiles/daily`, then `:99` rewrites `package.json` there | `new-writer.ps1:90-99` |
+| How exactly is it rewritten? | **A literal string replace of the main-tree path**: `$text -replace [regex]::Escape('D:/DSH/work/dsh-native-daily'), ($wt -replace '\\','/')` | `new-writer.ps1:99` |
+| Do the needle and the committed value still match? | **Yes, exactly** — case, slashes, no trailing slash. Verified by extracting the `Escape()` argument programmatically and testing both committed targets against it. | measured 2026-09-20 |
+| Does any path install the profile WITHOUT the rewrite and then need a different value? | **No.** The documented operator install copies FROM the main tree (`cp -r /d/DSH/work/dsh-native-daily/profiles/daily-candidate ...`, `docs/DELIVERY.md:170`), so the main-tree path is already correct there. The launcher's missing-profile path never reaches this file: `apps/cli/src/profile-boot.ts:93-131` `initializeProfileFromDefault` copies only the shipped template's BUNDLE LIST. | `DELIVERY.md:170`; `profile-boot.ts:93-131` |
+
+**Decision: the committed absolute value STAYS, and the rewrite is the
+mechanism.** It is not an accident that the value names the main tree — that
+literal IS the search string the provisioning step looks for. A
+tree-independent value would make the replace find nothing and every provisioned
+writer would silently resolve the main tree while believing it resolved its own:
+precisely the `G-SEAM-29` / `G-SEAM-36` / `G-SEAM-61` trap, and it fails
+**silently** rather than loudly.
+
+**What was added:** a `_comment_linkTargets` block in
+`profiles/daily-candidate/package.json` recording the coupling, the measured
+match, who rewrites it, and who does not — so the next reader does not "clean up"
+the absolute path and silently break isolation.
+
+**Verified rather than assumed:**
+
+- The loader accepts the added key: the profile re-boots and the roster is still
+  exactly `["daily-standard"]`, 27 tools, 0 activation warnings.
+- The rewrite still functions with the key present: applying the same replace to
+  the new file yields both targets pointing at the worktree.
+- **The key is identity-neutral.** `package.json` is not a file-derived identity
+  input (`helpers/rederive-identity.py:46-53` maps only the profile patch, the
+  preset composition, and the two specs), and `rederive-identity.py` still
+  reports exactly the same two moves with the same values after the edit.
+- `signal.test.ts` (which reads this manifest) still passes: 14/14.
+
