@@ -1,1 +1,1 @@
-dsh web: http://127.0.0.1:2221/?token=UA6YGsJD_xSpoFs_7czp6yxkdRf0JsBXLkd_A1QNxtU
+dsh web: http://127.0.0.1:2221/?token=<redacted>

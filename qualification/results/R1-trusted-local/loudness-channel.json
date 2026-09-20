@@ -4,7 +4,7 @@
  "port": 4638,
  "exitCode": null,
  "timedOut": true,
- "stdout": "dsh web: http://127.0.0.1:4638/?token=eCARo3VYMCvQuQXsvhpM9tSRVWukGYaGnX66DS0hgrg\n",
+ "stdout": "dsh web: http://127.0.0.1:4638/?token=<redacted>\n",
  "stderr": "dsh: warning: 1 entry did not activate\nloudness-async-apply (file:///D:/DSH/work/wt-r1/.probe/loudness-async-apply.mjs): Error: ASYNC-APPLY-REJECTION-MARKER\n    at Object.apply [as callback] (file:///D:/DSH/work/wt-r1/.probe/loudness-async-apply.mjs:11:9)\n    at Fiber.execute (file:///D:/DSH/src/dsh-src/vendor/cordis/lib/index.js:1071:28)\n    at file:///D:/DSH/src/dsh-src/vendor/cordis/lib/index.js:1142:34\n    at file:///D:/DSH/home/r1/profiles/daily/#loudness-async-apply\n    at file:///D:/DSH/home/r1/profiles/daily/#include\n",
  "asyncApplyRejectionListed": true,
  "asyncApplyMarkerAnywhere": true,

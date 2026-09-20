@@ -7,7 +7,7 @@
       "cycle": 0,
       "resources": 7,
       "listeners": 14,
-      "heapMb": 70.5,
+      "heapMb": 74,
       "admitted": 4,
       "spent": 4
     },
@@ -15,7 +15,7 @@
       "cycle": 1,
       "resources": 6,
       "listeners": 14,
-      "heapMb": 57,
+      "heapMb": 60.8,
       "admitted": 4,
       "spent": 8
     },
@@ -23,7 +23,7 @@
       "cycle": 2,
       "resources": 6,
       "listeners": 14,
-      "heapMb": 69,
+      "heapMb": 73.1,
       "admitted": 4,
       "spent": 12
     },
@@ -31,7 +31,7 @@
       "cycle": 3,
       "resources": 6,
       "listeners": 14,
-      "heapMb": 55.4,
+      "heapMb": 59.7,
       "admitted": 4,
       "spent": 16
     },
@@ -39,7 +39,7 @@
       "cycle": 4,
       "resources": 5,
       "listeners": 14,
-      "heapMb": 67.3,
+      "heapMb": 71.9,
       "admitted": 4,
       "spent": 20
     },
@@ -47,7 +47,7 @@
       "cycle": 5,
       "resources": 6,
       "listeners": 14,
-      "heapMb": 53.6,
+      "heapMb": 58.8,
       "admitted": 4,
       "spent": 24
     }

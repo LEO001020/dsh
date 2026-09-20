@@ -22,6 +22,6 @@
 # SEAM the M3 worker binds to is live in the product.
 
 VERIFY-DATA-PLANE: {"servicePresent":true,"grantRevision":1,"captureState":"durable","capturedBytes":162,"readBackMatches":true,"sessionCreated":true,"sessionId":"session-54159ad1-8b79-4b08-8fb7-a5aff2694bf4","toolCountAgentKey":26,"dataToolPresent":false,"error":null,"tools":["ask_user_question","create_goal","edit","exit_plan_mode","get_goal","glob","grep","interrupt_agent","job_kill","job_list","job_output","list_agents","present","pwsh","read","read_image","send_message","skill","subagent","subagent_fork","todo_write","update_goal","web_fetch","web_search","workflow","write"]}
-dsh web: http://127.0.0.1:4168/?token=HlEq2cgtfa2xfy40Y92drxm8UC1H5Z8V00vzebmHoRo
+dsh web: http://127.0.0.1:4168/?token=<redacted>
 dsh web: opening the default browser; pass --no-open to disable
 boot_exit=124

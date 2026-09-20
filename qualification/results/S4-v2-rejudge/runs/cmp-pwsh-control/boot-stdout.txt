@@ -1,1 +1,1 @@
-dsh web: http://127.0.0.1:10381/?token=iaXtUMEbjLl0G6zV5gINvu-QtrouTEi3V_ad1ZSjucg
+dsh web: http://127.0.0.1:10381/?token=<redacted>

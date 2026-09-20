@@ -3,7 +3,7 @@
 # timedOut: false   exitCode: null
 
 --- stdout ---
-dsh web: http://127.0.0.1:4618/?token=J4Ey9C0Hulbl89W1kqShvw0QL8hHTdGTrMbSFHoerro
+dsh web: http://127.0.0.1:4618/?token=<redacted>
 
 --- stderr ---
 dsh: warning: 4 entries did not activate

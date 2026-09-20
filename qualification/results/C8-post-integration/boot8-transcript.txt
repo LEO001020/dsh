@@ -6,6 +6,6 @@
 # SAME COMPOSITION FILE: true
 
 --- stdout ---
-dsh web: http://127.0.0.1:4862/?token=gVeZt3T1_pJbxNQcy-FgCJ15sVgipEK_KhYUtKVu0Vw
+dsh web: http://127.0.0.1:4862/?token=<redacted>
 
 --- stderr ---

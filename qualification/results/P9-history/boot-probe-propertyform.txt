@@ -1,2 +1,2 @@
 M7-HISTORY: {"dailyHistoryServicePresent":true,"sessionQueryServicePresent":true,"historyAvailable":false,"createdSessionId":null,"selfRead":null,"foreignReadRefused":null,"foreignRefusalCode":null,"pageTraversal":null,"provenanceRecord":null,"untrustedContent":null,"error":"Error: cannot get property \"sessionQuery\" without inject"}
-dsh web: http://127.0.0.1:3080/?token=6Yxy3vyZEPeqR18RY9QbzCF6OWksOkMqhR4ozxG4Mx4
+dsh web: http://127.0.0.1:3080/?token=<redacted>

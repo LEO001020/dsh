@@ -15,7 +15,7 @@
    "violationIdOnStderr": false,
    "observedConfinedModeOnStderr": false,
    "stderr": "",
-   "stdout": "dsh web: http://127.0.0.1:1831/?token=WVMYQkWQ75ngnz-dKlwTKs7Dywbl-f6Jg4IT2R42yjQ\n"
+   "stdout": "dsh web: http://127.0.0.1:1831/?token=<redacted>\n"
   },
   "reverted": {
    "label": "reverted-mode",
@@ -32,7 +32,7 @@
    "violationIdOnStderr": true,
    "observedConfinedModeOnStderr": true,
    "stderr": "dsh: warning: 1 entry did not activate\ndaily-no-sandbox-contract (dsh-daily-work/no-sandbox-contract): Error: trusted-local contract violated at the startup boundary: 1 check(s) failed. This deployment is NOT the intended trusted-local graph, so product execution stops here rather than continuing under a mode nobody chose. The mode is NOT switched back automatically: that would hide a real configuration change.\n  startup.sandboxPolicy.mode: 'workspace-write' -- the deployment default is 'workspace-write', which CONFINES. Under trusted-local this is a FALSE STATEMENT ABOUT THE MODEL'S PERMISSIONS: the same resolved policy renders the model-facing sentence (sandbox-policy/src/index.ts:42-56) and gates the PTC confine decision (ptc-runtime-node/src/index.ts:224). Note the observability limit: 'read-only' here is indistinguishable from an unset config, because Config's schema default is 'read-only' (:113).\n    at NoSandboxContractService.checkBoundarySync (file:///D:/DSH/work/wt-r1/packages/dsh-daily-work/lib/no-sandbox-contract.js:785:19)\n    at Object.apply [as callback] (file:///D:/DSH/work/wt-r1/packages/dsh-daily-work/lib/no-sandbox-contract.js:1139:13)\n    at async Fiber._reload (file:///D:/DSH/src/dsh-src/vendor/cordis/lib/index.js:1356:5)\n",
-   "stdout": "dsh web: http://127.0.0.1:8250/?token=YjUu0d-Afx-P3D68ol-qXQNE2jnGl9MuSivgn7tP0pY\n"
+   "stdout": "dsh web: http://127.0.0.1:8250/?token=<redacted>\n"
   }
  },
  "verdict": {

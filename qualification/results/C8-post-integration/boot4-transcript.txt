@@ -3,6 +3,6 @@
 # timedOut: false   exitCode: null
 
 --- stdout ---
-dsh web: http://127.0.0.1:6795/?token=OrfgLellWnqpwxxHuO2JX1Ik1J9VFQjh6kPRTXuYdPY
+dsh web: http://127.0.0.1:6795/?token=<redacted>
 
 --- stderr ---

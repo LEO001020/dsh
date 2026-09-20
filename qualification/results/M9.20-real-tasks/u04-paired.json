@@ -41,11 +41,11 @@
     "wallTime": [
       {
         "group": "C0",
-        "mountAndCreateMs": 24
+        "mountAndCreateMs": 25
       },
       {
         "group": "C1",
-        "mountAndCreateMs": 7
+        "mountAndCreateMs": 6
       },
       {
         "group": "C2",
@@ -101,8 +101,8 @@
     },
     "wallStats": {
       "n": 3,
-      "min": 7,
-      "max": 24,
+      "min": 6,
+      "max": 25,
       "mean": 13.333333333333334
     },
     "winnerDeclared": false,

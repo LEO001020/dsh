@@ -3,7 +3,7 @@
 # timedOut: false   exitCode: null
 
 --- stdout ---
-dsh web: http://127.0.0.1:6771/?token=-D2mS57k-ySPJvZksBZjhIoQ9ouV5-VSYz0IbK_3abI
+dsh web: http://127.0.0.1:6771/?token=<redacted>
 VERIFY-T3-SHELL: {"activationWarningCount":1,"inactiveEntryIds":["hmr"],"postAuditActivationWarningCount":0,"postAuditInactiveEntryIds":[],"postAuditProbeRowState":2,"postAuditRan":true,"postAuditTimedOut":false,"permissionPresetsAbsent":true,"shellSandboxMode":null,"toolCount":24,"allAssertionsPass":false,"verdict":{"activationWarningsZero":true,"postAuditCheckpointReached":true,"midApplyActivationWarningsZero":false,"permissionPresetsAbsent":true,"shellSandboxModeUndefined":true,"ipythonPresent":true,"nativeFsToolsPresent":true,"toolCountNonZero":true,"pwshAbsenceIsIntentional":true,"modelShellRowNotPending":true,"ipythonReplacesPwsh":true,"noProbeError":true},"error":null}
 
 --- stderr ---

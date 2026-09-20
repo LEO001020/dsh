@@ -8,7 +8,7 @@
  "cwd": "C:/Windows/Temp",
  "probeInTree": true,
  "bootEvidence": {
-  "stdout": "dsh web: http://127.0.0.1:12071/?token=f3pbZsDgOCO5qdzPfJgAfTu2t3ri6Cm_fcPFsdu8paE\n",
+  "stdout": "dsh web: http://127.0.0.1:12071/?token=<redacted>\n",
   "stderr": "dsh: warning: 1 entry did not activate\ns11-cmp-probe (file:///D:/DSH/work/wt-s11/qualification/runners/s11-cmp-probe.mjs): Error: probe-complete\n    at Object.apply [as callback] (file:///D:/DSH/work/wt-s11/qualification/runners/s11-cmp-probe.mjs:642:9)\n    at async Fiber._reload (file:///D:/DSH/src/dsh-src/vendor/cordis/lib/index.js:1356:5)\n",
   "served": true,
   "activationWarningLine": "warning: 1 entry did not activate",

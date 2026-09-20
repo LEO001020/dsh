@@ -96,7 +96,7 @@ admit it". Real HTTP requests against the live server:
 | request | Host header | status |
 |---|---|---|
 | `GET /` unauthenticated | `127.0.0.1:3080` | **401** `dsh web authentication required` |
-| `GET /?token=guess` | `127.0.0.1:3080` | **401**, byte-identical body |
+| `GET /?token=<redacted>` | `127.0.0.1:3080` | **401**, byte-identical body |
 | `GET /api` unauthenticated | `127.0.0.1:3080` | **401** `unauthorized` |
 | `GET /api` | `attacker.example.com` | **403** `forbidden` |
 | `GET /` | `attacker.example.com` | **401** (not Host-fenced) |

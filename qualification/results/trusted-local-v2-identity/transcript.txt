@@ -9,7 +9,7 @@ portReleased:  true
 probe written: true
 
 --- stdout ---
-dsh web: http://127.0.0.1:4370/?token=XupgzqiTN2-rGKuoA0twUalLffd7GmI0WDtUmSKlXeI
+dsh web: http://127.0.0.1:4370/?token=<redacted>
 
 --- checks ---
 ok   the boot did not time out

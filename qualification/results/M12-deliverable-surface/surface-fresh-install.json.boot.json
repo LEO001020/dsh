@@ -2,7 +2,7 @@
  "boot": {
   "port": 6815,
   "exitCode": null,
-  "stdout": "dsh web: http://127.0.0.1:6815/?token=vt7jsA1DR60dLM7NRFsPsLXDvcuo1lc18L3FyJr70NA\n",
+  "stdout": "dsh web: http://127.0.0.1:6815/?token=<redacted>\n",
   "stderr": "",
   "timedOut": false,
   "portReleased": true

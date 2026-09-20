@@ -1,2 +1,2 @@
-dsh web: http://127.0.0.1:11942/?token=Rbxnv5KWerG9J-uAx00wuLljfrUhlne1NidDAYkqz84
+dsh web: http://127.0.0.1:11942/?token=<redacted>
 T17-IDENTITY-PROBE: {"peersChecked":6,"hostInstancesFromBuiltEntry":6,"hostInstancesFromSourceEntry":0,"hostInstancesFromNeitherCandidate":[],"mixedSourceAndBuilt":false,"pass":true}

@@ -4,6 +4,6 @@
 # timedOut: false   exitCode: null
 
 --- stdout ---
-dsh web: http://127.0.0.1:10426/?token=sb5I9A6BiXnR9fW0WP_5tqBTQ6s0F_7LWV_Tr0sPH8s
+dsh web: http://127.0.0.1:10426/?token=<redacted>
 
 --- stderr ---

@@ -1,6 +1,6 @@
 # tsc -p tsconfig.check.json (whole tree, tests included)
 # exit 0, 0 error(s) across 0 file(s)
-# run: 2026-09-19T23:31:43.359Z
+# run: 2026-09-20T14:51:47.826Z
 #
 # DEP-03's oracle is "all production packages AND tests compile". A non-zero
 # count below falsifies it. The list is empty when the gate holds.

@@ -4,6 +4,6 @@
 
 --- stdout ---
 VERIFY-T2-FS: {"out":"D:/DSH/work/dsh-native-daily/qualification/results/V2-composition/boot2-fs.json","provider":"LocalFileSystem","error":null}
-dsh web: http://127.0.0.1:4796/?token=6jUCWj-x1xmPFrx7CskEqlRTcrLnSSnVpYC31x0u8cs
+dsh web: http://127.0.0.1:4796/?token=<redacted>
 
 --- stderr ---

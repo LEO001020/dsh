@@ -6,7 +6,7 @@
  "cwd": "C:/Windows/Temp",
  "probeInTree": false,
  "bootEvidence": {
-  "stdout": "dsh web: http://127.0.0.1:13162/?token=FSuQf8R0eVkdF7ZLDWHRBYHEbNKaZzHNbekjSI-YrQE\n",
+  "stdout": "dsh web: http://127.0.0.1:13162/?token=<redacted>\n",
   "stderr": "dsh: warning: 1 entry did not activate\nsomething\n",
   "served": true,
   "activationWarningLine": "warning: 1 entry did not activate",

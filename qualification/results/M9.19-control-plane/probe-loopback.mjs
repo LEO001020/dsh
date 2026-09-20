@@ -183,7 +183,7 @@ export async function apply(ctx) {
     //    parameter. The token is a 32-byte random value, so a guess must fail;
     //    what matters is that it fails with the same minimal answer as no token
     //    at all rather than falling through to an unauthenticated page.
-    finding.requests.indexGuessedToken = await httpGet(server.port, '/?token=guess', authority)
+    finding.requests.indexGuessedToken = await httpGet(server.port, '/?token=<redacted>', authority)
 
     // Is the launch token reachable from the shell environment at all? The shell
     // registry is the model's own channel to the environment, so if the token

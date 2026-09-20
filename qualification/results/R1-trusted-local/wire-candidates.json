@@ -5,7 +5,7 @@
  "exitCode": null,
  "timedOut": true,
  "elapsedMs": null,
- "stdout": "dsh web: http://127.0.0.1:6665/?token=hoku41PSiibKBRufMuaOMgDoerlSVdyphrXUZ8HC_vw\n",
+ "stdout": "dsh web: http://127.0.0.1:6665/?token=<redacted>\n",
  "stderr": "",
  "activationWarningLine": null,
  "p1ChildThrowListedOnStderr": false,

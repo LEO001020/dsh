@@ -7,5 +7,5 @@
  "portReleased": true,
  "elapsedMs": 25626,
  "stderr": "",
- "stdout": "dsh web: http://127.0.0.1:3834/?token=o3-gnQgIHX2_bBQ6jB258d9eUNAcH4zx-fTe31zEdAQ\n"
+ "stdout": "dsh web: http://127.0.0.1:3834/?token=<redacted>\n"
 }

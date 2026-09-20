@@ -4,7 +4,7 @@
  "port": 8071,
  "exitCode": null,
  "timedOut": true,
- "stdout": "dsh web: http://127.0.0.1:8071/?token=ADRhwWKOkHay6kKC4J5RAqgHgFKGvdTnAAQEJxMvbs0\n",
+ "stdout": "dsh web: http://127.0.0.1:8071/?token=<redacted>\n",
  "stderr": "dsh: warning: 2 entries did not activate\nwire-w1-deferred-throw (file:///D:/DSH/work/wt-r1/.probe/wire-w1-deferred-throw.mjs): Error: W1-DEFERRED-THROW-MARKER\n    at Object.apply [as callback] (file:///D:/DSH/work/wt-r1/.probe/wire-w1-deferred-throw.mjs:16:9)\n    at async Fiber._reload (file:///D:/DSH/src/dsh-src/vendor/cordis/lib/index.js:1356:5)\n    at async Fiber.await (file:///D:/DSH/src/dsh-src/vendor/cordis/lib/index.js:1400:24)\nwire-w2-row-inject-throw (file:///D:/DSH/work/wt-r1/.probe/wire-w2-row-inject-throw.mjs): Error: W2-ROW-INJECT-THROW-MARKER\n    at new apply (file:///D:/DSH/work/wt-r1/.probe/wire-w2-row-inject-throw.mjs:9:9)\n    at Fiber.execute (file:///D:/DSH/src/dsh-src/vendor/cordis/lib/index.js:1068:24)\n    at file:///D:/DSH/src/dsh-src/vendor/cordis/lib/index.js:1142:34\n    at file:///D:/DSH/home/r1/profiles/daily/#wire-w2-row-inject-throw\n    at file:///D:/DSH/home/r1/profiles/daily/#include\n",
  "activationWarningLine": "warning: 2 entries did not activate",
  "w1ThrowListed": true,

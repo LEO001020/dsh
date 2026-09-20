@@ -1,3 +1,3 @@
 VERIFY-DATA-PLANE: {"servicePresent":true,"grantRevision":1,"captureState":"durable","capturedBytes":162,"readBackMatches":true,"sessionCreated":true,"sessionId":"session-f906a2d6-f960-4dda-a183-0119a5aaa1ac","toolCountAgentKey":26,"dataToolPresent":false,"error":null,"tools":["ask_user_question","create_goal","edit","exit_plan_mode","get_goal","glob","grep","interrupt_agent","job_kill","job_list","job_output","list_agents","present","pwsh","read","read_image","send_message","skill","subagent","subagent_fork","todo_write","update_goal","web_fetch","web_search","workflow","write"]}
-dsh web: http://127.0.0.1:1512/?token=THK1vWPl5o_W4HyiQR7Go-f6Q31794VPpp58GM2TKQQ
+dsh web: http://127.0.0.1:1512/?token=<redacted>
 EXIT=124

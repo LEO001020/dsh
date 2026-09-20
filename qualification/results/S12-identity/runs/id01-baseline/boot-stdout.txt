@@ -1,2 +1,2 @@
-dsh web: http://127.0.0.1:9382/?token=GVemu0Aui6XojzLyA90MrSoy_9HnS0xOd94JFecUPcw
+dsh web: http://127.0.0.1:9382/?token=<redacted>
 T17-IDENTITY-PROBE: {"peersChecked":6,"hostInstancesFromBuiltEntry":6,"hostInstancesFromSourceEntry":0,"hostInstancesFromNeitherCandidate":[],"mixedSourceAndBuilt":false,"pass":true}

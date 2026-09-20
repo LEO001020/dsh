@@ -13,7 +13,7 @@
    "guardEntryNamedOnStderr": false,
    "refusalTextOnStderr": false,
    "stderr": "",
-   "stdout": "dsh web: http://127.0.0.1:3809/?token=7vPt6zEzloSN9EPMAlBTr-_CmdP6vLqVpvxqQjE5N8M\n"
+   "stdout": "dsh web: http://127.0.0.1:3809/?token=<redacted>\n"
   },
   "reverted": {
    "label": "reverted-mode",
@@ -28,7 +28,7 @@
    "guardEntryNamedOnStderr": false,
    "refusalTextOnStderr": false,
    "stderr": "",
-   "stdout": "dsh web: http://127.0.0.1:6689/?token=DwNRqVssnoMTDfmPcvK9yl3WxZ-i_b2jBjJ6w3iaEh4\n"
+   "stdout": "dsh web: http://127.0.0.1:6689/?token=<redacted>\n"
   }
  },
  "verdict": {
