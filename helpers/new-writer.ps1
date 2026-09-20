@@ -110,12 +110,60 @@ if ($code -ne 0) { Die "profile install failed (exit $code)" }
 # --- 4. PROVE the boot resolves THIS worktree ------------------------------
 # A provisioning script that reports success without checking would be the exact
 # "mechanism implemented, nothing calls it" defect this project keeps recording.
+#
+# WHAT IS ACTUALLY PROVEN, and why the first version of this check was WRONG. It
+# originally asserted that `--dump-config` mentions the worktree path. That check
+# failed for a CORRECT tree: once dsh-ipython stopped hardcoding absolute paths
+# (96a0e35), no checkout path appears in the dump at all, because the extension
+# now derives its own location from `import.meta.url`. Grepping the dump for a
+# path therefore tested an implementation detail of the patch file rather than the
+# property that matters.
+#
+# The property that matters is WHICH PHYSICAL PACKAGES THE PROFILE LOADS. Two
+# assertions establish it, and neither can pass while the writer is bound
+# elsewhere:
+#   1. Node's own resolver, from the INSTALLED profile directory, resolves both
+#      extension packages to this worktree.
+#   2. The boot composes without naming a foreign checkout of this repository.
+#      (Zero mentions is the correct outcome; a mention of a DIFFERENT
+#      dsh-native-daily tree is the failure.)
 Step "verify the boot resolves $wt"
 $env:DSH_HOME = $dshHome
+
+$resolveScript = @'
+import { createRequire } from 'node:module'
+const req = createRequire(process.argv[2])
+for (const name of ['dsh-ipython', 'dsh-daily-work']) {
+  try { console.log(name + '\t' + req.resolve(name + '/package.json')) }
+  catch (e) { console.log(name + '\tUNRESOLVED: ' + e.message) }
+}
+'@
+$resolveFile = Join-Path $env:TEMP "resolve-$Name.mjs"
+Set-Content -Path $resolveFile -Value $resolveScript
+$profilePkg = Join-Path $profDest 'package.json'
+$resolved = & node $resolveFile $profilePkg 2>&1 | Out-String
+Remove-Item $resolveFile -Force -ErrorAction SilentlyContinue
+
+foreach ($pkgName in 'dsh-ipython', 'dsh-daily-work') {
+    $line = ($resolved -split "`n" | Where-Object { $_ -like "$pkgName`t*" } | Select-Object -First 1)
+    if (-not $line) { Die "could not resolve $pkgName from the installed profile" }
+    $path = ($line -split "`t")[1].Trim()
+    if ($path -like 'UNRESOLVED*') { Die "$pkgName did not resolve: $path" }
+    $expectedPkg = Join-Path $wt "packages\$pkgName\package.json"
+    if ($path -ne $expectedPkg) {
+        Die "$pkgName resolves to '$path' but this writer owns '$expectedPkg'. The writer would measure another checkout."
+    }
+}
+
+# A DIFFERENT checkout of this repository must not be named by the composition.
+# The writer's own tree may legitimately appear; another one must not.
 $dump = & node $launcher --profile daily --dump-config 2>&1 | Out-String
-$expected = ($wt -replace '\\', '/')
-if ($dump -notmatch [regex]::Escape($expected)) {
-    Die "boot does NOT name the worktree path. The profile is still bound to another checkout -- do not use this writer."
+$foreign = [regex]::Matches($dump, '[A-Za-z]:[\\/][^\s"'',;)\]]*dsh-native-daily[^\s"'',;)\]]*') |
+    ForEach-Object { $_.Value } |
+    Where-Object { $_ -notlike "$($wt -replace '\\','/')*" -and $_ -notlike "$($wt -replace '/','\')*" } |
+    Select-Object -Unique
+if ($foreign.Count -gt 0) {
+    Die "the boot names a FOREIGN checkout of this repo: $($foreign -join '; ')"
 }
 
 $verdict = Join-Path $wt '.writer-provision.json'
@@ -127,7 +175,9 @@ $verdict = Join-Path $wt '.writer-provision.json'
     dsh_src     = $DshSrc
     launcher    = $launcher
     provisioned = (Get-Date).ToString('s')
-    boot_names_own_tree = $true
+    ipython_resolves_to_own_tree    = $true
+    dailywork_resolves_to_own_tree  = $true
+    no_foreign_checkout_named       = $true
 } | ConvertTo-Json | Set-Content -Path $verdict
 
 Write-Host ""
@@ -136,6 +186,6 @@ Write-Host "  worktree : $wt"
 Write-Host "  branch   : $branch"
 Write-Host "  DSH_HOME : $dshHome"
 Write-Host "  launcher : $launcher"
-Write-Host "  proof    : --dump-config names the worktree"
+Write-Host "  proof    : node resolves both extension packages to this worktree"
 Write-Host ""
 Write-Host "Boot with:  `$env:DSH_HOME='$dshHome'; node $launcher --profile daily ..."
