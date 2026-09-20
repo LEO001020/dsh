@@ -138,7 +138,6 @@ const PACKAGE_ROOT = dirname(dirname(fileURLToPath(import.meta.url)))
 export const DEFAULT_BROKER_SCRIPT = join(PACKAGE_ROOT, 'src', 'broker.py')
 
 /**
-<<<<<<< HEAD
  * The environment manifest V5 §11.2 requires, and the ONLY input to the
  * environment digest.
  *
