@@ -136,34 +136,45 @@ export async function handleCompletion(
 }
 
 /**
- * Move a task to the state a completion establishes, and release its slot only
- * when that state is one that releases.
+ * Move a task to the state a completion establishes, releasing its slot only
+ * when quiescence is established.
  *
- * THE STATE CHOICE IS THE SUBSTANCE, and it is deliberately the WEAKER of the
+ * THE STATE CHOICE IS THE SUBSTANCE, and it is deliberately the weaker of the
  * two available readings:
  *
- *   - A clean stop (`'stop'`, `'max-turns'`, or any non-error terminal reason)
- *     establishes that the child FINISHED, not that its result was VERIFIED.
- *     The record's own vocabulary separates those: `settling` is "work appears
+ *   - A clean stop (`'completed'`) establishes that the child's ACTIVATION is
+ *     over. It does NOT establish that the result is the work that was asked
+ *     for. The record's vocabulary separates those: `settling` is "work appears
  *     done; artifacts not yet confirmed by an independent check", and
  *     `confirmed` is "the result is confirmed. Only this state is success"
- *     (`states.ts:28-31`). This module writes `settling` — never `confirmed` —
- *     because confirming is the acceptance runner's job and a completion
- *     listener that confirmed would make the child the oracle for its own work,
- *     which is the exact inversion the verification gate exists to prevent.
+ *     (`states.ts`). This module writes `completed` — never `confirmed` —
+ *     because confirming is the acceptance runner's job, and a completion
+ *     listener that confirmed would make the child the oracle for its own work.
  *
- *   - An error stop reason does NOT establish that work finished, so the task
+ *   - WHY `completed` AND NOT `settling`. This is the decision that makes
+ *     WORK-ROLLING true, and it is worth stating as the falsifiable claim it is:
+ *     `settling` HOLDS its slot (`SLOT_HOLDING_STATES`), so a completion that
+ *     wrote `settling` would leave the run one slot poorer forever — occupancy
+ *     would be monotone non-decreasing and no target could ever be sustained.
+ *     `completed` is slot-free by construction while remaining open to
+ *     acceptance's judgement (it is not terminal, and it transitions to
+ *     `confirmed`). The two facts "the child is gone" and "the work is
+ *     unverified" are both true and are now both representable.
+ *
+ *   - An error or unknown stop reason does NOT establish quiescence, so the task
  *     goes to `unknown`: "The outcome cannot be established from local evidence"
- *     (`states.ts:36-41`). The slot stays held and a reconciliation must resolve
- *     it. §7.4's instruction to report the failure to the root and NOT to invent
- *     a retry is satisfied by this state plus the wake: the root sees a task in
+ *     (`states.ts`). The slot stays held and a reconciliation must resolve it.
+ *     §7.4's instruction to report the failure to the root and NOT to invent a
+ *     retry is satisfied by this state plus the wake: the root sees a task in
  *     `unknown` and an honest deficit, and decides what it means.
  *
- * `settling` holds its slot (`SLOT_HOLDING_STATES`, `states.ts:56-64`). That is
- * correct and not an oversight: work that appears done may still change the
- * world, and the confirmation is what releases. So the REFILL this module
- * triggers is bounded by the same rule as everything else — the wake re-examines
- * the run, and the run's occupancy falls only when something confirms.
+ * THE BUDGET IS DELIBERATELY NOT RELEASED by the `completed` transition, and
+ * this is the one place the slot/credit axes visibly diverge. The child ran and
+ * spent money nobody has measured yet; freeing the credit would fabricate
+ * headroom against an unmeasured cost. `transition`'s default release rule
+ * (`confirmed` or `cancelled`) already gives that behaviour, so no explicit
+ * `releaseReservation: false` is passed — the DEFAULT is the safe direction, and
+ * relying on it here is honest because the rule is stated in one place.
  */
 async function reconcileCompletedTask(
   service: WorkService,
@@ -174,7 +185,7 @@ async function reconcileCompletedTask(
   const record = service.getRun(runId)
   const task = record?.tasks[taskId]
   if (task === undefined) return
-  const target: AdmissionState = establishesCompletion(stopReason) ? 'settling' : 'unknown'
+  const target: AdmissionState = establishesCompletion(stopReason) ? 'completed' : 'unknown'
   // `canTransition` rather than `assertTransition`: a completion can arrive for a
   // task the run has already moved on (a duplicate event, or a task cancelled
   // while the child was finishing). An illegal edge there is a REAL race rather

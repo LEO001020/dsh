@@ -2069,6 +2069,11 @@ export class WorkService extends Service {
     switch (to) {
       case 'confirmed':
       case 'cancelled':
+      case 'completed':
+        // `completed` releases the TASK slot for the same reason the other two
+        // do: the child's activation is over, so the slot it held must be free
+        // or the target can never be sustained. It does NOT release the
+        // reservation — see the transition below, which retains it.
         this.gate.releaseTask(taskId)
         return
       case 'prepared':
