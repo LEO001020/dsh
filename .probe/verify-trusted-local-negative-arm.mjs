@@ -123,6 +123,18 @@ export async function apply(ctx) {
     }
 
     // ═══ arm A: ask the guard, at the startup boundary, on this graph ═══════
+    //
+    // THE `contract === undefined` CASE IS A FINDING, NOT A MISSING READING, and
+    // it is the EXPECTED outcome once the startup boundary is loud. The guard's
+    // own entry now fails at `apply`, so its service is never published — which is
+    // exactly what makes the refusal visible on stderr. Reporting the arm as
+    // `reportOk: null` alone would let a reader mistake "the guard refused and its
+    // entry died" for "the guard never ran", so the two are separated explicitly
+    // and the boot's own stderr is carried alongside as the corroborating channel.
+    if (contract === undefined) {
+      f.startup.serviceAbsentBecauseEntryFailed = true
+      f.startup.note = 'ctx.noSandboxContract is NOT published on this graph, which is the LOUD outcome rather than a missing reading: the guard entry itself failed at apply (the refusal throws from apply\'s own body), so DSH\'s activation audit reports it under "N entries did not activate" on stderr. The driver merges that stderr into this artifact as `bootEvidence`; `loudness-after-fix.json` carries the probe-free verdict.'
+    }
     if (contract !== undefined) {
       const report = contract.checkDeployment()
       f.startup.reportOk = report.ok
