@@ -1,0 +1,22 @@
+CONTROL: can release-gate's FLAKY check actually FAIL?
+============================================================
+WHY THIS IS NEEDED. release-gate reports '4 no FLAKY -> ok' on this tree,
+because no case is FLAKY and the stability ledger is absent. A check that has
+only ever been observed passing is indistinguishable from a check that cannot
+fail -- the exact defect class this whole slice is about.
+
+ROUTE A -- the spec records status FLAKY:
+  check passed = False  (REQUIRED: False)
+  detail: 1: BR-01 (a green rerun does not clear these)
+  verdict = NOT_READY
+  -> HELD
+
+ROUTE B -- spec says PASS, but the LEDGER records 3 PASS + 1 FAIL:
+  check passed = False  (REQUIRED: False)
+  detail: 1: BR-01 (a green rerun does not clear these)
+  verdict = NOT_READY
+  -> HELD
+
+BOTH ROUTES HELD: the FLAKY check can fail, and route B fires from the
+append-only ledger even when the spec's own status field says PASS -- which is
+the property that makes a green rerun unable to clear it.
