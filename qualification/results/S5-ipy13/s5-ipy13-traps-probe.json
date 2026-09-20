@@ -1,0 +1,78 @@
+{
+ "work_dir": "C:\\Users\\hzq00\\AppData\\Local\\Temp\\s5-ipy13-traps-01khfm90",
+ "marker_exists": true,
+ "t1_await": {
+  "own": "T1-AWAIT-OK\n",
+  "foreign": []
+ },
+ "t2_magic": {
+  "own": "asyncio\t \nT2-MAGIC-OK\n",
+  "foreign": []
+ },
+ "t3_error": {
+  "ename": "",
+  "own_stream": "",
+  "traceback": [
+   [
+    "\u001b[31m---------------------------------------------------------------------------\u001b[39m",
+    "\u001b[31mValueError\u001b[39m                                Traceback (most recent call last)",
+    "\u001b[36mCell\u001b[39m\u001b[36m \u001b[39m\u001b[32mIn[3]\u001b[39m\u001b[32m, line 3\u001b[39m\n\u001b[32m      1\u001b[39m \u001b[38;5;28;01mdef\u001b[39;00m boom():\n\u001b[32m      2\u001b[39m     \u001b[38;5;28;01mraise\u001b[39;00m ValueError(\u001b[33m't3-boom'\u001b[39m)\n\u001b[32m----> \u001b[39m\u001b[32m3\u001b[39m boom()\n",
+    "\u001b[36mCell\u001b[39m\u001b[36m \u001b[39m\u001b[32mIn[3]\u001b[39m\u001b[32m, line 2\u001b[39m, in \u001b[36mboom\u001b[39m\u001b[34m()\u001b[39m\n\u001b[32m      1\u001b[39m \u001b[38;5;28;01mdef\u001b[39;00m boom():\n\u001b[32m----> \u001b[39m\u001b[32m2\u001b[39m     \u001b[38;5;28;01mraise\u001b[39;00m ValueError(\u001b[33m't3-boom'\u001b[39m)\n",
+    "\u001b[31mValueError\u001b[39m: t3-boom"
+   ]
+  ]
+ },
+ "t4_displayhook": {
+  "own": "2",
+  "foreign": []
+ },
+ "t5_print_kwargs": {
+  "own": "a-b!direct-write\n\nto-stderr\n",
+  "stderr": "a-b!direct-write\n\nto-stderr\n",
+  "foreign": []
+ },
+ "t6_subprocess": {
+  "own": "T6-CAPTURED T6-CHILD-OUTPUT\nT6-cell-settled\n",
+  "foreign": []
+ },
+ "t7_asyncio_task": {
+  "own": "T7-TASK-WRITE\nT7-cell-settled\n",
+  "foreign": []
+ },
+ "t8_outliving_thread": {
+  "cellA_own": "T8-cellA-settled\n",
+  "cellA_foreign": [],
+  "cellB_own": "T8-cellB-joined\n",
+  "cellB_foreign": [
+   {
+    "parent": "5bd6e8a1-e1cd1ec73fa7abcfb67c5c3e_25856_9",
+    "type": "stream",
+    "text": "T8-LATE-FROM-CELL-A\n"
+   }
+  ]
+ },
+ "t9_logging": {
+  "own": "INFO:root:T9-BG-LOG\nT9-cell-settled\n",
+  "foreign": []
+ },
+ "t10_pre_cell_thread": {
+  "setup_own": "T10-thread-started\n",
+  "cellB_own": "t10-tick 0\nt10-tick 1\nt10-tick 2\nT10-cellB-settled\n",
+  "cellB_foreign": []
+ },
+ "t11_grandchild": {
+  "own": "T11-cell-settled\n",
+  "foreign": [
+   {
+    "parent": "dsh:background",
+    "type": "stream",
+    "text": "T11-GRANDCHILD-WRITE\n"
+   }
+  ]
+ },
+ "t12_large": {
+  "own_len": 5026,
+  "foreign": []
+ },
+ "kernel_alive": true
+}
