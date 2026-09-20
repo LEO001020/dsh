@@ -118,6 +118,16 @@ export interface LaunchRequest {
   readonly childId: string
   readonly prompt: string
   readonly reservedCost: number
+  /**
+   * Capability classes this assignment may use, when the caller knows them.
+   *
+   * Optional and additive: a caller that does not name any gets the drain's
+   * existing default (`['reader']`), so every pre-existing construction site
+   * keeps its exact behaviour. A READY assignment carries its own list, which is
+   * the only reason this field exists — dropping it would silently widen or
+   * narrow a permission the submitter stated.
+   */
+  readonly allowedCapabilities?: readonly string[]
 }
 
 /** The result of asking the service to launch one child. */
@@ -206,6 +216,13 @@ class AdmissionRefused extends Error {
   }
 }
 
+/** One completion wake that failed, kept so a report can surface it. */
+export interface CompletionFailure {
+  readonly childId: string
+  readonly stopReason: string
+  readonly message: string
+}
+
 /**
  * A submission whose taskId already names DIFFERENT work (V5 §7.2).
  *
@@ -254,7 +271,28 @@ interface DrainWorkItem {
   readonly signal: AbortSignal
   readonly resolve: (outcomes: LaunchOutcome[]) => void
   readonly reject: (error: unknown) => void
+  /**
+   * Whether this item's work comes from the run's DURABLE ready table rather
+   * than from `requests` (V5 §7.3).
+   *
+   * A flag rather than a second leader: §7.3 requires ONE per-run leader "for
+   * efficiency only", and two leader maps would be two leaders racing on the
+   * same slots — the exact defect CAP-10 measured. So a ready-driven pass goes
+   * through the same generation/dirty loop as a caller-driven one, and only the
+   * SOURCE of the requests differs.
+   */
+  readonly fromReadyTable?: boolean
 }
+
+/**
+ * A signal that never aborts, for a drain no caller is waiting on.
+ *
+ * `requestDrain` is a wake, not a request: no caller's cancellation can apply to
+ * it. Passing a per-call `AbortController` whose signal is never aborted would
+ * allocate an object per wake for the same meaning, and passing `undefined`
+ * would force every read of `entry.signal` to handle a case that cannot happen.
+ */
+const NEVER_ABORTED: AbortSignal = new AbortController().signal
 
 /**
  * The per-run drain leader's generation state (V3 §H3's dirty loop).
@@ -474,6 +512,14 @@ export class WorkService extends Service {
   private targetSetting: TargetSettingHandle | undefined
   /** Refusals the boundary produced, in order, so a report can surface them. */
   private readonly childRefusals: ChildRefusal[] = []
+  /**
+   * Completion wakes that failed, in order.
+   *
+   * A completion listener is fire-and-forget (it must not block DSH's emit), so
+   * its rejection has no caller to reach. See `recordCompletionFailure` for why
+   * it lands here instead of being dropped or rethrown.
+   */
+  private readonly completionFailures: CompletionFailure[] = []
 
   constructor(ctx: Context, config: WorkServiceConfig) {
     super(ctx, 'dailyWork')
@@ -1098,12 +1144,101 @@ export class WorkService extends Service {
   /** The current counts for a run, computed from stored state plus observed liveness. */
   counts(runId: string): Counts {
     const record = this.requireRun(runId)
-    return countRun(record, this.liveness.get(runId) ?? new Map(), this.readyTaskCount.get(runId) ?? 0)
+    return countRun(record, this.liveness.get(runId) ?? new Map(), this.readyTaskCountFor(record))
+  }
+
+  /**
+   * How many assignments this run has ready, as a reader should see it.
+   *
+   * THE DURABLE TABLE IS THE AUTHORITY NOW, and this is the connection that was
+   * missing before this slice: `readyTasks` was fed only by `setReadyTasks`, a
+   * process-local setter whose only callers were tests, so the deficit reader's
+   * `insufficient_ready_tasks` arm (`counting.ts:287`) could not be produced by
+   * anything durable. A run with 60 pending assignments and a target of 30
+   * reported a deficit whose reason did not know those assignments existed.
+   *
+   * WHY THE FOLD IS A MAXIMUM rather than a replacement. `setReadyTasks` still
+   * serves a caller with a view this package does not hold — and the pre-existing
+   * arms that set it assert on the deficit reasons it produces. Folding by
+   * maximum keeps those readings and adds the durable one, which is the safe
+   * direction for a number whose only use is to EXPLAIN a deficit: over-reporting
+   * ready work can never hide a shortage, whereas under-reporting would report
+   * `insufficient_ready_tasks` for work that is durably waiting.
+   */
+  private readyTaskCountFor(record: RunRecord): number {
+    const observed = this.readyTaskCount.get(record.runId) ?? 0
+    const durable = Object.keys(record.readyAssignments ?? {}).length
+    return Math.max(observed, durable)
   }
 
   /** Record how many ready tasks the root currently has. Mechanical, no model call. */
   setReadyTasks(runId: string, ready: number): void {
     this.readyTaskCount.set(runId, ready)
+  }
+
+  /**
+   * The run and task a reserved child id belongs to, if any.
+   *
+   * WHY THIS EXISTS, and why it is a scan. DSH's `subagent/end` names a child by
+   * its SessionId (`dsh-subagent/src/types.ts:104`), and this package reserved
+   * that exact id before launching (`launch-port.ts:78`, asserted at `:92-97`),
+   * so the mapping is exact rather than heuristic. But the record stores tasks
+   * keyed by taskId, so the lookup is over the runs this host holds.
+   *
+   * The scan is bounded by `listRunIds()` — a host holds few runs — and it is a
+   * READ, so a linear search costs nothing a map would save. The alternative, an
+   * in-memory childId index, would be a second copy of durable state that a
+   * restart would have to rebuild, and this project has already recorded what a
+   * process-local side table costs when it disagrees with the record (`G-SEAM-45`
+   * / CAP-10).
+   *
+   * @returns undefined for a child this package does not own. That is a normal
+   *   answer, not an error: DSH can create children outside WorkService
+   *   admission.
+   */
+  findTaskByChildId(childId: string): { readonly runId: string; readonly taskId: string } | undefined {
+    if (this.disposed || this.domain === undefined) return undefined
+    for (const runId of this.listRunIds()) {
+      const record = this.runs().get(runId)
+      if (record === undefined) continue
+      for (const task of Object.values(record.tasks)) {
+        if (task.childId === childId) return { runId, taskId: task.taskId }
+      }
+      // A task that is still READY has a reserved childId but no task row yet.
+      // It is deliberately NOT returned: the completion event names a child that
+      // was STARTED, and a ready assignment has not been. Returning it would let
+      // a completion for some other child reconcile an assignment that never ran.
+    }
+    return undefined
+  }
+
+  /**
+   * Record that a completion wake failed, so the failure is visible rather than
+   * swallowed.
+   *
+   * The listener is fire-and-forget (it must not block the registry's emit), so
+   * its rejection has nowhere to go. Dropping it would violate the project's rule
+   * that a failure is reported rather than hidden, and letting it propagate would
+   * terminate the process under Node's default unhandled-rejection policy. So it
+   * lands in the same bounded refusal log the capacity guard uses, with its own
+   * wording so a reader can tell a completion failure from a capacity refusal.
+   *
+   * Bounded for the same reason: a failing wake storm must not grow without
+   * limit. The count of dropped entries is not kept, because the log's purpose is
+   * diagnosis and the first 64 are the informative ones.
+   */
+  recordCompletionFailure(failure: {
+    readonly childId: string
+    readonly stopReason: string
+    readonly message: string
+  }): void {
+    if (this.completionFailures.length >= 64) this.completionFailures.shift()
+    this.completionFailures.push(failure)
+  }
+
+  /** The completion failures this process recorded, oldest first. */
+  completionFailureLog(): readonly CompletionFailure[] {
+    return [...this.completionFailures]
   }
 
   /** Record observed liveness for one task. Mechanical, no model call. */
@@ -2274,6 +2409,56 @@ export class WorkService extends Service {
   }
 
   /**
+   * Wake the run's drain because something changed that may have freed a slot
+   * (V5 §7.3).
+   *
+   * THIS IS A WAKE, NOT A REQUEST, and the difference is the whole reason it
+   * exists. `drain` answers a caller's own assignments; `requestDrain` says only
+   * "look at the durable ready table again". The two callers are V5 §7.2's
+   * `work submit` (after a durable insert) and §7.4's completion listener (after
+   * a slot is released). Neither has work of its own to submit.
+   *
+   * IT DOES NOT AWAIT, AND THAT IS DELIBERATE. A completion listener must not
+   * block the event that woke it: the listener's own job — reconciling the
+   * child's canonical state — must not be held behind a launch that may take as
+   * long as a provider call. The returned promise resolves when the pass this
+   * wake requested has finished, so a TEST can await the mechanism; a production
+   * listener does not have to.
+   *
+   * IT IS NOT THE CORRECTNESS LAYER, exactly as `drain` is not. If this wake is
+   * lost — a crash, a missed event — the target is not over-admitted, because the
+   * decision lives in `tryReserveAdmission`. What is lost is promptness, and that
+   * is why §7.5's boot sweep exists: a run with ready assignments drains again
+   * when the service opens.
+   */
+  async requestDrain(runId: string): Promise<void> {
+    // Nothing to do for a run this host does not hold, or a disposed service.
+    // Not an error: a completion event can arrive for a run another host owns.
+    if (this.disposed || this.domain === undefined) return
+    const record = this.getRun(runId)
+    if (record === undefined) return
+    const existing = this.drainLeaders.get(runId)
+    const state: DrainLeaderState = existing ?? {
+      requestedGeneration: 0,
+      handledGeneration: 0,
+      runner: undefined,
+      pending: [],
+    }
+    if (existing === undefined) this.drainLeaders.set(runId, state)
+    state.requestedGeneration += 1
+    const promise = new Promise<LaunchOutcome[]>((resolve, reject) => {
+      // The ready-table pass does not take its work from this list, so the
+      // `requests` array is empty by construction and the outcome the caller
+      // receives is the pass's own summary rather than a per-request answer.
+      state.pending.push({ requests: [], signal: NEVER_ABORTED, resolve, reject, fromReadyTable: true })
+    })
+    if (state.runner === undefined) {
+      state.runner = this.runDrainLeader(runId, state).catch(() => {})
+    }
+    await promise
+  }
+
+  /**
    * The single per-run drain leader.
    *
    * Runs one pass per requested generation. A pass takes a SNAPSHOT of the
@@ -2354,7 +2539,55 @@ export class WorkService extends Service {
 
     for (const entry of batch) {
       const mine = outcomes.get(entry)!
-      for (const request of entry.requests) {
+      // ---- WHERE THIS PASS'S WORK COMES FROM (V5 §7.3) ----------------------
+      //
+      // A caller-driven item carries its own requests. A ready-driven item
+      // carries NONE, and its work is the run's durable ready table read at pass
+      // start, OLDEST FIRST. Reading it here rather than at the wake is what
+      // makes a wake idempotent and lossless: the pass always decides from the
+      // current durable state, so a wake that arrives while a previous pass is
+      // still committing cannot act on a stale list.
+      //
+      // The pass loops until the table yields nothing admit-able, because one
+      // wake must be able to fill SEVERAL free slots. A single-request pass would
+      // need one wake per slot, which under a completion storm is exactly the
+      // polling this slice exists to remove.
+      const requests: readonly LaunchRequest[] = entry.fromReadyTable === true
+        ? this.readyAssignments(runId).map(a => ({
+            taskId: a.taskId,
+            childId: a.childId,
+            prompt: a.prompt,
+            reservedCost: a.reservedCost,
+            allowedCapabilities: a.allowedCapabilities,
+          }))
+        : entry.requests
+      // ---- A READY-DRIVEN PASS REFUSES TO CONSUME THE TABLE WITH NO PORT ----
+      //
+      // WHY THIS GUARD EXISTS, and it is not defensive padding. The
+      // caller-driven path below already handles an absent port by admitting the
+      // task and then moving it to `unknown` with `uncertainty: 'no launch port
+      // installed'` — correct there, because a caller asked for THIS work and
+      // must learn it did not run. Applied to the ready table it would be
+      // DESTRUCTIVE: a boot sweep (§7.5) with no port installed would convert
+      // every durable ready row into an `unknown` TASK, which holds a slot and
+      // commits credit. A wake that turns pending intent into quarantined
+      // occupancy is worse than not waking.
+      //
+      // So a ready-driven pass with no port leaves the table EXACTLY as it found
+      // it and reports the refusal, which is the honest reading: the work is
+      // still pending, and the reason it is not running is a configuration fact
+      // about this host rather than anything about the assignment.
+      if (entry.fromReadyTable === true && this.launchPort === undefined && requests.length > 0) {
+        const first = requests[0]!
+        mine.push({
+          taskId: first.taskId,
+          childId: first.childId,
+          accepted: false,
+          reason: 'no launch port installed',
+        })
+        continue
+      }
+      for (const request of requests) {
         // A caller whose signal is already aborted, or a disposed service, gets NO
         // OUTCOME rather than a refusal, and that is the contract the previous
         // implementation had: `host.test.ts` ("does not launch when the caller
@@ -2368,7 +2601,7 @@ export class WorkService extends Service {
         if (this.disposed || entry.signal.aborted) break
 
         const record = this.requireRun(runId)
-        const counts = countRun(record, this.liveness.get(runId) ?? new Map(), this.readyTaskCount.get(runId) ?? 0)
+        const counts = countRun(record, this.liveness.get(runId) ?? new Map(), this.readyTaskCountFor(record))
 
         // ---- THERE IS NO OCCUPANCY PRE-CHECK HERE ANY MORE, AND WHY ----------
         //
@@ -2448,7 +2681,11 @@ export class WorkService extends Service {
           childId: request.childId,
           assignmentDigest: request.prompt,
           reservedCost: request.reservedCost,
-          allowedCapabilities: ['reader'],
+          // A ready assignment carries its own capability list; a caller-driven
+          // request that named none keeps the drain's existing default. This is
+          // the same expression as before for every pre-existing caller, so no
+          // admission changes behaviour because of this line.
+          allowedCapabilities: request.allowedCapabilities ?? ['reader'],
         })
         if (!reservation.reserved) {
           // The refusal came from the atomic update, so its reason is the gate's
@@ -2461,8 +2698,47 @@ export class WorkService extends Service {
             accepted: false,
             reason: refusalReasonForOutcome(record, counts, reservation, request.reservedCost),
           })
+          if (entry.fromReadyTable === true) {
+            // ---- TWO DIFFERENT REFUSALS, TWO DIFFERENT RESPONSES (V5 §7.3) ----
+            //
+            // §7.3's pseudo-code is explicit: "if target/cap/budget blocked:
+            // break". A capacity refusal is a fact about the RUN, not about this
+            // assignment, so every remaining ready row would be refused
+            // identically. Continuing would spend one refused storage-domain
+            // update per row to learn the same answer, which is the cost the
+            // leader exists to avoid.
+            //
+            // `slots_held_by_unconfirmed` is the exception and must NOT break:
+            // it is the row's own staleness. The taskId is already admitted (or
+            // tombstoned), which means the READY row is redundant — the window
+            // `clearReadyAssignment` documents. An admitted task is stronger
+            // evidence than a pending intent, so the row is dropped and the pass
+            // moves on to the next one. Breaking here would let ONE stale row
+            // block every row behind it, which is a starvation bug with a
+            // plausible-looking justification.
+            if (reservation.reason === 'slots_held_by_unconfirmed') {
+              await this.clearReadyAssignment(runId, request.taskId)
+              continue
+            }
+            break
+          }
           continue
         }
+
+        // ---- THE INTENT IS RETIRED AS SOON AS IT IS ADMITTED ----------------
+        //
+        // Placed HERE, immediately after the reservation committed, rather than
+        // after the launch: from this point the task is durably admitted, so the
+        // READY row is already redundant, and clearing it now keeps the window
+        // (documented at `clearReadyAssignment`) as small as this design can
+        // make it. Clearing it after the launch would leave the window open for
+        // as long as a provider call takes.
+        //
+        // NOT conditional on `entry.fromReadyTable`: the rule is about the
+        // taskId, not about which path admitted it. A caller-driven drain that
+        // happens to admit a taskId which also has a READY row retires the row
+        // for the same reason.
+        await this.clearReadyAssignment(runId, request.taskId)
 
         // ---- THE DURABLE RESERVATION IS COMMITTED. ONLY NOW MAY WE LAUNCH ----
         //
