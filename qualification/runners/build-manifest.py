@@ -568,6 +568,11 @@ def build_manifest(observation: dict[str, Any]) -> tuple[dict[str, Any], list[st
                 "merely reported."),
         },
         "build": {},
+        # QUALIFIERS: facts that DESCRIBE the observation but are deliberately NOT
+        # hashed into RuntimeDeploymentIdentity. Kept in a separate object so the
+        # boundary is visible in the artifact rather than a reader having to guess
+        # which fields moved the identity. Each entry states why it is excluded.
+        "qualifiers": {},
         "gaps": gaps,
     }
     b = manifest["build"]
@@ -597,14 +602,45 @@ def build_manifest(observation: dict[str, Any]) -> tuple[dict[str, Any], list[st
             "qualification/runners/run-p14-manifest.mjs.")
     b["project_git_commit"] = observed_rev.get("commit")
     b["project_git_tree"] = observed_rev.get("tree")
-    b["project_git_branch"] = observed_rev.get("branch")
-    b["project_git_dirty"] = observed_rev.get("dirty")
-    b["project_git_dirty_path_count"] = observed_rev.get("dirty_path_count")
     b["project_git_bound_to"] = (
         "THE COMMIT RECORDED HERE, read at OBSERVATION time. Not the current HEAD of "
         "this or any other checkout: twelve writers edit this tree concurrently, so the "
         "commit moves under the measurement and the manifest states which one it saw.")
-    b["project_git_live_at_generation"] = {
+    # ── WHAT IS NOT HASHED, AND WHY ─────────────────────────────────────────
+    #
+    # THE DESIGN ERROR THIS CORRECTS, found by watching the identity move for a
+    # reason that was not a change to the deployment. `project_git_dirty_path_count`
+    # was in the hashed set, and another writer creating one unrelated file moved
+    # RuntimeDeploymentIdentity. A writer adding an untracked result directory did
+    # not change the launcher, the profile, the packages, the graph or the catalog --
+    # so the identity moved while the deployment did not, which is the exact
+    # defect this slice removes.
+    #
+    # The precedent is already recorded in this project, in
+    # qualification-identity.py's `implementation_commit`: "The dirty state is
+    # recorded but NOT part of the identity digest: an uncommitted edit in a
+    # worktree would otherwise make every measurement in that worktree
+    # unreproducible by identity, which would push writers toward committing
+    # half-finished work to get a stable hash. The ARTIFACTS are digested instead,
+    # so a real change is still caught."
+    #
+    # So: the COMMIT and the TREE are hashed, because they are the build's identity.
+    # The DIRTY state, the BRANCH NAME and the live-at-generation comparison are
+    # QUALIFIERS -- recorded, reported, and excluded from the hash. A dirty tree that
+    # produced different ARTIFACTS still moves the identity, because every artifact
+    # is hashed below; that is what makes the exclusion safe rather than a hole.
+    qualifiers = manifest["qualifiers"]
+    qualifiers["git_dirty_at_observation"] = {
+        "dirty": observed_rev.get("dirty"),
+        "dirty_path_count": observed_rev.get("dirty_path_count"),
+        "branch": observed_rev.get("branch"),
+        "excluded_from_the_identity_because": (
+            "a concurrent writer's untracked file is not a change to this deployment, and "
+            "including a path COUNT made the identity move for exactly that reason -- "
+            "measured. The artifacts are hashed instead, so a real change is still caught. "
+            "Same rule and same reason as qualification-identity.py's implementation_commit."),
+    }
+    qualifiers["git_live_at_generation"] = {
         "commit": live_rev["commit"],
         "dirty": live_rev["dirty"],
         "dirty_path_count": live_rev["dirty_path_count"],
@@ -630,10 +666,15 @@ def build_manifest(observation: dict[str, Any]) -> tuple[dict[str, Any], list[st
                 "recorded_at_observation": recorded,
                 "on_disk_now": actual,
             })
-    b["artifact_staleness"] = {
+    # A statement about "now" rather than about the build, so it is a QUALIFIER:
+    # hashing it would make the identity move every time a reader ran the generator.
+    qualifiers["artifact_staleness"] = {
         "fingerprinted_paths": len(fingerprint),
         "moved_since_observation": moved_artifacts,
         "commit_moved_only": bool(moved_artifacts) is False and live_rev["commit"] != observed_rev.get("commit"),
+        "excluded_from_the_identity_because": (
+            "it compares the observation to the moment of generation, so hashing it would make "
+            "the identity move every time the generator was re-run on an unchanged build."),
         "_reading": (
             "COMMIT MOVED ONLY: every fingerprinted artifact is byte-identical, so the "
             "deployment is materially the same and the previous measurements still "
