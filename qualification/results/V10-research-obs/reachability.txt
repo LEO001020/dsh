@@ -7,39 +7,46 @@ total files scanned: 147
 --- direct importers, per target ---
 
 history-plane (the M7 history plane implementation)
-  PRODUCTION importers (2): ["packages/dsh-daily-work/src/history-plugin.ts","qualification/runners/v10-obs-plane.mjs"]
+  PRODUCTION importers (1): ["packages/dsh-daily-work/src/history-plugin.ts"]
+  QUALIFICATION-RUNNER importers (1): ["qualification/runners/v10-obs-plane.mjs"]
   TEST importers       (1): ["packages/dsh-daily-work/src/history-web.test.ts"]
-  reachable from a non-test path: true
+  reachable from a non-test PRODUCTION path: true
 
 history-plugin (the M7 plugin entry point (the profile row))
   PRODUCTION importers (0): []
+  QUALIFICATION-RUNNER importers (0): []
   TEST importers       (1): ["packages/dsh-daily-work/src/history-web.test.ts"]
-  reachable from a non-test path: false
+  reachable from a non-test PRODUCTION path: false
 
 web-provenance (the M7 provenance/locator implementation)
-  PRODUCTION importers (2): ["packages/dsh-daily-work/src/history-plugin.ts","qualification/runners/v10-res01-chain.mjs"]
+  PRODUCTION importers (1): ["packages/dsh-daily-work/src/history-plugin.ts"]
+  QUALIFICATION-RUNNER importers (1): ["qualification/runners/v10-res01-chain.mjs"]
   TEST importers       (3): ["packages/dsh-daily-work/src/history-web.test.ts","packages/dsh-daily-work/src/research-chain.test.ts","packages/dsh-daily-work/src/research.test.ts"]
-  reachable from a non-test path: true
+  reachable from a non-test PRODUCTION path: true
 
 web-search (the ported web-search provider)
-  PRODUCTION importers (2): ["packages/dsh-daily-work/src/web-search-plugin.ts","qualification/runners/v10-res01-chain.mjs"]
+  PRODUCTION importers (1): ["packages/dsh-daily-work/src/web-search-plugin.ts"]
+  QUALIFICATION-RUNNER importers (1): ["qualification/runners/v10-res01-chain.mjs"]
   TEST importers       (5): ["packages/dsh-daily-work/src/profile-config.test.ts","packages/dsh-daily-work/src/research-chain.test.ts","packages/dsh-daily-work/src/research.test.ts","packages/dsh-daily-work/src/security.test.ts","packages/dsh-daily-work/src/web-search.test.ts"]
-  reachable from a non-test path: true
+  reachable from a non-test PRODUCTION path: true
 
 observations (the observation capture module)
   PRODUCTION importers (2): ["packages/dsh-daily-work/src/artifacts.ts","packages/dsh-daily-work/src/data-service.ts"]
+  QUALIFICATION-RUNNER importers (0): []
   TEST importers       (1): ["packages/dsh-daily-work/src/data-plane.test.ts"]
-  reachable from a non-test path: true
+  reachable from a non-test PRODUCTION path: true
 
 recovery (the recovery module)
   PRODUCTION importers (0): []
+  QUALIFICATION-RUNNER importers (0): []
   TEST importers       (2): ["packages/dsh-daily-work/src/durability-advanced.test.ts","packages/dsh-daily-work/src/durability-records.test.ts"]
-  reachable from a non-test path: false
+  reachable from a non-test PRODUCTION path: false
 
 reconcile (the reconcile module)
   PRODUCTION importers (1): ["packages/dsh-daily-work/src/durability-runner.ts"]
+  QUALIFICATION-RUNNER importers (0): []
   TEST importers       (6): ["packages/dsh-daily-work/src/durability-advanced.test.ts","packages/dsh-daily-work/src/durability-records.test.ts","packages/dsh-daily-work/src/lifecycle.test.ts","packages/dsh-daily-work/src/reconcile.test.ts","packages/dsh-daily-work/src/tool-protocol.test.ts","packages/dsh-daily-work/src/wire-faults.test.ts"]
-  reachable from a non-test path: true
+  reachable from a non-test PRODUCTION path: true
 
 --- the dailyHistory service: what CALLS it ---
   packages/dsh-daily-work/src/history-plugin.ts  test=false  get('dailyHistory')=false  .history(...)=false
@@ -49,7 +56,14 @@ reconcile (the reconcile module)
   qualification/runners/verify-deliverable-surface.mjs  test=false  get('dailyHistory')=true  .history(...)=false
   qualification/runners/verify-m7-history.mjs  test=false  get('dailyHistory')=true  .history(...)=false
   qualification/runners/verify-t4-preset.mjs  test=false  get('dailyHistory')=true  .history(...)=false
-  PRODUCTION callers of .history(...): 1 ["qualification/runners/v10-obs-plane.mjs"]
+  PRODUCT (packages/**) callers of .history(...): 0 []
+  QUALIFICATION-RUNNER callers of .history(...): 1 ["qualification/runners/v10-obs-plane.mjs"]
+
+  NOTE ON `history-plugin`: the profile reaches it through the package EXPORT
+  `dsh-daily-work/history` -> `lib/history-plugin.js`, which names no file path,
+  so a direct-import scan reports zero importers for the MODULE while the module is
+  in fact the thing the composed host loads. The boot probe settles that direction:
+  `ctx.dailyHistory` is present in the composed host (see OBS-plane-boot.json).
 
 --- the IPython broker protocol: could a host callback ride it? ---
 BrokerOpName members: ["start","execute","interrupt","restart","shutdown","status","kernel_info"]

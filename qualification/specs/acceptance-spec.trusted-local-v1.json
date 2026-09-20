@@ -2467,8 +2467,28 @@
       "requirement": "the search-to-citation chain uses real sources",
       "stimulus": "Run an independent search, fetch the original source, widen to the full relevant range, then cite.",
       "oracle": "Every step carries a real source with a version and a timestamp. A missing key or a failed fetch is reported as a failure, never turned into a fabricated result or an invented citation.",
-      "status": "NOT_RUN",
-      "evidence": []
+      "status": "PASS",
+      "evidence": [
+        {
+          "path": "qualification/results/V10-research-obs/RES-01-research-chain.txt",
+          "sha256": "ab43db26e15e0eb41d7e09a2a4064e21a28130c684290700d190fb319ab7596d",
+          "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+          "note": "T1 transcript: 35/35 passed. LINK 1/1b/1c (search dialect and mounted-not-selected), LINK 2 (original bytes by digest), LINK 3/3b/3c (truncation vs refusal), LINK 4 (digest-verified citation), LINK 4c (loopback reached through the documented resolver seam while the shipped default refuses), LINK 4b (production locator), and five FAILURE-not-emptiness shapes."
+        },
+        {
+          "path": "qualification/results/V10-research-obs/RES-01-t2-boot.txt",
+          "sha256": "027df26a2ef7d334215b1a82d3fc9afe011bca0799de848e3946657abb41e699",
+          "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+          "note": "T2 driver transcript: rebuild exit 0, fresh profile installed from the repository (patch sha256 5b8b2a8e...), boot on port 3013, portReleased true, probe named the booted home, resolver selection read from the composed tree."
+        },
+        {
+          "path": "qualification/results/V10-research-obs/RES-01-boot-chain.json",
+          "sha256": "47722b5e683d68fcfd4fffb183bed52b2944d19f16c9834c7cc9c0b91df61be2",
+          "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+          "note": "T2 probe result: the chain measured inside the booted host -- search request the server received, fetched-digest equality, located span, failure shapes, and the 27-tool agent surface."
+        }
+      ],
+      "note": "Every link carries a real source with a version and a timestamp, and every failure shape is an explicit error rather than a fabricated result. MEASURED: the search request reaches a loopback endpoint through the shipped ported provider ({query,maxResults} on the wire, 3 rows sent / 1 kept, tracking param and fragment stripped); the fetch retrieves the ORIGINAL bytes through the shipped HttpFetchProvider (served digest == fetched digest, non-ASCII survived); the production locateClaim names a real byte span (startByte 252, endByte 285) whose bytes ARE the quote; a fetch of an unreachable port is WEB_BLOCKED_URL with no body, and an unreachable search endpoint is SEARCH_PROVIDER_UNAVAILABLE rather than an empty source list. The chain is reachable from the T2 composition: a real Session on the profile's own preset carries 27 tools including web_fetch and web_search. NAMED LIMITS: (1) the retrieval link is proven against a CONTROLLED FAKE (a loopback server written to the port's dialect) because no live search credential is authorized; the origin link is a real socket through the shipped provider. (2) No version IDENTITY is established across the chain: publishedAt is provider prose carried through unvalidated and no ETag/Last-Modified/content-hash is compared between the search row and the fetched bytes (G-WEB-03). (3) REACH: the ported provider is MOUNTED but NOT SELECTED -- the composed web row reads searchProvider: deepseek-official while the ported row carries id: daily-search, so a search driven through ctx.web.search() reaches a different backend (G-WEB-01, re-measured here)."
     },
     {
       "id": "RES-02",
@@ -2478,8 +2498,28 @@
       "requirement": "the evidence tier is not inflated",
       "stimulus": "Store only the bytes of a PDF without ever presenting its body to the reader.",
       "oracle": "The record reports `bytes_captured` and does not claim `primary_read` or `understood`. The tier vocabulary must not even contain the stronger values as reachable states.",
-      "status": "NOT_RUN",
-      "evidence": []
+      "status": "PASS",
+      "evidence": [
+        {
+          "path": "qualification/results/V10-research-obs/RES-02-03-vocabulary.txt",
+          "sha256": "645187104bf546108c7b1a1863001859007f844a21a367d7e0b5debd9453442d",
+          "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+          "note": "Standalone probe: the file-by-file location of the tier vocabulary (test-local, with the file list printed), the shipped member lists read from the built module, the shipped EvidenceRef field list, and the PDF refusal."
+        },
+        {
+          "path": "qualification/results/V10-research-obs/RES-02-03-research.txt",
+          "sha256": "42742fade0f225e145d3d9fa5afc2472ed8242dcb44f9f020a8133fffe77e4b5",
+          "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+          "note": "T1 transcript: 53/53 passed, including the R02 block -- a stored PDF is bytes_captured and NOT any reading tier, the vocabulary cannot express primary_read or understood, no automatic promotion, and the refusals of a skipped, backwards or evidence-free transition."
+        },
+        {
+          "path": "qualification/results/V10-research-obs/RES-01-research-chain.txt",
+          "sha256": "ab43db26e15e0eb41d7e09a2a4064e21a28130c684290700d190fb319ab7596d",
+          "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+          "note": "The R02 block of the research-chain transcript: the ladder walked honestly ends at support_checked and never at understood, and a parse that does not state its coverage is refused."
+        }
+      ],
+      "note": "Saving bytes reports bytes_captured and never a reading tier, and the tier vocabulary cannot express the stronger values. MEASURED: EVIDENCE_TIERS is a closed six-member tuple and advanceEvidence refuses a skipped step, a backwards step, and any destination outside it; there is no overload taking a bare target tier, so 'advance this to understood' is not expressible. On the SHIPPED build, AcquisitionCompleteness is [complete-within-request, partial, unknown] and GapRecovery is [page, refetch, none, unknown] -- neither contains primary_read or understood -- and the shipped EvidenceRef schema has fields [kind, id, digest, label] with NO tier/read-state field at all. A PDF cannot become a read through the shipped fetch path: web_fetch on application/pdf is refused with WEB_UNSUPPORTED_CONTENT_TYPE and returns no body. NAMED LIMIT, stated rather than smoothed over: the six-rung TIER LADDER is declared in the TEST FILES, not in a shipped module -- a flat scan of all 80 .ts files under packages/dsh-daily-work/src shows primary_read, understood, range_presented_to_model and bytes_captured in ZERO production files. DSH has no evidence-tier concept to import, and the project modelled it against the plan's own words rather than inventing a DSH API for it. The production half of the claim is therefore the narrower measured fact above."
     },
     {
       "id": "RES-03",
@@ -2489,8 +2529,28 @@
       "requirement": "an incomplete parse reports its own limits",
       "stimulus": "Parse a PDF whose body omits tables, and separately follow a redirect, a 404 and a truncated body.",
       "oracle": "The read range and its limitations are stated for each case, and missing content is never filled in. Using a search snippet as if it were the full text is NOT PASS.",
-      "status": "NOT_RUN",
-      "evidence": []
+      "status": "PASS",
+      "evidence": [
+        {
+          "path": "qualification/results/V10-research-obs/RES-02-03-research.txt",
+          "sha256": "42742fade0f225e145d3d9fa5afc2472ed8242dcb44f9f020a8133fffe77e4b5",
+          "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+          "note": "T1 transcript: 53/53 passed. The R03 block covers bytes-are-not-a-read, a partial parse recording its range and withholding the parsed state, a real 404, a real WebError carrying the provider code, a refused redirect, an unconfigured provider, the refusal to turn a failed fetch into a negative finding, and the PDF/text-layer cases."
+        },
+        {
+          "path": "qualification/results/V10-research-obs/RES-02-03-vocabulary.txt",
+          "sha256": "645187104bf546108c7b1a1863001859007f844a21a367d7e0b5debd9453442d",
+          "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+          "note": "Standalone probe: the shipped extractPdfText outcomes measured directly -- text, empty (with doesNotMean), budget-exceeded and decode-error -- plus locateClaim on a present quote, an absent quote and a snippet-labelled quote."
+        },
+        {
+          "path": "qualification/results/V10-research-obs/OBS-history-web.txt",
+          "sha256": "86c9e9665b8b0c06f9afca5ff282fc9451305ddf6a525272dedd01251c8cb85f",
+          "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+          "note": "The WEB-08 block: an empty extraction is not reported as 'the content does not exist', a throwing extractor is a decode error with the cause preserved, and a budget stop is PARTIAL with byte counts."
+        }
+      ],
+      "note": "An incomplete read states its range and its limits, and missing content is never filled in. MEASURED for each stimulus the case names: a PDF whose body omits tables is recorded by its range with complete: false and a limit naming the text-layer extraction, and a claim about the missing table THROWS /no complete read exists/ rather than returning an empty string; an empty extraction carries coverage: unknown and doesNotMean: 'the document contains no content'; a 404 is recorded as responded/usable:false and a parse of it is refused by its status; a refused redirect is a FETCH failure whose text says the content state is UNKNOWN, and an allowed redirect records finalUrl so the range is attributable; a truncated body is recorded as truncated AND as an incomplete read. A snippet used as full text is refused STRUCTURALLY: locateClaim(quote, artifact, {origin:'search_snippet'}) returns not-located / snippet-is-not-full-text with the quoted words demonstrably present in the artifact, so the refusal cannot be explained by a failed string match. A quote that is not in the artifact returns text-not-in-artifact -- the match is exact and byte-based, never approximate."
     },
     {
       "id": "RES-04",
@@ -2500,8 +2560,34 @@
       "requirement": "provider truncation is not local full recoverability",
       "stimulus": "Have a provider deliver only the first part of a body.",
       "oracle": "`acquisition.completeness` is `partial` with recovery `none` or `refetch`, and the record does not claim the full text is locally recoverable. Claiming completeness from a truncated fetch is NOT PASS.",
-      "status": "NOT_RUN",
-      "evidence": []
+      "status": "PASS",
+      "evidence": [
+        {
+          "path": "qualification/results/V10-research-obs/RES-01-boot-chain.json",
+          "sha256": "47722b5e683d68fcfd4fffb183bed52b2944d19f16c9834c7cc9c0b91df61be2",
+          "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+          "note": "T2 probe result: res04Truncation -- the truncation record built from a real capped fetch through the shipped provider, with the completeness, the gap recovery, the vocabulary and the claimScope."
+        },
+        {
+          "path": "qualification/results/V10-research-obs/RES-01-t2-boot.txt",
+          "sha256": "027df26a2ef7d334215b1a82d3fc9afe011bca0799de848e3946657abb41e699",
+          "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+          "note": "T2 driver transcript for that probe, including the build digest and the boot's port release."
+        },
+        {
+          "path": "qualification/results/V10-research-obs/RES-01-research-chain.txt",
+          "sha256": "ab43db26e15e0eb41d7e09a2a4064e21a28130c684290700d190fb319ab7596d",
+          "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+          "note": "LINK 3 / 3b / 3c: the truncated range is labelled as a range and the model is told to fetch narrower; a declared overrun is a REFUSAL; and the same cap truncates an undeclared body."
+        },
+        {
+          "path": "qualification/results/V10-research-obs/OBS-history-web.txt",
+          "sha256": "86c9e9665b8b0c06f9afca5ff282fc9451305ddf6a525272dedd01251c8cb85f",
+          "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+          "note": "The WEB-01 block: truncated:true -> partial + a provider-acquisition gap with recovery refetch, and the explicit assertion that the recovery is NOT 'page'."
+        }
+      ],
+      "note": "Provider truncation is partial with a non-local recovery, and the record never claims the full text is locally recoverable. MEASURED through the SHIPPED HttpFetchProvider with a character cap, so the truncated flag is produced by the real transport rather than stated by the probe: servedBodyChars 280, deliveredChars 40, deliveredIsAPrefixOfTheServedBytes true, truncatedFlag true, completeness 'partial', gaps[0].stage 'provider-acquisition', gaps[0].recovery 'refetch', coverage.claimScope 'request', claimsLocalFullRecoverability false. The recovery vocabulary is [page, refetch, none, unknown] with NO local arm -- read in source, refetch is documented as 'deliberately not a local recovery' and there is no recover-locally member, so the vocabulary cannot express the claim the oracle forbids. The complementary arm is pinned in both directions: the same cap that TRUNCATES an undeclared body REFUSES a body with a declared content-length over the byte cap (WEB_FETCH_TOO_LARGE, no value at all)."
     },
     {
       "id": "RES-05",
@@ -2511,8 +2597,28 @@
       "requirement": "raw and derived content are separately identified",
       "stimulus": "De-script an HTML page and convert it to markdown, including a conversion that fails.",
       "oracle": "Raw and derived artifacts carry separate hashes and separate locators, and a failed conversion produces an explicit failure rather than manufactured body text.",
-      "status": "NOT_RUN",
-      "evidence": []
+      "status": "PASS",
+      "evidence": [
+        {
+          "path": "qualification/results/V10-research-obs/RES-01-boot-chain.json",
+          "sha256": "47722b5e683d68fcfd4fffb183bed52b2944d19f16c9834c7cc9c0b91df61be2",
+          "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+          "note": "T2 probe result: res05RawDerived -- the raw and derived digests, the parent link, the transform identity, and the three failure arms (throwing, empty, and the assembled record)."
+        },
+        {
+          "path": "qualification/results/V10-research-obs/RES-01-t2-boot.txt",
+          "sha256": "027df26a2ef7d334215b1a82d3fc9afe011bca0799de848e3946657abb41e699",
+          "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+          "note": "T2 driver transcript for that probe."
+        },
+        {
+          "path": "qualification/results/V10-research-obs/OBS-history-web.txt",
+          "sha256": "86c9e9665b8b0c06f9afca5ff282fc9451305ddf6a525272dedd01251c8cb85f",
+          "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+          "note": "The WEB-03 block: raw and derived separately hashed and linked, no fallback to raw HTML on an empty conversion, a throwing converter recorded as a transform gap, and the raw/derived separation asserted in separate record slots."
+        }
+      ],
+      "note": "Raw and derived content carry separate hashes and separate locators, and a failed conversion produces an explicit failure rather than manufactured body text. MEASURED on a real HTML page fetched through the shipped provider: raw sha256 13775969... (303 bytes) vs derived sha256 ba8796f2... (238 bytes), hashesAreSeparate true; the record carries captured.artifact and derived.parent and derivedNamesItsParent is true, so the derivation names the raw artifact it came from; the transform identity is recorded as {name, version}. A THROWING converter yields NO derived body and a transform gap with recovery 'none' whose reason names the converter; an EMPTY conversion yields NO derived body and a transform gap, with the raw HTML demonstrably NOT substituted; and on the assembled record the failed conversion leaves hasDerivedSlot false while the raw object is still present. NAMED LIMIT: the converter is INJECTED -- the real turndown+gfm converter is not a package export -- so this establishes the raw/derived separation and the failure behaviour, not turndown's own output on real malformed markup."
     },
     {
       "id": "RES-06",
@@ -2522,8 +2628,28 @@
       "requirement": "a claim is locatable and external content stays untrusted",
       "stimulus": "Make a final claim citing a page or fragment, from a page that also contains embedded commands, a skill-update instruction and an authority claim.",
       "oracle": "The claim can be located in the captured artifact at a named span, a snippet is not treated as the full text, and the external content is wrapped as untrusted data that cannot change host authority or cause execution.",
-      "status": "NOT_RUN",
-      "evidence": []
+      "status": "PASS",
+      "evidence": [
+        {
+          "path": "qualification/results/V10-research-obs/RES-01-boot-chain.json",
+          "sha256": "47722b5e683d68fcfd4fffb183bed52b2944d19f16c9834c7cc9c0b91df61be2",
+          "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+          "note": "T2 probe result: citationLink -- the located span with the bytes at those offsets checked against the artifact, the snippet refusal, the artifact digest, and the untrusted wrap with its three findings and the empty capability set."
+        },
+        {
+          "path": "qualification/results/V10-research-obs/RES-01-t2-boot.txt",
+          "sha256": "027df26a2ef7d334215b1a82d3fc9afe011bca0799de848e3946657abb41e699",
+          "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+          "note": "T2 driver transcript for that probe."
+        },
+        {
+          "path": "qualification/results/V10-research-obs/OBS-history-web.txt",
+          "sha256": "86c9e9665b8b0c06f9afca5ff282fc9451305ddf6a525272dedd01251c8cb85f",
+          "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+          "note": "The WEB-06 and WEB-07 blocks: a quote located at real byte offsets, a snippet refused, a non-occurring quote unsupported rather than approximately matched, every injection attempt recorded as a finding with the text verbatim, and no field in the untrusted record that could carry authority."
+        }
+      ],
+      "note": "A claim is locatable at a named span in the captured artifact, a snippet is not treated as the full text, and external content is wrapped as untrusted data that cannot change host authority or cause execution. The stimulus is the case's own: ONE page carrying an embedded command, a skill-update instruction and an authority claim, plus the sentence the claim is built from. MEASURED: the production locateClaim returns kind 'located' with startByte 252 / endByte 285, the artifact's own sha256, and the bytes at those offsets ARE the quote; the SAME quote labelled origin 'search_snippet' returns not-located / snippet-is-not-full-text; the page wraps as trust 'untrusted-data' with the shipped notice and textIsVerbatim true; all three injection attempts are DETECTED and reported -- findingIds [imperative-command, skill-update, authority-claim] -- while the content passes through unchanged; and capabilitiesFor(content) returns [] for any content. Read in source, UntrustedContent has no authority/capability/instruction field, so a record of this type cannot express a grant."
     },
     {
       "id": "OBS-01",
@@ -2533,8 +2659,28 @@
       "requirement": "observation caching is measured, not assumed",
       "stimulus": "Observe one unchanged stored session N times with the cache sized above N, and count the underlying reads.",
       "oracle": "The read count is recorded verbatim. A cache that produces N reads where a hit would produce 1 is reported as a DEFECT with its cause, not described as a cache that works. A bound and an eviction policy are not a hit rate.",
-      "status": "NOT_RUN",
-      "evidence": []
+      "status": "PASS",
+      "evidence": [
+        {
+          "path": "qualification/results/V10-research-obs/OBS-01-cache-reads.txt",
+          "sha256": "40c5b4220482d4d8f37b9563f9c3e9017642d12be80d2eabfc061ef78206f5d0",
+          "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+          "note": "The verbatim read count and its controls: N=6, cacheSize=32, the revision printed before and after, the two ctx.get calls compared for identity, both proxy targets compared for identity, the 6 reads, and the explicit DEFECT statement with the cause and the source locations."
+        },
+        {
+          "path": "qualification/results/V10-research-obs/probe-obs01-cache.mjs",
+          "sha256": "5e4f662a731375dadd33ee926b949debc1735440a685d9a5e1dce2a16e3a4b02",
+          "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+          "note": "The probe itself, so a reader can re-run it: real SessionStore, real JSONL persistence with a counting read handle, real SQLite session-query engine, real SessionObservationReader."
+        },
+        {
+          "path": "qualification/results/V10-research-obs/OBS-history-web.txt",
+          "sha256": "86c9e9665b8b0c06f9afca5ff282fc9451305ddf6a525272dedd01251c8cb85f",
+          "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+          "note": "The HIS-04 block's contrast arm: repeated observeSession calls against the same unchanged stored session each pay a full log read (3 calls -> 3 reads), which is why the plane pins its own observation instead of re-observing per page."
+        }
+      ],
+      "note": "The oracle asks for the read count recorded verbatim and for a cache that never hits to be reported as a DEFECT with its cause -- not described as a cache that works. MEASURED: 6 observations of ONE unchanged stored session with preparedSessionCacheSize 32 (ABOVE N, so eviction is not the reason) produced 6 FULL LOG READS where a cache hit would have produced 1. The cause is measured, not inferred: the revision half of the key MATCHES (the revision is byte-identical across calls, printed verbatim) and the identity half CANNOT, because ctx.get('sessionPersistence') === ctx.get('sessionPersistence') is FALSE -- two calls return two fresh traceable Proxies, while both resolve to the SAME stable target under Symbol.for('cordis.original'), which is the escape a fix would key on. Read in source: the key is cached.persistence !== persistence || cached.revision !== revision (packages/session-query/session-query/src/observation.ts:209), the proxy is built by createTraceable (vendor/cordis/src/utils.ts:165-175) and entered via ctx.get -> getTraceable (vendor/cordis/src/reflect.ts). This is G-SEAM-23, CONFIRMED at this deployment identity. CONSUMER EXPOSURE: this project is NOT exposed -- the history plane pins its own observation, so a 100-page traversal costs ONE log read (see OBS-04) -- but any other consumer relying on this cache pays a full-log load per call. Not patched upstream."
     },
     {
       "id": "OBS-02",
@@ -2544,8 +2690,28 @@
       "requirement": "a scan watermark is stable while events append",
       "stimulus": "Run a history scan while new events keep being appended.",
       "oracle": "The page order is fixed to one snapshot for the whole scan, and events appended after the snapshot are read in a separate pass with their own watermark. Interleaving new events into the running scan is NOT PASS.",
-      "status": "NOT_RUN",
-      "evidence": []
+      "status": "PASS",
+      "evidence": [
+        {
+          "path": "qualification/results/V10-research-obs/OBS-plane-boot.json",
+          "sha256": "b6899390ff502f4ccf101975384bf8428515cf1c44a04972c8e658a910032652",
+          "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+          "note": "T2 boot probe result: obs02WatermarkPinned -- the pinned watermark, the first page, the appended seqs, the continuation's watermark and seqs, and the four boolean facts (pinnedScanExcludedAppended, watermarkUnchangedAcrossPages, reopenedSeesAppended, generationAdvanced). The file also carries the home assertion and the build digest."
+        },
+        {
+          "path": "qualification/results/V10-research-obs/OBS-02-05-t2-boot.txt",
+          "sha256": "d18f41c1e37101aae80e171a03b18cb4deb7f08109e5024625573fca320dd0b3",
+          "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+          "note": "T2 driver transcript: rebuild exit 0, fresh profile installed (patch sha256 5b8b2a8e...), boot port 7322, portReleased true, probe named the booted home."
+        },
+        {
+          "path": "qualification/results/V10-research-obs/OBS-history-web.txt",
+          "sha256": "86c9e9665b8b0c06f9afca5ff282fc9451305ddf6a525272dedd01251c8cb85f",
+          "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+          "note": "The HIS-02 block at T1: a pinned scan excludes appended events and a separate scan reads them at a new generation; at most ONE pinned observation per session; a superseded generation refused; page order stable across a filtered multi-page traversal."
+        }
+      ],
+      "note": "A scan is pinned to ONE watermark for its whole life, and events appended after the snapshot are read in a SEPARATE pass with their own watermark. MEASURED inside the booted composed host through the LOADED ctx.dailyHistory service: the scan pinned at {maxSeq 2, generation 1} and returned [0]; five events at seq 3..7 were then appended through the real persistence handle; the continuation returned [1,2] with exhausted true and pinnedScanExcludedAppended true; the watermark did NOT move across pages (maxSeq AND generation both identical, watermarkUnchangedAcrossPages true); and a fresh scan read {maxSeq 7, generation 2} with reopenedSeesAppended true and generationAdvanced true. So the new events came from a separate pass with their own watermark rather than being interleaved into the running one. The refusal direction is measured too: a superseded cursor is refused with HISTORY_WATERMARK_SUPERSEDED rather than re-based, including after closeScan and after dispose."
     },
     {
       "id": "OBS-03",
@@ -2555,8 +2721,28 @@
       "requirement": "one oversized event does not break the page budget",
       "stimulus": "Read a history page containing a single event larger than the page budget.",
       "oracle": "An authorized reference or a segmented read is returned, and the page budget is not exceeded. Truncating silently, or emitting the whole event inline, is NOT PASS.",
-      "status": "NOT_RUN",
-      "evidence": []
+      "status": "PASS",
+      "evidence": [
+        {
+          "path": "qualification/results/V10-research-obs/OBS-plane-boot.json",
+          "sha256": "b6899390ff502f4ccf101975384bf8428515cf1c44a04972c8e658a910032652",
+          "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+          "note": "T2 boot probe result: obs03OversizedEvent -- kind, totalBytes, the four segments, the digest check, complete, recovery, the no-body assertion, the segment-list bound, and the two-arm digest/byte agreement."
+        },
+        {
+          "path": "qualification/results/V10-research-obs/OBS-02-05-t2-boot.txt",
+          "sha256": "d18f41c1e37101aae80e171a03b18cb4deb7f08109e5024625573fca320dd0b3",
+          "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+          "note": "T2 driver transcript for that probe."
+        },
+        {
+          "path": "qualification/results/V10-research-obs/OBS-history-web.txt",
+          "sha256": "86c9e9665b8b0c06f9afca5ff282fc9451305ddf6a525272dedd01251c8cb85f",
+          "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+          "note": "The HIS-03 block at T1: segments with the FULL size and digest and never a partial body as the event; the segment LIST bounded as well as each segment; an absent seq reported as an error rather than an empty event; and a digest stable across key ordering."
+        }
+      ],
+      "note": "An oversized event returns an authorized reference or a segmented read, and the page budget is not exceeded. MEASURED in the booted host on a 200,000-character event read with maxBytes 4096: kind 'segments', totalBytes 200203, 4 segments of 4096 bytes each, a hex64 digest OF THE FULL EVENT, complete false, recovery 'authorized-refetch', and NO field carrying the event body in this arm. The budget is enforced twice over: each segment is within the requested budget, and the segment LIST is capped, so a tiny budget against a huge event cannot return thousands of offsets -- which would be the same breach counted in a different unit. The two arms describe the SAME object: a second read at a larger budget returns kind 'value' whose digest equals the segments arm's digest and whose byte count equals its totalBytes. Nothing is silently truncated and the whole event is never emitted inline."
     },
     {
       "id": "OBS-04",
@@ -2566,8 +2752,28 @@
       "requirement": "repeated traversal does not re-replay the whole log",
       "stimulus": "Traverse the same history for 100 pages.",
       "oracle": "A prepared observation or index is reused, and the actual number of full log replays is recorded as a number. A measured 100 replays for 100 pages is reported as the defect it is.",
-      "status": "NOT_RUN",
-      "evidence": []
+      "status": "PASS",
+      "evidence": [
+        {
+          "path": "qualification/results/V10-research-obs/OBS-history-web.txt",
+          "sha256": "86c9e9665b8b0c06f9afca5ff282fc9451305ddf6a525272dedd01251c8cb85f",
+          "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+          "note": "The HIS-04 block at T1: the 100-page traversal at ONE log read with pages == 100, the counter's control arm (a second pinned scan increments it), and the byte-level measurement that distinguishes a pin from a per-page re-read."
+        },
+        {
+          "path": "qualification/results/V10-research-obs/OBS-plane-boot.json",
+          "sha256": "b6899390ff502f4ccf101975384bf8428515cf1c44a04972c8e658a910032652",
+          "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+          "note": "T2 boot probe result: obs04Replay -- pages, exhausted, the materialization count for the traversal, the control arm's cost, and the per-session replay map."
+        },
+        {
+          "path": "qualification/results/V10-research-obs/OBS-02-05-t2-boot.txt",
+          "sha256": "d18f41c1e37101aae80e171a03b18cb4deb7f08109e5024625573fca320dd0b3",
+          "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+          "note": "T2 driver transcript for that probe, including the boot's port release and the installed-patch digest."
+        }
+      ],
+      "note": "A prepared observation is reused across a multi-page traversal, and the number of full log replays is recorded as a NUMBER, with a control arm that shows the counter is not a constant. MEASURED at T1 on a 500-event log through a persistence handle that counts every read: a 100-page traversal cost logReads 1 and replayCounter().total 1, with pages == 100 and every seq seen exactly once. The BYTES arm rules out a cache that still copies the whole log per page: ~500 KB read in total, bytesRead < oneLog * 1.5 and < 1 MB, where a per-page replay of the same log would be ~50 MB. CONFIRMED in the booted composed host at T2: a 9-page traversal of the stored session (9 events, exhausted true) cost fullLogMaterializationsForTheTraversal 1. THE CONTROL: a SECOND pinned scan of the same session costs a second materialization (controlArmSecondScanCost 1, controlHasTeeth true; the T1 file pins the same control as total 1 -> 2), so the 1 above is a measurement rather than a constant."
     },
     {
       "id": "OBS-05",
@@ -2577,8 +2783,28 @@
       "requirement": "the three visibilities stay separate",
       "stimulus": "Store an event without reading it programmatically, then read it without emitting it, then emit it.",
       "oracle": "`obtainable`, `consumed` and `model-projected` are recorded as three separate states and are never merged into one. Reporting a stored event as model-visible, or a consumed event as projected, is NOT PASS.",
-      "status": "NOT_RUN",
-      "evidence": []
+      "status": "PASS",
+      "evidence": [
+        {
+          "path": "qualification/results/V10-research-obs/OBS-plane-boot.json",
+          "sha256": "b6899390ff502f4ccf101975384bf8428515cf1c44a04972c8e658a910032652",
+          "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+          "note": "T2 boot probe result: obs05Visibilities -- the stored count and surfaces, the consumed and projected sets, the report, the disjointness and union checks, and the refusal measured on the loaded ledger. The same file's `reach` block records the model tool names, the ipython service's method list and the dailyHistory method list."
+        },
+        {
+          "path": "qualification/results/V10-research-obs/OBS-history-web.txt",
+          "sha256": "86c9e9665b8b0c06f9afca5ff282fc9451305ddf6a525272dedd01251c8cb85f",
+          "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+          "note": "The HIS-05 block at T1: DSH's own three surfaces classified, consumption and projection recorded separately, refusal to record consumption for an event never stored, refusal to record projection for an event never consumed, and surface-filtered paging."
+        },
+        {
+          "path": "qualification/results/V10-research-obs/reachability.txt",
+          "sha256": "f8cb99deb7846eaaf91ece1014bf30345c81e14587315c834f50badce035d0dd",
+          "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+          "note": "The reach measurement: 147 source files scanned under two named roots, per-module importer lists split into production / qualification-runner / test, and the dailyHistory caller table showing ZERO product callers of .history(...)."
+        }
+      ],
+      "note": "Obtainable, consumed and model-projected are recorded as three SEPARATE states and are never merged. MEASURED in the booted host on the loaded plane's own records: 9 stored events, seq 0 recorded as consumed and then as projected, and the report yields storedOnly [1..8], consumedNotProjected [] and projected [0] -- three disjoint sets whose union accounts for every stored event. The refusal direction is measured on the loaded ledger: recording a projection for a seq that was never consumed throws HISTORY_EVENT_ABSENT, so 'the model saw it' cannot be inferred from 'it exists'. At T1 the classification uses DSH's OWN three-valued surface vocabulary rather than a second mechanism: a real compaction-style surfaceOp replace yields [0,'shadowed'],[1,'shadowed'],[2,'current'],[3,'current'], and the plane's surface filter pages by 'shadowed' and 'current' through session-query's own types. RECORDED IN THIS CASE'S NEIGHBOURHOOD AND NOT A FALSE PASS: the PRODUCT has ZERO callers of ctx.dailyHistory.history(caller) -- the service is mounted and serves authorized reads, but no model-facing tool, no Python-cell binding and no broker message type reaches it (BrokerOpName is [start, execute, interrupt, restart, shutdown, status, kernel_info]; BrokerEvent is [kernel_exited, late_output, diagnostic]; neither carries a host-callback or tool-call member). That is a gap in REACH, not a defect in the three visibilities."
     },
     {
       "id": "OBS-06",
@@ -2588,8 +2814,28 @@
       "requirement": "a derived index is rebuildable from canonical data",
       "stimulus": "Delete the derived full-text index, then restore.",
       "oracle": "The index is rebuilt from the canonical Session and artifact data with no second history source required, and the rebuilt index answers the same queries as before. The rebuild is recorded with what it read.",
-      "status": "NOT_RUN",
-      "evidence": []
+      "status": "PASS",
+      "evidence": [
+        {
+          "path": "qualification/results/V10-research-obs/OBS-06-index-rebuild.txt",
+          "sha256": "89478a17cdb8abf582cf00f0605d37141af9aff6015227c675093e9fc8c830a4",
+          "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+          "note": "The standalone probe output: the baseline result, the index directory's contents before deletion and its absence after, the surviving canonical root and its enumerated contents, the rebuilt result, and the explicit same-answer verdict."
+        },
+        {
+          "path": "qualification/results/V10-research-obs/probe-obs06-index.mjs",
+          "sha256": "51c2df4b179fab88e991378973c7829e351ca378538a0d944cb361b61f440d65",
+          "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+          "note": "The probe itself, so a reader can re-run it: real SessionStore, real JSONL persistence, real SQLite FTS5 engine, with the deletion and the fresh boot in the middle."
+        },
+        {
+          "path": "qualification/results/V10-research-obs/OBS-history-web.txt",
+          "sha256": "86c9e9665b8b0c06f9afca5ff282fc9451305ddf6a525272dedd01251c8cb85f",
+          "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+          "note": "The HIS-08 block at T1: an in-memory derived index dropped and rebuilt from canonical sessions, the REAL SQLite FTS index rebuilt after deleting its file, and the assertion that the index holds nothing the canonical logs lack."
+        }
+      ],
+      "note": "A derived index is rebuilt from canonical Session data with no second history source, and the rebuilt index answers the same query. MEASURED against the REAL SQLite FTS5 backend over the REAL JSONL persistence: the baseline query returned one session (id v10-obs06-session, bestMatchSeq 0, the marker present in the excerpt); the index directory was then DELETED -- all three files including the -wal and -shm -- and confirmed gone; a fresh engine was booted over the surviving session root; and the identical query returned the identical session id, seq and excerpt, so the answer was reconstructed rather than cached. WHAT IT READ is recorded rather than asserted: the canonical session root enumerated to its single session's log, and the index directory did not exist when the rebuild started, so no second history source was available to it. At T1 the same property is measured against the in-memory stand-in, where dropping and rebuilding from the same canonical events yields an identical row count -- if the index held a fact the log does not, that count would come up short."
     }
   ],
   "not_applicable_inherited": {

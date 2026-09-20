@@ -1,0 +1,1 @@
+V3-IPY-BOOT: {"port":8019,"portReleased":true,"hostExitCode":null,"timedOut":false,"resultRead":true,"resultError":null,"ipythonToolPresent":true,"ipythonParameterNames":["code"],"toolCountAgentKey":27,"forbiddenLifecycleTools":[],"pythonExecAliasPresent":false}

@@ -1,0 +1,36 @@
+V3 IPYTHON family — build and identity record
+generated: 2026-09-20T00:06:03Z
+
+== git ==
+cf5491dac3def363989721379c2d359ef2af8656
+ipython-native
+
+== deployment identity ==
+recorded: 0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461
+recomputed: 0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461
+
+== built lib/ digests (the code the link: homes resolve) ==
+a054d7a7d4306c7b5cbfcebb168903383ee4f84589adf3ed16c00b55c8abb20b 1789862589.843822 packages/dsh-ipython/lib\bridge.js
+4ffe32bf3534c7501c74593ea6b2aa925b29b09694dcbca614c6a073c547b8e5 1789862589.8624814 packages/dsh-ipython/lib\host-plugin.js
+34807582fd6d2481d21277155fd8db870fbfc8d805ccdae9499973229b7cc14f 1789862589.8657658 packages/dsh-ipython/lib\ipython-tool.js
+e88ebe125020f3d41f24c1afdd2a059dab89a965dba6625206a311860d85a9d8 1789862589.8593187 packages/dsh-ipython/lib\kernel-plugin.js
+ddc1e45283fd4f7a857787796561ea1e445df4075c587c86f60aa583ed65079b 1789862589.851852 packages/dsh-ipython/lib\kernel.js
+0eb378d00eb08b99f56186ca0a09c2d39cc4a9ebd4851ba45b78a232cebec439 1789862589.868773 packages/dsh-ipython/lib\native-call.js
+8fa4a9c6122c491939daa64947defb87410b4fb03ca005f6074a75cbc24faca6 1789862589.8264937 packages/dsh-ipython/lib\protocol.js
+1471f14cbf1d1752f7894810b3374e82c58787b0bf404bcc562712069bb94bc3 1789862589.8735738 packages/dsh-ipython/lib\t7-measure.js
+
+== source digests (the tests that were run) ==
+0c481b6d25d9be8e1848af693320e9e731d65c679d63effee6aa999ca1c354bd 1789858635.5611932 packages/dsh-ipython/src\bridge-seam.test.ts
+1717c69f2f19982ce39c4088fc226c7c59a489b8f8864400a42deb070ff354aa 1789852558.1322658 packages/dsh-ipython/src\cleanup.test.ts
+37095ac672a69a0f0cde2084a9826fc80c58edf47361bb311da29e5b9486f3c2 1789860876.7371438 packages/dsh-ipython/src\faults.test.ts
+3691a3671dd66c4a4406f4c6717c55017c6ba3e86e06ba753e492a9c679a9935 1789860114.1789763 packages/dsh-ipython/src\lifecycle.test.ts
+bab987c217d58e8db309802eecc1df39c8314a3d303b4dade97fbdfcc0ecdb47 1789840030.592342 packages/dsh-ipython/src\protocol.test.ts
+f8e094908d0840d3caefcc8f7e26fe9ee6b875413ad2074878984f882b2aa5b1 1789839789.7076385 packages/dsh-ipython/src\requirements.test.ts
+2e971913f4bff1a0f1c78254a01e980d7aa117b26278dc1203e4a960a2991499 1789839990.36112 packages/dsh-ipython/src\service.test.ts
+10dbc8eb97a55c5c61f90deace7b6b1a90961a80769d0291ac3c611e965faa15 1789839268.6319551 packages/dsh-ipython/src\smoke.test.ts
+d724689e1e57a7f86a96217808ef629a30ffc5eeb2b34d2eff6d851588c46427 1789861523.5828366 packages/dsh-ipython/src\v3-spec-gates.test.ts
+a4d5319404409dae560dbcf2afbeaa38043eb90d96349a7914e94629578e86a9 1789850684.1799452 packages/dsh-ipython/src/broker.py
+60a444bd27eefec859daaa8032905ab7802492b5c7e5a04e88270d489927d09f 1789850623.5734575 packages/dsh-ipython/src/kernel.ts
+436c140fa55174ebcbea90163b0f44696effba8e92ece8817da07acc5d642bae 1789850767.5220141 packages/dsh-ipython/src/kernel-plugin.ts
+c38f7ee8bf94bf82227dc4318754735c2305c827bb51dee258e9c0f3a32047bc 1789850696.2043235 packages/dsh-ipython/src/protocol.ts
+7b90107f03cc9e835c4334aecda7ce58a1e83199e9ba723329c4ada88623add0 1789839216.469517 packages/dsh-ipython/src/ipython-tool.ts

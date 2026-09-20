@@ -99,12 +99,18 @@ for (const target of TARGETS) {
     if (isImporter) hits.push(relative(REPO, path).replace(/\\/gu, '/'))
   }
   const tests = hits.filter(path => /\.test\.(?:ts|mts|js|mjs)$/u.test(path))
-  const production = hits.filter(path => !/\.test\.(?:ts|mts|js|mjs)$/u.test(path))
+  // THREE classes, not two. A qualification RUNNER is neither a test nor the
+  // product: it is this project's instrument. Calling it a "production importer"
+  // would let a probe certify its own subject, which is the exact over-claim this
+  // project keeps retracting, so the classes are kept apart and reported apart.
+  const runners = hits.filter(path => !/\.test\./u.test(path) && path.startsWith('qualification/'))
+  const production = hits.filter(path => !/\.test\./u.test(path) && !path.startsWith('qualification/'))
   say('')
   say(`${target.id} (${target.claim})`)
   say(`  PRODUCTION importers (${String(production.length)}): ${JSON.stringify(production)}`)
+  say(`  QUALIFICATION-RUNNER importers (${String(runners.length)}): ${JSON.stringify(runners)}`)
   say(`  TEST importers       (${String(tests.length)}): ${JSON.stringify(tests)}`)
-  say(`  reachable from a non-test path: ${String(production.length > 0)}`)
+  say(`  reachable from a non-test PRODUCTION path: ${String(production.length > 0)}`)
 }
 
 say('')
@@ -123,8 +129,18 @@ for (const path of files) {
 for (const caller of callers) {
   say(`  ${caller.path}  test=${String(caller.isTest)}  get('dailyHistory')=${String(caller.getsService)}  .history(...)=${String(caller.callsHistory)}`)
 }
-const productionCallers = callers.filter(caller => !caller.isTest && caller.callsHistory)
-say(`  PRODUCTION callers of .history(...): ${String(productionCallers.length)} ${JSON.stringify(productionCallers.map(c => c.path))}`)
+// Same three-way split: a qualification runner calling `.history(...)` is this
+// project's own instrument reaching the service, NOT a product consumer.
+const productCallers = callers.filter(caller => !caller.isTest && !caller.path.startsWith('qualification/') && caller.callsHistory)
+const runnerCallers = callers.filter(caller => !caller.isTest && caller.path.startsWith('qualification/') && caller.callsHistory)
+say(`  PRODUCT (packages/**) callers of .history(...): ${String(productCallers.length)} ${JSON.stringify(productCallers.map(c => c.path))}`)
+say(`  QUALIFICATION-RUNNER callers of .history(...): ${String(runnerCallers.length)} ${JSON.stringify(runnerCallers.map(c => c.path))}`)
+say('')
+say('  NOTE ON `history-plugin`: the profile reaches it through the package EXPORT')
+say('  `dsh-daily-work/history` -> `lib/history-plugin.js`, which names no file path,')
+say('  so a direct-import scan reports zero importers for the MODULE while the module is')
+say('  in fact the thing the composed host loads. The boot probe settles that direction:')
+say('  `ctx.dailyHistory` is present in the composed host (see OBS-plane-boot.json).')
 
 say('')
 say('--- the IPython broker protocol: could a host callback ride it? ---')
