@@ -47,7 +47,6 @@ import { fileURLToPath } from 'node:url'
 import { afterEach, describe, expect, it } from 'vitest'
 import { EFFECT_RECORD_STATUSES, EffectLedger, identify, sendDecision, type EffectIntent } from './effects.ts'
 import { WorkService } from './host.ts'
-import { applyWorkerSettlement, RefusalLedger } from './recovery.ts'
 import { reconcileTask } from './reconcile.ts'
 
 /** This file's directory, resolved from the module URL rather than from cwd. */
@@ -826,81 +825,133 @@ describe('D14: OS processes that outlive a hard kill', () => {
 })
 
 // ---------------------------------------------------------------------------
-// T9-A: the epoch guard — is it wireable, and what does its absence cost?
+// T9-A: the epoch question is CLOSED BY DELETION, and this is the non-claim
 // ---------------------------------------------------------------------------
 
 /**
- * THE FINDING THIS SECTION EXISTS TO SETTLE.
+ * WHAT THIS SECTION MEASURES NOW, and why it changed shape.
  *
- * `docs/GAPS.md` G-SEAM-21 records that `recovery.ts`'s epoch guard is
- * unreachable from production. A previous agent concluded that wiring it would
- * "invent a caller rather than connect a real one". That conclusion is tested
- * here rather than inherited, because the tree has changed since: a production
- * launch port now exists, `createRun` binds it, and `subagent/end` is emitted by
- * the real subagent registry with the child's `SessionId` — which IS the
- * reserved `childId` the record stores.
+ * It used to assert that `recovery.ts`'s epoch guard was correct, unit-tested and
+ * unreachable — the finding filed as G-SEAM-21 and as the v1 cases REC-09/REC-10.
+ * The guard, the `WorkerSettlement` type, the `RefusalLedger` and the run record's
+ * `epoch` field have since been DELETED, and the reason is a topology measurement
+ * rather than a preference:
  *
- * The answer is that the conclusion still holds, but for a sharper reason than
- * "there is no event": there IS a real event carrying a real child identity, and
- * there is STILL no settlement that could ever be stale, because the epoch is
- * never bumped. Wiring the guard to `subagent/end` today would produce a
- * reachable guard whose precondition cannot occur — the same defect class
- * (`mechanism implemented, unit-tested, correct, while the product reaches
- * nothing that matters`) in a new and harder-to-see form. That is worse than
- * leaving it unreachable, because it would read as closed.
+ *   The guard was not merely unreachable, it guarded a path that does not exist.
+ *   A stale-generation settlement needs a settlement PRODUCER. `WorkService.
+ *   transition` is the only method that can write a task's terminal state, its
+ *   reservation release and its tombstone, and NO production call site targets
+ *   `settling`, `confirmed`, `cancelled`, `executing` or `cancel_requested`. The
+ *   launch port resolves at the ADMISSION edge and is never called back on
+ *   completion. The package has no completion listener, no settlement entry
+ *   point, no outbox consumer, no IPC channel and no second process. And nothing
+ *   ever bumped the epoch: `initialRunRecord` wrote the literal 1 and no other
+ *   code read or wrote it, so even a wired guard would have compared 1 to 1
+ *   forever. Full graph: `qualification/results/R9-recovery-topology/TOPOLOGY.md`.
  *
- * WHAT IS MEASURED, and it is the damage the field exists to prevent:
- *   1. The reachability claim, re-derived from the tree rather than cited.
- *   2. That the epoch is never bumped — across a REAL SIGKILL and a real
- *      re-adoption, the record still reads epoch 1.
- *   3. That WITHOUT the guard, a settlement from the previous generation IS
- *      APPLIED by the production `transition` path: the task moves to a terminal
- *      state and its reservation is RELEASED, so budget authority is exercised
- *      by a generation that never admitted the work.
- *   4. That WITH the guard, the same settlement is refused and retained — so the
- *      guard is correct and the gap is purely reachability.
+ * So wiring it would have meant INVENTING a cross-process settlement producer,
+ * which the audit forbids. The honest resolution is the other direction, and it is
+ * the one measured here.
+ *
+ * WHAT THIS REMOVAL IS: a CLAIM that was never true is removed — an epoch that
+ * looked like a guard only because nothing checked it. It is NOT the removal of a
+ * mechanism the product relied on. Same shape as G-SEAM-50, where CMP-06's
+ * sandbox-policy protection is unreachability rather than immutability.
+ *
+ * v1's REC-09/REC-10 stay FAIL. Nothing here makes them pass, and nothing here
+ * edits the frozen spec, `qualification/gates.json` or `compatibility.lock.json`.
  */
-describe('T9-A: the epoch guard (G-SEAM-21) — unreachable, and what that costs', () => {
-  it('the guard has no production importer and the epoch has no production writer', () => {
-    // Re-derived here from the SOURCE TREE, by name, so this finding cannot rot
-    // into a citation of a document that may itself go stale.
+describe('T9-A: the run epoch is DELETED, and v2 does not claim the guarantee', () => {
+  it('the deleted settlement machinery has no surviving reference anywhere in the source', () => {
+    // The removal must be total. A dangling import, a stale type reference or a
+    // leftover domain name would be a compile error at best and a resurrected
+    // claim at worst, so this is asserted over EVERY TypeScript file in the
+    // package, tests included.
+    //
+    // Two different checks, because the two file kinds carry different risk:
+    //   - PRODUCTION files must not mention these identifiers in CODE at all.
+    //     Comments may name them: that is where the deletion is documented.
+    //   - TEST files are allowed to name them as string DATA (the assertion lists
+    //     below do exactly that), so what is checked there is that no test
+    //     IMPORTS a deleted symbol. A test that imported one would not compile,
+    //     which is the real dangling-reference risk.
+    const src = join(import.meta.dirname)
+    const all = readdirSync(src).filter(name => name.endsWith('.ts'))
+    // The identifiers that no longer exist. `relaunchPrepared` is deliberately
+    // NOT in this list: it is a different claim (gate D03) and is kept.
+    const dead = [
+      'applyWorkerSettlement',
+      'WorkerSettlement',
+      'SettlementOutcome',
+      'RefusalLedger',
+      'RefusalRecord',
+      'refusalRecordSchema',
+      'refusalDomainSpec',
+      'REFUSAL_DOMAIN_NAME',
+      'dsh_daily_work_refusals',
+    ]
+    const codeMentions: string[] = []
+    const importers: string[] = []
+    for (const file of all) {
+      const text = readFileSync(join(src, file), 'utf8')
+      const code = text.split(/\r?\n/u)
+        .filter(line => !/^\s*(?:\/\/|\*|\/\*)/u.test(line))
+        .join('\n')
+      if (!file.endsWith('.test.ts')) {
+        for (const symbol of dead) {
+          if (code.includes(symbol)) codeMentions.push(`${file}: ${symbol}`)
+        }
+      } else {
+        // Every import statement, so a deleted symbol reached through
+        // `import { x } from './recovery.ts'` is caught wherever it appears.
+        for (const statement of text.matchAll(/import\s*(?:type\s*)?\{[^}]*\}\s*from\s*'[^']+'/gu)) {
+          for (const symbol of dead) {
+            if (statement[0].includes(symbol)) importers.push(`${file}: ${symbol}`)
+          }
+        }
+      }
+    }
+    expect(codeMentions, 'no PRODUCTION file may mention the deleted machinery in code').toEqual([])
+    expect(importers, 'no test may IMPORT a deleted symbol').toEqual([])
+  })
+
+  it('the run record no longer carries an epoch, and nothing writes or reads one', () => {
     const src = join(import.meta.dirname)
     const production = readdirSync(src).filter(name => name.endsWith('.ts') && !name.endsWith('.test.ts'))
-
-    const importers: string[] = []
-    const epochWriters: string[] = []
+    // Comments are stripped before matching, because the corrected comment in
+    // `record.ts` QUOTES the line that was removed — that quotation is the
+    // documentation, and it must not read as the declaration.
+    const strip = (text: string): string =>
+      text.split(/\r?\n/u).filter(line => !/^\s*(?:\/\/|\*|\/\*)/u.test(line)).join('\n')
+    const recordCode = strip(readFileSync(join(src, 'record.ts'), 'utf8'))
+    // The field is GONE from both the schema and the initialiser. Asserting the
+    // absence is the point: the field was inert, and an inert field documented as
+    // a guarantee is the defect this slice exists to remove.
+    expect(recordCode, 'the schema must not declare an epoch field').not.toMatch(/epoch:\s*z\.number/u)
+    expect(recordCode, 'the initialiser must not write an epoch').not.toMatch(/^\s*epoch:\s*1,/mu)
+    // And no PRODUCTION module mentions it in code at all — the removal is total,
+    // not merely relocated.
+    const codeMentions: string[] = []
     for (const file of production) {
-      if (file === 'recovery.ts') continue
-      const text = readFileSync(join(src, file), 'utf8')
-      if (/from\s+'\.\/recovery\.ts'/u.test(text)) importers.push(file)
-      // A WRITE of the field, not a mention in a comment. `epoch: 1` in the
-      // initialiser and a zod declaration are both declarations; only an
-      // assignment inside a mutation would be a bump.
-      const code = text.split(/\r?\n/u).filter(line => !/^\s*(?:\/\/|\*|\/\*)/u.test(line)).join('\n')
-      if (/\bepoch\s*:/u.test(code) || /\bepoch\s*=/u.test(code)) epochWriters.push(file)
+      const code = strip(readFileSync(join(src, file), 'utf8'))
+      // `kernel-lifecycle.ts` has a KERNEL epoch, a different field with the same
+      // word (G-SEAM-43); it is excluded by name so this assertion stays about the
+      // RUN record rather than about the word.
+      if (file !== 'kernel-lifecycle.ts' && /\bepoch\b/u.test(code)) codeMentions.push(file)
     }
-    // THE FINDING, re-measured. `recovery.ts` is imported by no production module.
-    expect(importers, 'recovery.ts must have no production importer').toEqual([])
-    // And the only production file that even mentions the field in code is the
-    // schema/initialiser in `record.ts` — no bump exists anywhere.
-    expect(epochWriters, 'no production module may WRITE the epoch').toEqual(['record.ts'])
-    const record = readFileSync(join(src, 'record.ts'), 'utf8')
-    expect(record, 'the sole writer is the schema declaration').toMatch(/epoch: z\.number\(\)\.int\(\)\.min\(1\)/u)
-    expect(record, 'and the sole value ever written is the literal 1').toMatch(/epoch: 1,/u)
-    // There is no `resume`-time bump either, which is the second half of the
-    // double unreachability: the guard's precondition cannot occur.
-    const host = readFileSync(join(src, 'host.ts'), 'utf8')
-    const resume = /async resume\(runId: string, now = new Date\(\)\.toISOString\(\)\): Promise<RunRecord> \{([\s\S]*?)\n  \}/u.exec(host)
-    expect(resume, 'the production resume path must be locatable').not.toBeNull()
-    expect(resume?.[1], 'resume must not bump the epoch').not.toMatch(/epoch/u)
+    expect(codeMentions, 'no production module may reference a run epoch').toEqual([])
   })
 
   it('is unreachable from every PACKAGE ENTRY POINT, not merely from a direct import', () => {
-    // The stronger form of the finding, and the one that decides whether this is a
-    // live defect or a documentation problem. A module with no DIRECT importer can
-    // still be reachable transitively, so "no direct importer" alone does not
-    // establish unreachability. This closes that gap by walking the import graph
-    // from the package's own published entry points.
+    // The stronger form of the reachability finding, and the one that decides
+    // whether a module with no DIRECT importer is a live defect or a documentation
+    // problem: a module can still be reachable transitively. This closes that gap
+    // by walking the import graph from the package's own published entry points.
+    //
+    // It is KEPT after the epoch deletion because its subject is the reachability
+    // of the recovery modules as a class — which is exactly what the topology
+    // measurement rests on — and because the `host.ts` control makes it
+    // falsifiable rather than an empty negative.
     const src = join(import.meta.dirname)
     const pkg = JSON.parse(readFileSync(join(src, '..', 'package.json'), 'utf8')) as {
       readonly exports: Record<string, unknown>
@@ -951,16 +1002,21 @@ describe('T9-A: the epoch guard (G-SEAM-21) — unreachable, and what that costs
     // negative produced by a broken traversal.
     expect(reachable.has('recovery.ts'), 'recovery.ts must be in no entry point\'s transitive closure').toBe(false)
     expect(reachable.has('host.ts'), 'control: host.ts IS reachable, so the walk works').toBe(true)
-    // The same walk, for the module the epoch guard lives beside.
+    // The same walk, for the module `recovery.ts` depends on for its decisions.
     expect(reachable.has('reconcile.ts'), 'reconcile.ts is likewise unreachable from the product').toBe(false)
   })
 
   it('the consequence: only TESTS reach these modules, so the product never reconciles at all', () => {
     // THE HONEST HALF, and it is stronger than "the epoch field is inert". If
     // `recovery.ts` and `reconcile.ts` are reachable only from test files, then no
-    // production code path calls `reconcileTask`, `applyWorkerSettlement` or
-    // `relaunchPrepared`. The product therefore does not reconcile an unknown
-    // outcome — it cannot, because there is no caller.
+    // production code path calls `reconcileTask`, `relaunchPrepared` — or, before
+    // its deletion, the settlement guard. The product therefore does not reconcile
+    // an unknown outcome — it cannot, because there is no caller.
+    //
+    // This test is UNCHANGED by the epoch deletion and is deliberately kept: its
+    // subject is reachability of the recovery modules as a class, not the guard.
+    // It is also the independent corroboration of the topology measurement, since
+    // it re-derives the importer sets rather than citing them.
     //
     // What that does and does not mean for the "never auto-replay" constraint is
     // measured rather than asserted, and the answer is asymmetric:
@@ -984,11 +1040,15 @@ describe('T9-A: the epoch guard (G-SEAM-21) — unreachable, and what that costs
     const importersOf = (target: string, pool: readonly string[]): string[] =>
       pool.filter(name => name !== target && importsOf(name).includes(target))
 
-    // MEASURED: the importer sets of the three modules, split by kind.
+    // MEASURED: the importer sets of the modules, split by kind.
     const testImporters = (target: string): string[] => importersOf(target, testFiles).sort()
     const productionImporters = (target: string): string[] => importersOf(target, production).sort()
 
     expect(productionImporters('recovery.ts'), 'recovery.ts has NO production importer').toEqual([])
+    // `recovery.ts` still has exactly two test importers. What they import changed
+    // — `durability-records.test.ts` now takes only `relaunchPrepared`, and the
+    // settlement API is gone — but the reachability claim this test makes is about
+    // the module, and it still holds.
     expect(testImporters('recovery.ts'), 'and its only importers are tests').toEqual([
       'durability-advanced.test.ts',
       'durability-records.test.ts',
@@ -1012,236 +1072,70 @@ describe('T9-A: the epoch guard (G-SEAM-21) — unreachable, and what that costs
     ])
   })
 
-  it('and no production path can even EXPRESS the check: `transition` takes no epoch', async () => {
-    // The second half of the finding, and the reason wiring this guard is not a
-    // one-line change. `WorkService.transition` is the only method that can move a
-    // task to an authoritative terminal state, and it has no epoch parameter. So
-    // the guard is not merely uncalled: the reachable write path has no place to
-    // put the comparison. This measures the consequence rather than asserting it.
-    const root = makeTempDir('t9a-inexpressible')
-    const { ctx, service } = await openService(root)
-    try {
-      const runId = 'run-t9a-inexpressible'
-      await service.createRun({
-        runId,
-        root: { session: { header: { id: 'root-t9a-inexpressible' } } } as never,
-        authorizationRef: 'auth',
-      })
-      await service.admit({
-        runId,
-        taskId: 't1',
-        childId: 'child-t9a-inexpressible',
-        assignmentDigest: 'd',
-        reservedCost: 7,
-        allowedCapabilities: ['reader'],
-      })
-      await service.transition({ runId, taskId: 't1', to: 'launching' })
-      await service.transition({ runId, taskId: 't1', to: 'accepted' })
-      // `accepted -> confirmed` is NOT a legal edge (states.ts:86-88: accepted
-      // reaches executing/settling/cancel_requested/unknown only), so the legal
-      // terminal path goes through `settling`. Using the legal path matters: an
-      // illegal one would be refused by the state machine and the test would then
-      // be measuring the wrong refusal.
-      await service.transition({ runId, taskId: 't1', to: 'settling' })
-
-      // A settlement that claims a STALE generation, offered to the reachable
-      // write path. `epoch` is not a parameter, so the field is simply ignored:
-      // the transition applies, the reservation is released and a tombstone is
-      // written. There is no refusal to observe because there is no comparison.
-      await service.transition({
-        runId,
-        taskId: 't1',
-        to: 'confirmed',
-        ...({ epoch: 0 } as object),
-      } as never)
-
-      const after = service.getRun(runId)
-      expect(after?.tasks['t1']?.state, 'the stale-epoch settlement was applied by the reachable path').toBe('confirmed')
-      expect(after?.budget.reserved, 'and it released a reservation it never held').toBe(0)
-      expect(after?.terminalTombstones).toEqual(['t1'])
-      expect(after?.epoch, 'the record epoch was never consulted and never moved').toBe(1)
-    } finally {
-      await service.close()
-      await ctx.fiber.dispose()
+  it('the DECIDING topology fact: no production call site can write a terminal task state', () => {
+    // This is the measurement the deletion rests on, re-derived from the tree so
+    // it cannot rot into a citation. `transition` is the only method that moves a
+    // task's state; if no production caller targets a terminal state, then no
+    // settlement — stale or current — can be delivered at all.
+    const src = join(import.meta.dirname)
+    const production = readdirSync(src).filter(name => name.endsWith('.ts') && !name.endsWith('.test.ts'))
+    const terminalTargets = /to:\s*'(?:settling|confirmed|cancelled|executing|cancel_requested)'/u
+    const callers: string[] = []
+    for (const file of production) {
+      const text = readFileSync(join(src, file), 'utf8')
+      if (terminalTargets.test(text)) callers.push(file)
     }
+    // The only production file that ever named a terminal target was
+    // `recovery.ts`, whose settlement half is now deleted. `durability-runner.ts`
+    // is the hand-run CLI and is in no production import graph; it targets
+    // `executing`, so it is named explicitly rather than filtered away silently.
+    expect(callers.sort(), 'no product path may target a terminal task state').toEqual(['durability-runner.ts'])
+    // And the CLI is itself unreachable, which is what makes the row above safe to
+    // exclude. Asserted separately so the two facts cannot be conflated.
+    const importersOfRunner = production.filter(name =>
+      name !== 'durability-runner.ts'
+      && /from\s+'\.\/durability-runner\.ts'/u.test(readFileSync(join(src, name), 'utf8')))
+    expect(importersOfRunner, 'the hand-run CLI has no importer').toEqual([])
   })
 
-  it('a REAL SIGKILL and a real re-adoption do NOT bump the epoch, so no settlement can be stale', { timeout: 180_000 }, async () => {
-    // The window the field promises to handle: host A admits work and launches a
-    // child, host A dies, host B re-adopts the run. If the epoch were bumped on
-    // re-adoption, a settlement from A's child would carry a stale value. It is
-    // not bumped, so it cannot.
-    const root = makeTempDir('t9a-epoch')
-    const childSource = `
-import { Context } from 'file:///D:/DSH/src/dsh-src/vendor/cordis/lib/index.js'
-import Storage from 'file:///D:/DSH/src/dsh-src/packages/storage/storage/lib/index.js'
-import * as storageDomainPlugin from 'file:///D:/DSH/src/dsh-src/packages/storage/storage-domain/lib/index.js'
-import * as storageJsonPlugin from 'file:///D:/DSH/src/dsh-src/packages/storage/storage-json/lib/index.js'
-import { WorkService } from 'file:///${HERE.replace(/\\/g, '/')}/host.ts'
-import { writeFileSync } from 'node:fs'
-
-const [,, storeDir, reportPath] = process.argv
-const ctx = new Context()
-await ctx.plugin(Storage, {})
-await ctx.plugin(storageJsonPlugin, { root: storeDir })
-await ctx.plugin(storageDomainPlugin, { backend: 'json' })
-const service = new WorkService(ctx, { targetChildren: 10, maxDepth: 1, budgetCeiling: 1000, currency: 'USD', priceVersion: 't9a' })
-await service.open()
-await service.createRun({ runId: 'run-t9a', root: { session: { header: { id: 'root-t9a' } } }, authorizationRef: 'auth-t9a' })
-await service.admit({ runId: 'run-t9a', taskId: 't1', childId: 'child-t9a', assignmentDigest: 'digest-t9a', reservedCost: 7, allowedCapabilities: ['reader'] })
-await service.transition({ runId: 'run-t9a', taskId: 't1', to: 'launching' })
-await service.transition({ runId: 'run-t9a', taskId: 't1', to: 'accepted' })
-const belief = service.getRun('run-t9a')
-writeFileSync(reportPath, JSON.stringify({ ready: true, epoch: belief.epoch, state: belief.tasks.t1.state, reserved: belief.budget.reserved }))
-setInterval(() => {}, 3600000)
-await new Promise(() => {})
-`
-    const killed = await forkKillChild(childSource, [root])
-    // The kill was real and abrupt, so no cleanup ran.
-    expect(killed.exit.signal).toBe('SIGKILL')
-    // The generation that admitted the work was at epoch 1.
-    expect(killed.report['epoch']).toBe(1)
-    expect(killed.report['state']).toBe('accepted')
-    expect(killed.report['reserved']).toBe(7)
-
-    // Host B: a NEW service over the SAME store. This is a re-adoption.
-    const { ctx, service } = await openService(root)
-    try {
-      const adopted = service.getRun('run-t9a')
-      expect(adopted, 'the run must survive').toBeDefined()
-      // THE MEASUREMENT: the re-adopting generation reads the SAME epoch. Nothing
-      // bumped it, so "a settlement from a previous host generation" is a value
-      // no code in this package can produce.
-      expect(adopted?.epoch, 're-adoption must NOT bump the epoch — this is the second half of G-SEAM-21').toBe(1)
-      // The production resume path re-opens the phase and leaves the epoch alone.
-      await service.pause('run-t9a', 'recovered after a host restart')
-      const resumed = await service.resume('run-t9a')
-      expect(resumed.phase).toBe('open')
-      expect(resumed.epoch, 'resume must not bump the epoch').toBe(1)
-    } finally {
-      await service.close()
-      await ctx.fiber.dispose()
-    }
+  it('`host.ts` no longer claims a per-await epoch re-check it does not perform', () => {
+    // Two comments in `host.ts` stated the top-up contract in the grammar of
+    // enforcement ("we re-check the run epoch"; "authority is bound to the live
+    // object plus the run epoch"). Neither was true of the code: the word `epoch`
+    // appeared in that file ONLY inside those comments. They are corrected, and
+    // the correction is asserted so the false claim cannot come back.
+    const host = readFileSync(join(join(import.meta.dirname), 'host.ts'), 'utf8')
+    const code = host.split(/\r?\n/u)
+      .filter(line => !/^\s*(?:\/\/|\*|\/\*)/u.test(line))
+      .join('\n')
+    expect(code, 'host.ts must contain no epoch EXPRESSION').not.toMatch(/\bepoch\b/u)
+    // The claim is gone, and what is actually enforced is named instead.
+    expect(host).not.toContain('After every await we re-check the run epoch')
+    expect(host).not.toContain('bound to the live object plus the run epoch')
+    expect(host).toContain('tool-protocol-guards.ts')
+    // The REAL await-boundary re-checks, quoted from the loop they guard.
+    expect(code).toMatch(/if \(this\.disposed\) break/u)
+    expect(code).toMatch(/if \(signal\.aborted\) break/u)
   })
 
-  it('WITHOUT the guard, a previous generation\'s settlement IS applied and RELEASES the reservation', { timeout: 120_000 }, async () => {
-    // The concrete damage, measured through the PRODUCTION transition path — the
-    // same method `runDrain` uses. This is what the field exists to prevent and
-    // what its inertness actually costs.
-    const root = makeTempDir('t9a-damage')
-    const first = await openService(root)
-    const runId = 'run-t9a-damage'
-    await first.service.createRun({
-      runId,
-      root: { session: { header: { id: 'root-t9a-damage' } } } as never,
-      authorizationRef: 'auth',
-    })
-    await first.service.admit({
-      runId,
-      taskId: 't1',
-      childId: 'child-t9a-damage',
-      assignmentDigest: 'd',
-      reservedCost: 7,
-      allowedCapabilities: ['reader'],
-    })
-    await first.service.transition({ runId, taskId: 't1', to: 'launching' })
-    await first.service.transition({ runId, taskId: 't1', to: 'accepted' })
-    // Generation A ends. Generation B re-adopts the same durable store.
-    await first.service.close()
-    await first.ctx.fiber.dispose()
-
-    const second = await openService(root)
-    try {
-      const before = second.service.getRun(runId)
-      expect(before?.budget.reserved).toBe(7)
-      expect(before?.tasks['t1']?.state).toBe('accepted')
-      expect(before?.terminalTombstones).toEqual([])
-
-      // THE STALE SETTLEMENT, applied through the production path. The child id
-      // is a STRING the re-adopted child legitimately carries, and the epoch is
-      // the only field that could distinguish the generations — and it agrees.
-      await second.service.transition({ runId, taskId: 't1', to: 'settling' })
-      await second.service.transition({ runId, taskId: 't1', to: 'confirmed' })
-
-      const after = second.service.getRun(runId)
-      // The damage, in the record's own numbers:
-      //   - the task is TERMINAL, so it can never be reconciled again;
-      //   - the reservation is RELEASED, so credit the new generation believed
-      //     was held becomes free and can be committed to new work;
-      //   - a tombstone is written, so the taskId can never be re-admitted.
-      expect(after?.tasks['t1']?.state).toBe('confirmed')
-      expect(after?.budget.reserved, 'the reservation is released by a generation that never admitted it').toBe(0)
-      expect(after?.terminalTombstones).toEqual(['t1'])
-      // And nothing anywhere recorded that this was a stale claim: there is no
-      // refusal, no audit entry, no uncertainty string. The record simply moved.
-      expect(after?.tasks['t1']?.uncertainty).toBeUndefined()
-    } finally {
-      await second.service.close()
-      await second.ctx.fiber.dispose()
-    }
-  })
-
-  it('WITH the guard, the same settlement is refused and the evidence is retained', async () => {
-    // The other half, so the finding is precise: the guard is CORRECT. The gap is
-    // reachability, not logic. `applyWorkerSettlement` refuses the epoch-1 claim
-    // from a generation that is not current, and records why.
-    const root = makeTempDir('t9a-guard')
-    const { ctx, service } = await openService(root)
-    const ledger = new RefusalLedger(ctx)
-    await ledger.open()
-    try {
-      const runId = 'run-t9a-guard'
-      await service.createRun({
-        runId,
-        root: { session: { header: { id: 'root-t9a-guard' } } } as never,
-        authorizationRef: 'auth',
-      })
-      await service.admit({
-        runId,
-        taskId: 't1',
-        childId: 'child-t9a-guard',
-        assignmentDigest: 'd',
-        reservedCost: 7,
-        allowedCapabilities: ['reader'],
-      })
-      await service.transition({ runId, taskId: 't1', to: 'launching' })
-      await service.transition({ runId, taskId: 't1', to: 'accepted' })
-
-      // A settlement carrying an epoch that is NOT the record's. The record is at
-      // 1, so the only value that can be stale is anything else — which is the
-      // point: no production code can produce one, so this input can only be
-      // written by hand, which is exactly why the guard is unreachable.
-      const refused = await applyWorkerSettlement({
-        service,
-        ledger,
-        settlement: { runId, epoch: 0, taskId: 't1', childId: 'child-t9a-guard', to: 'confirmed' },
-      })
-      expect(refused.accepted).toBe(false)
-      expect(refused.reason).toMatch(/carries epoch 0 but run "run-t9a-guard" is at epoch 1/)
-      expect(refused.reason).toMatch(/stale generation cannot write authoritative state/)
-
-      // The authoritative state is untouched: no confirmation, no release, no
-      // tombstone, and the epoch is unchanged.
-      const after = service.getRun(runId)
-      expect(after?.tasks['t1']?.state).toBe('accepted')
-      expect(after?.budget.reserved).toBe(7)
-      expect(after?.terminalTombstones).toEqual([])
-      expect(after?.epoch).toBe(1)
-
-      // The diagnostic evidence IS retained, in its own store, so a silent
-      // refusal cannot destroy the only record that a stale worker existed.
-      expect(refused.refusalRef).toBeDefined()
-      const retained = ledger.get(refused.refusalRef ?? '')
-      expect(retained?.epoch).toBe(0)
-      expect(retained?.reason).toMatch(/stale generation/)
-      expect(ledger.entries()).toHaveLength(1)
-    } finally {
-      await ledger.close()
-      await service.close()
-      await ctx.fiber.dispose()
-    }
+  it('the v1 FAIL is preserved: REC-09 and REC-10 still read FAIL in the frozen spec', () => {
+    // The historical record must not be retroactively improved. This slice may not
+    // make an old case pass by changing the product after the fact, and it must not
+    // edit the frozen spec either.
+    // Derived from THIS file's location rather than from a repo-root constant:
+    // the spec lives outside the package and this file has no such constant.
+    // src/ -> dsh-daily-work/ -> packages/ -> repo root.
+    const specPath = join(import.meta.dirname, '..', '..', '..', 'qualification', 'specs', 'acceptance-spec.trusted-local-v1.json')
+    const spec = JSON.parse(readFileSync(specPath, 'utf8')) as
+      | { readonly id: string; readonly status: string }[]
+      | { readonly cases: { readonly id: string; readonly status: string }[] }
+    const cases = Array.isArray(spec) ? spec : spec.cases
+    const byId = new Map(cases.map(entry => [entry.id, entry.status]))
+    expect(byId.get('REC-09'), 'v1 REC-09 stays FAIL — the guarantee was never true').toBe('FAIL')
+    expect(byId.get('REC-10'), 'v1 REC-10 stays FAIL — the guard was never reachable').toBe('FAIL')
   })
 })
+
 
 // ---------------------------------------------------------------------------
 // T9-B: the real rewind consequence, measured rather than inherited

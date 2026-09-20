@@ -1550,10 +1550,12 @@ describe('C18: after a definite completion, the drain is final and explicit', ()
     expect(r.service.getRun('run-first')?.phase).toBe('closing')
     expect(r.service.getRun('run-first')?.runId).toBe(first.runId)
 
-    // New work needs a new run, with its own authorization ref and epoch 1.
+    // New work needs a new run, with its own authorization ref. There is no
+    // epoch field: it was deleted with the settlement guard that would have read
+    // it (qualification/results/R9-recovery-topology/).
     const second = await r.service.createRun({ runId: 'run-second', root: r.root, authorizationRef: 'auth-2' })
     expect(second.runId).toBe('run-second')
-    expect(second.epoch).toBe(1)
+    expect(Object.hasOwn(second, 'epoch'), 'the run record carries no epoch').toBe(false)
     expect(second.authorizationRef).toBe('auth-2')
     expect(second.phase).toBe('open')
     expect(Object.keys(second.tasks)).toHaveLength(0)

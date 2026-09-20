@@ -708,10 +708,10 @@ describe('UPG-04: a backup restores on a new host with verifiable identity, and 
       expect(record?.runId).toBe('run-backup')
       expect(record?.rootSessionId).toBe('session-run-backup')
       expect(record?.authorizationRef).toBe('auth-run-backup')
-      // The restored record is at its ORIGINAL epoch, not a bumped one: a
-      // restore is not a new generation, and silently re-epoching would make a
-      // later stale-settlement check meaningless.
-      expect(record?.epoch).toBe(1)
+      // The record carries no epoch: a restore is not a new generation, and the
+      // field was deleted with the settlement guard that would have read it
+      // (qualification/results/R9-recovery-topology/).
+      expect(Object.hasOwn(record!, 'epoch'), 'the restored record carries no epoch').toBe(false)
       // A restored run is fully usable: the counts recompute from stored state.
       // `desiredTarget` is the user's N as the record carries it, and every
       // occupancy bucket is zero because the run has no admitted work yet.

@@ -46,7 +46,7 @@ import * as storageDomainPlugin from '@deepseek-ai/dsh-storage-domain'
 import type { DomainChanged } from '@deepseek-ai/dsh-storage-domain'
 import * as storageJsonPlugin from '@deepseek-ai/dsh-storage-json'
 import { spawn, type ChildProcess } from 'node:child_process'
-import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -54,7 +54,7 @@ import { afterEach, describe, expect, it } from 'vitest'
 import { WorkService, WORK_DOMAIN_NAME, workDomainSpec, type LaunchPort, type LaunchRequest } from './host.ts'
 import { createContinuableLaunchPort } from './launch-port.ts'
 import { recoveryPhase, reconcileRun, reconcileTask, type ChildEvidence } from './reconcile.ts'
-import { applyWorkerSettlement, RefusalLedger, relaunchPrepared } from './recovery.ts'
+import { relaunchPrepared } from './recovery.ts'
 import { holdsSlot } from './states.ts'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
@@ -1556,13 +1556,16 @@ describe('D09: an incomplete trailing record', () => {
     })
     await first.close()
 
-    // Corrupt the stored record in a way that violates the schema (the run
-    // record requires a positive integer epoch).
+    // Corrupt the stored record in a way that violates the schema. The run
+    // record requires `requestedTarget` to be a non-negative integer, so a string
+    // there is a type violation the schema must catch. (This used to corrupt the
+    // `epoch` field; that field was deleted with the settlement guard, so the
+    // corruption now names a field the schema still constrains.)
     const unitPath = join(root, 'dsh_daily_work.json')
     const document = JSON.parse(readFileSync(unitPath, 'utf8')) as {
-      tables: { runs: Record<string, { epoch: unknown }> }
+      tables: { runs: Record<string, { requestedTarget: unknown }> }
     }
-    document.tables.runs['r']!.epoch = 'not-a-number'
+    document.tables.runs['r']!.requestedTarget = 'not-a-number'
     writeFileSync(unitPath, JSON.stringify(document), 'utf8')
 
     // A NEW generation over the corrupted medium. The open must reject with
@@ -1588,37 +1591,49 @@ describe('D09: an incomplete trailing record', () => {
 })
 
 // ---------------------------------------------------------------------------
-// D10 -- stale epoch result
+// D10 -- the stale-epoch settlement, and why this gate is now a NON-CLAIM
 // ---------------------------------------------------------------------------
 
-describe('D10: an old worker submits a settlement after a restart', () => {
-  it('D10 (simulated barrier): the stale epoch is refused while the diagnostic evidence is retained', async () => {
-    // The window: the host restarted and re-adopted the run under a NEW epoch. A
-    // worker from the OLD generation still submits its settlement.
-    //
-    // The invariant is INV-L3, quoted from `docs/INVARIANTS.md`: "Authority is
-    // bound to the exact live Agent object plus run epoch, not to a session-id
-    // string. A stale callback cannot write authoritative state."
-    //
-    // The epoch half of that had NO enforcement: `record.ts` documents the field
-    // as "bumped when a run is re-adopted by a new host generation ... A callback
-    // carrying a stale epoch must be rejected", but nothing read or wrote it
-    // after `initialRunRecord` set it to 1. `recovery.ts` supplies the missing
-    // guard, and this test drives it against the REAL storage domain so the
-    // refusal and the retained evidence are durable facts.
-    //
-    // The method is a SIMULATED BARRIER rather than a real kill: the window here
-    // is not "what survived the kill" but "what a second submission is allowed to
-    // do afterwards", and the epoch mismatch is expressible directly. A real kill
-    // would add nothing, because the stale worker's claim is defined by the epoch
-    // it carries, not by how it died.
+/**
+ * WHAT THIS SECTION USED TO ASSERT, AND WHY IT CHANGED.
+ *
+ * D10's oracle is "refuse the authoritative write, retain the diagnostic
+ * evidence". It used to be discharged by driving `applyWorkerSettlement` — the
+ * epoch guard in `recovery.ts` — against the real storage domain, with a
+ * `RefusalLedger` over a separate `dsh_daily_work_refusals` domain.
+ *
+ * That machinery is DELETED, because a topology measurement showed it guarded a
+ * path the product does not have. A stale-generation settlement needs a settlement
+ * PRODUCER, and there is none: `WorkService.transition` is the only method that can
+ * write a task's terminal state, its reservation release and its tombstone, and no
+ * production call site targets a terminal state at all; the launch port resolves at
+ * the ADMISSION edge and is never called back on completion; and nothing ever
+ * bumped the epoch, so even a wired guard would have compared 1 to 1 forever.
+ * Wiring it would have meant INVENTING a cross-process settlement producer, which
+ * the audit forbids. Graph: `qualification/results/R9-recovery-topology/TOPOLOGY.md`.
+ *
+ * WHAT SURVIVES, and it is the part that was always real: the run record is
+ * authoritative and durable, the reservation is held by the stored task, and a
+ * cross-generation read sees exactly what the previous generation committed. That
+ * is asserted here, because it is a property the product actually has.
+ *
+ * WHAT IS NOT CLAIMED: that a stale generation's settlement is refused. It is not
+ * refused, because it cannot be delivered. v1's REC-09/REC-10 stay FAIL.
+ */
+describe('D10: the run record is authoritative across generations, and no stale settlement is claimed', () => {
+  it('a second generation over the same store reads exactly what the first committed', async () => {
+    // The real property. Generation A admits and launches; generation A ends;
+    // generation B opens the SAME store. What B sees is what A committed — no
+    // reconstruction, no replay, no lost reservation.
     const r = await storeRig()
     const created = await r.service.createRun({
       runId: 'run-d10',
       root: { session: { header: { id: 'root-d10' } } } as never,
       authorizationRef: 'auth-d10',
     })
-    expect(created.epoch).toBe(1)
+    // The record carries no epoch field at all — that is the deletion, asserted
+    // rather than described.
+    expect(Object.hasOwn(created, 'epoch'), 'the run record must not carry an epoch').toBe(false)
 
     await r.service.admit({
       runId: 'run-d10',
@@ -1630,122 +1645,78 @@ describe('D10: an old worker submits a settlement after a restart', () => {
     })
     await r.service.transition({ runId: 'run-d10', taskId: 't1', to: 'launching' })
     await r.service.transition({ runId: 'run-d10', taskId: 't1', to: 'accepted' })
-
-    const ledger = new RefusalLedger(r.ctx)
-    await ledger.open()
-    cleanups.push(async () => { await ledger.close() })
-
-    // The stale worker: it carries the epoch of a generation that is no longer
-    // current, and it claims the task is done.
-    const stale = await applyWorkerSettlement({
-      service: r.service,
-      ledger,
-      settlement: {
-        runId: 'run-d10',
-        epoch: 0,
-        taskId: 't1',
-        childId: 'child-d10',
-        to: 'confirmed',
-      },
-    })
-
-    // REFUSED, with the reason naming both epochs so a reader can check it.
-    expect(stale.accepted).toBe(false)
-    expect(stale.reason).toMatch(/carries epoch 0 but run "run-d10" is at epoch 1/)
-    expect(stale.reason).toMatch(/stale generation cannot write authoritative state/)
-
-    // The AUTHORITATIVE state is untouched: no confirmation, no released slot,
-    // no tombstone, and the reservation still held.
-    const after = r.service.getRun('run-d10')!
-    expect(after.tasks['t1']?.state).toBe('accepted')
-    expect(after.terminalTombstones).toEqual([])
-    expect(after.budget.reserved).toBe(3)
-    expect(after.epoch).toBe(1)
-    expect(holdsSlot(after.tasks['t1']!.state)).toBe(true)
-
-    // The DIAGNOSTIC evidence is RETAINED, durably, in its own store. This is the
-    // half that a silent refusal would lose.
-    expect(stale.refusalRef).toBeDefined()
-    const retained = ledger.get(stale.refusalRef!)
-    expect(retained).toBeDefined()
-    expect(retained?.epoch).toBe(0)
-    expect(retained?.taskId).toBe('t1')
-    expect(retained?.childId).toBe('child-d10')
-    expect(retained?.reason).toMatch(/stale generation/)
-
-    // And the evidence is durable: a SECOND generation reading the same
-    // directory sees the refusal, which is what makes it evidence rather than a
-    // log line.
-    await ledger.close()
     await r.service.close()
+
     const reopened = await reopenOver(r.root)
-    const ledger2 = new RefusalLedger(reopened.ctx)
-    await ledger2.open()
-    cleanups.push(async () => { await ledger2.close() })
-    expect(ledger2.entries()).toHaveLength(1)
-    expect(ledger2.entries()[0]?.reason).toMatch(/stale generation/)
-    // The run record is also intact, still at its own epoch.
-    expect(reopened.service.getRun('run-d10')?.epoch).toBe(1)
+    const after = reopened.service.getRun('run-d10')
+    expect(after, 'the run survives the generation change').toBeDefined()
+    expect(after?.tasks['t1']?.state).toBe('accepted')
+    // The reservation is still HELD by the stored task, which is the fact that
+    // makes a cross-generation settlement harmful if one could be delivered.
+    expect(after?.budget.reserved).toBe(3)
+    expect(after?.terminalTombstones).toEqual([])
+    expect(holdsSlot(after!.tasks['t1']!.state)).toBe(true)
+    expect(Object.hasOwn(after!, 'epoch')).toBe(false)
+    await reopened.service.close()
   })
 
-  it('D10: a settlement whose childId is not the reserved one is refused and retained too', async () => {
-    // The identity half of "stale": a claim about a task the worker never ran.
-    // Accepting it would attribute a result across identities.
-    const r = await storeRig()
-    await r.service.createRun({
-      runId: 'run-d10b',
-      root: { session: { header: { id: 'root-d10b' } } } as never,
-      authorizationRef: 'a',
-    })
-    await r.service.admit({
-      runId: 'run-d10b',
-      taskId: 't1',
-      childId: 'child-current',
-      assignmentDigest: 'd',
-      reservedCost: 3,
-      allowedCapabilities: [],
-    })
-    await r.service.transition({ runId: 'run-d10b', taskId: 't1', to: 'launching' })
-    await r.service.transition({ runId: 'run-d10b', taskId: 't1', to: 'accepted' })
+  it('no settlement entry point exists, so there is no stale-write path to guard', () => {
+    // Re-derived from the tree so the non-claim cannot rot into a citation. The
+    // settlement machinery is gone from every PRODUCTION source file, and the only
+    // non-test module that still names a terminal target is the hand-run CLI,
+    // which is itself in no production import graph.
+    //
+    // The scan covers production files only. A test file legitimately names these
+    // identifiers as string data (the list below is one such place); what a test
+    // must not do is IMPORT one, which is asserted in
+    // `durability-advanced.test.ts`'s T9-A section, and which would not compile
+    // anyway.
+    const src = join(import.meta.dirname)
+    const all = readdirSync(src).filter(name => name.endsWith('.ts'))
+    const production = all.filter(name => !name.endsWith('.test.ts'))
 
-    const ledger = new RefusalLedger(r.ctx)
-    await ledger.open()
-    cleanups.push(async () => { await ledger.close() })
+    const deadSymbols = [
+      'applyWorkerSettlement',
+      'WorkerSettlement',
+      'SettlementOutcome',
+      'RefusalLedger',
+      'RefusalRecord',
+      'refusalRecordSchema',
+      'refusalDomainSpec',
+      'REFUSAL_DOMAIN_NAME',
+      'dsh_daily_work_refusals',
+    ]
+    const offenders: string[] = []
+    for (const file of production) {
+      // Comments are allowed to name the deleted symbols: that is how a reader
+      // learns why they are gone. An EXPRESSION is what must not survive.
+      const code = readFileSync(join(src, file), 'utf8')
+        .split(/\r?\n/u)
+        .filter(line => !/^\s*(?:\/\/|\*|\/\*)/u.test(line))
+        .join('\n')
+      for (const symbol of deadSymbols) {
+        if (code.includes(symbol)) offenders.push(`${file}: ${symbol}`)
+      }
+    }
+    expect(offenders, 'the settlement machinery must be gone from every production source file').toEqual([])
 
-    const mismatched = await applyWorkerSettlement({
-      service: r.service,
-      ledger,
-      settlement: {
-        runId: 'run-d10b',
-        epoch: 1,
-        taskId: 't1',
-        childId: 'child-from-another-life',
-        to: 'confirmed',
-      },
-    })
-    expect(mismatched.accepted).toBe(false)
-    expect(mismatched.reason).toMatch(/is not attributable across identities/)
-    expect(r.service.getRun('run-d10b')?.tasks['t1']?.state).toBe('accepted')
-    expect(ledger.entries()).toHaveLength(1)
-
-    // The CURRENT generation's settlement, by contrast, IS applied -- so the
-    // guard refuses stale claims without becoming a blanket refusal.
-    const current = await applyWorkerSettlement({
-      service: r.service,
-      ledger,
-      settlement: { runId: 'run-d10b', epoch: 1, taskId: 't1', childId: 'child-current', to: 'settling' },
-    })
-    expect(current.accepted).toBe(true)
-    expect(r.service.getRun('run-d10b')?.tasks['t1']?.state).toBe('settling')
-    // No new refusal was recorded for the accepted settlement.
-    expect(ledger.entries()).toHaveLength(1)
+    // The deciding topology fact, re-derived: only the unreachable CLI names a
+    // terminal target, and `transition` is the only state writer.
+    const terminalTargets = /to:\s*'(?:settling|confirmed|cancelled|executing|cancel_requested)'/u
+    const callers = production.filter(file => terminalTargets.test(readFileSync(join(src, file), 'utf8')))
+    expect(callers.sort(), 'no product path may target a terminal task state').toEqual(['durability-runner.ts'])
+    const importersOfRunner = production.filter(file =>
+      file !== 'durability-runner.ts'
+      && /from\s+'\.\/durability-runner\.ts'/u.test(readFileSync(join(src, file), 'utf8')))
+    expect(importersOfRunner, 'and that CLI is itself unreachable').toEqual([])
   })
 
-  it('D10: reconciliation itself keys on the task, so the record childId is the identity that matters', async () => {
-    // Documents the seam a caller must respect: `reconcileTask` keys on taskId,
-    // and the record's own reserved childId is the identity a settlement is
-    // checked against. Evidence gathered for a different child is refused
-    // upstream by `applyWorkerSettlement`, not silently settled.
+  it('reconciliation still refuses to release a slot on a mismatched child identity', () => {
+    // The half of "stale" that was ALWAYS a real property of a reachable module:
+    // `reconcileTask` keys on taskId and holds the slot regardless of what a
+    // mismatched identity claims. This is kept and asserted, because it is a
+    // decision the reconciler really makes — unlike the epoch comparison, which
+    // had no input to compare.
     const decision = reconcileTask({
       taskId: 't1',
       assignmentDigest: 'd',
@@ -1769,10 +1740,11 @@ describe('D10: an old worker submits a settlement after a restart', () => {
       launchProvenNotCreated: false,
     })
     // The reconciler holds the slot regardless, so a mismatched settlement can
-    // never free credit even if it were wrongly applied.
+    // never free credit even if one were wrongly applied.
     expect(decision.releaseSlot).toBe(false)
   })
 })
+
 
 // ---------------------------------------------------------------------------
 // D11 -- repeated domain open
