@@ -28,7 +28,7 @@ import type { Context } from '@deepseek-ai/cordis'
 import { Service } from '@deepseek-ai/cordis'
 import type { Agent } from '@deepseek-ai/dsh-agent'
 import { defineDomain, domainTable, type Domain } from '@deepseek-ai/dsh-storage-domain'
-import { randomUUID } from 'node:crypto'
+import { createHash, randomUUID } from 'node:crypto'
 import { z } from 'zod'
 import {
   admissionReason,
@@ -71,6 +71,7 @@ import {
   retainAsUnknown,
   runRecordSchema,
   type BudgetReport,
+  type ReadyAssignment,
   type RunRecord,
   type TaskRecord,
 } from './record.ts'
@@ -203,6 +204,48 @@ class AdmissionRefused extends Error {
     this.held = held
     this.target = target
   }
+}
+
+/**
+ * A submission whose taskId already names DIFFERENT work (V5 §7.2).
+ *
+ * Its own type rather than a bare `Error` for the same reason
+ * `AdmissionRefused` is: a caller must be able to tell "you contradicted
+ * yourself" from "the store failed", and string matching is how those two get
+ * confused in a report. The two digests are carried so the message can name
+ * both without the caller having to re-read the record.
+ */
+export class ReadyConflictError extends Error {
+  readonly taskId: string
+  readonly existingDigest: string
+  readonly submittedDigest: string
+
+  constructor(taskId: string, existingDigest: string, submittedDigest: string) {
+    super(
+      `dailyWork: task "${taskId}" is already submitted as ready with a different assignment `
+      + `(existing ${existingDigest}, submitted ${submittedDigest}); a changed assignment under the same `
+      + 'taskId is an explicit conflict — submit it under a new taskId',
+    )
+    this.name = 'ReadyConflictError'
+    this.taskId = taskId
+    this.existingDigest = existingDigest
+    this.submittedDigest = submittedDigest
+  }
+}
+
+/**
+ * Digest of a submitted assignment, over the prompt text.
+ *
+ * A named function rather than an inline call so the duplicate rule has ONE
+ * preimage. If the digest were computed in two places and the two disagreed,
+ * the idempotent arm would silently become a conflict arm — a retried submit
+ * would start erroring, which is the worst possible failure for a retry path.
+ *
+ * `createHash` is already imported for child ids; this reuses it rather than
+ * adding a second hashing idiom.
+ */
+function assignmentDigestOf(prompt: string): string {
+  return `sha256:${createHash('sha256').update(prompt, 'utf8').digest('hex')}`
 }
 
 /** One caller's queued work, with its own signal and its own answer. */
@@ -1214,6 +1257,157 @@ export class WorkService extends Service {
       requestedTarget: target,
       updatedAt: new Date().toISOString(),
     }))
+  }
+
+  /**
+   * Durably record that the model decided on this work, whether or not a slot
+   * exists for it right now (V5 §7.2 / WORK-READY).
+   *
+   * WHY THIS REPLACES AN IMMEDIATE `drain` AT THE SUBMIT EDGE. `work submit`
+   * used to call `drain(runId, [one request])` and nothing else. A refusal is a
+   * VALUE and writes nothing — deliberately, so a refusal storm is free — but
+   * the consequence at THIS edge was that the semantic assignment the model had
+   * already decided existed only in the tool-call argument and was **lost** when
+   * the run was full. The root then had to re-derive it after every completion,
+   * which converts a mechanical target into model polling. That is the defect
+   * V5 §7 names, and this method is the durable half of the fix.
+   *
+   * WHAT THIS DOES NOT DO: it does not admit, does not take a slot, does not
+   * commit credit and does not launch. `requestDrain` is a separate call, and
+   * admission still happens only inside `tryReserveAdmission`. Keeping the two
+   * apart is what lets a submission succeed while the target is full, which is
+   * the whole point.
+   *
+   * THE DUPLICATE RULE (V5 §7.2), and why each half is the shape it is:
+   *
+   *   - IDENTICAL assignment under a taskId already ready -> **idempotent**. The
+   *     stored record stands and the transform returns the record UNCHANGED, so
+   *     the domain performs no write at all. That is stronger than writing an
+   *     identical value: a retried tool call (the model re-sending after a
+   *     transport failure) leaves no trace to reconcile and does not re-order
+   *     the assignment behind newer work.
+   *   - CHANGED assignment under the same taskId -> **explicit conflict**, an
+   *     error naming both digests. Silently replacing would let a second
+   *     submission redefine work the root may already be relying on, and
+   *     silently keeping the old one would report success for a goal the caller
+   *     did not get. Neither is honest, so it is refused and the caller chooses
+   *     a new taskId.
+   *
+   * A taskId that is already ADMITTED is a different fact (the work is running,
+   * not pending) and `tryReserveAdmission` already refuses a re-admission with
+   * its own wording, so this method does not duplicate that decision. It refuses
+   * only against a READY record.
+   *
+   * @returns the stored assignment and whether this call created it.
+   * @throws when the assignment conflicts with an existing READY record.
+   */
+  async submitReady(input: {
+    runId: string
+    taskId: string
+    prompt: string
+    reservedCost: number
+    allowedCapabilities?: readonly string[]
+    childId?: string
+    sourceCallId?: string
+    now?: string
+  }): Promise<{ readonly assignment: ReadyAssignment; readonly created: boolean }> {
+    this.assertOpen()
+    if (input.taskId.length === 0) throw new Error('dailyWork: submitReady requires a taskId')
+    if (input.prompt.length === 0) throw new Error('dailyWork: submitReady requires a non-empty prompt')
+    if (!Number.isFinite(input.reservedCost) || input.reservedCost < 0) {
+      throw new Error(
+        `dailyWork: reservedCost ${String(input.reservedCost)} must be a non-negative finite number`,
+      )
+    }
+    const now = input.now ?? new Date().toISOString()
+    const digest = assignmentDigestOf(input.prompt)
+    // The child id is reserved HERE, at submission, not at launch. That is the
+    // half of the record that makes a crash between submission and admission
+    // recoverable: the record names the exact child a later admission must
+    // create, so reconciliation is keyed on a persisted identity instead of one
+    // invented after the fact. `childId` may be supplied so a caller that has
+    // already minted one (a re-submission after a restart) keeps it.
+    const childId = input.childId ?? `child-${input.taskId}`
+    let created = false
+    const updated = await this.runs().update(input.runId, record => {
+      const existing = record.readyAssignments?.[input.taskId]
+      if (existing !== undefined) {
+        if (existing.assignmentDigest === digest && existing.prompt === input.prompt) return record
+        throw new ReadyConflictError(input.taskId, existing.assignmentDigest, digest)
+      }
+      // The sequence is `max(existing) + 1` rather than `count + 1`, so a
+      // submission after an admitted one still sorts after it. `count + 1` would
+      // reuse a sequence number and make "oldest ready" ambiguous, which is a
+      // starvation risk under sustained load rather than a cosmetic problem.
+      const sequences = Object.values(record.readyAssignments ?? {}).map(a => a.sequence)
+      const sequence = sequences.length === 0 ? 1 : Math.max(...sequences) + 1
+      const assignment: ReadyAssignment = {
+        taskId: input.taskId,
+        childId,
+        prompt: input.prompt,
+        assignmentDigest: digest,
+        reservedCost: input.reservedCost,
+        allowedCapabilities: [...input.allowedCapabilities ?? ['reader']],
+        sequence,
+        createdAt: now,
+        updatedAt: now,
+        ...input.sourceCallId === undefined ? {} : { sourceCallId: input.sourceCallId },
+      }
+      created = true
+      return {
+        ...record,
+        readyAssignments: { ...record.readyAssignments, [input.taskId]: assignment },
+        updatedAt: now,
+      }
+    })
+    const assignment = updated.readyAssignments?.[input.taskId]
+    if (assignment === undefined) {
+      throw new Error(`dailyWork: the ready assignment for "${input.taskId}" did not persist`)
+    }
+    return { assignment, created }
+  }
+
+  /**
+   * The READY assignments of a run, OLDEST FIRST by durable submission sequence.
+   *
+   * The order is the record's own `sequence`, not insertion order of the stored
+   * object and not `createdAt`: two submissions inside one millisecond would be
+   * unordered by a clock, and an unordered drain starves an assignment under
+   * sustained load. An absent table means none, which is what a record written
+   * before this table existed means.
+   */
+  readyAssignments(runId: string): readonly ReadyAssignment[] {
+    const record = this.requireRun(runId)
+    return Object.values(record.readyAssignments ?? {}).sort((a, b) => a.sequence - b.sequence)
+  }
+
+  /**
+   * Drop one READY assignment, because it was admitted or because its intent is
+   * withdrawn.
+   *
+   * SEPARATE FROM THE ADMISSION, AND THAT IS A STATED COST. The ideal is one
+   * atomic update that admits the task and retires the intent together. That is
+   * not what this is, and the window it leaves is named rather than glossed: if
+   * the process dies between the admission committing and this call, the record
+   * holds BOTH an admitted task and its READY row. The recovery rule for that
+   * state is written at the call site in `runDrainPass` — the READY row is
+   * dropped when its taskId is already admitted, because an admitted task is
+   * stronger evidence than a pending intent. The direction is chosen so the
+   * failure is a redundant row, never a lost assignment.
+   *
+   * @returns whether a record was removed.
+   */
+  async clearReadyAssignment(runId: string, taskId: string, now?: string): Promise<boolean> {
+    this.assertOpen()
+    let removed = false
+    await this.runs().update(runId, record => {
+      if (record.readyAssignments?.[taskId] === undefined) return record
+      removed = true
+      const next = { ...record.readyAssignments }
+      delete next[taskId]
+      return { ...record, readyAssignments: next, updatedAt: now ?? new Date().toISOString() }
+    })
+    return removed
   }
 
   /**
