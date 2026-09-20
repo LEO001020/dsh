@@ -1,0 +1,72 @@
+{
+  "probe": "c3-product-range",
+  "label": "after",
+  "measuredAt": "2026-09-20T15:34:21.544Z",
+  "identity": {
+    "srcDataPlaneTs": "bb039c72dfaff13d30be68a72f28c2ace120b0cd0cc49bef4352e73385e3b8c5",
+    "srcArtifactsTs": "ecbb31a5aa7520224ab4e540df903991c9f6451fddbff329c372044636a6b39a",
+    "libDataPlaneJs": "499bef361a82d91cc5fd39e6a3ab48dbe996590057d7195ee4251860bc6948c5",
+    "libArtifactsJs": "f22ef649e211e1c7c7c4fb3da798051bce9c75a0d90ebacb56e831a51ef270ca"
+  },
+  "arms": {
+    "control_rangeInsideFile": {
+      "fileBytes": 4096,
+      "requestedRange": {
+        "offset": 0,
+        "length": 1024
+      },
+      "requestedBytes": 1024,
+      "publishedBytes": 1024,
+      "completeness": "complete-within-request",
+      "coverageVerdict": "full-for-requested-scope",
+      "gaps": [],
+      "bytesAbsentInsideRequestedRange": 0,
+      "deliverableAsComplete": true
+    },
+    "rangePastEof": {
+      "fileBytes": 400,
+      "requestedRange": {
+        "offset": 0,
+        "length": 1000
+      },
+      "requestedBytes": 1000,
+      "publishedBytes": 400,
+      "completeness": "partial",
+      "coverageVerdict": "partial-native-acquisition",
+      "gaps": [
+        {
+          "stage": "native-acquisition",
+          "recovery": "none",
+          "reason": "the request named 1000 bytes at offset 0 but only 400 were acquired (600 bytes inside the requested range are absent, because the requested range extends past the end of the source)"
+        }
+      ],
+      "bytesAbsentInsideRequestedRange": 600,
+      "deliverableAsComplete": false
+    },
+    "rangeStartsPastEof": {
+      "fileBytes": 400,
+      "requestedRange": {
+        "offset": 1000,
+        "length": 512
+      },
+      "requestedBytes": 512,
+      "publishedBytes": 0,
+      "completeness": "partial",
+      "coverageVerdict": "partial-native-acquisition",
+      "gaps": [
+        {
+          "stage": "native-acquisition",
+          "recovery": "none",
+          "reason": "the request named 512 bytes at offset 1000 but only 0 were acquired (512 bytes inside the requested range are absent, because the requested range extends past the end of the source)"
+        }
+      ],
+      "bytesAbsentInsideRequestedRange": 512,
+      "deliverableAsComplete": false
+    }
+  },
+  "finding": {
+    "controlInsideRangeHasNoGap": true,
+    "rangePastEofIsAnUnrecordedLoss": false,
+    "rangeStartsPastEofIsAnUnrecordedLoss": false
+  }
+}

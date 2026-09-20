@@ -1,0 +1,79 @@
+{
+  "probe": "c3-gap-hole",
+  "label": "after",
+  "measuredAt": "2026-09-20T15:34:25.361Z",
+  "identity": {
+    "srcArtifactsTs": "ecbb31a5aa7520224ab4e540df903991c9f6451fddbff329c372044636a6b39a",
+    "libArtifactsJs": "f22ef649e211e1c7c7c4fb3da798051bce9c75a0d90ebacb56e831a51ef270ca"
+  },
+  "arms": {
+    "rangeInsideFile": {
+      "fileBytes": 4096,
+      "requestedRange": {
+        "offset": 0,
+        "length": 1024
+      },
+      "requestedBytes": 1024,
+      "publishedBytes": 4096,
+      "completeness": "complete-within-request",
+      "coverageVerdict": "full-for-requested-scope",
+      "gaps": [],
+      "bytesMissingFromRequestedRange": 0,
+      "deliverableAsComplete": true
+    },
+    "rangePastEof": {
+      "fileBytes": 400,
+      "requestedRange": {
+        "offset": 0,
+        "length": 1000
+      },
+      "requestedBytes": 1000,
+      "publishedBytes": 400,
+      "completeness": "partial",
+      "coverageVerdict": "partial-native-acquisition",
+      "gaps": [
+        {
+          "stage": "native-acquisition",
+          "recovery": "none"
+        }
+      ],
+      "bytesMissingFromRequestedRange": 600,
+      "deliverableAsComplete": false
+    },
+    "rangeEntirelyPastEof": {
+      "fileBytes": 400,
+      "requestedRange": {
+        "offset": 1000,
+        "length": 512
+      },
+      "requestedBytes": 512,
+      "publishedBytes": 400,
+      "completeness": "partial",
+      "coverageVerdict": "partial-native-acquisition",
+      "gaps": [
+        {
+          "stage": "native-acquisition",
+          "recovery": "none"
+        }
+      ],
+      "bytesMissingFromRequestedRange": 112,
+      "deliverableAsComplete": false
+    },
+    "wholeFileShortReader": {
+      "publishedBytes": 400,
+      "completeness": "partial",
+      "gaps": [
+        {
+          "stage": "native-acquisition",
+          "recovery": "refetch"
+        }
+      ]
+    }
+  },
+  "finding": {
+    "rangePastEofIsUnrecordedLoss": false,
+    "rangeEntirelyPastEofIsUnrecordedLoss": false,
+    "controlInsideRangeRecordsNoGap": true,
+    "controlShortReaderRecordsGap": true
+  }
+}
