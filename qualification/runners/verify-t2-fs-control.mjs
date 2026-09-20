@@ -14,7 +14,24 @@ import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node
 import { createHash } from 'node:crypto'
 import { bootAndWait, readResult } from './boot-harness.mjs'
 
-const REPO = 'D:/DSH/work/dsh-native-daily'
+// THE REPO ROOT IS DERIVED FROM THIS FILE'S OWN LOCATION, not hardcoded.
+//
+// It used to be the literal `D:/DSH/work/dsh-native-daily`, which names ONE
+// checkout. Every path built from it -- the result directory, the profile
+// source, the digests read back -- therefore belonged to the MAIN tree even when
+// this file ran from a git worktree (which the multi-agent discipline requires).
+// A runner that reads the main tree and writes into its own tree is reporting a
+// fact about a tree it does not own; the reverse overwrites evidence. Both are
+// the `G-SEAM-66` corruption class, and the read side is what produced two
+// retracted findings in this project (G-SEAM-29, G-SEAM-36).
+//
+// `import.meta.url` is `.../qualification/runners/<this file>`, so two levels up
+// is the repository root of WHICHEVER tree is running -- verified for a worktree,
+// where it resolves to that worktree rather than to the main checkout.
+import { fileURLToPath } from 'node:url'
+import { dirname as __dirnameOf, join as __joinOf } from 'node:path'
+const REPO = __joinOf(__dirnameOf(fileURLToPath(import.meta.url)), '..', '..').replace(/\\/g, '/')
+
 const RESULT_DIR = `${REPO}/qualification/results/T2-fs`
 const HOME = 'D:/DSH/home/t2-fs-control'
 const PROFILE = 'daily'

@@ -30,8 +30,14 @@ export const name = 'verify-cmp-composition'
 
 export const inject = ['sessionController']
 
+import { fileURLToPath } from 'node:url'
+import { dirname, join } from 'node:path'
+
+/** The repository root of the tree THIS FILE was loaded from. */
+const REPO_ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..').replace(/\\/g, '/')
+
 const OUT = process.env.DSH_PROBE_OUT
-  ?? 'D:/DSH/work/dsh-native-daily/qualification/results/V2-composition/boot4-composition.json'
+  ?? join(REPO_ROOT, 'qualification/results/V2-composition/boot4-composition.json')
 
 /** FiberState.ACTIVE === 2 (`vendor/cordis/src/fiber.ts:147-155`). */
 const FIBER_ACTIVE = 2
@@ -286,7 +292,7 @@ export async function apply(ctx) {
 
     const sessionFor = async (label, preset) => {
       const created = await sc.create({
-        cwd: 'D:/DSH/work/dsh-native-daily',
+        cwd: REPO_ROOT,
         ...preset === undefined ? {} : { agentPreset: preset },
       })
       const id = created?.sessionId ?? created?.id ?? null

@@ -24,9 +24,15 @@ import { createHash } from 'node:crypto'
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { bootAndWait, readResult } from './boot-harness.mjs'
 
+import { fileURLToPath } from 'node:url'
+import { dirname, join } from 'node:path'
+
+/** The repository root of the tree THIS FILE was loaded from. */
+const REPO_ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..').replace(/\\/g, '/')
+
 const HOME = 'D:/DSH/home/t3-shell'
 const PROFILE = 'daily'
-const RESULT_DIR = 'D:/DSH/work/dsh-native-daily/qualification/results/T3-shell'
+const RESULT_DIR = join(REPO_ROOT, 'qualification/results/T3-shell')
 const OUT = `${RESULT_DIR}/boot.json`
 /** A cwd that is neither the repo nor the profile directory. */
 const FOREIGN_CWD = 'C:/Windows/Temp'
@@ -57,7 +63,7 @@ function digestArtifacts() {
   for (const rel of TRACKED_ARTIFACTS) {
     try {
       out[rel] = createHash('sha256')
-        .update(readFileSync(`D:/DSH/work/dsh-native-daily/${rel}`))
+        .update(readFileSync(`${REPO_ROOT}/${rel}`))
         .digest('hex')
     } catch {
       out[rel] = null
@@ -74,7 +80,7 @@ const artifactsBefore = digestArtifacts()
 const boot = await bootAndWait({
   home: HOME,
   profile: PROFILE,
-  patches: ['D:/DSH/work/dsh-native-daily/qualification/runners/verify-t3-shell.patch.yml'],
+  patches: [join(REPO_ROOT, 'qualification/runners/verify-t3-shell.patch.yml')],
   outPath: OUT,
   cwd: FOREIGN_CWD,
 })

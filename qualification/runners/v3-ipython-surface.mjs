@@ -43,8 +43,14 @@ export const name = 'v3-ipython-surface'
 // probe never runs and reports NOTHING, rather than reporting a false absence.
 export const inject = ['sessionController', 'ipython']
 
+import { fileURLToPath } from 'node:url'
+import { dirname, join } from 'node:path'
+
+/** The repository root of the tree THIS FILE was loaded from. */
+const REPO_ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..').replace(/\\/g, '/')
+
 const OUT = process.env.DSH_PROBE_OUT
-  ?? 'D:/DSH/work/dsh-native-daily/qualification/results/V3-ipython/IPY-09-tool-surface.json'
+  ?? join(REPO_ROOT, 'qualification/results/V3-ipython/IPY-09-tool-surface.json')
 
 export async function apply(ctx) {
   const finding = {
@@ -82,7 +88,7 @@ export async function apply(ctx) {
 
     // (3) A REAL Session on the profile's own default preset.
     const sc = ctx.get('sessionController')
-    const created = await sc.create({ cwd: 'D:/DSH/work/dsh-native-daily' })
+    const created = await sc.create({ cwd: REPO_ROOT })
     finding.sessionId = created?.sessionId ?? created?.id ?? null
     finding.sessionCreated = finding.sessionId !== null
 

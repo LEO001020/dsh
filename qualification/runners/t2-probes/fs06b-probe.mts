@@ -19,21 +19,40 @@
  * fixture now supplies a real receipt and measures both the residual gap and its
  * closure (see the case's own comments).
  *
- * RUN IT FROM ANYWHERE. Imports are absolute paths into the pinned checkout,
- * because ESM resolves bare specifiers relative to the IMPORTING FILE's location
- * rather than the process cwd. `tsx` is needed for the `.ts` import of the subject.
+ * RUN IT FROM ANYWHERE. The pinned-checkout imports are absolute because ESM
+ * resolves bare specifiers relative to the IMPORTING FILE's location rather than
+ * the process cwd, and `D:/DSH/src/dsh-src` is a fixed machine-layout fact recorded
+ * in `compatibility.lock.json`. `tsx` is needed for the `.ts` import of the subject.
  *   cd D:/DSH/src/dsh-src && node --import tsx/esm \
- *     D:/DSH/work/dsh-native-daily/qualification/runners/t2-probes/fs06b-probe.mts
+ *     <this file>
+ *
+ * THE SUBJECT IS REACHED FROM THIS FILE'S OWN TREE, not from a hardcoded checkout.
+ * It used to be
+ * `file:///D:/DSH/work/dsh-native-daily/packages/dsh-daily-work/src/worktree-isolation.ts`,
+ * which made a run from any other checkout measure the MAIN tree's module while
+ * reporting a finding about its own -- the stale-artifact trap that produced two
+ * retracted findings in this project (G-SEAM-29, G-SEAM-36). A `file://` URL is a
+ * MODULE SPECIFIER, so this is a cross-tree READ of the subject under test, which
+ * is the worst place for one: the probe would be measuring code it does not own.
+ * Resolved from `import.meta.url`, so it tracks whichever tree is running.
  */
 import { spawnSync } from 'node:child_process'
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
-import { join } from 'node:path'
+import { dirname, join } from 'node:path'
+import { fileURLToPath, pathToFileURL } from 'node:url'
 import { Context } from 'file:///D:/DSH/src/dsh-src/vendor/cordis/lib/index.js'
 import { LocalSubprocessRuntime } from 'file:///D:/DSH/src/dsh-src/packages/subprocess/subprocess-local/lib/index.js'
 // The subject under test, reached through its SOURCE so this probe tracks the
-// module rather than a stale build.
-import { acquireWriterWorkspace, assessIntegration } from 'file:///D:/DSH/work/dsh-native-daily/packages/dsh-daily-work/src/worktree-isolation.ts'
+// module rather than a stale build -- and from THIS tree, so the probe measures the
+// code it is actually a probe for.
+const SUBJECT = pathToFileURL(
+  join(dirname(fileURLToPath(import.meta.url)), '..', '..', '..', 'packages', 'dsh-daily-work', 'src', 'worktree-isolation.ts'),
+).href
+const { acquireWriterWorkspace, assessIntegration } = await import(SUBJECT) as {
+  acquireWriterWorkspace: (...args: unknown[]) => unknown
+  assessIntegration: (...args: unknown[]) => unknown
+}
 
 const roots: string[] = []
 const makeRoot = (p: string): string => {

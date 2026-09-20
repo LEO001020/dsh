@@ -15,7 +15,7 @@ import json
 import sys
 from pathlib import Path
 
-ROOT = Path('D:/DSH/work/dsh-native-daily')
+ROOT = Path(__file__).resolve().parents[2]
 SPEC = ROOT / 'qualification' / 'specs' / 'acceptance-spec.trusted-local-v1.json'
 IDENTITY = '0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461'
 GATES = 'qualification/results/V7-fs/GATES.md'

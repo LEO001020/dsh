@@ -41,10 +41,16 @@
 import { writeFileSync } from 'node:fs'
 
 export const name = 'verify-r4-authorization'
+import { fileURLToPath } from 'node:url'
+import { dirname, join } from 'node:path'
+
+/** The repository root of the tree THIS FILE was loaded from. */
+const REPO_ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..').replace(/\\/g, '/')
+
 export const inject = ['sessionController']
 
 const OUT = process.env.DSH_PROBE_OUT
-  ?? 'D:/DSH/work/wt-r4/qualification/results/R4-authorization/boot.json'
+  ?? join(REPO_ROOT, 'qualification/results/R4-authorization/boot.json')
 
 /**
  * Read the run counts and the run this host holds for one session id.
@@ -217,7 +223,7 @@ export async function apply(ctx) {
   try {
     // ---- (1) Session creation ALONE ------------------------------------
     const sessions = ctx.get('sessionController')
-    const created = await sessions.create({ cwd: 'D:/DSH/work/wt-r4' })
+    const created = await sessions.create({ cwd: REPO_ROOT })
     finding.sessionId = String(created.sessionId)
     finding.agentPreset = created.agentPreset ?? null
     const roster = ctx.get('agentPresets')
@@ -350,7 +356,7 @@ export async function apply(ctx) {
     // sequential arm below so the run count is unambiguous. A second session is
     // created so this arm's run cannot be confused with the positive arm's.
     if (commands !== undefined && ctx.get('agents') !== undefined) {
-      const concurrentSession = await sessions.create({ cwd: 'D:/DSH/work/wt-r4' })
+      const concurrentSession = await sessions.create({ cwd: REPO_ROOT })
       const concurrentAgent = ctx.get('agents')?.get(concurrentSession.sessionId)
       if (concurrentAgent !== undefined) {
         const settled = await Promise.all([

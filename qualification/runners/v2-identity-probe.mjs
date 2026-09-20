@@ -39,10 +39,16 @@ export const name = 'v2-identity-probe'
 // measurement is possible. Naming a service the probe wants to ASSERT would mean
 // the probe never runs when that service is missing, and the artifact would be
 // ABSENT rather than reporting `false` -- the opposite of honest.
+import { fileURLToPath } from 'node:url'
+import { dirname, join } from 'node:path'
+
+/** The repository root of the tree THIS FILE was loaded from. */
+const REPO_ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..').replace(/\\/g, '/')
+
 export const inject = ['sessionController']
 
 const OUT = process.env.DSH_PROBE_OUT
-  ?? 'D:/DSH/work/wt-r0/qualification/results/trusted-local-v2/probe.json'
+  ?? join(REPO_ROOT, 'qualification/results/trusted-local-v2/probe.json')
 
 /**
  * The cwd a SESSION is created with, which is NOT the boot cwd.
@@ -61,7 +67,7 @@ const OUT = process.env.DSH_PROBE_OUT
  * argument -- the same defect class as G-FIX-06. The boot cwd stays foreign; the
  * SESSION cwd is named explicitly and is a real directory.
  */
-const SESSION_CWD = process.env.V2_IDENTITY_SESSION_CWD ?? 'D:/DSH/work/wt-r0'
+const SESSION_CWD = process.env.V2_IDENTITY_SESSION_CWD ?? REPO_ROOT
 
 /** FiberState.ACTIVE === 2 (`vendor/cordis/src/fiber.ts:147-155`). */
 const FIBER_ACTIVE = 2

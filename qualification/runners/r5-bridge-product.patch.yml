@@ -6,9 +6,29 @@
 # bridge works when a row is present while proving nothing about the product --
 # the exact mistake recorded as G-FIX-04/G-FIX-05, and the shape F2 was.
 #
-# The probe path is absolute because a cordis row names a module to load, and it
-# points INTO THIS WORKTREE. A path into the main checkout would make a worktree
-# boot measure another tree's probe.
+# THIS FILE IS A TEMPLATE, NOT A RUNNABLE OVERLAY. The `name:` below is a
+# PLACEHOLDER and `r5-bridge-driver.mjs` rewrites it at run time to this tree's
+# own `r5-bridge-product.mjs`, writing the result beside its own evidence.
+#
+# WHY, and this is the defect this comment records. It used to be the literal
+# `D:/DSH/work/wt-r5/qualification/runners/r5-bridge-product.mjs`. A cordis row's
+# `name:` is a MODULE SPECIFIER, and the loader turns an absolute one into a
+# `file://` URL and imports exactly that file
+# (`packages/boot/app-boot/src/index.ts:521`,
+# `vendor/loader/src/config/tree.ts:122-126`). So a boot from ANY tree other than
+# `wt-r5` executed another writer's probe while believing it measured its own
+# composition. That is cross-tree CODE EXECUTION, not merely a cross-tree read,
+# and no single literal can be correct for a repository checked out in more than
+# one place. A relative `name:` is not a substitute either: the loader resolves it
+# against the PROFILE directory, not against this file.
+#
+# The driver REFUSES to run when this row is missing (`materialiseOverlay`
+# throws), so the placeholder cannot be silently dropped.
 - insert:
     - id: r5-bridge-product
-      name: 'D:/DSH/work/wt-r5/qualification/runners/r5-bridge-product.mjs'
+      name: 'REWRITTEN-AT-RUN-TIME/r5-bridge-product.mjs'
+# TO RUN THIS OVERLAY, materialise it with the running tree's own probe:
+#   import { materialiseOverlay } from './overlay.mjs'
+#   materialiseOverlay('<this file>', '<your results dir>/x.patch.yml', '<your probe>.mjs')
+# Running it AS-IS fails loudly with an unresolvable module, which is deliberate:
+# a loud failure beats silently executing another checkout's probe.

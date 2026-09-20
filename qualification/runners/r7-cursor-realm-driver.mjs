@@ -29,7 +29,36 @@ const HOME = 'D:/DSH/home/r7'
 const PROFILE_SRC = join(REPO, 'profiles', 'daily-candidate')
 const PROFILE_DIR = join(HOME, 'profiles', 'daily')
 const OUT = join(REPO, 'qualification', 'results', 'R7-cursor-realm', 'product-boot.json')
-const PATCH = join(HERE, 'r7-cursor-realm.patch.yml')
+const PATCH_SRC = join(HERE, 'r7-cursor-realm.patch.yml')
+/**
+ * The overlay is MATERIALISED INTO THIS TREE at run time, with the probe row
+ * rewritten to name THIS tree's probe file.
+ *
+ * WHY IT IS NOT THE COMMITTED FILE ANY MORE. The committed overlay carries the
+ * literal `D:/DSH/work/wt-r7/qualification/runners/r7-cursor-realm-probe.mjs`,
+ * and a cordis row's `name:` is a MODULE SPECIFIER: the loader turns an absolute
+ * one into a `file://` URL and imports exactly that file
+ * (`packages/boot/app-boot/src/index.ts:521`, `vendor/loader/src/config/tree.ts:122-126`).
+ * So a boot from any tree other than `wt-r7` executed ANOTHER writer's probe
+ * while believing it measured its own composition -- cross-tree CODE EXECUTION,
+ * not merely a cross-tree read. A relative `name:` is not a substitute: the
+ * loader resolves it against the PROFILE directory, not against this file.
+ *
+ * Materialising the overlay beside this driver's own result keeps the row a
+ * specifier the loader understands while making the file it names this tree's.
+ */
+const PATCH = join(REPO, 'qualification', 'results', 'R7-cursor-realm', 'r7-cursor-realm.patch.yml')
+function materialiseOverlay() {
+  const text = readFileSync(PATCH_SRC, 'utf8')
+  const own = join(HERE, 'r7-cursor-realm-probe.mjs').replace(/\\/g, '/')
+  const rewritten = text.replace(/^(\s*name:\s*)'[^']*r7-cursor-realm-probe\.mjs'/mu, `$1'${own}'`)
+  if (rewritten === text) {
+    throw new Error(`r7-cursor-realm-driver: the overlay names no r7-cursor-realm-probe.mjs row to rewrite: ${PATCH_SRC}`)
+  }
+  mkdirSync(dirname(PATCH), { recursive: true })
+  writeFileSync(PATCH, rewritten, 'utf8')
+  return PATCH
+}
 
 /** Install the profile FRESH from this repository. */
 function installProfile() {
@@ -63,6 +92,7 @@ function installProfile() {
 
 installProfile()
 if (existsSync(OUT)) rmSync(OUT)
+materialiseOverlay()
 
 const boot = await bootAndWait({
   home: HOME,
