@@ -1,0 +1,8 @@
+ [32m✓[39m src/p13-artifact-plane.test.ts[2m > [22mP13 — the large-result plane is the project artifact plane, not a path[2m > [22mP13-10 the DURABLE LEDGER carries a typed ref, never a host path[33m 6233[2mms[22m[39m
+ [32m✓[39m src/p13-artifact-plane.test.ts[2m > [22mP13 — the large-result plane is the project artifact plane, not a path[2m > [22mP13-11 the PRODUCTION path binds the plane: KernelService config -> bridge -> ref[33m 3177[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[32m11 passed[39m[22m[90m (11)[39m
+[2m   Start at [22m 22:05:34
+[2m   Duration [22m 34.15s[2m (transform 349ms, setup 0ms, import 488ms, tests 33.50s, environment 0ms)[22m
+

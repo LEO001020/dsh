@@ -1,0 +1,8 @@
+ [31m×[39m src/p13-artifact-plane.test.ts[2m > [22mP13 — the large-result plane is the project artifact plane, not a path[2m > [22mP13-4 load() on the unified plane is REFUSED, so no filesystem fallback exists[33m 2653[2mms[22m[39m
+[31m   → expected 'HAS_PATH:True\nLOAD_REFUSED:yes\nLOAD…' to contain 'HAS_PATH:False'[39m
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 1 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+[31m[1mAssertionError[22m: expected 'HAS_PATH:True\nLOAD_REFUSED:yes\nLOAD…' to contain 'HAS_PATH:False'[39m
+[32m- HAS_PATH:[7mFalse[27m[39m
+[31m+ HAS_PATH:[7mTrue[27m[39m
+    [90m255|[39m     [34mexpect[39m(result[33m.[39mstdout[33m.[39mtext)[33m.[39m[34mtoContain[39m([32m'HAS_PATH:False'[39m)
+[2m      Tests [22m [1m[31m1 failed[39m[22m[2m | [22m[33m8 skipped[39m[90m (9)[39m

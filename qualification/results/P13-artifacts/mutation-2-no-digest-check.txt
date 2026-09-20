@@ -1,0 +1,8 @@
+ [31m×[39m src/p13-artifact-plane.test.ts[2m > [22mP13 — the large-result plane is the project artifact plane, not a path[2m > [22mP13-5 a plane that retains DIFFERENT bytes is refused, not bound to Python[33m 2524[2mms[22m[39m
+[31m   → expected 'RAISED:no\nGOT_PLANE:unified\n' to contain 'RAISED:yes'[39m
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 1 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+[31m[1mAssertionError[22m: expected 'RAISED:no\nGOT_PLANE:unified\n' to contain 'RAISED:yes'[39m
+[32m- RAISED:[7myes[27m[39m
+[31m+ RAISED:[7mno[27m[39m
+    [90m279|[39m     [34mexpect[39m(result[33m.[39mstdout[33m.[39mtext)[33m.[39m[34mtoContain[39m([32m'RAISED:yes'[39m)
+[2m      Tests [22m [1m[31m1 failed[39m[22m[2m | [22m[33m8 skipped[39m[90m (9)[39m

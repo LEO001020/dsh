@@ -41,6 +41,20 @@ const PYTHON = process.env['DSH_PYTHON'] ?? 'C:/Users/hzq00/AppData/Local/Progra
 
 const observed: Record<string, unknown> = {}
 
+/**
+ * Record one arm and print it IMMEDIATELY.
+ *
+ * WHY NOT ONLY AT THE END. A first version of this probe accumulated everything
+ * and wrote once, and when it hung the stdout log was 0 bytes -- so a hang was
+ * indistinguishable from a slow run and there was nothing to inspect. Printing
+ * per arm makes a hang LOCALISED to the arm that never printed, which is the
+ * difference between a measurement and a mystery.
+ */
+function record(arm: string, value: unknown): void {
+  observed[arm] = value
+  process.stderr.write(`[p13-probe] ${arm} done\n`)
+}
+
 function agentFor(sessionId: string, cwd: string): Agent {
   return { session: { header: { id: sessionId, cwd } } } as unknown as Agent
 }
@@ -61,7 +75,7 @@ async function main(): Promise<void> {
   await ctx.plugin(Subprocess)
   const root = await mkdtemp(join(tmpdir(), 'p13-probe-'))
 
-  observed['frameLimitBytes'] = MAX_FRAME_BYTES
+  record('frameLimitBytes', MAX_FRAME_BYTES)
 
   // A tool whose canonical value is sized by the caller, so the SAME tool
   // produces an inline-sized and an over-frame-sized result.
@@ -84,7 +98,7 @@ async function main(): Promise<void> {
   // (1 MiB inline vs a 4 MiB frame). That is the configuration under which a
   // result can be too large to inline AND still be routed to the artifact door.
   const inlineValueBytes = 4096
-  observed['inlineValueBytes'] = inlineValueBytes
+  record('inlineValueBytes', inlineValueBytes)
 
   const bridge = new BridgeServer({ artifactDirectory: join(root, 'artifacts'), inlineValueBytes })
   await bridge.start()
@@ -124,10 +138,10 @@ async function main(): Promise<void> {
     "print('A_PARENT_WRITABLE:' + str(_os.access(_os.path.dirname(value.path), _os.W_OK)))",
     `print('A_IS_UNDER_SESSION_CWD:' + str(_os.path.abspath(value.path).startswith(_os.path.abspath(${JSON.stringify(root)}))))`,
   ].join('\n'))
-  observed['armA_belowFrameLimit'] = {
+  record('armA_belowFrameLimit', {
     outcome: armA.outcome,
     stdout: armA.stdout.text.trim().split('\n'),
-  }
+  })
 
   // ---------------------------------------------------------------------
   // ARM B: a result above the FRAME limit (4 MiB). The inline bound is 4 KiB,
@@ -143,11 +157,11 @@ async function main(): Promise<void> {
     "print('B_VERIFY:' + str(value.verify()))",
     "print('B_LEN:' + str(len(value.json()['blob'])))",
   ].join('\n'))
-  observed['armB_aboveFrameLimit'] = {
+  record('armB_aboveFrameLimit', {
     outcome: armB.outcome,
     stdout: armB.stdout.text.trim().split('\n'),
     stderrTail: armB.stderr.text.trim().split('\n').slice(-6),
-  }
+  })
 
   // ---------------------------------------------------------------------
   // ARM C: the ARGUMENTS direction, which IS bounded by the frame. A call
@@ -178,10 +192,10 @@ async function main(): Promise<void> {
     "    print('C_CODE:' + str(getattr(exc, 'code', None)))",
     "    print('C_TYPE:' + type(exc).__name__)",
   ].join('\n'))
-  observed['armC_argumentsOverFrameLimit'] = {
+  record('armC_argumentsOverFrameLimit', {
     outcome: armC.outcome,
     stdout: armC.stdout.text.trim().split('\n'),
-  }
+  })
 
   // ---------------------------------------------------------------------
   // ARM D: is there ANY retention/quota/provenance policy on the artifact
@@ -195,7 +209,7 @@ async function main(): Promise<void> {
   for (const name of entries) {
     try { sizes[name] = (await stat(join(artifactDir, name))).size } catch { sizes[name] = -1 }
   }
-  observed['armD_artifactDirectory'] = {
+  record('armD_artifactDirectory', {
     path: artifactDir,
     fileCount: entries.length,
     files: sizes,
@@ -207,7 +221,7 @@ async function main(): Promise<void> {
       hasGc: typeof (bridge as unknown as Record<string, unknown>)['collectGarbage'] !== 'undefined',
       hasArtifactStoreRef: typeof (bridge as unknown as Record<string, unknown>)['artifactStore'] !== 'undefined',
     },
-  }
+  })
 
   // ---------------------------------------------------------------------
   // ARM E: the SAME tool, on a bridge that HAS a retention port.
@@ -239,7 +253,29 @@ async function main(): Promise<void> {
     },
   })
   await unifiedBridge.start()
-  const unifiedService = new KernelService(ctx, { pythonExecutable: PYTHON, brokerScript: BROKER, root: join(root, 'kernels-unified') })
+  // A SEPARATE CONTEXT, and it is not optional. `KernelService` registers itself
+  // as the `ipython` service, so a second instance on the SAME context collides
+  // with the first -- measured: the probe hung with no output until it was
+  // killed. One context per kernel service is the contract the plugin expects.
+  const unifiedCtx = new Context()
+  await unifiedCtx.plugin(SystemPrompt, { personaPrefix: '' })
+  await unifiedCtx.plugin(ToolRuntime, { mode: 'native', maxParallelSubCalls: 10 })
+  await unifiedCtx.plugin(Subprocess)
+  unifiedCtx.tools.register(defineTool({
+    name: 'p13_blob',
+    description: 'Returns a blob of a requested character count.',
+    parameters: { chars: { type: 'number', required: true, description: 'how many characters' } },
+    output: {
+      schema: {
+        type: 'object',
+        additionalProperties: false,
+        properties: { blob: { type: 'string', required: true } },
+      },
+      render: (_args, value) => [{ type: 'text', text: `<${String((value as { blob: string }).blob.length)} chars>` }],
+    },
+    execute: async (args: { chars: number }) => ({ blob: 'x'.repeat(args.chars) }),
+  }))
+  const unifiedService = new KernelService(unifiedCtx, { pythonExecutable: PYTHON, brokerScript: BROKER, root: join(root, 'kernels-unified') })
   const unifiedLease = unifiedBridge.mintLease({
     sessionId: 'session-p13-unified',
     cellId: 'cell-p13-unified-1',
@@ -248,7 +284,7 @@ async function main(): Promise<void> {
     rootCallId: String('ipython-call-p13-unified'),
     ledger: new MemoryBridgeLedger(),
     handler: createNativeCallHandler({
-      ctx,
+      ctx: unifiedCtx,
       authority: authorityFor('ipython-call-p13-unified', agent, new AbortController().signal),
       bridge: unifiedBridge,
     }),
@@ -272,7 +308,7 @@ async function main(): Promise<void> {
     "print('E_VERIFY_NO_PATH:' + str(value.verify()))",
     "print('E_REPR:' + repr(value))",
   ].join('\n'))
-  observed['armE_unifiedRetentionPort'] = {
+  record('armE_unifiedRetentionPort', {
     outcome: armE.outcome,
     stdout: armE.stdout.text.trim().split('\n'),
     stderrTail: armE.stderr.text.trim().split('\n').slice(-6),
@@ -281,12 +317,13 @@ async function main(): Promise<void> {
     scratchDirectoryEntries: await (async () => {
       try { return await readdir(join(root, 'artifacts-unified-scratch')) } catch { return [] }
     })(),
-  }
+  })
 
   await unifiedLease.close('completed', 'the probe finished')
   unifiedBridge.releaseLease(unifiedLease)
   await unifiedService.close()
   await unifiedBridge.close()
+  await unifiedCtx.fiber.dispose()
 
   await lease.close('completed', 'the probe finished')
   bridge.releaseLease(lease)
