@@ -161,6 +161,14 @@ async function main(): Promise<void> {
           'arm2_errorHasDroppedFramesField',
           /droppedFrames|dropped frame/i.test(error instanceof Error ? error.message : ''),
         )
+        // THE CLAUSE UNDER TEST, read from the text the MODEL would receive rather
+        // than from the fields: the oracle says the loss must be reported as LOST
+        // with a count, never as empty output. This is that sentence.
+        record(
+          'arm2_reportedAsLostWithCount',
+          /frame\(s\) LOST/i.test(error instanceof Error ? error.message : ''),
+        )
+        record('arm2_modelText', error instanceof Error ? error.message.slice(0, 400) : String(error))
       }
       // What the host recorded about refusals on the stream itself.
       record('arm2_host_transportRefusals', host.transportRefusals.length)
@@ -345,8 +353,111 @@ async function main(): Promise<void> {
       )
       record('arm5_brokerDiagnostics_hasLimit', host.brokerDiagnostics.includes('exceeds the limit'))
       record('arm5_bytesWritten', huge)
+      // THE AFTER READING. This is the arm the pump fix was written for, so the
+      // tally is read back here rather than only in arm6: a fix that recorded the
+      // loss somewhere unreadable would look identical to no fix at all from
+      // every other arm.
+      const status = await host.status() as unknown as Record<string, unknown>
+      record('arm5_transportDroppedFrames', status['transportDroppedFrames'] ?? null)
+      record(
+        'arm5_lossIsRecorded',
+        typeof status['transportDroppedFrames'] === 'number' && (status['transportDroppedFrames'] as number) > 0,
+      )
     } catch (error) {
       record('arm5_outerError', error instanceof Error ? `${error.name}: ${error.message}` : String(error))
+    } finally {
+      await host.shutdown().catch(() => undefined)
+    }
+  }
+
+  // -------------------------------------------------------------------------
+  // ARM 6 -- IS THE COUNT READABLE? The broker now tallies refused frames as
+  // `transportDroppedFrames` in `status`. A tally nothing can read is a log line
+  // with a shape, so this arm reads it back through the HOST's own API after a
+  // real over-limit reply, which is the only reading that shows whether the
+  // oracle's "with a count" is satisfied for a caller.
+  // -------------------------------------------------------------------------
+  {
+    const host = new KernelHost({
+      subprocess: ctx.subprocess,
+      identity: { sessionId: 'c1-arm6', executionWorld: 'local', environmentDigest: 'c1' },
+      brokerScript: BROKER,
+      pythonExecutable: PYTHON,
+      workingDirectory: root,
+      cellTimeoutMs: 60_000,
+    })
+    try {
+      await host.start()
+      const before = await host.status() as unknown as Record<string, unknown>
+      record('arm6_tallyFieldPresent_before', 'transportDroppedFrames' in before)
+      record('arm6_tally_before', before['transportDroppedFrames'] ?? null)
+      // The stimulus: a real over-limit reply, exactly as arm4 produced one.
+      const refused = await host.execute([
+        'from IPython.display import display',
+        'for i in range(200):',
+        '    display({"i": i, "blob": "F" * 65536})',
+      ].join('\n')).then(() => 'result' as const).catch(() => 'error' as const)
+      record('arm6_stimulusOutcome', refused)
+      const after = await host.status() as unknown as Record<string, unknown>
+      record('arm6_tallyFieldPresent_after', 'transportDroppedFrames' in after)
+      record('arm6_tally_after', after['transportDroppedFrames'] ?? null)
+      record(
+        'arm6_tallyIsReadableAndNonZero',
+        typeof after['transportDroppedFrames'] === 'number' && (after['transportDroppedFrames'] as number) > 0,
+      )
+      // Is it a DECLARED field, or only a runtime extra the host types do not
+      // know about? A field a reader must cast to see is a field most readers
+      // will not find.
+      const declaredInTypes = /transportDroppedFrames/u.test(
+        await (await import('node:fs/promises')).readFile(resolve(HERE, 'protocol.ts'), 'utf8'),
+      )
+      record('arm6_tallyDeclaredInHostTypes', declaredInTypes)
+    } catch (error) {
+      record('arm6_outerError', error instanceof Error ? `${error.name}: ${error.message}` : String(error))
+    } finally {
+      await host.shutdown().catch(() => undefined)
+    }
+  }
+
+  // -------------------------------------------------------------------------
+  // ARM 7 -- THE DISPLAY CLAIM, MEASURED RATHER THAN READ.
+  //
+  // The claim under test: "display truncates each entry at 64 KiB and never drops
+  // an entry, so display loses no frames and a dropped-frame counter is the wrong
+  // instrument for it." If that holds, display needs no counter of its own. If a
+  // display payload can be DROPPED, the claim is false and display needs one.
+  // -------------------------------------------------------------------------
+  {
+    const host = new KernelHost({
+      subprocess: ctx.subprocess,
+      identity: { sessionId: 'c1-arm7', executionWorld: 'local', environmentDigest: 'c1' },
+      brokerScript: BROKER,
+      pythonExecutable: PYTHON,
+      workingDirectory: root,
+      cellTimeoutMs: 60_000,
+    })
+    try {
+      await host.start()
+      // ONE display payload far over the 64 KiB per-entry limit, plus a count of
+      // entries small enough that the reply stays under the frame bound -- so the
+      // reply IS delivered and the display array can be inspected.
+      const result = await host.execute([
+        'from IPython.display import display',
+        'display({"one": "G" * (256 * 1024)})',
+        'display({"two": "H" * (256 * 1024)})',
+      ].join('\n'))
+      record('arm7_outcome', result.outcome)
+      record('arm7_displayEntries', result.display.length)
+      record('arm7_displayTruncatedFlags', result.display.map(entry => entry.truncated))
+      record('arm7_displayTextBytes', result.display.map(entry => Buffer.byteLength(entry.text, 'utf8')))
+      // THE CLAIM: two over-limit entries, both KEPT (truncated, not dropped).
+      record(
+        'arm7_displayNeverDropped_claimHolds',
+        result.display.length === 2 && result.display.every(entry => entry.truncated === true),
+      )
+      record('arm7_stdout_droppedFrames', result.stdout.droppedFrames)
+    } catch (error) {
+      record('arm7_outerError', error instanceof Error ? `${error.name}: ${error.message}` : String(error))
     } finally {
       await host.shutdown().catch(() => undefined)
     }

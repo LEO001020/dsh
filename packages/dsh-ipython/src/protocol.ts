@@ -291,6 +291,29 @@ export interface KernelStatus {
   readonly curveKeysPresent: boolean
   readonly plaintextWarningSeen: boolean
   /**
+   * Frames the transport bound REFUSED, tallied at the broker.
+   *
+   * WHY IT IS DECLARED HERE AND NOT ONLY EMITTED BY `broker.py`. The broker began
+   * publishing this field when the pump's swallowed loss was fixed, but nothing on
+   * the host side named it, so the only way to read it was to cast the status
+   * object to `Record<string, unknown>` -- measured: `'transportDroppedFrames' in
+   * status` was true while `KernelStatus` had no such member. A count a reader has
+   * to cast to find is a count most readers will never find, and the oracle's
+   * clause 2 requires the loss to be reported "with a count" rather than merely
+   * counted somewhere.
+   *
+   * WHAT IT COUNTS, EXACTLY. Refused frames that had NO cell in flight to carry
+   * the loss: a frame refused while a cell is running is charged to that cell's
+   * `CellResult.stdout.droppedFrames`, because there a cell result exists to carry
+   * it. This field is the other half -- the loss that would otherwise survive only
+   * as a log line. The two are complementary and must not be added as if they were
+   * one population: a reader summing them would count each refusal twice.
+   *
+   * Optional because a broker that has not answered `status` yet reports nothing;
+   * `0` is a real measurement ("no frame has been refused"), and absent is not.
+   */
+  readonly transportDroppedFrames?: number
+  /**
    * The kernel's identity, under the names V5 §11.2 requires.
    *
    * WHY `ipythonVersion` IS GONE RATHER THAN KEPT BESIDE THESE. It was a field
@@ -409,6 +432,20 @@ export type BrokerEvent =
     readonly limitBytes: number
     /** What the frame claimed, when the peer declared it. Absent otherwise. */
     readonly declaredBytes?: number
+    /**
+     * How many frames this refusal accounts for.
+     *
+     * Always present on a refusal the broker emits today, and always `1`: a
+     * refusal IS one frame, because both the encoder and the decoder refuse a
+     * frame as a unit. It is a FIELD rather than a sentence because the oracle's
+     * clause is that the loss be reported "with a count", and a reader must not
+     * have to parse the number back out of prose that may be reworded.
+     *
+     * Optional because it is decoded from a frame: a broker that predates the
+     * field still produces a valid refusal, and refusing to decode it would turn
+     * a bounded refusal into a protocol violation.
+     */
+    readonly refusedFrames?: number
   }
 
 export type BrokerMessage = BrokerReply | BrokerEvent
@@ -480,6 +517,13 @@ export function asBrokerMessage(value: unknown): BrokerMessage {
         throw new FrameError('transport_refused is missing a numeric limitBytes')
       }
       const declaredBytes = record['declaredBytes']
+      // THE COUNT IS VALIDATED, NOT PASSED THROUGH. A non-numeric or negative
+      // `refusedFrames` becomes absent rather than reaching a reader as a value no
+      // arithmetic can use -- the same discipline `declaredBytes` gets. Unlike
+      // `limitBytes` it is NOT required: a refusal whose count is missing is still
+      // a bounded refusal, and rejecting it would report a protocol violation
+      // where the peer reported a loss.
+      const refusedFrames = record['refusedFrames']
       return {
         type: 'event',
         event,
@@ -489,6 +533,9 @@ export function asBrokerMessage(value: unknown): BrokerMessage {
         limitBytes,
         ...typeof declaredBytes === 'number' && Number.isFinite(declaredBytes)
           ? { declaredBytes }
+          : {},
+        ...typeof refusedFrames === 'number' && Number.isFinite(refusedFrames) && refusedFrames >= 0
+          ? { refusedFrames }
           : {},
       }
     }

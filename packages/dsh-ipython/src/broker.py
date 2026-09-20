@@ -337,6 +337,54 @@ class FrameLimitError(ProtocolError):
         ProtocolError.__init__(self, message)
         self.limit_bytes = limit_bytes
         self.declared_bytes = declared_bytes
+        # HOW MANY FRAMES THIS REFUSAL ACCOUNTS FOR. Exactly one, and it is a
+        # CONSTANT rather than a running total because a refusal IS one frame:
+        # `encode_frame` refuses a payload as a unit and `FrameReader` refuses a
+        # declared length as a unit, so there is no state to keep in sync and no
+        # second counter to drift from `OutputBuffer.dropped_frames`.
+        #
+        # WHY A COUNT IS CARRIED AT ALL. The oracle requires an over-limit frame to
+        # be "reported as LOST with a count", and a reader must not have to infer
+        # the count from the fact that an error happened. Carried on the refusal so
+        # it reaches the caller on the SAME reply that failed, instead of requiring
+        # a second call to learn how much was lost.
+        self.refused_frames = 1
+        # Whether the cell had already RUN when the frame was refused. Set by the
+        # handler that knows: a refused REPLY means the cell completed and only its
+        # delivery failed, while a refused REQUEST means nothing ran at all.
+        # Defaulted to False because the conservative claim is "nothing ran": a
+        # reader who acts on "the cell ran" when it did not looks for side effects
+        # that were never produced, which is worse than the reverse error.
+        self.cell_ran = False
+
+
+def refused_frame_loss_message(exc):
+    """The sentence a refused frame's loss is reported with, count included.
+
+    ONE PLACE, so the wording a model reads and the wording the transport event
+    carries cannot drift into two accounts of the same refusal.
+
+    WHY IT NAMES THE LOSS AND NOT ONLY THE BOUND. Before this the reply said only
+    "frame of N bytes exceeds the limit", which states the bound and the size but
+    never says the bytes are GONE. A reader could take that for a size complaint
+    about a frame that was retried or trimmed. It is neither: the frame was refused
+    before a single byte was written, so the delivery is lost outright -- and the
+    clause under test is that this be reported as LOST, never as empty output.
+    """
+    parts = [
+        "%d frame(s) LOST" % exc.refused_frames,
+        str(exc),
+    ]
+    if exc.declared_bytes is not None:
+        parts.append("declared %d bytes, limit %d bytes" % (
+            exc.declared_bytes,
+            exc.limit_bytes if exc.limit_bytes is not None else MAX_FRAME_BYTES,
+        ))
+    parts.append(
+        "the cell ran and its result was not delivered" if exc.cell_ran
+        else "nothing was run"
+    )
+    return "; ".join(parts)
 
 
 def frame_too_large_event(exc, epoch=0):
@@ -355,8 +403,16 @@ def frame_too_large_event(exc, epoch=0):
         "event": "transport_refused",
         "epoch": epoch,
         "code": "FRAME_TOO_LARGE",
-        "detail": str(exc),
+        # THE LOSS IS NAMED AS A LOSS, count included. `detail` used to be
+        # `str(exc)`, which stated the bound and the size but never said the bytes
+        # are gone -- a reader could take it for a size complaint about a frame
+        # that was retried or trimmed. It was neither.
+        "detail": refused_frame_loss_message(exc),
         "limitBytes": exc.limit_bytes if exc.limit_bytes is not None else MAX_FRAME_BYTES,
+        # THE COUNT AS A FIELD, not only inside the sentence. A reader must not have
+        # to parse a number back out of prose that may be reworded, which is the
+        # same reason `limitBytes` and `declaredBytes` are fields.
+        "refusedFrames": exc.refused_frames,
     }
     if exc.declared_bytes is not None:
         event["declaredBytes"] = exc.declared_bytes
@@ -1381,9 +1437,17 @@ def main():
             # per-cell sink is already gone by now (`execute` clears it in its
             # `finally`), so the count goes to the broker tally rather than to a
             # `CellResult` that no longer exists to carry it.
+            #
+            # THE COUNT ALSO RIDES THE REPLY. `str(exc)` alone states the bound and
+            # the size but never says the bytes are GONE, so the caller that most
+            # needs the count -- the one whose cell just failed -- had to make a
+            # second `status` call to find it. `cell_ran` is True here and the
+            # sentence says so, because in this arm the cell DID run and only its
+            # delivery failed.
+            exc.cell_ran = True
             log("execute reply exceeded the frame bound: %s" % exc)
             broker._note_transport_drop(exc)
-            reply(request_id, False, str(exc), code="FRAME_TOO_LARGE")
+            reply(request_id, False, refused_frame_loss_message(exc), code="FRAME_TOO_LARGE")
         except Exception as exc:  # noqa: BLE001
             log("execute failed: %s" % traceback.format_exc()[-1200:])
             reply(request_id, False, "%s: %s" % (type(exc).__name__, exc))
