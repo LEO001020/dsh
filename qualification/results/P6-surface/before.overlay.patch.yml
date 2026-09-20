@@ -1,0 +1,39 @@
+# Overlay for the P6 surface boot probe.
+#
+# Loaded ON TOP of the `daily` profile, so the probe runs inside a real composed
+# profile boot rather than a hand-mounted context. It ADDS ONE ROW and changes
+# nothing else: the change under test lives in the PRESET
+# (`profiles/daily-candidate/presets/daily-standard/agent.cordis.yml`), not here.
+# A probe that installed its own subject could not observe the product's
+# composition -- and for THIS change that distinction is the whole point, because
+# the failure being looked for is a ROW that is absent from the composition
+# rather than one this overlay supplied (G-FIX-04).
+#
+# WHY THERE IS NO `webserver` ROW HERE. `boot-harness.mjs` already appends a port
+# overlay LAST, and it restates all four keys the row needs (`host`, `port`,
+# `compression`, `compressionLevel`) because a patch REPLACES the target row's
+# whole `config` object rather than merging into it. The harness picks a
+# genuinely free port by binding port 0, which is what keeps this boot from
+# colliding with the other writers' hosts -- a guessed port produced an
+# `EADDRINUSE` -> "2 required plugins did not activate" false positive twice in
+# this project.
+#
+# THIS FILE IS A TEMPLATE, NOT A RUNNABLE OVERLAY. The `name:` below is a
+# PLACEHOLDER and the driver rewrites it at run time to THIS tree's own
+# `p6-surface-probe.mjs`, writing the result beside its own evidence.
+#
+# WHY, and this is the defect this comment records. A cordis row's `name:` is a
+# MODULE SPECIFIER, and the loader turns an absolute one into a `file://` URL and
+# imports exactly that file (packages/boot/app-boot/src/index.ts:521,
+# vendor/loader/src/config/tree.ts:122-126). So a committed absolute path would
+# make a boot from ANY other checkout execute ANOTHER writer's probe while
+# believing it measured its own composition -- cross-tree CODE EXECUTION, not
+# merely a cross-tree read (G-SEAM-61/G-SEAM-66, and the two retracted findings
+# G-SEAM-29/G-SEAM-36). A relative `name:` is not a substitute either: the loader
+# resolves it against the PROFILE directory, not against this file.
+#
+# Running this file AS-IS fails loudly with an unresolvable module, which is
+# deliberate: a loud failure beats silently executing another checkout's probe.
+- insert:
+    - id: p6-surface-probe
+      name: 'D:/DSH/work/wt-p6/qualification/results/P6-surface/p6-surface-probe.mjs'
