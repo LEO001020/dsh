@@ -1,0 +1,8 @@
+# C6 surface measurement -- foreign cwd, probe adds NO tool row
+# cwd: C:/   DSH_HOME: D:/DSH/home/c6   port: 8641   portReleased: true
+# timedOut: false   exitCode: null
+
+--- stdout ---
+dsh web: http://127.0.0.1:8641/?token=iAJx_AE1STh3TPeWFQ5Ur2rXd__SNdmvrQ5_c9d6m4w
+
+--- stderr ---
