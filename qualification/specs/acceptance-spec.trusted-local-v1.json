@@ -91,7 +91,33 @@
       "name": "NATIVE BRIDGE",
       "cases": "BR-01..12",
       "count": 12,
-      "subject": "The path from a Python cell to a native DSH tool: one shared policy pipeline, dynamic revocation, reference delivery, no forged host facts, bounded nesting."
+      "subject": "The path from a Python cell to a native DSH tool: one shared policy pipeline, dynamic revocation, reference delivery, no forged host facts, bounded nesting.",
+      "reachability_fail": {
+        "gate": "G-SEAM-34",
+        "statement": "The bridge MECHANISM is measured correct (all 12 cases PASS), and the PRODUCT does not start it: `new BridgeServer` has ZERO production call sites and bridge.ts/native-call.ts are outside the transitive closure of every declared entry point. Measured this round by two independent instruments that agree: qualification/results/V4-bridge/wiring.json (symbol-level) and qualification/results/V4-bridge/import-graph.txt (compiler-based entry closure).",
+        "combined_statement": "The FORBIDDEN seam (ctx.terminalController) is absent AND the sanctioned one is unwired, so today the model's Python has no tool access at all. That matters more than either half alone, because `ipython` is the model's ONLY execution surface: the composed profile is 27 tools with pwsh/bash absent (qualification/results/M12-deliverable-surface/surface-fresh-install.json).",
+        "why_not_a_case": "No BR oracle asks whether the product starts the bridge; every one asks whether the bridge behaves correctly when driven, and it does. Filing this as a FAIL on a BR case would assert an oracle that case does not state. It is recorded here, on the family, and in docs/GAPS.md.",
+        "evidence": [
+          {
+            "path": "qualification/results/V4-bridge/wiring.json",
+            "sha256": "a9308a667f631ea2e3679d55f0dfb43fba94ba1cafc6ce0d28fe7fca7683f8ce",
+            "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+            "note": "instrument A: verdict.bridgeIsStartedInProduction false; productionCallSites for `new BridgeServer` is []"
+          },
+          {
+            "path": "qualification/results/V4-bridge/import-graph.txt",
+            "sha256": "3ad97687a344a4ec9f111a29a5359ecbc5403c7d998f74b818ac0efb21871170",
+            "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+            "note": "instrument B: bridge.ts and native-call.ts UNREACHABLE from all five export roots"
+          },
+          {
+            "path": "qualification/results/V4-bridge/mutation-check.txt",
+            "sha256": "ee5b39b785ec0c7730f39d01eefaa1ad2a2443bcd9b0ed098800a9f1b9880064",
+            "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+            "note": "the detector falsified: a temporary canary constructing a BridgeServer made T7-07's arm FAIL naming packages/dsh-ipython/src/v4-mutation-canary.ts"
+          }
+        ]
+      }
     },
     {
       "prefix": "DATA",
@@ -1158,8 +1184,22 @@
       "status": "PASS",
       "evidence": [
         {
-          "path": "qualification/results/ROOT-verification/BR-scope-tests.txt",
-          "sha256": "b2c6fbee4e8c77bc46e27b6b65b8c2b59260d6ab53931d95ea6d1d1daa0fc2b2"
+          "path": "qualification/results/V4-bridge/v4-bridge-probe.json",
+          "sha256": "fbf6847edf6f3cb4a79efc5e902058b1d2fc365a24c6058eaf6b00fb0f9dd9fb",
+          "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+          "note": "BR-01: the SAME tool on the model-direct route and from a real cell. Value identical (marker/value/count/flag), guard decision identical (both denied with the policy's own message and the body never ran), output-schema violation identical. No route reaches the executor without the guard. MECHANISM ONLY: `new BridgeServer` has zero production call sites and bridge.ts/native-call.ts are outside every entry point's closure (G-SEAM-34, qualification/results/V4-bridge/wiring.json and import-graph.txt), so this route is NOT the shipped profile's route."
+        },
+        {
+          "path": "qualification/results/V4-bridge/v4-bridge-approval-probe.json",
+          "sha256": "d6d14e75546f7d7375805e9386d1f4ed4207468d27cafb113e25c19c15ac9d67",
+          "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+          "note": "The APPROVAL arm, which the oracle names explicitly: the REAL ApprovalService under its `never` policy rejected BOTH routes with the same message, the tool body ran ZERO times on either (toolBodyRunsInTotal: 0), and the two approval/decided events are on the session -- which is what makes the cell route the SAME seam rather than a parallel one."
+        },
+        {
+          "path": "qualification/results/V4-bridge/GATES.md",
+          "sha256": "8538e50b5cdc8dea9de4de62747a56b3c6090001ea676271c2f8621e70ce24d6",
+          "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+          "note": "Gate table BR-01, with the exact command and the route qualification."
         }
       ],
       "note": "BRG-01 establishes one pipeline for native, PTC and the scope routes: 42/42 in programmatic-scope.test.ts."
@@ -1175,8 +1215,16 @@
       "status": "PASS",
       "evidence": [
         {
-          "path": "qualification/results/ROOT-verification/BR-scope-tests.txt",
-          "sha256": "b2c6fbee4e8c77bc46e27b6b65b8c2b59260d6ab53931d95ea6d1d1daa0fc2b2"
+          "path": "qualification/results/V4-bridge/v4-bridge-probe.json",
+          "sha256": "fbf6847edf6f3cb4a79efc5e902058b1d2fc365a24c6058eaf6b00fb0f9dd9fb",
+          "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+          "note": "BR-02: inside ONE cell -- call the target (ok), revoke it through the disposer the registry's own `register` returned, then call it again -> second-ERROR:UNKNOWN_TOOL. targetAfterTheCell: UNREGISTERED, revokeCalls: 1. The decision cannot rest on a catalog captured at cell start, because the SAME cell saw the tool work and then fail. MECHANISM ONLY: `new BridgeServer` has zero production call sites and bridge.ts/native-call.ts are outside every entry point's closure (G-SEAM-34, qualification/results/V4-bridge/wiring.json and import-graph.txt), so this route is NOT the shipped profile's route."
+        },
+        {
+          "path": "qualification/results/V4-bridge/GATES.md",
+          "sha256": "8538e50b5cdc8dea9de4de62747a56b3c6090001ea676271c2f8621e70ce24d6",
+          "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+          "note": "Gate table BR-02."
         }
       ],
       "note": "BRG-02: revoking a tool mid-scope takes effect on the next call, and names() is a live read."
@@ -1192,8 +1240,16 @@
       "status": "PASS",
       "evidence": [
         {
-          "path": "qualification/results/ROOT-verification/BR-scope-tests.txt",
-          "sha256": "b2c6fbee4e8c77bc46e27b6b65b8c2b59260d6ab53931d95ea6d1d1daa0fc2b2"
+          "path": "qualification/results/V4-bridge/v4-bridge-probe.json",
+          "sha256": "fbf6847edf6f3cb4a79efc5e902058b1d2fc365a24c6058eaf6b00fb0f9dd9fb",
+          "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+          "note": "BR-03: a SMALL canonical value read from the cell arrives with its declared type -- CELL_TYPE:dict, CELL_IS_ARTIFACT:False, and the per-field types {count:int, flag:bool, marker:str, value:str}. Not silently replaced by a reference handle. The delivered type is recorded, which is what the oracle asks for. MECHANISM ONLY: `new BridgeServer` has zero production call sites and bridge.ts/native-call.ts are outside every entry point's closure (G-SEAM-34, qualification/results/V4-bridge/wiring.json and import-graph.txt), so this route is NOT the shipped profile's route."
+        },
+        {
+          "path": "qualification/results/V4-bridge/GATES.md",
+          "sha256": "8538e50b5cdc8dea9de4de62747a56b3c6090001ea676271c2f8621e70ce24d6",
+          "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+          "note": "Gate table BR-03."
         }
       ],
       "note": "BRG-03: value delivery returns the declared canonical type, never a reference."
@@ -1209,8 +1265,22 @@
       "status": "PASS",
       "evidence": [
         {
-          "path": "qualification/results/ROOT-verification/BR-scope-tests.txt",
-          "sha256": "b2c6fbee4e8c77bc46e27b6b65b8c2b59260d6ab53931d95ea6d1d1daa0fc2b2"
+          "path": "qualification/results/V4-bridge/v4-bridge-probe.json",
+          "sha256": "fbf6847edf6f3cb4a79efc5e902058b1d2fc365a24c6058eaf6b00fb0f9dd9fb",
+          "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+          "note": "BR-04, BRIDGE route: executionsDuringTheCell: 1 against a 2 MiB payload with a 4096-byte inline bound; the cell received TYPE:Artifact, VERIFY:True, LEN:2097152. One execution, one reference."
+        },
+        {
+          "path": "qualification/results/V4-bridge/tests-programmatic-scope.txt",
+          "sha256": "1e29ea5aa7c9e9e14fcf58dc770d744b32be29e9235634f372dcf9947f7ade37",
+          "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+          "note": "The half the bridge route does not by itself establish: 'runs the tool EXACTLY ONCE and returns a reference to the final value' AND 'the reference carries the POST-POLICY value, not the pre-policy one'. The second rules out a reference taken before the policy stage, which is the failure the oracle names. 42/42 passing."
+        },
+        {
+          "path": "qualification/results/V4-bridge/GATES.md",
+          "sha256": "8538e50b5cdc8dea9de4de62747a56b3c6090001ea676271c2f8621e70ce24d6",
+          "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+          "note": "Gate table BR-04."
         }
       ],
       "note": "BRG-04: the tool runs EXACTLY ONCE and the reference carries the POST-POLICY value."
@@ -1226,8 +1296,22 @@
       "status": "PASS",
       "evidence": [
         {
-          "path": "qualification/results/ROOT-verification/BR-scope-tests.txt",
-          "sha256": "b2c6fbee4e8c77bc46e27b6b65b8c2b59260d6ab53931d95ea6d1d1daa0fc2b2"
+          "path": "qualification/results/V4-bridge/v4-bridge-probe.json",
+          "sha256": "fbf6847edf6f3cb4a79efc5e902058b1d2fc365a24c6058eaf6b00fb0f9dd9fb",
+          "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+          "note": "BR-05, BRIDGE route: a post-execute policy REPLACES a 2 MiB secret-bearing value. The cell received HAS_SECRET:False, HAS_REPLACEMENT:True. A sweep of EVERY file in the artifact directory the cell can reach by path reports secretAnywhereInTheArtifactDirectory: false, each file's sha256 recorded. The blocked control arm (a post-execute BLOCK) retained nothing."
+        },
+        {
+          "path": "qualification/results/V4-bridge/tests-programmatic-scope.txt",
+          "sha256": "1e29ea5aa7c9e9e14fcf58dc770d744b32be29e9235634f372dcf9947f7ade37",
+          "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+          "note": "The SCOPE route half: 'a post-policy BLOCK leaves no recoverable original in the store', 'a policy that REPLACES a sensitive value leaves only the replacement retrievable', 'a blocked call retains nothing even under reference delivery' -- each sweeps every object in the store. 42/42 passing."
+        },
+        {
+          "path": "qualification/results/V4-bridge/GATES.md",
+          "sha256": "8538e50b5cdc8dea9de4de62747a56b3c6090001ea676271c2f8621e70ce24d6",
+          "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+          "note": "Gate table BR-05."
         }
       ],
       "note": "BRG-05: a post-policy BLOCK leaves no recoverable original in the store."
@@ -1243,8 +1327,22 @@
       "status": "PASS",
       "evidence": [
         {
-          "path": "qualification/results/ROOT-verification/BR-scope-tests.txt",
-          "sha256": "b2c6fbee4e8c77bc46e27b6b65b8c2b59260d6ab53931d95ea6d1d1daa0fc2b2"
+          "path": "qualification/results/V4-bridge/v4-bridge-approval-probe.json",
+          "sha256": "d6d14e75546f7d7375805e9386d1f4ed4207468d27cafb113e25c19c15ac9d67",
+          "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+          "note": "BR-06: 12 concurrent nested calls driven from a real cell at maxParallel 4 -> observedMaxConcurrency: 4, totalBodyRuns: 12, cell outcome: ok, and an exclusive-classified tool ran (the barrier arm). The run COMPLETED inside the budget rather than deadlocking; a cycle would have produced a cell timeout, not this outcome. The observed maximum concurrency is recorded, which is what the oracle asks for."
+        },
+        {
+          "path": "qualification/results/V4-bridge/tests-programmatic-scope.txt",
+          "sha256": "1e29ea5aa7c9e9e14fcf58dc770d744b32be29e9235634f372dcf9947f7ade37",
+          "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+          "note": "The scope route: 'MANY concurrent wrapped calls complete without exhausting the pool' and 're-entrancy: a nested call may itself open a nested call, many levels deep', plus the cap/overlap/barrier arms. The M2 FINDINGS additionally record MUTATION evidence: with the nested-admission branch mutated to always queue through the pool, the re-entrancy test TIMED OUT after 60s -- a real deadlock -- and was reverted."
+        },
+        {
+          "path": "qualification/results/V4-bridge/GATES.md",
+          "sha256": "8538e50b5cdc8dea9de4de62747a56b3c6090001ea676271c2f8621e70ce24d6",
+          "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+          "note": "Gate table BR-06."
         }
       ],
       "note": "BRG-06: a wrapper never waits for a slot from the pool it already holds."
@@ -1257,11 +1355,25 @@
       "requirement": "end-of-cell drain has a recorded disposition per call",
       "stimulus": "Return a cell while native child calls are still in flight.",
       "oracle": "Every in-flight call carries one disposition from `settled`, `cancelled`, `handed-to-jobs`, `abandoned-unstarted`, and any call handed to Jobs names its job id. Nothing continues silently in the background with no record.",
-      "status": "PASS",
+      "status": "FAIL",
       "evidence": [
         {
-          "path": "qualification/results/ROOT-verification/BR-scope-tests.txt",
-          "sha256": "b2c6fbee4e8c77bc46e27b6b65b8c2b59260d6ab53931d95ea6d1d1daa0fc2b2"
+          "path": "qualification/results/V4-bridge/v4-bridge-drain-probe.json",
+          "sha256": "59e21ed9485c610106c31cbbadef1b97429e3626f790afd955340ab390255f13",
+          "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+          "note": "BR-07 on the BRIDGE ROUTE, which is the route the stimulus names ('Return a cell while native child calls are still in flight'). Measured: a real cell started a call without awaiting it and returned (CELL_RETURNED_WITH_TASK_PENDING True, slowStarted 1, slowFinished 0, registryResults []). The lease's revoke then WAITED 1499 ms for that call before resolving, and a call arriving after the revoke was refused LEASE_REVOKED -- so nothing continues silently. BUT the bridge route has NO per-call disposition vocabulary: the live CellLease's own keys and prototype methods are id, sessionId, cellId, epoch, handler, inFlight, seenRequestIds, revoked / live, revokedReason, invoke, revoke. `disposition`, `jobId` and `handoff` appear NOWHERE in bridge.ts or native-call.ts. The oracle names four dispositions and requires one per in-flight call; on the cell route there is none. FAIL on the RECORD half, with the DRAIN half measured and recorded so the mechanism is not reported as simply absent."
+        },
+        {
+          "path": "qualification/results/V4-bridge/tests-programmatic-scope.txt",
+          "sha256": "1e29ea5aa7c9e9e14fcf58dc770d744b32be29e9235634f372dcf9947f7ade37",
+          "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+          "note": "The SCOPE route, where the vocabulary DOES exist and is measured -- 'queued-unstarted calls are REFUSED with a recorded disposition', 'a host JOBS HANDOFF takes ownership instead of refusing, and the job id is recorded', 'close resolves only AFTER in-flight work has settled'. Cited as the CONTRAST, not as this case's evidence: the bridge does not route through the scope service (native-call.ts calls ctx.tools.execute directly), so the scope's dispositions cannot establish this oracle for a cell. Filing them here would be the weaker-oracle substitution this spec's rules forbid. SCOPE ROUTE: the IPython bridge does not route through the programmatic scope service (native-call.ts calls ctx.tools.execute directly), and the product starts no bridge at all (G-SEAM-34)."
+        },
+        {
+          "path": "qualification/results/V4-bridge/GATES.md",
+          "sha256": "8538e50b5cdc8dea9de4de62747a56b3c6090001ea676271c2f8621e70ce24d6",
+          "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+          "note": "Gate table BR-07 and section 4a, which states the split and why it is a FAIL."
         }
       ],
       "note": "BRG-07: a close with calls in flight never leaves work running; every disposition is recorded, and close is idempotent."
@@ -1277,8 +1389,22 @@
       "status": "PASS",
       "evidence": [
         {
-          "path": "qualification/results/ROOT-verification/BR-scope-tests.txt",
-          "sha256": "b2c6fbee4e8c77bc46e27b6b65b8c2b59260d6ab53931d95ea6d1d1daa0fc2b2"
+          "path": "qualification/results/V4-bridge/v4-bridge-probe.json",
+          "sha256": "fbf6847edf6f3cb4a79efc5e902058b1d2fc365a24c6058eaf6b00fb0f9dd9fb",
+          "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+          "note": "BR-08: a tool returning additionalContexts + concludeTurn + a 4096-byte bulk image, called from a real cell. Control survived and is BOUNDED: noticeCount 1, 106 control bytes ferried, concludedTurnCount 1. The bulk image did NOT enter model context on this route: contentBytesEnteringModelContextViaTheBridge 0, because the bridge ferries CONTROL and returns the program its own copy through the value/artifact door -- the model projection is the tool's own render and is not carried by the bridge. The recorded byte count is stated, which is what the oracle asks for."
+        },
+        {
+          "path": "qualification/results/V4-bridge/tests-programmatic-scope.txt",
+          "sha256": "1e29ea5aa7c9e9e14fcf58dc770d744b32be29e9235634f372dcf9947f7ade37",
+          "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+          "note": "The boundedness half on the scope route: 'a security additionalContext reaches the enclosing execution, bounded' and 'past the direct bound, notices are COALESCED into one bounded record, not dropped' -- so the bound is not a silent drop."
+        },
+        {
+          "path": "qualification/results/V4-bridge/GATES.md",
+          "sha256": "8538e50b5cdc8dea9de4de62747a56b3c6090001ea676271c2f8621e70ce24d6",
+          "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+          "note": "Gate table BR-08."
         }
       ],
       "note": "BRG-08: control notices keep their semantics and bulk payloads do not enter context."
@@ -1294,8 +1420,22 @@
       "status": "PASS",
       "evidence": [
         {
-          "path": "qualification/results/ROOT-verification/BR-bridge-tests.txt",
-          "sha256": "1980973fe0ad3404f852f8b6cff9ba039437e0e42405e73d79e8a9ca3beead30"
+          "path": "qualification/results/V4-bridge/v4-bridge-probe.json",
+          "sha256": "fbf6847edf6f3cb4a79efc5e902058b1d2fc365a24c6058eaf6b00fb0f9dd9fb",
+          "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+          "note": "BR-09, WIRE level: a hand-made frame over a real socket carrying a LIVE lease id, real cell id, real epoch and a forged host-authored field, sent ONE FIELD AT A TIME. The bridge's own seven authority fields -- authority, agent, session, sessionId, rootCallId, parent, parentToken -- were ALL REFUSED with FORGED_AUTHORITY. The refusal is TARGETED, not an outage: the same frame without a forged field IS served. The forgery check runs BEFORE any lease lookup. RECORDED PRECISION: the oracle's other examples (id, captured, captured.sha256) are NOT in the bridge's authority list and those frames were SERVED -- but the forged key never REACHED the executor: the handler's own received keys are exactly arguments, cellId, epoch, leaseId, requestId, tool in every served frame, and forgedFieldReachedTheHandler is false. A field the host drops cannot promote a claim."
+        },
+        {
+          "path": "qualification/results/V4-bridge/tests-observation-authority.txt",
+          "sha256": "8655b837c562722a40fff1948a7cc927801bd56c2198077c419eae0fa5b1a1cb",
+          "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+          "note": "BR-09, TYPE level, and it is where the oracle's exact paths ARE refused: HOST_AUTHORED_PATHS includes id, captured, captured.sha256, captured.bytes, authority and authority.ownerScope; refuseForgedClaims refuses a kernel payload asserting any of them, naming every offending path, code observation-authority-forged, and a forged capture is refused BEFORE anything is written so a bad payload cannot cause an effect. 5/5 passing. Together with the wire arm these are the type-level AND wire-level defences the oracle names."
+        },
+        {
+          "path": "qualification/results/V4-bridge/GATES.md",
+          "sha256": "8538e50b5cdc8dea9de4de62747a56b3c6090001ea676271c2f8621e70ce24d6",
+          "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+          "note": "Gate table BR-09 and section 4a, which states the precision."
         }
       ],
       "note": "The bridge-seam suite (17/17) measures that the kernel cannot forge host-authored facts: the host owns the lease and the client cannot mint one."
@@ -1311,8 +1451,22 @@
       "status": "PASS",
       "evidence": [
         {
-          "path": "qualification/results/ROOT-verification/BR-scope-tests.txt",
-          "sha256": "b2c6fbee4e8c77bc46e27b6b65b8c2b59260d6ab53931d95ea6d1d1daa0fc2b2"
+          "path": "qualification/results/V4-bridge/v4-scope-probe.json",
+          "sha256": "243a0111fa8eca82d8905071ac6e21ef75a2f26b44b340d3fa83e9b15ab5a682",
+          "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+          "note": "BR-10: the close driven for EACH of the three declared reasons -- completed, aborted, error. In every case 5 calls were submitted with 2 IN FLIGHT at close (measured: startedAtClose 2), and the result was 5 dispositions, uniqueSubCallIds 5, everyDispositionCarriesTheCloseReason true, everyCallReachedATerminalState true, with cancelled for the started calls and abandoned-unstarted for the queued ones. NO call remains unsettled after the close. The `error` reason had NO coverage in the existing suite (0 uses against 34 for `completed`), which is why this probe exists."
+        },
+        {
+          "path": "qualification/results/V4-bridge/tests-programmatic-scope.txt",
+          "sha256": "1e29ea5aa7c9e9e14fcf58dc770d744b32be29e9235634f372dcf9947f7ade37",
+          "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+          "note": "The scope suite's own drain arms, including 'close resolves only AFTER in-flight work has settled' and 'invoking after close is refused, not silently queued'. 42/42 passing. SCOPE ROUTE: the IPython bridge does not route through the programmatic scope service (native-call.ts calls ctx.tools.execute directly), and the product starts no bridge at all (G-SEAM-34)."
+        },
+        {
+          "path": "qualification/results/V4-bridge/GATES.md",
+          "sha256": "8538e50b5cdc8dea9de4de62747a56b3c6090001ea676271c2f8621e70ce24d6",
+          "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+          "note": "Gate table BR-10."
         }
       ],
       "note": "The scope close is explicit and reports a disposition per call."
@@ -1328,8 +1482,22 @@
       "status": "PASS",
       "evidence": [
         {
-          "path": "qualification/results/ROOT-verification/BR-scope-tests.txt",
-          "sha256": "b2c6fbee4e8c77bc46e27b6b65b8c2b59260d6ab53931d95ea6d1d1daa0fc2b2"
+          "path": "qualification/results/V4-bridge/v4-scope-probe.json",
+          "sha256": "243a0111fa8eca82d8905071ac6e21ef75a2f26b44b340d3fa83e9b15ab5a682",
+          "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+          "note": "BR-11: ONE image-returning tool run under BOTH declared modes, with the delivered BYTE COUNT recorded in each. `reference` -> 0 bytes to model context, 187 bytes retained as a reference with its sha256 and lossless:true; `defer-images` -> 4114 bytes to model context of which 4096 are the image, 0 bytes retained. modesDifferAsRequired true. The mode is visible in the record through which slot filled, not only through the constructor argument. The byte counts differ as the modes require."
+        },
+        {
+          "path": "qualification/results/V4-bridge/tests-programmatic-scope.txt",
+          "sha256": "1e29ea5aa7c9e9e14fcf58dc770d744b32be29e9235634f372dcf9947f7ade37",
+          "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+          "note": "The scope suite's behavioural arms: 'a BULK image does NOT automatically enter model context; it is retained as a reference' and 'defer-images reproduces stock run_code content behaviour, for comparison'. 42/42 passing."
+        },
+        {
+          "path": "qualification/results/V4-bridge/GATES.md",
+          "sha256": "8538e50b5cdc8dea9de4de62747a56b3c6090001ea676271c2f8621e70ce24d6",
+          "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+          "note": "Gate table BR-11."
         }
       ],
       "note": "BRG-08/BRG-11 cover both contentProjection arms; the projection is counted."
@@ -1342,8 +1510,12 @@
       "requirement": "the deployment depth ceiling cannot be lifted by the caller",
       "stimulus": "From a cell, attempt to open grandchildren through the bridge and pass a large `maxDepth`.",
       "oracle": "The deployment ceiling still applies and each refusal is recorded with its reason. A caller-supplied value that raises the effective ceiling is NOT PASS.",
-      "status": "FAIL",
+      "status": "PASS",
       "evidence": [
+        {
+          "path": "qualification/results/V4-bridge/v4-bridge-probe.json",
+          "sha256": "fbf6847edf6f3cb4a79efc5e902058b1d2fc365a24c6058eaf6b00fb0f9dd9fb"
+        },
         {
           "path": "qualification/results/ROOT-verification/BR-bridge-tests.txt",
           "sha256": "1980973fe0ad3404f852f8b6cff9ba039437e0e42405e73d79e8a9ca3beead30"
@@ -1351,17 +1523,9 @@
         {
           "path": "qualification/results/ROOT-verification/BR-import-graph.txt",
           "sha256": "acf0a80f67d3ef0520330246e621262502ae5ea782648e8889799f29a74aafde"
-        },
-        {
-          "path": "qualification/results/T7-bridge/FINDINGS.md",
-          "sha256": "c0496dd0cf6af6241015e41b640e4769ec14dda06c5785f74ae6ad860c6acb71"
-        },
-        {
-          "path": "qualification/results/T7-bridge/wiring.json",
-          "sha256": "13b81d23b096d2a892be46ba28e7e0a2dc08404b6b7f4d99b76f038ecb860e67"
         }
       ],
-      "note": "REACHABILITY FAIL (G-SEAM-34). The mechanism is measured and the wiring is absent: new BridgeServer has ZERO production call sites, and bridge.ts/native-call.ts are outside the transitive closure of every declared entry point -- measured by two independent instruments that agree (T7 symbol-level probe; import-graph.mjs reports 5 reachable / 3 unreachable non-test modules). The depth ceiling cannot be lifted by a caller through a bridge that is never started, so the oracle is not established on the product route. Recorded as a FAIL rather than a PASS because the case is about the deployment, not about the mechanism."
+      "note": "CORRECTED from FAIL to PASS after V4's probe measured this oracle directly. The oracle is \"The deployment ceiling still applies and each refusal is recorded with its reason. A caller-supplied value that raises the effective ceiling is NOT PASS.\" Measured: callerSuppliedMaxDepthIsReachableFromACell: FALSE, the deployment ceiling source is capacity.ts assertDepthWithin(agent, maxDepth), the client frame carries only [type, requestId, tool, arguments, leaseId, cellId, epoch], and the host REFUSES all seven forged-authority fields (agent, session, sessionId, rootCallId, parent, parentToken, authority) with code FORGED_AUTHORITY and servedUnderForgery: false in every arm. So the negative the oracle names does not occur: a caller cannot raise the ceiling. MY EARLIER FILING WAS WRONG and the reason is worth recording: I filed FAIL on REACHABILITY (G-SEAM-34 -- the bridge has zero production call sites), which is a fact about the DEPLOYMENT, while this case's oracle is about the MECHANISM. Those are different claims, and filing the deployment fact against a mechanism oracle would have read as \"the ceiling can be lifted\", which is the opposite of what was measured. G-SEAM-34 remains open and is recorded as BR-family context in docs/GAPS.md rather than as this case's verdict."
     },
     {
       "id": "DATA-01",

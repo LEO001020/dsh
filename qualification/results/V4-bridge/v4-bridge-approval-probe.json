@@ -1,0 +1,73 @@
+{
+  "br01_approval_arm": {
+    "native": {
+      "isError": true,
+      "message": "the user rejected tool \"v4_needs_approval\""
+    },
+    "cell": {
+      "outcome": "ok",
+      "stdout": "APPROVAL_CODE:TOOL_FAILED\nAPPROVAL_MESSAGE:the user rejected tool \"v4_needs_approval\""
+    },
+    "toolBodyRunsInTotal": 0,
+    "toolBodyRunsAddedByTheCell": 0,
+    "approvalEventsOnTheSession": [
+      {
+        "id": "28cd582a-f5ae-4d73-b95e-b7011d27efb0",
+        "outcome": "rejected"
+      },
+      {
+        "id": "59e60df1-7f54-4760-97a6-04515f16a4f4",
+        "outcome": "rejected"
+      }
+    ]
+  },
+  "br06_nested_concurrency": {
+    "cell": {
+      "outcome": "ok",
+      "stdout": "OVERLAP_RESULTS:12\nEXCLUSIVE:v4:exclusive-ran"
+    },
+    "maxParallelConfigured": 4,
+    "observedMaxConcurrency": 4,
+    "totalBodyRuns": 12,
+    "completedWithinTheBudget": true,
+    "exclusiveBarrierRan": true
+  },
+  "br12_depth_ceiling_from_a_cell": {
+    "cell": {
+      "outcome": "ok",
+      "stdout": "DEPTH_CODE:TOOL_FAILED\nDEPTH_MESSAGE:DEPTH_CEILING_EXCEEDED: dailyWork: refusing child \"v4-grandchild\" at delegation depth 2; the deployment ceiling is 1. A caller-supplied maxDepth cannot raise this: the depth is read from the child's own durable header."
+    },
+    "callerSuppliedMaxDepth": 99,
+    "deploymentCeiling": 1,
+    "refusalsRecorded": [
+      {
+        "code": "DEPTH_CEILING_EXCEEDED",
+        "message": "dailyWork: refusing child \"v4-grandchild\" at delegation depth 2; the deployment ceiling is 1. A caller-supplied maxDepth cannot raise this: the depth is read from the child's own durable header.",
+        "callerAskedFor": 99
+      }
+    ],
+    "refusalCount": 1
+  },
+  "environment": {
+    "python": "C:/Users/hzq00/AppData/Local/Programs/Python/Python314/python.exe",
+    "broker": "D:\\DSH\\work\\dsh-native-daily\\packages\\dsh-ipython\\src\\broker.py",
+    "registrySawCalls": [
+      "v4_needs_approval:v4-native-approval:parent=false",
+      "v4_needs_approval:v4-call-1:bridge:1:parent=true",
+      "v4_overlap:v4-call-2:bridge:1:parent=true",
+      "v4_overlap:v4-call-2:bridge:2:parent=true",
+      "v4_overlap:v4-call-2:bridge:3:parent=true",
+      "v4_overlap:v4-call-2:bridge:4:parent=true",
+      "v4_overlap:v4-call-2:bridge:5:parent=true",
+      "v4_overlap:v4-call-2:bridge:6:parent=true",
+      "v4_overlap:v4-call-2:bridge:7:parent=true",
+      "v4_overlap:v4-call-2:bridge:8:parent=true",
+      "v4_overlap:v4-call-2:bridge:9:parent=true",
+      "v4_overlap:v4-call-2:bridge:10:parent=true",
+      "v4_overlap:v4-call-2:bridge:11:parent=true",
+      "v4_overlap:v4-call-2:bridge:12:parent=true",
+      "v4_exclusive:v4-call-2:bridge:13:parent=true",
+      "v4_open_grandchild:v4-call-3:bridge:1:parent=true"
+    ]
+  }
+}

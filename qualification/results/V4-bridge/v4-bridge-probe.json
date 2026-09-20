@@ -1,6 +1,6 @@
 {
   "bridge": {
-    "boundPort": 14073,
+    "boundPort": 13790,
     "inlineValueBytes": 4096
   },
   "br01_and_br03": {
@@ -90,31 +90,53 @@
   "br09_forged_host_fields": {
     "authority": {
       "ok": false,
-      "code": "FORGED_AUTHORITY"
+      "code": "FORGED_AUTHORITY",
+      "servedUnderForgery": false
     },
     "agent": {
       "ok": false,
-      "code": "FORGED_AUTHORITY"
+      "code": "FORGED_AUTHORITY",
+      "servedUnderForgery": false
     },
     "session": {
       "ok": false,
-      "code": "FORGED_AUTHORITY"
+      "code": "FORGED_AUTHORITY",
+      "servedUnderForgery": false
     },
     "sessionId": {
       "ok": false,
-      "code": "FORGED_AUTHORITY"
+      "code": "FORGED_AUTHORITY",
+      "servedUnderForgery": false
     },
     "rootCallId": {
       "ok": false,
-      "code": "FORGED_AUTHORITY"
+      "code": "FORGED_AUTHORITY",
+      "servedUnderForgery": false
     },
     "parent": {
       "ok": false,
-      "code": "FORGED_AUTHORITY"
+      "code": "FORGED_AUTHORITY",
+      "servedUnderForgery": false
     },
     "parentToken": {
       "ok": false,
-      "code": "FORGED_AUTHORITY"
+      "code": "FORGED_AUTHORITY",
+      "servedUnderForgery": false
+    },
+    "id": {
+      "ok": true,
+      "code": null,
+      "servedUnderForgery": true
+    },
+    "captured": {
+      "ok": true,
+      "code": null,
+      "servedUnderForgery": true
+    },
+    "captured.sha256": {
+      "ok": true,
+      "code": null,
+      "servedUnderForgery": true
     },
     "cleanFrame": {
       "ok": true,
@@ -122,7 +144,87 @@
         "reached": true
       }
     },
-    "handlerRan": 1
+    "handlerRan": 4,
+    "handlerReceived": [
+      {
+        "requestId": "forge-id",
+        "tool": "v4_echo",
+        "arguments": {
+          "value": "one"
+        },
+        "receivedKeys": [
+          "arguments",
+          "cellId",
+          "epoch",
+          "leaseId",
+          "requestId",
+          "tool"
+        ]
+      },
+      {
+        "requestId": "forge-captured",
+        "tool": "v4_echo",
+        "arguments": {
+          "value": "one"
+        },
+        "receivedKeys": [
+          "arguments",
+          "cellId",
+          "epoch",
+          "leaseId",
+          "requestId",
+          "tool"
+        ]
+      },
+      {
+        "requestId": "forge-captured.sha256",
+        "tool": "v4_echo",
+        "arguments": {
+          "value": "one"
+        },
+        "receivedKeys": [
+          "arguments",
+          "cellId",
+          "epoch",
+          "leaseId",
+          "requestId",
+          "tool"
+        ]
+      },
+      {
+        "requestId": "clean-1",
+        "tool": "v4_echo",
+        "arguments": {
+          "value": "one"
+        },
+        "receivedKeys": [
+          "arguments",
+          "cellId",
+          "epoch",
+          "leaseId",
+          "requestId",
+          "tool"
+        ]
+      }
+    ],
+    "interpretation": {
+      "refusedByTheBridge": [
+        "authority",
+        "agent",
+        "session",
+        "sessionId",
+        "rootCallId",
+        "parent",
+        "parentToken"
+      ],
+      "servedBecauseTheFieldIsNotInTheBridgeAuthorityList": [
+        "id",
+        "captured",
+        "captured.sha256"
+      ],
+      "forgedFieldReachedTheHandler": false,
+      "note": "A served frame is not a forgery IF the extra field is dropped before the handler. This probe records the handler's received keys so that claim is falsifiable rather than asserted. The host-authored facts the DATA plane protects (captured.sha256, authority.*) are refused at THAT boundary by refuseForgedClaims, measured separately in tests-observation-authority.txt."
+    }
   },
   "br12_depth_ceiling": {
     "clientFrameKeys": [

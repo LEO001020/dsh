@@ -1074,10 +1074,30 @@ describe('T7-07 the bridge is UNWIRED from the product (MEASURED — this is a F
     // raw numbers in `qualification/results/T7-bridge/measurement.json`; it is
     // run by hand, is not in any entry point, and is not imported by anything.
     // Counting it as a caller would turn this arm red for a probe and hide the
-    // fact it exists to report. The exclusion is by NAME and it is narrow: a
-    // probe must be a `t*-measure.ts` file, and the entry-closure arm above is
-    // the instrument that would catch a real wiring regardless.
-    const isProbe = (file: string): boolean => /[\\/]t\d+-measure\.ts$/.test(file)
+    // fact it exists to report.
+    //
+    // AN EXPLICIT LIST, NOT A PATTERN, and this changed for a MEASURED reason.
+    // The rule was `/[\\/]t\d+-measure\.ts$/`: narrow, but widening in the wrong
+    // direction, because a later probe with a different name is classified as a
+    // production caller. That is not hypothetical. V4's probe
+    // (`v4-bridge-probe.ts`) made this arm fail with `new BridgeServer` at
+    // `packages/dsh-ipython/src/v4-bridge-probe.ts` -- a hand-run driver with no
+    // importer, not a wiring. The fix is NOT to loosen the pattern (that would
+    // let a real caller through) and NOT to rename the probe to fit a detector
+    // (that is making a detector quiet by moving the subject). It is to name
+    // every probe exactly, so the exclusion set is auditable by reading it. A new
+    // probe must be ADDED here, which is a deliberate act a reviewer sees.
+    const PROBE_FILES = new Set([
+      'packages/dsh-ipython/src/t7-measure.ts',
+      'packages/dsh-ipython/src/v4-bridge-probe.ts',
+    ])
+    // `file` arrives ABSOLUTE (the walk joins from `repo`), so it is reduced to
+    // the repo-relative form the set is keyed by. A first version compared the
+    // absolute path against repo-relative keys, which matched nothing and made
+    // this arm report BOTH probes as production callers -- caught by running it,
+    // which is why the arm is exercised rather than reasoned about.
+    const isProbe = (file: string): boolean =>
+      PROBE_FILES.has(path.relative(repo, file).replace(/\\/g, '/'))
     const productionHits: Array<{ file: string, symbol: string }> = []
     for (const file of files) {
       if (isTest(file) || isProbe(file)) continue

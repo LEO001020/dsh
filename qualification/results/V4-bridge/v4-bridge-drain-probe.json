@@ -1,0 +1,54 @@
+{
+  "atCellReturn": {
+    "cellOutcome": "ok",
+    "cellStdout": "CELL_RETURNED_WITH_TASK_PENDING:True",
+    "slowStarted": 1,
+    "slowFinished": 0,
+    "registryDispatches": [
+      "v4_slow:v4-drain-call:bridge:1"
+    ],
+    "registryResults": [],
+    "leaseHasDispositionSurface": false,
+    "leaseOwnKeys": [
+      "id",
+      "sessionId",
+      "cellId",
+      "epoch",
+      "handler",
+      "inFlight",
+      "seenRequestIds",
+      "revoked"
+    ],
+    "leasePrototypeMethods": [
+      "constructor",
+      "live",
+      "revokedReason",
+      "invoke",
+      "revoke"
+    ]
+  },
+  "revokeDrains": {
+    "slowStartedBeforeRevoke": 1,
+    "slowFinishedBeforeRevoke": 0,
+    "revokeElapsedMs": 1499,
+    "slowFinishedAfterRevoke": 1,
+    "theDrainWaitedForTheInFlightCall": true,
+    "revokedReason": "the cell settled",
+    "registryResultsAfterRevoke": [
+      "v4_slow:v4-drain-call:bridge:1"
+    ]
+  },
+  "afterRevoke": {
+    "outcome": "REFUSED",
+    "code": "LEASE_REVOKED",
+    "message": "the cell that held this capability has settled: the cell settled"
+  },
+  "verdict": {
+    "dispositionVocabularyPresentOnTheBridgeRoute": false,
+    "inFlightCallWasDrained": true,
+    "nothingContinuedSilently": true,
+    "perCallDispositionRecordExists": false,
+    "drainHalf": "MEASURED — the lease drain waits for the in-flight call, so nothing continues silently past the cell.",
+    "recordHalf": "NOT ESTABLISHED — the bridge route has NO per-call disposition vocabulary. BR-07's oracle names `settled`/`cancelled`/`handed-to-jobs`/`abandoned-unstarted` and a job id for a handoff; the bridge route implements a drain barrier and a request-id record instead, which is a DIFFERENT mechanism. The scope route implements the vocabulary and is measured separately."
+  }
+}

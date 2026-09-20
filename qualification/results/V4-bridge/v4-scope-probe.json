@@ -1,0 +1,219 @@
+{
+  "br10_scope_close_per_reason": {
+    "completed": {
+      "startedAtClose": 2,
+      "finishedByClose": 2,
+      "submittedCalls": 5,
+      "dispositions": [
+        {
+          "subCallId": "v4-scope:scope:3",
+          "disposition": "abandoned-unstarted",
+          "closeReason": "completed",
+          "nested": false
+        },
+        {
+          "subCallId": "v4-scope:scope:4",
+          "disposition": "abandoned-unstarted",
+          "closeReason": "completed",
+          "nested": false
+        },
+        {
+          "subCallId": "v4-scope:scope:5",
+          "disposition": "abandoned-unstarted",
+          "closeReason": "completed",
+          "nested": false
+        },
+        {
+          "subCallId": "v4-scope:scope:1",
+          "disposition": "cancelled",
+          "closeReason": "completed",
+          "nested": false
+        },
+        {
+          "subCallId": "v4-scope:scope:2",
+          "disposition": "cancelled",
+          "closeReason": "completed",
+          "nested": false
+        }
+      ],
+      "dispositionCounts": {
+        "abandoned-unstarted": 3,
+        "cancelled": 2
+      },
+      "totalDispositions": 5,
+      "everyCallReachedATerminalState": true,
+      "outcomes": [
+        "refused:tool call aborted",
+        "refused:tool call aborted",
+        "refused:programmatic scope closed (completed); \"v4_slow\" was abandon",
+        "refused:programmatic scope closed (completed); \"v4_slow\" was abandon",
+        "refused:programmatic scope closed (completed); \"v4_slow\" was abandon"
+      ],
+      "everyDispositionCarriesTheCloseReason": true,
+      "uniqueSubCallIds": 5
+    },
+    "aborted": {
+      "startedAtClose": 2,
+      "finishedByClose": 2,
+      "submittedCalls": 5,
+      "dispositions": [
+        {
+          "subCallId": "v4-scope:scope:3",
+          "disposition": "abandoned-unstarted",
+          "closeReason": "aborted",
+          "nested": false
+        },
+        {
+          "subCallId": "v4-scope:scope:4",
+          "disposition": "abandoned-unstarted",
+          "closeReason": "aborted",
+          "nested": false
+        },
+        {
+          "subCallId": "v4-scope:scope:5",
+          "disposition": "abandoned-unstarted",
+          "closeReason": "aborted",
+          "nested": false
+        },
+        {
+          "subCallId": "v4-scope:scope:1",
+          "disposition": "cancelled",
+          "closeReason": "aborted",
+          "nested": false
+        },
+        {
+          "subCallId": "v4-scope:scope:2",
+          "disposition": "cancelled",
+          "closeReason": "aborted",
+          "nested": false
+        }
+      ],
+      "dispositionCounts": {
+        "abandoned-unstarted": 3,
+        "cancelled": 2
+      },
+      "totalDispositions": 5,
+      "everyCallReachedATerminalState": true,
+      "outcomes": [
+        "refused:tool call aborted",
+        "refused:tool call aborted",
+        "refused:programmatic scope closed (aborted); \"v4_slow\" was abandoned",
+        "refused:programmatic scope closed (aborted); \"v4_slow\" was abandoned",
+        "refused:programmatic scope closed (aborted); \"v4_slow\" was abandoned"
+      ],
+      "everyDispositionCarriesTheCloseReason": true,
+      "uniqueSubCallIds": 5
+    },
+    "error": {
+      "startedAtClose": 2,
+      "finishedByClose": 2,
+      "submittedCalls": 5,
+      "dispositions": [
+        {
+          "subCallId": "v4-scope:scope:3",
+          "disposition": "abandoned-unstarted",
+          "closeReason": "error",
+          "nested": false
+        },
+        {
+          "subCallId": "v4-scope:scope:4",
+          "disposition": "abandoned-unstarted",
+          "closeReason": "error",
+          "nested": false
+        },
+        {
+          "subCallId": "v4-scope:scope:5",
+          "disposition": "abandoned-unstarted",
+          "closeReason": "error",
+          "nested": false
+        },
+        {
+          "subCallId": "v4-scope:scope:1",
+          "disposition": "cancelled",
+          "closeReason": "error",
+          "nested": false
+        },
+        {
+          "subCallId": "v4-scope:scope:2",
+          "disposition": "cancelled",
+          "closeReason": "error",
+          "nested": false
+        }
+      ],
+      "dispositionCounts": {
+        "abandoned-unstarted": 3,
+        "cancelled": 2
+      },
+      "totalDispositions": 5,
+      "everyCallReachedATerminalState": true,
+      "outcomes": [
+        "refused:tool call aborted",
+        "refused:tool call aborted",
+        "refused:programmatic scope closed (error); \"v4_slow\" was abandoned b",
+        "refused:programmatic scope closed (error); \"v4_slow\" was abandoned b",
+        "refused:programmatic scope closed (error); \"v4_slow\" was abandoned b"
+      ],
+      "everyDispositionCarriesTheCloseReason": true,
+      "uniqueSubCallIds": 5
+    }
+  },
+  "br11_content_projection": {
+    "reference": {
+      "declaredMode": "reference",
+      "canonicalValue": "v4: image captured",
+      "toolExecutions": 1,
+      "deferredMessages": 0,
+      "bytesDeliveredToModelContext": 0,
+      "imageBytesInDeferredMessages": 0,
+      "retainedPayloads": 1,
+      "retainedBytes": 187,
+      "retainedBlockTypes": [
+        [
+          "image"
+        ]
+      ],
+      "retainedLossless": [
+        true
+      ],
+      "retainedSha256": [
+        "5de87f545f6259efee807d2251244df70da3f2b248e70399a6719f23a9981467"
+      ],
+      "declaredImageBytes": 4096,
+      "modeVisibleInTheRecord": {
+        "contentRecords": 1,
+        "noticeRecords": 0,
+        "observable": "reference (retained, kept out of context)"
+      }
+    },
+    "defer-images": {
+      "declaredMode": "defer-images",
+      "canonicalValue": "v4: image captured",
+      "toolExecutions": 1,
+      "deferredMessages": 1,
+      "bytesDeliveredToModelContext": 4114,
+      "imageBytesInDeferredMessages": 4096,
+      "retainedPayloads": 0,
+      "retainedBytes": 0,
+      "retainedBlockTypes": [],
+      "retainedLossless": [],
+      "retainedSha256": [],
+      "declaredImageBytes": 4096,
+      "modeVisibleInTheRecord": {
+        "contentRecords": 0,
+        "noticeRecords": 0,
+        "observable": "defer-images (deferred into context)"
+      }
+    },
+    "theDifference": {
+      "bytesToModelContext": {
+        "reference": 0,
+        "deferImages": 4114
+      },
+      "bytesRetained": {
+        "reference": 187,
+        "deferImages": 0
+      },
+      "modesDifferAsRequired": true
+    }
+  }
+}

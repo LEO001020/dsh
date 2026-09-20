@@ -467,11 +467,24 @@ async function main(): Promise<void> {
     const b = new BridgeServer({ artifactDirectory: join(root, 'artifacts-forge') })
     const started = await b.start()
     let handlerRan = 0
+    /** What the handler ACTUALLY received, so "ignored" is measured, not assumed. */
+    const handlerSaw: Array<Record<string, unknown>> = []
     const lease = b.mintLease({
       sessionId: 'v4-forge',
       cellId: 'v4-forge-1',
       epoch: 1,
-      handler: async () => { handlerRan += 1; return { ok: true, value: { reached: true } } },
+      handler: async (call) => {
+        handlerRan += 1
+        handlerSaw.push({
+          requestId: call.requestId,
+          tool: call.tool,
+          arguments: call.arguments,
+          // The keys the handler's OWN request object carries. If a forged
+          // top-level frame field were merged in, it would appear here.
+          receivedKeys: Object.keys(call as unknown as Record<string, unknown>).sort(),
+        })
+        return { ok: true, value: { reached: true } }
+      },
     })
     const token = /_bind\(\d+, "([0-9a-f]+)"/.exec(b.preamble(lease))?.[1] ?? ''
     const speak = async (frame: Record<string, unknown>): Promise<Record<string, unknown>> =>
@@ -501,14 +514,26 @@ async function main(): Promise<void> {
       leaseId: lease.id, cellId: lease.cellId, epoch: lease.epoch,
     }
     const out: Record<string, unknown> = {}
-    // The FORBIDDEN_FIELDS list, sent one field at a time, each on an otherwise
-    // valid frame with a LIVE lease. A check that ran after the lease lookup
-    // would serve these.
-    for (const field of ['authority', 'agent', 'session', 'sessionId', 'rootCallId', 'parent', 'parentToken']) {
-      const reply = await speak({ ...base, requestId: `forge-${field}`, [field]: 'forged' })
+    // The bridge's own FORBIDDEN_FIELDS, PLUS the ORACLE's own examples of
+    // host-authored paths (`id`, `captured`, `captured.sha256`). The extra three
+    // are here to measure whether the refusal GENERALISES to the field names
+    // BR-09 names, or covers only the bridge's own list -- a distinction that
+    // decides whether the oracle's "such as" clause is satisfied. Sent one field
+    // at a time, each on an otherwise valid frame with a LIVE lease; a check that
+    // ran after the lease lookup would serve these.
+    const FRAME_FIELDS = [
+      'authority', 'agent', 'session', 'sessionId', 'rootCallId', 'parent', 'parentToken',
+      'id', 'captured', 'captured.sha256',
+    ]
+    for (const field of FRAME_FIELDS) {
+      const forgedValue: unknown = field === 'captured' ? { sha256: 'f'.repeat(64) } : 'forged'
+      const reply = await speak({ ...base, requestId: `forge-${field}`, [field]: forgedValue })
       out[field] = {
         ok: reply['ok'] ?? null,
         code: (reply['error'] as { code?: string } | undefined)?.code ?? null,
+        // A frame with NO error is a frame the host SERVED under a forged
+        // field, which is the failure this arm exists to detect.
+        servedUnderForgery: reply['ok'] === true,
       }
     }
     // A control frame with NO forged field, so the refusal is targeted rather
@@ -516,6 +541,27 @@ async function main(): Promise<void> {
     const clean = await speak({ ...base, requestId: 'clean-1' })
     out['cleanFrame'] = { ok: clean['ok'] ?? null, value: clean['value'] ?? null }
     out['handlerRan'] = handlerRan
+    // THE PRECISION THAT MATTERS, and it is a measurement rather than a reading.
+    // The bridge's FORBIDDEN_FIELDS are REFUSED. The oracle's other examples
+    // (`id`, `captured`, `captured.sha256`) are NOT in that list, and the frames
+    // naming them were SERVED. What decides whether that is a forgery is whether
+    // the field REACHED the handler: a field that is ignored cannot promote a
+    // claim, while a field that is merged would. So the handler's own received
+    // keys are recorded for every call.
+    out['handlerReceived'] = handlerSaw
+    out['interpretation'] = {
+      refusedByTheBridge: FRAME_FIELDS.filter(field => out[field] !== undefined && (out[field] as { servedUnderForgery?: boolean }).servedUnderForgery === false),
+      servedBecauseTheFieldIsNotInTheBridgeAuthorityList: FRAME_FIELDS.filter(field => (out[field] as { servedUnderForgery?: boolean }).servedUnderForgery === true),
+      // Every served call must have carried ONLY the four transport fields, so
+      // the forged key was DROPPED rather than merged.
+      forgedFieldReachedTheHandler: handlerSaw.some(call => (call['receivedKeys'] as string[]).some(key =>
+        ['id', 'captured', 'captured.sha256'].includes(key))),
+      note: 'A served frame is not a forgery IF the extra field is dropped before the handler. '
+        + 'This probe records the handler\'s received keys so that claim is falsifiable rather '
+        + 'than asserted. The host-authored facts the DATA plane protects (captured.sha256, '
+        + 'authority.*) are refused at THAT boundary by refuseForgedClaims, measured separately '
+        + 'in tests-observation-authority.txt.',
+    }
     await b.close()
     return out
   })()

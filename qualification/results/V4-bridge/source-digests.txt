@@ -1,0 +1,53 @@
+# Source digests — V4 NATIVE BRIDGE (BR-01..BR-12)
+# Generated: 2026-09-20T08:30:38+08:00
+#
+# THE STALE-BUILD TRAP, ADDRESSED. Every home installs these packages through a
+# `link:`, so a boot resolves the BUILT `lib/`, never `src/`. The rebuild was run
+# BEFORE any measurement and was BYTE-IDENTICAL to what was already on disk, so
+# `lib/` was current rather than stale.
+#
+# command (from packages/dsh-ipython):
+#   node /d/DSH/src/dsh-src/node_modules/typescript/bin/tsc -p tsconfig.json
+# result: exit 0, no output. lib/bridge.js and lib/native-call.js hashed
+# IDENTICAL before and after the rebuild -- recorded below.
+
+## Upstream DSH checkout (read-only reference)
+path: D:/DSH/src/dsh-src
+base SHA: ddefc45fbc7f8e46dd73185e68295696d1297887
+## Upstream file touched by this slice: NONE.
+
+## Built output the profile resolver loads
+a054d7a7d4306c7b5cbfcebb168903383ee4f84589adf3ed16c00b55c8abb20b  packages/dsh-ipython/lib/bridge.js
+0eb378d00eb08b99f56186ca0a09c2d39cc4a9ebd4851ba45b78a232cebec439  packages/dsh-ipython/lib/native-call.js
+
+## Sources this slice measured or wrote
+6aaa7225328eac79eb2603d509b9a5897c6787bd2be4c785602febf0200a5cb0  packages/dsh-ipython/src/bridge.ts
+332d8f088df256ddc0c340df8731fcc8589a1eaea5b3c9e44ac3ea64686f679c  packages/dsh-ipython/src/native-call.ts
+12826dfc60a726fb112f280ea48e7adea2bf8793d12152fb4beebd4d54642559  packages/dsh-ipython/src/bridge-seam.test.ts
+92ef24cb9b5d193f4d4f924ad782b0aeeebddc447a062a8efe110bfcc57f6f1d  packages/dsh-ipython/src/v4-bridge-probe.ts
+71de7cc8980895810082789979b35ad6695d51f4cf78d6f300703344f3bdbc84  packages/dsh-ipython/src/v4-bridge-approval-probe.ts
+d105758a720439ebf85317b23a706b6b73aa5053ea5d6e64d0c9d97a633dbb86  packages/dsh-ipython/src/v4-bridge-drain-probe.ts
+cd5bea90a5477be520bb632ee774e0194176b31a144d78a2961641e2c4574136  packages/dsh-daily-work/src/programmatic-scope.ts
+bd1ce8a88e4e51233cfa99973c92b31de8d4155e2a91704bddf1f11e6cac4225  packages/dsh-daily-work/src/programmatic-scope.test.ts
+a4b9600d3287c81d6006c41f9b370a1e70d1f95121eb89d1549e75b80a788156  packages/dsh-daily-work/src/capacity.ts
+7027d3db2b65d0a9e5a29010f987161461b584cbfa65568942749f217362e34d  packages/dsh-daily-work/src/capacity.test.ts
+7ead0000e5c785bf8c322cf4447f1a24309226dc5b3677e9e1bb1803146ca6e3  packages/dsh-daily-work/src/observations.ts
+a43d06d60eeacd388c2651d70473f7b22d06f80ba00a53047329d5940b6b9e8e  packages/dsh-daily-work/src/data-plane.test.ts
+387037457376f6d2be77902d5e07b1e78d69fe785b3af157a165ff529459169f  packages/dsh-daily-work/src/v4-scope-probe.ts
+57dce19482761d827f87ae3187f96cfa0786f9a45e727c63f2454062cea1b373  packages/dsh-daily-work/cordis.patch.yml
+af7d5b9f7f990c58878db5280e054459df7a224525f1dc0347d1df20a4ac301c  qualification/results/V4-bridge/probe-wiring.mjs
+9f397141dbc0b1235edca8a7a17982dee2c25bb9ba2ef78916263414b5575cb4  qualification/results/V4-bridge/file-br-cases.py
+
+## The deployment identity
+compatibility.lock.json -> deployment.identity
+  0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461
+re-verified by qualification/results/T1-spec/verify-identity.py: all 30 checks passed.
+
+## The ONE edit this slice made to a measured subject, stated rather than buried
+# packages/dsh-ipython/src/bridge-seam.test.ts was edited in ONE place: the
+# probe-classification list in T7-07's second arm. It was a regex matching
+# `t*-measure.ts`; V4's driver `v4-bridge-probe.ts` does not match it, so the arm
+# reported a PROBE as a production caller of `new BridgeServer`. The fix is an
+# explicit PROBE_FILES set. The detector was then MUTATED to prove it still bites:
+# a temporary `v4-mutation-canary.ts` constructing a BridgeServer made the arm FAIL
+# naming that file (mutation-check.txt), and the canary was deleted immediately.
