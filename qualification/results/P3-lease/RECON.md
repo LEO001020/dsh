@@ -95,4 +95,16 @@ that implements A.
 |---|---|
 | this recon note | `qualification/results/P3-lease/RECON.md` |
 | fault-injection test | `packages/dsh-ipython/src/p3-lease-started.test.ts` |
-| test output | `qualification/results/P3-lease/tests.txt` |
+| test + mutation output | `qualification/results/P3-lease/TEST-RESULTS.md` |
+
+## Production reachability of the changed code
+
+`CellLease.invoke` is reached by `BridgeServer.onCall` (`bridge.ts:1421`), which
+is the frame handler for a `call` frame on the loopback bridge. The lease is
+minted by `KernelService.mintCellLease` (`kernel-plugin.ts:642-644`), called
+from `runCell` (`kernel-plugin.ts:593`), which is the path the model-facing
+`ipython` tool takes. The production ledger is DURABLE by default:
+`kernel-plugin.ts:533-540` selects `openBridgeLedger(storageFacilityOf(ctx))`
+unless `durableLedger === false`, so the `STARTED` write in production is a real
+storage-domain `put`, not the in-memory one this slice's tests inject faults
+into. See CLAIMS I AM NOT MAKING in the report.
