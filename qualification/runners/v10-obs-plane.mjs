@@ -88,7 +88,10 @@ export async function apply(ctx) {
       const persistence = ctx.get('sessionPersistence')
       if (persistence === undefined) throw new Error('no sessionPersistence service in the composed host')
 
-      const targetId = SessionId('v10-obs-target')
+      // A UNIQUE id per boot: the profile's session root is durable across boots,
+      // so a fixed id makes the second run fail with `SessionAlreadyExistsError`
+      // -- an environment artefact that would read as a measurement failure.
+      const targetId = SessionId(`v10-obs-target-${String(Date.now())}`)
       const handle = await persistence.create({
         version: SESSION_FORMAT_VERSION, id: targetId, createdAt: 1, cwd, isSeeded: false,
       })
@@ -178,8 +181,18 @@ export async function apply(ctx) {
         recovery: read.kind === 'segments' ? read.recovery : null,
         // There is no field carrying the event body in the segments arm.
         segmentsArmCarriesNoEventBody: read.kind === 'segments' ? read.event === undefined : null,
-        returnedPayloadBytesAreWithinBudget: read.kind === 'segments'
-          ? read.segments.reduce((sum, segment) => sum + (segment.endByte - segment.startByte), 0) <= 4096
+        // WHAT THE BUDGET BOUNDS. The returned PAYLOAD is the offsets, not the
+        // bytes they name: `maxBytes: 4096` produced four 4096-wide segments and
+        // NO body text. So the bound is enforced twice over -- each segment is at
+        // most `maxBytes`, and the LIST is capped (4 here) so a tiny budget
+        // against a huge event cannot return thousands of offsets, which would be
+        // the same breach counted in a different unit.
+        segmentListIsBounded: read.kind === 'segments' ? read.segments.length <= 4 : null,
+        eachSegmentIsWithinTheRequestedBudget: read.kind === 'segments'
+          ? read.segments.every(segment => segment.endByte - segment.startByte <= 4096)
+          : null,
+        offsetsDescribedExceedTheBudgetBecauseTheListIsCappedNotTruncated: read.kind === 'segments'
+          ? read.segments.reduce((sum, segment) => sum + (segment.endByte - segment.startByte), 0) > 4096
           : null,
         // The two arms describe the SAME object.
         fullArmKind: full.kind,

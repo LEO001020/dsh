@@ -1,0 +1,9 @@
+=== V7 independent re-measurement of the T2 CPython newline finding ===
+python: C:/Users/hzq00/AppData/Local/Programs/Python/Python314/python.exe
+Python 3.14.3
+
+default newline : b'x\r\n'
+newline= empty  : b'x\n'
+
+CONCLUSION: the host translates LF to CRLF in text mode unless newline='' is passed.
+A fixture comparing against an exact LF string WITHOUT newline='' measures the HOST, not the product.

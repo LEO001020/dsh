@@ -1,6 +1,6 @@
 - id: webserver
   config:
     host: !!js ctx.webStartup.host ?? '127.0.0.1'
-    port: 4349
+    port: 7365
     compression: gzip
     compressionLevel: 1

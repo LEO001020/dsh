@@ -1,0 +1,33 @@
+{
+  "writeLfOntoCrlf": {
+    "afterReported": "x\ny\nz\n",
+    "afterReportedHex": "780a790a7a0a",
+    "onDisk": "x\ny\nz\n",
+    "onDiskHex": "780a790a7a0a",
+    "operation": "update"
+  },
+  "writeCrlfOntoCrlf": {
+    "afterReported": "x\ny\nz\n",
+    "afterReportedHex": "780a790a7a0a",
+    "onDisk": "x\r\ny\r\nz\r\n",
+    "onDiskHex": "780d0a790d0a7a0d0a"
+  },
+  "writeCrlfOntoNew": {
+    "afterReported": "p\nq\n",
+    "onDisk": "p\r\nq\r\n",
+    "onDiskHex": "700d0a710d0a",
+    "operation": "create"
+  },
+  "editOnCrlf": {
+    "beforeReported": "one\ntwo\nthree\n",
+    "afterReported": "one\nTWO\nthree\n",
+    "onDisk": "one\r\nTWO\r\nthree\r\n",
+    "onDiskHex": "6f6e650d0a54574f0d0a74687265650d0a"
+  },
+  "honestyCheck": {
+    "beforeReportedHex": "6f6e650a74776f0a74687265650a",
+    "afterReportedHex": "780a790a7a0a",
+    "diskHex": "780a790a7a0a",
+    "afterMatchesDisk": true
+  }
+}

@@ -1,0 +1,59 @@
+=== V10 reachability: which RES/OBS production paths the product actually imports ===
+roots: D:/DSH/work/dsh-native-daily/packages (depth <= 4), D:/DSH/work/dsh-native-daily/qualification/runners (depth <= 1)
+  D:/DSH/work/dsh-native-daily/packages: 106 source files
+  D:/DSH/work/dsh-native-daily/qualification/runners: 41 source files
+total files scanned: 147
+
+--- direct importers, per target ---
+
+history-plane (the M7 history plane implementation)
+  PRODUCTION importers (2): ["packages/dsh-daily-work/src/history-plugin.ts","qualification/runners/v10-obs-plane.mjs"]
+  TEST importers       (1): ["packages/dsh-daily-work/src/history-web.test.ts"]
+  reachable from a non-test path: true
+
+history-plugin (the M7 plugin entry point (the profile row))
+  PRODUCTION importers (0): []
+  TEST importers       (1): ["packages/dsh-daily-work/src/history-web.test.ts"]
+  reachable from a non-test path: false
+
+web-provenance (the M7 provenance/locator implementation)
+  PRODUCTION importers (2): ["packages/dsh-daily-work/src/history-plugin.ts","qualification/runners/v10-res01-chain.mjs"]
+  TEST importers       (3): ["packages/dsh-daily-work/src/history-web.test.ts","packages/dsh-daily-work/src/research-chain.test.ts","packages/dsh-daily-work/src/research.test.ts"]
+  reachable from a non-test path: true
+
+web-search (the ported web-search provider)
+  PRODUCTION importers (2): ["packages/dsh-daily-work/src/web-search-plugin.ts","qualification/runners/v10-res01-chain.mjs"]
+  TEST importers       (5): ["packages/dsh-daily-work/src/profile-config.test.ts","packages/dsh-daily-work/src/research-chain.test.ts","packages/dsh-daily-work/src/research.test.ts","packages/dsh-daily-work/src/security.test.ts","packages/dsh-daily-work/src/web-search.test.ts"]
+  reachable from a non-test path: true
+
+observations (the observation capture module)
+  PRODUCTION importers (2): ["packages/dsh-daily-work/src/artifacts.ts","packages/dsh-daily-work/src/data-service.ts"]
+  TEST importers       (1): ["packages/dsh-daily-work/src/data-plane.test.ts"]
+  reachable from a non-test path: true
+
+recovery (the recovery module)
+  PRODUCTION importers (0): []
+  TEST importers       (2): ["packages/dsh-daily-work/src/durability-advanced.test.ts","packages/dsh-daily-work/src/durability-records.test.ts"]
+  reachable from a non-test path: false
+
+reconcile (the reconcile module)
+  PRODUCTION importers (1): ["packages/dsh-daily-work/src/durability-runner.ts"]
+  TEST importers       (6): ["packages/dsh-daily-work/src/durability-advanced.test.ts","packages/dsh-daily-work/src/durability-records.test.ts","packages/dsh-daily-work/src/lifecycle.test.ts","packages/dsh-daily-work/src/reconcile.test.ts","packages/dsh-daily-work/src/tool-protocol.test.ts","packages/dsh-daily-work/src/wire-faults.test.ts"]
+  reachable from a non-test path: true
+
+--- the dailyHistory service: what CALLS it ---
+  packages/dsh-daily-work/src/history-plugin.ts  test=false  get('dailyHistory')=false  .history(...)=false
+  packages/dsh-daily-work/src/history-web.test.ts  test=true  get('dailyHistory')=true  .history(...)=false
+  packages/dsh-daily-work/src/writers-plugin.ts  test=false  get('dailyHistory')=false  .history(...)=false
+  qualification/runners/v10-obs-plane.mjs  test=false  get('dailyHistory')=true  .history(...)=true
+  qualification/runners/verify-deliverable-surface.mjs  test=false  get('dailyHistory')=true  .history(...)=false
+  qualification/runners/verify-m7-history.mjs  test=false  get('dailyHistory')=true  .history(...)=false
+  qualification/runners/verify-t4-preset.mjs  test=false  get('dailyHistory')=true  .history(...)=false
+  PRODUCTION callers of .history(...): 1 ["qualification/runners/v10-obs-plane.mjs"]
+
+--- the IPython broker protocol: could a host callback ride it? ---
+BrokerOpName members: ["start","execute","interrupt","restart","shutdown","status","kernel_info"]
+BrokerMessage members: " BrokerReply | BrokerEvent"
+BrokerEvent members: ["'event'","'kernel_exited'","'late_output'","'diagnostic'"]
+  A host-callback message type would have to appear in one of those unions.
+  a host-callback / tool-call message type is present: false

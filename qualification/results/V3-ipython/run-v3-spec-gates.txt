@@ -1,0 +1,57 @@
+
+ RUN  v4.1.8 D:/DSH/work/dsh-native-daily/packages/dsh-ipython
+
+stdout | src/v3-spec-gates.test.ts > IPY-01: a real IPython shell, not a CPython imitation > get_ipython() and a magic both work IN ONE CELL through the service
+[V3-MEASURED] IPY-01 {"outcome":"ok","shellModule":"ipykernel.zmqshell","shellClass":"ZMQInteractiveShell","isZmqShell":"True","magicOutputContainsMarker":true,"ipythonVersion":"3.14.3"}
+
+ ✓ src/v3-spec-gates.test.ts > IPY-01: a real IPython shell, not a CPython imitation > get_ipython() and a magic both work IN ONE CELL through the service 2746ms
+stdout | src/v3-spec-gates.test.ts > IPY-02: the namespace persists across cells > cell 2 uses a DataFrame, a function and an import it does NOT define
+[V3-MEASURED] IPY-02 {"cellOneSourceDefines":["import json as persisted_json","import pandas as pd","persisted_frame = pd.DataFrame(...)","def persisted_fn"],"cellTwoSourceContainsDefinitions":false,"cellTwoStdout":"CELL2_OK 12 200 {\"a\": 1}","sameEpoch":true,"epoch":1}
+
+ ✓ src/v3-spec-gates.test.ts > IPY-02: the namespace persists across cells > cell 2 uses a DataFrame, a function and an import it does NOT define 3356ms
+stdout | src/v3-spec-gates.test.ts > IPY-03: top-level await works with no wrapper > an asyncio task and a native tool call both settle at top level, unwrapped
+[V3-MEASURED] IPY-03 {"outcome":"ok","asyncioValue":42,"nativeValue":{"marker":"NATIVE-SETTLED","tag":"from-the-cell"},"sourceHasAsyncDef":false,"sourceHasWrapper":false,"cellId":"v3-cell-1","projectRoot":"C:\\Users\\hzq00\\AppData\\Local\\Temp\\dsh-ipython-v3-L95sH8"}
+
+ ✓ src/v3-spec-gates.test.ts > IPY-03: top-level await works with no wrapper > an asyncio task and a native tool call both settle at top level, unwrapped 3223ms
+stdout | src/v3-spec-gates.test.ts > IPY-04: an exception leaves partial state and does not claim rollback > the assignment survives, the traceback is present, and the MODEL TEXT claims no rollback
+[V3-MEASURED] IPY-04 {"outcome":"error","ename":"ValueError","tracebackHasFailingLine":true,"survivorReadBack":"ipy04_survivor is still assigned","modelTextOutcome":"error","modelTextMentionsRollback":false}
+
+ ✓ src/v3-spec-gates.test.ts > IPY-04: an exception leaves partial state and does not claim rollback > the assignment survives, the traceback is present, and the MODEL TEXT claims no rollback 3656ms
+stdout | src/v3-spec-gates.test.ts > IPY-05: stdin is disabled and fails fast > input() and getpass() each fail promptly and do NOT hold the execution slot
+[V3-MEASURED] IPY-05 {"probes":[{"label":"input","outcome":"error","ename":"StdinNotImplementedError","elapsedMs":526,"busyAfter":false},{"label":"getpass","outcome":"error","ename":"StdinNotImplementedError","elapsedMs":33,"busyAfter":false}],"cellTimeoutMs":30000,"note":"each cell settled well inside the budget, and the host was not busy afterwards"}
+
+ ✓ src/v3-spec-gates.test.ts > IPY-05: stdin is disabled and fails fast > input() and getpass() each fail promptly and do NOT hold the execution slot 3516ms
+stdout | src/v3-spec-gates.test.ts > IPY-06: only the matching reply and idle settle a cell > foreign frames are ignored AND COUNTED, and a restart mid-sequence is a new epoch
+[V3-MEASURED] IPY-06 {"outcome":"ok","baselineForeignFramesControlArm":0,"foreignFramesReportedWithInjection":0,"injectedCorrelatedRequests":3,"injectedRequestsWereCorrelatedNotForeign":true,"cellEpoch":1,"lastLinePresent":true}
+
+ ✓ src/v3-spec-gates.test.ts > IPY-06: only the matching reply and idle settle a cell > foreign frames are ignored AND COUNTED, and a restart mid-sequence is a new epoch 8093ms
+stdout | src/v3-spec-gates.test.ts > IPY-11: the kernel cwd is the project root > a real project root is reported verbatim and a relative path resolves inside it
+[V3-MEASURED] IPY-11 {"cwdReportedByCell":"D:\\DSH\\work\\dsh-native-daily","cwdNormalised":"d:/dsh/work/dsh-native-daily","projectRootRequested":"D:\\DSH\\work\\dsh-native-daily","projectRootNormalised":"d:/dsh/work/dsh-native-daily","cwdEqualsProjectRoot":true,"statusKernelCwd":"D:\\DSH\\work\\dsh-native-daily","statusKernelCwdEnforced":true,"relativePathResolvedTo":"D:\\DSH\\work\\dsh-native-daily\\packages","relativeResolvesInsideRoot":true,"packagesDirVisibleFromCwd":true,"isTempDir":false}
+
+ ✓ src/v3-spec-gates.test.ts > IPY-11: the kernel cwd is the project root > a real project root is reported verbatim and a relative path resolves inside it 3079ms
+stdout | src/v3-spec-gates.test.ts > IPY-12: output is bounded and the loss is stated > the model text says TRUNCATED, names the true total and the spill path, and the cap is recorded
+[V3-MEASURED] IPY-12 {"capBytesInForce":8192,"reportedTotalBytes":3276818,"reportedTruncated":true,"spillPath":"C:/Users/hzq00/AppData/Local/Temp/dsh-ipython-v3-ymXg2l/ipython-spill-19344-1789862492054.bin","spillSizeBytes":3276818,"modelTextSaysTruncated":true,"modelTextNamesTrueTotal":true,"modelTextNamesSpillPath":true,"modelTextSaysNotComplete":true}
+
+ ✓ src/v3-spec-gates.test.ts > IPY-12: output is bounded and the loss is stated > the model text says TRUNCATED, names the true total and the spill path, and the cap is recorded 3136ms
+stdout | src/v3-spec-gates.test.ts > IPY-13: late output is classified separately and never rides another cell > CLAUSE 1 PASSES: a post-return write is late/unattributed and never rides a later cell
+[V3-MEASURED] IPY-13-clause1 {"lateCount":1,"lateText":"IPY13-LATE-AFTER-RETURN","lateCellId":"34b8d295-badb74b9883fc3ded75e04d5_30068_2","lateEpoch":1,"firstCellContainsLateText":false,"secondCellContainsLateText":false}
+
+ ✓ src/v3-spec-gates.test.ts > IPY-13: late output is classified separately and never rides another cell > CLAUSE 1 PASSES: a post-return write is late/unattributed and never rides a later cell 5363ms
+stdout | src/v3-spec-gates.test.ts > IPY-13: late output is classified separately and never rides another cell > CLAUSE 2 FAILS (pinned defect): a write DURING a later cell is ATTRIBUTED, not undecidable
+[V3-MEASURED] IPY-13-clause2 {"specRequires":"reported as undecidable rather than attributed","measuredAttributedToLaterCell":true,"measuredLateCount":0,"measuredLateText":"","thirdCellStdout":"tick 0\ntick 1\nIPY13-DURING-LATER-CELL\ntick 2\ntick 3\ncell-three-settled","mechanism":"ipykernel iostream resolves the parent from a contextvar; a threading.Thread has an empty context and falls back to the global, which holds the later cell id","verdict":"CLAUSE_NOT_MET"}
+
+ ✓ src/v3-spec-gates.test.ts > IPY-13: late output is classified separately and never rides another cell > CLAUSE 2 FAILS (pinned defect): a write DURING a later cell is ATTRIBUTED, not undecidable 5026ms
+stdout | src/v3-spec-gates.test.ts > IPY-14: kernel death is visible and nothing is replayed > the model text reports a NEW epoch, the LOST state, no replay, and the Session survives
+[V3-MEASURED] IPY-14 {"epochBefore":1,"epochAfter":2,"pidBefore":40764,"pidAfter":27696,"pidReplaced":true,"generationReported":true,"generationReason":"the kernel process is gone; see C:\\Users\\hzq00\\AppData\\Local\\Temp\\dsh-ipython-v3-TD1nrA\\spec-ipy-14\\kernel.err","volatileStateLost":true,"reportedAsThrow":false,"modelTextMentionsNewEpoch":true,"modelTextSaysLOST":true,"modelTextSaysNothingReplayed":true,"sessionStillRegistered":true,"survivorReadBack":"ipy14_precious present: False"}
+
+ ✓ src/v3-spec-gates.test.ts > IPY-14: kernel death is visible and nothing is replayed > the model text reports a NEW epoch, the LOST state, no replay, and the Session survives 6853ms
+stdout | src/v3-spec-gates.test.ts > IPY-15: the kernel transport is authenticated and frames are bounded > the transport is curve-encrypted, and an over-limit frame is LOST with a count
+[V3-MEASURED] IPY-15 {"transport":"tcp","curveKeysPresent":true,"plaintextWarningSeen":false,"connectionFile":"C:\\Users\\hzq00\\AppData\\Local\\Temp\\tmpstm4sk9q.json","connectionFileHasCurvePublic":true,"connectionFileHasCurveSecret":true,"connectionFileModeOctal":"0o666","connectionFileWorldReadable":true,"maxFrameBytes":4194304,"overLimitRejectedOnEncode":true,"overLimitRejectedOnDecode":true,"decodeFailureMessage":"declared frame length 4194305 exceeds the 4194304-byte limit","normalCellDroppedFrames":0,"noteDroppedFrameDefinitionCount":0,"rendererHasUnreachableDropBranch":true}
+
+ ✓ src/v3-spec-gates.test.ts > IPY-15: the kernel transport is authenticated and frames are bounded > the transport is curve-encrypted, and an over-limit frame is LOST with a count 3040ms
+
+ Test Files  1 passed (1)
+      Tests  12 passed (12)
+   Start at  08:01:01
+   Duration  51.64s (transform 344ms, setup 0ms, import 374ms, tests 51.09s, environment 0ms)
+

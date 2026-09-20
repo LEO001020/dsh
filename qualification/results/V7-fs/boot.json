@@ -24,7 +24,7 @@
   "presetDefaultId": "daily-standard",
   "session": {
     "created": true,
-    "sessionId": "session-f484e27b-61ea-4983-817f-cb6473b783cc",
+    "sessionId": "session-8cca23f9-8857-49fb-a6d3-d96d802be405",
     "cwd": "D:/DSH/work/dsh-native-daily/qualification/results/V7-fs/workspace",
     "agentPresent": true,
     "sessionObjectAvailable": true
@@ -112,7 +112,7 @@
         {
           "id": "session.override",
           "ok": true,
-          "observed": "session session-f484e27b-61ea-4983-817f-cb6473b783cc: overrideOf = undefined (does not confine), resolve() = 'workspace-write'"
+          "observed": "session session-8cca23f9-8857-49fb-a6d3-d96d802be405: overrideOf = undefined (does not confine), resolve() = 'workspace-write'"
         }
       ]
     },
@@ -411,8 +411,16 @@
       "value": {
         "theBitCouldBeCleared": true,
         "theObjectCouldBeOverwritten": true,
-        "whatTheStoreReturnedWhileTampered": "V7-FS06 TAMPERED store object\n",
-        "theStoreNoticed": true,
+        "readPathThrewAnError": false,
+        "whatTheReadPathReturned": "V7-FS06 TAMPERED store object\n",
+        "readPathReturnedTamperedBytes": true,
+        "readPathDetectedTheTampering": false,
+        "theExplicitVerifyDetectedTheTampering": true,
+        "whatStatReportedWhileTampered": {
+          "bytes": 30,
+          "sha256": "07d894c4eb826e7b334398df3bdab18545111646cc121b6bed98d566b1e5fc53"
+        },
+        "statDigestMatchesItsOwnBytes": false,
         "restored": true
       }
     },

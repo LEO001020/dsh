@@ -1,0 +1,17 @@
+=== OBS-06: a derived index rebuilds from canonical data ===
+session root: C:\Users\hzq00\AppData\Local\Temp\v10-obs06-sessions-86QerO
+index root:   C:\Users\hzq00\AppData\Local\Temp\v10-obs06-index-oddln4
+
+baseline query result: {"itemCount":1,"sessionIds":["v10-obs06-session"],"live":[false],"persisted":[true],"bestMatchSeq":[0],"snippetContainsMarker":true}
+index dir before deletion: ["search.db","search.db-shm","search.db-wal"]
+index dir after deletion:  [] (exists=false)
+canonical session root survived: true -> ["--C-v10-obs06-project--"]
+canonical files the rebuild has to work from: [{"entry":"--C-v10-obs06-project--","kind":"dir","contents":["v10-obs06-session"]}]
+
+rebuilt query result: {"itemCount":1,"sessionIds":["v10-obs06-session"],"live":[false],"persisted":[true],"bestMatchSeq":[0],"snippetContainsMarker":true}
+index dir after the rebuild: ["search.db","search.db-shm","search.db-wal"]
+
+SAME ANSWER AS BEFORE: true
+a SECOND history source was needed: false (the index directory did not exist when the rebuild started)
+
+temp dirs removed: true / true

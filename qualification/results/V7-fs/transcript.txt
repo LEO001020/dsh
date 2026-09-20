@@ -19,7 +19,7 @@ composition_is_current: true
 stale_lock: no lock present
 
 boot_cwd: D:/DSH/src/dsh-src (deliberately foreign to the profile directory)
-port: 4065 (bound by the harness, not assumed)
+port: 8270 (bound by the harness, not assumed)
 timed_out: false
 exit_code: null
 port_released_after_kill: true
@@ -73,10 +73,12 @@ ok   FS-06: the store object is IMMUTABLE in fact -- the write is refused by the
 ok   FS-06: the store object was NOT modified by the refused write
 ok   FS-06: the store still returns the original bytes after the refused write
 ok   FS-06: the read-only bit is NOT a boundary -- the same user can clear it (recorded, not hidden)
-ok   FS-06: when the object IS tampered, the store DETECTS it rather than returning damaged bytes
+ok   FS-06: FINDING -- the read path does NOT detect tampering (no error, tampered bytes returned)
+ok   FS-06: the EXPLICIT verify() DOES detect tampering
+ok   FS-06: FINDING -- stat() cannot detect it either (it reports the ORIGINAL digest beside the tampered byte count)
 ok   FS-06: the probe restored the object it tampered (the store is left as found)
 
-checks_passed: 45/45
+checks_passed: 47/47
 
 --- FS-04 vectors, recorded per vector (a non-refusal is a FINDING, not a green) ---
   symlink   refused=false verdict=NOT REFUSED -- FINDING: a symlink in the workspace escapes it; the write followed the link and mutated the target outside
@@ -106,8 +108,11 @@ checks_passed: 45/45
   the refusal came from the OS (EACCES), not from DSH policy: true
   COUNTER-CHECK, the bit is a guard and NOT a boundary:
     the same OS user could clear the bit and overwrite the object: true
-    the store DETECTED the tampering instead of returning damaged bytes: true
-    what the store returned while tampered: "V7-FS06 TAMPERED store object\n"
+    FINDING -- the READ path (openRange) threw no error and returned TAMPERED bytes: true (threw: false)
+    what the read path returned while tampered: "V7-FS06 TAMPERED store object\n"
+    the EXPLICIT verify() DID detect it: true
+    FINDING -- stat() reported the ORIGINAL digest beside the tampered byte count: {"bytes":30,"sha256":"07d894c4eb826e7b334398df3bdab18545111646cc121b6bed98d566b1e5fc53"}
+    stat()'s digest matched its own bytes: false
     the probe restored the object afterwards: true
   the store's own read after the refused write: {"label":"store.openRange","ok":true,"value":"V7-FS06 store-owned artifact payload -- this must survive a work"}
   the store's own reconcile: {"label":"store.reconcile","ok":true,"value":{"orphans":["artifact:sha256:07d894c4eb826e7b334398df3bdab18545111646cc121b6bed98d566b1e5fc53","artifact:sha256:150f662de432382d21003d7ba23053663e76f94c0d79cbe4ac27ef0a54b21184"],"integrityErrors":[]}}

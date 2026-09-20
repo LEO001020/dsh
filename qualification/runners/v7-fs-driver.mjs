@@ -389,14 +389,17 @@ const checks = {
     && json.fs06?.sameUserCanClearTheBit?.value?.theObjectCouldBeOverwritten === true,
   // THE FINDING, recorded in the direction it was measured. `openRange` does NOT
   // verify (its own source says verification is separate), so a tampered object IS
-  // returned as content. The explicit `verify()` DOES catch it. The first version of
-  // this probe asserted the opposite in a CHECK LABEL while the measurement said
-  // otherwise -- a false claim in the green direction, which is the failure mode
-  // this whole spec exists to catch. The label is now the measurement.
-  'FS-06: the read path does NOT detect tampering (openRange returns the bytes; recorded as a FINDING)':
-    json.fs06?.sameUserCanClearTheBit?.value?.theReadPathDetectedTheTampering === false,
+  // returned as content with no error. The explicit `verify()` DOES catch it. The
+  // first version of this probe asserted the opposite in a CHECK LABEL while the
+  // measurement said otherwise -- a false claim in the green direction, which is the
+  // failure mode this whole spec exists to catch. The label is now the measurement.
+  'FS-06: FINDING -- the read path does NOT detect tampering (no error, tampered bytes returned)':
+    json.fs06?.sameUserCanClearTheBit?.value?.readPathReturnedTamperedBytes === true
+    && json.fs06?.sameUserCanClearTheBit?.value?.readPathThrewAnError === false,
   'FS-06: the EXPLICIT verify() DOES detect tampering':
     json.fs06?.sameUserCanClearTheBit?.value?.theExplicitVerifyDetectedTheTampering === true,
+  'FS-06: FINDING -- stat() cannot detect it either (it reports the ORIGINAL digest beside the tampered byte count)':
+    json.fs06?.sameUserCanClearTheBit?.value?.statDigestMatchesItsOwnBytes === false,
   'FS-06: the probe restored the object it tampered (the store is left as found)':
     json.fs06?.sameUserCanClearTheBit?.value?.restored === true,
 }
@@ -440,10 +443,11 @@ say(`  object mode on disk: ${JSON.stringify(json.fs06?.objectModeOnDisk)}`)
 say(`  the refusal came from the OS (EACCES), not from DSH policy: ${String(json.fs06?.refusalCameFromTheOS)}`)
 say(`  COUNTER-CHECK, the bit is a guard and NOT a boundary:`)
 say(`    the same OS user could clear the bit and overwrite the object: ${String(json.fs06?.sameUserCanClearTheBit?.value?.theObjectCouldBeOverwritten)}`)
-say(`    FINDING -- the READ path (openRange) did NOT detect it: ${String(json.fs06?.sameUserCanClearTheBit?.value?.theReadPathDetectedTheTampering)}`)
-say(`    what the store returned while tampered: ${JSON.stringify(json.fs06?.sameUserCanClearTheBit?.value?.whatTheStoreReturnedWhileTampered)}`)
+say(`    FINDING -- the READ path (openRange) threw no error and returned TAMPERED bytes: ${String(json.fs06?.sameUserCanClearTheBit?.value?.readPathReturnedTamperedBytes)} (threw: ${String(json.fs06?.sameUserCanClearTheBit?.value?.readPathThrewAnError)})`)
+say(`    what the read path returned while tampered: ${JSON.stringify(json.fs06?.sameUserCanClearTheBit?.value?.whatTheReadPathReturned)}`)
 say(`    the EXPLICIT verify() DID detect it: ${String(json.fs06?.sameUserCanClearTheBit?.value?.theExplicitVerifyDetectedTheTampering)}`)
-say(`    what stat() reported while tampered: ${JSON.stringify(json.fs06?.sameUserCanClearTheBit?.value?.whatStatReportedWhileTampered)}`)
+say(`    FINDING -- stat() reported the ORIGINAL digest beside the tampered byte count: ${JSON.stringify(json.fs06?.sameUserCanClearTheBit?.value?.whatStatReportedWhileTampered)}`)
+say(`    stat()'s digest matched its own bytes: ${String(json.fs06?.sameUserCanClearTheBit?.value?.statDigestMatchesItsOwnBytes)}`)
 say(`    the probe restored the object afterwards: ${String(json.fs06?.sameUserCanClearTheBit?.value?.restored)}`)
 say(`  the store's own read after the refused write: ${JSON.stringify(json.fs06?.storeReadAfterTamper)}`)
 say(`  the store's own reconcile: ${JSON.stringify(json.fs06?.reconcile)}`)

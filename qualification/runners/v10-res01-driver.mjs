@@ -228,6 +228,8 @@ else {
   say(`seam reaches loopback:          ${JSON.stringify(probe.seamReachesLoopback)}`)
   say(`search link:                    ${JSON.stringify(probe.searchLink)}`)
   say(`citation link:                  ${JSON.stringify(probe.citationLink)}`)
+  say(`RES-04 truncation:              ${JSON.stringify(probe.res04Truncation)}`)
+  say(`RES-05 raw/derived:             ${JSON.stringify(probe.res05RawDerived)}`)
   say(`failure shapes:                 ${JSON.stringify(probe.failureShapes)}`)
 }
 say('')

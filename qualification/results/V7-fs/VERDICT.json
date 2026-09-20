@@ -1,7 +1,7 @@
 {
   "ok": true,
-  "checksPassed": 45,
-  "checksTotal": 45,
+  "checksPassed": 47,
+  "checksTotal": 47,
   "failedChecks": [],
   "checks": {
     "the tool face is not zero (FACT F did not occur)": true,
@@ -47,7 +47,9 @@
     "FS-06: the store object was NOT modified by the refused write": true,
     "FS-06: the store still returns the original bytes after the refused write": true,
     "FS-06: the read-only bit is NOT a boundary -- the same user can clear it (recorded, not hidden)": true,
-    "FS-06: when the object IS tampered, the store DETECTS it rather than returning damaged bytes": true,
+    "FS-06: FINDING -- the read path does NOT detect tampering (no error, tampered bytes returned)": true,
+    "FS-06: the EXPLICIT verify() DOES detect tampering": true,
+    "FS-06: FINDING -- stat() cannot detect it either (it reports the ORIGINAL digest beside the tampered byte count)": true,
     "FS-06: the probe restored the object it tampered (the store is left as found)": true
   },
   "composition": {
@@ -175,8 +177,16 @@
       "value": {
         "theBitCouldBeCleared": true,
         "theObjectCouldBeOverwritten": true,
-        "whatTheStoreReturnedWhileTampered": "V7-FS06 TAMPERED store object\n",
-        "theStoreNoticed": true,
+        "readPathThrewAnError": false,
+        "whatTheReadPathReturned": "V7-FS06 TAMPERED store object\n",
+        "readPathReturnedTamperedBytes": true,
+        "readPathDetectedTheTampering": false,
+        "theExplicitVerifyDetectedTheTampering": true,
+        "whatStatReportedWhileTampered": {
+          "bytes": 30,
+          "sha256": "07d894c4eb826e7b334398df3bdab18545111646cc121b6bed98d566b1e5fc53"
+        },
+        "statDigestMatchesItsOwnBytes": false,
         "restored": true
       }
     },
@@ -237,7 +247,7 @@
     "edit": []
   },
   "boot": {
-    "port": 4065,
+    "port": 8270,
     "timedOut": false,
     "exitCode": null,
     "portReleased": true

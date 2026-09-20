@@ -1,0 +1,22 @@
+{
+  "local": {
+    "sandboxMode": null,
+    "afterReportedHex": "780a790a7a0a",
+    "onDiskHex": "780a790a7a0a",
+    "onDisk": "x\ny\nz\n",
+    "editOnDiskHex": "6f6e650d0a54574f0d0a74687265650d0a",
+    "editAfterHex": "6f6e650a54574f0a74687265650a"
+  },
+  "sandbox": {
+    "sandboxMode": "danger-full-access",
+    "afterReportedHex": "780a790a7a0a",
+    "onDiskHex": "780a790a7a0a",
+    "onDisk": "x\ny\nz\n",
+    "editOnDiskHex": "6f6e650d0a54574f0d0a74687265650d0a",
+    "editAfterHex": "6f6e650a54574f0a74687265650a"
+  },
+  "delta": {
+    "writeTextOnDiskIdentical": true,
+    "editOnDiskIdentical": true
+  }
+}

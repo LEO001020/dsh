@@ -1,0 +1,17 @@
+python_status: 0 stderr: 
+{
+  "decision": "refuse",
+  "reasons": [
+    "there is no acceptance receipt, so there is no evidence that any test ran",
+    "no acceptance receipt was supplied, so nothing about the candidate has been verified"
+  ],
+  "testsAreReal": false,
+  "testReason": "there is no acceptance receipt, so there is no evidence that any test ran",
+  "patchApplies": true,
+  "scopeOk": true,
+  "baseRevisionMatches": true,
+  "headDescendsFromBase": true,
+  "changedPaths": [
+    "src/app.txt"
+  ]
+}

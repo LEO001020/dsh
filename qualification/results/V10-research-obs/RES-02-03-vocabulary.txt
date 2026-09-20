@@ -1,0 +1,60 @@
+=== RES-02 / RES-03: tier vocabulary and incomplete-parse record ===
+repo: D:/DSH/work/dsh-native-daily
+
+--- (1) where the tier vocabulary appears, by file ---
+files scanned (flat, 80 .ts files under packages/dsh-daily-work/src):
+  primary_read                 in 2 file(s); PRODUCTION: []; TEST: ["research-chain.test.ts","research.test.ts"]
+  understood                   in 3 file(s); PRODUCTION: []; TEST: ["cost.test.ts","research-chain.test.ts","research.test.ts"]
+  range_presented_to_model     in 2 file(s); PRODUCTION: []; TEST: ["research-chain.test.ts","research.test.ts"]
+  bytes_captured               in 2 file(s); PRODUCTION: []; TEST: ["research-chain.test.ts","research.test.ts"]
+
+READ THIS HONESTLY: the evidence TIER LADDER (discovered / bytes_captured / parsed /
+range_presented_to_model / cited_in_output / support_checked) is declared in the TEST FILES
+(research.test.ts, research-chain.test.ts) and is NOT a shipped module. DSH has no
+evidence-tier concept to import, and the project chose to model it against the plan's own
+words rather than invent a DSH API for it. So RES-02's "the vocabulary cannot express
+primary_read or understood" is established against the model the tests build, and the
+production half of the claim is the narrower, measured fact below: no SHIPPED member list
+contains either token, and `record.ts`'s evidence reference is a POINTER (kind/id/digest)
+that has no tier field at all.
+
+shipped EvidenceRef fields (packages/dsh-daily-work/lib/record.js): ["kind","id","digest","label"]
+  carries a tier / read-state field: false
+  -> the shipped reference answers "where is it", not "how far did we get with it".
+
+--- (2) the shipped vocabulary, read from the built module ---
+AcquisitionCompleteness members: ["complete-within-request","partial","unknown"]
+  contains 'complete'            : false
+  contains 'exhaustive'          : false
+  contains 'primary_read'        : false
+  contains 'understood'          : false
+GapRecovery members:             ["page","refetch","none","unknown"]
+  contains a local-recovery arm  : false
+observed completeness, truncated=true : "partial"
+observed completeness, truncated=false: "complete-within-request"
+observed gap recoveries, truncated    : ["refetch"]
+coverage.claimScope                  : "request" (never "the document" or "the world")
+
+--- (3) RES-03: an incomplete parse states its range and its limits ---
+hasPdfMagic(real PDF header)      : true
+hasPdfMagic(non-PDF bytes)        : false
+text-layer extraction             : {"kind":"text","text":"Introduction. Methods. Results. (table content omitted by the text-layer extractor)","pages":4}
+empty extraction                  : {"kind":"empty","reason":"the extractor produced no text. This is an extractor outcome, not a property of the document","coverage":"unknown","doesNotMean":"the document contains no content"}
+budget stop                       : {"kind":"budget-exceeded","reason":"PDF extraction stopped at the 16777216-byte output budget","extractedBytes":16777216,"budgetBytes":16777216,"coverage":"partial"}
+decode error                      : {"kind":"decode-error","reason":"the bytes do not begin with a PDF header, so they are not a PDF this extractor can read","coverage":"unknown"}
+
+THE NEGATIVE, stated as a measurement:
+  an empty extraction carries coverage="unknown" and doesNotMean="the document contains no content"
+  so "the extractor found nothing" is never reported as "the document has no content"
+
+--- (4) RES-03: missing content is never filled in ---
+quote present in the artifact     : {"kind":"located","span":{"artifact":"artifact:sha256:deadbeef","sha256":"bf070f765b1623f260e0b36c0d9e897388ebe3b4ba4632fa582ac48fe2c93bc0","startByte":16,"endByte":33,"text":"the figure is 12%"}}
+quote absent from the artifact    : {"kind":"not-located","code":"text-not-in-artifact","reason":"the quoted text does not occur in the captured artifact; the claim is not supported by this object"}
+same quote, labelled a snippet    : {"kind":"not-located","code":"snippet-is-not-full-text","reason":"the quote came from a provider-generated snippet, which is not a span of the captured document; a snippet may be summarized or re-ordered and cannot locate a passage"}
+span offsets index the CAPTURED object: true
+
+  A quote that is NOT in the artifact is `text-not-in-artifact`, never an approximate
+  match, and a snippet is refused STRUCTURALLY -- so a claim about content the record
+  never read cannot be produced by either path.
+
+=== probe complete: 59 lines ===

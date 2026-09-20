@@ -1,0 +1,21 @@
+=== V10 / OBS: the loaded history plane, in a booted composed host ===
+repo:      D:/DSH/work/dsh-native-daily
+home:      D:/DSH/home/v10-research-obs
+probe out: D:/DSH/work/dsh-native-daily/qualification/results/V10-research-obs/runs/obs/obs-plane-boot.json
+rebuild packages/dsh-daily-work: exit=0
+build dsh-daily-work: 32 js files, digest a9a8369abe7aed00
+repo profile patch      sha256: 5b8b2a8e5d9ae13d35c1d86833f8b96eeb84078a13027a08efc1379a6fc8afb4
+installed profile patch sha256: 5b8b2a8e5d9ae13d35c1d86833f8b96eeb84078a13027a08efc1379a6fc8afb4
+plugin install: exit=0
+
+port: 7365  portReleased: true  timedOut: false  exitCode: null
+
+probe names the booted home: true
+probe error:                 null
+OBS-02 watermark pinned:     {"watermarkAtPin":{"maxSeq":2,"generation":1},"firstPageSeqs":[0],"appendedSeqs":[3,4,5,6,7],"continuedWatermark":{"maxSeq":2,"generation":1},"continuedSeqs":[1,2],"continuedExhausted":true,"pinnedScanExcludedAppended":true,"watermarkUnchangedAcrossPages":true,"reopenedWatermark":{"maxSeq":7,"generation":2},"reopenedSeesAppended":true,"generationAdvanced":true}
+OBS-03 oversized event:      {"kind":"segments","totalBytes":200203,"segmentCount":4,"segments":[{"startByte":0,"endByte":4096},{"startByte":4096,"endByte":8192},{"startByte":8192,"endByte":12288},{"startByte":12288,"endByte":16384}],"digestIsHex64":true,"complete":false,"recovery":"authorized-refetch","segmentsArmCarriesNoEventBody":true,"segmentListIsBounded":true,"eachSegmentIsWithinTheRequestedBudget":true,"offsetsDescribedExceedTheBudgetBecauseTheListIsCappedNotTruncated":true,"fullArmKind":"value","fullArmDigestEqualsSegmentsDigest":true,"fullArmBytesEqualsSegmentsTotalBytes":true,"eventBodyIs200kChars":200000}
+OBS-04 replay:               {"pages":9,"exhausted":true,"fullLogMaterializationsForTheTraversal":1,"controlArmSecondScanCost":1,"controlHasTeeth":true,"replayMap":{"v10-obs-target-1789862447758":5}}
+OBS-05 visibilities:         {"storedCount":9,"surfaces":{"0":"current","1":"current","2":"current","3":"current","4":"current","5":"current","6":"current","7":"current","8":"current"},"consumed":[0],"projected":[0],"report":{"storedOnly":[1,2,3,4,5,6,7,8],"consumedNotProjected":[],"projected":[0]},"threeSetsAreDisjoint":true,"unionAccountsForEveryStoredEvent":true,"refusingToProjectWithoutConsuming":"HISTORY_EVENT_ABSENT"}
+REACH:                       {"agentToolCount":27,"historyToolNamesInTheModelSurface":[],"ipythonKernelServicePresent":true,"ipythonExposesAHistoryBinding":false,"ipythonServiceMethodNames":["close","constructor","currentEpoch","defaultEnvironmentDigest","drainUnattributed","entryFor","evict","hasKernel","identityFor","interrupt","kernelWorkingDirectoryFor","listSessions","reconfigure","restart","runCell","status"],"dailyHistoryMethodNames":["available","constructor","dispose","dynamicTailBytes","history","recordFetch","recordSearch","untrusted","untrustedNotice"]}
+
+written: D:/DSH/work/dsh-native-daily/qualification/results/V10-research-obs/OBS-plane-boot.json

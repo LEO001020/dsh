@@ -1,0 +1,115 @@
+=== V10: the zloop web-search layer, checked against the shipped DSH port ===
+date: 2026-09-20T08:02:49+08:00
+
+--- SOURCE (read-only, bounded inspection; no recursive walk) ---
+E:/zcode-labs/zloop/plugin/runtime/src/zloop/websearch.py : 1367 lines, sha256 c2dd81984428f1256b85e11de67ce5928fe6cf2ab93822f31c505a6970befb57
+E:/zcode-labs/zloop/plugin/runtime/src/zloop/lanes.py : 1734 lines, sha256 35b531a730c8517a8290c8778948513b2525f7c77ac285fae91f1605e2b36e19
+
+--- THE DISCIPLINE CLAIMS, each located in the zloop source ---
+18:  not answer is ``{"status": "unavailable"}`` with the error preserved -- it is
+19:  never reported as "no results found", because that fabricates evidence.
+47:SEARCH_CODES = ("ok", "partial", "unavailable", "cancelled", "timed_out")
+103:    # fragment or a tracking parameter was stripped.
+165:# Deterministic canned corpus for StubProvider. Offline, no credentials.
+203:    No network, no credentials, no clock: the same query always yields the same
+240:                continue
+397:                continue
+525:    unprefixed mixed-case alphanumerics (or any 40+ hex run) as credentials,
+601:            continue
+604:            continue
+607:            continue
+622:    and it produces ``status: "unavailable"`` with a fallback hint.
+645:        "provider broken" (``unavailable``) from "provider worked, nothing
+655:            return self._failure("unavailable", "INVALID_QUERY", "query must be a non-empty string")
+662:                "unavailable",
+671:                "unavailable",
+707:                "timed_out" if exc.code == "SEARCH_TIMEOUT" else "unavailable",
+719:                "unavailable",
+728:                "unavailable",
+759:                "unavailable",
+782:        if status == "unavailable":
+799:        When NO lane completed, the answer is ``unavailable``: a lane outage is
+814:            return "unavailable", f"no research lane completed ({names})"
+974:        # 4. NullProvider -> unavailable, never an empty success
+978:            r.get("status") == "unavailable"
+982:        record("NullProvider -> status unavailable (not a fake empty success)", ok,
+988:            r.get("status") == "unavailable"
+992:        record("no provider -> unavailable with fallback hint", ok,
+995:        # 5. a provider that raises -> unavailable with the error preserved
+
+--- THE DSH SIDE: the same discipline in the SHIPPED build ---
+
+1. FAILED PROVIDER IS UNAVAILABLE, NEVER 'NO RESULTS'
+203:            'SEARCH_PROVIDER_ERROR',
+210:        // Zero hits from a WORKING provider is a legitimate, honest answer.
+221:          'SEARCH_PROVIDER_UNAVAILABLE',
+
+2. available() IS PRESENCE-ONLY, NO NETWORK
+172:    available(): boolean {
+173-      return credentials.isConfigured(config.apiKeyEnv)
+174-    },
+175-
+
+3. CANONICALIZATION: strips fragment + tracking, refuses embedded credentials and non-http(s)
+ * Strips the fragment and the known tracking parameters, and refuses embedded
+ * credentials and non-http(s) schemes. Nothing else is normalized: no
+ * lowercasing, no trailing-slash folding. Over-normalizing merges distinct
+ * pages, which loses evidence rather than consolidating it.
+ *
+ * @param value - the raw URL from the provider.
+ * @returns the canonical form, or undefined when the URL is unusable.
+ */
+export function canonicalSourceUrl(value: string): string | undefined {
+  let url: URL
+  try {
+    url = new URL(value)
+  } catch {
+    return undefined
+  }
+  if (url.protocol !== 'http:' && url.protocol !== 'https:') return undefined
+  if (url.username !== '' || url.password !== '') return undefined
+  url.hash = ''
+  for (const param of TRACKING_PARAMS) url.searchParams.delete(param)
+  return url.toString()
+}
+
+/** One raw hit as the provider returned it, before any interpretation. */
+interface RawHit {
+  readonly url?: unknown
+  readonly title?: unknown
+  readonly snippet?: unknown
+  readonly publishedAt?: unknown
+}
+
+function asString(value: unknown): string | undefined {
+  return typeof value === 'string' && value.length > 0 ? value : undefined
+}
+
+/**
+
+4. ROWS WITH NO USABLE URL ARE DROPPED
+ * Map a provider payload into sources, dropping unusable rows.
+ *
+ * A row with no usable URL is dropped rather than emitted with an empty URL: a
+ * source with no address is not a citation, and emitting it would let the model
+ * cite nothing while appearing to cite something.
+ */
+export function mapHits(hits: readonly RawHit[], maxResults: number): WebSearchSource[] {
+  const seen = new Set<string>()
+  const sources: WebSearchSource[] = []
+  for (const hit of hits) {
+    const raw = asString(hit.url)
+    if (raw === undefined) continue
+    const canonical = canonicalSourceUrl(raw)
+    if (canonical === undefined) continue
+    if (seen.has(canonical)) continue
+    seen.add(canonical)
+    const title = asString(hit.title)
+    const snippet = asString(hit.snippet)
+    const publishedAt = asString(hit.publishedAt)
+    sources.push({
+      url: canonical,
+      ...(title === undefined ? {} : { title }),
+      ...(snippet === undefined ? {} : { snippet }),
+      ...(publishedAt === undefined ? {} : { publishedAt }),
+    })

@@ -1,0 +1,17 @@
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.8 [39m[90mD:/DSH/work/dsh-native-daily/packages/dsh-ipython[39m
+
+[90mstdout[2m | src/v3-restart-experiment.test.ts[2m > [22m[2mrestart: the single variable is an intervening status()[2m > [22m[2mWITH an intervening status() between the cell and the restart
+[22m[39m[V3-EXP4] {"label":"with-status","withInterveningStatus":true,"ok":true,"elapsedMs":1823,"pidBefore":31804,"statusEpochBeforeRestart":1,"epochAfter":2,"error":null}
+
+ [32m✓[39m src/v3-restart-experiment.test.ts[2m > [22mrestart: the single variable is an intervening status()[2m > [22mWITH an intervening status() between the cell and the restart[33m 5217[2mms[22m[39m
+[90mstdout[2m | src/v3-restart-experiment.test.ts[2m > [22m[2mrestart: the single variable is an intervening status()[2m > [22m[2mWITHOUT an intervening status() between the cell and the restart
+[22m[39m[V3-EXP4] {"label":"without-status","withInterveningStatus":false,"ok":true,"elapsedMs":11852,"pidBefore":29972,"statusEpochBeforeRestart":null,"epochAfter":2,"error":null}
+
+ [32m✓[39m src/v3-restart-experiment.test.ts[2m > [22mrestart: the single variable is an intervening status()[2m > [22mWITHOUT an intervening status() between the cell and the restart[33m 15062[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[32m2 passed[39m[22m[90m (2)[39m
+[2m   Start at [22m 07:59:59
+[2m   Duration [22m 20.65s[2m (transform 151ms, setup 0ms, import 195ms, tests 20.28s, environment 0ms)[22m
+

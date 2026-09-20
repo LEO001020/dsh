@@ -678,20 +678,28 @@ export async function apply(ctx) {
         // byte window and returns it -- its own source says the verification is
         // separate (`packages/dsh-daily-work/src/artifacts.ts:391`: "Verify the
         // whole object against its address. Explicit, so paging stays O(page)").
-        // So a tampered object IS returned as content, and the first version of this
-        // probe asserted the opposite in a CHECK LABEL while the measured value was
-        // right there. The label was a false claim; the measurement is the finding.
-        // `verify()` exists and DOES detect it -- but it has no production caller in
-        // this package, so nothing on the read path performs it. Both are measured.
+        // So a tampered object IS returned as content with NO error, and the first
+        // version of this probe asserted the opposite in a CHECK LABEL while the
+        // measured value said otherwise. The label was a false claim in the GREEN
+        // direction -- the failure mode this spec exists to catch. The measurement
+        // is the finding; the labels below now say what was measured.
         finding.fs06.sameUserCanClearTheBit = await attempt('clear read-only bit and write', async () => {
           const { chmodSync } = await import('node:fs')
           chmodSync(objectOnDisk, 0o600)
           writeFileSync(objectOnDisk, 'V7-FS06 TAMPERED store object\n', 'utf8')
           const nowTampered = readFileSync(objectOnDisk, 'utf8').includes('TAMPERED')
-          const storeRead = await data.store.openRange(put.value.artifact, { offset: 0, length: 64 })
-          const storeSaw = Buffer.from(storeRead).toString('utf8')
-          // The explicit verifier, which is the thing that CAN tell.
+          // (1) the READ path, with no error thrown.
+          let readThrew = null
+          let storeSaw = null
+          try {
+            storeSaw = Buffer.from(await data.store.openRange(put.value.artifact, { offset: 0, length: 64 })).toString('utf8')
+          } catch (error) {
+            readThrew = `${error.name}: ${error.message}`
+          }
+          // (2) the EXPLICIT verifier, which is the thing that CAN tell.
           const verifySays = await data.store.verify(put.value.artifact)
+          // (3) stat, whose reported sha256 is derived from the reference NAME
+          // rather than recomputed, so it cannot detect this either.
           const statSays = await data.store.stat(put.value.artifact)
           // Restore the object so the store is left as it was found.
           writeFileSync(objectOnDisk, payload, 'utf8')
@@ -699,13 +707,21 @@ export async function apply(ctx) {
           return {
             theBitCouldBeCleared: true,
             theObjectCouldBeOverwritten: nowTampered,
-            whatTheStoreReturnedWhileTampered: storeSaw.slice(0, 64),
-            // MEASURED: the read path returned the TAMPERED bytes. This is FALSE,
-            // and saying so is the point -- `openRange` does not verify.
-            theReadPathDetectedTheTampering: !storeSaw.startsWith('V7-FS06 store-owned artifact payload'),
+            // MEASURED: no error, and the bytes returned are the TAMPERED ones. So
+            // the read path did NOT detect -- stated in the affirmative direction.
+            readPathThrewAnError: readThrew !== null,
+            whatTheReadPathReturned: storeSaw,
+            readPathReturnedTamperedBytes: storeSaw !== null
+              && storeSaw.includes('TAMPERED'),
+            readPathDetectedTheTampering: readThrew !== null,
             // MEASURED: the explicit verifier DOES catch it.
             theExplicitVerifyDetectedTheTampering: verifySays === false,
+            // MEASURED: stat reports the ORIGINAL digest beside the TAMPERED byte
+            // count, so its two fields disagree and neither is a verification.
             whatStatReportedWhileTampered: statSays ?? null,
+            statDigestMatchesItsOwnBytes: statSays !== null
+              && statSays !== undefined
+              && statSays.sha256 === createHash('sha256').update('V7-FS06 TAMPERED store object\n').digest('hex'),
             restored: readFileSync(objectOnDisk, 'utf8') === payload,
           }
         })
