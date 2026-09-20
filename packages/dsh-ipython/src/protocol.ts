@@ -206,6 +206,21 @@ export interface LateOutput {
   readonly text: string
 }
 
+/**
+ * The origin recorded for a write whose cell could NOT be established.
+ *
+ * IPY-13 requires that such a write be reported as undecidable rather than
+ * attributed to a cell, and "undecidable" has to be a value a caller can test
+ * for. This is that value: a write from a thread started in a cell carries that
+ * cell's id; a write with no discoverable cell origin carries THIS, which
+ * matches no cell's `msg_id` and is therefore never absorbed into a cell result.
+ *
+ * It is deliberately a named constant rather than `''` or a missing field: an
+ * empty string is indistinguishable from a frame that lost its parent, and the
+ * two are different facts.
+ */
+export const DSH_BACKGROUND_ORIGIN = 'dsh:background'
+
 /** The broker's report for one executed cell. */
 export interface CellResult {
   readonly outcome: CellOutcome
@@ -252,6 +267,17 @@ export interface KernelStatus {
    * correctness failure, which is why it is reported rather than assumed.
    */
   readonly kernelCwdEnforced?: boolean
+  /**
+   * Whether the kernel-side IPY-13 attribution bootstrap loaded.
+   *
+   * False means output written by a thread started in a cell is being stamped
+   * with whichever cell runs next, i.e. the defect is live. It is read back from
+   * a marker the bootstrap writes as its LAST action rather than assumed from
+   * the argv the broker passed: an `exec_files` that silently failed leaves no
+   * other symptom, and a silent return of the defect is exactly what this field
+   * exists to make visible.
+   */
+  readonly attributionBootstrapLoaded?: boolean
 }
 
 export interface BrokerError {

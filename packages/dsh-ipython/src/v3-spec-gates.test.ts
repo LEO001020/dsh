@@ -26,6 +26,9 @@
  *   IPY-11  cwd is the project root, recorded verbatim, relative path resolves
  *   IPY-12  TRUNCATED names the true total AND a spill path; cap recorded
  *   IPY-13  late output: post-return is late; during-a-later-cell is UNDECIDABLE
+ *           (this arm pinned the defect until round 2's broker.py bootstrap
+ *            fixed it; it now asserts the oracle. The fix's own gate, with the
+ *            thread+join control and the mutation record, is `s5-ipy13.test.ts`.)
  *   IPY-14  kernel death: NEW epoch + reason + LOST + nothing replayed
  *   IPY-15  transport authentication + an over-limit frame is LOST, not empty
  *
@@ -845,39 +848,48 @@ describe('IPY-13: late output is classified separately and never rides another c
   }, 300_000)
 
   // -------------------------------------------------------------------------
-  // CLAUSE 2 OF THE ORACLE, and it FAILS. THIS IS THE FINDING.
+  // CLAUSE 2 OF THE ORACLE. It FAILED when this gate was written, and this arm
+  // records BOTH the defect it pinned and the fix that replaced it.
   //
   //   "A write landing DURING a later cell is reported as undecidable rather
   //    than attributed. A claim that the originating cell's parent id is always
   //    preserved is NOT PASS, because it is false for a thread started with an
   //    empty context."
   //
-  // MEASURED, and the measurement is the opposite of what the oracle requires:
-  // the straddling write is SILENTLY ATTRIBUTED to the later cell. It is not
-  // reported as late (lateCount 0) and it is not flagged undecidable -- it is
-  // folded into cell three's stdout, where a model reading that result will
-  // attribute it to cell three's own code.
+  // MEASURED BEFORE THE FIX, and the measurement was the opposite of what the
+  // oracle requires: the straddling write was SILENTLY ATTRIBUTED to the later
+  // cell. It was not reported as late (lateCount 0) and it was not flagged
+  // undecidable -- it was folded into cell three's stdout, where a model reading
+  // that result would attribute it to cell three's own code. This arm used to
+  // assert `attributedToThird === true`, deliberately, so that a fix would have
+  // to update it rather than let the defect quietly disappear from the record.
   //
-  // WHY IT HAPPENS, and it is a platform fact rather than a broker bug:
-  // `ipykernel/iostream.py` resolves a stream's parent header from a
+  // WHY IT HAPPENED, and it is a platform fact rather than a broker bug:
+  // `ipykernel/iostream.py:596-608` resolves a stream's parent header from a
   // `contextvars.ContextVar`, falling back to a GLOBAL when the contextvar is
-  // unset. `threading.Thread` starts with an EMPTY context (an asyncio Task would
-  // copy one), so a background writer never sees the contextvar and takes the
-  // global -- which holds whichever cell most recently set it. That is the LATER
-  // cell. So the kernel itself stamps the straddling write with the later cell's
-  // msg_id, and the broker's router sees `parent == sink.msg_id` with the cell
-  // not yet idle, which is indistinguishable from the cell's own output.
+  // unset, and the setter (`:605-608`) overwrites that global on every request.
+  // `threading.Thread` starts with an EMPTY context (an asyncio Task would copy
+  // one), so a background writer never sees the contextvar and takes the global
+  // -- which holds whichever cell most recently set it. That is the LATER cell.
+  // So the kernel itself stamped the straddling write with the later cell's
+  // msg_id, and the broker's router saw `parent == sink.msg_id` with the cell
+  // not yet idle, indistinguishable from the cell's own output. The broker was
+  // behaving correctly on the information it had; the loss was upstream of it.
   //
-  // The broker's router is therefore behaving correctly on the information it
-  // has; the loss is upstream of it. Distinguishing the two cases would need a
-  // signal the transport does not carry.
+  // THE FIX is the kernel-side attribution bootstrap in `broker.py` (see the
+  // block above `DSH_BACKGROUND_ORIGIN` there), injected through the public
+  // `KernelManager.start_kernel(extra_arguments=)` ->
+  // `--IPKernelApp.exec_files=` path. It carries the cell's parent header into
+  // threads the cell starts, and stamps a write with NO discoverable origin
+  // with a sentinel. The broker's router is UNCHANGED: the sentinel matches no
+  // cell, so such a frame already becomes a `late_output` event.
   //
-  // THIS TEST PINS THE DEFECT RATHER THAN PASSING OVER IT. It asserts the
-  // measured behaviour, so a fix fails here and has to update this gate and the
-  // spec case together, instead of the defect quietly disappearing from the
-  // record. The case is filed FAIL in the spec.
+  // The oracle's warning is honoured, not dodged: preservation of the
+  // originating cell's parent id is NOT claimed in general. It holds for a
+  // thread the cell started, and it is reported UNDECIDABLE where it does not
+  // hold (`_thread.start_new_thread`, measured in `s5-ipy13.test.ts`).
   // -------------------------------------------------------------------------
-  it('CLAUSE 2 FAILS (pinned defect): a write DURING a later cell is ATTRIBUTED, not undecidable', async () => {
+  it('CLAUSE 2: a write DURING a later cell is undecidable, not attributed', async () => {
     const h = makeHost()
     await h.start()
 
@@ -905,6 +917,7 @@ describe('IPY-13: late output is classified separately and never rides another c
     ].join('\n'))
     expect(third.outcome).toBe('ok')
 
+    await sleep(400)
     const late = h.drainLateOutput()
     const lateText = late.map(entry => entry.text).join('')
     const attributedToThird = third.stdout.text.includes('IPY13-DURING-LATER-CELL')
@@ -915,15 +928,17 @@ describe('IPY-13: late output is classified separately and never rides another c
       measuredLateCount: late.length,
       measuredLateText: lateText.trim(),
       thirdCellStdout: third.stdout.text.trim(),
-      mechanism: 'ipykernel iostream resolves the parent from a contextvar; a threading.Thread has an empty context and falls back to the global, which holds the later cell id',
+      mechanism: 'ipykernel iostream resolves the parent from a contextvar with a process-wide global fallback; a threading.Thread has an empty context, so the kernel stamps the LATER cell id. The broker-side bootstrap now carries the originating cell header into cell-started threads and sentinels the rest.',
       verdict: attributedToThird ? 'CLAUSE_NOT_MET' : 'clause_met',
     }))
 
-    // THE DEFECT, PINNED. The write is attributed to the later cell and is NOT
-    // reported as late or undecidable.
-    expect(attributedToThird).toBe(true)
-    expect(lateText).not.toContain('IPY13-DURING-LATER-CELL')
-    expect(late).toHaveLength(0)
+    // THE ORACLE, now met: undecidable rather than attributed.
+    expect(attributedToThird).toBe(false)
+    expect(lateText).toContain('IPY13-DURING-LATER-CELL')
+    // And the later cell's OWN output is intact -- the fix must not buy
+    // correctness by dropping the cell's frames along with the foreign one.
+    expect(third.stdout.text).toContain('cell-three-settled')
+    for (let i = 0; i < 4; i++) expect(third.stdout.text).toContain(`tick ${i}`)
 
     await h.shutdown()
     host = undefined

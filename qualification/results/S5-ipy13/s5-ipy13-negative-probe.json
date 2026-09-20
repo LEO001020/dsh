@@ -1,0 +1,14 @@
+{
+ "work_dir": "C:\\Users\\hzq00\\AppData\\Local\\Temp\\s5-ipy13-neg-mlgcvn3t",
+ "bootstrap_generated_but_not_injected": "C:\\Users\\hzq00\\AppData\\Local\\Temp\\s5-ipy13-neg-mlgcvn3t\\does-not-exist\\dsh_attribution_bootstrap.py",
+ "marker_path": "C:\\Users\\hzq00\\AppData\\Local\\Temp\\s5-ipy13-neg-mlgcvn3t\\dsh_attribution_bootstrap.loaded",
+ "marker_exists_before_kernel": false,
+ "attributionBootstrapLoaded": false,
+ "cellA_own_text": "neg-cellA-settled\n",
+ "cellB_own_text": "neg-tick 0\nneg-tick 1\nneg-tick 2\nNEG-STRADDLER-WRITE\nneg-tick 3\nneg-tick 4\nneg-cellB-settled\n",
+ "cellB_foreign_parents": [],
+ "defect_returned_straddler_rides_cellB": true,
+ "kernel_err_mentions_the_missing_file": true,
+ "kernel_err_excerpt": "[IPKernelApp] WARNING | File not found: 'C:\\\\Users\\\\hzq00\\\\AppData\\\\Local\\\\Temp\\\\s5-ipy13-neg-mlgcvn3t\\\\does-not-exist\\\\dsh_attribution_bootstrap.py'\n",
+ "kernel_alive": true
+}

@@ -1,0 +1,535 @@
+{
+ "work_dir": "C:\\Users\\hzq00\\AppData\\Local\\Temp\\s5-ipy13-boot-cuhyb7nx",
+ "design": {},
+ "p0_stream_type": {
+  "msg_id": "42edd8fc-6d9a1b4b0dfd15383d69006d_40848_2",
+  "frames": [
+   {
+    "parent": "42edd8fc-6d9a1b4b0dfd15383d69006d_40848_2",
+    "own": true,
+    "msg_type": "status"
+   },
+   {
+    "parent": "42edd8fc-6d9a1b4b0dfd15383d69006d_40848_2",
+    "own": true,
+    "msg_type": "execute_input"
+   },
+   {
+    "parent": "42edd8fc-6d9a1b4b0dfd15383d69006d_40848_2",
+    "own": true,
+    "msg_type": "stream",
+    "text": "P0_TYPE ipykernel.iostream.OutStream has_set_parent True has_parent_header True\n",
+    "stream": "stdout"
+   },
+   {
+    "parent": "42edd8fc-6d9a1b4b0dfd15383d69006d_40848_2",
+    "own": true,
+    "msg_type": "status"
+   }
+  ]
+ },
+ "p1_thread_context": {
+  "msg_id": "42edd8fc-6d9a1b4b0dfd15383d69006d_40848_3",
+  "frames": [
+   {
+    "parent": "42edd8fc-6d9a1b4b0dfd15383d69006d_40848_3",
+    "own": true,
+    "msg_type": "status"
+   },
+   {
+    "parent": "42edd8fc-6d9a1b4b0dfd15383d69006d_40848_3",
+    "own": true,
+    "msg_type": "execute_input"
+   },
+   {
+    "parent": "42edd8fc-6d9a1b4b0dfd15383d69006d_40848_3",
+    "own": true,
+    "msg_type": "stream",
+    "text": "P1_THREAD_SEES C1\n",
+    "stream": "stdout"
+   },
+   {
+    "parent": "42edd8fc-6d9a1b4b0dfd15383d69006d_40848_3",
+    "own": true,
+    "msg_type": "status"
+   }
+  ]
+ },
+ "p2_join_design2": {
+  "msg_id": "42edd8fc-6d9a1b4b0dfd15383d69006d_40848_4",
+  "frames": [
+   {
+    "parent": "42edd8fc-6d9a1b4b0dfd15383d69006d_40848_4",
+    "own": true,
+    "msg_type": "status"
+   },
+   {
+    "parent": "42edd8fc-6d9a1b4b0dfd15383d69006d_40848_4",
+    "own": true,
+    "msg_type": "execute_input"
+   },
+   {
+    "parent": "42edd8fc-6d9a1b4b0dfd15383d69006d_40848_4",
+    "own": true,
+    "msg_type": "stream",
+    "text": "P2-WORKER-OUTPUT\nP2-cell-settled\n",
+    "stream": "stdout"
+   },
+   {
+    "parent": "42edd8fc-6d9a1b4b0dfd15383d69006d_40848_4",
+    "own": true,
+    "msg_type": "status"
+   }
+  ]
+ },
+ "p2_join_design1": {
+  "msg_id": "42edd8fc-6d9a1b4b0dfd15383d69006d_40848_5",
+  "frames": [
+   {
+    "parent": "42edd8fc-6d9a1b4b0dfd15383d69006d_40848_5",
+    "own": true,
+    "msg_type": "status"
+   },
+   {
+    "parent": "42edd8fc-6d9a1b4b0dfd15383d69006d_40848_5",
+    "own": true,
+    "msg_type": "execute_input"
+   },
+   {
+    "parent": "dsh:background",
+    "own": false,
+    "msg_type": "stream",
+    "text": "P2B-WORKER-OUTPUT\n",
+    "stream": "stdout"
+   },
+   {
+    "parent": "42edd8fc-6d9a1b4b0dfd15383d69006d_40848_5",
+    "own": true,
+    "msg_type": "stream",
+    "text": "P2B-cell-settled\n",
+    "stream": "stdout"
+   },
+   {
+    "parent": "42edd8fc-6d9a1b4b0dfd15383d69006d_40848_5",
+    "own": true,
+    "msg_type": "status"
+   }
+  ]
+ },
+ "p3_raw_thread": {
+  "msg_id": "42edd8fc-6d9a1b4b0dfd15383d69006d_40848_6",
+  "frames": [
+   {
+    "parent": "42edd8fc-6d9a1b4b0dfd15383d69006d_40848_6",
+    "own": true,
+    "msg_type": "status"
+   },
+   {
+    "parent": "42edd8fc-6d9a1b4b0dfd15383d69006d_40848_6",
+    "own": true,
+    "msg_type": "execute_input"
+   },
+   {
+    "parent": "dsh:background",
+    "own": false,
+    "msg_type": "stream",
+    "text": "P3-RAW-THREAD-WRITE\n",
+    "stream": "stdout"
+   },
+   {
+    "parent": "42edd8fc-6d9a1b4b0dfd15383d69006d_40848_6",
+    "own": true,
+    "msg_type": "stream",
+    "text": "P3-cell-settled\n",
+    "stream": "stdout"
+   },
+   {
+    "parent": "42edd8fc-6d9a1b4b0dfd15383d69006d_40848_6",
+    "own": true,
+    "msg_type": "status"
+   }
+  ]
+ },
+ "p4_start": {
+  "msg_id": "42edd8fc-6d9a1b4b0dfd15383d69006d_40848_7",
+  "frames": [
+   {
+    "parent": "42edd8fc-6d9a1b4b0dfd15383d69006d_40848_7",
+    "own": true,
+    "msg_type": "status"
+   },
+   {
+    "parent": "42edd8fc-6d9a1b4b0dfd15383d69006d_40848_7",
+    "own": true,
+    "msg_type": "execute_input"
+   },
+   {
+    "parent": "42edd8fc-6d9a1b4b0dfd15383d69006d_40848_7",
+    "own": true,
+    "msg_type": "stream",
+    "text": "P4-cellA-settled\n",
+    "stream": "stdout"
+   },
+   {
+    "parent": "42edd8fc-6d9a1b4b0dfd15383d69006d_40848_7",
+    "own": true,
+    "msg_type": "status"
+   }
+  ]
+ },
+ "p4_later": {
+  "msg_id": "42edd8fc-6d9a1b4b0dfd15383d69006d_40848_8",
+  "frames": [
+   {
+    "parent": "42edd8fc-6d9a1b4b0dfd15383d69006d_40848_8",
+    "own": true,
+    "msg_type": "status"
+   },
+   {
+    "parent": "42edd8fc-6d9a1b4b0dfd15383d69006d_40848_8",
+    "own": true,
+    "msg_type": "execute_input"
+   },
+   {
+    "parent": "42edd8fc-6d9a1b4b0dfd15383d69006d_40848_8",
+    "own": true,
+    "msg_type": "stream",
+    "text": "p4-tick 0\n",
+    "stream": "stdout"
+   },
+   {
+    "parent": "42edd8fc-6d9a1b4b0dfd15383d69006d_40848_8",
+    "own": true,
+    "msg_type": "stream",
+    "text": "p4-tick 1\n",
+    "stream": "stdout"
+   },
+   {
+    "parent": "42edd8fc-6d9a1b4b0dfd15383d69006d_40848_8",
+    "own": true,
+    "msg_type": "stream",
+    "text": "p4-tick 2\n",
+    "stream": "stdout"
+   },
+   {
+    "parent": "dsh:background",
+    "own": false,
+    "msg_type": "stream",
+    "text": "P4-STRADDLER-WRITE",
+    "stream": "stdout"
+   },
+   {
+    "parent": "dsh:background",
+    "own": false,
+    "msg_type": "stream",
+    "text": "\n",
+    "stream": "stdout"
+   },
+   {
+    "parent": "42edd8fc-6d9a1b4b0dfd15383d69006d_40848_8",
+    "own": true,
+    "msg_type": "stream",
+    "text": "p4-tick 3\n",
+    "stream": "stdout"
+   },
+   {
+    "parent": "42edd8fc-6d9a1b4b0dfd15383d69006d_40848_8",
+    "own": true,
+    "msg_type": "stream",
+    "text": "P4-cellB-settled\n",
+    "stream": "stdout"
+   },
+   {
+    "parent": "42edd8fc-6d9a1b4b0dfd15383d69006d_40848_8",
+    "own": true,
+    "msg_type": "status"
+   }
+  ]
+ },
+ "p5_start": {
+  "msg_id": "42edd8fc-6d9a1b4b0dfd15383d69006d_40848_9",
+  "frames": [
+   {
+    "parent": "42edd8fc-6d9a1b4b0dfd15383d69006d_40848_9",
+    "own": true,
+    "msg_type": "status"
+   },
+   {
+    "parent": "42edd8fc-6d9a1b4b0dfd15383d69006d_40848_9",
+    "own": true,
+    "msg_type": "execute_input"
+   },
+   {
+    "parent": "42edd8fc-6d9a1b4b0dfd15383d69006d_40848_9",
+    "own": true,
+    "msg_type": "stream",
+    "text": "P5-cellA-settled\n",
+    "stream": "stdout"
+   },
+   {
+    "parent": "42edd8fc-6d9a1b4b0dfd15383d69006d_40848_9",
+    "own": true,
+    "msg_type": "status"
+   }
+  ]
+ },
+ "p5_later": {
+  "msg_id": "42edd8fc-6d9a1b4b0dfd15383d69006d_40848_10",
+  "frames": [
+   {
+    "parent": "42edd8fc-6d9a1b4b0dfd15383d69006d_40848_10",
+    "own": true,
+    "msg_type": "status"
+   },
+   {
+    "parent": "42edd8fc-6d9a1b4b0dfd15383d69006d_40848_10",
+    "own": true,
+    "msg_type": "execute_input"
+   },
+   {
+    "parent": "42edd8fc-6d9a1b4b0dfd15383d69006d_40848_10",
+    "own": true,
+    "msg_type": "stream",
+    "text": "p5-tick 0\n",
+    "stream": "stdout"
+   },
+   {
+    "parent": "42edd8fc-6d9a1b4b0dfd15383d69006d_40848_10",
+    "own": true,
+    "msg_type": "stream",
+    "text": "p5-tick 1\n",
+    "stream": "stdout"
+   },
+   {
+    "parent": "42edd8fc-6d9a1b4b0dfd15383d69006d_40848_10",
+    "own": true,
+    "msg_type": "stream",
+    "text": "p5-tick 2\n",
+    "stream": "stdout"
+   },
+   {
+    "parent": "dsh:background",
+    "own": false,
+    "msg_type": "stream",
+    "text": "P5-STRADDLER-WRITE\n",
+    "stream": "stdout"
+   },
+   {
+    "parent": "42edd8fc-6d9a1b4b0dfd15383d69006d_40848_10",
+    "own": true,
+    "msg_type": "stream",
+    "text": "p5-tick 3\n",
+    "stream": "stdout"
+   },
+   {
+    "parent": "42edd8fc-6d9a1b4b0dfd15383d69006d_40848_10",
+    "own": true,
+    "msg_type": "stream",
+    "text": "P5-cellB-settled\n",
+    "stream": "stdout"
+   },
+   {
+    "parent": "42edd8fc-6d9a1b4b0dfd15383d69006d_40848_10",
+    "own": true,
+    "msg_type": "status"
+   }
+  ]
+ },
+ "p6_error": {
+  "msg_id": "42edd8fc-6d9a1b4b0dfd15383d69006d_40848_11",
+  "frames": [
+   {
+    "parent": "42edd8fc-6d9a1b4b0dfd15383d69006d_40848_11",
+    "own": true,
+    "msg_type": "status"
+   },
+   {
+    "parent": "42edd8fc-6d9a1b4b0dfd15383d69006d_40848_11",
+    "own": true,
+    "msg_type": "execute_input"
+   },
+   {
+    "parent": "42edd8fc-6d9a1b4b0dfd15383d69006d_40848_11",
+    "own": true,
+    "msg_type": "error",
+    "ename": "ValueError"
+   },
+   {
+    "parent": "42edd8fc-6d9a1b4b0dfd15383d69006d_40848_11",
+    "own": true,
+    "msg_type": "status"
+   }
+  ]
+ },
+ "p6_after_error": {
+  "msg_id": "42edd8fc-6d9a1b4b0dfd15383d69006d_40848_12",
+  "frames": [
+   {
+    "parent": "42edd8fc-6d9a1b4b0dfd15383d69006d_40848_12",
+    "own": true,
+    "msg_type": "status"
+   },
+   {
+    "parent": "42edd8fc-6d9a1b4b0dfd15383d69006d_40848_12",
+    "own": true,
+    "msg_type": "execute_input"
+   },
+   {
+    "parent": "42edd8fc-6d9a1b4b0dfd15383d69006d_40848_12",
+    "own": true,
+    "msg_type": "stream",
+    "text": "P6_AFTER_ERROR_CELLVAR None\n",
+    "stream": "stdout"
+   },
+   {
+    "parent": "42edd8fc-6d9a1b4b0dfd15383d69006d_40848_12",
+    "own": true,
+    "msg_type": "status"
+   }
+  ]
+ },
+ "p7_raw_fd": {
+  "msg_id": "42edd8fc-6d9a1b4b0dfd15383d69006d_40848_13",
+  "frames": [
+   {
+    "parent": "42edd8fc-6d9a1b4b0dfd15383d69006d_40848_13",
+    "own": true,
+    "msg_type": "status"
+   },
+   {
+    "parent": "42edd8fc-6d9a1b4b0dfd15383d69006d_40848_13",
+    "own": true,
+    "msg_type": "execute_input"
+   },
+   {
+    "parent": "42edd8fc-6d9a1b4b0dfd15383d69006d_40848_13",
+    "own": true,
+    "msg_type": "stream",
+    "text": "P7-cell-settled\n",
+    "stream": "stdout"
+   },
+   {
+    "parent": "42edd8fc-6d9a1b4b0dfd15383d69006d_40848_13",
+    "own": true,
+    "msg_type": "status"
+   }
+  ]
+ },
+ "p8_display": {
+  "msg_id": "42edd8fc-6d9a1b4b0dfd15383d69006d_40848_14",
+  "frames": [
+   {
+    "parent": "42edd8fc-6d9a1b4b0dfd15383d69006d_40848_14",
+    "own": true,
+    "msg_type": "status"
+   },
+   {
+    "parent": "42edd8fc-6d9a1b4b0dfd15383d69006d_40848_14",
+    "own": true,
+    "msg_type": "execute_input"
+   },
+   {
+    "parent": "42edd8fc-6d9a1b4b0dfd15383d69006d_40848_14",
+    "own": true,
+    "msg_type": "stream",
+    "text": "P8-cellA-settled\n",
+    "stream": "stdout"
+   },
+   {
+    "parent": "42edd8fc-6d9a1b4b0dfd15383d69006d_40848_14",
+    "own": true,
+    "msg_type": "status"
+   }
+  ]
+ },
+ "p8_later": {
+  "msg_id": "42edd8fc-6d9a1b4b0dfd15383d69006d_40848_15",
+  "frames": [
+   {
+    "parent": "42edd8fc-6d9a1b4b0dfd15383d69006d_40848_15",
+    "own": true,
+    "msg_type": "status"
+   },
+   {
+    "parent": "42edd8fc-6d9a1b4b0dfd15383d69006d_40848_15",
+    "own": true,
+    "msg_type": "execute_input"
+   },
+   {
+    "parent": "42edd8fc-6d9a1b4b0dfd15383d69006d_40848_15",
+    "own": true,
+    "msg_type": "stream",
+    "text": "p8-tick 0\n",
+    "stream": "stdout"
+   },
+   {
+    "parent": "42edd8fc-6d9a1b4b0dfd15383d69006d_40848_15",
+    "own": true,
+    "msg_type": "stream",
+    "text": "p8-tick 1\n",
+    "stream": "stdout"
+   },
+   {
+    "parent": "42edd8fc-6d9a1b4b0dfd15383d69006d_40848_15",
+    "own": true,
+    "msg_type": "stream",
+    "text": "p8-tick 2\n",
+    "stream": "stdout"
+   },
+   {
+    "parent": "42edd8fc-6d9a1b4b0dfd15383d69006d_40848_15",
+    "own": true,
+    "msg_type": "display_data",
+    "text": "{'text/plain': 'P8-BG-DISPLAY'}"
+   },
+   {
+    "parent": "42edd8fc-6d9a1b4b0dfd15383d69006d_40848_15",
+    "own": true,
+    "msg_type": "stream",
+    "text": "p8-tick 3\n",
+    "stream": "stdout"
+   },
+   {
+    "parent": "42edd8fc-6d9a1b4b0dfd15383d69006d_40848_15",
+    "own": true,
+    "msg_type": "status"
+   }
+  ]
+ },
+ "p9_start": {
+  "msg_id": "42edd8fc-6d9a1b4b0dfd15383d69006d_40848_16",
+  "frames": [
+   {
+    "parent": "42edd8fc-6d9a1b4b0dfd15383d69006d_40848_16",
+    "own": true,
+    "msg_type": "status"
+   },
+   {
+    "parent": "42edd8fc-6d9a1b4b0dfd15383d69006d_40848_16",
+    "own": true,
+    "msg_type": "execute_input"
+   },
+   {
+    "parent": "42edd8fc-6d9a1b4b0dfd15383d69006d_40848_16",
+    "own": true,
+    "msg_type": "stream",
+    "text": "P9-cell-settled\n",
+    "stream": "stdout"
+   },
+   {
+    "parent": "42edd8fc-6d9a1b4b0dfd15383d69006d_40848_16",
+    "own": true,
+    "msg_type": "status"
+   }
+  ]
+ },
+ "p9_orphan_frames": [
+  {
+   "parent": "dsh:background",
+   "msg_type": "stream",
+   "text": "P9-POSTRETURN-WRITE\n",
+   "stream": "stdout"
+  }
+ ],
+ "kernel_alive": true
+}

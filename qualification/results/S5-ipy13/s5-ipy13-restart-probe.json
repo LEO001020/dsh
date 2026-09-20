@@ -1,0 +1,29 @@
+{
+ "work_dir": "C:\\Users\\hzq00\\AppData\\Local\\Temp\\s5-ipy13-restart-gt263s_r",
+ "marker_path": "C:\\Users\\hzq00\\AppData\\Local\\Temp\\s5-ipy13-restart-gt263s_r\\dsh_attribution_bootstrap.loaded",
+ "marker_after_first_start": true,
+ "before_restart": {
+  "cellB_own": "tick 0\ntick 1\ntick 2\ntick 3\nRESTART-BEFORE-cellB-settled\n",
+  "cellB_foreign": [
+   {
+    "parent": "5a0cdfae-6f7ebdc8deb9912252470415_35448_2",
+    "text": "RESTART-BEFORE-STRADDLER\n"
+   }
+  ],
+  "straddler_rides_cellB": false
+ },
+ "marker_after_restart": true,
+ "after_restart": {
+  "cellB_own": "tick 0\ntick 1\ntick 2\ntick 3\nRESTART-AFTER-cellB-settled\n",
+  "cellB_foreign": [
+   {
+    "parent": "5a0cdfae-6f7ebdc8deb9912252470415_35448_2",
+    "text": "RESTART-AFTER-STRADDLER\n"
+   }
+  ],
+  "straddler_rides_cellB": false
+ },
+ "marker_exists_after_deleting_it": false,
+ "stale_report_demonstrated": "the marker from the FIRST kernel is indistinguishable from a fresh load; a restart whose bootstrap failed would still test as loaded unless the marker is removed before the new kernel starts",
+ "kernel_alive": true
+}

@@ -1,0 +1,335 @@
+{
+ "work_dir": "C:\\Users\\hzq00\\AppData\\Local\\Temp\\s5-ipy13-probe-sy13nzf2",
+ "bootstrap_path": "C:\\Users\\hzq00\\AppData\\Local\\Temp\\s5-ipy13-probe-sy13nzf2\\dsh_bootstrap.py",
+ "start_kernel_accepted_extra_arguments": true,
+ "q1_bootstrap_ran": {
+  "msg_id": "a258de71-16ca65ea3980633f2ed5c8ef_42796_2",
+  "frames": [
+   {
+    "parent": "a258de71-16ca65ea3980633f2ed5c8ef_42796_2",
+    "own": true,
+    "msg_type": "status"
+   },
+   {
+    "parent": "a258de71-16ca65ea3980633f2ed5c8ef_42796_2",
+    "own": true,
+    "msg_type": "execute_input"
+   },
+   {
+    "parent": "dsh:background",
+    "own": false,
+    "msg_type": "stream",
+    "text": "probe-alive\n",
+    "stream": "stdout"
+   },
+   {
+    "parent": "a258de71-16ca65ea3980633f2ed5c8ef_42796_2",
+    "own": true,
+    "msg_type": "status"
+   }
+  ]
+ },
+ "q2_metadata": {
+  "msg_id": "a258de71-16ca65ea3980633f2ed5c8ef_42796_3",
+  "frames": [
+   {
+    "parent": "a258de71-16ca65ea3980633f2ed5c8ef_42796_3",
+    "own": true,
+    "msg_type": "status"
+   },
+   {
+    "parent": "a258de71-16ca65ea3980633f2ed5c8ef_42796_3",
+    "own": true,
+    "msg_type": "execute_input"
+   },
+   {
+    "parent": "a258de71-16ca65ea3980633f2ed5c8ef_42796_3",
+    "own": true,
+    "msg_type": "stream",
+    "text": "Q2_CTXVAR CELL-A\n",
+    "stream": "stdout"
+   },
+   {
+    "parent": "a258de71-16ca65ea3980633f2ed5c8ef_42796_3",
+    "own": true,
+    "msg_type": "status"
+   }
+  ]
+ },
+ "q2b_no_metadata": {
+  "msg_id": "a258de71-16ca65ea3980633f2ed5c8ef_42796_4",
+  "frames": [
+   {
+    "parent": "a258de71-16ca65ea3980633f2ed5c8ef_42796_4",
+    "own": true,
+    "msg_type": "status"
+   },
+   {
+    "parent": "a258de71-16ca65ea3980633f2ed5c8ef_42796_4",
+    "own": true,
+    "msg_type": "execute_input"
+   },
+   {
+    "parent": "dsh:background",
+    "own": false,
+    "msg_type": "stream",
+    "text": "Q2B_CTXVAR None\n",
+    "stream": "stdout"
+   },
+   {
+    "parent": "a258de71-16ca65ea3980633f2ed5c8ef_42796_4",
+    "own": true,
+    "msg_type": "status"
+   }
+  ]
+ },
+ "q3_start_thread": {
+  "msg_id": "a258de71-16ca65ea3980633f2ed5c8ef_42796_5",
+  "frames": [
+   {
+    "parent": "a258de71-16ca65ea3980633f2ed5c8ef_42796_5",
+    "own": true,
+    "msg_type": "status"
+   },
+   {
+    "parent": "a258de71-16ca65ea3980633f2ed5c8ef_42796_5",
+    "own": true,
+    "msg_type": "execute_input"
+   },
+   {
+    "parent": "a258de71-16ca65ea3980633f2ed5c8ef_42796_5",
+    "own": true,
+    "msg_type": "stream",
+    "text": "Q3-cellA-settled\n",
+    "stream": "stdout"
+   },
+   {
+    "parent": "a258de71-16ca65ea3980633f2ed5c8ef_42796_5",
+    "own": true,
+    "msg_type": "status"
+   }
+  ]
+ },
+ "q3_later_cell": {
+  "msg_id": "a258de71-16ca65ea3980633f2ed5c8ef_42796_6",
+  "frames": [
+   {
+    "parent": "a258de71-16ca65ea3980633f2ed5c8ef_42796_6",
+    "own": true,
+    "msg_type": "status"
+   },
+   {
+    "parent": "a258de71-16ca65ea3980633f2ed5c8ef_42796_6",
+    "own": true,
+    "msg_type": "execute_input"
+   },
+   {
+    "parent": "a258de71-16ca65ea3980633f2ed5c8ef_42796_6",
+    "own": true,
+    "msg_type": "stream",
+    "text": "q3-tick 0\n",
+    "stream": "stdout"
+   },
+   {
+    "parent": "a258de71-16ca65ea3980633f2ed5c8ef_42796_6",
+    "own": true,
+    "msg_type": "stream",
+    "text": "q3-tick 1\n",
+    "stream": "stdout"
+   },
+   {
+    "parent": "a258de71-16ca65ea3980633f2ed5c8ef_42796_6",
+    "own": true,
+    "msg_type": "stream",
+    "text": "q3-tick 2\n",
+    "stream": "stdout"
+   },
+   {
+    "parent": "dsh:background",
+    "own": false,
+    "msg_type": "stream",
+    "text": "Q3-STRADDLER-WRITE\n",
+    "stream": "stdout"
+   },
+   {
+    "parent": "a258de71-16ca65ea3980633f2ed5c8ef_42796_6",
+    "own": true,
+    "msg_type": "stream",
+    "text": "q3-tick 3\n",
+    "stream": "stdout"
+   },
+   {
+    "parent": "a258de71-16ca65ea3980633f2ed5c8ef_42796_6",
+    "own": true,
+    "msg_type": "stream",
+    "text": "Q3-cellB-settled\n",
+    "stream": "stdout"
+   },
+   {
+    "parent": "a258de71-16ca65ea3980633f2ed5c8ef_42796_6",
+    "own": true,
+    "msg_type": "status"
+   }
+  ]
+ },
+ "q3c_context_copy_thread": {
+  "msg_id": "a258de71-16ca65ea3980633f2ed5c8ef_42796_7",
+  "frames": [
+   {
+    "parent": "a258de71-16ca65ea3980633f2ed5c8ef_42796_7",
+    "own": true,
+    "msg_type": "status"
+   },
+   {
+    "parent": "a258de71-16ca65ea3980633f2ed5c8ef_42796_7",
+    "own": true,
+    "msg_type": "execute_input"
+   },
+   {
+    "parent": "a258de71-16ca65ea3980633f2ed5c8ef_42796_7",
+    "own": true,
+    "msg_type": "stream",
+    "text": "Q3C_COPY_CONTEXT CELL-C\n",
+    "stream": "stdout"
+   },
+   {
+    "parent": "a258de71-16ca65ea3980633f2ed5c8ef_42796_7",
+    "own": true,
+    "msg_type": "status"
+   }
+  ]
+ },
+ "q4_await": {
+  "msg_id": "a258de71-16ca65ea3980633f2ed5c8ef_42796_8",
+  "frames": [
+   {
+    "parent": "a258de71-16ca65ea3980633f2ed5c8ef_42796_8",
+    "own": true,
+    "msg_type": "status"
+   },
+   {
+    "parent": "a258de71-16ca65ea3980633f2ed5c8ef_42796_8",
+    "own": true,
+    "msg_type": "execute_input"
+   },
+   {
+    "parent": "dsh:background",
+    "own": false,
+    "msg_type": "stream",
+    "text": "AWAIT_OK\n",
+    "stream": "stdout"
+   },
+   {
+    "parent": "a258de71-16ca65ea3980633f2ed5c8ef_42796_8",
+    "own": true,
+    "msg_type": "status"
+   }
+  ]
+ },
+ "q4_magic": {
+  "msg_id": "a258de71-16ca65ea3980633f2ed5c8ef_42796_9",
+  "frames": [
+   {
+    "parent": "a258de71-16ca65ea3980633f2ed5c8ef_42796_9",
+    "own": true,
+    "msg_type": "status"
+   },
+   {
+    "parent": "a258de71-16ca65ea3980633f2ed5c8ef_42796_9",
+    "own": true,
+    "msg_type": "execute_input"
+   },
+   {
+    "parent": "dsh:background",
+    "own": false,
+    "msg_type": "stream",
+    "text": "asyncio\t copier\t i\t res\t straddler\t t\t threading\t time\t \nMAGIC_OK\n",
+    "stream": "stdout"
+   },
+   {
+    "parent": "a258de71-16ca65ea3980633f2ed5c8ef_42796_9",
+    "own": true,
+    "msg_type": "status"
+   }
+  ]
+ },
+ "q4_traceback": {
+  "msg_id": "a258de71-16ca65ea3980633f2ed5c8ef_42796_10",
+  "frames": [
+   {
+    "parent": "a258de71-16ca65ea3980633f2ed5c8ef_42796_10",
+    "own": true,
+    "msg_type": "status"
+   },
+   {
+    "parent": "a258de71-16ca65ea3980633f2ed5c8ef_42796_10",
+    "own": true,
+    "msg_type": "execute_input"
+   },
+   {
+    "parent": "a258de71-16ca65ea3980633f2ed5c8ef_42796_10",
+    "own": true,
+    "msg_type": "error",
+    "ename": "ValueError"
+   },
+   {
+    "parent": "a258de71-16ca65ea3980633f2ed5c8ef_42796_10",
+    "own": true,
+    "msg_type": "status"
+   }
+  ]
+ },
+ "q4_displayhook": {
+  "msg_id": "a258de71-16ca65ea3980633f2ed5c8ef_42796_11",
+  "frames": [
+   {
+    "parent": "a258de71-16ca65ea3980633f2ed5c8ef_42796_11",
+    "own": true,
+    "msg_type": "status"
+   },
+   {
+    "parent": "a258de71-16ca65ea3980633f2ed5c8ef_42796_11",
+    "own": true,
+    "msg_type": "execute_input"
+   },
+   {
+    "parent": "a258de71-16ca65ea3980633f2ed5c8ef_42796_11",
+    "own": true,
+    "msg_type": "execute_result",
+    "text": "2"
+   },
+   {
+    "parent": "a258de71-16ca65ea3980633f2ed5c8ef_42796_11",
+    "own": true,
+    "msg_type": "status"
+   }
+  ]
+ },
+ "q5_stderr": {
+  "msg_id": "a258de71-16ca65ea3980633f2ed5c8ef_42796_12",
+  "frames": [
+   {
+    "parent": "a258de71-16ca65ea3980633f2ed5c8ef_42796_12",
+    "own": true,
+    "msg_type": "status"
+   },
+   {
+    "parent": "a258de71-16ca65ea3980633f2ed5c8ef_42796_12",
+    "own": true,
+    "msg_type": "execute_input"
+   },
+   {
+    "parent": "a258de71-16ca65ea3980633f2ed5c8ef_42796_12",
+    "own": true,
+    "msg_type": "status"
+   }
+  ]
+ },
+ "q5_late_frame": {
+  "parent": "dsh:background",
+  "msg_type": "stream",
+  "text": "Q5-BG-STDERR\n",
+  "stream": "stderr"
+ },
+ "kernel_alive": true
+}

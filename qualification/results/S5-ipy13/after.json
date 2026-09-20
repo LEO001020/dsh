@@ -1,0 +1,29 @@
+{
+  "arm1_outcome": "ok",
+  "arm1_stdout": "arm1-settled\n",
+  "arm1_late": [
+    {
+      "cellId": "7cff4c9d-596e6d685ea9d8bb3004a31d_43540_3",
+      "text": "S5-BEFORE-POSTRETURN\n",
+      "epoch": 1
+    }
+  ],
+  "arm1_lateText": "S5-BEFORE-POSTRETURN\n",
+  "arm2_cellA_outcome": "ok",
+  "arm2_cellA_stdout": "arm2-cellA-settled\n",
+  "arm2_cellB_outcome": "ok",
+  "arm2_cellB_stdout": "arm2-tick 0\narm2-tick 1\narm2-tick 2\narm2-tick 3\narm2-tick 4\narm2-cellB-settled\n",
+  "arm2_cellB_contains_straddler": false,
+  "arm2_late": [
+    {
+      "cellId": "7cff4c9d-596e6d685ea9d8bb3004a31d_43540_4",
+      "text": "S5-BEFORE-STRADDLER\n",
+      "epoch": 1
+    }
+  ],
+  "arm2_lateText": "S5-BEFORE-STRADDLER\n",
+  "arm3_outcome": "ok",
+  "arm3_stdout": "S5-BEFORE-CONTROL\n",
+  "metadata_probe": "see qualification/results/S5-ipy13/mechanism-probe.json",
+  "verdict": "defect not reproduced by this arm"
+}
