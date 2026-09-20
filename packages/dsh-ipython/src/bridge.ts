@@ -1501,7 +1501,7 @@ class _Channel:
         return self._socket
 
     def _send(self, tool, arguments, waiter):
-        """Register `waiter` and put the request on the wire under ONE lock.
+        """Register \`waiter\` and put the request on the wire under ONE lock.
 
         WHY THE REGISTRATION LIVES IN HERE AND NOT IN THE CALLER. The reader
         thread matches a reply to a waiter by request id, and a reply it cannot
@@ -1516,8 +1516,8 @@ class _Channel:
         ONE ACQUISITION IS THE POINT. Registering and sending under the same lock
         is what makes the ordering atomic instead of hopeful: the reader cannot
         observe the request until after its waiter exists. This is the same rule
-        the broker's own shell channel already enforces -- `broker.py`'s
-        `ShellRouter.register` is documented "Call BEFORE sending the request",
+        the broker's own shell channel already enforces -- \`broker.py\`'s
+        \`ShellRouter.register\` is documented "Call BEFORE sending the request",
         and its reader counts a frame whose parent matches no waiter instead of
         delivering it. Applying it here is consistency with that router, not a
         new mechanism.
@@ -1565,7 +1565,7 @@ class _Channel:
 
     async def call_async(self, tool, arguments, timeout):
         loop = _asyncio.get_running_loop()
-        # Built HERE, before the send: `create_future` must run on the loop's own
+        # Built HERE, before the send: \`create_future\` must run on the loop's own
         # thread, and a future created after the send could be resolved by the
         # reader before it exists -- the same lost-reply window as the sync path.
         waiter = _AsyncWaiter(loop)
