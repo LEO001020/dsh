@@ -87,6 +87,89 @@ export const outboxEntrySchema = z.object({
 export type OutboxEntry = z.infer<typeof outboxEntrySchema>
 
 /**
+ * A DURABLE ASSIGNMENT THE MODEL ALREADY DECIDED, waiting for a free slot.
+ *
+ * WHY THIS IS NOT A TASK STATE (V5 §7.1 / WORK-READY). Before this record
+ * existed, `work submit` called `drain` immediately and a refusal wrote NOTHING
+ * (that property is deliberate and stays: see `tryReserveAdmission`). The
+ * consequence was that when the target was full, the semantic assignment the
+ * model had already decided was **lost** — it lived only in the tool-call
+ * argument — and the root had to re-derive it after every completion. A
+ * mechanical target turned into model polling, which is the defect V5 §7 names.
+ *
+ * WHY A SEPARATE TABLE IN THE SAME AGGREGATE, rather than a `ready` member of
+ * `ADMISSION_STATES`. V5 §7.1 permits either ("a task state `ready` or an
+ * equivalent durable assignment table inside the same run aggregate"). This is
+ * the second, for three measured reasons:
+ *
+ *   1. `holdsSlot` is INV-C1's single predicate over `ADMISSION_STATES`, and
+ *      `heldSlots` is the ONE occupancy derivation shared by the admission gate
+ *      and the deficit reader (see `counting.ts`). Adding a non-slot-holding
+ *      member to that vocabulary puts a value into the state machine whose only
+ *      correct behaviour is to be excluded everywhere — one forgotten exclusion
+ *      and a READY assignment consumes a child slot, which is exactly what
+ *      V5 §7.1 forbids.
+ *   2. `taskRecordSchema` requires `attempt >= 1` and a state from the admission
+ *      vocabulary. A ready assignment has no attempt: it has not been admitted,
+ *      so there is nothing to be the first attempt OF.
+ *   3. V5 §7.1's field list (submission sequence, source model-call
+ *      correlation) is intent metadata, not admission metadata. Putting it on
+ *      the admission record would widen the record every admission decision
+ *      reads.
+ *
+ * WHAT IT IS NOT. It is not a reservation. It holds no slot, commits no credit
+ * and appears in no occupancy count. A READY record that is never admitted is a
+ * deficit to report honestly, never a phantom child (V5 §7.6: "insufficient
+ * ready work produces honest deficit, no filler task").
+ */
+export const readyAssignmentSchema = z.object({
+  taskId: z.string().min(1),
+  /**
+   * The child identity RESERVED at submission time, not at launch time.
+   *
+   * Reserving it here is what makes the assignment recoverable: a crash between
+   * submission and admission leaves a record naming the exact child that a
+   * later admission must create, instead of minting a new identity and losing
+   * the correlation the reconciliation relation is keyed on.
+   */
+  childId: z.string().min(1),
+  /** The semantic goal, verbatim. This is the fact a refusal used to lose. */
+  prompt: z.string().min(1),
+  /**
+   * Digest of the assignment as submitted.
+   *
+   * `prompt` is the digest's preimage and is carried separately because the
+   * launch port needs the text; the digest is what the duplicate rule compares,
+   * so "identical" is a comparison that does not depend on the text's length.
+   */
+  assignmentDigest: z.string().min(1),
+  /** The estimate the model asked to spend. NOT committed until admission. */
+  reservedCost: z.number().min(0),
+  /** Capability classes the assignment may use: permission, not a role. */
+  allowedCapabilities: z.array(z.string()),
+  /**
+   * Monotone submission order within the run, 1-based.
+   *
+   * The drain takes the OLDEST ready assignment, and "oldest" must be a durable
+   * total order rather than insertion order of an object or a wall clock: two
+   * submissions inside one millisecond would otherwise be unordered, and an
+   * unordered drain is a starvation risk under sustained load.
+   */
+  sequence: z.number().int().min(1),
+  /** ISO-8601. */
+  createdAt: z.string(),
+  updatedAt: z.string(),
+  /**
+   * Which model call submitted this, when the caller named one.
+   *
+   * Optional because the human command plane and a recovery path have no model
+   * call to correlate; inventing one would fabricate provenance.
+   */
+  sourceCallId: z.string().optional(),
+})
+export type ReadyAssignment = z.infer<typeof readyAssignmentSchema>
+
+/**
  * Why new admissions stopped, and when.
  *
  * This is deliberately NOT a run phase. A budget halt leaves `phase: 'open'`
@@ -497,6 +580,19 @@ export const runRecordSchema = z.object({
   continuation: continuationHandoverSchema.optional(),
   budget: budgetSchema,
   tasks: z.record(z.string(), taskRecordSchema),
+  /**
+   * The durable READY assignments (V5 §7.1 / WORK-READY).
+   *
+   * Optional so that a record written before this table existed still validates
+   * on read: absent means "no pending intent", which is exactly what it meant.
+   * Same reasoning as `reservationGeneration` and the budget's `rootReserve`,
+   * and the same reason `WORK_SCHEMA_VERSION` does not move — the field is
+   * additive, and a reader that does not know it drops it rather than failing.
+   *
+   * KEYED BY taskId, so the duplicate rule (§7.2) is a lookup rather than a
+   * scan, and so two submissions of one taskId cannot both exist.
+   */
+  readyAssignments: z.record(z.string(), readyAssignmentSchema).optional(),
   outbox: z.record(z.string(), outboxEntrySchema),
   lastReconciledRefs: z.array(evidenceRefSchema),
   /** Closed task ids kept so a late result cannot resurrect them. */
@@ -534,6 +630,7 @@ export function initialRunRecord(input: {
     ...input.continuation === undefined ? {} : { continuation: input.continuation },
     budget: input.budget,
     tasks: {},
+    readyAssignments: {},
     outbox: {},
     lastReconciledRefs: [],
     terminalTombstones: [],

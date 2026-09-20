@@ -114,6 +114,16 @@ export function apply(ctx: Context): void {
             cancelled: { type: 'integer' },
             capacityDeficit: { type: 'integer' },
             deficitReason: { type: 'string' },
+            /**
+             * Whether the assignment is durably recorded (V5 §7.2).
+             *
+             * Separate from `accepted` on purpose, and the separation is the
+             * point of the slice: a submission at a full target is `ready: true,
+             * accepted: false`, and before this field existed that caller had no
+             * way to tell "your work is safe and will run when a slot frees"
+             * from "your work was discarded".
+             */
+            ready: { type: 'boolean' },
             accepted: { type: 'boolean' },
             reason: { type: 'string' },
             taskState: { type: 'string' },
@@ -159,19 +169,56 @@ export function apply(ctx: Context): void {
           if (taskId === undefined || taskId === '') throw new Error('submit requires a taskId')
           if (goal === undefined || goal === '') throw new Error('submit requires a goal')
           const childId = args.childId ?? `child-${taskId}`
-          const outcomes = await service.drain(
+          // ---- SUBMISSION IS DURABLE, AND ADMISSION IS A SEPARATE QUESTION ----
+          //
+          // This used to be `service.drain(runId, [one request], signal)` and
+          // nothing else. A refusal writes nothing (deliberately, so a refusal
+          // storm is free), so when the target was full the GOAL THE MODEL HAD
+          // JUST STATED was not persisted anywhere: it existed only in this
+          // argument, and the root had to re-derive it after every completion.
+          // That is V5 §7's defect — a mechanical target turned into model
+          // polling — and the durable ready table is the fix.
+          //
+          // The two halves are now explicit and reported separately, because
+          // "was my assignment recorded" and "is it running" are different
+          // questions and a single `accepted` boolean conflates them. A caller
+          // that sees `accepted: false, ready: true` knows the work is SAFE and
+          // will run when a slot frees; before this change that caller could only
+          // conclude it had lost the work.
+          const submitted = await service.submitReady({
             runId,
-            [{ taskId, childId, prompt: goal, reservedCost: 1 }],
-            exec.signal,
-          )
-          const outcome = outcomes[0]
+            taskId,
+            prompt: goal,
+            reservedCost: 1,
+            ...args.childId === undefined ? {} : { childId: args.childId },
+            // The tool call's own identity, so a later report can correlate the
+            // durable row with the model call that decided it (V5 §7.1). The
+            // session id is part of it because a taskId is only unique within a
+            // run, and two runs can be driven by one model loop.
+            sourceCallId: `${agent.session.header.id}:${taskId}`,
+          })
+          // The wake. `requestDrain` is a wake rather than a request, so it takes
+          // no work of its own; it looks at the durable table this call just
+          // wrote. Awaiting it means the tool's answer reflects the admission
+          // attempt that followed, which is what the caller is asking about.
+          await service.requestDrain(runId)
           const record = service.getRun(runId)
+          const task = record?.tasks[taskId]
           return {
             action: 'submit',
             runId,
-            accepted: outcome?.accepted ?? false,
-            ...(outcome?.reason === undefined ? {} : { reason: outcome.reason }),
-            ...(record?.tasks[taskId] === undefined ? {} : { taskState: record.tasks[taskId].state }),
+            // WHETHER THE ASSIGNMENT IS DURABLE. Always true on this path, and
+            // reported explicitly rather than inferred from `accepted`, because
+            // the whole point is that these differ.
+            ready: submitted.created || (record?.readyAssignments?.[taskId] !== undefined),
+            // WHETHER A CHILD WAS STARTED NOW. This is the old `accepted`.
+            accepted: task !== undefined && task.state !== 'prepared',
+            ...task === undefined ? {} : { taskState: task.state },
+            // The reason a run at its target did not start this now. `none` means
+            // the run is full, which is a healthy reading and not an error.
+            ...(task === undefined
+              ? { reason: service.counts(runId).deficitReason }
+              : {}),
           }
         }
 
