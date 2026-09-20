@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "kind": "TRUSTED_LOCAL_V2_EVIDENCE_MANIFEST_NOT_A_DSH_ARTIFACT",
-  "qualification_contract_identity": "4e2cad7878017fd2914fcf03048154914697fb9e01cbd57fed90f85246cc37c5",
+  "qualification_contract_identity": "082d7f630a450752b1fab921a09875426eb560faf6ba9fdb2963ee7e9a392cb2",
   "entries": [
     {
       "path": "qualification/results/trusted-local-v2-identity/probe.json",
