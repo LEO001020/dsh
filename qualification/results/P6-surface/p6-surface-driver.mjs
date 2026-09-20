@@ -50,8 +50,16 @@
  * instead of being reported as ours (G-FIX-13).
  *
  * Usage: node qualification/results/P6-surface/p6-surface-driver.mjs
+ *        node qualification/results/P6-surface/p6-surface-driver.mjs --build-only
+ *
+ * `--build-only` constructs both homes, prints their layout, and exits without
+ * booting. It exists because a boot costs minutes and CPU this machine shares
+ * with many writers, and a home that is subtly wrong fails as a COMPOSITION
+ * error rather than as a path error -- the same shape as the `EADDRINUSE` false
+ * positive. Checking the two homes before spending two boots is the cheap half
+ * of the measurement.
  */
-import { cpSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { cpSync, mkdirSync, readdirSync, readFileSync, realpathSync, rmSync, writeFileSync } from 'node:fs'
 import { createHash } from 'node:crypto'
 import { execFileSync } from 'node:child_process'
 import { dirname, join } from 'node:path'
@@ -158,11 +166,13 @@ function buildHome(home, presetSource, patchSource) {
   return profileDir
 }
 
-/** Boot one home and return `{ boot, probe, probeError }`. */
+/** Boot one home and return `{ boot, probe, probeError, artifactUsed }`. */
 async function bootHome({ label, home, outPath }) {
   const overlay = materialiseOverlay(
     OVERLAY_TEMPLATE, `${RESULT_DIR}/${label}.overlay.patch.yml`, PROBE,
   )
+  const partialPath = `${outPath}.partial`
+  rmSync(partialPath, { force: true })
   const before = digestArtifacts()
   const boot = await bootAndWait({
     home,
@@ -171,22 +181,38 @@ async function bootHome({ label, home, outPath }) {
     outPath,
     cwd: FOREIGN_CWD,
     // A creation call in the BEFORE boot reaches a provider with no model
-    // route; the harness kills the host either way, and the probe flushes its
-    // catalog BEFORE the bridge arm, so a slow arm cannot cost the deliverable.
-    timeoutMs: 180_000,
+    // route; the probe bounds each such call and writes the partial artifact
+    // after each one, so a slow arm costs the arm and not the catalog.
+    timeoutMs: 240_000,
+    env: { DSH_PROBE_PARTIAL_OUT: partialPath },
   })
   const after = digestArtifacts()
   let probe = null
   let probeError = null
+  let artifactUsed = null
   try {
     probe = readResult(outPath, home).json
+    artifactUsed = outPath
   } catch (error) {
     probeError = error instanceof Error ? error.message : String(error)
+    // THE PARTIAL FALLBACK. The main file is the harness's completion signal,
+    // so its absence means the probe did not finish -- and the partial file
+    // then holds everything up to the step that hung. A partial result is
+    // reported as PARTIAL by the driver rather than as a completed one; the
+    // catalog in it is still the measurement.
+    try {
+      probe = readResult(partialPath, home).json
+      artifactUsed = partialPath
+    } catch (partialError) {
+      probeError += `\n  partial: ${partialError instanceof Error ? partialError.message : String(partialError)}`
+    }
   }
   return {
     boot,
     probe,
     probeError,
+    artifactUsed,
+    partial: artifactUsed === partialPath,
     buildIdentity: {
       artifacts: after,
       changedDuringBoot: TRACKED_ARTIFACTS.filter(rel => before[rel] !== after[rel]),
@@ -236,6 +262,48 @@ const homes = {
 const OUT_BEFORE = `${RESULT_DIR}/catalog-before.json`
 const OUT_AFTER = `${RESULT_DIR}/catalog-after.json`
 
+// `--build-only`: construct both homes and stop, so the cheap half of the
+// measurement can be checked before the expensive half is paid for.
+if (process.argv.includes('--build-only')) {
+  const listing = dir => readdirSync(dir, { withFileTypes: true })
+    .map(entry => `${entry.isSymbolicLink() ? 'link ' : entry.isDirectory() ? 'dir  ' : 'file '}${entry.name}`)
+  const report = {
+    mode: 'build-only',
+    homes,
+    before: {
+      profile: listing(homes.before),
+      nodeModules: listing(`${homes.before}/node_modules`),
+      presets: listing(`${homes.before}/presets/daily-standard`),
+      // The junction targets, read back: a junction into the WRONG tree is the
+      // stale-artifact trap, and it fails silently.
+      junctions: Object.fromEntries(['dsh-daily-work', 'dsh-ipython'].map(pkg => [
+        pkg, realpathSync(`${homes.before}/node_modules/${pkg}`).replace(/\\/g, '/'),
+      ])),
+    },
+    after: {
+      profile: listing(homes.after),
+      nodeModules: listing(`${homes.after}/node_modules`),
+      presets: listing(`${homes.after}/presets/daily-standard`),
+      junctions: Object.fromEntries(['dsh-daily-work', 'dsh-ipython'].map(pkg => [
+        pkg, realpathSync(`${homes.after}/node_modules/${pkg}`).replace(/\\/g, '/'),
+      ])),
+    },
+    // THE DIFFERENCE THAT MUST BE THE ONLY ONE. The two homes exist to isolate
+    // the two commits; anything else that differs between them is a confound.
+    presetDiffers: readFileSync(`${homes.before}/presets/daily-standard/agent.cordis.yml`, 'utf8')
+      !== readFileSync(`${homes.after}/presets/daily-standard/agent.cordis.yml`, 'utf8'),
+    patchDiffers: readFileSync(`${homes.before}/cordis.patch.yml`, 'utf8')
+      !== readFileSync(`${homes.after}/cordis.patch.yml`, 'utf8'),
+    packageJsonSame: readFileSync(`${homes.before}/package.json`, 'utf8')
+      === readFileSync(`${homes.after}/package.json`, 'utf8'),
+    presetYmlSame: readFileSync(`${homes.before}/presets/daily-standard/preset.yml`, 'utf8')
+      === readFileSync(`${homes.after}/presets/daily-standard/preset.yml`, 'utf8'),
+  }
+  writeFileSync(`${RESULT_DIR}/homes.json`, JSON.stringify(report, null, 2))
+  process.stdout.write(`P6-SURFACE-BUILD-ONLY: ${JSON.stringify(report)}\n`)
+  process.exit(0)
+}
+
 // ONE BOOT AT A TIME. Strictly serial.
 const before = await bootHome({ label: 'before', home: BEFORE_HOME, outPath: OUT_BEFORE })
 const after = await bootHome({ label: 'after', home: AFTER_HOME, outPath: OUT_AFTER })
@@ -270,6 +338,11 @@ const assertions = {
   // The measurement itself must have happened on both sides.
   bothBootsProducedACatalog:
     (before.probe?.toolCountAgentKey ?? 0) > 0 && (after.probe?.toolCountAgentKey ?? 0) > 0,
+  // BOTH ARTIFACTS ARE COMPLETE, not partial fallbacks. A partial AFTER
+  // artifact would still hold the catalog, but it would mean the negative arm
+  // was cut short -- and this assertion exists so that state cannot pass as a
+  // finished measurement.
+  bothArtifactsAreComplete: before.partial === false && after.partial === false,
   // The agent-keyed read is the right one: the unscoped control differs.
   agentKeyIsTheScopeKey:
     before.probe?.toolCountContextKey !== before.probe?.toolCountAgentKey,
@@ -329,12 +402,14 @@ const report = {
     before: {
       port: before.boot.port, portReleased: before.boot.portReleased, exitCode: before.boot.exitCode,
       timedOut: before.boot.timedOut, probeError: before.probeError,
+      artifactUsed: before.artifactUsed, partial: before.partial,
       activationWarnings: before.boot.stderr.split('\n').filter(l => /did not activate|startup failed/i.test(l)),
       buildIdentity: before.buildIdentity,
     },
     after: {
       port: after.boot.port, portReleased: after.boot.portReleased, exitCode: after.boot.exitCode,
       timedOut: after.boot.timedOut, probeError: after.probeError,
+      artifactUsed: after.artifactUsed, partial: after.partial,
       activationWarnings: after.boot.stderr.split('\n').filter(l => /did not activate|startup failed/i.test(l)),
       buildIdentity: after.buildIdentity,
     },

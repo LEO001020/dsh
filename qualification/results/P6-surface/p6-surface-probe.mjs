@@ -65,10 +65,24 @@
  * inventing a default, because a default would make the two boots below
  * indistinguishable if a caller ran them concurrently.
  *
- * THE ARTIFACT IS WRITTEN EARLY, THEN REWRITTEN. The catalog and the direct
- * negative arm are flushed to disk BEFORE the bridge arm runs. A kernel that
- * hangs would otherwise cost the entire measurement, and the catalog is the
- * deliverable.
+ * THE ARTIFACT IS WRITTEN TO TWO PATHS, AND THE SECOND ONE IS LOAD-BEARING.
+ *
+ * `DSH_PROBE_OUT` is the COMPLETION SIGNAL: `boot-harness.mjs` waits for that
+ * file to EXIST and then SIGKILLs the host (boot-harness.mjs:135-149). So a
+ * probe that flushes its main artifact early would have its host killed while
+ * the rest of the measurement was still running -- the negative arm would be
+ * truncated, and the artifact would look complete. Measured by reading the
+ * harness, not assumed.
+ *
+ * `DSH_PROBE_PARTIAL_OUT` is the CRASH INSURANCE: the same finding object,
+ * rewritten after every step that can hang. The catalog is the deliverable, and
+ * the BEFORE boot is expected to DISPATCH creation calls that reach a provider
+ * with no model route -- so the probe can wait. Writing the partial file after
+ * each step means a hang costs at most the steps after it, while the main file
+ * still means exactly what the harness thinks it means.
+ *
+ * The driver reads the partial file only when the main one is missing, and
+ * records which one it used.
  */
 import { writeFileSync } from 'node:fs'
 
@@ -86,6 +100,9 @@ if (OUT === undefined || OUT === '') {
   throw new Error('p6-surface-probe: DSH_PROBE_OUT must name this caller\'s own result path; '
     + 'a shared fixed path cannot be attributed to a caller (G-FIX-13)')
 }
+
+/** Where the in-progress artifact goes. See the module header. */
+const PARTIAL_OUT = process.env.DSH_PROBE_PARTIAL_OUT ?? ''
 
 /** The bound on one creation-route call. See the negative arm's comment. */
 const ROUTE_BOUND_MS = 25_000
@@ -209,8 +226,26 @@ export async function apply(ctx) {
     errorPhase: null,
   }
 
-  /** Flush what is known now. Called before any step that can hang. */
-  const flush = () => writeFileSync(OUT, JSON.stringify(finding, null, 2))
+  /**
+   * Write the in-progress artifact.
+   *
+   * Deliberately NOT the main output path: see the module header. The main file
+   * is the harness's completion signal, and writing it early would have the host
+   * killed mid-measurement.
+   */
+  const flush = () => {
+    if (PARTIAL_OUT !== '') writeFileSync(PARTIAL_OUT, JSON.stringify(finding, null, 2))
+  }
+
+  /**
+   * Write the FINAL artifact. Called on every exit path, including the early
+   * ones, so an aborted probe still produces a file the harness can see -- and
+   * so the driver gets a probe that says WHY it stopped rather than a timeout.
+   */
+  const finish = () => {
+    flush()
+    writeFileSync(OUT, JSON.stringify(finding, null, 2))
+  }
 
   try {
     // ---- the roster roots, recorded FIRST ---------------------------------
@@ -266,7 +301,7 @@ export async function apply(ctx) {
     const sessions = ctx.get('sessionController')
     if (sessions === undefined) {
       finding.error = 'sessionController is absent, so no catalog could be measured'
-      flush()
+      finish()
       return
     }
     const created = await sessions.create({ cwd: REPO_ROOT })
@@ -279,14 +314,14 @@ export async function apply(ctx) {
     const agent = ctx.get('agents')?.get(finding.sessionId)
     if (agent === undefined) {
       finding.error = 'the created session has no live agent in this process'
-      flush()
+      finish()
       return
     }
 
     const tools = ctx.get('tools')
     if (tools === undefined) {
       finding.error = 'the tools registry is absent from this composition'
-      flush()
+      finish()
       return
     }
 
@@ -397,8 +432,9 @@ export async function apply(ctx) {
       }
     }
 
-    // FLUSH BEFORE THE BRIDGE ARM. The catalog and the direct refusals are the
-    // deliverable; a kernel that hangs must not cost them.
+    // FLUSH THE PARTIAL FILE BEFORE THE BRIDGE ARM. The catalog and the direct
+    // refusals are the deliverable; a kernel that hangs must not cost them.
+    // (The partial path, not `OUT`: see the module header.)
     flush()
 
     // ---- (3b) THE HIDDEN ARM: the ipython bridge ------------------------
@@ -456,7 +492,7 @@ export async function apply(ctx) {
     finding.errorPhase = finding.errorPhase ?? 'outer'
   }
 
-  flush()
+  finish()
   process.stdout.write(`P6-SURFACE: ${JSON.stringify({
     toolCountAgentKey: finding.toolCountAgentKey,
     tools: finding.tools,
