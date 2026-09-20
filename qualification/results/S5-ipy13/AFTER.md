@@ -104,6 +104,7 @@ hash verified. Restore hashes: `db24b46e…` (before the grandchild change),
 | M2 naive gate: never carry the origin into threads | straddler fixed, but `thread+join` output LOST from its own cell | **RED** |
 | M3b hardcode the load report to `false` | the report is not a measurement | **RED** |
 | M4 disable grandchild-origin propagation | grandchild write lost from its cell | **RED** |
+| M6 drift the sentinel in `broker.py` only | a caller would never match an undecidable frame | **RED** |
 | M5 remove the pre-restart marker invalidation | restart still succeeds and re-writes the marker, so arm F still passes | **NOT RED — see below** |
 
 **M5 is an honest gap.** The invalidation guards a failure path (a restart whose
