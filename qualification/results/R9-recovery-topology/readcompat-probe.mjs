@@ -1,5 +1,17 @@
 // Read-compat probe: a store written by the PRE-change schema (with `epoch`)
 // opened by the POST-change schema (without it). Runs the REAL domain stack.
+//
+// Like `product-probe.mjs`, it must be COPIED INTO THE PACKAGE before running,
+// because bare specifiers (`@deepseek-ai/*`) and the relative `./src/host.ts`
+// both resolve from the importing file's directory:
+//
+//   cd D:/DSH/work/wt-r9/packages/dsh-daily-work
+//   cp ../../qualification/results/R9-recovery-topology/readcompat-probe.mjs ./r9-readcompat-probe.mjs
+//   node --import tsx ./r9-readcompat-probe.mjs
+//   rm ./r9-readcompat-probe.mjs
+//
+// Archived output: `readcompat-probe.txt`. Measured result: the legacy store
+// opens cleanly and the extra key is dropped.
 import { Context } from '@deepseek-ai/cordis'
 import Storage from '@deepseek-ai/dsh-storage'
 import * as storageJsonPlugin from '@deepseek-ai/dsh-storage-json'
