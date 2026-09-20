@@ -176,7 +176,7 @@ const observed = {
     bridgeClientDigest: (() => {
       const text = readFileSync(bridgeRoute, 'utf8')
       const match = /export const PYTHON_CLIENT_SOURCE = `([\s\S]*?)`\n\n\/\*\* The bytes/u.exec(text)
-      return match === null ? null : String(match[1].length)
+      return match?.[1] === undefined ? null : match[1].length
     })(),
   },
   exportsRoots: roots,

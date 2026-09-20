@@ -44,6 +44,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { KernelHost, KernelOutcomeUnknownError } from './kernel.ts'
 import { KernelService } from './kernel-plugin.ts'
 import { encodeFrame, FrameDecoder, MAX_FRAME_BYTES } from './protocol.ts'
+import { MemoryBridgeLedger } from './bridge-ledger.ts'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
 const BROKER = resolve(HERE, 'broker.py')
@@ -302,6 +303,9 @@ describe('IPY-03: top-level await works with no wrapper', () => {
       sessionId: 'spec-ipy-03',
       cellId: 'v3-cell-1',
       epoch: 1,
+      outerCallId: String('legacy-outer-call'),
+      rootCallId: String('legacy-outer-call'),
+      ledger: new MemoryBridgeLedger(),
       handler: createNativeCallHandler({
         ctx,
         authority: {
@@ -351,7 +355,7 @@ describe('IPY-03: top-level await works with no wrapper', () => {
     expect(observed['asyncio']).toBe(42)
     expect(observed['native']).toEqual({ marker: 'NATIVE-SETTLED', tag: 'from-the-cell' })
 
-    await lease.revoke('the cell settled')
+    await lease.close('completed', 'the cell settled')
     bridge.releaseLease(lease)
     // `BridgeServer.close()` (not `stop`): it revokes every lease and stops
     // listening, so this test cannot leave a listening socket behind.

@@ -21,6 +21,7 @@ import { BridgeServer } from './bridge.ts'
 import { createNativeCallHandler, type EnclosingAuthority } from './native-call.ts'
 import { KernelService } from './kernel-plugin.ts'
 import type { Agent } from '@deepseek-ai/dsh-agent'
+import { MemoryBridgeLedger } from './bridge-ledger.ts'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
 const BROKER = resolve(HERE, 'broker.py')
@@ -168,6 +169,9 @@ async function main(): Promise<void> {
     sessionId: 't7-measure',
     cellId,
     epoch: 1,
+    outerCallId: String(callId),
+    rootCallId: String(callId),
+    ledger: new MemoryBridgeLedger(),
     handler: createNativeCallHandler({
       ctx,
       authority: authorityFor(callId, agent, new AbortController().signal),
@@ -189,7 +193,7 @@ async function main(): Promise<void> {
     pipelineSaw: pipelineSaw.splice(0, pipelineSaw.length),
     pipelineResults: pipelineResults.splice(0, pipelineResults.length),
   }
-  await lease1.revoke('settled')
+  await lease1.close('completed', 'settled')
   bridge.releaseLease(lease1)
 
   // ---- 2. one model loop -------------------------------------------------
@@ -209,7 +213,7 @@ async function main(): Promise<void> {
     results: pipelineResults.splice(0, pipelineResults.length),
     dispatchCount: 3,
   }
-  await lease2.revoke('settled')
+  await lease2.close('completed', 'settled')
   bridge.releaseLease(lease2)
 
   // ---- 3. the contract ---------------------------------------------------
@@ -228,7 +232,7 @@ async function main(): Promise<void> {
     "print('CELL_SURVIVED:True')",
   ].join('\n'))
   contract['toolError'] = { outcome: r3.outcome, stdout: r3.stdout.text.trim() }
-  await lease3.revoke('settled')
+  await lease3.close('completed', 'settled')
   bridge.releaseLease(lease3)
 
   const lease4 = leaseFor('cell-4', 'ipython-call-unknown')
@@ -242,7 +246,7 @@ async function main(): Promise<void> {
     "    print('CODE:' + exc.code)",
   ].join('\n'))
   contract['unknownTool'] = { outcome: r4.outcome, stdout: r4.stdout.text.trim() }
-  await lease4.revoke('settled')
+  await lease4.close('completed', 'settled')
   bridge.releaseLease(lease4)
 
   const lease5 = leaseFor('cell-5', 'ipython-call-deny')
@@ -261,7 +265,7 @@ async function main(): Promise<void> {
     stdout: r5.stdout.text.trim(),
     note: 'a monotonic guard denies without info, so the registry reports TOOL_FAILED',
   }
-  await lease5.revoke('settled')
+  await lease5.close('completed', 'settled')
   bridge.releaseLease(lease5)
 
   const lease5b = leaseFor('cell-5b', 'ipython-call-deny-policy')
@@ -280,7 +284,7 @@ async function main(): Promise<void> {
     stdout: r5b.stdout.text.trim(),
     note: 'a pre-execute denial that supplies info.code keeps it through the bridge',
   }
-  await lease5b.revoke('settled')
+  await lease5b.close('completed', 'settled')
   bridge.releaseLease(lease5b)
 
   const lease6 = leaseFor('cell-6', 'ipython-call-slow')
@@ -301,7 +305,7 @@ async function main(): Promise<void> {
     stdout: r6.stdout.text.trim(),
     hostReceivedTheCall: slowCallReceived,
   }
-  await lease6.revoke('settled')
+  await lease6.close('completed', 'settled')
   bridge.releaseLease(lease6)
 
   const lease7 = leaseFor('cell-7', 'ipython-call-big')
@@ -313,7 +317,7 @@ async function main(): Promise<void> {
     "print('LEN:' + str(len(value.json()['blob'])))",
   ].join('\n'))
   contract['artifact'] = { outcome: r7.outcome, stdout: r7.stdout.text.trim(), payloadLength: PAYLOAD.length }
-  await lease7.revoke('settled')
+  await lease7.close('completed', 'settled')
   bridge.releaseLease(lease7)
 
   observed['nativeCallContract'] = contract
@@ -339,7 +343,7 @@ async function main(): Promise<void> {
     "print('IPYTHON_TERMINAL_MODULES:' + repr(sorted(m for m in sys.modules if m.startswith('IPython.terminal') or m.startswith('IPython.utils.terminal'))))",
   ].join('\n'))
   observed['cellNamespace'] = { outcome: r8.outcome, stdout: r8.stdout.text.trim() }
-  await lease8.revoke('settled')
+  await lease8.close('completed', 'settled')
   bridge.releaseLease(lease8)
 
   observed['environment'] = {

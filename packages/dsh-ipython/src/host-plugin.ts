@@ -31,7 +31,31 @@ import type { Context } from '@deepseek-ai/cordis'
 import { KernelService, type KernelServiceConfig } from './kernel-plugin.ts'
 
 export const name = 'dsh-ipython'
-export const inject = ['subprocess']
+/**
+ * The services this plugin needs before it may activate.
+ *
+ * `subprocess` is the broker's process seam. `tools` is the REGISTRY THE BRIDGE
+ * DISPATCHES THROUGH, and it is here because a `ctx.tools` read from a context
+ * that did not inject it throws:
+ *
+ *     BridgeError: BRIDGE_FAILED: cannot get property "tools" without inject
+ *
+ * WHY THIS IS NOT REDUNDANT WITH THE TOOL ROW'S OWN `inject = ['tools']`. A tool
+ * row's inject gates that ROW; this gates the SERVICE, and they are different
+ * fibers. The service is constructed with the context this `apply` receives, and
+ * `native-call.ts` reaches `ctx.tools.execute(...)` through the SERVICE's
+ * context -- so without `tools` here, every cell's `dsh.call` fails while the
+ * `ipython` tool itself still resolves and runs.
+ *
+ * MEASURED, not reasoned: the composition-tier probe
+ * (`qualification/runners/r5-bridge-product.mjs`) found this on the first real
+ * boot, with exactly that message, AFTER the code-path tests had passed 17/17.
+ * Those tests hand the service a context that mounted `ToolRuntime` directly, so
+ * the mechanism worked in every test while the PRODUCT failed on the first real
+ * cell -- the F2 defect shape one layer down, and the reason the composition
+ * tier exists as a separate instrument from the code-path tier.
+ */
+export const inject = ['subprocess', 'tools']
 
 /** Configuration. Every field is host-set and none is model-reachable. */
 export interface Config extends KernelServiceConfig {}

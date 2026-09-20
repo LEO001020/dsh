@@ -34,12 +34,19 @@
  * A test that can only pass is not a measurement, so each arm is also driven in
  * the failing direction where one exists.
  *
- * WHAT THIS FILE DOES NOT CLAIM. It does not claim the bridge is WIRED into the
- * shipped profile. It is not: `createNativeCallHandler` has no production
- * caller. That finding is the headline of
- * `qualification/results/T7-bridge/FINDINGS.md`, and this file is what makes
- * the difference between "the seam is correct" (measured here) and "the product
- * uses it" (measured false, there).
+ * WHAT THIS FILE CLAIMS, AS OF R5. It claimed the bridge was NOT wired, and
+ * that claim was true when written: `createNativeCallHandler` had no production
+ * caller, recorded as `G-SEAM-34` / `F2`. R5 closed that defect, so the claim is
+ * now the opposite and the tests were inverted with it. The pre-R5 measurement
+ * is archived at `qualification/results/R5-bridge/F2-before.json` (instrument:
+ * `src/r5-f2-before.ts`), and section 7 below is the same instrument asserting
+ * the WIRED state.
+ *
+ * WHAT HAS NOT CHANGED IS THE SEPARATION THIS FILE KEEPS. Every arm here drives
+ * a HAND-MOUNTED bridge, which establishes the MECHANISM. `r5-product-bridge.
+ * test.ts` drives the real `ipython` tool through the real registry and
+ * establishes the PRODUCT. Neither substitutes for the other, and the day this
+ * file's arms pass while the product ones fail is the day the old defect is back.
  */
 import { Context } from '@deepseek-ai/cordis'
 import Subprocess from '@deepseek-ai/dsh-subprocess-local'
@@ -55,6 +62,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { BridgeServer } from './bridge.ts'
 import { createNativeCallHandler, type EnclosingAuthority } from './native-call.ts'
 import { KernelService } from './kernel-plugin.ts'
+import { MemoryBridgeLedger } from './bridge-ledger.ts'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
 const BROKER = resolve(HERE, 'broker.py')
@@ -220,6 +228,9 @@ describe('T7-01 the model Python path reaches ctx.tools.execute (MEASURED)', () 
       sessionId: 'session-seam',
       cellId,
       epoch,
+      outerCallId: String('ipython-call-1'),
+      rootCallId: String('ipython-call-1'),
+      ledger: new MemoryBridgeLedger(),
       handler: createNativeCallHandler({
         ctx,
         authority: authorityFor('ipython-call-1', agent, new AbortController().signal),
@@ -251,14 +262,14 @@ describe('T7-01 the model Python path reaches ctx.tools.execute (MEASURED)', () 
     expect(seenByPipeline[0]?.parent).toBe(true)
     // (c) the sub-call id is derived from the ENCLOSING ipython call id, so the
     //     nested call is correlatable to the execution that authorised it.
-    expect(seenByPipeline[0]?.callId).toBe('ipython-call-1:bridge:1')
+    expect(seenByPipeline[0]?.callId).toBe('ipython-call-1:ipython:1')
     // (d) the registry's OWN canonical value reached the cell, byte-for-byte.
     expect(stdout).toContain(`CELL_SAW:{"marker":"${ECHO_MARKER}","tag":"from-the-cell"}`)
     // (e) the module the cell reached is the host-written client, not something
     //     the cell could have fabricated into existence.
     expect(stdout).toContain('MODULE:dsh')
 
-    await lease.revoke('the cell settled')
+    await lease.close('completed', 'the cell settled')
     b.releaseLease(lease)
   }, 240_000)
 
@@ -343,6 +354,9 @@ describe('T7-02 ctx.terminalController is NOT on the model Python path (MEASURED
       sessionId: 'session-tc',
       cellId: 'cell-tc-1',
       epoch: 1,
+      outerCallId: String('ipython-call-tc'),
+      rootCallId: String('ipython-call-tc'),
+      ledger: new MemoryBridgeLedger(),
       handler: createNativeCallHandler({
         ctx,
         authority: authorityFor('ipython-call-tc', agent, new AbortController().signal),
@@ -363,7 +377,7 @@ describe('T7-02 ctx.terminalController is NOT on the model Python path (MEASURED
     // ... and the FORBIDDEN seam was never read, not even once.
     expect(decoy.accesses).toEqual([])
 
-    await lease.revoke('the cell settled')
+    await lease.close('completed', 'the cell settled')
     b.releaseLease(lease)
   }, 240_000)
 })
@@ -411,6 +425,9 @@ describe('T7-03 exactly one model loop (MEASURED)', () => {
       sessionId: 'session-loop',
       cellId: 'cell-loop-1',
       epoch: 1,
+      outerCallId: String('ipython-call-loop'),
+      rootCallId: String('ipython-call-loop'),
+      ledger: new MemoryBridgeLedger(),
       handler: createNativeCallHandler({
         ctx,
         authority: authorityFor('ipython-call-loop', agent, new AbortController().signal),
@@ -437,12 +454,12 @@ describe('T7-03 exactly one model loop (MEASURED)', () => {
     // And the sub-call ids are the bridge's own ordinal, derived from the ONE
     // enclosing call id: a second loop would mint a second enclosing id.
     expect(dispatches).toEqual([
-      'ipython-call-loop:bridge:1',
-      'ipython-call-loop:bridge:2',
-      'ipython-call-loop:bridge:3',
+      'ipython-call-loop:ipython:1',
+      'ipython-call-loop:ipython:2',
+      'ipython-call-loop:ipython:3',
     ])
 
-    await lease.revoke('the cell settled')
+    await lease.close('completed', 'the cell settled')
     b.releaseLease(lease)
   }, 240_000)
 
@@ -499,6 +516,9 @@ describe('T7-04 the native-call contract (MEASURED)', () => {
       sessionId: 'session-err',
       cellId: 'cell-err-1',
       epoch: 1,
+      outerCallId: String('ipython-call-err'),
+      rootCallId: String('ipython-call-err'),
+      ledger: new MemoryBridgeLedger(),
       handler: createNativeCallHandler({
         ctx,
         authority: authorityFor('ipython-call-err', agent, new AbortController().signal),
@@ -525,7 +545,7 @@ describe('T7-04 the native-call contract (MEASURED)', () => {
     // The cell kept running: a tool failure is a value, not a kernel fault.
     expect(result.stdout.text).toContain('CELL_SURVIVED:True')
 
-    await lease.revoke('the cell settled')
+    await lease.close('completed', 'the cell settled')
     b.releaseLease(lease)
   }, 240_000)
 
@@ -539,6 +559,9 @@ describe('T7-04 the native-call contract (MEASURED)', () => {
       sessionId: 'session-unknown',
       cellId: 'cell-unknown-1',
       epoch: 1,
+      outerCallId: String('ipython-call-unknown'),
+      rootCallId: String('ipython-call-unknown'),
+      ledger: new MemoryBridgeLedger(),
       handler: createNativeCallHandler({
         ctx,
         authority: authorityFor('ipython-call-unknown', agent, new AbortController().signal),
@@ -561,7 +584,7 @@ describe('T7-04 the native-call contract (MEASURED)', () => {
     // bridge passes the registry's OWN code through rather than flattening it.
     expect(result.stdout.text).toContain('CODE:UNKNOWN_TOOL')
 
-    await lease.revoke('the cell settled')
+    await lease.close('completed', 'the cell settled')
     b.releaseLease(lease)
   }, 240_000)
 
@@ -589,6 +612,9 @@ describe('T7-04 the native-call contract (MEASURED)', () => {
       sessionId: 'session-deny',
       cellId: 'cell-deny-1',
       epoch: 1,
+      outerCallId: String('ipython-call-deny'),
+      rootCallId: String('ipython-call-deny'),
+      ledger: new MemoryBridgeLedger(),
       handler: createNativeCallHandler({
         ctx,
         authority: authorityFor('ipython-call-deny', agent, new AbortController().signal),
@@ -622,7 +648,7 @@ describe('T7-04 the native-call contract (MEASURED)', () => {
     // denying seam made it.
     expect(result.stdout.text).toContain('CODE:TOOL_FAILED')
 
-    await lease.revoke('the cell settled')
+    await lease.close('completed', 'the cell settled')
     b.releaseLease(lease)
   }, 240_000)
 
@@ -662,6 +688,9 @@ describe('T7-04 the native-call contract (MEASURED)', () => {
       sessionId: 'session-deny2',
       cellId: 'cell-deny2-1',
       epoch: 1,
+      outerCallId: String('ipython-call-deny2'),
+      rootCallId: String('ipython-call-deny2'),
+      ledger: new MemoryBridgeLedger(),
       handler: createNativeCallHandler({
         ctx,
         authority: authorityFor('ipython-call-deny2', agent, new AbortController().signal),
@@ -685,7 +714,7 @@ describe('T7-04 the native-call contract (MEASURED)', () => {
     expect(result.stdout.text).toContain('CODE:POLICY_DENIED')
     expect(result.stdout.text).toContain('denied by the pre-execute policy')
 
-    await lease.revoke('the cell settled')
+    await lease.close('completed', 'the cell settled')
     b.releaseLease(lease)
   }, 240_000)
 
@@ -720,6 +749,9 @@ describe('T7-04 the native-call contract (MEASURED)', () => {
       sessionId: 'session-slow',
       cellId: 'cell-slow-1',
       epoch: 1,
+      outerCallId: String('ipython-call-slow'),
+      rootCallId: String('ipython-call-slow'),
+      ledger: new MemoryBridgeLedger(),
       handler: createNativeCallHandler({
         ctx,
         authority: authorityFor('ipython-call-slow', agent, new AbortController().signal),
@@ -750,7 +782,7 @@ describe('T7-04 the native-call contract (MEASURED)', () => {
     // different facts and only one of them is a bridge defect.
     expect(hostSawCall).toBe(true)
 
-    await lease.revoke('the cell settled')
+    await lease.close('completed', 'the cell settled')
     b.releaseLease(lease)
   }, 240_000)
 
@@ -789,6 +821,9 @@ describe('T7-04 the native-call contract (MEASURED)', () => {
       sessionId: 'session-big',
       cellId: 'cell-big-1',
       epoch: 1,
+      outerCallId: String('ipython-call-big'),
+      rootCallId: String('ipython-call-big'),
+      ledger: new MemoryBridgeLedger(),
       handler: createNativeCallHandler({
         ctx,
         authority: authorityFor('ipython-call-big', agent, new AbortController().signal),
@@ -814,7 +849,7 @@ describe('T7-04 the native-call contract (MEASURED)', () => {
     expect(result.stdout.text).toContain('HASH_OK:True')
     expect(result.stdout.text).toContain(`LEN:${String(PAYLOAD.length)}`)
 
-    await lease.revoke('the cell settled')
+    await lease.close('completed', 'the cell settled')
     b.releaseLease(lease)
   }, 240_000)
 })
@@ -887,6 +922,9 @@ describe('T7-05 forged authority is refused, not ignored (MEASURED)', () => {
       sessionId: 'session-forge',
       cellId: 'cell-forge-1',
       epoch: 1,
+      outerCallId: String('legacy-outer-call'),
+      rootCallId: String('legacy-outer-call'),
+      ledger: new MemoryBridgeLedger(),
       handler: async () => {
         handlerRan = true
         return { ok: true, value: { shouldNotBeReached: true } }
@@ -936,6 +974,9 @@ describe('T7-05 forged authority is refused, not ignored (MEASURED)', () => {
       sessionId: 'session-forge-ok',
       cellId: 'cell-forge-ok-1',
       epoch: 1,
+      outerCallId: String('legacy-outer-call'),
+      rootCallId: String('legacy-outer-call'),
+      ledger: new MemoryBridgeLedger(),
       handler: async () => {
         handlerRan = true
         return { ok: true, value: { reached: true } }
@@ -963,31 +1004,29 @@ describe('T7-05 forged authority is refused, not ignored (MEASURED)', () => {
 })
 
 // ---------------------------------------------------------------------------
-// 7. THE WIRING: does the PRODUCT use the bridge? (the answer is NO)
+// 7. THE WIRING: does the PRODUCT use the bridge? (the answer is now YES)
 // ---------------------------------------------------------------------------
+//
+// THIS BLOCK WAS INVERTED BY R5, AND THE OLD VERSION IS KEPT IN THE RECORD
+// RATHER THAN DELETED. Until R5 the verdict was `F2` / `G-SEAM-34`: the two
+// bridge modules were outside the transitive closure of every package entry
+// point and `new BridgeServer` had ZERO production call sites, so a Python cell
+// could reach no DSH tool at all. This block used to ASSERT THAT ABSENCE, on the
+// argument that pinning a defect in a test makes it visible the day it is fixed.
+// That is exactly what happened: this block turning red is the signal that the
+// wiring landed, and the measured BEFORE state is archived at
+// `qualification/results/R5-bridge/F2-before.json` with the instrument that took
+// it (`src/r5-f2-before.ts`).
+//
+// WHAT IS ASSERTED NOW, AND WHY IT IS THE SAME INSTRUMENT. The closure walk is
+// unchanged, so the before and after numbers are comparable. What changed is the
+// expected answer: both modules ARE in the closure, and `new BridgeServer` DOES
+// have a production call site. The distinction this block exists to draw is
+// still the audit's: a working mechanism must not stand in for a wired product.
+// It is now drawn by asserting the wiring is PRESENT rather than absent.
 
-describe('T7-07 the bridge is UNWIRED from the product (MEASURED — this is a FAIL)', () => {
-  /**
-   * WHY THESE ASSERT THE ABSENCE RATHER THAN FAILING ON IT.
-   *
-   * The verdict of this gate is FAIL, and it is reported as FAIL in
-   * `qualification/results/T7-bridge/FINDINGS.md`. The tests below assert the
-   * absence so that the absence is PINNED: the day someone wires the bridge,
-   * these turn red, and the gate table's FAIL has to be revisited rather than
-   * left to rot. A test that simply failed here would be indistinguishable from
-   * a broken instrument, and the next reader could not tell "the defect is still
-   * present" from "the probe stopped working".
-   *
-   * The distinction this gate exists to draw is the one the audit names: a
-   * working mechanism must not stand in for a wired product.
-   */
-  it('the package entry points do not reach bridge.ts or native-call.ts', async () => {
-    // QUESTION 2, and it is a different question from every test above. Those
-    // measure whether the MECHANISM is correct; this measures whether anything
-    // in the product constructs one. A green mechanism must not stand in for a
-    // wired product -- that substitution is the weaker-oracle mistake this
-    // project's audit exists to catch.
-    //
+describe('T7-07 the bridge IS wired into the product (MEASURED — F2 closed)', () => {
+  it('the package entry points DO reach bridge.ts and native-call.ts', async () => {
     // The measurement walks the REAL import closure from the package's own
     // `exports` roots, resolving relative specifiers as written on disk. It is
     // done here, in the package under test, rather than by reading a report, so
@@ -1002,8 +1041,6 @@ describe('T7-07 the bridge is UNWIRED from the product (MEASURED — this is a F
     // Entry roots, from the manifest rather than a hand-written list: a root
     // that is not declared cannot be loaded by a profile, so a module reached
     // only from an undeclared file is not reachable in the product either.
-    // The `./package.json` export is a plain string and names no module, so the
-    // two shapes are normalized here rather than assumed.
     const roots = Object.values(pkg.exports)
       .map(entry => typeof entry === 'string' ? entry : entry.default)
       .filter(value => value.endsWith('.js'))
@@ -1024,26 +1061,30 @@ describe('T7-07 the bridge is UNWIRED from the product (MEASURED — this is a F
       for (const match of text.matchAll(/from\s+'([^']+)'/g)) {
         const specifier = match[1] ?? ''
         if (!specifier.startsWith('.')) continue
-        // Relative specifiers in this package are written with a `.ts`
-        // extension (`allowImportingTsExtensions`), so they resolve directly.
         const resolved = path.posix.normalize(path.posix.join(path.posix.dirname(current), specifier))
         queue.push(resolved)
       }
     }
 
-    // THE MEASUREMENT: neither bridge module is in the closure of any entry.
-    expect([...seen].some(file => file.endsWith('/bridge.ts'))).toBe(false)
-    expect([...seen].some(file => file.endsWith('/native-call.ts'))).toBe(false)
-    // And the closure is not empty, so the absence is not an artefact of the
-    // walk failing to start.
+    // THE MEASUREMENT, and it is the INVERSE of what this arm asserted before R5.
+    // `bridge.ts` and `native-call.ts` are now reached from `kernel-plugin.ts`,
+    // which is an entry root (exported as `./plugin`) AND reached from the
+    // `ipython` tool's own entry point (`./tool`).
+    expect([...seen].some(file => file.endsWith('/bridge.ts'))).toBe(true)
+    expect([...seen].some(file => file.endsWith('/native-call.ts'))).toBe(true)
+    // And the closure is not empty, so the presence is not an artefact of the
+    // walk visiting everything.
     expect(seen.size).toBeGreaterThanOrEqual(5)
-  })
+    // Stated as the specific edge rather than only as reachability, so a reader
+    // can see WHICH entry carries the wiring.
+    expect([...seen].some(file => file.endsWith('/ipython-tool.ts'))).toBe(true)
+  }, 120_000)
 
-  it('nothing outside this package names the bridge symbols', async () => {
-    // The second half of the wiring question. Even a module that IS reachable
-    // would be unwired if no composition ever constructs it, so the symbols are
-    // searched for across the whole repository, with the entry-root closure
-    // above as the other instrument.
+  it('the bridge is CONSTRUCTED by production code, and only by the kernel service', async () => {
+    // The second half of the wiring question, and the one that was the actual
+    // defect: a module can be reachable and still never be constructed. This
+    // searches the whole repository for the bridge symbols, with the entry-root
+    // closure above as the other instrument.
     //
     // SCOPE, stated because it bounds the claim: this walks `packages/` and
     // `profiles/` to a capped depth, which is where a composition would live on
@@ -1070,32 +1111,29 @@ describe('T7-07 the bridge is UNWIRED from the product (MEASURED — this is a F
 
     const isTest = (file: string): boolean => /\.test\.ts$/.test(file)
     // A PROBE is not a production caller, and the distinction is load-bearing
-    // rather than convenient. `t7-measure.ts` drives the bridge to produce the
-    // raw numbers in `qualification/results/T7-bridge/measurement.json`; it is
-    // run by hand, is not in any entry point, and is not imported by anything.
-    // Counting it as a caller would turn this arm red for a probe and hide the
-    // fact it exists to report.
+    // rather than convenient: each of these is run by hand, is in no entry point,
+    // and is imported by nothing. Counting one as a caller would make this arm
+    // green for a probe and hide the fact it exists to report -- the exact
+    // substitution the arm is here to prevent.
     //
-    // AN EXPLICIT LIST, NOT A PATTERN, and this changed for a MEASURED reason.
-    // The rule was `/[\\/]t\d+-measure\.ts$/`: narrow, but widening in the wrong
-    // direction, because a later probe with a different name is classified as a
-    // production caller. That is not hypothetical. V4's probe
-    // (`v4-bridge-probe.ts`) made this arm fail with `new BridgeServer` at
-    // `packages/dsh-ipython/src/v4-bridge-probe.ts` -- a hand-run driver with no
-    // importer, not a wiring. The fix is NOT to loosen the pattern (that would
-    // let a real caller through) and NOT to rename the probe to fit a detector
-    // (that is making a detector quiet by moving the subject). It is to name
-    // every probe exactly, so the exclusion set is auditable by reading it. A new
-    // probe must be ADDED here, which is a deliberate act a reviewer sees.
+    // AN EXPLICIT LIST, NOT A PATTERN, and the reason is MEASURED rather than
+    // stylistic. The rule was a name-shaped regex: narrow, but widening in the
+    // wrong direction, because a later probe with a different name is classified
+    // as a production caller. That happened with `v4-bridge-probe.ts`. The fix is
+    // NOT to loosen the pattern (that would let a real caller through) and NOT to
+    // rename a probe to fit a detector (that is making a detector quiet by moving
+    // the subject). It is to name every probe exactly, so the exclusion set is
+    // auditable by reading it. A new probe must be ADDED here, which is a
+    // deliberate act a reviewer sees.
     const PROBE_FILES = new Set([
       'packages/dsh-ipython/src/t7-measure.ts',
       'packages/dsh-ipython/src/v4-bridge-probe.ts',
+      'packages/dsh-ipython/src/v4-bridge-approval-probe.ts',
+      'packages/dsh-ipython/src/v4-bridge-drain-probe.ts',
+      'packages/dsh-ipython/src/r5-f2-before.ts',
     ])
     // `file` arrives ABSOLUTE (the walk joins from `repo`), so it is reduced to
-    // the repo-relative form the set is keyed by. A first version compared the
-    // absolute path against repo-relative keys, which matched nothing and made
-    // this arm report BOTH probes as production callers -- caught by running it,
-    // which is why the arm is exercised rather than reasoned about.
+    // the repo-relative form the set is keyed by.
     const isProbe = (file: string): boolean =>
       PROBE_FILES.has(path.relative(repo, file).replace(/\\/g, '/'))
     const productionHits: Array<{ file: string, symbol: string }> = []
@@ -1110,18 +1148,57 @@ describe('T7-07 the bridge is UNWIRED from the product (MEASURED — this is a F
       }
     }
 
-    // THE MEASUREMENT. The expected hits are the two bridge modules naming
-    // their own symbols; anything else would be a real caller. `new BridgeServer`
-    // is expected to be ABSENT ENTIRELY: it is the constructor, so a hit would
-    // mean a bridge is actually started somewhere.
+    // THE MEASUREMENT, and it is the INVERSE of the pre-R5 assertion. The
+    // constructor now has a production call site, and it is the kernel service --
+    // the owner V3 §J2 names -- so this asserts the OWNER as well as the
+    // existence.
+    //
+    // THE DETECTOR IS TEXTUAL, AND THAT IS A LIMIT RATHER THAN AN OVERSIGHT.
+    // It finds the symbol wherever it appears, including inside a docstring, so
+    // the assertions below distinguish a CALL from a MENTION rather than
+    // pretending the search is smarter than it is. `ipython-tool.ts` names the
+    // constructor in prose (its docstring explains what the pre-R5 defect was);
+    // that is not a call site, and a reader sees the distinction here instead of
+    // having to infer it from an unexpectedly large set.
     const starters = productionHits.filter(hit => hit.symbol === 'new BridgeServer')
-    expect(starters).toEqual([])
-
-    // And no composition file names the package's bridge path at all.
-    const compositionHits = productionHits.filter(hit =>
-      !hit.file.startsWith('packages/dsh-ipython/src/bridge.ts')
-      && !hit.file.startsWith('packages/dsh-ipython/src/native-call.ts'))
-    expect(compositionHits).toEqual([])
+    expect(starters.map(hit => hit.file).sort()).toEqual([
+      'packages/dsh-ipython/src/ipython-tool.ts',
+      'packages/dsh-ipython/src/kernel-plugin.ts',
+    ])
+    // And the ONLY place that actually constructs one is the kernel service. The
+    // carrying LINE is read back for each hit, so this is an assertion about code
+    // rather than about a file containing the words somewhere.
+    const constructing = await Promise.all(starters.map(async hit => {
+      const text = await fs.readFile(path.join(repo, hit.file), 'utf8')
+      const line = text.split('\n').find(candidate => candidate.includes('new BridgeServer')) ?? ''
+      return { file: hit.file, isCall: line.includes('new BridgeServer(') }
+    }))
+    expect(constructing.filter(entry => entry.isCall)).toEqual([{
+      file: 'packages/dsh-ipython/src/kernel-plugin.ts',
+      isCall: true,
+    }])
+    // The lease is minted by the same module, so one place owns the capability
+    // rather than several that could drift apart. `bridge.ts` is expected in the
+    // textual set because it DEFINES `mintLease`; the definition is not a caller,
+    // and the call-shape check below is what separates the two.
+    const minters = productionHits.filter(hit => hit.symbol === 'mintLease')
+    expect(minters.map(hit => hit.file).sort()).toEqual([
+      'packages/dsh-ipython/src/bridge.ts',
+      'packages/dsh-ipython/src/kernel-plugin.ts',
+    ])
+    const minting = await Promise.all(minters.map(async hit => {
+      const text = await fs.readFile(path.join(repo, hit.file), 'utf8')
+      const line = text.split('\n').find(candidate => candidate.includes('mintLease')) ?? ''
+      return { file: hit.file, isCall: /mintLease\(/u.test(line) && !line.includes('mintLease(input') }
+    }))
+    expect(minting.filter(entry => entry.isCall)).toEqual([{
+      file: 'packages/dsh-ipython/src/kernel-plugin.ts',
+      isCall: true,
+    }])
+    // And nothing OUTSIDE the package names a bridge symbol, so the wiring is
+    // internal to the owner rather than a composition file reaching in.
+    const outside = productionHits.filter(hit => !hit.file.startsWith('packages/dsh-ipython/src/'))
+    expect(outside).toEqual([])
   }, 120_000)
 })
 
@@ -1192,6 +1269,9 @@ describe('T7-08 the forbidden seam is ABSENT from this package (MEASURED)', () =
       sessionId: 'session-tc2',
       cellId: 'cell-tc2-1',
       epoch: 1,
+      outerCallId: String('legacy-outer-call'),
+      rootCallId: String('legacy-outer-call'),
+      ledger: new MemoryBridgeLedger(),
       handler: async () => ({ ok: true, value: { reached: true } }),
     })
 
@@ -1234,7 +1314,7 @@ describe('T7-08 the forbidden seam is ABSENT from this package (MEASURED)', () =
     expect(stdout).toContain("'call'")
     expect(stdout).toContain("'tools'")
 
-    await lease.revoke('the cell settled')
+    await lease.close('completed', 'the cell settled')
     b.releaseLease(lease)
   }, 240_000)
 })

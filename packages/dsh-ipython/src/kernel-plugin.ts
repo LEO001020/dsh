@@ -337,6 +337,32 @@ declare module '@deepseek-ai/cordis' {
  * silently given the namespace.
  */
 export class KernelService extends Service {
+  /**
+   * The registry this service's bridge dispatches through.
+   *
+   * DECLARED ON THE CLASS, not only on the plugin module, and this is a MEASURED
+   * requirement rather than a style choice. Cordis refuses a bare `ctx.tools`
+   * read from a context that did not inject it:
+   *
+   *     BridgeError: BRIDGE_FAILED: cannot get property "tools" without inject
+   *
+   * THE SERVICE'S CONTEXT IS NOT THE PLUGIN FUNCTION'S CONTEXT. The module-level
+   * `inject` in `host-plugin.ts` gates when `apply` runs and injects into the
+   * context `apply` receives; `this.ctx` inside the service is a DIFFERENT
+   * context, and a `ctx.tools.execute(...)` reached from there throws. The unit
+   * tests did not catch it because they hand the service the TEST's context,
+   * which had mounted `ToolRuntime` directly -- so the mechanism worked in every
+   * test and the PRODUCT failed on the first real cell.
+   *
+   * That is the same defect shape as F2 itself, one layer down, and the same one
+   * `ProgrammaticScopeService` documents for its own `inject`. It was found by
+   * the composition-tier probe (`qualification/runners/r5-bridge-product.mjs`),
+   * which is the only instrument here that runs the bridge out of a real boot's
+   * own service context. The measurement is archived at
+   * `qualification/results/R5-bridge/composition-tier.json`.
+   */
+  static readonly inject = ['tools']
+
   private readonly entries = new Map<string, Entry>()
 
   constructor(ctx: Context, config: KernelServiceConfig) {
