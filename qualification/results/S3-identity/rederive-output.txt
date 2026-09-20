@@ -1,0 +1,85 @@
+# S3: the re-derivation output, reproduced (NOT quoted from the report)
+
+Command: `python helpers/rederive-identity.py`
+Worktree: D:\DSH\work\wt-s3   branch wt/s3
+Measured at HEAD: fef7612fa427ce04aed8a329dd22a80fd8fc8e77
+
+## BEFORE the lock was updated (reproduced, not trusted)
+
+```
+recorded identity  : 0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461
+recomputed identity: 533c8cb08b2ccd7f94b8e0231ca9ea62918107dc6e8733471d23ca57c8d8a6fb
+
+2 input(s) moved:
+  host_profile_digest
+    CHANGED: profiles/daily-candidate/cordis.patch.yml
+    recorded: 5b8b2a8e5d9ae13d35c1d86833f8b96e
+    computed: 0e8e370e06375ad4a289fa36f783232d
+  agent_preset_digest
+    CHANGED: profiles/daily-candidate/presets/daily-standard/agent.cordis.yml
+    recorded: 16bc20e559d0c05b810876522fd46895
+    computed: 05f7a029739692db4245efad803e6bbb
+```
+
+This matches the numbers in the assignment exactly. Exit code 0.
+
+## AFTER the lock was updated
+
+```
+recorded identity  : 533c8cb08b2ccd7f94b8e0231ca9ea62918107dc6e8733471d23ca57c8d8a6fb
+recomputed identity: 533c8cb08b2ccd7f94b8e0231ca9ea62918107dc6e8733471d23ca57c8d8a6fb
+
+no file-derived input moved. The identity is unchanged by this tree.
+```
+
+## Independent recomputation, to prove the new value is not a transcription
+
+The tool's own output was NOT copied into the lock. The new identity was recomputed
+a second time, straight from the lock's declared algorithm, over the corrected inputs:
+
+```
+python -c: sha256(json.dumps(inputs, sort_keys=True, separators=(',',':'),
+                             ensure_ascii=True).encode('utf-8'))
+  independent recomputation: 533c8cb08b2ccd7f94b8e0231ca9ea62918107dc6e8733471d23ca57c8d8a6fb
+  the tool said            : 533c8cb08b2ccd7f94b8e0231ca9ea62918107dc6e8733471d23ca57c8d8a6fb
+  MATCH
+```
+
+Input count over which the identity is computed: 23.
+
+## The recorded digests are the digests of the files AT THE COMMIT THAT PINNED THEM
+
+Proof that the "recorded" values are not arbitrary, and that the move is a real
+content change rather than a hashing-convention artefact. `c3b9dba` is the commit
+that wrote both old digests into the lock (`git log -S "<old digest>" --all --
+compatibility.lock.json` returns exactly that commit for both).
+
+```
+git show c3b9dba:profiles/daily-candidate/cordis.patch.yml
+  -> 5b8b2a8e5d9ae13d35c1d86833f8b96eeb84078a13027a08efc1379a6fc8afb4   MATCH (recorded)
+git show c3b9dba:profiles/daily-candidate/presets/daily-standard/agent.cordis.yml
+  -> 16bc20e559d0c05b810876522fd468952b421a69ed2b5276a3ddd06c01053bce   MATCH (recorded)
+```
+
+So both pins were CORRECT when written, and both files have since changed. That is
+drift, not a bad pin.
+
+## The digest chain, commit by commit
+
+```
+PROFILE profiles/daily-candidate/cordis.patch.yml
+  c3b9dba   5b8b2a8e5d9ae13d  bytes=24743   (the pinned revision)
+  e465a31   6834f9053e5e5563  bytes=29659   (+4916)  R1: F3 sandbox-policy row
+  5bcf546   cf2a201c59dcf111  bytes=32968   (+3309)  F3: approval inventory (comments)
+  d50b2bb   33d46a6b68d2a4e0  bytes=29986   (-2982)  merge: elide a real workspace path
+  73747a4   0e8e370e06375ad4  bytes=33295   (+3309)  R1: startup-boundary loudness
+  HEAD      0e8e370e06375ad4  bytes=33295   (+0)
+
+PRESET profiles/daily-candidate/presets/daily-standard/agent.cordis.yml
+  c3b9dba   16bc20e559d0c05b  bytes=23756   (the pinned revision)
+  1ea7e89   05f7a029739692db  bytes=24685   (+929)   R4: daily-work-command row
+  HEAD      05f7a029739692db  bytes=24685   (+0)
+```
+
+The final digest of each chain equals the value `rederive-identity.py` computed, so
+the "computed" values are the digests of the files at HEAD and nothing else.
