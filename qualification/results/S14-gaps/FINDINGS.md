@@ -27,7 +27,7 @@ and nothing else.
 | entries | 108 | **109** (+1 reconstructed `G-FIX-10`) |
 | malformed table rows (unescaped `\|` splits a cell) | **6** | **0** |
 | literal control bytes | **3** | **0** |
-| entries whose Status has no leading verdict | **1** | **0** |
+| entries whose Status has no leading verdict | **1** (strict) / **4** (including `CONFIRMED`/`VERIFIED`, see §6) | **0** |
 | referenced-but-undefined ids | `G-FIX-10`, `G-WEB-01`, `G-WEB-03` | `G-WEB-01`, `G-WEB-03` (documented aliases) |
 | missing ids inside a family | `G-FIX: [10]` | **none** |
 | id collisions | none | none |
