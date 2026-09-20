@@ -220,6 +220,23 @@ export function assertTargetActiveChildren(value: number): void {
  * failures with different fixes: an out-of-range number is a bad value, a legacy
  * key is a bad document, and a caller told "out of range" would go looking in the
  * wrong place.
+ *
+ * WHERE THIS CAN FIRE, measured rather than assumed, and the measurement changed
+ * the design. It is called from the section's `validate` hook, which
+ * `installSection` passes into `register` (`settings/src/index.ts:481-483`) and
+ * which therefore runs inside the `owner.inject(['settings'], ...)` activation
+ * turn. MEASURED on this rig: when the hook throws, the activation turn's fiber
+ * FAILS, so `register` never completes — `describe()` reports NO `daily-work`
+ * namespace at all and every read silently falls back to the composition entry.
+ * The refusal would therefore be both invisible AND worse than the problem it
+ * addresses, because the namespace would vanish instead of the setting being
+ * merely stale.
+ *
+ * So the hook is NOT where the guarantee lives. It is kept because a write that
+ * reintroduces the old key must be refused at the write boundary, and the
+ * guarantee the host actually depends on is enforced by
+ * {@link TargetSettingHandle.defaultTarget}, which checks the DOCUMENT LAYER
+ * directly and cannot be bypassed by a failed fiber.
  */
 export function assertNoLegacyTargetField(section: Record<string, unknown>): void {
   if (LEGACY_TARGET_FIELD in section) {
@@ -289,13 +306,23 @@ export interface TargetSettingHandle {
 /**
  * The section's `validate` hook runs on the RESOLVED value, so it sees defaults.
  *
- * It checks BOTH the legacy key and the range, in that order: a document that is
- * both stale and out of range should be reported as stale, because rewriting the
- * key is the fix that comes first and the range check would pass once the stored
- * value is dropped.
+ * IT DELIBERATELY DOES NOT REFUSE THE PRE-SPLIT KEY, and that is a measurement
+ * rather than a preference. MEASURED on this rig: when a `validate` hook throws,
+ * the `owner.inject(['settings'], ...)` activation turn's fiber FAILS, `register`
+ * never completes, `describe()` reports NO `daily-work` namespace, and `setSource`
+ * is never called. So a legacy-key refusal here would not report the stale
+ * document — it would DELETE the namespace and leave every read on the composition
+ * fallback, which is strictly worse and equally invisible.
+ *
+ * The key is refused on the READ path instead ({@link
+ * TargetSettingHandle.defaultTarget}), which is reachable precisely because the
+ * section DOES register and the non-strict schema carries the undeclared key
+ * through into the resolved value. Measured: a document
+ * `{targetActiveChildren: 12}` over a base of 6 resolves to
+ * `{"targetActiveChildren":12,"defaultTargetActiveChildren":6}`, so the resolved
+ * value is exactly where the stale key is visible.
  */
 function validateResolved(value: DailyWorkSettings): void {
-  assertNoLegacyTargetField(value as unknown as Record<string, unknown>)
   assertTargetActiveChildren(value.defaultTargetActiveChildren)
 }
 
@@ -355,8 +382,33 @@ export function installDailyWorkTargetSetting(
     }
     return descriptor.revision
   }
+  /**
+   * Read the RESOLVED section, and it is where the stale key is visible.
+   *
+   * WHY THE RESOLVED VALUE AND NOT THE RAW DOCUMENT. `settingsSource()` is the
+   * section's own reader once the section registered, so it returns the resolved
+   * value — schema defaults, then the composition `base`, then the user layer. The
+   * schema resolver is NON-STRICT (`vendor/schemastery/src/index.ts:761` merges
+   * undeclared keys through), so a document still using the old field name arrives
+   * here WITH that key intact. Measured: a user layer
+   * `{targetActiveChildren: 12}` over a base of 6 resolves to
+   * `{"targetActiveChildren":12,"defaultTargetActiveChildren":6}`.
+   *
+   * WHY THE READ PATH AND NOT THE `validate` HOOK: see {@link validateResolved}.
+   * A hook throw fails the activation fiber and deletes the namespace, which would
+   * make this failure invisible rather than loud.
+   */
+  const readResolved = (): Record<string, unknown> =>
+    settingsSource() as unknown as Record<string, unknown>
   return {
-    defaultTarget: () => settingsSource().defaultTargetActiveChildren,
+    // THE READ PATH CARRIES THE GUARANTEE, because it is the boundary a failed
+    // fiber cannot bypass. See `readResolved`.
+    defaultTarget: () => {
+      const resolved = readResolved()
+      assertNoLegacyTargetField(resolved)
+      assertTargetActiveChildren(resolved[DEFAULT_TARGET_FIELD] as number)
+      return resolved[DEFAULT_TARGET_FIELD] as number
+    },
     // Same function, second name. Not a wrapper that could drift: the SAME
     // arrow, so the two names cannot return different numbers.
     target(): number { return this.defaultTarget() },

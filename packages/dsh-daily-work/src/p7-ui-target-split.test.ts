@@ -352,3 +352,79 @@ describe('P7 split: the default and the active target are independently addressa
     expect(reopened.getRun(runId)?.requestedTarget).toBe(7)
   })
 })
+
+// ---------------------------------------------------------------------------
+// The pre-split key is refused BY NAME, and the refusal is mutation-tested
+// ---------------------------------------------------------------------------
+
+describe('P7 split: a document still using the pre-split key is refused, not ignored', () => {
+  it('a stored section carrying the old key fails the install loudly', async () => {
+    // WHY THIS ARM EXISTS. The schema resolver is NON-STRICT
+    // (`vendor/schemastery/src/index.ts:761` merges undeclared keys through), so
+    // a document written under the old field name resolves with that key carried
+    // through untouched while the new field silently takes the composition
+    // default. Measured directly: a document `{targetActiveChildren: 12}` resolved
+    // to `{"targetActiveChildren":12,"defaultTargetActiveChildren":6}`. A setting
+    // that is stored and does nothing is the failure mode this project records
+    // most often, so `assertNoLegacyTargetField` refuses it instead.
+    const { Context } = await import('@deepseek-ai/cordis')
+    const { SettingsProvider } = await import('@deepseek-ai/dsh-settings')
+    const { installDailyWorkTargetSetting, LEGACY_TARGET_FIELD } = await import('./target-setting.ts')
+
+    class Seeded extends SettingsProvider {
+      doc: Record<string, unknown>
+      constructor(ctx: ConstructorParameters<typeof SettingsProvider>[0]) {
+        super(ctx)
+        this.doc = { 'daily-work': { [LEGACY_TARGET_FIELD]: 12 } }
+      }
+      get writable(): boolean { return true }
+      protected load(): Promise<Record<string, unknown>> { return Promise.resolve(structuredClone(this.doc)) }
+      protected async persist(): Promise<void> {}
+    }
+
+    const ctx = new Context()
+    await ctx.plugin(Seeded)
+    cleanups.push(async () => { await ctx.fiber.dispose() })
+
+    // MEASURED TIMING, and it is why this arm READS rather than asserting a throw
+    // from the install. The section's `validate` hook runs inside the
+    // `owner.inject(['settings'], ...)` activation turn, which is a FIBER: a throw
+    // there does not reach this caller — the install returns a handle and the
+    // throw is logged on the fiber while boot continues. So the refusal has to
+    // hold on the READ path, which is the call the host actually makes.
+    const handle = installDailyWorkTargetSetting(ctx, { targetActiveChildren: 6 })
+    // The activation turn that attaches `settingsSource` to the resolved section
+    // runs asynchronously (`owner.inject` schedules a fiber turn; the same reason
+    // `authorization-path.test.ts` awaits `service.open()` before touching a
+    // handle). Reading before that turn would read the COMPOSITION fallback, which
+    // is a fresh object with no legacy key, and the guard would appear not to fire.
+    await new Promise(resolve => { setTimeout(resolve, 0) })
+    expect(() => handle.defaultTarget())
+      .toThrow(new RegExp(`${LEGACY_TARGET_FIELD}.*defaultTargetActiveChildren`, 's'))
+    // The deprecated alias is not a way around it: it is the same function.
+    expect(() => handle.target()).toThrow(new RegExp(LEGACY_TARGET_FIELD))
+
+    // CONTROL ARM, and it is the one that makes the arm above mean something: the
+    // SAME rig with the NEW key installs AND READS cleanly. Without this, a guard
+    // that refused every document would pass.
+    class Fresh extends SettingsProvider {
+      doc: Record<string, unknown>
+      constructor(ctx: ConstructorParameters<typeof SettingsProvider>[0]) {
+        super(ctx)
+        this.doc = { 'daily-work': { defaultTargetActiveChildren: 12 } }
+      }
+      get writable(): boolean { return true }
+      protected load(): Promise<Record<string, unknown>> { return Promise.resolve(structuredClone(this.doc)) }
+      protected async persist(): Promise<void> {}
+    }
+    const ok = new Context()
+    await ok.plugin(Fresh)
+    cleanups.push(async () => { await ok.fiber.dispose() })
+    const fresh = installDailyWorkTargetSetting(ok, { defaultTargetActiveChildren: 6 })
+    // Same awaited activation turn as the arm above: until it runs,
+    // `settingsSource()` is the composition fallback and this would read 6.
+    await new Promise(resolve => { setTimeout(resolve, 0) })
+    expect(fresh.defaultTarget()).toBe(12)
+    expect(fresh.target()).toBe(12)
+  })
+})
