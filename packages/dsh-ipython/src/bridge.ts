@@ -790,9 +790,17 @@ export class CellLease {
     this.closeReason ??= reason
     this.closeDetail ??= detail ?? 'the cell settled'
     if (this.closing !== undefined) return this.closing
-    // STEP 1: stop accepting new calls. Atomic in the sense that matters here --
-    // `invoke` reads `state` synchronously and there is no await between the read
-    // and the queue push, so no call can be accepted after this line runs.
+    // STEP 1: stop accepting new calls.
+    //
+    // WHAT "ATOMIC" MEANS HERE, AND WHAT IT NO LONGER MEANS. `invoke` reads
+    // `state` synchronously, and no frame that reads OPEN after this line can
+    // reach `publish`, because `publish` re-checks the state. Before Option A
+    // this comment claimed something stronger -- that there was no await between
+    // the state read and the queue push, so no call could be accepted after the
+    // flip. That is no longer true, and the difference is stated rather than
+    // left as a stale claim: a call CAN now be mid-write when the close begins.
+    // It is not accepted, because acceptance is the publish, and the publish
+    // either sees OPEN or disposes the call. See `publish` and `drain`.
     this.state = 'CLOSING'
     // STEP 2: abort every call this lease owns. A started call settles under the
     // abort; a queued call is refused before it ever reaches the registry.
