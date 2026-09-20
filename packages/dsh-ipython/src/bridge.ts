@@ -214,6 +214,14 @@ export type LeaseState = 'OPEN' | 'CLOSING' | 'CLOSED'
  * into `CELL_LEASE_EXPIRED` would tell a program its cell had settled when in
  * fact its kernel was shut down underneath it, which is a different fact with a
  * different remedy.
+ *
+ * `LEASE_LEDGER_UNAVAILABLE` is the durable-intent arm (V5 §6.2): the STARTED
+ * write did not commit, so the call was NEVER ACCEPTED and NEVER DISPATCHED. It
+ * is a distinct code because it is a distinct fact with a distinct remedy --
+ * a transient storage failure the caller may retry, as opposed to an authority
+ * refusal that no retry can fix. Collapsing it into the generic `BRIDGE_FAILED`
+ * would leave a program unable to tell "my capability is gone" from "the host
+ * could not write its record and nothing happened".
  */
 export type LeaseRejectionCode =
   | 'CELL_LEASE_EXPIRED'
@@ -226,6 +234,7 @@ export type LeaseRejectionCode =
   | 'FORGED_AUTHORITY'
   | 'TOOL_NAME_INVALID'
   | 'ARGUMENTS_NOT_JSON'
+  | 'LEASE_LEDGER_UNAVAILABLE'
   | 'BRIDGE_CLOSED'
 
 /** A refusal, carrying the code and the values that disagreed. */
@@ -405,8 +414,55 @@ export class CellLease {
    * conflict (`REQUEST_ID_CONFLICT`) rather than being refused indiscriminately.
    */
   private readonly byRequestId = new Map<string, { subCallId: string, name: string, argsDigest: string, settled: Promise<NativeCallOutcome> }>()
+  /**
+   * THE PROVISIONAL ACCEPTING TABLE (V5 §6.2, Option A).
+   *
+   * A call is NOT accepted when its frame arrives. It is accepted when its
+   * durable `STARTED` row has committed. Between those two moments the request id
+   * lives HERE and nowhere else: it is not in {@link byRequestId}, not in the FIFO
+   * {@link queue}, and not in {@link inFlight}. So a `ledger.started` rejection
+   * needs no rollback at all -- there is nothing to roll back, and no window in
+   * which a ghost could be observed by a reader or started by the runner.
+   *
+   * WHY NOT OPTION B (publish first, roll back synchronously on failure). It is
+   * not merely uglier; it is UNSOUND ON THIS QUEUE. Under B the entry is in
+   * `queue` before `ledger.started` is awaited, and a DIFFERENT concurrent
+   * `invoke` that finishes its own write reaches `scheduleDrain()` and shifts the
+   * FIRST entry off the queue -- `runQueue` then runs `this.handler(...)`, a real
+   * `ctx.tools.execute`, for a call whose own durable intent is still unwritten.
+   * If that write then rejects, B's rollback removes the entry from all three
+   * collections, but the mutating tool call has already executed and is now
+   * absent from every structure the ledger's crash window is keyed on. B trades a
+   * ghost for an executed side effect with no record, which is strictly worse.
+   * A has no such window: the entry is unreachable by `runQueue` until the write
+   * has resolved.
+   *
+   * `acceptance` is what makes A safe for duplicates -- see {@link invoke}.
+   */
+  private readonly accepting = new Map<string, { name: string, argsDigest: string, outcome: Promise<NativeCallOutcome> }>()
   private readonly queue: AcceptedCall[] = []
   private readonly reported: LeaseCallDisposition[] = []
+  /**
+   * `STARTED` writes this lease has issued that have not yet resolved into either
+   * a published call or a refusal.
+   *
+   * `drain` waits for these as well as for {@link inFlight}, and the reason is
+   * the one thing Option A would otherwise cost: if `close()` could flip to
+   * CLOSED while a `STARTED` write was still in flight, that write's continuation
+   * would run against a CLOSED lease, record its refusal disposition into
+   * {@link pendingWrites} AFTER `flush` had already drained it, and leave a
+   * STARTED row with no disposition -- which `outcomeIsUnknown` reports as the
+   * crash window. That is a false crash-window report, the same class of defect
+   * `bridge-ledger.ts` documents as already having been fixed once. Waiting here
+   * keeps the disposition on the same `flush`/`unrecorded` channel as every
+   * other one, so "is this close's record complete?" still has exactly one
+   * answer.
+   *
+   * These are deliberately NOT counted by {@link pending}: that counter is
+   * "accepted unsettled logical calls" (V5 §6.3), and under A a call is not
+   * accepted until its intent is durable.
+   */
+  private readonly pendingIntents = new Set<Promise<void>>()
   private readonly controller: AbortController
   private sequence = 0
   private state: LeaseState = 'OPEN'
@@ -505,6 +561,14 @@ export class CellLease {
    * the caller in the epoch it thinks it is, is it the cell it thinks it is, has
    * this exact request already been answered — so the FIRST failure names the
    * most fundamental disagreement.
+   *
+   * THE ACCEPTANCE ORDER (V5 §6.2, Option A). This method does NOT publish the
+   * call. It registers a PROVISIONAL entry, awaits the durable `STARTED` write,
+   * and only then publishes into `byRequestId` / `queue` / `inFlight` (in
+   * {@link publish}). So there is no moment at which the lease holds an accepted
+   * call whose durable intent was not written, and a `ledger.started` rejection
+   * leaves nothing behind to roll back. See {@link accepting} for why Option B is
+   * unsound on this FIFO rather than merely less tidy.
    */
   async invoke(call: NativeCallRequest): Promise<NativeCallOutcome> {
     if (this.state !== 'OPEN') {
@@ -551,35 +615,153 @@ export class CellLease {
       )
     }
 
+    // THE PROVISIONAL TABLE, AND THE RULE A DUPLICATE GETS WHILE THE WRITE IS IN
+    // FLIGHT. This is the case that decides whether Option A is safe, so it is
+    // stated here rather than left to be inferred from the code.
+    //
+    // A second frame with the SAME request id can arrive while the first frame's
+    // `STARTED` write is still unresolved -- `onCall` does not serialize per
+    // request id, and a program may legitimately retransmit. That second frame
+    // finds the entry HERE, before it is in `byRequestId`, so:
+    //
+    //   * same tool + same arguments digest -> it JOINS the provisional entry's
+    //     OUTCOME promise. It neither starts a second write nor a second
+    //     dispatch. Both callers then await the SAME promise, so if the write
+    //     commits they both await the ONE published settlement, and if it rejects
+    //     they both get the SAME `LEASE_LEDGER_UNAVAILABLE` refusal. Neither is
+    //     left hanging and neither sees a different answer -- which is exactly
+    //     the "duplicate request joining" property V5 §6.2 requires A to preserve.
+    //   * same request id, different tool or arguments -> `REQUEST_ID_CONFLICT`,
+    //     the same code and the same rule as the published table. Deciding it on
+    //     the provisional entry means a colliding frame is refused whether or not
+    //     the first frame's write happened to commit.
+    //
+    // The rule for a caller that receives `LEASE_LEDGER_UNAVAILABLE` is: RETRY
+    // with the SAME request id is safe and is the documented recovery, because
+    // nothing was accepted, nothing was dispatched, and no `STARTED` row exists
+    // that a replay could be confused with. A retry with a FRESH request id is
+    // equally safe; unlike the conflict arm there is no identity to preserve,
+    // because the refused call never acquired one.
+    const accepting = this.accepting.get(call.requestId)
+    if (accepting !== undefined) {
+      if (accepting.name !== call.tool || accepting.argsDigest !== digest.digest) {
+        throw new LeaseRejection(
+          'REQUEST_ID_CONFLICT',
+          `request id ${call.requestId} was first used for "${accepting.name}" with different arguments; `
+          + `it is refused rather than replayed as "${call.tool}"`,
+        )
+      }
+      return await accepting.outcome
+    }
+
+    // The sequence is consumed BEFORE the write and is NOT reused on the refusal
+    // arm. A gap in the numbering is harmless (the ids are identities, not an
+    // accounting total), whereas reusing a number would let two different logical
+    // calls share one subcall id -- the key the ledger is read by.
     this.sequence += 1
     const subCallId = `${this.outerCallId}:ipython:${String(this.sequence)}`
     let resolve!: (outcome: NativeCallOutcome) => void
     let reject!: (error: unknown) => void
     const settled = new Promise<NativeCallOutcome>((res, rej) => { resolve = res; reject = rej })
     const accepted: AcceptedCall = { call, subCallId, sequence: this.sequence, argsDigest: digest.digest, settled, resolve, reject, started: false }
-    this.byRequestId.set(call.requestId, { subCallId, name: call.tool, argsDigest: digest.digest, settled })
+
+    // DURABLE INTENT, BEFORE PUBLICATION AND BEFORE ANY DISPATCH. Written here
+    // rather than inside the runner so it happens at ACCEPTANCE: a call that is
+    // queued behind others and then abandoned at close must still have left a
+    // record, which is the case BR-07's oracle names ("nothing continues silently
+    // ... with no record").
+    const acceptance = (async (): Promise<{ settled: Promise<NativeCallOutcome> }> => {
+      await this.ledger.started({
+        subCallId,
+        sessionId: this.sessionId,
+        kernelEpoch: this.epoch,
+        cellId: this.cellId,
+        outerCallId: this.outerCallId,
+        rootCallId: this.rootCallId,
+        requestId: call.requestId,
+        argsDigest: digest.digest,
+        name: call.tool,
+      })
+      // THE INTENT IS DURABLE NOW. Only here does the call become reachable by
+      // the FIFO runner -- and `publish` re-checks the lease state first, because
+      // a close can have begun during the write.
+      return this.publish(call, accepted, settled)
+    })()
+
+    // THE ONE OUTCOME PROMISE BOTH ARMS AWAIT. Built once and stored in the
+    // provisional entry, so the first caller and every duplicate get an
+    // identical, structured answer. A bare rethrow of the ledger's own error
+    // would reach a duplicate as an unstructured failure while the first caller
+    // saw a classified one, which is the kind of asymmetry a program cannot
+    // branch on.
+    const outcome = acceptance.then(
+      record => record.settled,
+      (error: unknown): never => {
+        // THE REFUSAL ARM. Nothing was published, so there is no ghost to remove
+        // and no rollback to perform: the call was never accepted. The refusal is
+        // a structured `LeaseRejection` so a program can branch on
+        // `LEASE_LEDGER_UNAVAILABLE` and retry, rather than parsing a generic
+        // `BRIDGE_FAILED` and being unable to tell "retryable storage failure,
+        // nothing happened" from "your authority is gone".
+        throw new LeaseRejection(
+          'LEASE_LEDGER_UNAVAILABLE',
+          `the durable intent for "${call.tool}" could not be recorded, so the call was NOT accepted and NOT dispatched: `
+          + (error instanceof Error ? error.message : String(error)),
+        )
+      },
+    )
+    this.accepting.set(call.requestId, { name: call.tool, argsDigest: digest.digest, outcome })
+    this.trackIntent(call.requestId, acceptance)
+    return await outcome
+  }
+
+  /**
+   * Publish an accepted call into the three collections, or dispose of it.
+   *
+   * THE STATE RE-CHECK IS LOAD-BEARING AND IS NOT DEFENSIVE CODING. `invoke`
+   * checked the state before the write, but a write is an await, so a close can
+   * begin during it. Publishing unconditionally would then add the call to
+   * `queue` and `inFlight` AFTER `drain` had already passed its last
+   * `settleQueuedCalls` and flushed -- leaving a CLOSED lease with an accepted
+   * call that nothing will ever settle: the same ghost the fix exists to remove,
+   * merely moved to a narrower window. So a call whose lease closed during its
+   * own write is DISPOSED here instead, through the same handoff/report/reject
+   * path the close path uses, which is why the disposition is still recorded and
+   * the caller still gets a structured refusal.
+   */
+  private publish(call: NativeCallRequest, accepted: AcceptedCall, settled: Promise<NativeCallOutcome>): { settled: Promise<NativeCallOutcome> } {
+    if (this.state !== 'OPEN') {
+      this.disposeUnstarted(accepted, this.closeReason ?? 'completed')
+      return { settled }
+    }
+    this.byRequestId.set(call.requestId, {
+      subCallId: accepted.subCallId,
+      name: call.tool,
+      argsDigest: accepted.argsDigest,
+      settled,
+    })
     this.queue.push(accepted)
     this.inFlight.add(settled)
     void settled.catch(() => undefined).finally(() => { this.inFlight.delete(settled) })
-
-    // DURABLE INTENT, BEFORE ANY DISPATCH. Written here rather than inside the
-    // runner so it happens at ACCEPTANCE: a call that is queued behind others and
-    // then abandoned at close must still have left a record, which is the case
-    // BR-07's oracle names ("nothing continues silently ... with no record").
-    await this.ledger.started({
-      subCallId,
-      sessionId: this.sessionId,
-      kernelEpoch: this.epoch,
-      cellId: this.cellId,
-      outerCallId: this.outerCallId,
-      rootCallId: this.rootCallId,
-      requestId: call.requestId,
-      argsDigest: digest.digest,
-      name: call.tool,
-    })
-
     this.scheduleDrain()
-    return await settled
+    return { settled }
+  }
+
+  /**
+   * Keep the provisional entry alive until its write resolved, then clear it.
+   *
+   * Registered in {@link pendingIntents} for the whole lifetime of the write so
+   * `drain` can wait for it, and removed on BOTH arms. The promise held in
+   * `pendingIntents` never rejects: the caller's refusal is carried by `outcome`,
+   * and a rejection nobody awaited would surface as an unhandled rejection.
+   */
+  private trackIntent(requestId: string, acceptance: Promise<unknown>): void {
+    const tracked = acceptance.then(
+      () => { this.accepting.delete(requestId) },
+      () => { this.accepting.delete(requestId) },
+    )
+    this.pendingIntents.add(tracked)
+    void tracked.finally(() => { this.pendingIntents.delete(tracked) })
   }
 
   /**
@@ -618,11 +800,29 @@ export class CellLease {
    * queued entry start, and reporting quiescence with work outstanding is the one
    * thing a close barrier exists to prevent.
    */
+  /**
+   * STEP 3 + 4 + 5: quiesce every started call, record every disposition, close.
+   *
+   * The loop is not a single await because a runner settling can let the next
+   * queued entry start, and reporting quiescence with work outstanding is the one
+   * thing a close barrier exists to prevent.
+   *
+   * `pendingIntents` IS PART OF THE QUIESCENCE CONDITION, and that is the one
+   * thing Option A costs. A `STARTED` write that is still in flight when the close
+   * begins resolves AFTER the close started; its continuation either disposes the
+   * call (recording an `abandoned-unstarted` disposition on the same
+   * `flush`/`unrecorded` channel as every other one) or, if the write failed,
+   * leaves nothing at all. Breaking out of the loop without waiting for it would
+   * let `flush` run first and the disposition be pushed afterwards, leaving a
+   * STARTED row with no disposition -- which `outcomeIsUnknown` reports as the
+   * crash window, a false unknown-outcome report. So the loop waits for both sets
+   * before it flushes.
+   */
   private async drain(reason: BridgeCloseReason): Promise<void> {
     for (;;) {
       this.settleQueuedCalls(reason)
-      if (this.inFlight.size === 0) break
-      await Promise.allSettled([...this.inFlight])
+      if (this.inFlight.size === 0 && this.pendingIntents.size === 0) break
+      await Promise.allSettled([...this.inFlight, ...this.pendingIntents])
     }
     this.settleQueuedCalls(reason)
     // STEP 4: flush the ledger BEFORE the lease reports itself closed, so a
@@ -641,32 +841,43 @@ export class CellLease {
   }
 
   /**
-   * Dispose of calls that will never start, recording WHY for each.
+   * Dispose of ONE call that will never start, recording WHY for it.
    *
    * The two arms are the oracle's own distinction. A host handoff that takes
    * ownership produces `handed-to-jobs` WITH the job id; with no handoff, the
    * call is `abandoned-unstarted`. Mapping either onto the other would erase the
    * difference between "someone else owns this now" and "this was refused",
    * which is exactly what the oracle asks a reader to be able to tell apart.
+   *
+   * Shared by the two paths that can reach this state: the close path draining
+   * its queue, and `publish` discovering that the lease closed while the call's
+   * own durable intent was being written. Both must record the disposition and
+   * refuse the caller identically, or the same fact would be reported two ways
+   * depending on which window it landed in.
    */
+  private disposeUnstarted(entry: AcceptedCall, reason: BridgeCloseReason): void {
+    const handed = this.handoffToJobs?.({ subCallId: entry.subCallId, name: entry.call.tool, args: entry.call.arguments })
+    const refusal = new LeaseRejection(
+      'CELL_LEASE_EXPIRED',
+      handed === undefined
+        ? `the cell settled before "${entry.call.tool}" started, so the call was abandoned unstarted`
+        : `the cell settled before "${entry.call.tool}" started; the host handed it to job ${handed.jobId}`,
+    )
+    this.report(
+      handed === undefined
+        ? { subCallId: entry.subCallId, name: entry.call.tool, disposition: 'abandoned-unstarted', closeReason: reason, started: false }
+        : { subCallId: entry.subCallId, name: entry.call.tool, disposition: 'handed-to-jobs', jobId: handed.jobId, closeReason: reason, started: false },
+    )
+    entry.reject(refusal)
+  }
+
+  /** Dispose of every queued call that will never start, one at a time. */
   private settleQueuedCalls(reason: BridgeCloseReason): void {
     while (this.queue.length > 0) {
       const entry = this.queue.shift()
       if (entry === undefined) return
       if (entry.started) continue
-      const handed = this.handoffToJobs?.({ subCallId: entry.subCallId, name: entry.call.tool, args: entry.call.arguments })
-      const refusal = new LeaseRejection(
-        'CELL_LEASE_EXPIRED',
-        handed === undefined
-          ? `the cell settled before "${entry.call.tool}" started, so the call was abandoned unstarted`
-          : `the cell settled before "${entry.call.tool}" started; the host handed it to job ${handed.jobId}`,
-      )
-      this.report(
-        handed === undefined
-          ? { subCallId: entry.subCallId, name: entry.call.tool, disposition: 'abandoned-unstarted', closeReason: reason, started: false }
-          : { subCallId: entry.subCallId, name: entry.call.tool, disposition: 'handed-to-jobs', jobId: handed.jobId, closeReason: reason, started: false },
-      )
-      entry.reject(refusal)
+      this.disposeUnstarted(entry, reason)
     }
   }
 
