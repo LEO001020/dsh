@@ -839,3 +839,91 @@ describe('R4 CONCURRENCY: two concurrent /work start calls for one session', () 
   })
 })
 
+
+// ---------------------------------------------------------------------------
+// CORROBORATION, NOT A FIX: F5 / G-SEAM-45 reached through the NEW entry point
+// ---------------------------------------------------------------------------
+
+/**
+ * WHY THIS BLOCK EXISTS, AND WHY IT USES `it.fails`.
+ *
+ * V3's ordering rule is that Start Work must NOT be exposed before atomic target
+ * admission is fixed, because the new entry point makes an existing
+ * over-admission defect REACHABLE BY A USER for the first time. Writer R3 owns
+ * that fix and the root integrates R3 before R4. So this block repairs nothing: it
+ * CORROBORATES, through the product's own new path, that a run created by
+ * `/work start` exhibits the recorded defect.
+ *
+ * `it.fails` is this project's convention for an encoded open defect
+ * (`capacity-v8-probe.test.ts:306-312`, `capacity.test.ts`): the body states the
+ * CORRECT property, the suite stays green while the property is violated, and the
+ * case turns RED the moment R3 fixes it. That inversion is the point — a red case
+ * here is the signal to DELETE this block, not to repair it. It is deliberately
+ * the last block in the file so that deletion is a truncation.
+ *
+ * THE STIMULUS IS COPIED FROM THE RECORDED REPRODUCTION, not invented.
+ * `capacity-v8-probe.test.ts` (V8/CAP-10) reproduces G-SEAM-45 with target 3,
+ * three tasks admitted, TWO freed, then THREE concurrent refills against the two
+ * free slots.
+ *
+ * A NEGATIVE RESULT IS KEPT HERE ON PURPOSE, because it bounds the finding. A
+ * first version of this case used a DIFFERENT stimulus (target 3, two tasks
+ * admitted, ONE free slot, three concurrent refills) and did NOT reproduce the
+ * overshoot: `target=3 admittedNow=1 heldAgainstTarget=3 deficitAfter=0`. So the
+ * defect is not "any concurrency over-admits"; it is the specific interleaving the
+ * recorded repro drives. Widening the claim past that evidence would be the
+ * over-claim this project keeps retracting.
+ */
+describe('R4 CORROBORATION: a /work-start run exposes F5 (G-SEAM-45) — R3 owns the fix', () => {
+  it.fails('two freed slots admit exactly two, never three, through a /work-start run', async () => {
+    const r = await rig()
+    // The run is created by the HUMAN command, not by `createRun`, which is the
+    // whole point: this is the first path by which a user can reach it.
+    const started = await runWork(r, ' start 3')
+    expect(started.kind).toBe('success')
+    const runId = r.service.listRunIds()[0] as string
+    r.service.setReadyTasks(runId, 20)
+
+    const signal = new AbortController().signal
+    const req = (n: number) => ({
+      taskId: `task-${String(n)}`, childId: `child-${String(n)}`,
+      prompt: `work ${String(n)}`, reservedCost: 1,
+    })
+
+    const first = await r.service.drain(runId, [req(0), req(1), req(2)], signal)
+    expect(first.filter(o => o.accepted)).toHaveLength(3)
+
+    // Free exactly TWO slots, leaving one task holding its own.
+    for (const n of [0, 1]) {
+      await r.service.transition({ runId, taskId: `task-${String(n)}`, to: 'settling' })
+      await r.service.transition({ runId, taskId: `task-${String(n)}`, to: 'confirmed', spentCost: 0 })
+    }
+    expect(r.service.counts(runId).capacityDeficit, 'exactly two slots are free').toBe(2)
+
+    // THREE concurrent refills against TWO free slots. The correct answer is 2.
+    const [a, b, c] = await Promise.all([
+      r.service.drain(runId, [req(70)], signal),
+      r.service.drain(runId, [req(71)], signal),
+      r.service.drain(runId, [req(72)], signal),
+    ])
+    const admitted = [...a, ...b, ...c].filter(o => o.accepted)
+    const record = r.service.getRun(runId) as { tasks: Record<string, { state: string }> }
+    const held = Object.values(record.tasks).filter(task => task.state !== 'confirmed').length
+    const counts = r.service.counts(runId)
+
+    // MEASURED through the /work-start run, 2026-09-20, and byte-identical to the
+    // numbers GAPS.md records for the direct-`createRun` repro:
+    //   target=3 freedSlots=2 concurrentRequests=3 admitted=3 heldAgainstTarget3=4
+    //   acceptedIds=["child-70","child-71","child-72"] deficitAfter=0
+    // The overshoot is INVISIBLE to the deficit reader, which is the sharp half.
+    console.log(`R4/CORROBORATION measured: target=3 freedSlots=2 concurrentRequests=3 `
+      + `admitted=${String(admitted.length)} heldAgainstTarget3=${String(held)} `
+      + `acceptedIds=${JSON.stringify(admitted.map(o => o.childId))} `
+      + `deficitAfter=${String(counts.capacityDeficit)}`)
+
+    // THE CORRECT PROPERTIES, stated so `it.fails` has something to invert.
+    expect(admitted, 'two freed slots admit exactly two, never three').toHaveLength(2)
+    expect(held, 'held tasks never exceed the target').toBeLessThanOrEqual(3)
+    expect(counts.capacityDeficit, 'the deficit reader sees the overshoot').toBeGreaterThan(0)
+  })
+})
