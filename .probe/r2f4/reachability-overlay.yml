@@ -1,0 +1,29 @@
+# R2-F4 reachability overlay: the archived ID-01 overlay (keyless mock route) PLUS
+# one inserted probe row that reports whether ctx.dailyData is live in the composed
+# product and whether its store is bound to the mounted ctx.attachments capability.
+#
+# The probe INSERTS NO SERVICE AND NO TOOL ROW. It reads what the composition
+# registered, so a green result is a fact about the product and not about the probe.
+- id: llm-deepseek
+  disabled: true
+
+- id: agent-default-model
+  config:
+    provider: t17-mock
+    model: t17-mock
+
+- id: session-persistence-jsonl
+  config:
+    root: !!js process.env.T17_SESSION_ROOT
+    compression: none
+
+- id: agent-instructions
+  disabled: true
+
+- insert:
+    - id: t17-first-call-adapter
+      name: 'D:/DSH/work/wt-r2f4/qualification/results/T17-identity/first-call-adapter.mjs'
+
+- insert:
+    - id: r2f4-data-reachability
+      name: 'D:/DSH/work/wt-r2f4/.probe/r2f4/data-reachability-plugin.mjs'

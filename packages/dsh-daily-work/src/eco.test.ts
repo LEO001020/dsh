@@ -1322,11 +1322,21 @@ describe('ECO-07: the stock control arm is not secretly modified, and the variab
    * The STOCK arm is untouched by all of this and is still asserted above: its
    * patch is the literal empty array and its bundles are the two shipped ones.
    *
+   * WHY IT MOVED ONCE MORE, at integration. R1's F3 evidence quoted the boot's
+   * narration verbatim, and that sentence embedded an absolute workspace path
+   * (`D:/DSH/work/wt-r1`). `upg-gates.test.ts` asserts this file contains no
+   * absolute source path -- so the install does not depend on one machine's
+   * checkout layout -- and it was RIGHT to fail: the path was real and would have
+   * shipped. The path is now elided in the comment and the verbatim string lives
+   * in the artifact R1 recorded. The edit is COMMENT-ONLY (verified: the diff has
+   * no non-comment line), so the executable composition is unchanged -- but the
+   * file digest moves regardless, which is exactly why this pin is a literal.
+   *
    * THE STALENESS IS THE POINT OF THIS TEST, so the pin is kept as a literal
    * rather than computed. A digest that were recomputed at runtime would agree
    * with whatever the file happened to contain and would catch nothing.
    */
-  const DAILY_PATCH_SHA256 = '5b8b2a8e5d9ae13d35c1d86833f8b96eeb84078a13027a08efc1379a6fc8afb4'
+  const DAILY_PATCH_SHA256 = '33d46a6b68d2a4e0ece5d3405401e059e437355ae2207af4635423fe286538ac'
 
   it('the stock arm declares no plugin rows, and its files hash to the committed values', () => {
     // "A control group that has been quietly modified is not a control group."

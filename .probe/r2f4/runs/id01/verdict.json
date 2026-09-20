@@ -1,0 +1,105 @@
+{
+  "driver": "r2f4-id01-remesure",
+  "case": "ID-01 (graph clause)",
+  "ranAt": "2026-09-20T02:09:32.419Z",
+  "tree": "D:/DSH/work/wt-r2f4",
+  "branch": "wt/r2f4",
+  "home": "D:/DSH/home/r2f4",
+  "overlay": "D:/DSH/work/wt-r2f4/.probe/r2f4/combined-overlay.yml",
+  "overlayNote": "the archived ID-01 overlay with the two insert names re-pointed at this worktree; keyless mock route, no provider budget",
+  "rebuilds": [
+    {
+      "package": "packages/dsh-daily-work",
+      "exitCode": 0,
+      "ms": 1842,
+      "error": null
+    },
+    {
+      "package": "packages/dsh-ipython",
+      "exitCode": 0,
+      "ms": 926,
+      "error": null
+    }
+  ],
+  "buildFreshness": {
+    "dsh-daily-work": {
+      "newestLibMtime": "2026-09-20T02:09:25.390Z",
+      "newestSrcMtime": "2026-09-20T02:06:59.602Z",
+      "libNewerThanSrc": true
+    },
+    "dsh-ipython": {
+      "newestLibMtime": "2026-09-20T02:09:26.330Z",
+      "newestSrcMtime": "2026-09-20T01:11:17.610Z",
+      "libNewerThanSrc": true
+    }
+  },
+  "pluginInstall": {
+    "exitCode": 0,
+    "stdoutTail": "Already up to date\n\ndependencies:\n+ dsh-daily-work 0.1.0 <- ..\\..\\..\\..\\work\\wt-r2f4\\packages\\dsh-daily-work\n+ dsh-ipython 0.1.0 <- ..\\..\\..\\..\\work\\wt-r2f4\\packages\\dsh-ipython\n\nDone in 329ms using pnpm v11.24.0\n"
+  },
+  "port": 10384,
+  "timedOut": false,
+  "launcherSha256": "69c49c871735dc7ee81ec51f266bbec129f075fd5066e046374f4b13ab02a705",
+  "pinnedArtifactSha256": "69c49c871735dc7ee81ec51f266bbec129f075fd5066e046374f4b13ab02a705",
+  "graph": {
+    "lineCount": 720,
+    "distinctSpecifiers": 222,
+    "fromBuilt": 221,
+    "fromSource": 0,
+    "fromOther": 1,
+    "underPackagesLib": 213,
+    "underVendorLib": 7,
+    "underNodeModules": 1,
+    "sourceRows": []
+  },
+  "probeReadError": null,
+  "checks": [
+    {
+      "label": "the probe wrote its result and it names this home",
+      "ok": true,
+      "detail": "present"
+    },
+    {
+      "label": "every rebuilt package compiled",
+      "ok": true,
+      "detail": "[[\"packages/dsh-daily-work\",0],[\"packages/dsh-ipython\",0]]"
+    },
+    {
+      "label": "the graph was recorded and is non-empty",
+      "ok": true,
+      "detail": "lines=720"
+    },
+    {
+      "label": "no @deepseek-ai specifier resolved to a source (.ts) file",
+      "ok": true,
+      "detail": "fromBuilt=221 fromSource=0 fromOther=1; offenders=[]"
+    },
+    {
+      "label": "no specifier resolved to two different files (no mixed graph within a specifier)",
+      "ok": true,
+      "detail": "[]"
+    },
+    {
+      "label": "the resolved files sit under the checkout lib/ trees (packages, vendor or node_modules)",
+      "ok": true,
+      "detail": "fromBuilt=221 packages=213 vendor=7 node_modules=1"
+    },
+    {
+      "label": "REPORTED: sha256 of the launcher equals deployment.inputs.artifact_sha256 (a MAIN-checkout pin)",
+      "ok": true,
+      "detail": "onDisk=69c49c871735dc7e pinned=69c49c871735dc7e"
+    },
+    {
+      "label": "the first tool call SUCCEEDED",
+      "ok": true,
+      "detail": "requested=\"read\" isError=false"
+    },
+    {
+      "label": "the tool result carries the file's own text",
+      "ok": true,
+      "detail": "\"<path>D:\\\\DSH\\\\work\\\\wt-r2f4\\\\.probe\\\\r2f4\\\\runs\\\\id01\\\\first-call-input.txt</path>\\n<type>file</type>\\n<content>\\n1: ID01_FIRST_TOOL_CALL_ROUND_TRIP\\n\\n(End of file - total 1 lines)\\n</content>\""
+    }
+  ],
+  "graphFailures": [],
+  "graphClauseVerdict": "PASS"
+}

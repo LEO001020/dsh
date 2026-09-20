@@ -1,0 +1,61 @@
+{
+  "at": "2026-09-20T02:10:43.738Z",
+  "repoRoot": "D:\\DSH\\work\\wt-r2f4",
+  "packages": {
+    "dsh-daily-work": {
+      "emittedJsFiles": 33,
+      "emittedJsBytes": 723427,
+      "forbiddenImportsInEmitted": [],
+      "forbiddenImportsInProductionSources": [],
+      "forbiddenImportsInTests": [
+        {
+          "file": "packages/dsh-daily-work/src/data-plane.test.ts",
+          "specifier": "@deepseek-ai/dsh-tool-fs/src/read-render.ts"
+        },
+        {
+          "file": "packages/dsh-daily-work/src/data-plane.test.ts",
+          "specifier": "@deepseek-ai/dsh-tool-fs/src/read.ts"
+        },
+        {
+          "file": "packages/dsh-daily-work/src/data-plane.test.ts",
+          "specifier": "@deepseek-ai/dsh-tool-fs-search/src/search-core.ts"
+        },
+        {
+          "file": "packages/dsh-daily-work/src/data-plane.test.ts",
+          "specifier": "@deepseek-ai/dsh-tool-fs-search/src/search-core.ts"
+        },
+        {
+          "file": "packages/dsh-daily-work/src/data-plane.test.ts",
+          "specifier": "@deepseek-ai/dsh-tool-fs-search/src/grep.ts"
+        },
+        {
+          "file": "packages/dsh-daily-work/src/data-plane.test.ts",
+          "specifier": "@deepseek-ai/dsh-tool-fs-search/src/search-core.ts"
+        },
+        {
+          "file": "packages/dsh-daily-work/src/eco.test.ts",
+          "specifier": "@deepseek-ai/dsh-headless/src/json-stream.ts"
+        },
+        {
+          "file": "packages/dsh-daily-work/src/history-web.test.ts",
+          "specifier": "@deepseek-ai/dsh-tool-web/src/trust.ts"
+        }
+      ],
+      "commentCitationsInEmitted": []
+    },
+    "dsh-ipython": {
+      "emittedJsFiles": 11,
+      "emittedJsBytes": 159431,
+      "forbiddenImportsInEmitted": [],
+      "forbiddenImportsInProductionSources": [],
+      "forbiddenImportsInTests": [],
+      "commentCitationsInEmitted": []
+    }
+  },
+  "total": {
+    "emittedJsFiles": 44,
+    "forbiddenImportsInProduction": 0,
+    "commentCitationsInEmitted": 0,
+    "offenders": []
+  }
+}

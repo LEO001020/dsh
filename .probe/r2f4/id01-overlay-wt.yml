@@ -1,0 +1,37 @@
+# R2-F4 ID-01 overlay: the archived ID-01 overlay, with the two inserted rows
+# re-pointed at THIS worktree's copies of the T17 instruments.
+#
+# WHY A COPY RATHER THAN EDITING THE ARCHIVED FILE. The archived overlay under
+# `qualification/results/V1-identity/overlays/` is EVIDENCE for a run recorded under
+# deployment identity 0a0996f3, and it names the main checkout's instruments by
+# absolute path. Editing it would change the evidence for that run. This file is the
+# same composition with only the two `insert` names moved, so the graph measured here
+# is the graph of THIS tree.
+#
+# EVERYTHING ELSE IS IDENTICAL, including the keyless mock route. That means this is
+# a CONTROLLED LOCAL ROUTE: it consumes no provider budget and proves the module
+# graph and the tool chain, NOT a provider integration.
+
+- id: llm-deepseek
+  disabled: true
+
+- id: agent-default-model
+  config:
+    provider: t17-mock
+    model: t17-mock
+
+- id: session-persistence-jsonl
+  config:
+    root: !!js process.env.T17_SESSION_ROOT
+    compression: none
+
+- id: agent-instructions
+  disabled: true
+
+- insert:
+    - id: t17-first-call-adapter
+      name: 'D:/DSH/work/wt-r2f4/qualification/results/T17-identity/first-call-adapter.mjs'
+
+- insert:
+    - id: t17-identity-probe
+      name: 'D:/DSH/work/wt-r2f4/qualification/results/T17-identity/probe-plugin.mjs'

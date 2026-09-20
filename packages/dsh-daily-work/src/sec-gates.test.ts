@@ -1495,8 +1495,25 @@ describe('SEC-06: park invalidates old RPC; reset invalidates old references and
     expect(host).not.toContain('bound to the live object plus the run epoch')
     // What the await-boundary re-check ACTUALLY is, quoted from the loop it guards.
     // These two checks are real; the epoch and the owner are not.
-    expect(code).toMatch(/if \(this\.disposed\) break/u)
-    expect(code).toMatch(/if \(signal\.aborted\) break/u)
+    //
+    // ASSERTED AS THE INVARIANT, NOT AS ONE SPELLING OF IT. This read
+    // `/if \(this\.disposed\) break/` and `/if \(signal\.aborted\) break/`, which
+    // pinned the exact shape R9's tree had: two separate one-line guards. R3's
+    // admission rework replaced that loop with a batched form that checks the same
+    // two conditions in ONE combined guard before doing any work:
+    //
+    //     if (this.disposed || entry.signal.aborted) break
+    //
+    // That is the same protection, so the old spelling would fail a correct tree --
+    // and the tempting "fix" of deleting these two lines would have removed the only
+    // check that the guard exists at all. What is asserted instead is what this case
+    // is about: the loop still refuses to start work once the service is disposed or
+    // the caller's signal has aborted, and it BREAKS rather than fabricating an
+    // outcome for a caller who never asked.
+    expect(code, 'the drain must still stop on a disposed service').toMatch(/this\.disposed/u)
+    expect(code, 'the drain must still stop on an aborted caller').toMatch(/signal\.aborted/u)
+    expect(code, 'the combined guard must break rather than invent an outcome')
+      .toMatch(/this\.disposed \|\| entry\.signal\.aborted\) break/u)
     // THE TWO WRITERS' CHANGES ARE COMBINED HERE, not chosen between, because
     // they are about different properties and neither subsumes the other.
     //

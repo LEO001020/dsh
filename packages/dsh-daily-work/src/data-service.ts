@@ -48,9 +48,9 @@ import { z } from 'zod'
 import {
   ArtifactError,
   ArtifactStorePageProvider,
+  AttachmentArtifactStore,
   DEFAULT_ARTIFACT_QUOTA_BYTES,
   DEFAULT_PAGE_BYTES,
-  LocalArtifactStore,
   RecordingPageProvider,
   buildLineIndex,
   captureFile,
@@ -167,7 +167,7 @@ export const DEFAULT_EXECUTION_WORLD = 'local'
  * usable, which is the behaviour ARCHITECTURE §10/§12 requires.
  */
 export class DataPlaneService extends Service {
-  readonly store: LocalArtifactStore
+  readonly store: AttachmentArtifactStore
   readonly grants = new GrantTable()
   readonly ownerScope: string
   readonly executionWorld: string
@@ -194,12 +194,25 @@ export class DataPlaneService extends Service {
     // kernel supplies: a kernel-chosen root would let model-authored Python place
     // objects wherever it liked, which is the FS-policy bypass the audit forbids.
     //
-    // A FALLBACK IS RECORDED, NOT SILENT. When neither an explicit `artifactRoot`
-    // nor the host's `dshHomePath` helper is available, the root is the relative
-    // `data-artifacts` and its location depends on the launch directory. That is a
-    // real limitation, so it is written to the host log at construction rather
-    // than left for an operator to discover as a stray directory.
-    this.store = new LocalArtifactStore(
+    // ── MERGE OF TWO INDEPENDENT CHANGES TO ONE CONSTRUCTOR ────────────────
+    //
+    // R6 changed WHERE the root comes from (and made the fallback RECORDED).
+    // R2-F4 changed WHERE THE BYTES come from (the mounted `ctx.attachments`
+    // capability, instead of a store this module constructed). Neither subsumes
+    // the other, so both are kept:
+    //
+    //   - the root is still computed by `defaultArtifactRoot(ctx, configured,
+    //     onFallback)`, which refuses a RELATIVE configured root and records the
+    //     fallback rather than leaving it silent -- R6's fix for G-SEAM-64;
+    //   - the store is `AttachmentArtifactStore`, which takes the attachment
+    //     provider as its first argument and borrows the host's own instance --
+    //     R2-F4's fix for F4, so exactly one provider instance exists in the
+    //     process and no module-local state can be split between two copies.
+    //
+    // The two arguments are independent: the ROOT says where this project's
+    // artifact INDEX lives; the PROVIDER says where the BYTES live.
+    this.store = new AttachmentArtifactStore(
+      ctx.attachments,
       defaultArtifactRoot(ctx, config.artifactRoot, relative => {
         this._artifactRootFallback = relative
         ctx.logger?.warn(
@@ -400,7 +413,7 @@ export class DataPlaneService extends Service {
    */
   private recordRefusal(refusal: Omit<CursorRefusal, 'at'> & { at?: string }): void {
     void this.journal.recordRefusal({ at: new Date().toISOString(), ...refusal }).catch(() => {
-      // `LocalArtifactStore.recordRefusal` already captures the failure in its own
+      // `AttachmentArtifactStore.recordRefusal` already captures the failure in its own
       // list; this catch exists so a rejected promise is never unhandled.
     })
   }

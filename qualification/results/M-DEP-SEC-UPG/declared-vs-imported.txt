@@ -4,11 +4,10 @@
 # production import of an undeclared peer is the sibling defect: it resolves
 # here through the junction farm and can fail in a real install.
 
-imported (22):
+imported (21):
   @deepseek-ai/cordis
   @deepseek-ai/dsh-agent
-  @deepseek-ai/dsh-attachment-local   <-- NOT DECLARED
-  @deepseek-ai/dsh-commands
+  @deepseek-ai/dsh-attachment
   @deepseek-ai/dsh-credentials
   @deepseek-ai/dsh-fs   <-- NOT DECLARED
   @deepseek-ai/dsh-llm   <-- NOT DECLARED
@@ -31,7 +30,7 @@ imported (22):
 declared (10):
   @deepseek-ai/cordis
   @deepseek-ai/dsh-agent
-  @deepseek-ai/dsh-commands
+  @deepseek-ai/dsh-attachment
   @deepseek-ai/dsh-credentials
   @deepseek-ai/dsh-storage-domain
   @deepseek-ai/dsh-subagent
@@ -40,8 +39,7 @@ declared (10):
   @deepseek-ai/dsh-web
   typescript
 
-UNDECLARED (14):
-  @deepseek-ai/dsh-attachment-local
+UNDECLARED (13):
   @deepseek-ai/dsh-fs
   @deepseek-ai/dsh-llm
   @deepseek-ai/dsh-sandbox

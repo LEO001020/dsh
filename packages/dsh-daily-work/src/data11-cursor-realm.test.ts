@@ -24,7 +24,7 @@
  *   - descriptor/content mismatch -> reject
  *   - missing/corrupt object -> reject
  *
- * TRACK LABEL: `[real]`. Every arm drives the production `LocalArtifactStore`
+ * TRACK LABEL: `[real]`. Every arm drives the production `AttachmentArtifactStore`
  * over real files on this machine's disk through the production
  * `publishImmutableObjectStream` publication primitive. There is no mock here:
  * the cross-store question is about real store roots, so a mock store would
@@ -36,6 +36,7 @@
  * does not re-test it.
  */
 import { Context } from '@deepseek-ai/cordis'
+import AttachmentLocal from '@deepseek-ai/dsh-attachment-local'
 import LocalFileSystem from '@deepseek-ai/dsh-fs-local'
 import { createHash } from 'node:crypto'
 import { execFile } from 'node:child_process'
@@ -50,7 +51,7 @@ import {
   CURSOR_REFUSAL_LOG_NAME,
   STORE_REALM_FILE_NAME,
   InMemorySessionReferenceLog,
-  LocalArtifactStore,
+  AttachmentArtifactStore,
   RecordingPageProvider,
   ArtifactStorePageProvider,
   captureFile,
@@ -62,7 +63,7 @@ import {
   type CursorRefusal,
   type IoCounters,
 } from './artifacts.ts'
-import { GrantTable, type ObservationDescriptor } from './observations.ts'
+import { GrantTable, OBSERVATION_SCHEMA_VERSION, type ObservationDescriptor } from './observations.ts'
 
 const execFileAsync = promisify(execFile)
 const HERE = dirname(fileURLToPath(import.meta.url))
@@ -86,13 +87,83 @@ function mountFs(cwd: string): LocalFileSystem {
   return new LocalFileSystem(ctx, { cwd, diffBasisMaxBytes: 10 * 1024 * 1024 })
 }
 
-/** A real store + log + grants triple, with the store rooted in a temp dir. */
+/**
+ * A real store + log + grants triple, with the store rooted in a temp dir.
+ *
+ * THE PROVIDER IS MOUNTED HERE, and that is the post-merge construction. The
+ * store takes its BYTES from the `ctx.attachments` capability (F4's fix: the
+ * module used to deep-import the provider's `src/store.ts`, which put a `.ts`
+ * file in the production import graph and created a second physical module
+ * instance). So the store's first argument is a mounted provider and its second
+ * is the INDEX root -- two independent locations, which is exactly what the
+ * cross-store arms below need: two planes with different index roots AND
+ * different byte homes, so "different store" is a real difference rather than
+ * two views of one directory.
+ *
+ * The provider's home sits under the same temp root as the index, so no two
+ * planes share an attachment store and a plane publishing identical bytes cannot
+ * silently dedup against another plane's object.
+ */
 function makePlane(label: string, scope = 'project:r7') {
-  const store = new LocalArtifactStore(join(tempRoot(label), 'artifacts'))
+  const root = tempRoot(label)
+  const home = join(root, 'home')
+  const indexRoot = join(root, 'artifacts')
+  const ctx = new Context()
+  new AttachmentLocal(ctx, { dshHome: home })
+  const store = new AttachmentArtifactStore(ctx.attachments, indexRoot)
   const log = new InMemorySessionReferenceLog()
   const grants = new GrantTable()
   grants.bump(scope)
-  return { store, log, grants, scope }
+  return { store, log, grants, scope, ctx, home, indexRoot }
+}
+
+/**
+ * A SECOND store over the SAME two directories as `plane`, with a freshly mounted
+ * provider -- the in-process stand-in for a restarted process.
+ *
+ * Both locations are reused, and that is the point: the store's identity is a
+ * property of the index root, so a reopen pointed at a different root would prove
+ * nothing about durability. The provider is re-mounted rather than shared because
+ * a real restart has a new process and therefore a new provider instance; sharing
+ * `plane.ctx.attachments` would model a warm cache, not a restart.
+ */
+function reopenPlane(plane: ReturnType<typeof makePlane>): AttachmentArtifactStore {
+  const ctx = new Context()
+  new AttachmentLocal(ctx, { dshHome: plane.home })
+  return new AttachmentArtifactStore(ctx.attachments, plane.indexRoot)
+}
+
+/**
+ * A store over a FRESH temp root, for the arms that only exercise the realm file.
+ *
+ * The realm lives in the INDEX root, so the byte home is placed beside it under
+ * the same temp directory and never read. The provider still has to be mounted,
+ * because the constructor takes one -- a store with no provider is not a shape
+ * the merged code has.
+ *
+ * @param label - a distinct temp-dir name, so no two arms share a root.
+ * @returns the store and its index root.
+ */
+function standaloneStore(label: string): { store: AttachmentArtifactStore; indexRoot: string } {
+  const root = tempRoot(label)
+  const indexRoot = join(root, 'artifacts')
+  const ctx = new Context()
+  new AttachmentLocal(ctx, { dshHome: join(root, 'home') })
+  return { store: new AttachmentArtifactStore(ctx.attachments, indexRoot), indexRoot }
+}
+
+/** {@link standaloneStore} with the two directories named explicitly. */
+function standaloneStoreAt(home: string, indexRoot: string): { store: AttachmentArtifactStore } {
+  const ctx = new Context()
+  new AttachmentLocal(ctx, { dshHome: home })
+  return { store: new AttachmentArtifactStore(ctx.attachments, indexRoot) }
+}
+
+/** A second store over an existing index root, with a freshly mounted provider. */
+function reopenStoreAt(indexRoot: string, home?: string): AttachmentArtifactStore {
+  const ctx = new Context()
+  new AttachmentLocal(ctx, { dshHome: home ?? join(indexRoot, '..', 'home') })
+  return new AttachmentArtifactStore(ctx.attachments, indexRoot)
 }
 
 const sha256 = (buffer: Uint8Array): string => createHash('sha256').update(buffer).digest('hex')
@@ -112,14 +183,33 @@ async function captureInto(
   })
 }
 
-/** The object path for a digest, so a test can damage the real file. */
-function objectPath(store: LocalArtifactStore, digest: string): string {
-  return join(store.root, 'objects', digest.slice(0, 2), digest)
+/**
+ * The object path for a digest, so a test can damage the real file.
+ *
+ * The bytes live in the mounted attachment provider now, so the path comes from
+ * the capability (`hostPath`) rather than from a layout this module assumes.
+ * That is the same accessor the production read path uses, which is what makes
+ * the damage land on the file the product would actually open -- a hand-built
+ * `root/objects/<sha>` path would damage nothing and the tamper arms below would
+ * pass vacuously. The same correction is recorded in `data-plane.test.ts`'s
+ * DATA-08 block.
+ */
+async function objectPath(store: AttachmentArtifactStore, digest: string): Promise<string> {
+  const path = await store.hostPath(`artifact:sha256:${digest}`)
+  if (path === undefined) {
+    throw new Error('the mounted provider must be host-backed for this test to damage the real object')
+  }
+  return path
 }
 
 /** Replace an object's bytes in place, clearing the read-only mode first. */
-function corruptObject(store: LocalArtifactStore, digest: string, fill: number, length = PAYLOAD.length): void {
-  const path = objectPath(store, digest)
+async function corruptObject(
+  store: AttachmentArtifactStore,
+  digest: string,
+  fill: number,
+  length = PAYLOAD.length,
+): Promise<void> {
+  const path = await objectPath(store, digest)
   chmodSync(path, 0o600)
   writeFileSync(path, Buffer.alloc(length, fill))
 }
@@ -475,7 +565,7 @@ describe('DATA-11 [real] arm 6: a missing object is refused, never as an empty s
     const first = await pages(plane.store, {
       descriptor: capture.descriptor, maxBytes: 64, grants: plane.grants, callerScope: plane.scope,
     })
-    const path = objectPath(plane.store, capture.descriptor.captured.sha256)
+    const path = await objectPath(plane.store, capture.descriptor.captured.sha256)
     chmodSync(path, 0o600)
     rmSync(path)
     await expect(pages(plane.store, {
@@ -489,7 +579,7 @@ describe('DATA-11 [real] arm 6: a missing object is refused, never as an empty s
     writeFileSync(join(root, 'p.bin'), PAYLOAD)
     const plane = makePlane('missing-first-store')
     const capture = await captureInto(root, plane, 'obs-missing-first')
-    const path = objectPath(plane.store, capture.descriptor.captured.sha256)
+    const path = await objectPath(plane.store, capture.descriptor.captured.sha256)
     chmodSync(path, 0o600)
     rmSync(path)
     await expect(pages(plane.store, {
@@ -622,7 +712,7 @@ describe('DATA-11 [real] the store realm identity is durable and not per-boot', 
     const plane = makePlane('realm-persist-store')
     await captureInto(root, plane, 'obs-realm-persist')
     const first = await plane.store.ensureRealm()
-    const reopened = new LocalArtifactStore(plane.store.root)
+    const reopened = reopenPlane(plane)
     expect(await reopened.ensureRealm()).toBe(first)
     // The file is the durable record, and it names the same realm.
     const record = JSON.parse(readFileSync(join(plane.store.root, STORE_REALM_FILE_NAME), 'utf8')) as
@@ -640,21 +730,19 @@ describe('DATA-11 [real] the store realm identity is durable and not per-boot', 
   it('refuses rather than silently minting a new realm when the realm file is malformed', async () => {
     // Regenerating would invalidate every cursor the store ever issued while looking
     // like a security property. The honest answer is a refusal naming the file.
-    const root = tempRoot('realm-malformed')
-    const store = new LocalArtifactStore(join(root, 'artifacts'))
+    const { store, indexRoot } = standaloneStore('realm-malformed')
     const realm = await store.ensureRealm()
     expect(realm.length).toBeGreaterThan(0)
     writeFileSync(join(store.root, STORE_REALM_FILE_NAME), '{ not json')
-    const reopened = new LocalArtifactStore(store.root)
+    const reopened = reopenStoreAt(indexRoot)
     await expect(reopened.ensureRealm()).rejects.toMatchObject({ code: 'artifact-integrity-error' })
   })
 
   it('refuses a realm file that carries no storeRealmId', async () => {
-    const root = tempRoot('realm-empty')
-    const store = new LocalArtifactStore(join(root, 'artifacts'))
+    const { store, indexRoot } = standaloneStore('realm-empty')
     await store.ensureRealm()
     writeFileSync(join(store.root, STORE_REALM_FILE_NAME), JSON.stringify({ createdAt: 'x' }))
-    await expect(new LocalArtifactStore(store.root).ensureRealm())
+    await expect(reopenStoreAt(indexRoot).ensureRealm())
       .rejects.toMatchObject({ code: 'artifact-integrity-error' })
   })
 
@@ -666,15 +754,22 @@ describe('DATA-11 [real] the store realm identity is durable and not per-boot', 
     // design exists to avoid.
     const root = tempRoot('realm-restart')
     const storeRoot = join(root, 'artifacts')
+    const home = join(root, 'home')
     // Prime the realm so process 1 reads an EXISTING one, which is the case that
     // matters: a fresh store in each process would prove nothing about durability.
-    const primed = new LocalArtifactStore(storeRoot)
+    const { store: primed } = standaloneStoreAt(home, storeRoot)
     const created = await primed.ensureRealm()
 
+    // The child mounts its OWN provider over the same home, which is what a real
+    // second process does; a shared instance would model a warm cache instead.
     const script = `
       const { pathToFileURL } = await import('node:url')
       const mod = await import(pathToFileURL(${JSON.stringify(join(PKG_ROOT, 'lib', 'artifacts.js'))}).href)
-      const store = new mod.LocalArtifactStore(${JSON.stringify(storeRoot)})
+      const attachment = await import('@deepseek-ai/dsh-attachment-local')
+      const { Context } = await import('@deepseek-ai/cordis')
+      const ctx = new Context()
+      new attachment.default(ctx, { dshHome: ${JSON.stringify(home)} })
+      const store = new mod.AttachmentArtifactStore(ctx.attachments, ${JSON.stringify(storeRoot)})
       const realm = await store.ensureRealm()
       process.stdout.write(JSON.stringify({ pid: process.pid, realm }))
     `
@@ -708,7 +803,7 @@ describe('DATA-11 [real] the store realm identity is durable and not per-boot', 
     })
     // A NEW store object over the same root stands in for the restarted process's
     // store; the cross-process case is measured in the test above.
-    const restarted = new LocalArtifactStore(plane.store.root)
+    const restarted = reopenPlane(plane)
     const resumed = await pages(restarted, {
       descriptor: capture.descriptor, maxBytes: 64, grants: plane.grants, callerScope: plane.scope,
       cursor: first.nextCursor ?? '',
@@ -742,7 +837,14 @@ describe('DATA-11 [real] the cursor binds the COMPLETE tuple', () => {
     expect(payload['revision']).toBe(`${capture.descriptor.captured.sha256}@g1`)
     expect(payload['query']).toBe('bytes:64')
     expect(payload['position']).toBe(64)
-    expect(payload['schemaVersion']).toBe(1)
+    // Bound to the CONSTANT rather than to the literal 1 it was when this arm was
+    // written. The cursor carries the DESCRIPTOR's schema version
+    // (`new CursorAuthority(..., descriptor.schemaVersion)`), and R8's taxonomy
+    // split raised `OBSERVATION_SCHEMA_VERSION` from 1 to 2 -- so a literal here
+    // asserts a number the product is right not to produce. Reading the constant
+    // keeps this arm about the BINDING, which is what the test name claims, rather
+    // than about a value that moves for unrelated reasons.
+    expect(payload['schemaVersion']).toBe(OBSERVATION_SCHEMA_VERSION)
   })
 
   it('refuses a cursor minted for a different QUERY over the same artifact', async () => {

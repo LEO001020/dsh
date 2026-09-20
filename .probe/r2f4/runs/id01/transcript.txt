@@ -1,0 +1,14 @@
+=== ID-01 re-measurement: wt-r2f4, built launcher, real module graph ===
+repo:      D:/DSH/work/wt-r2f4
+home:      D:/DSH/home/r2f4
+launcher:  D:/DSH/src/dsh-src/apps/cli/lib/bin.js
+graph out: D:/DSH/work/wt-r2f4/.probe/r2f4/runs/id01/graph.jsonl
+rebuild packages/dsh-daily-work: exit=0 in 1842ms
+rebuild packages/dsh-ipython: exit=0 in 926ms
+build dsh-daily-work: lib=2026-09-20T02:09:25.390Z src=2026-09-20T02:06:59.602Z fresh=true
+build dsh-ipython: lib=2026-09-20T02:09:26.330Z src=2026-09-20T01:11:17.610Z fresh=true
+installed profile links this worktree: true
+plugin install: exit=0
+
+port: 10384 portReleased: true timedOut: false exitCode: null
+probe: read and bound to this home

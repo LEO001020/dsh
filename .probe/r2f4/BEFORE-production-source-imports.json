@@ -1,0 +1,11 @@
+{
+  "at": "2026-09-20T01:48:23.685Z",
+  "source": "git show HEAD:packages/dsh-daily-work/src/*.ts",
+  "forbiddenImportsInProductionSources": [
+    {
+      "file": "packages/dsh-daily-work/src/artifacts.ts",
+      "specifier": "@deepseek-ai/dsh-attachment-local/src/store.ts",
+      "line": 74
+    }
+  ]
+}

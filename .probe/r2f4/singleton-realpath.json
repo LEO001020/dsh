@@ -1,0 +1,447 @@
+{
+  "at": "2026-09-20T01:51:29.105Z",
+  "dshSrc": "D:/DSH/src/dsh-src",
+  "packages": {
+    "dsh-daily-work": {
+      "@deepseek-ai/cordis": {
+        "resolved": "D:/DSH/src/dsh-src/vendor/cordis/lib/index.js",
+        "realpath": "D:/DSH/src/dsh-src/vendor/cordis/lib/index.js",
+        "kind": "BUILT"
+      },
+      "@deepseek-ai/cordis-plugin-group": {
+        "resolved": "D:/DSH/src/dsh-src/vendor/group/lib/index.js",
+        "realpath": "D:/DSH/src/dsh-src/vendor/group/lib/index.js",
+        "kind": "BUILT"
+      },
+      "@deepseek-ai/cordis-plugin-include": {
+        "resolved": "D:/DSH/src/dsh-src/vendor/include/lib/index.js",
+        "realpath": "D:/DSH/src/dsh-src/vendor/include/lib/index.js",
+        "kind": "BUILT"
+      },
+      "@deepseek-ai/cordis-plugin-loader": {
+        "resolved": "D:/DSH/src/dsh-src/vendor/loader/lib/index.js",
+        "realpath": "D:/DSH/src/dsh-src/vendor/loader/lib/index.js",
+        "kind": "BUILT"
+      },
+      "@deepseek-ai/dsh-": {
+        "resolved": null,
+        "error": "MODULE_NOT_FOUND"
+      },
+      "@deepseek-ai/dsh-agent": {
+        "resolved": "D:/DSH/src/dsh-src/packages/core/agent/lib/index.js",
+        "realpath": "D:/DSH/src/dsh-src/packages/core/agent/lib/index.js",
+        "kind": "BUILT"
+      },
+      "@deepseek-ai/dsh-agent-instructions": {
+        "resolved": "D:/DSH/src/dsh-src/packages/context/agent-instructions/lib/index.js",
+        "realpath": "D:/DSH/src/dsh-src/packages/context/agent-instructions/lib/index.js",
+        "kind": "BUILT"
+      },
+      "@deepseek-ai/dsh-agent-loop": {
+        "resolved": "D:/DSH/src/dsh-src/packages/core/agent-loop/lib/index.js",
+        "realpath": "D:/DSH/src/dsh-src/packages/core/agent-loop/lib/index.js",
+        "kind": "BUILT"
+      },
+      "@deepseek-ai/dsh-agent-loop-testkit": {
+        "resolved": "D:/DSH/src/dsh-src/packages/test-support/agent-loop-testkit/lib/index.js",
+        "realpath": "D:/DSH/src/dsh-src/packages/test-support/agent-loop-testkit/lib/index.js",
+        "kind": "BUILT"
+      },
+      "@deepseek-ai/dsh-agent-presets": {
+        "resolved": "D:/DSH/src/dsh-src/packages/preset/agent-presets/lib/index.js",
+        "realpath": "D:/DSH/src/dsh-src/packages/preset/agent-presets/lib/index.js",
+        "kind": "BUILT"
+      },
+      "@deepseek-ai/dsh-app-boot": {
+        "resolved": "D:/DSH/src/dsh-src/packages/boot/app-boot/lib/index.js",
+        "realpath": "D:/DSH/src/dsh-src/packages/boot/app-boot/lib/index.js",
+        "kind": "BUILT"
+      },
+      "@deepseek-ai/dsh-atomic-write": {
+        "resolved": "D:/DSH/src/dsh-src/packages/util/atomic-write/lib/index.js",
+        "realpath": "D:/DSH/src/dsh-src/packages/util/atomic-write/lib/index.js",
+        "kind": "BUILT"
+      },
+      "@deepseek-ai/dsh-attachment": {
+        "resolved": "D:/DSH/src/dsh-src/packages/attachment/attachment/lib/index.js",
+        "realpath": "D:/DSH/src/dsh-src/packages/attachment/attachment/lib/index.js",
+        "kind": "BUILT"
+      },
+      "@deepseek-ai/dsh-attachment-local": {
+        "resolved": "D:/DSH/src/dsh-src/packages/attachment/attachment-local/lib/index.js",
+        "realpath": "D:/DSH/src/dsh-src/packages/attachment/attachment-local/lib/index.js",
+        "kind": "BUILT"
+      },
+      "@deepseek-ai/dsh-base": {
+        "resolved": "D:/DSH/src/dsh-src/packages/bundle/base/lib/index.js",
+        "realpath": "D:/DSH/src/dsh-src/packages/bundle/base/lib/index.js",
+        "kind": "BUILT"
+      },
+      "@deepseek-ai/dsh-bash-sandbox": {
+        "resolved": "D:/DSH/src/dsh-src/packages/shell/bash-sandbox/lib/index.js",
+        "realpath": "D:/DSH/src/dsh-src/packages/shell/bash-sandbox/lib/index.js",
+        "kind": "BUILT"
+      },
+      "@deepseek-ai/dsh-client-ui-settings-plugins": {
+        "resolved": "D:/DSH/src/dsh-src/packages/client/ui-settings-plugins/lib/index.js",
+        "realpath": "D:/DSH/src/dsh-src/packages/client/ui-settings-plugins/lib/index.js",
+        "kind": "BUILT"
+      },
+      "@deepseek-ai/dsh-compaction": {
+        "resolved": "D:/DSH/src/dsh-src/packages/compaction/compaction/lib/index.js",
+        "realpath": "D:/DSH/src/dsh-src/packages/compaction/compaction/lib/index.js",
+        "kind": "BUILT"
+      },
+      "@deepseek-ai/dsh-compaction-basic": {
+        "resolved": "D:/DSH/src/dsh-src/packages/compaction/compaction-basic/lib/index.js",
+        "realpath": "D:/DSH/src/dsh-src/packages/compaction/compaction-basic/lib/index.js",
+        "kind": "BUILT"
+      },
+      "@deepseek-ai/dsh-credentials": {
+        "resolved": "D:/DSH/src/dsh-src/packages/credentials/credentials/lib/index.js",
+        "realpath": "D:/DSH/src/dsh-src/packages/credentials/credentials/lib/index.js",
+        "kind": "BUILT"
+      },
+      "@deepseek-ai/dsh-fs": {
+        "resolved": "D:/DSH/src/dsh-src/packages/fs/fs/lib/index.js",
+        "realpath": "D:/DSH/src/dsh-src/packages/fs/fs/lib/index.js",
+        "kind": "BUILT"
+      },
+      "@deepseek-ai/dsh-fs-local": {
+        "resolved": "D:/DSH/src/dsh-src/packages/fs/fs-local/lib/index.js",
+        "realpath": "D:/DSH/src/dsh-src/packages/fs/fs-local/lib/index.js",
+        "kind": "BUILT"
+      },
+      "@deepseek-ai/dsh-goal": {
+        "resolved": "D:/DSH/src/dsh-src/packages/goal/goal/lib/index.js",
+        "realpath": "D:/DSH/src/dsh-src/packages/goal/goal/lib/index.js",
+        "kind": "BUILT"
+      },
+      "@deepseek-ai/dsh-goal-round-driver": {
+        "resolved": "D:/DSH/src/dsh-src/packages/goal/goal-round-driver/lib/index.js",
+        "realpath": "D:/DSH/src/dsh-src/packages/goal/goal-round-driver/lib/index.js",
+        "kind": "BUILT"
+      },
+      "@deepseek-ai/dsh-headless": {
+        "resolved": "D:/DSH/src/dsh-src/packages/bundle/headless/lib/index.js",
+        "realpath": "D:/DSH/src/dsh-src/packages/bundle/headless/lib/index.js",
+        "kind": "BUILT"
+      },
+      "@deepseek-ai/dsh-jobs": {
+        "resolved": "D:/DSH/src/dsh-src/packages/jobs/jobs/lib/index.js",
+        "realpath": "D:/DSH/src/dsh-src/packages/jobs/jobs/lib/index.js",
+        "kind": "BUILT"
+      },
+      "@deepseek-ai/dsh-jobs-local": {
+        "resolved": "D:/DSH/src/dsh-src/packages/jobs/jobs-local/lib/index.js",
+        "realpath": "D:/DSH/src/dsh-src/packages/jobs/jobs-local/lib/index.js",
+        "kind": "BUILT"
+      },
+      "@deepseek-ai/dsh-llm": {
+        "resolved": "D:/DSH/src/dsh-src/packages/llm/llm/lib/index.js",
+        "realpath": "D:/DSH/src/dsh-src/packages/llm/llm/lib/index.js",
+        "kind": "BUILT"
+      },
+      "@deepseek-ai/dsh-llm-deepseek": {
+        "resolved": "D:/DSH/src/dsh-src/packages/llm/llm-deepseek/lib/index.js",
+        "realpath": "D:/DSH/src/dsh-src/packages/llm/llm-deepseek/lib/index.js",
+        "kind": "BUILT"
+      },
+      "@deepseek-ai/dsh-llm-mock-server": {
+        "resolved": "D:/DSH/src/dsh-src/packages/test-support/llm-mock-server/lib/index.js",
+        "realpath": "D:/DSH/src/dsh-src/packages/test-support/llm-mock-server/lib/index.js",
+        "kind": "BUILT"
+      },
+      "@deepseek-ai/dsh-llm-retry": {
+        "resolved": "D:/DSH/src/dsh-src/packages/llm/llm-retry/lib/index.js",
+        "realpath": "D:/DSH/src/dsh-src/packages/llm/llm-retry/lib/index.js",
+        "kind": "BUILT"
+      },
+      "@deepseek-ai/dsh-no-such-package-exists": {
+        "resolved": null,
+        "error": "MODULE_NOT_FOUND"
+      },
+      "@deepseek-ai/dsh-ptc-runtime": {
+        "resolved": "D:/DSH/src/dsh-src/packages/ptc-runtime/ptc-runtime/lib/index.js",
+        "realpath": "D:/DSH/src/dsh-src/packages/ptc-runtime/ptc-runtime/lib/index.js",
+        "kind": "BUILT"
+      },
+      "@deepseek-ai/dsh-ptc-runtime-node": {
+        "resolved": "D:/DSH/src/dsh-src/packages/ptc-runtime/ptc-runtime-node/lib/index.js",
+        "realpath": "D:/DSH/src/dsh-src/packages/ptc-runtime/ptc-runtime-node/lib/index.js",
+        "kind": "BUILT"
+      },
+      "@deepseek-ai/dsh-pwsh-local": {
+        "resolved": "D:/DSH/src/dsh-src/packages/shell/pwsh-local/lib/index.js",
+        "realpath": "D:/DSH/src/dsh-src/packages/shell/pwsh-local/lib/index.js",
+        "kind": "BUILT"
+      },
+      "@deepseek-ai/dsh-sandbox": {
+        "resolved": "D:/DSH/src/dsh-src/packages/sandbox/sandbox/lib/index.js",
+        "realpath": "D:/DSH/src/dsh-src/packages/sandbox/sandbox/lib/index.js",
+        "kind": "BUILT"
+      },
+      "@deepseek-ai/dsh-sandbox-local": {
+        "resolved": "D:/DSH/src/dsh-src/packages/sandbox/sandbox-local/lib/index.js",
+        "realpath": "D:/DSH/src/dsh-src/packages/sandbox/sandbox-local/lib/index.js",
+        "kind": "BUILT"
+      },
+      "@deepseek-ai/dsh-sandbox-policy": {
+        "resolved": "D:/DSH/src/dsh-src/packages/sandbox/sandbox-policy/lib/index.js",
+        "realpath": "D:/DSH/src/dsh-src/packages/sandbox/sandbox-policy/lib/index.js",
+        "kind": "BUILT"
+      },
+      "@deepseek-ai/dsh-sandbox-windows-acl": {
+        "resolved": "D:/DSH/src/dsh-src/packages/sandbox/sandbox-windows-acl/lib/index.js",
+        "realpath": "D:/DSH/src/dsh-src/packages/sandbox/sandbox-windows-acl/lib/index.js",
+        "kind": "BUILT"
+      },
+      "@deepseek-ai/dsh-session": {
+        "resolved": "D:/DSH/src/dsh-src/packages/core/session/lib/index.js",
+        "realpath": "D:/DSH/src/dsh-src/packages/core/session/lib/index.js",
+        "kind": "BUILT"
+      },
+      "@deepseek-ai/dsh-session-persistence-jsonl": {
+        "resolved": "D:/DSH/src/dsh-src/packages/session/session-persistence-jsonl/lib/index.js",
+        "realpath": "D:/DSH/src/dsh-src/packages/session/session-persistence-jsonl/lib/index.js",
+        "kind": "BUILT"
+      },
+      "@deepseek-ai/dsh-session-projection": {
+        "resolved": "D:/DSH/src/dsh-src/packages/session/session-projection/lib/index.js",
+        "realpath": "D:/DSH/src/dsh-src/packages/session/session-projection/lib/index.js",
+        "kind": "BUILT"
+      },
+      "@deepseek-ai/dsh-session-query": {
+        "resolved": "D:/DSH/src/dsh-src/packages/session-query/session-query/lib/index.js",
+        "realpath": "D:/DSH/src/dsh-src/packages/session-query/session-query/lib/index.js",
+        "kind": "BUILT"
+      },
+      "@deepseek-ai/dsh-session-query-sqlite": {
+        "resolved": "D:/DSH/src/dsh-src/packages/session-query/session-query-sqlite/lib/index.js",
+        "realpath": "D:/DSH/src/dsh-src/packages/session-query/session-query-sqlite/lib/index.js",
+        "kind": "BUILT"
+      },
+      "@deepseek-ai/dsh-settings": {
+        "resolved": "D:/DSH/src/dsh-src/packages/settings/settings/lib/index.js",
+        "realpath": "D:/DSH/src/dsh-src/packages/settings/settings/lib/index.js",
+        "kind": "BUILT"
+      },
+      "@deepseek-ai/dsh-spill": {
+        "resolved": "D:/DSH/src/dsh-src/packages/spill/spill/lib/index.js",
+        "realpath": "D:/DSH/src/dsh-src/packages/spill/spill/lib/index.js",
+        "kind": "BUILT"
+      },
+      "@deepseek-ai/dsh-storage": {
+        "resolved": "D:/DSH/src/dsh-src/packages/storage/storage/lib/index.js",
+        "realpath": "D:/DSH/src/dsh-src/packages/storage/storage/lib/index.js",
+        "kind": "BUILT"
+      },
+      "@deepseek-ai/dsh-storage-domain": {
+        "resolved": "D:/DSH/src/dsh-src/packages/storage/storage-domain/lib/index.js",
+        "realpath": "D:/DSH/src/dsh-src/packages/storage/storage-domain/lib/index.js",
+        "kind": "BUILT"
+      },
+      "@deepseek-ai/dsh-storage-json": {
+        "resolved": "D:/DSH/src/dsh-src/packages/storage/storage-json/lib/index.js",
+        "realpath": "D:/DSH/src/dsh-src/packages/storage/storage-json/lib/index.js",
+        "kind": "BUILT"
+      },
+      "@deepseek-ai/dsh-subagent": {
+        "resolved": "D:/DSH/src/dsh-src/packages/subagent/subagent/lib/index.js",
+        "realpath": "D:/DSH/src/dsh-src/packages/subagent/subagent/lib/index.js",
+        "kind": "BUILT"
+      },
+      "@deepseek-ai/dsh-subagent-acp": {
+        "resolved": "D:/DSH/src/dsh-src/packages/subagent/subagent-acp/lib/index.js",
+        "realpath": "D:/DSH/src/dsh-src/packages/subagent/subagent-acp/lib/index.js",
+        "kind": "BUILT"
+      },
+      "@deepseek-ai/dsh-subagent-fork-in-process": {
+        "resolved": "D:/DSH/src/dsh-src/packages/subagent/subagent-fork-in-process/lib/index.js",
+        "realpath": "D:/DSH/src/dsh-src/packages/subagent/subagent-fork-in-process/lib/index.js",
+        "kind": "BUILT"
+      },
+      "@deepseek-ai/dsh-subagent-spawn-in-process": {
+        "resolved": "D:/DSH/src/dsh-src/packages/subagent/subagent-spawn-in-process/lib/index.js",
+        "realpath": "D:/DSH/src/dsh-src/packages/subagent/subagent-spawn-in-process/lib/index.js",
+        "kind": "BUILT"
+      },
+      "@deepseek-ai/dsh-subprocess": {
+        "resolved": "D:/DSH/src/dsh-src/packages/subprocess/subprocess/lib/index.js",
+        "realpath": "D:/DSH/src/dsh-src/packages/subprocess/subprocess/lib/index.js",
+        "kind": "BUILT"
+      },
+      "@deepseek-ai/dsh-subprocess-local": {
+        "resolved": "D:/DSH/src/dsh-src/packages/subprocess/subprocess-local/lib/index.js",
+        "realpath": "D:/DSH/src/dsh-src/packages/subprocess/subprocess-local/lib/index.js",
+        "kind": "BUILT"
+      },
+      "@deepseek-ai/dsh-system-prompt": {
+        "resolved": "D:/DSH/src/dsh-src/packages/core/system-prompt/lib/index.js",
+        "realpath": "D:/DSH/src/dsh-src/packages/core/system-prompt/lib/index.js",
+        "kind": "BUILT"
+      },
+      "@deepseek-ai/dsh-terminal": {
+        "resolved": "D:/DSH/src/dsh-src/packages/terminal/terminal/lib/index.js",
+        "realpath": "D:/DSH/src/dsh-src/packages/terminal/terminal/lib/index.js",
+        "kind": "BUILT"
+      },
+      "@deepseek-ai/dsh-terminal-bash": {
+        "resolved": "D:/DSH/src/dsh-src/packages/terminal/terminal-bash/lib/index.js",
+        "realpath": "D:/DSH/src/dsh-src/packages/terminal/terminal-bash/lib/index.js",
+        "kind": "BUILT"
+      },
+      "@deepseek-ai/dsh-token-meter": {
+        "resolved": "D:/DSH/src/dsh-src/packages/llm/token-meter/lib/index.js",
+        "realpath": "D:/DSH/src/dsh-src/packages/llm/token-meter/lib/index.js",
+        "kind": "BUILT"
+      },
+      "@deepseek-ai/dsh-tool-fs": {
+        "resolved": "D:/DSH/src/dsh-src/packages/fs/tool-fs/lib/index.js",
+        "realpath": "D:/DSH/src/dsh-src/packages/fs/tool-fs/lib/index.js",
+        "kind": "BUILT"
+      },
+      "@deepseek-ai/dsh-tool-fs-search": {
+        "resolved": "D:/DSH/src/dsh-src/packages/fs/tool-fs-search/lib/index.js",
+        "realpath": "D:/DSH/src/dsh-src/packages/fs/tool-fs-search/lib/index.js",
+        "kind": "BUILT"
+      },
+      "@deepseek-ai/dsh-tool-jobs": {
+        "resolved": "D:/DSH/src/dsh-src/packages/jobs/tool-jobs/lib/index.js",
+        "realpath": "D:/DSH/src/dsh-src/packages/jobs/tool-jobs/lib/index.js",
+        "kind": "BUILT"
+      },
+      "@deepseek-ai/dsh-tool-subagent": {
+        "resolved": "D:/DSH/src/dsh-src/packages/subagent/tool-subagent/lib/index.js",
+        "realpath": "D:/DSH/src/dsh-src/packages/subagent/tool-subagent/lib/index.js",
+        "kind": "BUILT"
+      },
+      "@deepseek-ai/dsh-tool-web": {
+        "resolved": "D:/DSH/src/dsh-src/packages/web/tool-web/lib/index.js",
+        "realpath": "D:/DSH/src/dsh-src/packages/web/tool-web/lib/index.js",
+        "kind": "BUILT"
+      },
+      "@deepseek-ai/dsh-tools": {
+        "resolved": "D:/DSH/src/dsh-src/packages/core/tools/lib/index.js",
+        "realpath": "D:/DSH/src/dsh-src/packages/core/tools/lib/index.js",
+        "kind": "BUILT"
+      },
+      "@deepseek-ai/dsh-user-approval": {
+        "resolved": "D:/DSH/src/dsh-src/packages/interaction/user-approval/lib/index.js",
+        "realpath": "D:/DSH/src/dsh-src/packages/interaction/user-approval/lib/index.js",
+        "kind": "BUILT"
+      },
+      "@deepseek-ai/dsh-util-values": {
+        "resolved": "D:/DSH/src/dsh-src/packages/util/values/lib/index.js",
+        "realpath": "D:/DSH/src/dsh-src/packages/util/values/lib/index.js",
+        "kind": "BUILT"
+      },
+      "@deepseek-ai/dsh-web": {
+        "resolved": "D:/DSH/src/dsh-src/packages/web/web/lib/index.js",
+        "realpath": "D:/DSH/src/dsh-src/packages/web/web/lib/index.js",
+        "kind": "BUILT"
+      },
+      "@deepseek-ai/dsh-web-app": {
+        "resolved": "D:/DSH/src/dsh-src/packages/bundle/web-app/lib/index.js",
+        "realpath": "D:/DSH/src/dsh-src/packages/bundle/web-app/lib/index.js",
+        "kind": "BUILT"
+      },
+      "@deepseek-ai/dsh-web-fetch-http": {
+        "resolved": "D:/DSH/src/dsh-src/packages/web/web-fetch-http/lib/index.js",
+        "realpath": "D:/DSH/src/dsh-src/packages/web/web-fetch-http/lib/index.js",
+        "kind": "BUILT"
+      },
+      "@deepseek-ai/dsh-web-search-deepseek": {
+        "resolved": "D:/DSH/src/dsh-src/packages/web/web-search-deepseek/lib/index.js",
+        "realpath": "D:/DSH/src/dsh-src/packages/web/web-search-deepseek/lib/index.js",
+        "kind": "BUILT"
+      },
+      "@deepseek-ai/dsh-workspace-changes": {
+        "resolved": "D:/DSH/src/dsh-src/packages/deliverables/workspace-changes/lib/index.js",
+        "realpath": "D:/DSH/src/dsh-src/packages/deliverables/workspace-changes/lib/index.js",
+        "kind": "BUILT"
+      },
+      "@deepseek-ai/node-addon-system": {
+        "resolved": null,
+        "error": "ERR_PACKAGE_PATH_NOT_EXPORTED"
+      },
+      "@deepseek-ai/schemastery": {
+        "resolved": "D:/DSH/src/dsh-src/vendor/schemastery/lib/index.cjs",
+        "realpath": "D:/DSH/src/dsh-src/vendor/schemastery/lib/index.cjs",
+        "kind": "BUILT"
+      }
+    },
+    "dsh-ipython": {
+      "@deepseek-ai/cordis": {
+        "resolved": "D:/DSH/src/dsh-src/vendor/cordis/lib/index.js",
+        "realpath": "D:/DSH/src/dsh-src/vendor/cordis/lib/index.js",
+        "kind": "BUILT"
+      },
+      "@deepseek-ai/dsh-agent": {
+        "resolved": "D:/DSH/src/dsh-src/packages/core/agent/lib/index.js",
+        "realpath": "D:/DSH/src/dsh-src/packages/core/agent/lib/index.js",
+        "kind": "BUILT"
+      },
+      "@deepseek-ai/dsh-llm": {
+        "resolved": "D:/DSH/src/dsh-src/packages/llm/llm/lib/index.js",
+        "realpath": "D:/DSH/src/dsh-src/packages/llm/llm/lib/index.js",
+        "kind": "BUILT"
+      },
+      "@deepseek-ai/dsh-session": {
+        "resolved": "D:/DSH/src/dsh-src/packages/core/session/lib/index.js",
+        "realpath": "D:/DSH/src/dsh-src/packages/core/session/lib/index.js",
+        "kind": "BUILT"
+      },
+      "@deepseek-ai/dsh-subprocess": {
+        "resolved": "D:/DSH/src/dsh-src/packages/subprocess/subprocess/lib/index.js",
+        "realpath": "D:/DSH/src/dsh-src/packages/subprocess/subprocess/lib/index.js",
+        "kind": "BUILT"
+      },
+      "@deepseek-ai/dsh-subprocess-local": {
+        "resolved": "D:/DSH/src/dsh-src/packages/subprocess/subprocess-local/lib/index.js",
+        "realpath": "D:/DSH/src/dsh-src/packages/subprocess/subprocess-local/lib/index.js",
+        "kind": "BUILT"
+      },
+      "@deepseek-ai/dsh-system-prompt": {
+        "resolved": "D:/DSH/src/dsh-src/packages/core/system-prompt/lib/index.js",
+        "realpath": "D:/DSH/src/dsh-src/packages/core/system-prompt/lib/index.js",
+        "kind": "BUILT"
+      },
+      "@deepseek-ai/dsh-tools": {
+        "resolved": "D:/DSH/src/dsh-src/packages/core/tools/lib/index.js",
+        "realpath": "D:/DSH/src/dsh-src/packages/core/tools/lib/index.js",
+        "kind": "BUILT"
+      },
+      "@deepseek-ai/dsh-user-approval": {
+        "resolved": "D:/DSH/src/dsh-src/packages/interaction/user-approval/lib/index.js",
+        "realpath": "D:/DSH/src/dsh-src/packages/interaction/user-approval/lib/index.js",
+        "kind": "BUILT"
+      }
+    }
+  },
+  "duplicateIdentities": [],
+  "sourcePlaneResolutions": [],
+  "summary": {
+    "distinctPackageNamesResolved": 71,
+    "duplicateIdentities": 0,
+    "sourcePlaneResolutions": 0,
+    "unresolved": [
+      {
+        "from": "dsh-daily-work",
+        "package": "@deepseek-ai/dsh-",
+        "error": "MODULE_NOT_FOUND"
+      },
+      {
+        "from": "dsh-daily-work",
+        "package": "@deepseek-ai/dsh-no-such-package-exists",
+        "error": "MODULE_NOT_FOUND"
+      },
+      {
+        "from": "dsh-daily-work",
+        "package": "@deepseek-ai/node-addon-system",
+        "error": "ERR_PACKAGE_PATH_NOT_EXPORTED"
+      }
+    ]
+  },
+  "verdict": "PASS"
+}

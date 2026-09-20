@@ -1,0 +1,15 @@
+{
+  "dailyDataPresent": true,
+  "storeConstructor": "AttachmentArtifactStore",
+  "storeIsAttachmentBacked": true,
+  "providerIsTheMountedCapability": true,
+  "providerUnwrapWorked": true,
+  "providerConstructor": "LocalAttachmentStore",
+  "artifactRoot": "data-artifacts",
+  "artifactRootIsAbsolute": false,
+  "observationId": "obs-r2f4-mu96hheu",
+  "captureState": "durable",
+  "capturedBytes": 23,
+  "readBackMatches": true,
+  "error": null
+}

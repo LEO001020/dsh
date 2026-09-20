@@ -5,25 +5,71 @@
  *
  * DSH already has storage that fits, and the audit forbids rebuilding it:
  *
+ *   `ctx.attachments`                THE PUBLIC CAPABILITY SEAM, and the one this
+ *                                    module uses. `saveFileStream` streams bounded
+ *                                    chunks into a staging file, hashes WHILE
+ *                                    streaming, fsyncs, hard-links into a
+ *                                    digest-derived path, dedups with digest-verified
+ *                                    EEXIST, publishes 0o400, and syncs directory
+ *                                    entries. `readFileStream` streams the object
+ *                                    back and verifies BOTH the declared byte count
+ *                                    and the digest before the iteration ends.
+ *                                    `fileHostPath` locates the object on disk when
+ *                                    -- and only when -- the mounted provider is
+ *                                    host-file-backed. That is exactly the "streaming
+ *                                    put, host-computed hash, atomic publish, verified
+ *                                    read" this milestone needs.
  *   `@deepseek-ai/dsh-atomic-write`  `writeFileAtomic` (temp + rename, wx create,
  *                                    bounded Windows rename retry). String content only,
  *                                    no streaming, no digest.
- *   `@deepseek-ai/dsh-attachment-local`
- *                                    `publishImmutableObjectStream` -- the REAL
- *                                    match: it streams bounded chunks into a staging
- *                                    file, hashes WHILE streaming, fsyncs, hard-links
- *                                    into a digest-derived path, dedups with
- *                                    digest-verified EEXIST, chmods 0o400, and syncs
- *                                    directory entries. That is exactly the
- *                                    "streaming put, host-computed hash, atomic
- *                                    publish" this milestone needs.
  *   `@deepseek-ai/dsh-spill`         `saveText` ONLY. It persists text and returns an
  *                                    OPAQUE `SpillLocator` with no unified
  *                                    read/delete/ACL/refcount contract. There is no
  *                                    `open`, no `stat`, no range read, no delete.
  *
- * So this module REUSES the attachment-local publication primitive verbatim and
- * supplies the narrow contract that is genuinely missing:
+ * THE F4 DEFECT THIS MODULE USED TO CARRY, AND WHAT REPLACED IT
+ *
+ * An earlier revision reached the publication primitive by DEEP-IMPORTING the
+ * provider's source: `@deepseek-ai/dsh-attachment-local/src/store.ts`. That was a
+ * real defect and not a style question, for two independent reasons:
+ *
+ *   1. It mixes DSH's SOURCE plane with its ARTIFACT plane. The emitted
+ *      `lib/artifacts.js` is production JavaScript, and one of its import
+ *      specifiers resolved to a `.ts` file inside the pinned checkout. Node 24
+ *      loads that by native type stripping, which is exactly why it worked and
+ *      went unnoticed. Measured on the audited build: of 223 distinct
+ *      `@deepseek-ai/*` specifiers resolved in a real boot, 221 resolved under a
+ *      `packages/<name>/lib/` path and this one did not, which is why ID-01's graph
+ *      clause read FAIL while every other clause passed.
+ *   2. It created a SECOND PHYSICAL MODULE INSTANCE of the provider package. The
+ *      provider's own entry (`lib/index.js`) inlines its copy of
+ *      `lib/types/store.js`, so the host held two copies of the module-scope
+ *      `const durableHomes = new Set()` and that state was split between them.
+ *      This project has already been burned by the same shape: `TOOL_RUNTIME_SCHEDULER`
+ *      is a module-local `Symbol()`, and a second copy of its package makes it
+ *      undefined (upstream Discussion #6529).
+ *
+ * The fix is the PUBLIC seam, and it is a CAPABILITY rather than a package: the
+ * store is constructed from whatever `AttachmentStore` the composition mounted, so
+ * there is exactly one provider instance in the process and this project never
+ * names a private module. The provider is MOUNTED, never constructed here. The
+ * project's own directory holds only metadata (see below) and never a second copy
+ * of any object's bytes.
+ *
+ * WHAT THE PROJECT STILL OWNS, AND WHY THAT IS NOT A SECOND OBJECT STORE
+ *
+ * The provider owns BYTES. This module owns the metadata the provider has no
+ * concept of, which the audit lists explicitly as project-domain: the quota
+ * enforced DURING the stream, the durable index of what this project published,
+ * tombstones that separate "collected" from "never captured", pinning, the paging
+ * cursor authority, the line index, the model-visible projection, and the
+ * reconcilable commit order. The index is a directory of small digest-named marker
+ * files holding the facts needed to ADDRESS an object again in a later process
+ * (`name`, `bytes`, `publishedAt`); it is the only reason a fresh process can still
+ * reconcile a store it did not create.
+ *
+ * So this module REUSES the public attachment capability and supplies the narrow
+ * contract that is genuinely missing:
  *
  *   - `capture_file`   stream a file in the FS-authorized execution world, hashing
  *                      as it goes, and return a descriptor. NOT a host path that
@@ -68,10 +114,21 @@
  */
 import { createHash, createHmac, randomUUID, timingSafeEqual } from 'node:crypto'
 import { createReadStream } from 'node:fs'
-import { appendFile, mkdir, open, readFile, stat as statPath, writeFile } from 'node:fs/promises'
+// MERGE: the union of both writers' `node:fs/promises` needs -- R7 added
+// `appendFile` and `statPath` (the refusal journal and the object-identity
+// stamp), R2-F4 added `readdir` (the attachment provider's directory walk).
+import { appendFile, mkdir, open, readFile, readdir, stat as statPath, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import type { FileSystem, FsTarget } from '@deepseek-ai/dsh-fs'
-import { publishImmutableObjectStream } from '@deepseek-ai/dsh-attachment-local/src/store.ts'
+// THE PUBLIC CAPABILITY TYPE, and the only attachment name this package may
+// import. `@deepseek-ai/dsh-attachment` is the SEAM package: it declares the
+// `ctx.attachments` service and the `FileAttachmentRef` vocabulary, and it has no
+// provider inside it, so importing it cannot create a second module instance of
+// any storage implementation. The PROVIDER
+// (`@deepseek-ai/dsh-attachment-local`) is deliberately NOT named anywhere in this
+// package: it is mounted by the composition, and the store reaches it through the
+// capability. A build gate enforces that (see `src/no-src-imports.test.ts`).
+import { AttachmentId, type AttachmentStore, type FileAttachmentRef } from '@deepseek-ai/dsh-attachment'
 import {
   ObservationError,
   coverageForRequest,
@@ -255,11 +312,11 @@ export interface IoCounters {
  * `spillStore` has only `put`. The audit's rule is to add the narrow missing
  * contract rather than a general object-storage platform, so this interface is
  * deliberately six methods and no more: no bucket lifecycle, no replication, no
- * arbitrary metadata query, no second content-addressing scheme (the path IS
- * the digest, exactly as attachment-local derives it).
+ * arbitrary metadata query, no second content-addressing scheme (the digest IS
+ * the address, exactly as the attachment provider derives it).
  */
 export interface ArtifactStore {
-  /** The root this store publishes below. Used as the durable boundary for syncs. */
+  /** The root of this project's artifact INDEX. Used as the durable boundary for syncs. */
   readonly root: string
   /**
    * This store's durable realm identity.
@@ -421,26 +478,92 @@ async function readStoreRealmRecord(path: string): Promise<StoreRealmRecord | un
 
 /**
  * A local, content-addressed artifact store built on DSH's publication primitive.
+ * One durable index entry: the facts needed to ADDRESS a published object again
+ * from a later process, and nothing else.
  *
- * The publication call is `publishImmutableObjectStream` from
- * `@deepseek-ai/dsh-attachment-local/src/store.ts` -- the same function that
- * stores image attachments. Reusing it is the point: the fsync ordering, the
- * Windows rename/link handling, the digest-verified dedup and the 0o400 mode are
- * already tested there, and a second implementation would be a second set of
- * durability bugs.
- *
- * WHAT IS ADDED HERE, and why the reuse is not sufficient alone:
- *   - a quota check that runs DURING the stream and fails with a recorded reason,
- *     because attachment-local has no quota concept (images are size-capped
- *     before publication, not while streaming);
- *   - `openRange` with real byte accounting, because attachment-local's read path
- *     reads a whole object and verifies it, which is the wrong shape for paging a
- *     32 MiB artifact one page at a time;
- *   - tombstones and pinning, which attachment-local does not have because
- *     attachments are referenced by immutable refs and never deleted.
+ * `name` is the provider-sanitized leaf name from the `FileAttachmentRef` the
+ * provider returned, NOT the caller's string. The provider validates its refs by
+ * recomputing the sanitizer (`fileLeafName`), so a stored caller string like
+ * `C:\Users\x\a.txt` would fail that check on the read path and turn a
+ * legitimately stored object into `INVALID_ATTACHMENT_REF`.
  */
-export class LocalArtifactStore implements ArtifactStore {
+export interface ArtifactIndexEntry {
+  artifact: string
+  sha256: string
+  /** The provider's own leaf name for this object. */
+  name: string
+  bytes: number
+  publishedAt: string
+}
+
+/**
+ * A content-addressed artifact store built on the PUBLIC `ctx.attachments`
+ * capability.
+ *
+ * WHAT THIS CLASS IS, NOW THAT IT IS NOT A SECOND OBJECT STORE
+ *
+ * The bytes live in the mounted attachment provider. This class holds the
+ * project-domain facts the provider has no concept of, and it holds them in a
+ * durable index of small digest-named JSON files under `root`:
+ *
+ *   - the quota, enforced DURING the stream (the provider size-caps images before
+ *     publication and has no streaming quota concept at all);
+ *   - the mapping from an `artifact:sha256:...` ref to the provider's
+ *     `FileAttachmentRef` (`name` + `bytes` are part of that ref, so a reader
+ *     cannot reconstruct it from the digest alone);
+ *   - tombstones and pinning, which the provider does not have because its
+ *     attachments are referenced by immutable refs and are never deleted.
+ *
+ * WHY AN INDEX IS NOT A SECOND COPY OF THE DATA
+ *
+ * An index entry is a few hundred bytes of metadata naming an object the provider
+ * owns. No object's BYTES are written twice, which is what "do not construct
+ * another LocalAttachmentStore" forbids. The index is the only reason a fresh
+ * process can reconcile a store it did not create, which is a stated project
+ * obligation rather than a convenience.
+ *
+ * THE COST THIS PAYS, AND THE INTEGRITY EACH ARM ACTUALLY GIVES
+ *
+ * The provider's read path (`readFileStream`) streams a WHOLE object and verifies
+ * its digest and byte count at the end. That is the wrong shape for paging a
+ * 32 MiB artifact 64 KiB at a time, so `openRange` has two arms, and THEY DO NOT
+ * CARRY THE SAME INTEGRITY GUARANTEE. That is stated here rather than implied,
+ * because a comment that describes one arm's property for both would be a claim
+ * the code does not support:
+ *
+ *   - HOST-PATH ARM (`fileHostPath` returned a path -- the mounted provider is
+ *     host-backed local, which is what a trusted-local deployment mounts).
+ *     `openRange` opens the object and reads ONLY the requested window, so paging
+ *     is O(page) and `IoCounters.artifactBytesRead` proves it. This arm performs
+ *     NO content verification: an object replaced in place at the same length, or
+ *     truncated, or bit-rotted under a stable path, is served as if it were valid.
+ *     The window is trusted because the index entry names a digest, not because
+ *     the bytes were re-hashed.
+ *   - STREAMING FALLBACK (no host path). The window is taken from a stream of the
+ *     whole object, and the provider verifies the byte count and the digest before
+ *     that iteration ends, so a returned window has been integrity-checked as a
+ *     side effect. That is O(object) per page, and the counters SHOW it rather than
+ *     hiding it, so a deployment that silently lost the optimization is visible as
+ *     a number.
+ *
+ * THE GUARANTEE IS THEREFORE PER-ARM, AND THE FULL-OBJECT CHECK HAS ITS OWN ENTRY
+ * POINT: {@link resolveReference} reads a whole object and re-derives its digest,
+ * refusing a mismatch with `artifact-integrity-error` and naming both hashes. That
+ * is the path a caller takes when it needs "the observation's bytes, verified" --
+ * it is what `DataPlaneService.resolve` exposes and what the profile boot probe
+ * exercises -- and it is why paging can stay O(page) without making the store's
+ * integrity claim false. What is NOT claimed: that a window read by `openRange` on
+ * the host-path arm has been verified. See `DATA-12` for the tamper cases, which
+ * run through `resolveReference`.
+ *
+ * The optimization is capability-detected at every call, never assumed from
+ * configuration: a provider that is not host-file-backed simply returns
+ * `undefined` and the fallback runs.
+ */
+export class AttachmentArtifactStore implements ArtifactStore {
+  /** The project's artifact index root. */
   readonly root: string
+  private readonly attachments: AttachmentStore
   private readonly quotaBytes: number
   private readonly pinned = new Set<string>()
   private readonly tombstones = new Map<string, Tombstone>()
@@ -462,12 +585,15 @@ export class LocalArtifactStore implements ArtifactStore {
    * constructed before its root exists (a test that names a temp path, a boot that
    * constructs the service before the domain opens). The memo is keyed to the
    * RESOLVED ROOT, so the identity is a property of the directory and not of the
-   * object instance: two `LocalArtifactStore` objects over one root share it, and
+   * object instance: two `AttachmentArtifactStore` objects over one root share it, and
    * one object can never drift from the file on disk within a process.
    */
   private realm: string | undefined
+  /** In-memory mirror of the index, so the hot path does not re-read the disk. */
+  private readonly index = new Map<string, ArtifactIndexEntry>()
 
-  constructor(root: string, options?: { quotaBytes?: number }) {
+  constructor(attachments: AttachmentStore, root: string, options?: { quotaBytes?: number }) {
+    this.attachments = attachments
     this.root = root
     this.quotaBytes = options?.quotaBytes ?? DEFAULT_ARTIFACT_QUOTA_BYTES
   }
@@ -527,12 +653,107 @@ export class LocalArtifactStore implements ArtifactStore {
 
   /**
    * Stream to an immutable object, enforcing the quota DURING the stream.
+   * The provider this store publishes through.
+   *
+   * Exposed so a caller can report WHICH provider is bound: the `fileHostPath`
+   * optimization is only sound against a host-backed local provider, so the
+   * deployment's own identity should be able to name it rather than infer it.
+   */
+  get provider(): AttachmentStore {
+    return this.attachments
+  }
+
+  /** The index directory. */
+  private get indexRoot(): string {
+    return join(this.root, 'index')
+  }
+
+  private indexPathOf(sha256: string): string {
+    return join(this.indexRoot, sha256.slice(0, 2), `${sha256}.json`)
+  }
+
+  /**
+   * Load one index entry from disk, if it is there.
+   *
+   * A MALFORMED entry is treated as ABSENT rather than as a parse error. The index
+   * is a derived structure: an entry that cannot be read cannot be used to address
+   * an object, and reporting it as an I/O failure would blame the storage layer for
+   * what is really "this project cannot name that object any more". The caller sees
+   * `undefined` from `stat`, which is the same answer as "never published", and
+   * `resolveReference` turns that into an integrity error when a Session reference
+   * says otherwise.
+   */
+  private async loadEntry(sha256: string): Promise<ArtifactIndexEntry | undefined> {
+    const cached = this.index.get(sha256)
+    if (cached !== undefined) return cached
+    let text: string
+    try {
+      text = await readFile(this.indexPathOf(sha256), 'utf8')
+    } catch {
+      return undefined
+    }
+    try {
+      const parsed = JSON.parse(text) as Partial<ArtifactIndexEntry>
+      if (typeof parsed.name !== 'string' || typeof parsed.bytes !== 'number'
+        || typeof parsed.artifact !== 'string' || parsed.artifact !== artifactRefOf(sha256)) {
+        return undefined
+      }
+      const entry: ArtifactIndexEntry = {
+        artifact: parsed.artifact,
+        sha256,
+        name: parsed.name,
+        bytes: parsed.bytes,
+        publishedAt: typeof parsed.publishedAt === 'string' ? parsed.publishedAt : '',
+      }
+      this.index.set(sha256, entry)
+      return entry
+    } catch {
+      return undefined
+    }
+  }
+
+  /** Write one index entry durably enough that a later process can read it back. */
+  private async saveEntry(entry: ArtifactIndexEntry): Promise<void> {
+    const path = this.indexPathOf(entry.sha256)
+    await mkdir(join(this.indexRoot, entry.sha256.slice(0, 2)), { recursive: true, mode: 0o700 })
+    // Write-then-rename, so a reader never observes a half-written entry. A torn
+    // entry would be indistinguishable from a corrupt one, and the loader above
+    // would then report a published object as unpublishable.
+    const temporary = `${path}.${randomUUID()}.tmp`
+    await writeFile(temporary, `${JSON.stringify(entry)}\n`, { encoding: 'utf8', mode: 0o600 })
+    const { rename } = await import('node:fs/promises')
+    await rename(temporary, path)
+    this.index.set(entry.sha256, entry)
+  }
+
+  /**
+   * Rebuild the provider reference for an index entry.
+   *
+   * The provider validates a `FileAttachmentRef` by recomputing its own leaf-name
+   * sanitizer, so this reconstructs the ref from the name the provider ITSELF
+   * returned rather than from anything a caller supplied.
+   */
+  private refOf(entry: ArtifactIndexEntry): FileAttachmentRef {
+    return {
+      attachmentId: AttachmentId(`sha256:${entry.sha256}`),
+      name: entry.name,
+      bytes: entry.bytes,
+    }
+  }
+
+  /**
+   * Stream to an immutable object through the public capability, enforcing the
+   * quota DURING the stream.
    *
    * The check runs per chunk rather than after, because a post-hoc check on a
-   * 10 GiB stream has already written 10 GiB. On violation the staged temp file
-   * is removed by the publication primitive's own error path and the caller gets
-   * `artifact-quota-exceeded` -- which becomes a gap record, never a silent
-   * inline fallback.
+   * 10 GiB stream has already written 10 GiB. On violation the provider's own error
+   * path removes the staged temp file and the caller gets `artifact-quota-exceeded`
+   * -- which becomes a gap record, never a silent inline fallback.
+   *
+   * The index entry is written only AFTER the provider reports a durable ref, so a
+   * crash between the two leaves an object this project cannot name -- which is
+   * exactly the ORPHAN the commit order already describes, and never a reference
+   * to an object that was not published.
    */
   async put(
     chunks: AsyncIterable<Uint8Array> | Iterable<Uint8Array>,
@@ -558,55 +779,88 @@ export class LocalArtifactStore implements ArtifactStore {
         yield chunk
       }
     }
+    let ref: FileAttachmentRef
     try {
-      const published = await publishImmutableObjectStream(
-        this.root,
-        bounded(),
-        // The digest IS the address. Two captures of identical bytes dedup onto one
-        // object, which is correct: the object is immutable, so sharing it cannot
-        // let one observation observe another's mutation.
-        sha256 => join(this.root, 'objects', sha256.slice(0, 2), sha256),
-        options?.signal,
-      )
-      const artifact = artifactRefOf(published.sha256)
-      this.tombstones.delete(artifact)
-      return { artifact, sha256: published.sha256, bytes: published.bytes }
+      ref = await this.attachments.saveFileStream({
+        data: bounded(),
+        name: 'artifact',
+        ...options?.signal !== undefined ? { signal: options.signal } : {},
+      })
     } catch (error) {
       if (error instanceof ArtifactError) throw error
-      // The publication primitive wraps a failure raised INSIDE the stream in its
-      // own error type, so an error this module raised -- a quota refusal, or a
-      // source that changed mid-capture -- would otherwise reach the caller as a
-      // generic write failure with its code lost. The walk recovers the original
-      // so the caller branches on the real reason.
+      // The provider wraps a failure raised INSIDE the stream in its own error
+      // type, so an error this module raised -- a quota refusal, or a source that
+      // changed mid-capture -- would otherwise reach the caller as a generic write
+      // failure with its code lost. The walk recovers the original so the caller
+      // branches on the real reason.
       const inner = findArtifactError(error)
       if (inner !== undefined) throw inner
       // Nothing of ours: preserve the cause so a real ENOSPC stays diagnosable
       // rather than becoming a generic failure.
       throw new ArtifactError('artifact publication failed', 'artifact-write-failed', { cause: error })
     }
+    const sha256 = digestOfProviderRef(ref)
+    const artifact = artifactRefOf(sha256)
+    await this.saveEntry({
+      artifact,
+      sha256,
+      name: ref.name,
+      bytes: ref.bytes,
+      publishedAt: new Date().toISOString(),
+    })
+    // A re-publication of identical bytes is a NEW observation of the same
+    // immutable object, so any tombstone recorded against it is stale and must not
+    // make a live object read as collected.
+    this.tombstones.delete(artifact)
+    return { artifact, sha256, bytes: ref.bytes }
   }
 
   async stat(artifact: string): Promise<{ bytes: number; sha256: string } | undefined> {
     const sha256 = digestOfRef(artifact)
-    const path = this.pathOf(sha256)
-    try {
-      const info = await statPath(path)
-      return { bytes: info.size, sha256 }
-    } catch (error) {
-      if ((error as NodeJS.ErrnoException).code === 'ENOENT') return undefined
-      throw error
-    }
+    const entry = await this.loadEntry(sha256)
+    if (entry === undefined) return undefined
+    return { bytes: entry.bytes, sha256 }
+  }
+
+  /**
+   * The host path of an artifact, when the mounted provider is host-file-backed.
+   *
+   * This is the capability-detected OPTIMIZATION, not a bypass: it is `undefined`
+   * for any provider that is not local, and every caller has a streaming path that
+   * works without it. Nothing in this module reads bytes through it without
+   * re-deriving the digest of what it read.
+   */
+  async hostPath(artifact: string): Promise<string | undefined> {
+    const sha256 = digestOfRef(artifact)
+    const entry = await this.loadEntry(sha256)
+    if (entry === undefined) return undefined
+    return this.attachments.fileHostPath(this.refOf(entry))
   }
 
   /**
    * Read one byte window of an artifact and account for it.
    *
    * The whole point of paging against a captured object is that the cost is
-   * proportional to the pages read. This method therefore opens the object and
-   * reads ONLY `[offset, offset + length)` -- it never verifies the whole object
-   * (that would be a full re-read per page) and it never falls back to a full
-   * read. Integrity is established at capture time by the streaming hash and
-   * re-established only by an explicit `verify`.
+   * proportional to the pages read. Where the provider exposes a host path this
+   * method opens the object and reads ONLY `[offset, offset + length)` -- it never
+   * verifies the whole object (that would be a full re-read per page) and it never
+   * falls back to a full read.
+   *
+   * THE ONE CASE THAT IS VERIFIED FOR FREE, and why only that one. When the
+   * requested window IS the whole object (`offset === 0` and `length >= entry.bytes`),
+   * the bytes about to be returned are already in hand, so their digest is computed
+   * over the SAME read and a mismatch is refused as `artifact-integrity-error` naming
+   * both hashes. The check costs no I/O at all, which is the identical argument
+   * {@link resolveReference} makes. It is deliberately NOT extended to partial
+   * windows: verifying those would require reading bytes the caller did not ask for,
+   * which would both falsify `IoCounters.artifactBytesRead` and destroy the O(page)
+   * property that is the entire reason this optimization exists. A caller that needs
+   * "these bytes, verified" therefore reads the whole object -- which is what
+   * {@link resolveReference} does -- rather than a window.
+   *
+   * Where the provider is NOT host-backed, the window comes from a VERIFIED stream
+   * of the whole object, so integrity is checked as a side effect of reading. That
+   * is more expensive and the counters say so.
    *
    * A MISSING object is an integrity error, not an empty string. The two are
    * different facts and only one of them is a valid empty result.
@@ -625,43 +879,114 @@ export class LocalArtifactStore implements ArtifactStore {
       )
     }
     const sha256 = digestOfRef(artifact)
-    const path = this.pathOf(sha256)
     if (range.length === 0) return new Uint8Array(0)
-    let handle
+    const entry = await this.loadEntry(sha256)
+    if (entry === undefined) {
+      // The event that referenced this object is committed; this project can no
+      // longer name the object. Returning an empty buffer here would make a lost
+      // artifact indistinguishable from a legitimately empty one.
+      throw new ArtifactError(
+        `artifact ${artifact} is referenced but absent from the store`,
+        'artifact-integrity-error',
+      )
+    }
+    const ref = this.refOf(entry)
+    const hostPath = this.attachments.fileHostPath(ref)
+    if (hostPath !== undefined) {
+      let handle
+      try {
+        handle = await open(hostPath, 'r')
+      } catch (error) {
+        if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
+          throw new ArtifactError(
+            `artifact ${artifact} is referenced but absent from the store`,
+            'artifact-integrity-error',
+            { cause: error },
+          )
+        }
+        throw error
+      }
+      let bytes: Uint8Array
+      try {
+        const buffer = Buffer.allocUnsafe(range.length)
+        const { bytesRead } = await handle.read(buffer, 0, range.length, range.offset)
+        if (counters !== undefined) {
+          counters.artifactBytesRead += bytesRead
+          counters.artifactReads += 1
+        }
+        bytes = new Uint8Array(buffer.subarray(0, bytesRead))
+      } finally {
+        await handle.close()
+      }
+      // The free check: only when this window IS the object. See the method comment
+      // for why a partial window is deliberately left unverified.
+      if (range.offset === 0 && bytes.byteLength >= entry.bytes) {
+        const actual = createHash('sha256').update(bytes).digest('hex')
+        if (actual !== sha256) {
+          throw new ArtifactError(
+            `artifact ${artifact} declares ${String(entry.bytes)} bytes hashing to ${sha256} `
+            + `but the stored object hashes to ${actual} (${String(bytes.byteLength)} bytes read)`,
+            'artifact-integrity-error',
+          )
+        }
+      }
+      return bytes
+    }
+    return this.streamRange(artifact, ref, range, counters, signal)
+  }
+
+  /**
+   * The verified-streaming fallback for a provider with no host path.
+   *
+   * The whole object is read through `readFileStream`, which is what establishes
+   * its integrity; bytes outside the window are discarded. `artifactBytesRead`
+   * therefore reports the WHOLE object per window, which is the honest cost of this
+   * route and the reason the host-path optimization is worth detecting.
+   */
+  private async streamRange(
+    artifact: string,
+    ref: FileAttachmentRef,
+    range: { offset: number; length: number },
+    counters?: IoCounters,
+    signal?: AbortSignal,
+  ): Promise<Uint8Array> {
+    const collected: Buffer[] = []
+    let position = 0
+    let produced = 0
     try {
-      handle = await open(path, 'r')
+      for await (const chunk of this.attachments.readFileStream(ref, signal)) {
+        const buffer = Buffer.from(chunk)
+        if (counters !== undefined) {
+          counters.artifactBytesRead += buffer.byteLength
+          counters.artifactReads += 1
+        }
+        const end = position + buffer.byteLength
+        if (end > range.offset && produced < range.length) {
+          const start = Math.max(0, range.offset - position)
+          const take = Math.min(buffer.byteLength - start, range.length - produced)
+          collected.push(buffer.subarray(start, start + take))
+          produced += take
+        }
+        position = end
+      }
     } catch (error) {
-      if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
-        // The event that referenced this object is committed; the object is gone.
-        // Returning an empty buffer here would make a lost artifact indistinguishable
-        // from a legitimately empty one.
+      // The provider refuses a missing object with its own NOT_FOUND code and a
+      // corrupt one with CORRUPT. Both are integrity failures from this module's
+      // point of view: the reference exists and the bytes do not match it.
+      if ((error as { code?: string }).code === 'ATTACHMENT_NOT_FOUND') {
         throw new ArtifactError(
           `artifact ${artifact} is referenced but absent from the store`,
           'artifact-integrity-error',
           { cause: error },
         )
       }
-      throw error
+      throw new ArtifactError(
+        `artifact ${artifact} could not be read back through the attachment capability`,
+        'artifact-integrity-error',
+        { cause: error },
+      )
     }
-    try {
-      const buffer = Buffer.allocUnsafe(range.length)
-      const { bytesRead } = await handle.read(buffer, 0, range.length, range.offset)
-      if (counters !== undefined) {
-        counters.artifactBytesRead += bytesRead
-        counters.artifactReads += 1
-      }
-      return new Uint8Array(buffer.subarray(0, bytesRead))
-    } finally {
-      await handle.close()
-    }
-  }
-
-  /** Verify the whole object against its address. Explicit, so paging stays O(page). */
-  async verify(artifact: string): Promise<boolean> {
-    const sha256 = digestOfRef(artifact)
-    const hash = createHash('sha256')
-    for await (const chunk of createReadStream(this.pathOf(sha256)) as AsyncIterable<Buffer>) hash.update(chunk)
-    return hash.digest('hex') === sha256
+    return new Uint8Array(Buffer.concat(collected))
   }
 
   /**
@@ -713,10 +1038,43 @@ export class LocalArtifactStore implements ArtifactStore {
         'artifact-integrity-error',
       )
     }
-    const path = this.pathOf(sha256)
+    // THE OBJECT'S BYTES, NOT THE INDEX ENTRY. This resolved through
+    // `pathOf()` when this module owned a `root/objects/<2>/<sha>` layout, and
+    // F4 replaced that layout with the mounted provider plus an `index/`
+    // metadata directory. The call site was renamed to `indexPathOf` with it,
+    // which pointed this size check at a few hundred bytes of JSON and made it
+    // refuse every legitimate read. The provider's own accessor is the correct
+    // one, and `verify()` below reads bytes the same way.
+    const sha256ForPath = sha256
+    const entry = await this.loadEntry(sha256ForPath)
+    if (entry === undefined) {
+      throw new ArtifactError(
+        `artifact ${artifact} is referenced but absent from the store; refusing before any byte is read`,
+        'artifact-integrity-error',
+      )
+    }
+    const ref = this.refOf(entry)
+    const hostPath = this.attachments.fileHostPath(ref)
+    if (hostPath === undefined) {
+      // Not host-file-backed, so there is no path to `stat`. The provider
+      // verifies both the byte count and the digest as a side effect of
+      // streaming, so a completed iteration IS the check -- the same argument
+      // `verify()` makes. A failure of either is an integrity error.
+      try {
+        for await (const chunk of this.attachments.readFileStream(ref)) void chunk
+      } catch (error) {
+        throw new ArtifactError(
+          `artifact ${artifact} could not be verified through the mounted provider; `
+          + 'refusing before any byte is served',
+          'artifact-integrity-error',
+          { cause: error },
+        )
+      }
+      return
+    }
     let info
     try {
-      info = await statPath(path)
+      info = await statPath(hostPath)
     } catch (error) {
       if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
         throw new ArtifactError(
@@ -739,7 +1097,7 @@ export class LocalArtifactStore implements ArtifactStore {
     // First touch, or the object moved under us. Hash it, then remember the stamp.
     const hash = createHash('sha256')
     let read = 0
-    for await (const chunk of createReadStream(path) as AsyncIterable<Buffer>) {
+    for await (const chunk of createReadStream(hostPath) as AsyncIterable<Buffer>) {
       hash.update(chunk)
       read += chunk.byteLength
     }
@@ -807,19 +1165,62 @@ export class LocalArtifactStore implements ArtifactStore {
 
   /**
    * Delete an object, leaving a TOMBSTONE.
+   * Verify the whole object against its address.
+   *
+   * Explicit, so paging stays O(page). Through a host path the bytes are hashed
+   * here; through the streaming route the provider has ALREADY verified both the
+   * byte count and the digest by the time the iteration ends, so a completed
+   * iteration IS the verification and re-hashing would be duplicated work.
+   */
+  async verify(artifact: string): Promise<boolean> {
+    const sha256 = digestOfRef(artifact)
+    const entry = await this.loadEntry(sha256)
+    if (entry === undefined) return false
+    const ref = this.refOf(entry)
+    const hostPath = this.attachments.fileHostPath(ref)
+    if (hostPath === undefined) {
+      try {
+        for await (const chunk of this.attachments.readFileStream(ref)) void chunk
+        return true
+      } catch {
+        return false
+      }
+    }
+    try {
+      const hash = createHash('sha256')
+      for await (const chunk of createReadStream(hostPath) as AsyncIterable<Buffer>) hash.update(chunk)
+      return hash.digest('hex') === sha256
+    } catch {
+      return false
+    }
+  }
+
+  /**
+   * Retire an artifact, leaving a TOMBSTONE.
    *
    * The tombstone is what makes a deleted reference read as `expired/deleted`
    * rather than `absent`: without it, a caller cannot tell "this was never
    * captured" from "this was captured and then collected", and the audit requires
    * the difference to survive.
+   *
+   * WHAT THIS DOES NOT DO, and the caller must know it: it does NOT delete the
+   * provider's object. The mounted `AttachmentStore` contract has no delete, and
+   * reaching around it -- for example by unlinking the path `fileHostPath` returns
+   * -- would be a bypass in the same family as the private import this module was
+   * fixed for. It would also be WRONG: the provider dedups by digest, so two
+   * references with different display names share one object, and unlinking it for
+   * one would destroy the other's bytes. Retirement is therefore a project-side
+   * fact; the bytes leave the provider only when the provider grows a retention
+   * policy. Recorded as an open limitation rather than papered over.
    */
   async remove(artifact: string): Promise<boolean> {
     const sha256 = digestOfRef(artifact)
-    const path = this.pathOf(sha256)
-    const existed = await this.stat(artifact) !== undefined
+    const entry = await this.loadEntry(sha256)
+    const existed = entry !== undefined
     if (existed) {
-      const { unlink } = await import('node:fs/promises')
-      await unlink(path)
+      const { rm } = await import('node:fs/promises')
+      await rm(this.indexPathOf(sha256), { force: true })
+      this.index.delete(sha256)
     }
     this.tombstones.set(artifact, {
       artifact,
@@ -848,16 +1249,20 @@ export class LocalArtifactStore implements ArtifactStore {
   }
 
   /**
-   * Grace GC over unreferenced objects.
+   * Grace GC over unreferenced index entries.
    *
-   * Only objects that are unreferenced, unpinned and older than `graceMs` are
-   * collected. The grace window is the whole reason an orphan is safe to delete:
-   * a crash between "object published" and "event committed" leaves an object
-   * whose referencing event may still be in flight, so collecting it immediately
-   * would turn a recoverable orphan into a real integrity error.
+   * Only entries that are unreferenced, unpinned and older than `graceMs` are
+   * collected. The grace window is the whole reason an orphan is safe to retire: a
+   * crash between "object published" and "event committed" leaves an object whose
+   * referencing event may still be in flight, so retiring it immediately would turn
+   * a recoverable orphan into a real integrity error.
+   *
+   * Collection RETIRES THE INDEX ENTRY and records a tombstone. The provider's
+   * bytes are left in place -- see `remove` for why that is deliberate and what it
+   * costs.
    *
    * @param referenced - artifact refs the Session has committed.
-   * @param graceMs - minimum age before an unreferenced object may be collected.
+   * @param graceMs - minimum age before an unreferenced entry may be retired.
    * @param now - injectable clock, so the grace window is testable without sleeping.
    */
   async collectGarbage(
@@ -865,13 +1270,12 @@ export class LocalArtifactStore implements ArtifactStore {
     graceMs: number,
     now: number = Date.now(),
   ): Promise<{ collected: string[]; skipped: Array<{ artifact: string; reason: string }> }> {
-    const { readdir, unlink, stat: statOne } = await import('node:fs/promises')
+    const { rm, stat: statOne } = await import('node:fs/promises')
     const collected: string[] = []
     const skipped: Array<{ artifact: string; reason: string }> = []
-    const objectsRoot = join(this.root, 'objects')
     let shards: string[]
     try {
-      shards = await readdir(objectsRoot)
+      shards = await readdir(this.indexRoot)
     } catch (error) {
       if ((error as NodeJS.ErrnoException).code === 'ENOENT') return { collected, skipped }
       throw error
@@ -879,12 +1283,19 @@ export class LocalArtifactStore implements ArtifactStore {
     for (const shard of shards) {
       let names: string[]
       try {
-        names = await readdir(join(objectsRoot, shard))
+        names = await readdir(join(this.indexRoot, shard))
       } catch {
         continue
       }
       for (const name of names) {
-        const artifact = artifactRefOf(name)
+        if (!name.endsWith('.json')) continue
+        const sha256 = name.slice(0, -'.json'.length)
+        let artifact: string
+        try {
+          artifact = artifactRefOf(sha256)
+        } catch {
+          continue
+        }
         if (referenced.has(artifact)) {
           skipped.push({ artifact, reason: 'referenced' })
           continue
@@ -893,13 +1304,14 @@ export class LocalArtifactStore implements ArtifactStore {
           skipped.push({ artifact, reason: 'pinned' })
           continue
         }
-        const info = await statOne(join(objectsRoot, shard, name))
+        const info = await statOne(join(this.indexRoot, shard, name))
         const ageMs = now - info.mtimeMs
         if (ageMs < graceMs) {
           skipped.push({ artifact, reason: `within-grace (${Math.round(ageMs)}ms < ${graceMs}ms)` })
           continue
         }
-        await unlink(join(objectsRoot, shard, name))
+        await rm(join(this.indexRoot, shard, name), { force: true })
+        this.index.delete(sha256)
         this.tombstones.set(artifact, {
           artifact,
           deletedAt: new Date().toISOString(),
@@ -910,10 +1322,25 @@ export class LocalArtifactStore implements ArtifactStore {
     }
     return { collected, skipped }
   }
+}
 
-  private pathOf(sha256: string): string {
-    return join(this.root, 'objects', sha256.slice(0, 2), sha256)
+/**
+ * The digest of a provider reference, refusing anything that is not one.
+ *
+ * The provider's `attachmentId` is `sha256:<hex>`; this module's artifact ref is
+ * `artifact:sha256:<hex>`. The two are DIFFERENT NAMESPACES for the same digest,
+ * and this function is the one place that crosses between them, so the crossing is
+ * validated rather than assumed.
+ */
+export function digestOfProviderRef(ref: FileAttachmentRef): string {
+  const match = /^sha256:([a-f0-9]{64})$/u.exec(String(ref.attachmentId))
+  if (match?.[1] === undefined) {
+    throw new ArtifactError(
+      `attachment provider returned a non-content-addressed file reference: ${String(ref.attachmentId)}`,
+      'artifact-write-failed',
+    )
   }
+  return match[1]
 }
 
 /** The artifact reference format. The digest is the address; nothing else is encoded. */
@@ -1637,7 +2064,7 @@ export interface RefusalJournal {
 }
 
 /** The default sink for the host service's page/walk calls. */
-export function mountRefusalRecording(store: LocalArtifactStore): RefusalJournal {
+export function mountRefusalRecording(store: AttachmentArtifactStore): RefusalJournal {
   return {
     recordRefusal: refusal => store.recordRefusal(refusal),
     realmId: () => store.ensureRealm(),
@@ -2134,11 +2561,24 @@ export async function resolveReference(
  *   - objects present but unreferenced -> orphans, listed for grace GC.
  *   - references whose object is absent -> integrity errors, listed loudly.
  *
+ * "PRESENT" MEANS THE PROJECT'S INDEX, NOT A DIRECTORY OF BYTES.
+ *
+ * The objects themselves live in the mounted attachment provider, which exposes no
+ * enumeration and no delete on its public contract. So the set this function walks
+ * is the set of objects THIS PROJECT published, which is the correct domain
+ * anyway: an object the provider holds for some other consumer is not this
+ * project's orphan. The consequence, stated rather than implied: an object that
+ * was published and then lost its index entry (a crash in that window) cannot be
+ * enumerated here and therefore cannot be reported as an orphan. The commit order
+ * already forbids reporting it as delivered, and the reference row is what
+ * `resolveReference` checks, so the honest answer stays honest -- but the sweep is
+ * narrower than a raw directory listing would be.
+ *
  * It never DELETES here. Collection is `collectGarbage`, which needs a grace
  * window; reconciliation only reports, so a caller can decide.
  */
 export async function reconcileStore(
-  store: LocalArtifactStore,
+  store: AttachmentArtifactStore,
   log: SessionReferenceLog,
 ): Promise<{
   orphans: string[]
@@ -2147,11 +2587,18 @@ export async function reconcileStore(
   const referenced = await log.referencedArtifacts()
   const { readdir } = await import('node:fs/promises')
   const present = new Set<string>()
-  const objectsRoot = join(store.root, 'objects')
+  const indexRoot = join(store.root, 'index')
   try {
-    for (const shard of await readdir(objectsRoot)) {
+    for (const shard of await readdir(indexRoot)) {
       try {
-        for (const name of await readdir(join(objectsRoot, shard))) present.add(artifactRefOf(name))
+        for (const name of await readdir(join(indexRoot, shard))) {
+          if (!name.endsWith('.json')) continue
+          try {
+            present.add(artifactRefOf(name.slice(0, -'.json'.length)))
+          } catch {
+            continue
+          }
+        }
       } catch {
         continue
       }
@@ -2323,13 +2770,14 @@ function isUtf8Continuation(byte: number): boolean {
 /**
  * Find an `ArtifactError` anywhere in a wrapped error's cause chain.
  *
- * The publication primitive (`stageImmutableObject` in
- * `@deepseek-ai/dsh-attachment-local/src/store.ts`) wraps every storage failure in
- * its own `ATTACHMENT_WRITE_FAILED` error with the original as `cause`, unless the
- * thrown value already is one of ITS errors or the signal aborted. A bare
- * `instanceof ArtifactError` check at the call site therefore never sees an
- * error this module raised from inside the stream, and the distinction it
- * carried is lost.
+ * The mounted attachment provider wraps every storage failure in its own
+ * `ATTACHMENT_WRITE_FAILED` error with the original as `cause`, unless the thrown
+ * value already is one of ITS errors or the signal aborted. (The wrapper is the
+ * provider's `stageImmutableObject`, which is reachable only through the public
+ * `saveFileStream` seam -- this module no longer names that private module, and the
+ * behaviour is described rather than imported.) A bare `instanceof ArtifactError`
+ * check at the call site therefore never sees an error this module raised from
+ * inside the stream, and the distinction it carried is lost.
  *
  * This matters for more than the quota: a source that changed mid-capture is
  * refused from inside the read generator with `artifact-integrity-error`, and

@@ -901,14 +901,26 @@ describe('T9-A: the run epoch is DELETED, and v2 does not claim the guarantee', 
         .join('\n')
       if (!file.endsWith('.test.ts')) {
         for (const symbol of dead) {
-          if (code.includes(symbol)) codeMentions.push(`${file}: ${symbol}`)
+          // AS AN IDENTIFIER, NOT AS A SUBSTRING. `includes` reported
+          // `mountRefusalRecording` (R7's LIVE function, added after this list was
+          // written) as a surviving `RefusalRecord`, because the deleted name is a
+          // prefix of the live one. A scan for dead identifiers has to match whole
+          // identifiers, or every future name that extends a deleted one reads as a
+          // regression -- and the pressure then runs the wrong way, toward renaming
+          // a live function to appease a test.
+          if (new RegExp(`\\b${symbol}\\b`, 'u').test(code)) codeMentions.push(`${file}: ${symbol}`)
         }
       } else {
         // Every import statement, so a deleted symbol reached through
         // `import { x } from './recovery.ts'` is caught wherever it appears.
+        //
+        // IDENTIFIER-EXACT, for the same reason the production scan above is:
+        // `includes` reported `mountRefusalRecording` -- R7's LIVE function -- as an
+        // import of the deleted `RefusalRecord`, because the dead name is a prefix
+        // of the live one.
         for (const statement of text.matchAll(/import\s*(?:type\s*)?\{[^}]*\}\s*from\s*'[^']+'/gu)) {
           for (const symbol of dead) {
-            if (statement[0].includes(symbol)) importers.push(`${file}: ${symbol}`)
+            if (new RegExp(`\\b${symbol}\\b`, 'u').test(statement[0])) importers.push(`${file}: ${symbol}`)
           }
         }
       }
@@ -1228,8 +1240,22 @@ describe('T9-A: the run epoch is DELETED, and v2 does not claim the guarantee', 
     expect(host).not.toContain('bound to the live object plus the run epoch')
     expect(host).toContain('tool-protocol-guards.ts')
     // The REAL await-boundary re-checks, quoted from the loop they guard.
-    expect(code).toMatch(/if \(this\.disposed\) break/u)
-    expect(code).toMatch(/if \(signal\.aborted\) break/u)
+    //
+    // ASSERTED AS THE INVARIANT, NOT AS ONE SPELLING OF IT -- the same correction
+    // `sec-gates.test.ts` carries, because this case duplicated the assertion. It
+    // pinned two separate one-line guards, which is the shape R9's tree had; R3's
+    // admission rework replaced that loop with a batched form checking both
+    // conditions in one combined guard before doing any work:
+    //
+    //     if (this.disposed || entry.signal.aborted) break
+    //
+    // Same protection, so the old spelling failed a correct tree. What is asserted
+    // is what the case is about: work stops once the service is disposed or the
+    // caller's signal has aborted, and it BREAKS rather than inventing an outcome.
+    expect(code, 'the drain must still stop on a disposed service').toMatch(/this\.disposed/u)
+    expect(code, 'the drain must still stop on an aborted caller').toMatch(/signal\.aborted/u)
+    expect(code, 'the combined guard must break rather than invent an outcome')
+      .toMatch(/this\.disposed \|\| entry\.signal\.aborted\) break/u)
   })
 
   it('the v1 FAIL is preserved: REC-09 and REC-10 still read FAIL in the frozen spec', () => {

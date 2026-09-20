@@ -424,7 +424,12 @@
 #
 #     "Current DSH file policy: workspace-write. Any available operation enforced
 #      by the DSH file sandbox may modify files under the session workspace:
-#      \"D:/DSH/work/wt-r1\". Some platform temporary areas may also be writable."
+#      \"<the session workspace>\". Some platform temporary areas may also be writable."
+#
+# The workspace path in that sentence is elided HERE on purpose, and the elision
+# is not cosmetic: `upg-gates.test.ts` asserts that this file contains no absolute
+# source path, so that the install does not depend on one machine's checkout
+# layout. The verbatim string, path included, is in the artifact named above.
 #
 # read from the `sandbox:policy` entry of a real `ctx.systemPrompt.assemble()`,
 # which is the exact string AgentLoop folds into the request

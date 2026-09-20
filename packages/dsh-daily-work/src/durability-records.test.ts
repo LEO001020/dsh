@@ -1695,7 +1695,13 @@ describe('D10: the run record is authoritative across generations, and no stale 
         .filter(line => !/^\s*(?:\/\/|\*|\/\*)/u.test(line))
         .join('\n')
       for (const symbol of deadSymbols) {
-        if (code.includes(symbol)) offenders.push(`${file}: ${symbol}`)
+        // AS AN IDENTIFIER, NOT AS A SUBSTRING -- the same correction
+        // `durability-advanced.test.ts` carries. `includes` reported
+        // `mountRefusalRecording` (R7's LIVE function) as a surviving
+        // `RefusalRecord`, because the deleted name is a prefix of the live one. A
+        // scan for dead identifiers must match whole identifiers, or every future
+        // name extending a deleted one reads as a regression.
+        if (new RegExp(`\\b${symbol}\\b`, 'u').test(code)) offenders.push(`${file}: ${symbol}`)
       }
     }
     expect(offenders, 'the settlement machinery must be gone from every production source file').toEqual([])

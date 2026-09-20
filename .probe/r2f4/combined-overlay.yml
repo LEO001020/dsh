@@ -1,0 +1,39 @@
+# R2-F4 combined overlay: the archived ID-01 overlay (keyless mock route) PLUS the
+# R2-F4 reachability probe. ONE boot, both measurements.
+#
+# WHY COMBINED. The first version of the reachability check used an overlay that
+# OMITTED the T17 probe, because that probe is what writes `boot.json`. The boot
+# harness waits for `T17_PROBE_OUT`, so with no writer the harness timed out and
+# `boot.json` was never produced -- which is a property of THAT OVERLAY, not of the
+# product. Mounting both probes in one boot removes the artefact and measures the
+# graph, the first tool call and the data plane in the same composition.
+#
+# The probes insert NO service and NO tool row. The only inserted rows are the mock
+# route adapter and the two probes.
+- id: llm-deepseek
+  disabled: true
+
+- id: agent-default-model
+  config:
+    provider: t17-mock
+    model: t17-mock
+
+- id: session-persistence-jsonl
+  config:
+    root: !!js process.env.T17_SESSION_ROOT
+    compression: none
+
+- id: agent-instructions
+  disabled: true
+
+- insert:
+    - id: t17-first-call-adapter
+      name: 'D:/DSH/work/wt-r2f4/qualification/results/T17-identity/first-call-adapter.mjs'
+
+- insert:
+    - id: r2f4-data-reachability
+      name: 'D:/DSH/work/wt-r2f4/.probe/r2f4/data-reachability-plugin.mjs'
+
+- insert:
+    - id: t17-identity-probe
+      name: 'D:/DSH/work/wt-r2f4/qualification/results/T17-identity/probe-plugin.mjs'

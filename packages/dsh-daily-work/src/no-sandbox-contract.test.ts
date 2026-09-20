@@ -55,6 +55,7 @@ import {
   TRUSTED_LOCAL_MODE,
   deploymentChecks,
   inject,
+  startupPolicyChecks,
   surfaceChecks,
   type DeploymentObservation,
   type SurfaceObservation,
@@ -121,6 +122,12 @@ function rowBlock(text: string, id: string): string | undefined {
 function healthyDeployment(overrides: Partial<DeploymentObservation> = {}): DeploymentObservation {
   return {
     defaultMode: TRUSTED_LOCAL_MODE,
+    // The shipped row restates `workspaceRoot: !!js process.cwd()`
+    // (`profiles/daily-candidate/cordis.patch.yml`), so the intended graph's
+    // root is an absolute path. A synthetic one is used here because this
+    // factory describes the INTENDED graph rather than one boot: what the
+    // startup check asserts is absoluteness, not a particular directory.
+    workspaceRoot: 'D:\\DSH\\work\\dsh-native-daily',
     modeSource: 'unobservable',
     // `undefined` is the local backend's base getter: it does not confine.
     fsSandboxMode: undefined,
@@ -266,6 +273,96 @@ describe('the guard refuses a silently reverted deployment', () => {
       .toEqual(['ptcRuntime.sandboxMode'])
     expect(failures(deploymentChecks(healthyDeployment({ ptcMounted: true, ptcSandboxMode: TRUSTED_LOCAL_MODE }))))
       .toEqual([])
+  })
+})
+
+// ---------------------------------------------------------------------------
+// The STARTUP boundary: the policy row on its own, before anything else mounts
+//
+// WHY THIS BLOCK EXISTS. `startupPolicyChecks` is a SECOND check set, not a
+// subset of `deploymentChecks`: `checkBoundarySync` selects it for the `startup`
+// boundary, which fires when `sandboxPolicy` mounts — earlier than `fs`, `shell`
+// and `ipython`, where the full contract measured a half-mounted graph and
+// reported three failures for a CORRECT deployment.
+//
+// That makes it the set a real boot actually runs first, and it had NO test arm:
+// the cases above all go through `deploymentChecks`, so a regression inside
+// `startupPolicyChecks` — including deleting a check — would have been invisible
+// to this suite. These cases are the detection arms that were missing.
+// ---------------------------------------------------------------------------
+
+describe('the startup boundary checks the policy row, and only what is knowable then', () => {
+  it('the intended policy row passes, on the same observation the full contract accepts', () => {
+    // The control arm, for the same reason as the one above: without it, a check
+    // set that returned `ok: false` unconditionally would pass every case below.
+    expect(failures(startupPolicyChecks(healthyDeployment()))).toEqual([])
+  })
+
+  it('it is a DIFFERENT set from the full contract, not a renamed copy', () => {
+    // If these two were the same set, the startup boundary would re-report the
+    // half-mounted graph and the false alarm it was introduced to fix would come
+    // back. Pinned by ids rather than by length so the difference is legible: the
+    // startup set carries the policy facts, and none of the backend facts.
+    const startup = startupPolicyChecks(healthyDeployment()).map(check => check.id)
+    const deployment = deploymentChecks(healthyDeployment()).map(check => check.id)
+    expect(startup).toEqual([
+      'startup.sandboxPolicy.present',
+      'startup.sandboxPolicy.mode',
+      'startup.sandboxPolicy.workspaceRoot',
+    ])
+    for (const id of startup) expect(deployment, `${id} must not be in the full set too`).not.toContain(id)
+    // And the backend facts it must NOT claim, because they are not knowable yet.
+    expect(startup).not.toContain('fs.provider')
+    expect(startup).not.toContain('ipython.present')
+  })
+
+  it('an ABSENT policy row is caught here, which is the tool-face-zeroing precondition', () => {
+    const checks = startupPolicyChecks(healthyDeployment({ defaultMode: undefined, workspaceRoot: undefined }))
+    expect(failures(checks)).toEqual([
+      'startup.sandboxPolicy.present',
+      'startup.sandboxPolicy.mode',
+      'startup.sandboxPolicy.workspaceRoot',
+    ])
+    // The report names the cascade rather than only the absence, so an operator
+    // reading a refused boot learns why seven rows went pending.
+    const present = checks.find(check => check.id === 'startup.sandboxPolicy.present')!
+    expect(present.observed).toContain('NOT mounted')
+    expect(present.detail).toContain('tool face to zero')
+  })
+
+  it('a policy row that CONFINES is caught at startup, before anything runs under it', () => {
+    // This is the F3 shape: the row exists and resolves, but to the wrong mode.
+    // Catching it at startup is the point of the boundary — the deployment stops
+    // before a model-facing sentence claims an authority the deployment lacks.
+    const checks = startupPolicyChecks(healthyDeployment({ defaultMode: 'workspace-write' }))
+    expect(failures(checks)).toEqual(['startup.sandboxPolicy.mode'])
+    const mode = checks.find(check => check.id === 'startup.sandboxPolicy.mode')!
+    expect(mode.observed).toBe("'workspace-write'")
+    expect(mode.detail).toContain('FALSE STATEMENT ABOUT THE MODEL\'S PERMISSIONS')
+  })
+
+  it('a NON-ABSOLUTE workspace root is caught, and an absolute one in either spelling is not', () => {
+    // CMP-02's oracle names the absolute root explicitly, and the service throws
+    // for a relative one (`sandbox-policy/src/index.ts:36-39`) — so a relative
+    // value arriving here means it was produced some other way. The predicate is
+    // structural rather than `path.isAbsolute` on purpose, so both Windows
+    // spellings and a POSIX root are accepted; a platform-dependent predicate
+    // would make one composed value pass or fail depending on which OS read it.
+    expect(failures(startupPolicyChecks(healthyDeployment({ workspaceRoot: 'relative/root' }))))
+      .toEqual(['startup.sandboxPolicy.workspaceRoot'])
+    expect(failures(startupPolicyChecks(healthyDeployment({ workspaceRoot: 'D:/DSH/work' })))).toEqual([])
+    expect(failures(startupPolicyChecks(healthyDeployment({ workspaceRoot: 'D:\\DSH\\work' })))).toEqual([])
+    expect(failures(startupPolicyChecks(healthyDeployment({ workspaceRoot: '/home/dsh' })))).toEqual([])
+  })
+
+  it('the service routes the startup boundary to THIS set, so the arms above are reachable', () => {
+    // Without this case the checks could be correct and unreachable — the defect
+    // class this project keeps finding. `checkBoundarySync` is the only caller,
+    // so its selection is read from source rather than assumed.
+    const source = readText(join(import.meta.dirname, 'no-sandbox-contract.ts'))
+    expect(source).toContain("boundary === 'startup'")
+    expect(source).toContain('? startupPolicyChecks(observed)')
+    expect(source).toContain(': deploymentChecks(observed)')
   })
 })
 
@@ -502,18 +599,18 @@ describe('the guard has a production entry point, so a profile can actually moun
 })
 
 // ---------------------------------------------------------------------------
-// The one claim the deployment does NOT satisfy — asserted, not softened
+// G-SEAM-33, FIXED — the marker was removed and the assertion kept at strength
 // ---------------------------------------------------------------------------
 
 describe('G-SEAM-33: the deployment default contradicts the stated trust model', () => {
-  it.fails('the profile pins the sandbox mode to the trusted-local value the architecture claims', () => {
-    // THE DEFECT THIS CASE PINS, and why the assertion is at FULL STRENGTH.
+  it('the profile pins the sandbox mode to the trusted-local value the architecture claims', () => {
+    // THE DEFECT THIS CASE PINNED, and why the assertion is at FULL STRENGTH.
     //
     // The architecture decision is "no sandbox: `danger-full-access`". The
-    // composed deployment does NOT declare it: `profiles/daily-candidate/
-    // cordis.patch.yml` has no `sandbox-policy` row, so the shipped bundle's
+    // composed deployment did NOT declare it: `profiles/daily-candidate/
+    // cordis.patch.yml` had no `sandbox-policy` row, so the shipped bundle's
     // `mode: !!js process.env.DSH_PERMISSION_MODE ?? 'workspace-write'`
-    // (`packages/bundle/base/cordis.patch.yml:218`) stands. MEASURED on a real
+    // (`packages/bundle/base/cordis.patch.yml:218`) stood. MEASURED on a real
     // boot, three independent times: `sandboxPolicyDefaultMode: "workspace-write"`
     // (`qualification/results/T2-fs/boot.json`, `ROOT-verification/
     // sandbox-policy-mode.json`).
@@ -527,17 +624,24 @@ describe('G-SEAM-33: the deployment default contradicts the stated trust model',
     //       EXACTLY `danger-full-access`, so PTC is the one path that would still
     //       fence.
     //
-    // WHY `it.fails` AND NOT A WEAKENED `toBe('workspace-write')`. Weakening the
-    // assertion to the current value would make the guard certify the defect: it
-    // would report "the deployment declares what it should" while the deployment
-    // declared something else. Marking it an expected failure keeps the claim at
-    // full strength AND keeps the suite honest, and it is self-clearing: the
-    // moment someone declares the row, this case turns RED as an unexpectedly
-    // passing test and forces the marker's removal. A passing assertion cannot
-    // hide behind it.
+    // THIS CASE WAS `it.fails`, AND IS NOW A REAL ASSERTION. That is the marker
+    // working as designed rather than a weakening: the comment on the old form
+    // said the case "is self-clearing: the moment someone declares the row, this
+    // case turns RED as an unexpectedly passing test and forces the marker's
+    // removal." F3 declared the row, so it turned red, and the marker is gone.
+    //
+    // The weakening that was explicitly rejected still is: asserting
+    // `toBe('workspace-write')` would have made the guard certify the defect.
+    // The assertion below is unchanged from the `it.fails` body.
     const profile = readText(PROFILE_PATCH)
     const policy = rowBlock(profile, 'sandbox-policy')
     expect(policy, 'the profile must declare the sandbox mode the architecture claims').toBeDefined()
     expect(policy).toContain(`mode: ${TRUSTED_LOCAL_MODE}`)
+    // `workspaceRoot` is restated WITH the mode because a patch replaces the
+    // target row's whole `config` (see the row's own comment in the profile):
+    // a patch setting only `mode` would drop a key whose schema has no default
+    // and the row would fail validation. Pinned here so the two keys cannot
+    // drift apart again.
+    expect(policy).toContain('workspaceRoot:')
   })
 })

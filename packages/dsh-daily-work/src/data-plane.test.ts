@@ -75,10 +75,10 @@ import { afterEach, describe, expect, it } from 'vitest'
 import {
   ArtifactError,
   ArtifactStorePageProvider,
+  AttachmentArtifactStore,
   CursorAuthority,
   DEFAULT_PAGE_BYTES,
   InMemorySessionReferenceLog,
-  LocalArtifactStore,
   buildLineIndex,
   captureFile,
   joinPages,
@@ -145,21 +145,58 @@ function mountFs(cwd: string): { ctx: Context; fs: LocalFileSystem } {
   return { ctx, fs }
 }
 
+/**
+ * The attachment provider this file mounts, through its PUBLIC package entry.
+ *
+ * WHY THE PROVIDER IS MOUNTED HERE AND NOT IN `artifacts.ts`. The store now takes
+ * its byte storage from the `ctx.attachments` capability (defect F4: the module
+ * used to deep-import the provider's `src/store.ts`, which put a `.ts` file in the
+ * production import graph and created a second physical module instance). So the
+ * provider is a MOUNTED SERVICE, and a test that wants a real one mounts it --
+ * exactly as the composed profile does through the base bundle's `attachment-local`
+ * row. The import below names the package's public entry only; the `src/*` subpath
+ * appears nowhere in this file's production imports.
+ */
+import AttachmentLocal from '@deepseek-ai/dsh-attachment-local'
+
 /** A real store + log + grants triple, with the store rooted in a temp dir. */
 function makePlane(label: string): {
-  store: LocalArtifactStore
+  store: AttachmentArtifactStore
   log: InMemorySessionReferenceLog
   grants: GrantTable
   scope: string
+  ctx: Context
 } {
-  const store = new LocalArtifactStore(join(tempRoot(label), 'artifacts'))
+  const root = tempRoot(label)
+  const ctx = new Context()
+  // A REAL provider, constructed the way the composition constructs it (a cordis
+  // `Service` publishes itself on construction, which is why `LocalFileSystem` is
+  // used the same way a few lines above), with its home under this test's temp root
+  // so no two tests share an attachment store.
+  new AttachmentLocal(ctx, { dshHome: join(root, 'home') })
+  const store = new AttachmentArtifactStore(ctx.attachments, join(root, 'artifacts'))
   const log = new InMemorySessionReferenceLog()
   const grants = new GrantTable()
   const scope = 'project:m4'
   // `bump` returns the REVISION; the scope name is the argument. Reading the return
   // value as the scope would put a number where a scope name belongs.
   grants.bump(scope)
-  return { store, log, grants, scope }
+  return { store, log, grants, scope, ctx }
+}
+
+/**
+ * A store alone, on a REAL mounted provider, for the cases that do not need a
+ * reference log or a grant table.
+ *
+ * The provider's home is under the same temp root, so two tests never share an
+ * attachment store and a test that publishes identical bytes cannot silently
+ * dedup against another test's object.
+ */
+function makeStore(label: string, options?: { quotaBytes?: number }): AttachmentArtifactStore {
+  const root = tempRoot(label)
+  const ctx = new Context()
+  new AttachmentLocal(ctx, { dshHome: join(root, 'home') })
+  return new AttachmentArtifactStore(ctx.attachments, join(root, 'artifacts'), options)
 }
 
 /** sha256 of a buffer, for byte-for-byte comparisons. */
@@ -969,10 +1006,17 @@ describe('DAT-02 [real capture / real consumers] 512 pages of 32MiB, projection 
       // line is what stops the test above from being read as "a cell can page".
       expect(reachText).toContain('import data FAILED: ModuleNotFoundError')
 
+      // DERIVED, not a literal. This field was the constant `false`, which made the
+      // log line look like a measurement while being an assertion someone typed --
+      // the same shape R0's `assert_no_constant_inputs` guard exists to catch. The
+      // fact is real (asserted two lines up: `import data` raises
+      // ModuleNotFoundError, so no cell reaches the data plane), so it is read off
+      // that assertion instead of restated.
+      const cellReachedDataPlane = !reachText.includes('import data FAILED')
       console.log('[DAT-02-ipykernel] realKernel pages', summary.pages, 'bytes', summary.bytes,
         'sha256MatchesSource', summary.sha256 === sha256(buffer),
         'artifactReads', io.artifactReads, 'projectionBytes', projectionBytes,
-        'cellReachedDataPlane', false)
+        'cellReachedDataPlane', cellReachedDataPlane)
     } finally {
       await served.close()
       await kernel.dispose()
@@ -1276,7 +1320,7 @@ describe('DAT-04 [mock provider] a repeated or backwards cursor raises paginatio
   it('still lets a well-formed provider finish, so the guard is not tripped by progress', async () => {
     // A guard that rejected legitimate walks would be worse than none, so the
     // happy path is asserted with the same driver.
-    const store = new LocalArtifactStore(join(tempRoot('dat04-ok'), 'artifacts'))
+    const store = makeStore('dat04-ok')
     const { artifact, bytes } = await store.put([new Uint8Array(300)])
     expect(bytes).toBe(300)
     const grants = new GrantTable()
@@ -1631,7 +1675,7 @@ describe('DAT-07 [real ripgrep] grep canonical keeps every match within the raw 
     // projection shape a caller must use once it has decided the acquisition is
     // partial.
     const root = tempRoot('dat07-cap')
-    const store = new LocalArtifactStore(join(tempRoot('dat07-cap-store'), 'artifacts'))
+    const store = makeStore('dat07-cap-store')
     const log = new InMemorySessionReferenceLog()
     const grants = new GrantTable()
     const scope = 'project:grep'
@@ -1721,7 +1765,7 @@ describe('DAT-08 [real] an over-quota capture fails explicitly and never falls b
     writeFileSync(join(root, 'too-big.txt'), content)
     const { fs } = mountFs(root)
     // A quota well below the file, standing in for disk-full / over-quota.
-    const store = new LocalArtifactStore(join(tempRoot('dat08-store'), 'artifacts'), { quotaBytes: 16 * 1024 })
+    const store = makeStore('dat08-store', { quotaBytes: 16 * 1024 })
     const log = new InMemorySessionReferenceLog()
     const grants = new GrantTable()
     const scope = 'project:quota'
@@ -1973,6 +2017,12 @@ describe('DataPlaneService: the production consumer the profile mounts', () => {
     await ctx.plugin(Storage)
     await ctx.plugin(storageJsonPlugin, { root: join(root, 'store') })
     await ctx.plugin(storageDomainPlugin, { backend: 'json' })
+    // The attachment provider, mounted the way the composition mounts it. The
+    // service now takes its byte storage from `ctx.attachments`, so a service test
+    // without this row would be testing a construction the product never performs
+    // -- and the `data-host` plugin row now declares `attachments` in its `inject`,
+    // which means the product would not activate without it either.
+    await ctx.plugin(AttachmentLocal, { dshHome: join(root, 'home') })
     const service = new DataPlaneService(ctx, {
       artifactRoot: join(root, 'artifacts'),
       ownerScope: 'project:svc',
@@ -2082,6 +2132,12 @@ describe('DataPlaneService: the production consumer the profile mounts', () => {
     await ctx.plugin(Storage)
     await ctx.plugin(storageJsonPlugin, { root: join(tempRoot('svc-root'), 'store') })
     await ctx.plugin(storageDomainPlugin, { backend: 'json' })
+    // MERGE: R2-F4's attachment mount and R6's dshHomePath provide are BOTH
+    // required here -- the store needs the provider, and the assertions below
+    // need the home helper. R2-F4's fallback assertion is dropped from this
+    // block because it contradicts providing dshHomePath; the next test covers
+    // that case explicitly.
+    await ctx.plugin(AttachmentLocal, { dshHome: join(tempRoot('svc-root-home'), 'home') })
     const home = tempRoot('svc-home')
     // The host publishes this with `ctx.provide` at boot; standing it in by hand
     // is what makes the second assertion about THIS seam rather than about a
@@ -2174,23 +2230,32 @@ describe('crash consistency: a real SIGKILL between publication and the Session 
    * child does not inherit the parent's loader hook and a temp cwd cannot resolve
    * package names. The same shape is used by `durability-records.test.ts` for its
    * own kill windows, so the two files agree about what a real kill means here.
+   *
+   * THE PROVIDER IS MOUNTED IN THE CHILD TOO, at the same `dshHome` the parent
+   * uses. The store no longer owns a directory of objects -- it publishes through
+   * `ctx.attachments` -- so a child that skipped the mount would have no byte
+   * storage and the surviving state would be a failed capture rather than the
+   * orphan window this test exists to enter. The provider is mounted exactly as the
+   * composition mounts it, through its public package entry.
    */
-  function childScript(modules: { artifacts: string; observations: string; fsLocal: string; cordis: string }): string {
+  function childScript(modules: { artifacts: string; observations: string; fsLocal: string; cordis: string; attachmentLocal: string }): string {
     return `
-import { LocalArtifactStore, InMemorySessionReferenceLog, captureFile } from '${modules.artifacts}'
+import { AttachmentArtifactStore, InMemorySessionReferenceLog, captureFile } from '${modules.artifacts}'
 import { GrantTable } from '${modules.observations}'
 import LocalFileSystem from '${modules.fsLocal}'
+import AttachmentLocal from '${modules.attachmentLocal}'
 import { Context } from '${modules.cordis}'
 import { writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 
 const [,, root, sourceDir] = process.argv
-const store = new LocalArtifactStore(join(root, 'artifacts'))
+const ctx = new Context()
+new AttachmentLocal(ctx, { dshHome: join(root, 'home') })
+const store = new AttachmentArtifactStore(ctx.attachments, join(root, 'artifacts'))
 const log = new InMemorySessionReferenceLog()
 const grants = new GrantTable()
 const scope = 'project:crash'
 grants.bump(scope)
-const ctx = new Context()
 const fs = new LocalFileSystem(ctx, { cwd: sourceDir, diffBasisMaxBytes: 10 * 1024 * 1024 })
 // The object is published by the time \`commit\` is called. Announce that, then stop
 // existing: no return, no cleanup, no session record.
@@ -2220,6 +2285,7 @@ writeFileSync(join(root, 'survived.txt'), outcome.reference.state)
       observations: pathToFileURL(join(HERE, 'observations.ts')).href,
       fsLocal: pathToFileURL(fileURLToPath(import.meta.resolve('@deepseek-ai/dsh-fs-local'))).href,
       cordis: pathToFileURL(fileURLToPath(import.meta.resolve('@deepseek-ai/cordis'))).href,
+      attachmentLocal: pathToFileURL(fileURLToPath(import.meta.resolve('@deepseek-ai/dsh-attachment-local'))).href,
     }))
 
     const child = spawn(process.execPath, [
@@ -2252,7 +2318,14 @@ writeFileSync(join(root, 'survived.txt'), outcome.reference.state)
 
     // Reconcile the SURVIVING state from a fresh process's view: an object with no
     // committed reference is an orphan.
-    const store = new LocalArtifactStore(join(root, 'artifacts'))
+    //
+    // The provider is re-mounted over the SAME home the child used, which is what
+    // makes this a genuine second process reading a store it did not create: the
+    // index entry is on disk, the bytes are in the provider's own tree, and neither
+    // was in this process's memory.
+    const survivorCtx = new Context()
+    new AttachmentLocal(survivorCtx, { dshHome: join(root, 'home') })
+    const store = new AttachmentArtifactStore(survivorCtx.attachments, join(root, 'artifacts'))
     const log = new InMemorySessionReferenceLog()
     const reconciled = await reconcileStore(store, log)
     expect(reconciled.orphans).toHaveLength(1)
@@ -2576,9 +2649,20 @@ describe('DATA-04/12 [real] the four byte-counts are separately measurable and d
 // therefore a value against itself: it could never fail.
 
 describe('DATA-08 [real] a corrupt or truncated artifact fails loud, never as content', () => {
-  /** The object path for a digest, so a test can damage the real file. */
-  function objectPath(store: LocalArtifactStore, sha256: string): string {
-    return join(store.root, 'objects', sha256.slice(0, 2), sha256)
+  /**
+   * The real object file for a digest, so a test can damage it.
+   *
+   * The bytes live in the mounted attachment provider now, so the path comes from
+   * the capability (`fileHostPath`) rather than from a layout this module assumes.
+   * That is the same accessor the production read path uses, which is what makes the
+   * damage land on the file the product would actually open -- a hand-built
+   * `root/objects/<sha>` path would have damaged nothing and the test would have
+   * passed vacuously.
+   */
+  async function objectPath(store: AttachmentArtifactStore, digest: string): Promise<string> {
+    const path = await store.hostPath(`artifact:sha256:${digest}`)
+    expect(path, 'the mounted provider must be host-backed for this test to damage the real object').toBeDefined()
+    return path as string
   }
 
   it('detects an object REPLACED in place at the same length', async () => {
@@ -2591,7 +2675,7 @@ describe('DATA-08 [real] a corrupt or truncated artifact fails loud, never as co
       executionWorld: 'local', observationId: 'obs-replaced', mediaType: 'application/octet-stream',
     })
     const digest = capture.descriptor.captured.sha256
-    const path = objectPath(store, digest)
+    const path = await objectPath(store, digest)
     const original = readFileSync(path)
 
     // The publication is 0o400, which is a REAL protection worth asserting: the
@@ -2617,7 +2701,7 @@ describe('DATA-08 [real] a corrupt or truncated artifact fails loud, never as co
       executionWorld: 'local', observationId: 'obs-truncated', mediaType: 'application/octet-stream',
     })
     const digest = capture.descriptor.captured.sha256
-    const path = objectPath(store, digest)
+    const path = await objectPath(store, digest)
     const original = readFileSync(path)
     chmodSync(path, 0o600)
     writeFileSync(path, original.subarray(0, 5))

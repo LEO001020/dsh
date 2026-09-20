@@ -34,6 +34,7 @@
  * PROVIDER and the mis-selection is reported rather than provoked.
  */
 import { Context } from '@deepseek-ai/cordis'
+import AttachmentLocal from '@deepseek-ai/dsh-attachment-local'
 import LocalFileSystem from '@deepseek-ai/dsh-fs-local'
 import Storage from '@deepseek-ai/dsh-storage'
 import * as storageDomainPlugin from '@deepseek-ai/dsh-storage-domain'
@@ -116,6 +117,11 @@ async function mountService(label: string, options: { readConcurrency?: number }
   await ctx.plugin(Storage)
   await ctx.plugin(storageJsonPlugin, { root: join(root, 'store') })
   await ctx.plugin(storageDomainPlugin, { backend: 'json' })
+  // The BYTE store is a mounted capability, not something the service builds
+  // (F4's fix), so a service test must mount a provider the way the composed
+  // profile does through the base bundle's `attachment-local` row. Its home is
+  // under this test's temp root, so no two arms share an attachment store.
+  await ctx.plugin(AttachmentLocal, { dshHome: join(root, 'home') })
   // The host publishes this at boot; standing it in is what makes these tests
   // measure the cwd-independent path rather than the fallback.
   ctx.provide('dshHomePath', (...segments: string[]) => join(root, ...segments))
@@ -1091,6 +1097,10 @@ describe('R6-K7 [real] storage faults are honest', () => {
     await ctx.plugin(storageDomainPlugin, { backend: 'json' })
     ctx.provide('dshHomePath', (...segments: string[]) => join(root, ...segments))
     await ctx.plugin(LocalFileSystem, { cwd: root, diffBasisMaxBytes: 10 * 1024 * 1024 })
+    // The byte store is a mounted capability (F4), so this arm mounts a provider
+    // too -- without it the quota refusal would surface as a generic publication
+    // failure and the retention gap this case asserts would never be produced.
+    await ctx.plugin(AttachmentLocal, { dshHome: join(root, 'home') })
     const service = new DataPlaneService(ctx, {
       artifactRoot: join(root, 'artifacts'),
       ownerScope: 'project:r6',
@@ -1138,11 +1148,16 @@ describe('R6-K7 [real] storage faults are honest', () => {
       // still declares the original digest, so this is exactly the window where a
       // naive reader would serve different bytes as the observation.
       const digest = captured.descriptor.captured.sha256
-      const objectPath = join(service.store.root, 'objects', digest.slice(0, 2), digest)
-      const before = readFileSync(objectPath)
+      // The object's bytes live in the mounted attachment provider now (F4), so the
+      // path comes from the capability -- the same accessor the production read path
+      // uses. A hand-built `root/objects/<sha>` path no longer exists, and damaging
+      // it would have left the test passing vacuously against a file nothing reads.
+      const objectPath = await service.store.hostPath(captured.descriptor.captured.artifact)
+      expect(objectPath, 'the mounted provider must be host-backed to damage the real object').toBeDefined()
+      const before = readFileSync(objectPath as string)
       expect(before.byteLength).toBe(original.byteLength)
-      chmodSync(objectPath, 0o600)
-      writeFileSync(objectPath, Buffer.alloc(original.byteLength, 0x5a))
+      chmodSync(objectPath as string, 0o600)
+      writeFileSync(objectPath as string, Buffer.alloc(original.byteLength, 0x5a))
 
       // The content-integrity check refuses it, naming both hashes.
       await expect(service.resolve('obs-r6-corrupt'))
@@ -1164,8 +1179,11 @@ describe('R6-K7 [real] storage faults are honest', () => {
       const captured = await plane.fsCapture(caller, {
         path: 'gone.bin', mediaType: 'text/plain', observationId: 'obs-r6-gone',
       })
-      const digest = captured.descriptor.captured.sha256
-      rmSync(join(service.store.root, 'objects', digest.slice(0, 2), digest), { force: true })
+      // Same correction as the corrupt arm above: the object is addressed through
+      // the mounted provider, not through a layout this module used to own.
+      const objectPath = await service.store.hostPath(captured.descriptor.captured.artifact)
+      expect(objectPath, 'the mounted provider must be host-backed to remove the real object').toBeDefined()
+      rmSync(objectPath as string, { force: true })
 
       await expect(service.resolve('obs-r6-gone'))
         .rejects.toMatchObject({ code: 'artifact-integrity-error' })
