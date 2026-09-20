@@ -3,7 +3,7 @@
   "kind": "TRUSTED_LOCAL_V2_QUALIFICATION_IDENTITY_NOT_A_DSH_ARTIFACT",
   "algorithm": "sha256(UTF8(json.dumps(inputs, sort_keys=True, separators=(',', ':'), ensure_ascii=True)))",
   "algorithm_note": "The lock's own declared algorithm, reused verbatim so a reader who can reproduce v1's identity reproduces v2's the same way: sha256(UTF8(json.dumps(inputs, sort_keys=True, separators=(',',':'), ensure_ascii=True))).",
-  "runtime_deployment_identity": "3d4b9a3584b0b763159399e33c0d69ad98a5ef6a721370a3c3a625e688a575e7",
+  "runtime_deployment_identity": "5e0fc8e18dde75f3bcce4c377e83d947cb0b35eb2b9a500fabe34f2c6c746aea",
   "runtime_inputs": {
     "upstream_commit": "ddefc45fbc7f8e46dd73185e68295696d1297887",
     "upstream_repository": "deepseek-ai/deepseek-harness",
@@ -22,7 +22,7 @@
     "authority_policy_digest": "user-authorizes-n-model-cannot-widen",
     "trust_model_statement": "The OS user account is the execution authority boundary. No sandbox, no WSL, no Linux VM, no SSH execution world. Every process this deployment starts -- including the persistent IPython kernel -- runs as the invoking OS user with that user's full filesystem, network and process visibility. This deployment claims NO confinement of reads, writes, network or process visibility, and no case in qualification/specs/acceptance-spec.trusted-local-v1.json may be read as establishing one.",
     "trust_model_name": null,
-    "implementation_commit": "0b7adeb47d85b32ffd75469b460fff8b58c9299e",
+    "implementation_commit": "492e2d10f21ef29889a790c018db4f26ab6b9d64",
     "python_identity": {
       "python_version": "3.14.3",
       "python_executable": "C:\\Users\\hzq00\\AppData\\Local\\Programs\\Python\\Python314\\python.exe",
@@ -75,8 +75,8 @@
   },
   "v1_lock_identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
   "qualification_contract": {
-    "contract_id": "trusted-local-v2.2ba8d059d652",
-    "qualification_contract_identity": "2ba8d059d65286114a4e96f7cc68dc07023734c818a3a53f06b9979fb23b602c",
+    "contract_id": "trusted-local-v2.4e2cad787801",
+    "qualification_contract_identity": "4e2cad7878017fd2914fcf03048154914697fb9e01cbd57fed90f85246cc37c5",
     "acceptance_definition_path": "qualification/specs/acceptance-spec.trusted-local-v2.definition.json",
     "acceptance_definition_digest": "115aa092d0279c005d6f83d0412c1e00d374b60f803dd10f56eaba878ed664e1",
     "provenance_path": "qualification/specs/acceptance-spec.trusted-local-v2.provenance.json",
@@ -86,10 +86,10 @@
       "qualification/runners/verify-spec.py": "79a3a1fe5dd3058c602fdaec91d956c46f3c05e86c0073e3838265f8d745181c",
       "qualification/runners/build-v2-definition.py": "b8fae63f50be92a44f9969c7b0b02eabb12e1307d913b24b98272fbc7793948c",
       "qualification/runners/v2-identity-probe.mjs": "536951bdd6243dc5ed66ac51c2262e1f257cff0429839f9230cf70d7fc2b9b4e",
-      "qualification/specs/frozen/verify-freeze.py": "b4d05c80094c4c813dae4dd92ff4c2a3834d3e31728877efab94f79e58cc842e",
+      "qualification/specs/frozen/verify-freeze.py": "7d8b4fadf3eb1940dd5b5773acbf34f30bfd673cd75465ae634aa7da50f914d0",
       ".gitattributes": "a7c77786b5f1d95cf22ddbb1f3f37bdcf77c2ff6bab01c14a8fbc46e0bd22c5e"
     },
-    "results_location": "qualification/results/trusted-local-v2.2ba8d059d652/"
+    "results_location": "qualification/results/trusted-local-v2.4e2cad787801/"
   },
   "field_provenance": [
     {
@@ -188,7 +188,7 @@
   ],
   "checkout_reproducibility": {
     "why": "A contract digest that depends on the checkout that computed it is not an identity. `.gitattributes` declares `*.json text eol=lf` with core.autocrlf=true, so on-disk CRLF becomes LF in git and the two digests diverge unless line endings are normalised.",
-    "all_committed_inputs_reproducible": true,
+    "all_committed_inputs_reproducible": false,
     "committed_inputs": 8,
     "uncommitted_inputs": [],
     "files": [
@@ -236,10 +236,10 @@
       },
       {
         "path": "qualification/specs/frozen/verify-freeze.py",
-        "canonical_digest_disk": "b4d05c80094c4c813dae4dd92ff4c2a3834d3e31728877efab94f79e58cc842e",
+        "canonical_digest_disk": "7d8b4fadf3eb1940dd5b5773acbf34f30bfd673cd75465ae634aa7da50f914d0",
         "canonical_digest_git": "b4d05c80094c4c813dae4dd92ff4c2a3834d3e31728877efab94f79e58cc842e",
         "committed": true,
-        "reproducible": true
+        "reproducible": false
       },
       {
         "path": ".gitattributes",
@@ -251,8 +251,8 @@
     ]
   },
   "staleness": {
-    "current_contract_identity": "2ba8d059d65286114a4e96f7cc68dc07023734c818a3a53f06b9979fb23b602c",
-    "current_runtime_identity": "3d4b9a3584b0b763159399e33c0d69ad98a5ef6a721370a3c3a625e688a575e7",
+    "current_contract_identity": "4e2cad7878017fd2914fcf03048154914697fb9e01cbd57fed90f85246cc37c5",
+    "current_runtime_identity": "5e0fc8e18dde75f3bcce4c377e83d947cb0b35eb2b9a500fabe34f2c6c746aea",
     "filed_results": [
       {
         "directory": "trusted-local-v2.e102849cbb2e",

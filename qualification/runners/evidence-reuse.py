@@ -495,7 +495,8 @@ def main() -> int:
     }
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     (OUT_DIR / "evidence-reuse.json").write_text(
-        json.dumps(record, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+        json.dumps(record, indent=2, ensure_ascii=False) + "\n", encoding="utf-8",
+        newline="\n")
 
     if args.json:
         print(json.dumps(record, indent=2, ensure_ascii=False))

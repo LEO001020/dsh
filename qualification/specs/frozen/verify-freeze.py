@@ -336,7 +336,7 @@ def main() -> int:
         "failures": [f"{r['label']} -- observed: {r['detail']}" for r in failures],
         "verdict": "FREEZE_HOLDS" if not failures else "FREEZE_BROKEN",
     }
-    RECORD.write_text(json.dumps(record, indent=2) + "\n", encoding="utf-8")
+    RECORD.write_text(json.dumps(record, indent=2) + "\n", encoding="utf-8", newline="\n")
 
     if args.json:
         print(json.dumps(record, indent=2))
