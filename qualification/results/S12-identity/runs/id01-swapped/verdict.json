@@ -1,0 +1,123 @@
+{
+  "driver": "s12-id01-driver",
+  "arm": "swapped",
+  "case": "ID-01",
+  "ranAt": "2026-09-20T10:52:08.591Z",
+  "tree": "D:/DSH/work/wt-s12",
+  "branch": "wt/s12",
+  "home": "D:/DSH/home/s12",
+  "overlay": "D:/DSH/work/wt-s12/qualification/results/S12-identity/id01-overlay-s12.yml",
+  "overlayNote": "the archived ID-01 overlay with the two insert names re-pointed at this worktree; keyless mock route, no provider budget",
+  "recorder": "D:/DSH/work/wt-s12/qualification/results/V1-identity/id01-graph-recorder.mjs",
+  "recorderSha256": "ff1b6ba41cb611f3dad03efb9e2ef023575df042f5c6978aa57eae6df3df342d",
+  "launcherExecuted": "D:/DSH/work/wt-s12/.probe/s12-id01/swapped2/apps/cli/lib/types/bin.js",
+  "launcherMeasured": "D:/DSH/work/wt-s12/.probe/s12-id01/swapped2/apps/cli/lib/types/bin.js",
+  "launcherMeasuredSha256": "fe01631ecb3141bb645a6036b13bacf42f8bc5369474daf11e10e9fbadb0a8e4",
+  "pinnedArtifactSha256": "69c49c871735dc7ee81ec51f266bbec129f075fd5066e046374f4b13ab02a705",
+  "swapProof": {
+    "swapArtifact": "D:/DSH/work/wt-s12/.probe/s12-id01/swapped2/apps/cli/lib/types/bin.js",
+    "swapSha256": "fe01631ecb3141bb645a6036b13bacf42f8bc5369474daf11e10e9fbadb0a8e4",
+    "swapVersionOutput": "0.1.6-alpha.2-UNBUNDLED",
+    "pinnedLauncherSha256": "69c49c871735dc7ee81ec51f266bbec129f075fd5066e046374f4b13ab02a705",
+    "swappedBuildExecuted": true
+  },
+  "attack": {
+    "kind": "swapped-build",
+    "executedArtifact": "D:/DSH/work/wt-s12/.probe/s12-id01/swapped2/apps/cli/lib/types/bin.js",
+    "proof": {
+      "swapArtifact": "D:/DSH/work/wt-s12/.probe/s12-id01/swapped2/apps/cli/lib/types/bin.js",
+      "swapSha256": "fe01631ecb3141bb645a6036b13bacf42f8bc5369474daf11e10e9fbadb0a8e4",
+      "swapVersionOutput": "0.1.6-alpha.2-UNBUNDLED",
+      "pinnedLauncherSha256": "69c49c871735dc7ee81ec51f266bbec129f075fd5066e046374f4b13ab02a705",
+      "swappedBuildExecuted": true
+    }
+  },
+  "rebuilds": [
+    {
+      "package": "packages/dsh-daily-work",
+      "exitCode": 0,
+      "ms": 2330,
+      "error": null
+    },
+    {
+      "package": "packages/dsh-ipython",
+      "exitCode": 0,
+      "ms": 1782,
+      "error": null
+    }
+  ],
+  "buildFreshness": {
+    "dsh-daily-work": {
+      "newestLibMtime": "2026-09-20T10:51:28.666Z",
+      "newestSrcMtime": "2026-09-20T10:30:32.768Z",
+      "libNewerThanSrc": true
+    },
+    "dsh-ipython": {
+      "newestLibMtime": "2026-09-20T10:51:30.467Z",
+      "newestSrcMtime": "2026-09-20T10:30:32.787Z",
+      "libNewerThanSrc": true
+    }
+  },
+  "pluginInstall": {
+    "exitCode": 0,
+    "stdoutTail": "Already up to date\n\ndependencies:\n+ dsh-daily-work 0.1.0 <- ..\\..\\..\\..\\work\\wt-s12\\packages\\dsh-daily-work\n+ dsh-ipython 0.1.0 <- ..\\..\\..\\..\\work\\wt-s12\\packages\\dsh-ipython\n\nDone in 507ms using pnpm v11.24.0\n"
+  },
+  "port": 10562,
+  "portReleased": true,
+  "timedOut": false,
+  "graph": {
+    "lineCount": 715,
+    "torn": 0,
+    "distinctSpecifiers": 222,
+    "fromBuilt": 221,
+    "fromSource": 0,
+    "fromOther": 1,
+    "underPackagesLib": 213,
+    "underVendorLib": 7,
+    "underNodeModules": 1,
+    "sourceRows": [],
+    "mixed": []
+  },
+  "probeReadError": null,
+  "clauses": [
+    {
+      "label": "the resolved module graph was recorded and is non-empty",
+      "ok": true,
+      "detail": "lines=715 distinct=222 torn=0"
+    },
+    {
+      "label": "no `@deepseek-ai/*` specifier resolves to a source (.ts) file",
+      "ok": true,
+      "detail": "fromBuilt=221 fromSource=0 fromOther=1; offenders=[]"
+    },
+    {
+      "label": "the graph does not mix src and lib for one specifier",
+      "ok": true,
+      "detail": "[]"
+    },
+    {
+      "label": "sha256 of the launcher equals deployment.inputs.artifact_sha256",
+      "ok": false,
+      "detail": "onDisk=fe01631ecb3141bb645a6036b13bacf42f8bc5369474daf11e10e9fbadb0a8e4 pinned=69c49c871735dc7ee81ec51f266bbec129f075fd5066e046374f4b13ab02a705 equal=false"
+    },
+    {
+      "label": "the first tool call actually succeeded (not a --help-only success)",
+      "ok": true,
+      "detail": "requested=\"read\" isError=false"
+    },
+    {
+      "label": "the tool result carries the file's own text (the call really ran)",
+      "ok": true,
+      "detail": "\"<path>D:\\\\DSH\\\\work\\\\wt-s12\\\\qualification\\\\results\\\\S12-identity\\\\runs\\\\id01-swapped\\\\first-call-input.txt</path>\\n<type>file</type>\\n<content>\\n1: ID01_FIRST_TOOL_CALL_ROUND_TRIP\\n\\n(End of file - total 1 lines)\\n</content>\""
+    },
+    {
+      "label": "REPORTED: built rows NOT under `packages\\` (literal-reading divergence)",
+      "ok": true,
+      "detail": "count=8 vendor=7 node_modules=1; [[\"@deepseek-ai/cordis\",\"D:\\\\DSH\\\\src\\\\dsh-src\\\\vendor\\\\cordis\\\\lib\\\\index.js\"],[\"@deepseek-ai/cordis-plugin-group\",\"D:\\\\DSH\\\\src\\\\dsh-src\\\\vendor\\\\group\\\\lib\\\\index.js\"],[\"@deepseek-ai/cordis-plugin-include\",\"D:\\\\DSH\\\\src\\\\dsh-src\\\\vendor\\\\include\\\\lib\\\\index.js\"],[\"@deepseek-ai/cordis-plugin-loader\",\"D:\\\\DSH\\\\src\\\\dsh-src\\\\vendor\\\\loader\\\\lib\\\\index.js\"],[\"@deepseek-ai/cordis-plugin-timer\",\"D:\\\\DSH\\\\src\\\\dsh-src\\\\vendor\\\\timer\\\\lib\\\\index.js\"],[\"@deepseek-ai/cosmokit\",\"D:\\\\DSH\\\\src\\\\dsh-src\\\\vendor\\\\cosmokit\\\\lib\\\\index.js\"],[\"@deepseek-ai/libreoffice-kit\",\"D:\\\\DSH\\\\src\\\\dsh-src\\\\node_modules\\\\.pnpm\\\\@deepseek-ai+libreoffice-kit@0.0.1\\\\node_modules\\\\@deepseek-ai\\\\libreoffice-kit\\\\lib\\\\index.js\"],[\"@deepseek-ai/schemastery\",\"D:\\\\DSH\\\\src\\\\dsh-src\\\\vendor\\\\schemastery\\\\lib\\\\index.mjs\"]]"
+    }
+  ],
+  "failures": [
+    "sha256 of the launcher equals deployment.inputs.artifact_sha256 -- observed: onDisk=fe01631ecb3141bb645a6036b13bacf42f8bc5369474daf11e10e9fbadb0a8e4 pinned=69c49c871735dc7ee81ec51f266bbec129f075fd5066e046374f4b13ab02a705 equal=false"
+  ],
+  "verdict": "FAIL"
+}

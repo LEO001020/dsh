@@ -1,0 +1,6 @@
+{
+  "target": "D:/DSH/work/wt-s12/packages/dsh-daily-work/src/artifacts.ts",
+  "injection": "import { publishImmutableObjectStream } from '@deepseek-ai/dsh-attachment-local/src/store.ts'\n",
+  "emittedFile": "D:/DSH/work/wt-s12/packages/dsh-daily-work/lib/artifacts.js",
+  "emittedCarriesSpecifier": true
+}

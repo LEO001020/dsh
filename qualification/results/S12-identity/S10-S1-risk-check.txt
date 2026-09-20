@@ -1,0 +1,65 @@
+# S12 — did the S10 `as never` audit or the S1 tool-row changes add a src/ import path?
+
+## 1. `as never` casts (S10's slice) — CANNOT introduce a module specifier
+
+`as never` is a TYPE-ONLY assertion. TypeScript erases it at emit, so it cannot
+name a module. Measured:
+
+  $ grep -rn 'as never' packages/*/src --include='*.ts' | grep -v '\.test\.ts' | wc -l
+  48      (many of those are the English word "never" in prose comments, not casts)
+  $ grep -rn 'as never' packages/*/lib --include='*.js' | wc -l
+  31
+
+The emitted hits are NOT casts: the string "never" survives only inside prose
+comments and message strings (e.g. `'the scan was never opened'`). TypeScript
+removed every `as never`. So the S10 audit cannot have created a new import path,
+and this is a SOURCE_FACT about the compiler rather than a measurement of S10's diff.
+
+## 2. Tool-row changes (S1's slice) — the preset names packages by ROW ID, not by path
+
+The preset (`profiles/daily-candidate/presets/daily-standard/agent.cordis.yml`)
+mounts tool rows by plugin NAME (e.g. `dsh-daily-work`, `ipython-tool`), and the
+resolution of those names is the profile's `link:` farm. A row cannot carry a
+`src/` specifier: the row schema takes a package id. So a tool-row change adds or
+removes a RESOLUTION TARGET, and the question becomes whether the newly reachable
+package resolves to a lib/ or a src/ path — which the boot graph answers directly
+(the three arms above). Measured on the baseline arm: 222 distinct specifiers,
+fromBuilt=221, fromSource=0.
+
+## 3. INDEPENDENT SCAN, not trusting the gate's PACKAGES constant
+
+The gate states its scope as a `PACKAGES` constant. An independent check must not
+inherit it, or a package added later is invisible to both. `scan-src-imports.mjs`
+DISCOVERS packages from the filesystem instead. Measured: 2 packages discovered
+(dsh-daily-work, dsh-ipython), 168 files scanned (52 production src + 64 test src
++ 52 emitted lib), PRODUCTION OFFENDERS = 0.
+
+Note the scan PARSES rather than greps: a plain `grep -rn` over this repo returns
+1 hit for the forbidden pattern, and it is the documentation COMMENT in
+`artifacts.ts:33` that cites the original defect. Grep reports it as an import;
+the TypeScript preprocessor does not. This is the difference the gate's own
+docstring records, independently confirmed here.
+
+## 4. COVERAGE GAP FOUND — two COMPUTED dynamic imports are invisible to the parser
+
+`packages/dsh-daily-work/src/homelock.ts` holds two specifiers in a VARIABLE, so
+`ts.preProcessFile` cannot see them and NEITHER the gate NOR my scan can test them:
+
+  line ~127:  const specifier = 'koffi'                              -> win32 lock
+  line ~235:  const specifier = '@deepseek-ai/node-addon-system/flock' -> posix lock
+
+Measured resolutions (from the package's own resolution context):
+
+  koffi -> D:\DSH\src\dsh-src\node_modules\.pnpm\koffi@3.1.1\node_modules\koffi\index.cjs
+  @deepseek-ai/node-addon-system/flock
+        -> D:\DSH\src\dsh-src\native\system\packages\entry\lib\flock.js
+
+BOTH resolve to built artifacts, so neither is a defect today. But they are a real
+gap in the gate's coverage, and they are exactly the shape that WOULD evade it: a
+computed specifier is the one way to name a `src/` path that a parse-based gate
+cannot see. The current values are literals assigned to a `const` one line above,
+so a reader can verify them by eye — but a gate that cannot see them cannot refuse
+a future edit that makes one of them a `src/` path.
+
+Recorded, NOT fixed: the gate's file is not mine to expand beyond the correction
+the slice needs, and both values are correct as they stand. This is the finding.

@@ -1,0 +1,119 @@
+{
+  "driver": "s12-id01-driver",
+  "arm": "src",
+  "case": "ID-01",
+  "ranAt": "2026-09-20T10:52:53.389Z",
+  "tree": "D:/DSH/work/wt-s12",
+  "branch": "wt/s12",
+  "home": "D:/DSH/home/s12",
+  "overlay": "D:/DSH/work/wt-s12/qualification/results/S12-identity/id01-overlay-s12.yml",
+  "overlayNote": "the archived ID-01 overlay with the two insert names re-pointed at this worktree; keyless mock route, no provider budget",
+  "recorder": "D:/DSH/work/wt-s12/qualification/results/V1-identity/id01-graph-recorder.mjs",
+  "recorderSha256": "ff1b6ba41cb611f3dad03efb9e2ef023575df042f5c6978aa57eae6df3df342d",
+  "launcherExecuted": "D:/DSH/src/dsh-src/apps/cli/lib/bin.js",
+  "launcherMeasured": "D:/DSH/src/dsh-src/apps/cli/lib/bin.js",
+  "launcherMeasuredSha256": "69c49c871735dc7ee81ec51f266bbec129f075fd5066e046374f4b13ab02a705",
+  "pinnedArtifactSha256": "69c49c871735dc7ee81ec51f266bbec129f075fd5066e046374f4b13ab02a705",
+  "swapProof": null,
+  "attack": {
+    "kind": "src-injection",
+    "target": "D:/DSH/work/wt-s12/packages/dsh-daily-work/src/artifacts.ts",
+    "injection": "import { publishImmutableObjectStream } from '@deepseek-ai/dsh-attachment-local/src/store.ts'\n",
+    "applied": true
+  },
+  "rebuilds": [
+    {
+      "package": "packages/dsh-daily-work",
+      "exitCode": 0,
+      "ms": 2288,
+      "error": null
+    },
+    {
+      "package": "packages/dsh-ipython",
+      "exitCode": 0,
+      "ms": 1479,
+      "error": null
+    }
+  ],
+  "buildFreshness": {
+    "dsh-daily-work": {
+      "newestLibMtime": "2026-09-20T10:52:15.543Z",
+      "newestSrcMtime": "2026-09-20T10:52:13.290Z",
+      "libNewerThanSrc": true
+    },
+    "dsh-ipython": {
+      "newestLibMtime": "2026-09-20T10:52:17.029Z",
+      "newestSrcMtime": "2026-09-20T10:30:32.787Z",
+      "libNewerThanSrc": true
+    }
+  },
+  "pluginInstall": {
+    "exitCode": 0,
+    "stdoutTail": "Already up to date\n\ndependencies:\n+ dsh-daily-work 0.1.0 <- ..\\..\\..\\..\\work\\wt-s12\\packages\\dsh-daily-work\n+ dsh-ipython 0.1.0 <- ..\\..\\..\\..\\work\\wt-s12\\packages\\dsh-ipython\n\nDone in 418ms using pnpm v11.24.0\n"
+  },
+  "port": 3097,
+  "portReleased": true,
+  "timedOut": false,
+  "graph": {
+    "lineCount": 720,
+    "torn": 0,
+    "distinctSpecifiers": 223,
+    "fromBuilt": 221,
+    "fromSource": 1,
+    "fromOther": 1,
+    "underPackagesLib": 213,
+    "underVendorLib": 7,
+    "underNodeModules": 1,
+    "sourceRows": [
+      {
+        "specifier": "@deepseek-ai/dsh-attachment-local/src/store.ts",
+        "kind": "SOURCE",
+        "path": "D:\\DSH\\src\\dsh-src\\packages\\attachment\\attachment-local\\src\\store.ts",
+        "occurrences": 1
+      }
+    ],
+    "mixed": []
+  },
+  "probeReadError": null,
+  "clauses": [
+    {
+      "label": "the resolved module graph was recorded and is non-empty",
+      "ok": true,
+      "detail": "lines=720 distinct=223 torn=0"
+    },
+    {
+      "label": "no `@deepseek-ai/*` specifier resolves to a source (.ts) file",
+      "ok": false,
+      "detail": "fromBuilt=221 fromSource=1 fromOther=1; offenders=[[\"@deepseek-ai/dsh-attachment-local/src/store.ts\",\"D:\\\\DSH\\\\src\\\\dsh-src\\\\packages\\\\attachment\\\\attachment-local\\\\src\\\\store.ts\"]]"
+    },
+    {
+      "label": "the graph does not mix src and lib for one specifier",
+      "ok": true,
+      "detail": "[]"
+    },
+    {
+      "label": "sha256 of the launcher equals deployment.inputs.artifact_sha256",
+      "ok": true,
+      "detail": "onDisk=69c49c871735dc7ee81ec51f266bbec129f075fd5066e046374f4b13ab02a705 pinned=69c49c871735dc7ee81ec51f266bbec129f075fd5066e046374f4b13ab02a705 equal=true"
+    },
+    {
+      "label": "the first tool call actually succeeded (not a --help-only success)",
+      "ok": true,
+      "detail": "requested=\"read\" isError=false"
+    },
+    {
+      "label": "the tool result carries the file's own text (the call really ran)",
+      "ok": true,
+      "detail": "\"<path>D:\\\\DSH\\\\work\\\\wt-s12\\\\qualification\\\\results\\\\S12-identity\\\\runs\\\\id01-src\\\\first-call-input.txt</path>\\n<type>file</type>\\n<content>\\n1: ID01_FIRST_TOOL_CALL_ROUND_TRIP\\n\\n(End of file - total 1 lines)\\n</content>\""
+    },
+    {
+      "label": "REPORTED: built rows NOT under `packages\\` (literal-reading divergence)",
+      "ok": true,
+      "detail": "count=8 vendor=7 node_modules=1; [[\"@deepseek-ai/cordis\",\"D:\\\\DSH\\\\src\\\\dsh-src\\\\vendor\\\\cordis\\\\lib\\\\index.js\"],[\"@deepseek-ai/cordis-plugin-group\",\"D:\\\\DSH\\\\src\\\\dsh-src\\\\vendor\\\\group\\\\lib\\\\index.js\"],[\"@deepseek-ai/cordis-plugin-include\",\"D:\\\\DSH\\\\src\\\\dsh-src\\\\vendor\\\\include\\\\lib\\\\index.js\"],[\"@deepseek-ai/cordis-plugin-loader\",\"D:\\\\DSH\\\\src\\\\dsh-src\\\\vendor\\\\loader\\\\lib\\\\index.js\"],[\"@deepseek-ai/cordis-plugin-timer\",\"D:\\\\DSH\\\\src\\\\dsh-src\\\\vendor\\\\timer\\\\lib\\\\index.js\"],[\"@deepseek-ai/cosmokit\",\"D:\\\\DSH\\\\src\\\\dsh-src\\\\vendor\\\\cosmokit\\\\lib\\\\index.js\"],[\"@deepseek-ai/libreoffice-kit\",\"D:\\\\DSH\\\\src\\\\dsh-src\\\\node_modules\\\\.pnpm\\\\@deepseek-ai+libreoffice-kit@0.0.1\\\\node_modules\\\\@deepseek-ai\\\\libreoffice-kit\\\\lib\\\\index.js\"],[\"@deepseek-ai/schemastery\",\"D:\\\\DSH\\\\src\\\\dsh-src\\\\vendor\\\\schemastery\\\\lib\\\\index.mjs\"]]"
+    }
+  ],
+  "failures": [
+    "no `@deepseek-ai/*` specifier resolves to a source (.ts) file -- observed: fromBuilt=221 fromSource=1 fromOther=1; offenders=[[\"@deepseek-ai/dsh-attachment-local/src/store.ts\",\"D:\\\\DSH\\\\src\\\\dsh-src\\\\packages\\\\attachment\\\\attachment-local\\\\src\\\\store.ts\"]]"
+  ],
+  "verdict": "FAIL"
+}

@@ -1,0 +1,117 @@
+# F4 GATE END-TO-END MUTATION TEST
+# writer S12. The gate is packages/dsh-daily-work/src/no-src-imports.test.ts
+# Question: does the gate go RED when a REAL production src/ import is emitted,
+#           and does it go back GREEN after a byte-exact restore?
+# captured: 2026-09-20T18:53:20+08:00
+
+## STEP 0: pre-state
+$ sha256sum src/artifacts.ts
+8dac7929894e0f9938c689df27704b21755e4a32efa0562275bb25fbe6fac703 *src/artifacts.ts
+$ git status --porcelain src/artifacts.ts
+(empty = at HEAD)
+
+## STEP 1: GATE BEFORE — must be GREEN
+$ node node_modules/vitest/vitest.mjs run src/no-src-imports.test.ts
+ [32m✓[39m src/no-src-imports.test.ts[2m > [22mF4 gate: no emitted production JS imports an upstream `src/*` path[2m > [22mthe detector FAILS when a forbidden specifier is injected, then the file is restored[32m 7[2mms[22m[39m
+ [32m✓[39m src/no-src-imports.test.ts[2m > [22mF4 gate: no emitted production JS imports an upstream `src/*` path[2m > [22mthe same detector finds the specifier in the BUILT artifact form, so the gate is not source-only[32m 1[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[32m5 passed[39m[22m[90m (5)[39m
+[2m   Start at [22m 18:53:21
+[2m   Duration [22m 495ms[2m (transform 31ms, setup 0ms, import 161ms, tests 148ms, environment 0ms)[22m
+
+
+## STEP 2: INJECT a real src/ deep import into the PRODUCTION source
+$ printf '%s' "import { publishImmutableObjectStream } from '@deepseek-ai/dsh-attachment-local/src/store.ts'" >> src/artifacts.ts
+$ sha256sum src/artifacts.ts   (MUST differ from step 0)
+c4419c4275a0cae82b2810dc3367e8a53588757d924cb01dcd9e4b377c8f61da *src/artifacts.ts
+
+## STEP 3: REBUILD with the project's own compiler, so the emitted lib/ carries it
+$ node D:/DSH/src/dsh-src/node_modules/typescript/bin/tsc -p tsconfig.json
+tsc exit=0
+$ grep -n 'attachment-local/src/store' lib/artifacts.js | head -3   (the EMITTED import)
+33: * provider's source: `@deepseek-ai/dsh-attachment-local/src/store.ts`. That was a
+2403:import { publishImmutableObjectStream } from '@deepseek-ai/dsh-attachment-local/src/store.ts';
+
+## STEP 4: GATE AFTER INJECTION — MUST BE RED
+$ node node_modules/vitest/vitest.mjs run src/no-src-imports.test.ts
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- [][39m
+[31m+ [[39m
+[31m+   "@deepseek-ai/dsh-attachment-local/src/store.ts",[39m
+[31m+ ][39m
+
+[36m [2m❯[22m src/no-src-imports.test.ts:[2m274:87[22m[39m
+    [90m272|[39m     [35mtry[39m {
+    [90m273|[39m       // CONTROL 1 — clean before the injection, so a later failure is…
+    [90m274|[39m       expect(forbiddenIn(target), 'the real file must be clean before …
+    [90m   |[39m                                                                                       [31m^[39m
+    [90m275|[39m
+    [90m276|[39m       // INJECT. Appended rather than spliced: the point is that a for…
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m3 failed[39m[22m[2m | [22m[1m[32m2 passed[39m[22m[90m (5)[39m
+[2m   Start at [22m 18:53:24
+[2m   Duration [22m 578ms[2m (transform 27ms, setup 0ms, import 167ms, tests 184ms, environment 0ms)[22m
+
+gate exit after injection=1
+
+## STEP 4b: WHICH tests failed (the gate's own names)
+
+## STEP 5: RESTORE the source byte-exactly (from git, which holds the pinned content)
+$ git checkout -- src/artifacts.ts
+$ sha256sum src/artifacts.ts   (MUST equal step 0: 8dac7929...)
+8dac7929894e0f9938c689df27704b21755e4a32efa0562275bb25fbe6fac703 *src/artifacts.ts
+$ git status --porcelain src/artifacts.ts   (MUST be empty)
+(end)
+
+## STEP 6: REBUILD so the emitted lib/ is clean again
+$ node D:/DSH/src/dsh-src/node_modules/typescript/bin/tsc -p tsconfig.json
+tsc exit=0
+$ grep -c 'from .@deepseek-ai/dsh-attachment-local/src/store' lib/artifacts.js   (IMPORT form, must be 0)
+0
+(0 = the emitted IMPORT is gone)
+
+## STEP 7: GATE AFTER RESTORE — MUST BE GREEN AGAIN
+$ node node_modules/vitest/vitest.mjs run src/no-src-imports.test.ts
+ [32m✓[39m src/no-src-imports.test.ts[2m > [22mF4 gate: no emitted production JS imports an upstream `src/*` path[2m > [22mthe detector FAILS when a forbidden specifier is injected, then the file is restored[32m 8[2mms[22m[39m
+ [32m✓[39m src/no-src-imports.test.ts[2m > [22mF4 gate: no emitted production JS imports an upstream `src/*` path[2m > [22mthe same detector finds the specifier in the BUILT artifact form, so the gate is not source-only[32m 0[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[32m5 passed[39m[22m[90m (5)[39m
+[2m   Start at [22m 18:53:34
+[2m   Duration [22m 575ms[2m (transform 27ms, setup 0ms, import 180ms, tests 210ms, environment 0ms)[22m
+
+
+## STEP 4c: WHICH assertions failed during the injected state (re-run, plain output)
+# Re-injecting to name the failing assertions, then restoring again.
+Error: Failed to load custom Reporter from basic
+  [cause]: Error: Failed to load url basic (resolved id: basic). Does the file exist?
+
+# restoring
+sha after restore: 8dac7929894e0f9938c689df27704b21755e4a32efa0562275bb25fbe6fac703
+git status after restore: 0 lines
+
+## STEP 4d: WHICH assertions failed during the injected state (default reporter, NO_COLOR)
+ × src/no-src-imports.test.ts > F4 gate: no emitted production JS imports an upstream `src/*` path > the emitted `lib/` of every package is clean, and the check is not vacuous 91ms
+ × src/no-src-imports.test.ts > F4 gate: no emitted production JS imports an upstream `src/*` path > non-test `src/` is clean too, so the defect cannot return one build away 51ms
+ ✓ src/no-src-imports.test.ts > F4 gate: no emitted production JS imports an upstream `src/*` path > the only remaining deep imports are the frozen, justified test set 77ms
+ × src/no-src-imports.test.ts > F4 gate: no emitted production JS imports an upstream `src/*` path > the detector FAILS when a forbidden specifier is injected, then the file is restored 5ms
+ ✓ src/no-src-imports.test.ts > F4 gate: no emitted production JS imports an upstream `src/*` path > the same detector finds the specifier in the BUILT artifact form, so the gate is not source-only 1ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+ FAIL  src/no-src-imports.test.ts > F4 gate: no emitted production JS imports an upstream `src/*` path > the emitted `lib/` of every package is clean, and the check is not vacuous
+ FAIL  src/no-src-imports.test.ts > F4 gate: no emitted production JS imports an upstream `src/*` path > non-test `src/` is clean too, so the defect cannot return one build away
+ FAIL  src/no-src-imports.test.ts > F4 gate: no emitted production JS imports an upstream `src/*` path > the detector FAILS when a forbidden specifier is injected, then the file is restored
+ Test Files  1 failed (1)
+      Tests  3 failed | 2 passed (5)
+
+# restoring
+sha after restore: 8dac7929894e0f9938c689df27704b21755e4a32efa0562275bb25fbe6fac703
+expected sha    : 8dac7929894e0f9938c689df27704b21755e4a32efa0562275bb25fbe6fac703
+git status lines: 0
