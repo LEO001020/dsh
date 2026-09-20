@@ -1,0 +1,39 @@
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.8 [39m[90mD:/DSH/work/wt-c7/packages/dsh-ipython[39m
+
+ [2m[90m↓[39m[22m src/r5-product-bridge.test.ts[2m > [22mR5-F2: the PRODUCT path reaches the native bridge[2m > [22mthe ipython tool is registered by the package own apply(), with ONE parameter
+ [2m[90m↓[39m[22m src/r5-product-bridge.test.ts[2m > [22mR5-F2: the PRODUCT path reaches the native bridge[2m > [22mmodel -> ipython -> dsh.call -> ToolRuntime -> Python value, on the product path
+ [2m[90m↓[39m[22m src/r5-product-bridge.test.ts[2m > [22mR5-F2: the PRODUCT path reaches the native bridge[2m > [22mthree exact calls produce exactly three ToolRuntime dispatches in one outer model turn
+ [2m[90m↓[39m[22m src/r5-product-bridge.test.ts[2m > [22mR5-F2: the PRODUCT path reaches the native bridge[2m > [22mconcurrent Python submission SERIALIZES: at most one exact call is ever in the registry
+ [32m✓[39m src/r5-product-bridge.test.ts[2m > [22mR5-BR-07: dispositions, the half that was missing[2m > [22ma completed call carries `settled`, and the durable ledger row is STARTED then SETTLED[33m 3059[2mms[22m[39m
+ [32m✓[39m src/r5-product-bridge.test.ts[2m > [22mR5-BR-07: dispositions, the half that was missing[2m > [22ma cell returning with calls in flight records `cancelled` and `abandoned-unstarted`[33m 4222[2mms[22m[39m
+ [32m✓[39m src/r5-product-bridge.test.ts[2m > [22mR5-BR-07: dispositions, the half that was missing[2m > [22ma call still queued when the cell returns is never dispatched, whatever its disposition[33m 2791[2mms[22m[39m
+ [32m✓[39m src/r5-product-bridge.test.ts[2m > [22mR5-BR-07: dispositions, the half that was missing[2m > [22mthe four dispositions are the scope route vocabulary, not a parallel one[32m 6[2mms[22m[39m
+ [32m✓[39m src/r5-product-bridge.test.ts[2m > [22mR5-BR-07: dispositions, the half that was missing[2m > [22ma handoff names its job id; with no handoff the call is abandoned-unstarted[32m 6[2mms[22m[39m
+ [32m✓[39m src/r5-product-bridge.test.ts[2m > [22mR5-BR-07: dispositions, the half that was missing[2m > [22ma lease WITH a handoff writes `handed-to-jobs` and names the job; the producer is exercised[32m 96[2mms[22m[39m
+ [32m✓[39m src/r5-product-bridge.test.ts[2m > [22mR5-BR-07: dispositions, the half that was missing[2m > [22msettled vs cancelled is decided by the CLOSE, not by whether the result was an abort[32m 11[2mms[22m[39m
+ [32m✓[39m src/r5-product-bridge.test.ts[2m > [22mR5-BR-07: dispositions, the half that was missing[2m > [22ma FAILED disposition write is reported, not swallowed, and CLOSED still happens[32m 13[2mms[22m[39m
+ [32m✓[39m src/r5-product-bridge.test.ts[2m > [22mR5-BR-07: dispositions, the half that was missing[2m > [22ma healthy close records every disposition and reports no failure[32m 10[2mms[22m[39m
+ [32m✓[39m src/r5-product-bridge.test.ts[2m > [22mR5-BR-07: dispositions, the half that was missing[2m > [22ma call that NEVER DISPATCHED is not reported as the crash window[32m 91[2mms[22m[39m
+ [2m[90m↓[39m[22m src/r5-product-bridge.test.ts[2m > [22mR5-J4/J5: composite semantics, idempotency, unknown outcomes[2m > [22madditionalContexts reach the OUTER ipython execution, in subcall order
+ [2m[90m↓[39m[22m src/r5-product-bridge.test.ts[2m > [22mR5-J4/J5: composite semantics, idempotency, unknown outcomes[2m > [22mconcludesTurn reaches the outer execution
+ [2m[90m↓[39m[22m src/r5-product-bridge.test.ts[2m > [22mR5-J4/J5: composite semantics, idempotency, unknown outcomes[2m > [22man oversized exact result arrives as a REFERENCE with paging helpers, not truncated
+ [2m[90m↓[39m[22m src/r5-product-bridge.test.ts[2m > [22mR5-J4/J5: composite semantics, idempotency, unknown outcomes[2m > [22mthe same request id with the same args joins the first result; with changed args it CONFLICTS
+ [2m[90m↓[39m[22m src/r5-product-bridge.test.ts[2m > [22mR5-J4/J5: composite semantics, idempotency, unknown outcomes[2m > [22man expired lease gets a stable CELL_LEASE_EXPIRED from the live bridge
+ [2m[90m↓[39m[22m src/r5-product-bridge.test.ts[2m > [22mR5-J8: the assembled test cannot pass without the product wiring[2m > [22ma real cell cannot forge authority: a frame naming agent is REFUSED, and kwargs are only arguments
+ [2m[90m↓[39m[22m src/r5-product-bridge.test.ts[2m > [22mR5-J8 continued: cancellation, epoch, and structured-error parity[2m > [22mCANCELLATION: aborting the outer ipython call refuses further calls and aborts the in-flight one
+ [2m[90m↓[39m[22m src/r5-product-bridge.test.ts[2m > [22mR5-J8 continued: cancellation, epoch, and structured-error parity[2m > [22mWRONG KERNEL EPOCH: a frame claiming an epoch the lease does not own is refused
+ [2m[90m↓[39m[22m src/r5-product-bridge.test.ts[2m > [22mR5-J8 continued: cancellation, epoch, and structured-error parity[2m > [22mSTRUCTURED ERROR PARITY: a tool failure reaches sync and async clients as the same code and message
+ [2m[90m↓[39m[22m src/r5-product-bridge.test.ts[2m > [22mR5-J8 continued: cancellation, epoch, and structured-error parity[2m > [22mNESTED IMAGE SEMANTICS: a successful image-bearing result is DEFERRED, never silently dropped
+ [2m[90m↓[39m[22m src/r5-product-bridge.test.ts[2m > [22mR5-J5 continued: request-id idempotency and the crash window[2m > [22mthe SAME request id with the SAME args joins the first result and dispatches ONCE
+ [2m[90m↓[39m[22m src/r5-product-bridge.test.ts[2m > [22mR5-J5 continued: request-id idempotency and the crash window[2m > [22mthe SAME request id with CHANGED args is REQUEST_ID_CONFLICT and is not dispatched
+ [2m[90m↓[39m[22m src/r5-product-bridge.test.ts[2m > [22mR5-J5 continued: request-id idempotency and the crash window[2m > [22ma crash after durable STARTED leaves OUTCOME_UNKNOWN and is NEVER auto-replayed
+ [2m[90m↓[39m[22m src/r5-product-bridge.test.ts[2m > [22mR5-J5 continued: request-id idempotency and the crash window[2m > [22ma DURABLE crash window survives a restart and is still not re-sent
+ [2m[90m↓[39m[22m src/r5-product-bridge.test.ts[2m > [22mR5-J5 continued: request-id idempotency and the crash window[2m > [22ma FAILED SETTLEMENT write does not hang the caller, and IS reported
+ [2m[90m↓[39m[22m src/r5-product-bridge.test.ts[2m > [22mR5-J5 continued: request-id idempotency and the crash window[2m > [22ma call queued behind a failed settlement still runs: one bad record is not a dead bridge
+
+[2m Test Files [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[32m10 passed[39m[22m[2m | [22m[33m20 skipped[39m[90m (30)[39m
+[2m   Start at [22m 23:17:29
+[2m   Duration [22m 10.90s[2m (transform 323ms, setup 0ms, import 449ms, tests 10.31s, environment 0ms)[22m
+

@@ -1,0 +1,62 @@
+{
+  "arm1_postReturn": {
+    "outcome": "ok",
+    "cellStdout": "outcome: ok\nkernel epoch: 1\n--- stdout ---\narm1-settled",
+    "cellContainsMarker": false,
+    "deliveredContexts": "",
+    "notices": [
+      {
+        "cellId": "e6465868-ceb19763d5543e1bf55687e6_39380_3",
+        "causalClass": "known-late",
+        "stream": "stdout",
+        "text": "IPY13R-POSTRETURN"
+      }
+    ]
+  },
+  "arm2_straddler": {
+    "cellAOutcome": "ok",
+    "cellAStdout": "outcome: ok\nkernel epoch: 1\n--- stdout ---\nCELLA_MSGID=e6465868-ceb19763d5543e1bf55687e6_39380_5\narm2-cellA-settled",
+    "cellAContainsStraddler": false,
+    "cellAMsgId": "e6465868-ceb19763d5543e1bf55687e6_39380_5",
+    "cellBOutcome": "ok",
+    "cellBStdout": "outcome: ok\nkernel epoch: 1\n--- stdout ---\nCELLB_MSGID=e6465868-ceb19763d5543e1bf55687e6_39380_7\ntick 0\ntick 1\ntick 2\ntick 3\narm2-cellB-settled",
+    "cellBContainsStraddler": false,
+    "cellBMsgId": "e6465868-ceb19763d5543e1bf55687e6_39380_7",
+    "cellBHasOwnOutputIntact": true,
+    "notice": null,
+    "noticeCount": 0,
+    "deliveredOriginCellId": "e6465868-ceb19763d5543e1bf55687e6_39380_5",
+    "recordedOriginCellId": "e6465868-ceb19763d5543e1bf55687e6_39380_5",
+    "originIsOriginatingCellA": true,
+    "originIsLaterCellB": false,
+    "modelTextMentionsUndecidable": false,
+    "modelTextMentionsLateOutput": true,
+    "deliveredContexts": "Runtime notice: background output from earlier cell(s)\n\nThis text was NOT produced by the cell you just ran. It was written by a background thread\nafter its own cell had already settled, and it is reported here rather than inside a cell\nresult so it cannot be mistaken for output of code that did not produce it.\n\nrecords: 1, kept bytes: 17\n\n--- late output ---\nkernel epoch: 1\nstream: stdout\norigin cell: e6465868-ceb19763d5543e1bf55687e6_39380_5\nIPY13R-STRADDLER"
+  },
+  "arm3_rawThread": {
+    "outcome": "ok",
+    "cellStdout": "outcome: ok\nkernel epoch: 1\n--- stdout ---\narm3-settled",
+    "cellContainsMarker": false,
+    "deliveredContexts": "Runtime notice: background output from earlier cell(s)\n\nThis text was NOT produced by the cell you just ran. It was written by a background thread\nafter its own cell had already settled, and it is reported here rather than inside a cell\nresult so it cannot be mistaken for output of code that did not produce it.\n\nrecords: 1, kept bytes: 11\n\n--- output of UNDECIDABLE origin ---\nkernel epoch: 1\nstream: stdout\norigin cell: UNDECIDABLE (recorded origin dsh:background); this write carried no cell identity that could be preserved, so no cell is named. Do not assume any particular cell produced it.\nIPY13R-RAW",
+    "notice": null,
+    "cellIdIsSentinel": false
+  },
+  "arm4_control": {
+    "outcome": "ok",
+    "cellStdout": "outcome: ok\nkernel epoch: 1\n--- stdout ---\nIPY13R-JOINED\narm4-settled",
+    "joinedOutputStayedInCell": true
+  },
+  "verdict": {
+    "clause1_postReturnLateAndRidesNothing": true,
+    "clause2_half1_straddlerNotAttributedToLaterCell": true,
+    "clause2_half2_straddlerReportedUndecidable": false,
+    "straddlerCausalClass": "known-late",
+    "straddlerRecordedOriginCellId": "e6465868-ceb19763d5543e1bf55687e6_39380_5",
+    "cellAMsgId": "e6465868-ceb19763d5543e1bf55687e6_39380_5",
+    "cellBMsgId": "e6465868-ceb19763d5543e1bf55687e6_39380_7",
+    "originNamesTheOriginatingCellA": true,
+    "originNamesTheLaterCellB": false,
+    "oracleThirdSentenceHonoured_rawOriginIsUndecidable": true,
+    "note": "SUBSTANTIVE HALF HOLDS, LITERAL HALF DOES NOT. The straddler does not ride the later cell (cell B stdout is clean, its own five lines intact), and it is reported as a separate late record -- but its causal class is `known-late` naming origin e6465868-ceb19763d5543e1bf55687e6_39380_5, which is the ORIGINATING cell A. A write with NO discoverable origin (raw `_thread.start_new_thread`) IS reported `undecidable`, so the oracle's third sentence is honoured on its own arm. The oracle's clause 2 word \"undecidable\" is therefore met for the no-origin case and not for the cell-started-thread case, which is reported `known-late` with a true origin."
+  }
+}

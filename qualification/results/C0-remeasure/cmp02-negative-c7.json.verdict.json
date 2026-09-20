@@ -1,0 +1,21 @@
+{
+  "case": "CMP-02",
+  "arm": "NEGATIVE CONTROL (mode reverted to the recorded defect value)",
+  "worktree": "D:/DSH/work/wt-c7",
+  "home": "D:/DSH/home/c7",
+  "expected": "clauseB false; verdict STILL FAILS",
+  "clauseA_rowPresentAndNotDisabled": true,
+  "clauseB_configuredModeIsDangerFullAccess": false,
+  "clauseC_workspaceRootIsAbsolute": true,
+  "measured": {
+    "effectiveDefaultMode": "workspace-write",
+    "effectiveWorkspaceRoot": "C:\\Windows\\Temp",
+    "narrationText": "Current DSH file policy: workspace-write. Any available operation enforced by the DSH file sandbox may modify files under the session workspace: \"D:/DSH/work/wt-r1\". Some platform temporary areas may also be writable.",
+    "saysWorkspaceWrite": true,
+    "saysDangerFullAccess": false,
+    "ptcConfineDecision": "WOULD CONFINDE (mode is 'workspace-write', and ptc-runtime-node:224 confines unless mode === 'danger-full-access')"
+  },
+  "verdict": "STILL FAILS",
+  "instrumentSensitivityConfirmed": true,
+  "probeError": null
+}

@@ -1,0 +1,124 @@
+{
+ "probe": "verify-trusted-local-composition",
+ "ranAt": "2026-09-20T15:09:20.542Z",
+ "presetRoots": [
+  {
+   "path": "D:/DSH/home/c7/profiles/daily/presets/",
+   "trust": "system"
+  },
+  {
+   "path": "D:\\DSH\\home\\c7\\.agent-presets",
+   "trust": "user"
+  }
+ ],
+ "presetDefaultId": "daily-standard",
+ "error": null,
+ "declared": {
+  "rowPresent": true,
+  "rowFiberState": 2,
+  "rowDisabled": false,
+  "configAsComposed": {
+   "mode": "danger-full-access",
+   "workspaceRoot": {
+    "__jsExpr": "process.cwd()"
+   }
+  },
+  "configKeys": [
+   "mode",
+   "workspaceRoot"
+  ]
+ },
+ "effective": {
+  "policyServicePresent": true,
+  "defaultMode": "danger-full-access",
+  "workspaceRoot": "C:\\Windows\\Temp",
+  "resolveNoSession": {
+   "mode": "danger-full-access",
+   "workspaceRoot": "C:\\Windows\\Temp"
+  },
+  "perSession": [
+   {
+    "label": "daily-standard",
+    "sessionId": "session-df8e3f4b-5151-4fad-80e9-4137d9878314",
+    "agentPreset": "daily-standard",
+    "agentPresent": true,
+    "override": null,
+    "resolved": "danger-full-access"
+   }
+  ]
+ },
+ "narration": {
+  "systemPromptServicePresent": true,
+  "assembleRan": true,
+  "assembleError": null,
+  "sandboxPolicyContextPresent": true,
+  "sandboxPolicyContextText": "Current DSH file policy: danger-full-access. The DSH file sandbox does not restrict file modifications by available operations.",
+  "contextNames": [
+   "sandbox:policy",
+   "approval:policy"
+  ],
+  "saysWorkspaceWrite": false,
+  "saysDangerFullAccess": true
+ },
+ "ptc": {
+  "runtimePresent": true,
+  "runtimeName": "NodePtcRuntime",
+  "sandboxMode": "danger-full-access",
+  "confineDecision": "no confinement (mode is exactly 'danger-full-access')",
+  "runCodeOnSurface": false,
+  "note": "Recomputed from the resolved policy, not read from a log. The runtime is not invoked here: running it would spawn a Node child and this probe is a read."
+ },
+ "composition": {
+  "fsProvider": "LocalFileSystem",
+  "fsSandboxMode": null,
+  "shellProvider": "PwshLocalExecutor",
+  "shellSandboxMode": null,
+  "shellMounted": true,
+  "ipythonMounted": true,
+  "permissionRowDisabled": true,
+  "uiPermissionRowDisabled": true,
+  "permissionPresetsServicePresent": false,
+  "approvalRowPresent": true,
+  "approvalRowConfig": {
+   "policy": "never"
+  },
+  "approvalServicePresent": true,
+  "approvalConfiguredPolicy": "never",
+  "escalationTools": [],
+  "toolNames": [
+   "ask_user_question",
+   "create_goal",
+   "edit",
+   "exit_plan_mode",
+   "get_goal",
+   "glob",
+   "grep",
+   "interrupt_agent",
+   "ipython",
+   "job_kill",
+   "job_list",
+   "job_output",
+   "list_agents",
+   "present",
+   "read",
+   "read_image",
+   "send_message",
+   "skill",
+   "todo_write",
+   "update_goal",
+   "web_fetch",
+   "web_search",
+   "work",
+   "write"
+  ],
+  "pwshPresent": false,
+  "ipythonPresent": true
+ },
+ "contract": {
+  "servicePresent": true,
+  "ok": true,
+  "checkCount": 8,
+  "violations": [],
+  "migrationRequired": []
+ }
+}

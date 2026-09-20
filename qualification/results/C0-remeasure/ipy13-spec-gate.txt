@@ -1,0 +1,27 @@
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.8 [39m[90mD:/DSH/work/wt-c7/packages/dsh-ipython[39m
+
+ [2m[90m↓[39m[22m src/v3-spec-gates.test.ts[2m > [22mIPY-01: a real IPython shell, not a CPython imitation[2m > [22mget_ipython() and a magic both work IN ONE CELL through the service
+ [2m[90m↓[39m[22m src/v3-spec-gates.test.ts[2m > [22mIPY-02: the namespace persists across cells[2m > [22mcell 2 uses a DataFrame, a function and an import it does NOT define
+ [2m[90m↓[39m[22m src/v3-spec-gates.test.ts[2m > [22mIPY-03: top-level await works with no wrapper[2m > [22man asyncio task and a native tool call both settle at top level, unwrapped
+ [2m[90m↓[39m[22m src/v3-spec-gates.test.ts[2m > [22mIPY-04: an exception leaves partial state and does not claim rollback[2m > [22mthe assignment survives, the traceback is present, and the MODEL TEXT claims no rollback
+ [2m[90m↓[39m[22m src/v3-spec-gates.test.ts[2m > [22mIPY-05: stdin is disabled and fails fast[2m > [22minput() and getpass() each fail promptly and do NOT hold the execution slot
+ [2m[90m↓[39m[22m src/v3-spec-gates.test.ts[2m > [22mIPY-06: only the matching reply and idle settle a cell[2m > [22mforeign frames are ignored AND COUNTED, and a restart mid-sequence is a new epoch
+ [2m[90m↓[39m[22m src/v3-spec-gates.test.ts[2m > [22mIPY-11: the kernel cwd is the project root[2m > [22ma real project root is reported verbatim and a relative path resolves inside it
+ [2m[90m↓[39m[22m src/v3-spec-gates.test.ts[2m > [22mIPY-12: output is bounded and the loss is stated[2m > [22mthe model text says TRUNCATED, names the true total and the spill path, and the cap is recorded
+[90mstdout[2m | src/v3-spec-gates.test.ts[2m > [22m[2mIPY-13: late output is classified separately and never rides another cell[2m > [22m[2mCLAUSE 1 PASSES: a post-return write is late/unattributed and never rides a later cell
+[22m[39m[V3-MEASURED] IPY-13-clause1 {"lateCount":1,"lateText":"IPY13-LATE-AFTER-RETURN","lateCellId":"d65b5ff2-2978337945321e218bebf1d9_39636_3","lateEpoch":1,"firstCellContainsLateText":false,"secondCellContainsLateText":false}
+
+ [32m✓[39m src/v3-spec-gates.test.ts[2m > [22mIPY-13: late output is classified separately and never rides another cell[2m > [22mCLAUSE 1 PASSES: a post-return write is late/unattributed and never rides a later cell[33m 5036[2mms[22m[39m
+[90mstdout[2m | src/v3-spec-gates.test.ts[2m > [22m[2mIPY-13: late output is classified separately and never rides another cell[2m > [22m[2mCLAUSE 2: a write DURING a later cell is undecidable, not attributed
+[22m[39m[V3-MEASURED] IPY-13-clause2 {"specRequires":"reported as undecidable rather than attributed","measuredAttributedToLaterCell":false,"measuredLateCount":1,"measuredLateText":"IPY13-DURING-LATER-CELL","thirdCellStdout":"tick 0\ntick 1\ntick 2\ntick 3\ncell-three-settled","mechanism":"ipykernel iostream resolves the parent from a contextvar with a process-wide global fallback; a threading.Thread has an empty context, so the kernel stamps the LATER cell id. The broker-side bootstrap now carries the originating cell header into cell-started threads and sentinels the rest.","verdict":"clause_met"}
+
+ [32m✓[39m src/v3-spec-gates.test.ts[2m > [22mIPY-13: late output is classified separately and never rides another cell[2m > [22mCLAUSE 2: a write DURING a later cell is undecidable, not attributed[33m 5365[2mms[22m[39m
+ [2m[90m↓[39m[22m src/v3-spec-gates.test.ts[2m > [22mIPY-14: kernel death is visible and nothing is replayed[2m > [22mthe model text reports a NEW epoch, the LOST state, no replay, and the Session survives
+ [2m[90m↓[39m[22m src/v3-spec-gates.test.ts[2m > [22mIPY-15: the kernel transport is authenticated and frames are bounded[2m > [22mthe transport is curve-encrypted, and an over-limit frame is LOST with a count
+
+[2m Test Files [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[32m2 passed[39m[22m[2m | [22m[33m10 skipped[39m[90m (12)[39m
+[2m   Start at [22m 23:17:41
+[2m   Duration [22m 11.02s[2m (transform 335ms, setup 0ms, import 473ms, tests 10.40s, environment 0ms)[22m
+

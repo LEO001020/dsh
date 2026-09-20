@@ -1,0 +1,29 @@
+{
+  "case": "CMP-02",
+  "worktree": "D:/DSH/work/wt-c7",
+  "home": "D:/DSH/home/c7",
+  "clauseA_rowPresentAndNotDisabled": true,
+  "clauseB_configuredModeIsDangerFullAccess": true,
+  "clauseC_workspaceRootIsAbsolute": true,
+  "measured": {
+    "rowPresent": true,
+    "rowFiberState": 2,
+    "rowDisabled": false,
+    "configAsComposed": {
+      "mode": "danger-full-access",
+      "workspaceRoot": {
+        "__jsExpr": "process.cwd()"
+      }
+    },
+    "effectiveDefaultMode": "danger-full-access",
+    "effectiveWorkspaceRoot": "C:\\Windows\\Temp",
+    "resolveNoSession": {
+      "mode": "danger-full-access",
+      "workspaceRoot": "C:\\Windows\\Temp"
+    },
+    "narrationText": "Current DSH file policy: danger-full-access. The DSH file sandbox does not restrict file modifications by available operations.",
+    "ptcConfineDecision": "no confinement (mode is exactly 'danger-full-access')"
+  },
+  "verdict": "HOLDS",
+  "probeError": null
+}

@@ -1,0 +1,22 @@
+# NEGATIVE CONTROL for the CMP-02 re-measurement, run from worktree wt-c7.
+#
+# WHY A NEGATIVE ARM IS REQUIRED, not optional. The re-measurement reports
+# `mode: danger-full-access` on the live graph. A probe that reports whatever the
+# profile says would report that too, so a green result alone does not show the
+# instrument can DISTINGUISH a fixed composition from the broken one. This arm
+# puts the recorded defect's value back (`workspace-write`, the exact string the
+# FAIL cites) and the probe must report it. If both arms reported
+# `danger-full-access`, the instrument would be measuring nothing.
+#
+# WHY `workspaceRoot` IS RESTATED. A patch REPLACES the whole `config` object
+# (`vendor/include/src/index.ts:120-123`) rather than merging into it, and
+# `workspaceRoot` has no schema default -- omitting it would make the row fail
+# validation and measure a DIFFERENT failure than the one this arm is about.
+#
+# THIS FILE IS A MEASUREMENT FIXTURE. It is never loaded by the product, and the
+# profile it overrides is not modified: the arm exists only as an overlay passed
+# on this one command line.
+- id: sandbox-policy
+  config:
+    mode: workspace-write
+    workspaceRoot: !!js process.cwd()

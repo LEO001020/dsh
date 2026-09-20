@@ -1,0 +1,92 @@
+{
+  "atCellReturn": {
+    "cellOutcome": "ok",
+    "cellStdout": "CELL_RETURNED_WITH_TASK_PENDING:True",
+    "slowStarted": 1,
+    "slowFinished": 0,
+    "registryDispatches": [
+      "v4_slow:v4-drain-call:ipython:1"
+    ],
+    "registryResults": [],
+    "leaseHasDispositionSurface": true,
+    "leaseOwnKeys": [
+      "id",
+      "sessionId",
+      "cellId",
+      "epoch",
+      "outerCallId",
+      "rootCallId",
+      "handler",
+      "dataHandler",
+      "ledger",
+      "handoffToJobs",
+      "onDisposition",
+      "inFlight",
+      "byRequestId",
+      "accepting",
+      "queue",
+      "reported",
+      "pendingIntents",
+      "controller",
+      "sequence",
+      "state",
+      "closing",
+      "drainScheduled",
+      "closeReason",
+      "closeDetail",
+      "pendingWrites",
+      "unrecorded",
+      "writeByReport"
+    ],
+    "leasePrototypeMethods": [
+      "constructor",
+      "live",
+      "lifecycle",
+      "revokedReason",
+      "signal",
+      "abortController",
+      "dispositions",
+      "pending",
+      "invoke",
+      "publish",
+      "trackIntent",
+      "close",
+      "beginClose",
+      "drain",
+      "disposeUnstarted",
+      "settleQueuedCalls",
+      "report",
+      "flush",
+      "writeOf",
+      "unrecordedDispositions",
+      "scheduleDrain",
+      "runQueue",
+      "dispatchOne",
+      "runOne"
+    ]
+  },
+  "revokeDrains": {
+    "slowStartedBeforeRevoke": 1,
+    "slowFinishedBeforeRevoke": 0,
+    "revokeElapsedMs": 1514,
+    "slowFinishedAfterRevoke": 1,
+    "theDrainWaitedForTheInFlightCall": true,
+    "revokedReason": "the cell settled",
+    "registryResultsAfterRevoke": [
+      "v4_slow:v4-drain-call:ipython:1"
+    ]
+  },
+  "afterRevoke": {
+    "outcome": "REFUSED",
+    "code": "CELL_LEASE_EXPIRED",
+    "message": "the cell that held this capability has settled: the cell settled"
+  },
+  "verdict": {
+    "dispositionVocabularyPresentOnTheBridgeRoute": true,
+    "inFlightCallWasDrained": true,
+    "nothingContinuedSilently": true,
+    "perCallDispositionRecordExists": true,
+    "drainHalf": "MEASURED — the lease drain waits for the in-flight call, so nothing continues silently past the cell.",
+    "recordHalf": "MEASURED — a per-call disposition exists."
+  }
+}

@@ -443,7 +443,7 @@
       "requirement": "the sandbox rows exist and are explicitly danger-full-access",
       "stimulus": "Read the resolved config graph for the `sandbox-policy` row and the effective sandbox mode of a live session.",
       "oracle": "A row with `id: sandbox-policy` is present (NOT deleted), its configured mode is `danger-full-access`, and its `workspaceRoot` resolves to an absolute path. The row being absent is a specific known failure: it leaves seven entries pending and drives the tool face to zero.",
-      "status": "FAIL",
+      "status": "PASS",
       "evidence": [
         {
           "path": "qualification/results/V2-composition/boot4-verdict.json",
@@ -462,8 +462,21 @@
           "sha256": "5da82a0c5424bb1f729cdbc73c7cd88e772c44cb66991e970e69efa0a34e7a1b",
           "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
           "note": "Gate table section 3.1 states the cause (the profile has NO sandbox-policy row; the upstream base bundle supplies mode: !!js process.env.DSH_PERMISSION_MODE ?? 'workspace-write' at packages/bundle/base/cordis.patch.yml:215-218, and DSH_PERMISSION_MODE is unset), records this as docs/GAPS.md G-SEAM-33 (OPEN, found by T5, confirmed independently by the root agent and T2), and states why it is NOT repaired here."
+        },
+        {
+          "path": "qualification/results/C0-remeasure/cmp02-composition-c7.json.verdict.json",
+          "sha256": "9ed787d4366a94b843eac634300f7a4720364b403ce1c03d84c52b69a0198b1d",
+          "identity": "152e5c45c4aef97ba986b917077849173a66585146b67032ec7be64472c39b78",
+          "note": "The positive arm: all three clauses true, with the composed row config, the effective default mode, the narration text and the ptc confine decision recorded verbatim. Measured through a REAL BOOT under DSH_HOME=D:\\DSH\\home\\c7."
+        },
+        {
+          "path": "qualification/results/C0-remeasure/cmp02-negative-c7.json.verdict.json",
+          "sha256": "86453439fb93a6beee522eab3566d8d30bd211de8a128369bce9ca79619c6d6d",
+          "identity": "152e5c45c4aef97ba986b917077849173a66585146b67032ec7be64472c39b78",
+          "note": "THE NEGATIVE CONTROL. The same instrument with the mode reverted to the recorded defect value: clauseB false, verdict STILL FAILS, instrumentSensitivityConfirmed true. This is what makes the positive arm evidence rather than an agreement."
         }
-      ]
+      ],
+      "note": "PASS, RE-MEASURED with a real boot and a NEGATIVE CONTROL. The recorded FAIL said the sandbox row was present and its workspaceRoot absolute, but the configured mode was 'workspace-write' (the composed row recorded verbatim as an UNRESOLVED !!js expression 'process.env.DSH_PERMISSION_MODE ?? workspace-write'), so the deployment was CONFINING while the architecture claims the OS user account is the authority boundary. RE-MEASURED: all three clauses hold. clauseA rowPresent true, rowFiberState 2 (ACTIVE), rowDisabled false. clauseB the composed mode IS 'danger-full-access', the effective default mode IS 'danger-full-access', and ptc-runtime-node's own confine decision reads 'no confinement (mode is exactly danger-full-access)'. clauseC workspaceRoot resolves to an ABSOLUTE path ('C:\\Windows\\Temp' for this probe's cwd). The narration the model sees agrees: 'Current DSH file policy: danger-full-access. The DSH file sandbox does not restrict file modifications by available operations.' THE NEGATIVE CONTROL IS WHY THIS IS TRUSTWORTHY: reverting the mode to the recorded defect value ('workspace-write') flips clauseB false and the same instrument then reports 'STILL FAILS', with the narration changing to 'Current DSH file policy: workspace-write' and ptcConfineDecision changing to 'WOULD CONFINDE'. So the instrument is SENSITIVE to the defect it is asserting the absence of -- it is not a probe that agrees with whatever it finds. FIXED by e465a31 ('F3: make the trusted-local composition TRUE, not merely documented'), which gives the deployment its own sandbox-policy row with a literal 'mode: danger-full-access' instead of inheriting the shipped bundle's env-conditional expression. ONE INSTRUMENT, NOT TWO, and that is recorded rather than papered over: the original FAIL cited a second instrument (verify-t2-fs.mjs) that was NOT re-run, because its overlay hardcodes a third tree's path and would therefore have measured a DIFFERENT composition. One instrument plus a sensitivity control is the honest strength of this verdict."
     },
     {
       "id": "CMP-03",
@@ -1109,7 +1122,7 @@
       "requirement": "late output is classified separately and never rides another cell",
       "stimulus": "A background thread writes to stdout after the cell has returned; then start another cell while the thread is still writing.",
       "oracle": "The post-return write is reported as late/unattributed and does not appear in any later cell's result. A write landing DURING a later cell is reported as undecidable rather than attributed. A claim that the originating cell's parent id is always preserved is NOT PASS, because it is false for a thread started with an empty context.",
-      "status": "PASS",
+      "status": "FAIL",
       "evidence": [
         {
           "path": "qualification/results/V3-ipython/run-v3-spec-gates.txt",
@@ -1130,7 +1143,7 @@
           "note": "ROOT'S RE-MEASUREMENT of IPY-13's two clauses, together with CAP-10, from the full serial suite run of the integrated candidate. Both clauses are printed by the project's own v3-spec-gates test as structured [V3-MEASURED] lines, so the numbers are the product's, not a re-derivation."
         }
       ],
-      "note": "PASS, RE-MEASURED. BOTH clauses now hold, and the second one is the clause the recorded FAIL turned on. CLAUSE 1 (a post-return write is late/unattributed and rides no later cell): lateCount 1, lateCellId carries the ORIGINATING cell id, and both the first and the second cell report containsLateText false -- so the post-return write rode no later cell. CLAUSE 2 (a write landing DURING a later cell is undecidable, not attributed): the recorded FAIL said the write WAS attributed to that cell (lateCount 0, the marker appearing inside cell three's stdout). RE-MEASURED: measuredAttributedToLaterCell FALSE, measuredLateCount 1, and the third cell's stdout contains ONLY its own ticks ('tick 0\ntick 1\ntick 2\ntick 3\ncell-three-settled') -- the marker IPY13-DURING-LATER-CELL is not in it. The measurement's own verdict field reads clause_met. WHAT CHANGED, and why it is not a weakened oracle: the upstream behaviour is UNCHANGED. ipykernel's iostream still resolves the stream parent from a contextvar with a process-wide global fallback, and threading.Thread still starts with an empty context. What changed is that the broker-side bootstrap now carries the originating cell header into cell-started threads and SENTINELS the rest -- so the global fallback is no longer accepted as an attribution. The oracle's requirement (undecidable rather than attributed) is met by refusing to guess, which is the behaviour the oracle asks for, not a relaxation of it. ALSO RECORDED: the oracle explicitly says a claim that the originating cell's parent id is ALWAYS preserved is NOT PASS, because it is false for a thread started with an empty context. This verdict does not make that claim -- the mechanism above is exactly why it does not."
+      "note": "FAIL on the LITERAL second clause, and the correction is recorded because an earlier version of this note read PASS. WHAT THE ORACLE REQUIRES, verbatim: 'The post-return write is reported as late/unattributed and does not appear in any later cell's result. A write landing DURING a later cell is reported as UNDECIDABLE rather than attributed. A claim that the originating cell's parent id is always preserved is NOT PASS, because it is false for a thread started with an empty context.' WHAT IS MEASURED (writer c7's independent class probe, qualification/results/C7-remeasure/ipy13-class-probe.json -- NOT the v3-spec-gates gate, which is the point): (a) CLAUSE 1 HOLDS. A post-return write is delivered as a late record with causalClass 'known-late', it carries the originating cell id, and it appears in no later cell's result. (b) THE SUBSTANTIVE HALF OF CLAUSE 2 HOLDS. The straddler -- a write landing while a later cell runs -- is NOT folded into that later cell. Cell B's stdout is exactly its own ticks ('tick 0..3') with cellBContainsStraddler false, and the write is delivered separately as a runtime notice naming its origin cell. The recorded defect (the marker appearing inside the later cell's stdout with lateCount 0) is measurably GONE. (c) THE LITERAL HALF OF CLAUSE 2 DOES NOT HOLD. The straddler is classified 'known-late', not 'undecidable'. The probe disambiguates this by printing each cell's own msg_id: the recorded origin is cell A's '..._39380_5', and cell B is '..._39380_7', so originIsLaterCellB is false and originIsOriginatingCellA is true. The notice text the model sees says 'background output from earlier cell(s)' and 'origin cell: ..._39380_5' -- it names a cell. The oracle's word is 'undecidable', and the product's word is 'known-late'. WHY THE EARLIER PASS WAS WRONG, stated plainly because it is this project's most-recorded defect class. The v3-spec-gates test that reported 'clause_met' asserts only that the write was not attributed to the later cell. It NEVER asserts the causal class. So a green there is an oracle WEAKER THAN ITS SCENARIO: it confirms the property the product has and skips the property the spec names. Writer c7 closed that gap with a probe that prints the class, and the class is not the one the oracle requires. Marking this PASS on the strength of the weaker gate would have been exactly the substitution this project's rules forbid. THE PRODUCT'S BEHAVIOUR IS ARGUABLY BETTER THAN THE ORACLE ASKS, and that does not make the case PASS. The product distinguishes two situations the oracle collapses into one: when the bootstrap carried the originating cell's header into a cell-started thread, the origin IS preserved and the write is reported 'known-late' with a true cell id; when a raw thread carries no identity ('UNDECIDABLE (recorded origin dsh:background)'), it is reported undecidable. Preserving a true origin is a stronger answer than declaring undecidable -- but the oracle names 'undecidable' as the required outcome, and an oracle is not satisfied by a better outcome it did not anticipate. The oracle's THIRD sentence is also respected and is worth noting: the product does NOT claim the parent id is always preserved, and the raw-thread arm is the evidence that it does not. RESOLUTION OWNED BY THE DELIVERY, recorded rather than taken: either this clause is a SPEC CLARITY defect (the oracle should require 'not attributed to the later cell, with a true origin when one is knowable, and undecidable otherwise'), or the product should report the straddler as undecidable. Choosing the first requires superseding the spec, which invalidates every verdict filed under the current identity -- a deliberate step, not a fix. Until that decision is made, the literal clause does not hold and this case stays FAIL. CLOSING NOTE ON WHAT DID CHANGE: the recorded defect is gone. This FAIL is about a WORD, and the note says so rather than presenting it as a product regression."
     },
     {
       "id": "IPY-14",
@@ -1368,7 +1381,7 @@
       "requirement": "end-of-cell drain has a recorded disposition per call",
       "stimulus": "Return a cell while native child calls are still in flight.",
       "oracle": "Every in-flight call carries one disposition from `settled`, `cancelled`, `handed-to-jobs`, `abandoned-unstarted`, and any call handed to Jobs names its job id. Nothing continues silently in the background with no record.",
-      "status": "FAIL",
+      "status": "PASS",
       "evidence": [
         {
           "path": "qualification/results/V4-bridge/v4-bridge-drain-probe.json",
@@ -1387,9 +1400,21 @@
           "sha256": "8538e50b5cdc8dea9de4de62747a56b3c6090001ea676271c2f8621e70ce24d6",
           "identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
           "note": "Gate table BR-07 and section 4a, which states the split and why it is a FAIL."
+        },
+        {
+          "path": "qualification/results/C0-remeasure/br07-drain-probe-ORIGINAL.json",
+          "sha256": "cf36657ce0ff0fdb8f081d1eeb83f7068b74f2512b8c6cb88e7fc887e6519149",
+          "identity": "152e5c45c4aef97ba986b917077849173a66585146b67032ec7be64472c39b78",
+          "note": "The ORIGINAL drain probe, unmodified, re-run against the current tree. Using the same instrument is what makes the before/after comparable: the two vocabulary booleans flip while the drain timing does not."
+        },
+        {
+          "path": "qualification/results/C0-remeasure/br07-tests.txt",
+          "sha256": "ef23799e7d284e498d451d353190770f21434c85ee19416a680fd3a8853617bb",
+          "identity": "152e5c45c4aef97ba986b917077849173a66585146b67032ec7be64472c39b78",
+          "note": "The r5 product-bridge test run for BR-07: the four dispositions, with 'handed-to-jobs' carrying its job id. 10/10."
         }
       ],
-      "note": "BRG-07: a close with calls in flight never leaves work running; every disposition is recorded, and close is idempotent."
+      "note": "PASS, RE-MEASURED against the ORIGINAL probe that produced the recorded FAIL. The recorded note said the bridge route had NO per-call disposition vocabulary -- that 'disposition', 'jobId' and 'handoff' appeared NOWHERE in bridge.ts or native-call.ts -- while the drain half was already measured and correct. RE-MEASURED with the same probe, unmodified: 'dispositionVocabularyPresentOnTheBridgeRoute' flips false -> TRUE and 'perCallDispositionRecordExists' flips false -> TRUE. The drain behaviour is unchanged (the lease's revoke still WAITS ~1514 ms for an in-flight call before resolving, and a call arriving after the revoke is still refused LEASE_REVOKED). The oracle names four dispositions and requires one per in-flight call, with a call handed to Jobs naming its job id. Measured on the real bridge route: 'cancelled' and 'abandoned-unstarted' are each recorded for the two in-flight calls, and 'handed-to-jobs' is recorded WITH its job id ('job-77'). 10/10 tests pass in the r5 product-bridge suite's BR-07 group. WHERE IT IS WIRED: packages/dsh-ipython/src/bridge-ledger.ts defines BridgeDisposition and BRIDGE_DISPOSITIONS; bridge.ts carries a LeaseCallDisposition with 'disposition' and 'jobId', an 'unrecordedDispositions' accessor, and the write at bridge.ts:1077 ('this.pendingWrites.push(this.ledger.disposed(...))'). The ledger is opened in the production path in kernel-plugin.ts, so this is reachable rather than a mechanism with no caller -- which is the distinction the recorded FAIL was actually about."
     },
     {
       "id": "BR-08",

@@ -1,0 +1,32 @@
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.8 [39m[90mD:/DSH/work/wt-c7/packages/dsh-daily-work[39m
+
+[90mstdout[2m | src/cap10-storm.test.ts[2m > [22m[2mCAP-10/storm: N children complete inside ONE event-loop interval[2m > [22m[2mneither misses a top-up nor duplicates one: N freed slots admit exactly N replacements
+[22m[39mCAP-10/storm measured: target=6 freedSlots=6 refillsRequested=6 admittedInStorm=5 deficitBeforeRetrigger=1 admittedOnRetrigger=1 heldFinal=6 overshoot=0 distinctReplacements=5
+
+ [32m✓[39m src/cap10-storm.test.ts[2m > [22mCAP-10/storm: N children complete inside ONE event-loop interval[2m > [22mneither misses a top-up nor duplicates one: N freed slots admit exactly N replacements[32m 290[2mms[22m[39m
+[90mstdout[2m | src/cap10-storm.test.ts[2m > [22m[2mCAP-10/storm: N children complete inside ONE event-loop interval[2m > [22m[2mCONTROL: the same refills, issued after the releases COMMIT, admit the same N
+[22m[39mCAP-10/control measured: admitted=6 held=6 overshoot=0
+
+ [32m✓[39m src/cap10-storm.test.ts[2m > [22mCAP-10/storm: N children complete inside ONE event-loop interval[2m > [22mCONTROL: the same refills, issued after the releases COMMIT, admit the same N[33m 312[2mms[22m[39m
+[90mstdout[2m | src/cap10-storm.test.ts[2m > [22m[2mCAP-10/arithmetic: the storm without real children[2m > [22m[2mN+2 concurrent top-ups against N freed slots admit exactly N
+[22m[39mCAP-10/arithmetic measured: target=6 freedSlots=6 refillsRequested=8 admitted=6 launches=12 highWater=6
+
+[90mstdout[2m | src/cap10-storm.test.ts[2m > [22m[2mCAP-10/duplicate: one freed slot admits exactly one replacement[2m > [22m[2ma duplicate notification for an already-admitted task does not free its slot
+[22m[39mCAP-10/duplicate measured: occupiedAfterAdmission=1 occupiedAfterRefusal=1 recordHeld=1 launches=1
+
+ [32m✓[39m src/cap10-storm.test.ts[2m > [22mCAP-10/arithmetic: the storm without real children[2m > [22mN+2 concurrent top-ups against N freed slots admit exactly N[32m 116[2mms[22m[39m
+ [32m✓[39m src/cap10-storm.test.ts[2m > [22mCAP-10/duplicate: one freed slot admits exactly one replacement[2m > [22ma duplicate notification for an already-admitted task does not free its slot[32m 19[2mms[22m[39m
+ [32m✓[39m src/cap10-storm.test.ts[2m > [22mCAP-10/duplicate: one freed slot admits exactly one replacement[2m > [22ma duplicate storm for ONE task admits once and holds one slot[32m 19[2mms[22m[39m
+[90mstdout[2m | src/cap10-storm.test.ts[2m > [22m[2mCAP-10/sweep: the storm across every freed fraction of the target[2m > [22m[2mfreed 3, 5 and 10 of 10 each admit exactly that many, with no overshoot
+[22m[39mCAP-10/sweep measured: target=10 rows=[{"freed":3,"admitted":3,"held":10,"overshoot":0,"highWater":10},{"freed":5,"admitted":5,"held":10,"overshoot":0,"highWater":10},{"freed":10,"admitted":10,"held":10,"overshoot":0,"highWater":10}]
+
+ [32m✓[39m src/cap10-storm.test.ts[2m > [22mCAP-10/sweep: the storm across every freed fraction of the target[2m > [22mfreed 3, 5 and 10 of 10 each admit exactly that many, with no overshoot[33m 426[2mms[22m[39m
+ [32m✓[39m src/cap10-storm.test.ts[2m > [22mCAP-10/retrigger: the coalesced drain stays re-triggerable[2m > [22mafter a storm, a LATER completion still admits a replacement[32m 266[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[32m7 passed[39m[22m[90m (7)[39m
+[2m   Start at [22m 23:00:58
+[2m   Duration [22m 2.28s[2m (transform 507ms, setup 0ms, import 682ms, tests 1.45s, environment 0ms)[22m
+
+EXIT=0
