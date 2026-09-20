@@ -33,7 +33,7 @@ import { fileURLToPath } from 'node:url'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { KernelHost, KernelOutcomeUnknownError } from './kernel.ts'
 import { KernelService } from './kernel-plugin.ts'
-import { kernelScratchDir } from './runtime-root.ts'
+import { sessionScratchKey } from './runtime-root.ts'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
 const BROKER = resolve(HERE, 'broker.py')
@@ -798,16 +798,18 @@ describe('IPY-15: the kernel working directory is the Session\'s project root', 
     const envSpill = norm(field('ENV_SPILL'))
     const projectNorm = norm(project)
     // DERIVED, not hand-written. The scratch layout is
-    // `<root>/<sessionScratchKey>/<epoch>` since V5 §11.4 moved the kernel root
-    // under DSH_HOME, so the literal `join(root, sessionId)` this used to assert
-    // is a claim about a layout the product no longer has -- and it failed for
-    // exactly that reason. Asking the product's own function keeps this gate
-    // measuring the SEPARATION rather than the shape of a path.
-    const scratchNorm = norm(kernelScratchDir({
-      sessionId: 'session-cwd-scratch',
-      kernelEpoch: 0,
-      dshHome: root,
-    }))
+    // `<configured-root>/<sessionScratchKey>/<epoch>` since V5 §11.4, so the
+    // literal `join(root, sessionId)` this used to assert is a claim about a
+    // layout the product no longer has -- and it failed for exactly that reason.
+    //
+    // DERIVED FROM THE CONFIGURED ROOT, NOT FROM DSH_HOME, and the distinction is
+    // MEASURED rather than assumed: `makeService` passes `root` as the service's
+    // own `root`, and `KernelService.kernelRoot()` returns that configured value
+    // when it is present. `kernelScratchDir({dshHome})` answers a different
+    // question -- where scratch would go if NO root were configured -- and using
+    // it here measured the wrong path (the printed hostScratchDir and the kernel's
+    // own ENV_DIR disagreed). So this composes the two product facts directly.
+    const scratchNorm = norm(join(root, sessionScratchKey('session-cwd-scratch'), '0'))
 
     // Printed, so the separation gate's four values are the run's own output.
     console.log('[T6-MEASURED] IPY-15-cwd-vs-scratch ' + JSON.stringify({
@@ -877,7 +879,7 @@ describe('IPY-15: the kernel working directory is the Session\'s project root', 
     // Derived from the product's own layout function, for the reason given at the
     // separation gate above: V5 §11.4 changed the shape to
     // `<root>/<sessionScratchKey>/<epoch>`.
-    const scratch = kernelScratchDir({ sessionId: 'session-scratch-lifecycle', kernelEpoch: 0, dshHome: root })
+    const scratch = join(root, sessionScratchKey('session-scratch-lifecycle'), '0')
     expect(await stat(scratch).catch(() => undefined)).toBeUndefined()
 
     const agent = agentFor('session-scratch-lifecycle')
@@ -890,9 +892,8 @@ describe('IPY-15: the kernel working directory is the Session\'s project root', 
     expect(entries).toContain('kernel.err')
     // And not shared: another Session gets its own directory.
     await s.runCell(agentFor('session-scratch-other'), 'pass')
-    expect(await stat(kernelScratchDir({
-      sessionId: 'session-scratch-other', kernelEpoch: 0, dshHome: root,
-    })).then(() => true).catch(() => false)).toBe(true)
+    expect(await stat(join(root, sessionScratchKey('session-scratch-other'), '0'))
+      .then(() => true).catch(() => false)).toBe(true)
 
     // The ordinary log is small. The threshold is deliberately loose -- this is a
     // sanity bound on a log file, not the output-cap assertion, which lives in
