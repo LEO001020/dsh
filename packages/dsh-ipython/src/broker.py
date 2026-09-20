@@ -910,6 +910,22 @@ class Broker:
         cap = DEFAULT_OUTPUT_CAP_BYTES if not isinstance(cap, int) or cap <= 0 else cap
         self._interrupt_requested_at = None
 
+        # THE HOST MAY ASK FOR A HIDDEN CONTROL REQUEST. `silent` is how the host
+        # runs its OWN code in this namespace -- the per-cell capability bind --
+        # without rewriting the user's cell and without the bind entering
+        # IPython's input history. Validated as a real bool rather than coerced:
+        # a truthy string would silently turn a user's cell into a hidden one,
+        # and a hidden request is not something a caller should reach by accident.
+        #
+        # `storeHistory` defaults to `not silent`, which is kernelbase's own
+        # default (`kernelbase.py:794`), restated here so the two cannot drift.
+        silent = request.get("silent", False)
+        if not isinstance(silent, bool):
+            raise ProtocolError("execute requires silent to be a boolean")
+        store_history = request.get("storeHistory", not silent)
+        if not isinstance(store_history, bool):
+            raise ProtocolError("execute requires storeHistory to be a boolean")
+
         # allow_stdin=False is what makes input()/getpass fail immediately with
         # StdinNotImplementedError instead of parking the cell on a terminal read.
         #
@@ -920,8 +936,8 @@ class Broker:
             "execute_request",
             {
                 "code": code,
-                "silent": False,
-                "store_history": True,
+                "silent": silent,
+                "store_history": store_history,
                 "user_expressions": {},
                 "allow_stdin": False,
                 "stop_on_error": True,

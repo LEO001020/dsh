@@ -153,6 +153,31 @@ export class KernelBusyError extends Error {
   }
 }
 
+/**
+ * The per-cell capability bind did not complete, so the user's cell was not run.
+ *
+ * WHY THIS IS ITS OWN TYPE AND NOT A `KernelTransportError`. The transport was
+ * fine: the kernel answered. What failed is the HOST's own control phase, and the
+ * consequence is specific and actionable -- the user's code was deliberately NOT
+ * dispatched, so nothing it contains took effect. Collapsing that into a
+ * transport failure would tell a reader the cell was lost when in fact it was
+ * never sent, and collapsing it into the cell's own result would present a host
+ * fault as the user's error.
+ *
+ * The bind's own `CellResult` rides the error, because the kernel's account of
+ * why the bind failed is the only explanation available.
+ */
+export class KernelBindError extends Error {
+  /** The bind request's own result: the kernel's account of why it failed. */
+  readonly bind: CellResult
+
+  constructor(message: string, bind: CellResult) {
+    super(message)
+    this.name = 'KernelBindError'
+    this.bind = bind
+  }
+}
+
 interface Pending {
   readonly resolve: (value: unknown) => void
   readonly reject: (error: Error) => void
@@ -477,7 +502,32 @@ export class KernelHost {
    * decision rather than racing it and reporting a transport failure for a cell
    * the broker was about to classify.
    */
-  async execute(code: string, options: { identity?: KernelIdentity, signal?: AbortSignal } = {}): Promise<CellResult> {
+  async execute(code: string, options: {
+    identity?: KernelIdentity
+    signal?: AbortSignal
+    /**
+     * Run this as a HIDDEN control request, not as the user's cell.
+     *
+     * This exists so the host can run its own code -- the per-cell capability
+     * bind -- in the kernel's namespace WITHOUT touching the user's bytes. The
+     * user's cell then travels as its own request, so what the model authored is
+     * what the kernel compiles, and a cell magic stays the first line of the
+     * request that contains it.
+     *
+     * A silent request still publishes `status: busy`/`idle` and still gets a
+     * matching `execute_reply`, so the broker's existing reply+idle settle
+     * condition is unchanged (`broker.py:936-953`). What changes is that it does
+     * not enter the input history and does not abort the kernel's queues on
+     * error (`kernelbase.py:868`), so a failed bind cannot poison the user's cell.
+     */
+    silent?: boolean
+    /**
+     * Whether this request enters IPython's input history. Defaults to
+     * `not silent`, the kernel's own default. A hidden bind passes nothing and
+     * therefore records nothing; the user's cell passes `true` explicitly.
+     */
+    storeHistory?: boolean
+  } = {}): Promise<CellResult> {
     if (this.stopped) throw new KernelTransportError('the kernel host is shut down')
     if (options.identity !== undefined) this.assertIdentity(options.identity)
     if (this.cellActive) {
@@ -496,6 +546,8 @@ export class KernelHost {
         'execute',
         {
           code,
+          ...options.silent === undefined ? {} : { silent: options.silent },
+          ...options.storeHistory === undefined ? {} : { storeHistory: options.storeHistory },
           ...this.options.outputCapBytes === undefined ? {} : { outputCapBytes: this.options.outputCapBytes },
           timeoutMs: cellTimeout,
           interruptGraceMs: grace,

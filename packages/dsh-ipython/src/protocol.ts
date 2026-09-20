@@ -157,6 +157,27 @@ export interface BrokerRequest {
   readonly code?: string
   /** Host-side cell label used for late-output attribution. */
   readonly cellId?: string
+  /**
+   * Run this cell as a HIDDEN control request rather than as user code.
+   *
+   * The host uses this for its own per-cell capability bind: the bind must run
+   * in the same namespace as the user's cell, and must NOT be the user's source.
+   * `silent` is the Jupyter protocol's own mechanism for that (`kernelbase.py:793`,
+   * `:810`), so no rewriting of user bytes is needed.
+   *
+   * Defaults to `false`, and the broker validates it as a real boolean rather
+   * than coercing: a truthy string would silently turn a user cell into a hidden
+   * one.
+   */
+  readonly silent?: boolean
+  /**
+   * Whether this request enters IPython's input history.
+   *
+   * Defaults to `not silent`, which is the kernel's own default
+   * (`kernelbase.py:794`). Sent explicitly rather than left implicit so the
+   * source-identity oracle can assert that the USER cell is the one recorded.
+   */
+  readonly storeHistory?: boolean
   /** Bounds for this cell only; the broker applies its own floor as well. */
   readonly outputCapBytes?: number
   readonly timeoutMs?: number

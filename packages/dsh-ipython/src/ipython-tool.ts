@@ -51,7 +51,7 @@
 import type { Context } from '@deepseek-ai/cordis'
 import { defineTool, type ToolRunContext } from '@deepseek-ai/dsh-tools'
 import { createUserMessage } from '@deepseek-ai/dsh-llm'
-import { KernelBusyError, KernelOutcomeUnknownError, KernelTransportError } from './kernel.ts'
+import { KernelBindError, KernelBusyError, KernelOutcomeUnknownError, KernelTransportError } from './kernel.ts'
 import type { CellResult } from './protocol.ts'
 import type { LateNotice, LateNoticeAccount } from './late-notice.ts'
 import type { CellAuthority, KernelService } from './kernel-plugin.ts'
@@ -293,6 +293,17 @@ function explainFailure(error: unknown): string {
   }
   if (error instanceof KernelBusyError) {
     return `outcome: refused\nA cell is already running in this kernel. Wait for it to finish; the host does not queue cells.`
+  }
+  if (error instanceof KernelBindError) {
+    // THE CELL WAS NEVER SENT. Saying so is the whole point of this arm: a reader
+    // who saw only "the cell failed" would have to guess whether the user's code
+    // ran, and the honest answer is that it did not.
+    return [
+      'outcome: refused',
+      'The host could not bind this cell\'s capability in the kernel, so the cell was NOT run.',
+      'Nothing in your code took effect.',
+      `The bind failed with: ${error.bind.error?.ename ?? error.bind.outcome}: ${error.bind.error?.evalue ?? 'no detail'}`,
+    ].join('\n')
   }
   if (error instanceof KernelTransportError) {
     return `outcome: transport_failure\n${error.message}`

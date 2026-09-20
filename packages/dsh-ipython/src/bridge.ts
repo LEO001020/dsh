@@ -1393,7 +1393,14 @@ export class BridgeServer {
     this.kernelToken = randomBytes(32).toString('hex')
   }
 
-  /** The per-cell Python preamble that binds `dsh` in the cell's namespace. */
+  /**
+   * The per-cell Python preamble that binds `dsh` in the cell's namespace.
+   *
+   * NOT THE PRODUCTION PATH ANY MORE. `runCell` sends {@link bind} as a hidden
+   * control request so the user's bytes are never rewritten. This remains for the
+   * hand-driven probes and tests that measure the mechanism by joining it to a
+   * cell themselves.
+   */
   preamble(lease: CellLease): string {
     return renderBridgePreamble({
       clientPath: this.clientPath,
@@ -1404,6 +1411,35 @@ export class BridgeServer {
       epoch: lease.epoch,
       ...this.options.dataClientPath === undefined ? {} : { dataClientPath: this.options.dataClientPath },
     })
+  }
+
+  /**
+   * The HIDDEN CONTROL program that binds `dsh` for one cell.
+   *
+   * This is what `runCell` sends as its own `silent` request before the user's
+   * cell. Same capability as {@link preamble}, without the trailing newline that
+   * only exists to separate a prepended block from the user's first line.
+   */
+  bind(lease: CellLease): string {
+    return renderBridgeBind({
+      clientPath: this.clientPath,
+      port: this.port,
+      token: this.tokenForPreamble,
+      leaseId: lease.id,
+      cellId: lease.cellId,
+      epoch: lease.epoch,
+    })
+  }
+
+  /**
+   * The HIDDEN CONTROL program that removes `dsh` from the kernel namespace.
+   *
+   * Static because it needs no capability: it only removes names. Sent before a
+   * cell that has no authority, so such a cell cannot inherit a capability from
+   * an earlier one -- see {@link renderBridgeRevoke}.
+   */
+  revoke(): string {
+    return renderBridgeRevoke()
   }
 
   /** Stop listening and close everything. Idempotent. */
@@ -1671,25 +1707,49 @@ export interface BridgePreambleInput {
 }
 
 /**
- * Render the preamble prepended to one cell.
+ * Render the bind program with a trailing newline, as the PREAMBLE form.
  *
- * WHY A PREAMBLE AND NOT A HOST-SIDE HOOK. The kernel is a grandchild process
- * the broker starts; the host has no channel into its namespace that does not go
- * through a cell. A preamble is the one mechanism that is guaranteed to run
- * before the model's code, in the model's namespace, without a second protocol.
+ * KEPT AS A SEPARATE EXPORT because it has existing callers and tests, and
+ * because the two forms differ in exactly one way that a reader should see: the
+ * preamble form is meant to be JOINED BEFORE user code, so it ends with a newline
+ * that separates it from the first user line. The bind form is a whole request of
+ * its own and has no such need.
  *
- * THE NAMESPACE IS LEFT CLEAN. Every temporary the preamble needs is deleted at
- * its end, so `dir()` in the model's code shows `dsh` and nothing else that the
- * host added. A cell that raises still leaves a clean namespace, because the
- * preamble's own statements have already completed.
+ * THE PRODUCTION PATH NO LONGER USES THIS. `runCell` sends {@link renderBridgeBind}
+ * as a hidden control request instead, so user bytes are never rewritten. This
+ * function survives for the hand-driven probes and tests that measure the
+ * mechanism, and its presence is NOT evidence that the product prepends anything.
  *
- * A CELL MAGIC IS NOT PREPENDED TO. `%%bash` and friends must be the first line
- * of a cell or IPython refuses the cell outright, so prepending would turn a
- * working cell into a syntax error. Such a cell runs unbridged and `dsh` is
- * simply absent; the caller can tell from the absence rather than from a
- * silently stale capability.
+ * A CELL MAGIC COULD NOT CARRY THE PREAMBLE. `%%bash` and friends must be the
+ * first line of a cell or IPython refuses the cell outright, so prepending turned
+ * a working cell into a syntax error -- which is why the old code had a
+ * `canPrependPreamble` branch, and why such a cell ran with no fresh binding at
+ * all. The hidden-bind design removes that branch entirely.
  */
 export function renderBridgePreamble(input: BridgePreambleInput): string {
+  return [renderBridgeBind(input), ''].join('\n')
+}
+
+/**
+ * Render the HIDDEN CONTROL program that binds `dsh` for one cell.
+ *
+ * WHY THIS REPLACES THE PREAMBLE. The old design prepended this text to the
+ * user's cell, which made the executed bytes differ from the authored bytes:
+ * tracebacks and SyntaxErrors reported a line number shifted by the preamble's
+ * length, and a cell magic -- which must be the first line of its request -- took
+ * a different path entirely and received no fresh binding at all. V5 §9 requires
+ * the model's code bytes to be the bytes the kernel executes, so the bind became
+ * a SEPARATE hidden execution and the user's cell travels untouched.
+ *
+ * THE NAMESPACE IS LEFT CLEAN. Every temporary is deleted at the end, so `dir()`
+ * in the user's code shows `dsh` and nothing else the host added. `_dsh_mod`
+ * itself is deleted too; only the `dsh` name is published.
+ *
+ * NOTHING HERE IS AUTHORITY. The module holds an endpoint and a lease id; which
+ * Agent, Session or policy a call runs under is decided by the host from the live
+ * execution. See the module docstring in `bridge.ts`.
+ */
+export function renderBridgeBind(input: BridgePreambleInput): string {
   const literal = (value: string): string => JSON.stringify(value)
   const lines = [
     'import sys as _dsh_sys, types as _dsh_types',
@@ -1758,11 +1818,45 @@ export function renderBridgePreamble(input: BridgePreambleInput): string {
 }
 
 /**
+ * Render the HIDDEN CONTROL program that REVOKES `dsh` for an unbridged cell.
+ *
+ * WHY AN EXPLICIT REVOKE AND NOT MERELY OMITTING A BIND. The kernel namespace is
+ * PERSISTENT. Once a bridged cell has run, `dsh` -- and `sys.modules['dsh']` --
+ * stay in the namespace. A later cell that is dispatched with no authority used
+ * to inherit that object, so the model could hold and call a capability whose
+ * lease had already settled, and the only thing it would learn is
+ * `LEASE_UNKNOWN`, which does not explain that the capability is gone by design.
+ *
+ * MEASURED BEFORE THIS EXISTED (see `qualification/results/P8-bind/before.json`):
+ * an authority-less cell reported `dsh_in_dir: true`, `import: OK`, and a call
+ * through the surviving object returned `LEASE_UNKNOWN`. So the old comment's
+ * claim that `dsh` "is simply absent" was not generally true in a persistent
+ * namespace.
+ *
+ * Both the namespace name and the module entry are removed. Removing only one
+ * would leave the capability reachable by `import dsh`, which is the same defect
+ * wearing a different name.
+ */
+export function renderBridgeRevoke(): string {
+  return [
+    'import sys as _dsh_sys',
+    "globals().pop('dsh', None)",
+    "_dsh_sys.modules.pop('dsh', None)",
+    'del _dsh_sys',
+  ].join('\n')
+}
+
+/**
  * Whether a cell can carry the preamble at all.
  *
  * A cell magic must be the first line, so a cell that starts with `%%` cannot be
  * prefixed. Checked on the RAW source's first non-blank line, which is what
  * IPython's own transformer looks at.
+ *
+ * NO LONGER CALLED BY `runCell`. Kept because it is exported API with its own
+ * tests, and because the property it tests -- "would prepending change what this
+ * cell means" -- is what a future caller would still need to ask. The bind path
+ * no longer prepends anything, so the answer no longer gates a capability.
  */
 export function canPrependPreamble(code: string): boolean {
   for (const line of code.split('\n')) {
