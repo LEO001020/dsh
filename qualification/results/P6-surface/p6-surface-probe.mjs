@@ -221,6 +221,10 @@ export async function apply(ctx) {
     // (6) The management surface that MUST survive.
     managementSurface: {},
 
+    // (7) THE HONEST BOUNDARY: the substrate seam the removed rows called.
+    // Present and callable from in-process code; NOT in the model's catalog.
+    substrateSeam: null,
+
     presetRoots: [],
     error: null,
     errorPhase: null,
@@ -414,6 +418,48 @@ export async function apply(ctx) {
       flush()
     }
     finding.anyCreationRouteExecuted = finding.unknownToolRefusals.some(r => r.executed === true)
+
+    // ---- (7) THE HONEST BOUNDARY, MEASURED RATHER THAN ASSERTED -----------
+    //
+    // V5 §8 asks about the MODEL-FACING surface, and that is all this change
+    // touches. Removing the four rows does NOT remove the underlying capability,
+    // and a reader must not conclude the substrate became unreachable. That is
+    // easy to say and easy to get wrong, so it is MEASURED here: the seam the
+    // removed tools called is still present and still callable, from an
+    // in-process caller holding a Context.
+    //
+    // THIS ARM CREATES NOTHING. It reads the service, lists its registered
+    // providers, and checks that the method exists as a function. Calling
+    // `startContinuable` would create a real child -- which is the thing the
+    // slice is about, and doing it here would both cost a child and change the
+    // composition the other arms measured.
+    //
+    // The upstream per-root fact is recorded beside it (docs/GAPS.md
+    // G-SEAM-19): DSH's own `maxActiveSubagents` pool is a WeakMap keyed by
+    // ROOT, so it bounds each root separately and is NOT the host bound. This
+    // project's ledger in `capacity.ts` is the host bound. Raising the pool to
+    // 30 (the previous commit) therefore did not make anything host-wide, and
+    // this arm does not claim it did.
+    const subagents = ctx.get('subagents')
+    finding.substrateSeam = {
+      // Present at all: a missing service would mean the capability really was
+      // removed, which is the opposite of this slice's claim.
+      servicePresent: subagents !== undefined,
+      // The public methods the removed rows reached. `typeof` rather than
+      // truthiness: a non-function property would still be a broken seam.
+      startContinuableIsCallable: typeof subagents?.startContinuable === 'function',
+      startIsCallable: typeof subagents?.start === 'function',
+      // The providers the deployment registered. A non-empty list is what makes
+      // the seam USABLE rather than merely declared: `start` resolves a provider
+      // by name, so an empty registry would mean the capability is present in
+      // signature and absent in fact.
+      registeredProviders: typeof subagents?.list === 'function' ? subagents.list() : null,
+      // The agent factory, the other documented seam.
+      agentsCreateIsCallable: typeof ctx.get('agents')?.create === 'function',
+      // Stated as a fact about THIS boot, not as a general claim.
+      note: 'these seams are reachable from an IN-PROCESS caller holding a Context; '
+        + 'the model-facing catalog measured above does not expose them',
+    }
 
     // ---- (6) the management surface that MUST survive --------------------
     // V5 §8: "Keep only what is actually needed to communicate with/list

@@ -279,6 +279,24 @@ const OUT_AFTER = `${RESULT_DIR}/catalog-after.json`
  */
 const REPLAY = process.argv.includes('--replay')
 
+/**
+ * `--boot=before` / `--boot=after`: re-run ONE side and read the other from
+ * disk.
+ *
+ * WHY. A change to the PROBE invalidates the artifact that side produced, but
+ * not the other side's. Re-booting both would be the reflex and it would spend a
+ * boot on a side whose composition did not change. This flag makes the economy
+ * explicit, and the report records which side was booted so a reader is not left
+ * guessing whether the two artifacts came from the same run.
+ *
+ * The loaded side goes through `loadRecorded`, so the same attribution guard
+ * (`readResult`) applies to it as to a replay.
+ */
+const BOOT_ONLY = (process.argv.find(arg => arg.startsWith('--boot=')) ?? '').slice('--boot='.length) || null
+if (BOOT_ONLY !== null && !['before', 'after'].includes(BOOT_ONLY)) {
+  throw new Error(`--boot= must name 'before' or 'after', not ${JSON.stringify(BOOT_ONLY)}`)
+}
+
 // `--build-only`: construct both homes and stop, so the cheap half of the
 // measurement can be checked before the expensive half is paid for.
 if (process.argv.includes('--build-only')) {
@@ -347,12 +365,15 @@ function loadRecorded(outPath, home, label) {
   }
 }
 
-const before = REPLAY
-  ? loadRecorded(OUT_BEFORE, BEFORE_HOME, 'before')
-  : await bootHome({ label: 'before', home: BEFORE_HOME, outPath: OUT_BEFORE })
-const after = REPLAY
-  ? loadRecorded(OUT_AFTER, AFTER_HOME, 'after')
-  : await bootHome({ label: 'after', home: AFTER_HOME, outPath: OUT_AFTER })
+const bootBefore = !REPLAY && (BOOT_ONLY === null || BOOT_ONLY === 'before')
+const bootAfter = !REPLAY && (BOOT_ONLY === null || BOOT_ONLY === 'after')
+
+const before = bootBefore
+  ? await bootHome({ label: 'before', home: BEFORE_HOME, outPath: OUT_BEFORE })
+  : loadRecorded(OUT_BEFORE, BEFORE_HOME, 'before')
+const after = bootAfter
+  ? await bootHome({ label: 'after', home: AFTER_HOME, outPath: OUT_AFTER })
+  : loadRecorded(OUT_AFTER, AFTER_HOME, 'after')
 
 const diff = catalogDiff(before.probe?.tools, after.probe?.tools)
 
@@ -455,13 +476,13 @@ const assertions = {
   presetSurvivedTheDisable: (after.probe?.toolCountAgentKey ?? 0) > 0,
   // Neither boot's executed bytes moved underneath it.
   //
-  // NULL IN REPLAY, and it must be: a replay runs no boot, so it has no before
-  // and after digests to compare. Recording it as `true` would be a free pass
-  // for a fact a replay never observed -- the vacuous-truth trap. `null` is
-  // reported as NOT_RUN rather than as PASS.
-  buildsStableDuringBothBoots: REPLAY
-    ? null
-    : before.buildIdentity.changedDuringBoot.length === 0 && after.buildIdentity.changedDuringBoot.length === 0,
+  // NULL WHEN EITHER SIDE WAS NOT BOOTED IN THIS RUN, and it must be: a side
+  // read back from disk has no before/after digests, so the fact was not
+  // observed this run. Recording it as `true` would be a free pass for a fact
+  // nobody measured -- the vacuous-truth trap. `null` is reported as NOT_RUN.
+  buildsStableDuringBothBoots: bootBefore && bootAfter
+    ? before.buildIdentity.changedDuringBoot.length === 0 && after.buildIdentity.changedDuringBoot.length === 0
+    : null,
   // The hidden arm: Python could not reach a creation route either.
   bridgeArmDidNotExecute: after.probe?.bridgeArm?.anyExecuted === false
     || after.probe?.bridgeArm?.available === false,
@@ -487,7 +508,8 @@ const report = {
   // `replay` = the observations were READ BACK from artifacts already on disk
   // and only the judgment was re-run. A reader must be able to tell these apart:
   // a replay says nothing new about the product.
-  mode: REPLAY ? 'replay' : 'boot',
+  mode: REPLAY ? 'replay' : BOOT_ONLY === null ? 'boot' : `boot:${BOOT_ONLY}`,
+  bootedSides: { before: bootBefore, after: bootAfter },
   homes: { before: homes.before, after: homes.after, canonical: CANONICAL_HOME },
   cwd: FOREIGN_CWD,
   boots: {
