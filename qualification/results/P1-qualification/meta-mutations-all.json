@@ -1,0 +1,106 @@
+{
+  "arms": [
+    {
+      "name": "META-SUMMARY",
+      "required": "one evidence/hash problem makes BOTH --summary and the full path exit nonzero",
+      "held": true,
+      "detail": "summary exit=1 full exit=1 agree=True summary begins VALIDATION=FAIL=True | corrupted ID-01:qualification/results/V1-identity/GATES.md | control(unmutated) prints EXITCODE 1: True",
+      "commands": [
+        "python drive.py summary   (spec with ID-01:qualification/results/V1-identity/GATES.md sha256 corrupted)",
+        "python drive.py full   (spec with ID-01:qualification/results/V1-identity/GATES.md sha256 corrupted)",
+        "control: unmutated spec through the same driver"
+      ]
+    },
+    {
+      "name": "META-DATA-ROUTE",
+      "required": "the data-route reachability gate reports RED when the bridge's data branch is absent",
+      "held": true,
+      "detail": "routing branches matching 'data:' in bridge.ts = 0; the gate is RED on this tree, which is the correct verdict and the one V5 fact 7 records (root measured 0). A gate that could not go red here could not go red on a DISCONNECTED branch either. The assembled data e2e that V5 \u00a74.3 names belongs to V5 \u00a75's slice and is NOT_RUN here.",
+      "commands": [
+        "python -c \"count 'data:' routing branches in packages/dsh-ipython/src/bridge.ts\""
+      ]
+    },
+    {
+      "name": "META-CURSOR",
+      "required": "re-introducing the descriptor-derived key makes the cursor-key authority gate RED",
+      "held": true,
+      "detail": "baseline exit=0 (green=True); with the constant-key mutation exit=1 (RED=True); restored sha256=3e781b38b8e31dd4...",
+      "commands": [
+        "node node_modules/vitest/vitest.mjs run src/data16-cursor-key-authority.test.ts (baseline, in packages/dsh-daily-work)",
+        "node node_modules/vitest/vitest.mjs run src/data16-cursor-key-authority.test.ts (with readOrCreateStoreCursorKey mutated to the old public derivation)",
+        "sha256 of artifacts.ts after restore"
+      ]
+    },
+    {
+      "name": "META-GRAPH",
+      "required": "a stale graph/identity artifact makes release-gate's freshness check RED",
+      "held": true,
+      "detail": "baseline exit=1 RED=True (identity_fresh=False recorded=533c8cb08b2ccd7f... recomputed=709a0fcee45b45f4...); named-stale-candidate refused=True (exit=1)",
+      "commands": [
+        "python qualification/runners/release-gate.py --json (baseline)",
+        "python qualification/runners/release-gate.py --json --candidate <stale identity>"
+      ]
+    },
+    {
+      "name": "META-IMPORT",
+      "required": "a variable-held specifier is invisible to a text scan but caught by runtime resolution",
+      "held": true,
+      "detail": "static scan sees the hidden import: False (must be False -- a variable-held specifier is invisible to it); runtime resolution succeeds: True (must be True). The premise of META-IMPORT holds: a text scanner cannot see this import and a runtime check can. The runtime-resolved graph CHECK that would use this against the real product is NOT_RUN -- no such runner exists in this tree yet.",
+      "commands": [
+        "static scan: 'from './hidden.mjs'' present in entry.mjs? (the naive gate)",
+        "node probe.mjs (runtime resolution of the variable specifier)"
+      ]
+    },
+    {
+      "name": "META-ZERO",
+      "required": "a run that selects 0 tests cannot PASS, even with a zero exit code",
+      "held": true,
+      "detail": "acceptance exit=1 (must be nonzero); outcome='fail'",
+      "commands": [
+        "node qualification/runners/acceptance.mjs META-ZERO.json --out META-ZERO-receipt.json"
+      ]
+    },
+    {
+      "name": "META-SKIP",
+      "required": "an all-skipped run cannot PASS",
+      "held": true,
+      "detail": "acceptance exit=1 (must be nonzero); outcome='all_skipped'",
+      "commands": [
+        "node qualification/runners/acceptance.mjs META-SKIP.json --out META-SKIP-receipt.json"
+      ]
+    },
+    {
+      "name": "META-TIMEOUT",
+      "required": "a runner timeout cannot PASS",
+      "held": true,
+      "detail": "acceptance exit=1 (must be nonzero); outcome='timeout'",
+      "commands": [
+        "node qualification/runners/acceptance.mjs META-TIMEOUT.json --out receipt.json (deadline 4s, runner sleeps 60s)"
+      ]
+    },
+    {
+      "name": "META-MARKUP",
+      "required": "a capitalisation/Markdown-only change does NOT fail a semantic gate (must stay GREEN)",
+      "held": true,
+      "detail": "semantic predicate unmoved by markup: True; the OLD markup-pinned predicate WOULD have moved: True (which is the defect this arm exists to keep visible); real sec-gates.test.ts exit=0 green=True | \u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m46 passed\u001b[39m\u001b[22m\u001b[90m (46)\u001b[39m\n\u001b[2m   Start at \u001b[22m 20:59:06\n\u001b[2m   Duration \u001b[22m 28.70s\u001b[2m (transform 454ms, setup 0ms, import 397ms, tests 28.14s, environment 0ms)\u001b[22m",
+      "commands": [
+        "python -c \"re.search(r'confirmed by measurement', s, re.I)\" on both renderings",
+        "node node_modules/vitest/vitest.mjs run src/sec-gates.test.ts (real gate, unchanged)"
+      ]
+    },
+    {
+      "name": "META-CONSUMER",
+      "required": "removing the last non-test importer of a module makes the reachability gate RED",
+      "held": true,
+      "detail": "baseline REACHABLE=32; after removing one import line from host.ts the newly-unreachable module(s) = ['src/counting.ts'] (reachable now 31); host.ts restored sha256=a1384deced322d51...",
+      "commands": [
+        "node qualification/runners/import-graph.mjs packages/dsh-daily-work (baseline)",
+        "node qualification/runners/import-graph.mjs packages/dsh-daily-work (with the last importer of one reachable module removed)",
+        "python -c \"count src/ references to that module\"",
+        "remove host.ts lines 33-42 (10-line import block for counting.ts)"
+      ]
+    }
+  ],
+  "held": 10,
+  "total": 10
+}
