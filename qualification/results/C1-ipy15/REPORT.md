@@ -135,6 +135,14 @@ re-ran: the gate went RED (`refusalNamesTheLoss`/`refusalStatesTheCount` false,
 `AssertionError` at line 1411), then I restored the file. An assertion that cannot
 fail is not an assertion.
 
+**One run in between failed IPY-06, and it is recorded rather than hidden.** The
+failure was `KernelTransportError: BROKER_FAILURE: RuntimeError: Kernel didn't
+respond in 60 seconds` in "foreign frames are ignored AND COUNTED" — a case this
+change does not touch. Re-run alone it passes in 8.2 s; re-run as the full file it
+passes 12/12. It is the known flaky timeout (5 other writers share this CPU), and
+it is NOT the IPY-15 arm. Both outcomes are stated because a single green run
+reported as the only run would be a selection effect.
+
 No assertion was deleted and no bound was loosened. The pin that said
 `expect(noteDroppedCallSites).toBe(0)` had already been inverted to
 `toBeGreaterThan(0)` by the coordinator's fix, and its own comment asked for
