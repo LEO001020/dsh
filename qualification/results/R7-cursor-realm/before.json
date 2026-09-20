@@ -1,0 +1,102 @@
+{
+  "label": "before",
+  "measuredAt": "2026-09-20T01:25:15.564Z",
+  "node": "v24.18.0",
+  "identity": {
+    "builtLib": {
+      "artifactsJs": "5de9d97a218762eec5a5bcd5c22daf304b71bce93a92f0b15da3bfe62bdabffa",
+      "observationsJs": "6aaff6e4fe66619a0282652e9bde5155d736867ac8d0c30d4ae845dc5dcb228c",
+      "artifactsJsBytes": 63864
+    },
+    "source": {
+      "artifactsTs": "f809bd7ed21cca96e831c1630b2eb6e0aa045d51f0b27a7ac8049b1638d4ae1b",
+      "observationsTs": "7ead0000e5c785bf8c322cf4447f1a24309226dc5b3677e9e1bb1803146ca6e3"
+    }
+  },
+  "arms": {
+    "cursorIssued": {
+      "issued": true,
+      "cursorLength": 320
+    },
+    "A_sameRealmSameRevision": {
+      "refused": false,
+      "bytes": 64,
+      "sha256": "ee8e658590c9a5e119400a774415a01db104de1ee6e2c29ec69aa73ef46544d2",
+      "offset": 64
+    },
+    "B_differentRevision": {
+      "refused": true,
+      "code": "pagination-scope-denied",
+      "name": "ArtifactError",
+      "message": "observation obs-r7-cursor was minted under grant revision 1, which is stale",
+      "realmRefused": null
+    },
+    "sameSha256AcrossStores": true,
+    "C_differentStoreSameBytes": {
+      "refused": false,
+      "bytes": 64,
+      "sha256": "ee8e658590c9a5e119400a774415a01db104de1ee6e2c29ec69aa73ef46544d2",
+      "offset": 64
+    },
+    "D_differentStoreObjectAbsent": {
+      "refused": true,
+      "code": "artifact-integrity-error",
+      "name": "ArtifactError",
+      "message": "artifact artifact:sha256:9076e7f76f5ff90f416d5ebae347a8c7cc550f298016b893f01a920303d9689b is referenced but absent from the store",
+      "realmRefused": null
+    },
+    "E_differentStoreDifferentBytes": {
+      "refused": false,
+      "bytes": 64,
+      "sha256": "cc7321cce5e4409bd8077d58422e1214969059bbd40b4eeb0de0a642f40f7282",
+      "offset": 64,
+      "descriptorSha256": "9076e7f76f5ff90f416d5ebae347a8c7cc550f298016b893f01a920303d9689b",
+      "yieldedIsTheNamedArtifact": false
+    },
+    "F_ownStoreCorrupt": {
+      "refused": false,
+      "bytes": 64,
+      "sha256": "cc7321cce5e4409bd8077d58422e1214969059bbd40b4eeb0de0a642f40f7282",
+      "offset": 0,
+      "yieldedIsTheNamedArtifact": false,
+      "resolveReference": {
+        "refused": true,
+        "code": "artifact-integrity-error"
+      },
+      "pagingAndResolveDisagree": true
+    },
+    "G_tamperedCursor": {
+      "refused": true,
+      "code": "pagination-scope-denied",
+      "name": "ArtifactError",
+      "message": "observation obs-r7-cursor was minted under grant revision 1, which is stale",
+      "realmRefused": null
+    },
+    "H_missingObject": {
+      "refused": true,
+      "code": "artifact-integrity-error",
+      "name": "ArtifactError",
+      "message": "artifact artifact:sha256:9076e7f76f5ff90f416d5ebae347a8c7cc550f298016b893f01a920303d9689b is referenced but absent from the store",
+      "realmRefused": null
+    }
+  },
+  "refusals": [],
+  "realm": {
+    "storeExposesRealm": null,
+    "realmDiffersAcrossStores": null,
+    "realmAfterReopen": null,
+    "realmStableAcrossSecondStoreInstance": null,
+    "persistedRealmFile": null
+  },
+  "verdicts": {
+    "control_sameRealmSucceeds": true,
+    "differentRevisionRefused": true,
+    "differentStoreRefused": false,
+    "crossStoreYieldedUnverifiedBytes": true,
+    "ownStoreCorruptRefused": false,
+    "tamperedCursorRefused": true,
+    "missingObjectRefused": true,
+    "refusalsRecorded": false,
+    "DATA_11_ORACLE_SATISFIED": false
+  }
+}

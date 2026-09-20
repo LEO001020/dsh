@@ -2794,9 +2794,16 @@ describe('cursor identity: a cursor binds its artifact and grants no authority',
     })
     const first = await pages(store, { descriptor: capture.descriptor, maxBytes: 64, grants, callerScope: scope })
     const authority = new CursorAuthority('some-other-secret', capture.descriptor.schemaVersion)
+    // Every field is correct INCLUDING the realm, so the refusal can only be the
+    // secret. A cursor minted with another host's secret must not resume a walk here
+    // even when it names this store.
     const foreign = authority.mint({
+      storeRealmId: await store.ensureRealm(),
       artifactSha256: capture.descriptor.captured.sha256,
+      observationId: capture.descriptor.id,
+      revision: `${capture.descriptor.captured.sha256}@g${String(capture.descriptor.authority.grantRevision)}`,
       representation: 'bytes',
+      query: 'bytes:64',
       position: 64,
       ownerScope: scope,
       watermark: capture.descriptor.source.acquiredAt,

@@ -1,0 +1,101 @@
+{
+  "boot": {
+    "port": 3940,
+    "exitCode": null,
+    "timedOut": false,
+    "portReleased": true,
+    "stderrTail": ""
+  },
+  "probe": {
+    "home": "D:/DSH/home/r7",
+    "servicePresent": true,
+    "serviceKind": "DataPlaneService",
+    "artifactRoot": "data-artifacts",
+    "storeRealmId": "realm_63790a35-0e42-4aab-bcad-4cad894920c9",
+    "realmIsPersisted": true,
+    "realmFileContents": {
+      "storeRealmId": "realm_63790a35-0e42-4aab-bcad-4cad894920c9",
+      "createdAt": "2026-09-20T01:41:09.932Z",
+      "storeVersion": "v1"
+    },
+    "toolCountAgentKey": 27,
+    "dataToolNames": [],
+    "error": null,
+    "arms": {
+      "capture": {
+        "state": "durable",
+        "bytes": 415,
+        "sha256": "eb2ebb705401de646638cd60c109f422003df8298475d9bfc377843eed210850"
+      },
+      "firstPage": {
+        "bytes": 64,
+        "offset": 0,
+        "hasCursor": true
+      },
+      "otherStoreRealm": "realm_a4befc5a-7227-439b-96dd-035b31f31bd5",
+      "realmsDiffer": true,
+      "crossStore": {
+        "refused": true,
+        "code": "pagination-realm-denied",
+        "realmRefused": true,
+        "message": "pagination cursor was issued for store realm \"realm_63790a35-0e42-4aab-bcad-4cad894920c9\", not \"realm_a4befc5a-7227-439b-96dd-035b31f31bd5\"; a cursor is not a bearer token and cannot be replayed against another store"
+      },
+      "refusalSinkFired": [
+        {
+          "code": "pagination-realm-denied",
+          "step": "realm",
+          "storeRealmId": "realm_a4befc5a-7227-439b-96dd-035b31f31bd5"
+        }
+      ],
+      "otherStoreHoldsSameDigest": true,
+      "otherStoreIssuedCursor": true,
+      "realmRefusalOnProductStore": {
+        "refused": true,
+        "code": "pagination-realm-denied",
+        "realmRefused": true
+      }
+    },
+    "recordedRefusals": [
+      {
+        "code": "pagination-cursor-invalid",
+        "step": "parse",
+        "storeRealmId": "realm_63790a35-0e42-4aab-bcad-4cad894920c9",
+        "observationId": "obs-r7-probe-1789868469949"
+      },
+      {
+        "code": "pagination-cursor-invalid",
+        "step": "parse",
+        "storeRealmId": "realm_63790a35-0e42-4aab-bcad-4cad894920c9",
+        "observationId": "obs-r7-probe-1789868489983"
+      },
+      {
+        "code": "pagination-realm-denied",
+        "step": "realm",
+        "storeRealmId": "realm_63790a35-0e42-4aab-bcad-4cad894920c9",
+        "observationId": "obs-r7-probe-1789868507823"
+      },
+      {
+        "code": "pagination-realm-denied",
+        "step": "realm",
+        "storeRealmId": "realm_63790a35-0e42-4aab-bcad-4cad894920c9",
+        "observationId": "obs-r7-probe-1789868518696"
+      },
+      {
+        "code": "pagination-realm-denied",
+        "step": "realm",
+        "storeRealmId": "realm_63790a35-0e42-4aab-bcad-4cad894920c9",
+        "observationId": "obs-r7-probe-1789868527887"
+      }
+    ],
+    "verdicts": {
+      "serviceReachable": true,
+      "realmPersistedNotPerBoot": true,
+      "crossStoreRefused": true,
+      "crossStoreRefusalIsTheRealm": true,
+      "refusalSinkFired": true,
+      "productStoreRefusedForeignRealm": true,
+      "refusalRecordedByProduct": true,
+      "DATA_11_PRODUCT_REACHABLE": true
+    }
+  }
+}

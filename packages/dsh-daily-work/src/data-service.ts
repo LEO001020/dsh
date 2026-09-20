@@ -49,9 +49,11 @@ import {
   DEFAULT_ARTIFACT_QUOTA_BYTES,
   DEFAULT_PAGE_BYTES,
   LocalArtifactStore,
+  RecordingPageProvider,
   buildLineIndex,
   captureFile,
   joinPages,
+  mountRefusalRecording,
   pages,
   projectForModel,
   readArtifactRange,
@@ -62,7 +64,9 @@ import {
   type ArtifactPage,
   type ArtifactReference,
   type CaptureOutcome,
+  type CursorRefusal,
   type IoCounters,
+  type RefusalJournal,
   type SessionReferenceLog,
 } from './artifacts.ts'
 import {
@@ -154,6 +158,13 @@ export class DataPlaneService extends Service {
   readonly executionWorld: string
   readonly pageBytes: number
   private readonly config: DataServiceConfig
+  /**
+   * The store's refusal journal.
+   *
+   * A field rather than a fresh object per call, so the store's own failure list is
+   * the one place a broken journal is reported.
+   */
+  private readonly journal: RefusalJournal
   private domain: Domain<typeof dataDomainSpec> | undefined
   private log: StorageReferenceLog | undefined
 
@@ -170,6 +181,7 @@ export class DataPlaneService extends Service {
       config.artifactRoot ?? defaultArtifactRoot(ctx),
       { quotaBytes: config.quotaBytes ?? DEFAULT_ARTIFACT_QUOTA_BYTES },
     )
+    this.journal = mountRefusalRecording(this.store)
   }
 
   /** Open the reference domain. Idempotent per instance. */
@@ -289,6 +301,12 @@ export class DataPlaneService extends Service {
       ...input.cursor !== undefined ? { cursor: input.cursor } : {},
       grants: this.grants,
       callerScope: this.ownerScope,
+      // THE REFUSAL IS RECORDED, which is half of DATA-11's oracle. The sink writes
+      // to the store's own journal before the error propagates, so a cross-realm
+      // replay leaves durable evidence even when the caller catches the throw. A
+      // refusal that only exists as a caught exception is the "keeps running and
+      // reporting health" shape the audit names.
+      onRefusal: refusal => { this.recordRefusal(refusal) },
     }, input.counters)
   }
 
@@ -300,7 +318,10 @@ export class DataPlaneService extends Service {
     counters?: IoCounters
   }): Promise<{ pages: number; bytes: number; exhausted: boolean; lastPosition: number }> {
     const descriptor = parseObservation(input.descriptor, this.grants)
-    return walkPages(new ArtifactStorePageProvider(this.store), {
+    // The recording provider wraps the real one, so EVERY page of the walk records
+    // its refusal rather than only the first call. `walkPages` drives the provider
+    // directly, so a sink on the request would be lost after the first page.
+    return walkPages(new RecordingPageProvider(new ArtifactStorePageProvider(this.store), this.journal), {
       descriptor,
       maxBytes: input.maxBytes ?? this.pageBytes,
       grants: this.grants,
@@ -309,6 +330,31 @@ export class DataPlaneService extends Service {
       ...input.maxPages !== undefined ? { maxPages: input.maxPages } : {},
       ...input.counters !== undefined ? { counters: input.counters } : {},
     })
+  }
+
+  /**
+   * Record a cursor refusal durably, and surface a journal failure.
+   *
+   * Deliberately NOT awaited by `page()`: the refusal is already decided and the
+   * caller is about to receive it, so making the refusal wait on a disk write would
+   * let a slow journal delay (or, if awaited in the wrong place, replace) the
+   * refusal. The write is started and its failure is collected for a later reader.
+   */
+  private recordRefusal(refusal: Omit<CursorRefusal, 'at'> & { at?: string }): void {
+    void this.journal.recordRefusal({ at: new Date().toISOString(), ...refusal }).catch(() => {
+      // `LocalArtifactStore.recordRefusal` already captures the failure in its own
+      // list; this catch exists so a rejected promise is never unhandled.
+    })
+  }
+
+  /** Every cursor refusal this deployment recorded, oldest first. */
+  async refusals(): Promise<CursorRefusal[]> {
+    return this.store.readRefusals()
+  }
+
+  /** This store's durable realm identity, created on first use. */
+  async storeRealmId(): Promise<string> {
+    return this.store.ensureRealm()
   }
 
   /** Build a sparse line index over the captured object. */
