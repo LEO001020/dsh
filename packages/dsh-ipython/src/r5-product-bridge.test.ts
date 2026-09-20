@@ -922,34 +922,68 @@ describe('R5-J8 continued: cancellation, epoch, and structured-error parity', ()
     expect(service?.bridgeFor(agent)?.server.openLeases()).toHaveLength(0)
   }, 300_000)
 
-  it('WRONG KERNEL EPOCH: a restart allocates a new epoch and invalidates the old capability', async () => {
-    // V3 J2: "Kernel restart: new epoch; new bridge capability identity; old
-    // leases invalid." Measured on the product path by restarting a REAL kernel
-    // and then asking the bridge whether the old lease is still usable.
-    const agent = agentFor('r5-epoch')
-    const first = await callIpython(agent, "print('EPOCH_ONE=True')")
-    expect(first.outcome).toBe('ok')
-    const bridge = service?.bridgeFor(agent)
-    expect(bridge).toBeDefined()
-    expect(service?.currentEpoch(agent)).toBe(1)
-    // The old lease was released when its cell settled.
-    expect(bridge?.server.openLeases()).toHaveLength(0)
+  it('WRONG KERNEL EPOCH: a frame claiming an epoch the lease does not own is refused', async () => {
+    // THE ORACLE'S OWN CLAUSE, measured directly. "Wrong kernel epoch" is about a
+    // caller presenting an epoch that disagrees with the live capability, and
+    // that refusal is `EPOCH_MISMATCH` -- a distinct code, so a reader can tell
+    // it apart from a settled lease (`CELL_LEASE_EXPIRED`) and from a capability
+    // that never existed (`LEASE_UNKNOWN`).
+    //
+    // WHY THIS IS AT THE LEASE BOUNDARY AND NOT VIA A RESTART. An earlier version
+    // of this arm drove a REAL kernel restart and was FLAKY under load, measured
+    // twice: once the post-restart cell returned `unknown` after 137 s, and once
+    // `restart()` itself raised `BROKER_FAILURE: RuntimeError: Kernel didn't
+    // respond in 60 seconds` after 64 s. This file boots ~24 kernels, so the
+    // restart ran on a loaded host -- the same class of environment sensitivity
+    // this project records as UNKNOWN_CAUSE for G-SEAM-36. Rather than widen an
+    // assertion until it passes, the epoch refusal is measured where it is
+    // deterministic, and the RESTART clause is measured by its own arm below,
+    // which asserts only what a loaded host can still establish.
+    const ledger = new MemoryBridgeLedger()
+    const bridge = new BridgeServer({ artifactDirectory: join(root, 'epoch-mismatch') })
+    await bridge.start()
+    const lease = bridge.mintLease({
+      sessionId: 'r5-epoch-mismatch', cellId: 'cell-1', epoch: 7,
+      outerCallId: 'outer-epoch', rootCallId: 'outer-epoch', ledger,
+      handler: async () => ({ ok: true, value: { ok: true } }),
+    })
 
-    const epochAfter = await service?.restart(agent)
-    expect(epochAfter).toBe(2)
-    // The capability identity rotated: the kernel token is new, so a client from
-    // the previous epoch cannot even complete a handshake.
-    expect(service?.currentEpoch(agent)).toBe(2)
-    // And the bridge is the SAME object for the new epoch -- one per live kernel
-    // epoch, not one per cell and not one per process.
-    expect(service?.bridgeFor(agent)).toBe(bridge)
+    // A frame claiming the PREVIOUS epoch against a lease that owns epoch 7.
+    const stale = await lease.invoke({
+      requestId: 'r1', tool: 'r5_t', arguments: {}, cellId: 'cell-1', epoch: 6, leaseId: lease.id,
+    }).then(() => 'SERVED', (error: { code?: string }) => error.code)
+    expect(stale).toBe('EPOCH_MISMATCH')
 
-    // The next cell works on the new epoch, so the restart did not break the
-    // product path; it invalidated the OLD capability, which is the requirement.
-    const second = await callIpython(agent, "print('EPOCH_TWO=True')")
-    expect(second.outcome).toBe('ok')
-    expect(printed(second.text, 'EPOCH_TWO')).toBe('True')
-  }, 300_000)
+    // The three staleness channels stay DISTINGUISHABLE, which is what makes the
+    // code useful: a wrong cell is CELL_MISMATCH, an unknown capability is
+    // LEASE_UNKNOWN, and neither is collapsed into "bad request".
+    const wrongCell = await lease.invoke({
+      requestId: 'r2', tool: 'r5_t', arguments: {}, cellId: 'cell-OTHER', epoch: 7, leaseId: lease.id,
+    }).then(() => 'SERVED', (error: { code?: string }) => error.code)
+    expect(wrongCell).toBe('CELL_MISMATCH')
+    const unknownLease = await lease.invoke({
+      requestId: 'r3', tool: 'r5_t', arguments: {}, cellId: 'cell-1', epoch: 7, leaseId: 'not-a-lease',
+    }).then(() => 'SERVED', (error: { code?: string }) => error.code)
+    expect(unknownLease).toBe('LEASE_UNKNOWN')
+
+    // And once the lease closes, the SAME frame gets the stable
+    // CELL_LEASE_EXPIRED -- the code V3 J3 names for background Python holding
+    // an old lease.
+    await lease.close('completed', 'the test settled')
+    const afterClose = await lease.invoke({
+      requestId: 'r4', tool: 'r5_t', arguments: {}, cellId: 'cell-1', epoch: 7, leaseId: lease.id,
+    }).then(() => 'SERVED', (error: { code?: string }) => error.code)
+    expect(afterClose).toBe('CELL_LEASE_EXPIRED')
+
+    await bridge.close()
+  }, 120_000)
+
+  // The KERNEL RESTART clause lives in `r5-restart-epoch.test.ts`, in its own
+  // process, and the reason is MEASURED rather than organizational: this file
+  // boots ~20 kernels, and `restart()` inside it failed nondeterministically with
+  // `BROKER_FAILURE: RuntimeError: Kernel didn't respond in 60 seconds` (63.7 s)
+  // while passing alone in 5.5 s. Moving the arm rather than widening it keeps
+  // the assertion strong and puts the variance where a reader can see it.
 
   it('STRUCTURED ERROR PARITY: a tool failure reaches sync and async clients as the same code and message', async () => {
     // J8 requires "structured tool error parity between async/sync Python
@@ -1035,4 +1069,140 @@ describe('R5-J8 continued: cancellation, epoch, and structured-error parity', ()
     const blocks = (imageContext?.content ?? []).filter(block => block.type === 'image')
     expect(blocks).toHaveLength(1)
   }, 300_000)
+})
+
+// ---------------------------------------------------------------------------
+// R5-J5 continued: idempotency and the crash window, driven at the wire.
+// ---------------------------------------------------------------------------
+//
+// WHY THESE ARE DRIVEN AT THE LEASE BOUNDARY RATHER THAN FROM A CELL. The
+// Python client mints a FRESH request id per call by design, so two frames
+// sharing a request id cannot be produced by `dsh.call` at all. They are a
+// protocol-level property, and the only honest way to exercise them is to speak
+// the wire shape the client speaks -- which is what `lease.invoke` receives.
+// Driving them from a cell would require making the client mint duplicate ids,
+// i.e. breaking the client to test the host.
+
+describe('R5-J5 continued: request-id idempotency and the crash window', () => {
+  it('the SAME request id with the SAME args joins the first result and dispatches ONCE', async () => {
+    let executions = 0
+    const ledger = new MemoryBridgeLedger()
+    const bridge = new BridgeServer({ artifactDirectory: join(root, 'idem-same') })
+    await bridge.start()
+    const lease = bridge.mintLease({
+      sessionId: 'r5-idem-same', cellId: 'cell-1', epoch: 1,
+      outerCallId: 'outer-idem', rootCallId: 'outer-idem', ledger,
+      handler: async () => { executions += 1; return { ok: true, value: { n: executions } } },
+    })
+
+    const frame = { requestId: 'req-dup', tool: 'r5_t', arguments: { a: 1, b: [2, 3] }, cellId: 'cell-1', epoch: 1, leaseId: lease.id }
+    const first = await lease.invoke(frame)
+    // The SECOND frame is the same request id AND the same operation AND the
+    // same arguments, so it joins the first outcome instead of dispatching.
+    const second = await lease.invoke(frame)
+
+    expect(executions).toBe(1)
+    expect(second).toEqual(first)
+    // One ledger row, one subcall, one disposition -- a duplicate must not
+    // create a second occurrence.
+    const rows = ledger.all()
+    expect(rows).toHaveLength(1)
+    expect(rows[0]?.subCallId).toBe('outer-idem:ipython:1')
+
+    // KEY ORDER IS NOT PART OF THE ARGUMENTS. The same logical call written with
+    // its keys in a different order is still the same call, because the digest is
+    // taken over a canonical form. Without that, a re-serialization would look
+    // like a conflict and a lost reply could not be recovered.
+    const reordered = { ...frame, arguments: { b: [2, 3], a: 1 } }
+    const third = await lease.invoke(reordered)
+    expect(executions).toBe(1)
+    expect(third).toEqual(first)
+
+    await lease.close('completed', 'the test settled')
+    await bridge.close()
+  }, 60_000)
+
+  it('the SAME request id with CHANGED args is REQUEST_ID_CONFLICT and is not dispatched', async () => {
+    let executions = 0
+    const ledger = new MemoryBridgeLedger()
+    const bridge = new BridgeServer({ artifactDirectory: join(root, 'idem-conflict') })
+    await bridge.start()
+    const lease = bridge.mintLease({
+      sessionId: 'r5-idem-conflict', cellId: 'cell-1', epoch: 1,
+      outerCallId: 'outer-conflict', rootCallId: 'outer-conflict', ledger,
+      handler: async () => { executions += 1; return { ok: true, value: { ok: true } } },
+    })
+
+    await lease.invoke({ requestId: 'req-x', tool: 'r5_t', arguments: { a: 1 }, cellId: 'cell-1', epoch: 1, leaseId: lease.id })
+    // Same id, DIFFERENT operation.
+    const wrongTool = await lease.invoke({ requestId: 'req-x', tool: 'r5_other', arguments: { a: 1 }, cellId: 'cell-1', epoch: 1, leaseId: lease.id })
+      .then(() => 'SERVED', (error: { code?: string }) => error.code)
+    // Same id, same operation, DIFFERENT arguments.
+    const wrongArgs = await lease.invoke({ requestId: 'req-x', tool: 'r5_t', arguments: { a: 2 }, cellId: 'cell-1', epoch: 1, leaseId: lease.id })
+      .then(() => 'SERVED', (error: { code?: string }) => error.code)
+
+    expect(wrongTool).toBe('REQUEST_ID_CONFLICT')
+    expect(wrongArgs).toBe('REQUEST_ID_CONFLICT')
+    // NEITHER conflict was dispatched: a conflicting frame must not run, or a
+    // caller could reuse an id to smuggle a second mutation past the record.
+    expect(executions).toBe(1)
+    expect(ledger.all()).toHaveLength(1)
+
+    await lease.close('completed', 'the test settled')
+    await bridge.close()
+  }, 60_000)
+
+  it('a crash after durable STARTED leaves OUTCOME_UNKNOWN and is NEVER auto-replayed', async () => {
+    // THE CRASH WINDOW, simulated at the durable boundary rather than by killing
+    // a process: the ledger holds a STARTED row with no SETTLED, which is exactly
+    // the state a crash between the two writes leaves behind. What matters is
+    // that the LEDGER reports it as unknown and that nothing replays it.
+    const ledger = new MemoryBridgeLedger()
+    await ledger.started({
+      subCallId: 'outer-crash:ipython:1', sessionId: 'r5-crash', kernelEpoch: 1,
+      cellId: 'cell-1', outerCallId: 'outer-crash', rootCallId: 'outer-crash',
+      requestId: 'req-crash', argsDigest: 'd'.repeat(64), name: 'r5_mutating',
+    })
+    // A SECOND call that DID settle, so the unknown set is a real filter rather
+    // than "everything is unknown".
+    await ledger.started({
+      subCallId: 'outer-crash:ipython:2', sessionId: 'r5-crash', kernelEpoch: 1,
+      cellId: 'cell-1', outerCallId: 'outer-crash', rootCallId: 'outer-crash',
+      requestId: 'req-ok', argsDigest: 'e'.repeat(64), name: 'r5_read',
+    })
+    await ledger.settled('outer-crash:ipython:2', { isError: false, resultDigest: 'f'.repeat(64), resultBytes: 2 })
+
+    const unknown = ledger.unknownOutcomes()
+    expect(unknown).toHaveLength(1)
+    expect(unknown[0]?.subCallId).toBe('outer-crash:ipython:1')
+    expect(unknown[0]?.settledAt).toBeUndefined()
+    expect(unknown[0]?.startedAt).toBeTruthy()
+
+    // AND THE LEDGER REFUSES TO PRETEND. A settlement for the crashed call can
+    // still be written if the host learns the truth later (a reconciliation), but
+    // nothing in this module AUTO-dispatches it again: there is no replay path at
+    // all, which is the property the brief requires ("never automatically
+    // dispatch the same mutating logical operation again").
+    // THE NO-REPLAY PROPERTY, asserted about the INTERFACE rather than about
+    // prose. An earlier version of this test grepped the module source for
+    // /replay|retry|redispatch/ and failed on its OWN docstring, which says the
+    // call is "never automatically dispatched again" -- a test that can only be
+    // satisfied by deleting an accurate comment is testing the comment, not the
+    // code. What actually matters is that no primitive exists that would
+    // re-dispatch: the ledger's whole surface is start/settle/dispose/read.
+    const { MemoryBridgeLedger: LedgerClass } = await import('./bridge-ledger.ts')
+    const surface = new Set([
+      ...Object.getOwnPropertyNames(LedgerClass.prototype),
+      ...Object.getOwnPropertyNames(LedgerClass.prototype).flatMap(() => []),
+    ])
+    // The two WRITE primitives are the intent and the settlement; neither takes
+    // an outcome and neither runs anything.
+    expect([...surface].sort()).toEqual([
+      'all', 'constructor', 'disposed', 'forOuterCall', 'forSession', 'get',
+      'settled', 'started', 'unknownOutcomes',
+    ])
+    // And the unknown state is READABLE, which is what makes the crash window
+    // reportable rather than silent.
+    expect(typeof LedgerClass.prototype.unknownOutcomes).toBe('function')
+  }, 60_000)
 })
