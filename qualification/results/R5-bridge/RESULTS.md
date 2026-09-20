@@ -101,7 +101,8 @@ occurrence records and digests, not a credential.
 
 | file | result |
 |---|---|
-| `r5-product-bridge.test.ts` (new) | 21/21 |
+| `r5-product-bridge.test.ts` (new) | 24/24 |
+| `r5-restart-epoch.test.ts` (new, isolated) | 1/1 |
 | `bridge-seam.test.ts` (T7-07 inverted) | 17/17 |
 | `v3-spec-gates.test.ts` | 12/12 |
 | `requirements.test.ts` | 19/19 |
