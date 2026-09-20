@@ -87,6 +87,11 @@ if (OUT === undefined || OUT === '') {
     + 'a shared fixed path cannot be attributed to a caller (G-FIX-13)')
 }
 
+/** The bound on one creation-route call. See the negative arm's comment. */
+const ROUTE_BOUND_MS = 25_000
+/** The value the race resolves with when the route did not settle in time. */
+const TIMEOUT_SENTINEL = Symbol('p6-surface-route-timeout')
+
 /**
  * Every tool name that creates a child, on the upstream pin.
  *
@@ -312,27 +317,66 @@ export async function apply(ctx) {
     // test: Work target may not be bypassed from normal model surface". The call
     // goes through the REAL `ToolRuntime.execute`, with the REAL calling agent,
     // so it exercises the same resolution the model's call would.
+    //
+    // EACH CALL IS BOUNDED BY AN EXPLICIT RACE, AND THE ARTIFACT IS FLUSHED
+    // AFTER EACH ONE. The BEFORE boot is expected to DISPATCH these calls --
+    // that is the positive control -- and a dispatched creation call reaches a
+    // provider whose model route does not exist in this deployment, so it can
+    // wait. An unbounded await would take the whole artifact down with it, and
+    // the catalog is the deliverable.
+    //
+    // WHY A RACE AND NOT `AbortSignal.timeout`. The signal is cooperative: the
+    // registry checks it between stages and the TOOL BODY is free to ignore it,
+    // so a hung body would still hang the probe. A race bounds the AWAIT, which
+    // is the only thing this probe controls. The signal is still passed, because
+    // a well-behaved body should see the cancellation.
+    //
+    // A ROUTE THAT TIMES OUT IS NOT A REFUSAL, and is recorded separately
+    // (`settled: false`): it means the call reached DISPATCH, which is the
+    // opposite of the claim the negative arm makes. A reader must not read the
+    // timeout as the registry refusing it.
     for (const route of CREATION_ROUTES) {
-      const record = { tool: route.tool, row: route.row, executed: null, isError: null, errorCode: null, errorName: null, message: null, contentText: null }
+      const record = {
+        tool: route.tool, row: route.row, executed: null, isError: null,
+        errorCode: null, errorName: null, message: null, contentText: null,
+        settled: false, dispatchedButUnsettled: false,
+      }
+      const controller = new AbortController()
+      const timer = setTimeout(() => controller.abort(), ROUTE_BOUND_MS)
       try {
-        const result = await tools.execute({
-          callId: `p6-surface-${route.tool}`,
-          name: route.tool,
-          arguments: creationArgs(route.tool),
-          agent,
-          signal: new AbortController().signal,
-        })
-        Object.assign(record, refusalOf(result === undefined ? null : JSON.parse(JSON.stringify(result))))
+        const result = await Promise.race([
+          tools.execute({
+            callId: `p6-surface-${route.tool}`,
+            name: route.tool,
+            arguments: creationArgs(route.tool),
+            agent,
+            signal: controller.signal,
+          }),
+          new Promise(resolve => {
+            setTimeout(() => resolve(TIMEOUT_SENTINEL), ROUTE_BOUND_MS)
+          }),
+        ])
+        if (result === TIMEOUT_SENTINEL) {
+          record.dispatchedButUnsettled = true
+          record.executed = null
+        } else {
+          record.settled = true
+          Object.assign(record, refusalOf(result === undefined ? null : JSON.parse(JSON.stringify(result))))
+        }
       } catch (error) {
         // A throw is a refusal too, and is recorded as such rather than as an
         // execution. The code is read from the error when it carries one.
+        record.settled = true
         record.isError = true
         record.errorCode = error?.code ?? null
         record.errorName = error?.name ?? null
         record.message = String(error instanceof Error ? error.message : error).slice(0, 300)
         record.executed = false
+      } finally {
+        clearTimeout(timer)
       }
       finding.unknownToolRefusals.push(record)
+      flush()
     }
     finding.anyCreationRouteExecuted = finding.unknownToolRefusals.some(r => r.executed === true)
 

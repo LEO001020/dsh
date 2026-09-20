@@ -254,7 +254,8 @@ const KEPT_TOOLS = ['send_message', 'interrupt_agent', 'list_agents', 'work']
 
 const refusalsBy = probe => Object.fromEntries(
   (probe?.unknownToolRefusals ?? []).map(row => [row.tool, {
-    executed: row.executed, errorCode: row.errorCode, errorName: row.errorName, message: row.message,
+    executed: row.executed, errorCode: row.errorCode, errorName: row.errorName,
+    message: row.message, settled: row.settled, dispatchedButUnsettled: row.dispatchedButUnsettled,
   }]),
 )
 const beforeRefusals = refusalsBy(before.probe)
@@ -282,13 +283,21 @@ const assertions = {
   managementSurfaceUsable: KEPT_TOOLS.every(name =>
     (after.probe?.managementSurface?.[name]?.parameters ?? []).length > 0),
   // THE NEGATIVE ARM. Every creation route is refused in the after boot...
-  allCreationRoutesRefusedAfter: Object.values(afterRefusals).every(row => row.executed === false),
+  //
+  // The conjunction is deliberate: `settled === true` excludes a route that
+  // reached DISPATCH and then hit the probe's own bound, which is the opposite
+  // of the claim. A `dispatchedButUnsettled` route makes this assertion FAIL
+  // rather than pass quietly.
+  allCreationRoutesRefusedAfter: Object.values(afterRefusals).every(row =>
+    row.settled === true && row.executed === false),
   // ...and the refusal is the REGISTRY's, not a tool body's own failure.
   refusalsAreUnknownTool: Object.values(afterRefusals).every(row => row.errorCode === 'UNKNOWN_TOOL'),
   // THE POSITIVE CONTROL. In the before boot the SAME calls must NOT all be
-  // refusals, or the after refusals carry no information.
-  positiveControlSomeRouteReachedTheRegistryBefore:
-    Object.values(beforeRefusals).some(row => row.errorCode !== 'UNKNOWN_TOOL'),
+  // refusals, or the after refusals carry no information. A route that reached
+  // dispatch and did not settle counts too: reaching dispatch IS the route
+  // being live, which is exactly what the control asserts.
+  positiveControlSomeRouteReachedTheRegistryBefore: Object.values(beforeRefusals).some(row =>
+    row.errorCode !== 'UNKNOWN_TOOL'),
   // The row table agrees with the catalog, so "disabled in the file" and
   // "absent from the mounted composition" are two facts and not one.
   disabledRowsReportedDisabledAfter: DISABLED_TOOLS
