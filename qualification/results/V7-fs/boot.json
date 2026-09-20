@@ -24,7 +24,7 @@
   "presetDefaultId": "daily-standard",
   "session": {
     "created": true,
-    "sessionId": "session-c9dbc9f4-2c8d-4094-97b1-8d98d9fc2a08",
+    "sessionId": "session-f484e27b-61ea-4983-817f-cb6473b783cc",
     "cwd": "D:/DSH/work/dsh-native-daily/qualification/results/V7-fs/workspace",
     "agentPresent": true,
     "sessionObjectAvailable": true
@@ -112,7 +112,7 @@
         {
           "id": "session.override",
           "ok": true,
-          "observed": "session session-c9dbc9f4-2c8d-4094-97b1-8d98d9fc2a08: overrideOf = undefined (does not confine), resolve() = 'workspace-write'"
+          "observed": "session session-f484e27b-61ea-4983-817f-cb6473b783cc: overrideOf = undefined (does not confine), resolve() = 'workspace-write'"
         }
       ]
     },
@@ -400,6 +400,22 @@
     "directObjectWriteSucceeded": false,
     "objectOnDiskAfterDirectWrite": "V7-FS06 store-owned artifact payload -- this must survive a workspace write\n",
     "objectWasTampered": false,
+    "objectModeOnDisk": {
+      "octal": "444",
+      "writableByOwner": false
+    },
+    "refusalCameFromTheOS": true,
+    "sameUserCanClearTheBit": {
+      "label": "clear read-only bit and write",
+      "ok": true,
+      "value": {
+        "theBitCouldBeCleared": true,
+        "theObjectCouldBeOverwritten": true,
+        "whatTheStoreReturnedWhileTampered": "V7-FS06 TAMPERED store object\n",
+        "theStoreNoticed": true,
+        "restored": true
+      }
+    },
     "storeReadAfterTamper": {
       "label": "store.openRange",
       "ok": true,

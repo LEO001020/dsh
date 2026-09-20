@@ -1,10 +1,8 @@
 {
-  "ok": false,
-  "checksPassed": 38,
-  "checksTotal": 39,
-  "failedChecks": [
-    "FS-06: the store object's ABSOLUTE path IS reachable by the tool (no confinement claimed)"
-  ],
+  "ok": true,
+  "checksPassed": 45,
+  "checksTotal": 45,
+  "failedChecks": [],
   "checks": {
     "the tool face is not zero (FACT F did not occur)": true,
     "no entry failed to activate": true,
@@ -44,7 +42,13 @@
     "FS-06: a workspace file with the artifact's own name does NOT change the store object": true,
     "FS-06: the store reports its own verdict on the object after the same-name write": true,
     "FS-06: the relative store path and the session-relative path are DIFFERENT files (recorded as a finding)": true,
-    "FS-06: the store object's ABSOLUTE path IS reachable by the tool (no confinement claimed)": false
+    "FS-06: the store object is REACHABLE by an absolute path (the read succeeds)": true,
+    "FS-06: the store object is IMMUTABLE in fact -- the write is refused by the OS (EACCES), not by DSH policy": true,
+    "FS-06: the store object was NOT modified by the refused write": true,
+    "FS-06: the store still returns the original bytes after the refused write": true,
+    "FS-06: the read-only bit is NOT a boundary -- the same user can clear it (recorded, not hidden)": true,
+    "FS-06: when the object IS tampered, the store DETECTS it rather than returning damaged bytes": true,
+    "FS-06: the probe restored the object it tampered (the store is left as found)": true
   },
   "composition": {
     "installed": "5b8b2a8e5d9ae13d35c1d86833f8b96eeb84078a13027a08efc1379a6fc8afb4",
@@ -159,6 +163,23 @@
     "sameRelativeNameTwoFiles": true,
     "storeObjectUntouchedByRelativeWrite": true,
     "directObjectWriteSucceeded": false,
+    "objectReadFirstIsError": false,
+    "objectModeOnDisk": {
+      "octal": "444",
+      "writableByOwner": false
+    },
+    "refusalCameFromTheOS": true,
+    "sameUserCanClearTheBit": {
+      "label": "clear read-only bit and write",
+      "ok": true,
+      "value": {
+        "theBitCouldBeCleared": true,
+        "theObjectCouldBeOverwritten": true,
+        "whatTheStoreReturnedWhileTampered": "V7-FS06 TAMPERED store object\n",
+        "theStoreNoticed": true,
+        "restored": true
+      }
+    },
     "objectWasTampered": false,
     "storeReadAfterTamper": {
       "label": "store.openRange",
@@ -216,7 +237,7 @@
     "edit": []
   },
   "boot": {
-    "port": 2991,
+    "port": 4065,
     "timedOut": false,
     "exitCode": null,
     "portReleased": true

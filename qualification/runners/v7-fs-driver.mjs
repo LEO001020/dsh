@@ -366,10 +366,39 @@ const checks = {
   'FS-06: the relative store path and the session-relative path are DIFFERENT files (recorded as a finding)':
     json.fs06?.sameRelativeNameTwoFiles === true
     && json.fs06?.storeObjectUntouchedByRelativeWrite === true,
-  // And the absolute path DOES reach the store's object, so the two trees are not
-  // a permission boundary -- only a naming divergence.
-  'FS-06: the store object\'s ABSOLUTE path IS reachable by the tool (no confinement claimed)':
-    json.fs06?.directObjectWriteSucceeded === true && json.fs06?.objectWasTampered === true,
+  // And the absolute path DOES reach the store's object -- the READ succeeds, so
+  // the store is not hidden behind a permission boundary -- while the WRITE is
+  // refused by the OS, because the object is published 0o400. That is the
+  // strongest form of the property this case is about: the object is immutable in
+  // fact, not merely by convention, and the refusal is EACCES from ReplaceFileW
+  // rather than a DSH policy decision.
+  'FS-06: the store object is REACHABLE by an absolute path (the read succeeds)':
+    json.fs06?.objectReadFirst?.isError === false,
+  'FS-06: the store object is IMMUTABLE in fact -- the write is refused by the OS (EACCES), not by DSH policy':
+    json.fs06?.directObjectWrite?.isError === true
+    && /EACCES/u.test(String(json.fs06?.directObjectWrite?.message ?? '')),
+  'FS-06: the store object was NOT modified by the refused write':
+    json.fs06?.objectWasTampered === false,
+  'FS-06: the store still returns the original bytes after the refused write':
+    json.fs06?.storeReadAfterTamper?.ok === true
+    && String(json.fs06?.storeReadAfterTamper?.value ?? '').startsWith('V7-FS06 store-owned artifact payload'),
+  // The counter-check that keeps the previous three honest: the read-only bit is a
+  // guard against accident, NOT a boundary. The same OS user can clear it.
+  'FS-06: the read-only bit is NOT a boundary -- the same user can clear it (recorded, not hidden)':
+    json.fs06?.sameUserCanClearTheBit?.ok === true
+    && json.fs06?.sameUserCanClearTheBit?.value?.theObjectCouldBeOverwritten === true,
+  // THE FINDING, recorded in the direction it was measured. `openRange` does NOT
+  // verify (its own source says verification is separate), so a tampered object IS
+  // returned as content. The explicit `verify()` DOES catch it. The first version of
+  // this probe asserted the opposite in a CHECK LABEL while the measurement said
+  // otherwise -- a false claim in the green direction, which is the failure mode
+  // this whole spec exists to catch. The label is now the measurement.
+  'FS-06: the read path does NOT detect tampering (openRange returns the bytes; recorded as a FINDING)':
+    json.fs06?.sameUserCanClearTheBit?.value?.theReadPathDetectedTheTampering === false,
+  'FS-06: the EXPLICIT verify() DOES detect tampering':
+    json.fs06?.sameUserCanClearTheBit?.value?.theExplicitVerifyDetectedTheTampering === true,
+  'FS-06: the probe restored the object it tampered (the store is left as found)':
+    json.fs06?.sameUserCanClearTheBit?.value?.restored === true,
 }
 
 const failed = Object.entries(checks).filter(([, ok]) => ok !== true)
@@ -406,9 +435,17 @@ say(`    sameRelativeNameTwoFiles: ${String(json.fs06?.sameRelativeNameTwoFiles)
 say(`    the tool resolved the relative path to: ${String(json.fs06?.relativeWriteTargetAsSeenByTool)}`)
 say(`    the store's object is at:               ${String(json.fs06?.objectOnDisk)}`)
 say(`    store object untouched by the relative write: ${String(json.fs06?.storeObjectUntouchedByRelativeWrite)}`)
-say(`  the ABSOLUTE store object path through the tool succeeded: ${String(json.fs06?.directObjectWriteSucceeded)}`)
-say(`  the object on disk WAS tampered by the absolute write: ${String(json.fs06?.objectWasTampered)}`)
-say(`  the store's own read after tampering: ${JSON.stringify(json.fs06?.storeReadAfterTamper)}`)
+say(`  the ABSOLUTE store object path through the tool: read=${String(json.fs06?.objectReadFirst?.isError === false)} writeRefused=${String(json.fs06?.directObjectWrite?.isError === true)}`)
+say(`  object mode on disk: ${JSON.stringify(json.fs06?.objectModeOnDisk)}`)
+say(`  the refusal came from the OS (EACCES), not from DSH policy: ${String(json.fs06?.refusalCameFromTheOS)}`)
+say(`  COUNTER-CHECK, the bit is a guard and NOT a boundary:`)
+say(`    the same OS user could clear the bit and overwrite the object: ${String(json.fs06?.sameUserCanClearTheBit?.value?.theObjectCouldBeOverwritten)}`)
+say(`    FINDING -- the READ path (openRange) did NOT detect it: ${String(json.fs06?.sameUserCanClearTheBit?.value?.theReadPathDetectedTheTampering)}`)
+say(`    what the store returned while tampered: ${JSON.stringify(json.fs06?.sameUserCanClearTheBit?.value?.whatTheStoreReturnedWhileTampered)}`)
+say(`    the EXPLICIT verify() DID detect it: ${String(json.fs06?.sameUserCanClearTheBit?.value?.theExplicitVerifyDetectedTheTampering)}`)
+say(`    what stat() reported while tampered: ${JSON.stringify(json.fs06?.sameUserCanClearTheBit?.value?.whatStatReportedWhileTampered)}`)
+say(`    the probe restored the object afterwards: ${String(json.fs06?.sameUserCanClearTheBit?.value?.restored)}`)
+say(`  the store's own read after the refused write: ${JSON.stringify(json.fs06?.storeReadAfterTamper)}`)
 say(`  the store's own reconcile: ${JSON.stringify(json.fs06?.reconcile)}`)
 say('')
 
@@ -475,6 +512,10 @@ const verdict = {
     sameRelativeNameTwoFiles: json.fs06?.sameRelativeNameTwoFiles ?? null,
     storeObjectUntouchedByRelativeWrite: json.fs06?.storeObjectUntouchedByRelativeWrite ?? null,
     directObjectWriteSucceeded: json.fs06?.directObjectWriteSucceeded ?? null,
+    objectReadFirstIsError: json.fs06?.objectReadFirst?.isError ?? null,
+    objectModeOnDisk: json.fs06?.objectModeOnDisk ?? null,
+    refusalCameFromTheOS: json.fs06?.refusalCameFromTheOS ?? null,
+    sameUserCanClearTheBit: json.fs06?.sameUserCanClearTheBit ?? null,
     objectWasTampered: json.fs06?.objectWasTampered ?? null,
     storeReadAfterTamper: json.fs06?.storeReadAfterTamper ?? null,
     reconcile: json.fs06?.reconcile ?? null,

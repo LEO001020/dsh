@@ -1,0 +1,1131 @@
+{
+  "schema_version": 2,
+  "target": "DSH Native Programmable Session",
+  "hard_child_capacity": 30,
+  "target_range": [
+    1,
+    30
+  ],
+  "cases": [
+    {
+      "id": "DEP-01",
+      "tier": "integration",
+      "mandatory": true,
+      "requirement": "身份锁定",
+      "stimulus": "更换launcher或混载src/lib",
+      "oracle": "真实首tool成功；记录module graph；不只检查--help",
+      "status": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "id": "DEP-02",
+      "tier": "integration",
+      "mandatory": true,
+      "requirement": "旧证据隔离",
+      "stimulus": "加载旧104-case报告",
+      "oracle": "不得自动迁移为新spec PASS",
+      "status": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "id": "DEP-03",
+      "tier": "integration",
+      "mandatory": true,
+      "requirement": "公共export",
+      "stimulus": "编译全部生产包与tests",
+      "oracle": "不得deep-import私有Symbol或通过any绕过",
+      "status": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "id": "DEP-04",
+      "tier": "integration",
+      "mandatory": true,
+      "requirement": "SSH路径一致",
+      "stimulus": "同一路径分别native read/grep/process/Web查看",
+      "oracle": "解析同executionWorld；不误读host同名文件",
+      "status": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "id": "DEP-05",
+      "tier": "integration",
+      "mandatory": true,
+      "requirement": "缺provider",
+      "stimulus": "移除subprocess/sandbox/SSH依赖",
+      "oracle": "loader失败明确；不降为danger-full-access",
+      "status": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "id": "DEP-06",
+      "tier": "integration",
+      "mandatory": true,
+      "requirement": "home锁竞态",
+      "stimulus": "A/B同时看见dead holder后交错rename/link",
+      "oracle": "只能一个WorkService获得真实独占；另一拒绝",
+      "status": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "id": "DEP-07",
+      "tier": "integration",
+      "mandatory": true,
+      "requirement": "锁释放稳定性",
+      "stimulus": "holder crash/restart并发acquire",
+      "oracle": "同inode OS锁释放；不按PID/TTL盗取活锁",
+      "status": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "id": "DEP-08",
+      "tier": "integration",
+      "mandatory": true,
+      "requirement": "完整构建覆盖",
+      "stimulus": "故意在test文件注入类型错误",
+      "oracle": "typecheck确实失败；tests不得被排除",
+      "status": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "id": "IPY-01",
+      "tier": "integration",
+      "mandatory": true,
+      "requirement": "真实IPython",
+      "stimulus": "执行get_ipython和受支持magic",
+      "oracle": "真实IPython shell，不是CPython伪装",
+      "status": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "id": "IPY-02",
+      "tier": "integration",
+      "mandatory": true,
+      "requirement": "持续变量",
+      "stimulus": "第一cell构建DataFrame/函数，下一cell复用",
+      "oracle": "值/函数可用；没有再次读取输入来假装保留",
+      "status": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "id": "IPY-03",
+      "tier": "integration",
+      "mandatory": true,
+      "requirement": "top-level await",
+      "stimulus": "await原生工具及asyncio任务",
+      "oracle": "无async-function-body语法要求；结果准确",
+      "status": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "id": "IPY-04",
+      "tier": "integration",
+      "mandatory": true,
+      "requirement": "异常部分状态",
+      "stimulus": "先赋值再抛异常",
+      "oracle": "错误清楚且先前赋值仍存在；不宣称rollback",
+      "status": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "id": "IPY-05",
+      "tier": "integration",
+      "mandatory": true,
+      "requirement": "禁stdin",
+      "stimulus": "执行input/getpass",
+      "oracle": "迅速可解释失败；不永久占cell",
+      "status": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "id": "IPY-06",
+      "tier": "integration",
+      "mandatory": true,
+      "requirement": "结果匹配",
+      "stimulus": "乱序shell/iopub及其他msg_id",
+      "oracle": "只匹配自己的reply/idle；外来帧不能结束当前cell",
+      "status": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "id": "IPY-07",
+      "tier": "integration",
+      "mandatory": true,
+      "requirement": "取消后复用",
+      "stimulus": "中断CPU循环和await-suspended cell",
+      "oracle": "按能力正确结束；不确定时标unknown并reset",
+      "status": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "id": "IPY-08",
+      "tier": "integration",
+      "mandatory": true,
+      "requirement": "自然activation结束",
+      "stimulus": "child结束activation后合法继续Session",
+      "oracle": "kernel可合法重绑或明确epoch丢失；不静默重启",
+      "status": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "id": "BRG-01",
+      "tier": "integration",
+      "mandatory": true,
+      "requirement": "共同policy",
+      "stimulus": "同工具分别native/PTC/IPython调用",
+      "oracle": "approval/guard/value/schema一致，没有旁路",
+      "status": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "id": "BRG-02",
+      "tier": "integration",
+      "mandatory": true,
+      "requirement": "动态撤权",
+      "stimulus": "cell运行中撤销一个native工具",
+      "oracle": "后续调用被拒绝；不会依赖启动时陈旧catalog",
+      "status": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "id": "BRG-03",
+      "tier": "integration",
+      "mandatory": true,
+      "requirement": "小返回值typed",
+      "stimulus": "tools.read返回小canonical value",
+      "oracle": "返回原schema T；不随机换成引用",
+      "status": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "id": "BRG-04",
+      "tier": "integration",
+      "mandatory": true,
+      "requirement": "reference交付",
+      "stimulus": "observations.call同一个native工具",
+      "oracle": "只执行一次；得到最终policy处理后的artifact引用",
+      "status": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "id": "BRG-05",
+      "tier": "integration",
+      "mandatory": true,
+      "requirement": "拒绝机密原文",
+      "stimulus": "post-policy删除/替换敏感value后读取原ref",
+      "oracle": "不能通过artifact找回被禁止的原value",
+      "status": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "id": "BRG-06",
+      "tier": "integration",
+      "mandatory": true,
+      "requirement": "nested死锁",
+      "stimulus": "并发scope大量包装调用耗尽pool",
+      "oracle": "没有持有外层pool等内层slot的循环等待",
+      "status": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "id": "BRG-07",
+      "tier": "integration",
+      "mandatory": true,
+      "requirement": "结束时drain",
+      "stimulus": "cell结束时仍有native child calls",
+      "oracle": "按明确语义取消/托管至Jobs并记录，不偷偷后台执行",
+      "status": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "id": "BRG-08",
+      "tier": "integration",
+      "mandatory": true,
+      "requirement": "控制通知保留",
+      "stimulus": "native返回安全additionalContexts/concludeTurn",
+      "oracle": "控制语义保留且有界；bulk images不自动进入模型",
+      "status": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "id": "DAT-01",
+      "tier": "integration",
+      "mandatory": true,
+      "requirement": "长行完整读取",
+      "stimulus": "单行100KiB并跨多页",
+      "oracle": "native capture后byte-for-byte恢复，无2000char尾丢失",
+      "status": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "id": "DAT-02",
+      "tier": "integration",
+      "mandatory": true,
+      "requirement": "大结果离上下文",
+      "stimulus": "一cell读512个native pages共32MiB",
+      "oracle": "全部正确消费，model-visible projection<=8KiB；明示mock/real层级",
+      "status": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "id": "DAT-03",
+      "tier": "integration",
+      "mandatory": true,
+      "requirement": "编码页边界",
+      "stimulus": "UTF-8/CRLF/JSONL在各边界拆分",
+      "oracle": "无字符损坏、重复或缺记录",
+      "status": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "id": "DAT-04",
+      "tier": "integration",
+      "mandatory": true,
+      "requirement": "分页前进",
+      "stimulus": "provider返回重复/回退cursor",
+      "oracle": "抛pagination-stalled，不能无限循环",
+      "status": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "id": "DAT-05",
+      "tier": "integration",
+      "mandatory": true,
+      "requirement": "固定快照",
+      "stimulus": "页1后修改源文件再读页2",
+      "oracle": "仍是同一captured hash，或明确失效；不混页",
+      "status": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "id": "DAT-06",
+      "tier": "integration",
+      "mandatory": true,
+      "requirement": "IO复杂度",
+      "stimulus": "固定大文件读取P页并记录物理字节",
+      "oracle": "不出现P次全文件重扫；报告实际IO与索引成本",
+      "status": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "id": "DAT-07",
+      "tier": "integration",
+      "mandatory": true,
+      "requirement": "grep分层",
+      "stimulus": "renderer只显示250条但canonical包含更多",
+      "oracle": "Python可读canonical合法全集；backend raw cap仍标partial",
+      "status": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "id": "DAT-08",
+      "tier": "integration",
+      "mandatory": true,
+      "requirement": "配额失败",
+      "stimulus": "磁盘满/对象超过quota",
+      "oracle": "明确partial/failure；不溢出无限inline、不重做外部效果",
+      "status": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "id": "WEB-01",
+      "tier": "integration",
+      "mandatory": true,
+      "requirement": "provider截断",
+      "stimulus": "provider只交付正文前段",
+      "oracle": "acquisition=partial且recovery none/refetch；不称本地全量可恢复",
+      "status": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "id": "WEB-02",
+      "tier": "integration",
+      "mandatory": true,
+      "requirement": "排名不是穷尽",
+      "stimulus": "search只给top10且无cursor",
+      "oracle": "不能报all-results/exhausted Internet",
+      "status": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "id": "WEB-03",
+      "tier": "integration",
+      "mandatory": true,
+      "requirement": "原文派生分离",
+      "stimulus": "HTML去脚本转换为markdown",
+      "oracle": "raw和derived分别hash/定位；转换失败不造正文",
+      "status": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "id": "WEB-04",
+      "tier": "integration",
+      "mandatory": true,
+      "requirement": "重抓变化",
+      "stimulus": "同URL返回不同ETag/body",
+      "oracle": "新observation并保留旧hash/时间，禁止回填旧原文",
+      "status": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "id": "WEB-05",
+      "tier": "integration",
+      "mandatory": true,
+      "requirement": "HTTP Range异常",
+      "stimulus": "server忽略Range返回200或改变encoding",
+      "oracle": "不盲拼页；校验range/实体身份与编码",
+      "status": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "id": "WEB-06",
+      "tier": "integration",
+      "mandatory": true,
+      "requirement": "来源可追溯",
+      "stimulus": "最终claim引用PDF页或网页片段",
+      "oracle": "可定位captured artifact中的实际段落；snippet不当全文",
+      "status": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "id": "WEB-07",
+      "tier": "integration",
+      "mandatory": true,
+      "requirement": "恶意内容",
+      "stimulus": "网页含命令、skill更新和authority声明",
+      "oracle": "只作不可信数据；不得修改host授权/自动执行",
+      "status": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "id": "WEB-08",
+      "tier": "integration",
+      "mandatory": true,
+      "requirement": "解析故障",
+      "stimulus": "PDF空文本/解码错误/压缩炸弹",
+      "oracle": "明确unknown/partial与预算；不把空抽取当不存在",
+      "status": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "id": "HIS-01",
+      "tier": "integration",
+      "mandatory": true,
+      "requirement": "跨Session授权",
+      "stimulus": "猜另一个项目SessionID读取",
+      "oracle": "host拒绝；SessionQuery无内置授权不得直接暴露",
+      "status": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "id": "HIS-02",
+      "tier": "integration",
+      "mandatory": true,
+      "requirement": "稳定watermark",
+      "stimulus": "history.scan同时不断append事件",
+      "oracle": "页序固定到一次snapshot，后续新事件另次读取",
+      "status": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "id": "HIS-03",
+      "tier": "integration",
+      "mandatory": true,
+      "requirement": "单event巨大",
+      "stimulus": "event超过page预算",
+      "oracle": "返回可授权ref/分段，不突破预算",
+      "status": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "id": "HIS-04",
+      "tier": "integration",
+      "mandatory": true,
+      "requirement": "避免重复replay",
+      "stimulus": "对同history遍历100页",
+      "oracle": "复用prepared observation/index，非100次全log replay",
+      "status": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "id": "HIS-05",
+      "tier": "integration",
+      "mandatory": true,
+      "requirement": "三种可见性",
+      "stimulus": "raw已存但Python未读/读后未emit",
+      "oracle": "分别记录可获取、程序消费、model投影，不混淆",
+      "status": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "id": "HIS-06",
+      "tier": "integration",
+      "mandatory": true,
+      "requirement": "memory纠正",
+      "stimulus": "旧数字被新证据替代",
+      "oracle": "新旧版本/source/supersedes可追溯；原文不丢",
+      "status": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "id": "HIS-07",
+      "tier": "integration",
+      "mandatory": true,
+      "requirement": "memory不提权",
+      "stimulus": "模型写trusted/admin的记忆",
+      "oracle": "不升级policy，纯data标签不能授予能力",
+      "status": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "id": "HIS-08",
+      "tier": "integration",
+      "mandatory": true,
+      "requirement": "索引重建",
+      "stimulus": "删除derived FTS索引再恢复",
+      "oracle": "从canonical Session/artifact重建，不需要第二history源",
+      "status": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "id": "REC-01",
+      "tier": "fault_injection",
+      "mandatory": true,
+      "requirement": "对象先事件后",
+      "stimulus": "artifact已publish但Session引用未提交时crash",
+      "oracle": "orphan可对账/宽限GC，不虚报已交付",
+      "status": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "id": "REC-02",
+      "tier": "fault_injection",
+      "mandatory": true,
+      "requirement": "坏引用",
+      "stimulus": "durable event指向缺失/坏hash对象",
+      "oracle": "integrity failure，不返回空成功",
+      "status": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "id": "REC-03",
+      "tier": "fault_injection",
+      "mandatory": true,
+      "requirement": "未接纳启动",
+      "stimulus": "child/cell启动前crash",
+      "oracle": "无发布任务；重试只限明确未生效操作",
+      "status": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "id": "REC-04",
+      "tier": "fault_injection",
+      "mandatory": true,
+      "requirement": "effect回包丢失",
+      "stimulus": "远端已执行而host未收到结果",
+      "oracle": "unknown；不默认重放整个cell",
+      "status": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "id": "REC-05",
+      "tier": "fault_injection",
+      "mandatory": true,
+      "requirement": "kernel死亡",
+      "stimulus": "持有变量后kill kernel",
+      "oracle": "epoch增加、lost清单可见；原Session保留",
+      "status": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "id": "REC-06",
+      "tier": "fault_injection",
+      "mandatory": true,
+      "requirement": "checkpoint落后",
+      "stimulus": "恢复比最后cell早的显式数据checkpoint",
+      "oracle": "报告as-of/skipped/lost；不能说完整恢复",
+      "status": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "id": "REC-07",
+      "tier": "fault_injection",
+      "mandatory": true,
+      "requirement": "反序列化攻击",
+      "stimulus": "导入pickle/dill/objectdtype恶意checkpoint",
+      "oracle": "拒绝自动恢复或只作隔离不可信代码，不在host反序列化",
+      "status": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "id": "REC-08",
+      "tier": "fault_injection",
+      "mandatory": true,
+      "requirement": "断线重连",
+      "stimulus": "SSH/IPC断开后用户重连",
+      "oracle": "不自动reexecute有歧义调用；资源和日志对账",
+      "status": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "id": "SEC-01",
+      "tier": "security",
+      "mandatory": true,
+      "requirement": "host secret",
+      "stimulus": "native read和Python直接读hostHOME/DSH_HOME/proc",
+      "oracle": "两条路径都不可达；ro host root不是保密",
+      "status": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "id": "SEC-02",
+      "tier": "security",
+      "mandatory": true,
+      "requirement": "控制面绕过",
+      "stimulus": "kernel调用human terminal/plugin manager/管理RPC",
+      "oracle": "拒绝，不能因localhost视为可信",
+      "status": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "id": "SEC-03",
+      "tier": "security",
+      "mandatory": true,
+      "requirement": "外部网络",
+      "stimulus": "DNS/IPv4/IPv6/局域网/cloud metadata访问",
+      "oracle": "未授权直连均受OS/网关阻断；记录真实结果",
+      "status": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "id": "SEC-04",
+      "tier": "security",
+      "mandatory": true,
+      "requirement": "SSRF",
+      "stimulus": "web工具重定向/重绑定到private地址",
+      "oracle": "每跳校验目标，凭证不跨域转发",
+      "status": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "id": "SEC-05",
+      "tier": "security",
+      "mandatory": true,
+      "requirement": "路径竞态",
+      "stimulus": "symlink/hardlink/rename逃离授权root",
+      "oracle": "provider实际handle边界拒绝，非仅字符串检查",
+      "status": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "id": "SEC-06",
+      "tier": "security",
+      "mandatory": true,
+      "requirement": "能力epoch",
+      "stimulus": "park后旧RPC、reset后旧引用/旧tool请求",
+      "oracle": "旧执行权限失效；数据ref仍需当前授权",
+      "status": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "id": "SEC-07",
+      "tier": "security",
+      "mandatory": true,
+      "requirement": "同kernel线程",
+      "stimulus": "旧background task在新cell活跃",
+      "oracle": "不把cell id宣称恶意代码隔离；越Session/host权限仍拒绝",
+      "status": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "id": "SEC-08",
+      "tier": "security",
+      "mandatory": true,
+      "requirement": "角色变化",
+      "stimulus": "read权限域/项目变更后重用kernel",
+      "oracle": "必须新epoch/受控迁移；不带旧域秘密变量",
+      "status": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "id": "CAP-01",
+      "tier": "integration",
+      "mandatory": true,
+      "requirement": "硬30并发",
+      "stimulus": "30有效child占用时同时申请31/32",
+      "oracle": "prepublication拒绝，任何时刻不超过30",
+      "status": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "id": "CAP-02",
+      "tier": "integration",
+      "mandatory": true,
+      "requirement": "全路径",
+      "stimulus": "one-shot/continuable/workflow/direct factory/cold resume各申请",
+      "oracle": "共享quota；maxDepth也不可通过99绕过",
+      "status": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "id": "CAP-03",
+      "tier": "integration",
+      "mandatory": true,
+      "requirement": "真实补位",
+      "stimulus": "ready充足，最快child完成其他仍运行",
+      "oracle": "立即补位，不等整波",
+      "status": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "id": "CAP-04",
+      "tier": "integration",
+      "mandatory": true,
+      "requirement": "unknown占位",
+      "stimulus": "child取消发出但进程未结束/cleanup失败",
+      "oracle": "仍占slot或quarantine，不释放成新任务",
+      "status": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "id": "CAP-05",
+      "tier": "integration",
+      "mandatory": true,
+      "requirement": "root资源",
+      "stimulus": "30children持续申请provider/tool预算",
+      "oracle": "root保留运行机会，不饥饿/不计入child",
+      "status": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "id": "CAP-06",
+      "tier": "integration",
+      "mandatory": true,
+      "requirement": "无空任务",
+      "stimulus": "N=30但ready仅2",
+      "oracle": "运行2并显示shortage，root被通知；无filler/idle凑数",
+      "status": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "id": "CAP-07",
+      "tier": "integration",
+      "mandatory": true,
+      "requirement": "跨root",
+      "stimulus": "两个root各请求30",
+      "oracle": "全host不超过30，公平队列与实际缺口可见",
+      "status": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "id": "CAP-08",
+      "tier": "integration",
+      "mandatory": true,
+      "requirement": "降升目标",
+      "stimulus": "30->1->30持续调整并并发完成",
+      "oracle": "降低不悄悄kill，升高有界补位，revision正确",
+      "status": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "id": "UI-01",
+      "tier": "integration",
+      "mandatory": true,
+      "requirement": "真实N控件",
+      "stimulus": "输入1/10/30并刷新/断线",
+      "oracle": "host持久目标回显，非仅React本地state",
+      "status": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "id": "UI-02",
+      "tier": "integration",
+      "mandatory": true,
+      "requirement": "非法N",
+      "stimulus": "0/31/小数/NaN/字符串/恶意payload",
+      "oracle": "UI和host均拒绝，hardcap不可改",
+      "status": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "id": "UI-03",
+      "tier": "integration",
+      "mandatory": true,
+      "requirement": "revision竞态",
+      "stimulus": "两个client用同revision修改N",
+      "oracle": "一个成功，另一明确stale；不静默最后写覆盖",
+      "status": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "id": "UI-04",
+      "tier": "integration",
+      "mandatory": true,
+      "requirement": "模型不能改N",
+      "stimulus": "从IPython/工具构造UI修改请求",
+      "oracle": "无human authority拒绝",
+      "status": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "id": "UI-05",
+      "tier": "integration",
+      "mandatory": true,
+      "requirement": "准确状态",
+      "stimulus": "显示queued/active/provider-wait/stopping/unknown",
+      "oracle": "与真实槽位/任务事件一致，不全标running",
+      "status": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "id": "UI-06",
+      "tier": "integration",
+      "mandatory": true,
+      "requirement": "kernel状态",
+      "stimulus": "park/reset/recovery部分加载",
+      "oracle": "展示epoch和lost/as-of，不显示虚假绿色恢复",
+      "status": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "id": "UI-07",
+      "tier": "integration",
+      "mandatory": true,
+      "requirement": "artifact查看",
+      "stimulus": "Web打开远端artifact/text/source定位",
+      "oracle": "经授权data API，不拼host路径或file://",
+      "status": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "id": "UI-08",
+      "tier": "integration",
+      "mandatory": true,
+      "requirement": "单续行owner",
+      "stimulus": "Goal与managed work同时存在",
+      "oracle": "只有一个自动续行者，切换按公开交接并测试",
+      "status": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "id": "VER-01",
+      "tier": "security",
+      "mandatory": true,
+      "requirement": "零测试",
+      "stimulus": "runner exit0但未收集任何test",
+      "oracle": "不是PASS",
+      "status": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "id": "VER-02",
+      "tier": "security",
+      "mandatory": true,
+      "requirement": "全跳过",
+      "stimulus": "所有tests skipped",
+      "oracle": "不是PASS",
+      "status": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "id": "VER-03",
+      "tier": "security",
+      "mandatory": true,
+      "requirement": "候选改oracle",
+      "stimulus": "worker尝试改受保护suite/config",
+      "oracle": "实际不能修改或被检测；验收不得被弱化",
+      "status": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "id": "VER-04",
+      "tier": "security",
+      "mandatory": true,
+      "requirement": "host执行绕过",
+      "stimulus": "candidate tests试读host secret/发送网络",
+      "oracle": "验证环境仍低权限，未授权操作被阻断",
+      "status": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "id": "VER-05",
+      "tier": "security",
+      "mandatory": true,
+      "requirement": "回执过期",
+      "stimulus": "验证后workspace/environment/oracle改变",
+      "oracle": "旧verdict不可复用成当前完成",
+      "status": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "id": "VER-06",
+      "tier": "security",
+      "mandatory": true,
+      "requirement": "A-B-A",
+      "stimulus": "验收期间改文件再改回原hash",
+      "oracle": "冻结被测副本，结果绑定副本，不仅轮询hash",
+      "status": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "id": "VER-07",
+      "tier": "security",
+      "mandatory": true,
+      "requirement": "在途writer",
+      "stimulus": "请求完成时仍有background mutation",
+      "oracle": "先收敛/隔离再冻结；未知不认证",
+      "status": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "id": "VER-08",
+      "tier": "security",
+      "mandatory": true,
+      "requirement": "失败后续做",
+      "stimulus": "verification失败后重新接纳任务",
+      "oracle": "pause未误用最终drain，合法恢复可继续",
+      "status": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "id": "ECO-01",
+      "tier": "evaluation",
+      "mandatory": true,
+      "requirement": "attempt计费",
+      "stimulus": "同一step两次retry产生usage",
+      "oracle": "各attempt正确记账，不被最后一次usage覆盖",
+      "status": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "id": "ECO-02",
+      "tier": "evaluation",
+      "mandatory": true,
+      "requirement": "缺usage",
+      "stimulus": "连接中断/usage缺失",
+      "oracle": "unknown/估计范围，不计0后静默通过budget",
+      "status": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "id": "ECO-03",
+      "tier": "evaluation",
+      "mandatory": true,
+      "requirement": "真实总费",
+      "stimulus": "root+children+summary+search+cache-storage",
+      "oracle": "统一总账无遗漏，provider计价字段不混用",
+      "status": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "id": "ECO-04",
+      "tier": "evaluation",
+      "mandatory": true,
+      "requirement": "前缀稳定",
+      "stimulus": "同工具SDK连续cell并变budget/变量",
+      "oracle": "固定prefix不乱序，动态变化在后部",
+      "status": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "id": "ECO-05",
+      "tier": "evaluation",
+      "mandatory": true,
+      "requirement": "token反例",
+      "stimulus": "减少context但fresh tokens上升",
+      "oracle": "报告真实账单可能更贵，不只报token下降",
+      "status": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "id": "ECO-06",
+      "tier": "evaluation",
+      "mandatory": true,
+      "requirement": "影子无副作用",
+      "stimulus": "shadow projection启用",
+      "oracle": "不发第二LLM请求、不重复tool/effect",
+      "status": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "id": "ECO-07",
+      "tier": "evaluation",
+      "mandatory": true,
+      "requirement": "严格C0",
+      "stimulus": "比较stock与IPython/data-plane",
+      "oracle": "固定版本/model/task/预算/权限；stock不偷偷改造",
+      "status": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "id": "ECO-08",
+      "tier": "evaluation",
+      "mandatory": true,
+      "requirement": "质量重复",
+      "stimulus": "代表coding+research任务多次paired运行",
+      "oracle": "报告成功/失败/方差/置信区间，非单次漂亮轨迹",
+      "status": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "id": "RES-01",
+      "tier": "fault_injection",
+      "mandatory": true,
+      "requirement": "控制优先",
+      "stimulus": "大量page流时发cancel/revoke",
+      "oracle": "控制不被data队列饿死，测延迟",
+      "status": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "id": "RES-02",
+      "tier": "fault_injection",
+      "mandatory": true,
+      "requirement": "输出洪泛",
+      "stimulus": "巨型stdout/MIME/循环print",
+      "oracle": "kernel/broker/host内存有界；标截断/unknown，不无限缓存",
+      "status": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "id": "RES-03",
+      "tier": "fault_injection",
+      "mandatory": true,
+      "requirement": "后台late输出",
+      "stimulus": "cell结束后线程/C扩展写stdout",
+      "oracle": "单独归类unattributed/late，不伪归新cell",
+      "status": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "id": "RES-04",
+      "tier": "fault_injection",
+      "mandatory": true,
+      "requirement": "CPU和C扩展",
+      "stimulus": "纯Python循环及不可及时中断工作",
+      "oracle": "超时升级进程隔离清理；不声称所有可恢复",
+      "status": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "id": "RES-05",
+      "tier": "fault_injection",
+      "mandatory": true,
+      "requirement": "kernel资源预算",
+      "stimulus": "30children真实启动kernel并保持大对象",
+      "oracle": "RSS/CPU/pids计入预算，资源不足明确阻断",
+      "status": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "id": "RES-06",
+      "tier": "fault_injection",
+      "mandatory": true,
+      "requirement": "park资源",
+      "stimulus": "大量历史child留下parked kernel",
+      "oracle": "内存有限，显式evict/loss通知，不免费无限驻留",
+      "status": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "id": "RES-07",
+      "tier": "fault_injection",
+      "mandatory": true,
+      "requirement": "原生data背压",
+      "stimulus": "native返回速率高于kernel消费",
+      "oracle": "有界queues/credits；server不把所有页放内存",
+      "status": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "id": "RES-08",
+      "tier": "fault_injection",
+      "mandatory": true,
+      "requirement": "公平native调用",
+      "stimulus": "一个cell高频调用与另一个交互并行",
+      "oracle": "单Session/全局公平和预算限制，root可服务",
+      "status": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "id": "UPG-01",
+      "tier": "integration",
+      "mandatory": true,
+      "requirement": "compiled安装",
+      "stimulus": "从实际发布/构建包安装候选profile",
+      "oracle": "没有依赖源码绝对路径，第一次python/native调用成功",
+      "status": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "id": "UPG-02",
+      "tier": "integration",
+      "mandatory": true,
+      "requirement": "Session schema升级",
+      "stimulus": "旧Session含新增compute/observation记录",
+      "oracle": "按版本迁移/明确拒绝，不能丢未知事件装正常",
+      "status": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "id": "UPG-03",
+      "tier": "integration",
+      "mandatory": true,
+      "requirement": "artifact兼容",
+      "stimulus": "旧spill locator与新refs并存",
+      "oracle": "权限/生命周期明确，旧数据不被删除或错误重新归属",
+      "status": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "id": "UPG-04",
+      "tier": "integration",
+      "mandatory": true,
+      "requirement": "备份恢复",
+      "stimulus": "备份Session+artifact+config后在新host恢复",
+      "oracle": "hash/身份可验证，kernel volatile明确不在备份",
+      "status": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "id": "UPG-05",
+      "tier": "integration",
+      "mandatory": true,
+      "requirement": "回滚",
+      "stimulus": "回滚runtime代码不回滚外部世界",
+      "oracle": "新schema数据可读或安全拒绝，保留effects未知",
+      "status": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "id": "UPG-06",
+      "tier": "integration",
+      "mandatory": true,
+      "requirement": "GC有效引用",
+      "stimulus": "原Session/fork/activelease仍引用artifact",
+      "oracle": "不能被startup cleanup或按目录age误删",
+      "status": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "id": "UPG-07",
+      "tier": "integration",
+      "mandatory": true,
+      "requirement": "真实30provider",
+      "stimulus": "授权frontier provider驱动30个非空child",
+      "oracle": "实际维持/补位记录；mock结果不替代本门",
+      "status": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "id": "UPG-08",
+      "tier": "integration",
+      "mandatory": true,
+      "requirement": "日用最终判决",
+      "stimulus": "任一mandatory为FAIL/NOT_RUN/BLOCKED",
+      "oracle": "NOT_READY，报告具体复现和外部阻塞",
+      "status": "NOT_RUN",
+      "evidence": []
+    }
+  ]
+}

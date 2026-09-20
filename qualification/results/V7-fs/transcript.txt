@@ -19,7 +19,7 @@ composition_is_current: true
 stale_lock: no lock present
 
 boot_cwd: D:/DSH/src/dsh-src (deliberately foreign to the profile directory)
-port: 2991 (bound by the harness, not assumed)
+port: 4065 (bound by the harness, not assumed)
 timed_out: false
 exit_code: null
 port_released_after_kill: true
@@ -68,9 +68,15 @@ ok   FS-06: a published object's address IS its content digest
 ok   FS-06: a workspace file with the artifact's own name does NOT change the store object
 ok   FS-06: the store reports its own verdict on the object after the same-name write
 ok   FS-06: the relative store path and the session-relative path are DIFFERENT files (recorded as a finding)
-FAIL FS-06: the store object's ABSOLUTE path IS reachable by the tool (no confinement claimed)
+ok   FS-06: the store object is REACHABLE by an absolute path (the read succeeds)
+ok   FS-06: the store object is IMMUTABLE in fact -- the write is refused by the OS (EACCES), not by DSH policy
+ok   FS-06: the store object was NOT modified by the refused write
+ok   FS-06: the store still returns the original bytes after the refused write
+ok   FS-06: the read-only bit is NOT a boundary -- the same user can clear it (recorded, not hidden)
+ok   FS-06: when the object IS tampered, the store DETECTS it rather than returning damaged bytes
+ok   FS-06: the probe restored the object it tampered (the store is left as found)
 
-checks_passed: 38/39
+checks_passed: 45/45
 
 --- FS-04 vectors, recorded per vector (a non-refusal is a FINDING, not a green) ---
   symlink   refused=false verdict=NOT REFUSED -- FINDING: a symlink in the workspace escapes it; the write followed the link and mutated the target outside
@@ -95,8 +101,14 @@ checks_passed: 38/39
     the tool resolved the relative path to: D:/DSH/work/dsh-native-daily/qualification/results/V7-fs/workspace/data-artifacts/objects/07/07d894c4eb826e7b334398df3bdab18545111646cc121b6bed98d566b1e5fc53
     the store's object is at:               D:\DSH\src\dsh-src\data-artifacts\objects\07\07d894c4eb826e7b334398df3bdab18545111646cc121b6bed98d566b1e5fc53
     store object untouched by the relative write: true
-  the ABSOLUTE store object path through the tool succeeded: false
-  the object on disk WAS tampered by the absolute write: false
-  the store's own read after tampering: {"label":"store.openRange","ok":true,"value":"V7-FS06 store-owned artifact payload -- this must survive a work"}
+  the ABSOLUTE store object path through the tool: read=true writeRefused=true
+  object mode on disk: {"octal":"444","writableByOwner":false}
+  the refusal came from the OS (EACCES), not from DSH policy: true
+  COUNTER-CHECK, the bit is a guard and NOT a boundary:
+    the same OS user could clear the bit and overwrite the object: true
+    the store DETECTED the tampering instead of returning damaged bytes: true
+    what the store returned while tampered: "V7-FS06 TAMPERED store object\n"
+    the probe restored the object afterwards: true
+  the store's own read after the refused write: {"label":"store.openRange","ok":true,"value":"V7-FS06 store-owned artifact payload -- this must survive a work"}
   the store's own reconcile: {"label":"store.reconcile","ok":true,"value":{"orphans":["artifact:sha256:07d894c4eb826e7b334398df3bdab18545111646cc121b6bed98d566b1e5fc53","artifact:sha256:150f662de432382d21003d7ba23053663e76f94c0d79cbe4ac27ef0a54b21184"],"integrityErrors":[]}}
 

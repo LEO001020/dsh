@@ -22,6 +22,7 @@ ID-02 arm 2: change one byte of one input
    identity differs = True
 
 ID-04: mutate one character of the spec file, then restore
+   file mutated: qualification/specs/frozen/acceptance-spec.trusted-local-v1.as-authored.json
    mutation: TRUSTED_LOCAL_ACCEPTANCE_SPEC_NOT_A_DSH_ARTIFACT -> TRUSTED_LOCAL_ACCEPTANCE_SPEC_NOT_A_DSH_ARTIFACU (one character)
    before: stored pin matches file  = True
            derived identity matches = True
@@ -31,5 +32,16 @@ ID-04: mutate one character of the spec file, then restore
    detection 2 (re-derived identity moved)      = True
    restore byte-exact                           = True
    restored sha256 = e5b6a1d2481f39c52a6012ec6b48a72e4618ff713f1927b6b0d6827a24b10ce7
+
+the LIVE LEDGER's relationship to the pinned artifact
+   pinned (frozen as-authored) : e5b6a1d2481f39c52a6012ec6b48a72e4618ff713f1927b6b0d6827a24b10ce7
+   live ledger on disk         : 97c770751bbf0d71e912003385c55e2c5e72710292976ded6a997a44b31f0ebf
+   live equals pinned          : False  (expected False while verdicts are filed)
+   case ids identical          : True
+   frozen statuses             : {'NOT_RUN': 109}
+   live   statuses             : {'FAIL': 6, 'NOT_RUN': 64, 'PASS': 39}
+   ORACLES edited              : NONE
+   STIMULI edited              : NONE
+   REQUIREMENTS edited         : NONE
 
 This is arithmetic over files. It does not certify the deployment.

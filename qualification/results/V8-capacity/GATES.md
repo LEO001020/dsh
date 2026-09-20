@@ -42,16 +42,15 @@ storm/credit/limit arms.
 |---|---|---|---|---|---|
 | **CAP-01** | With 30 occupied, the 31st and 32nd are refused BEFORE publication; occupancy never exceeds 30; the refusal code and the high-water mark are recorded | `vitest run src/capacity.test.ts -t "the ADMIT/REFUSE BOUNDARY"` **and** the composed-profile boot | `occupied 30, highWater 30, refusals HOST_CAPACITY_REACHED=2`, code `HOST_CAPACITY_REACHED`; on the composed boot a real `startContinuable` was refused with `the host already holds 30 children and the hard capacity is 30`, `highWater 30` | **PASS** | `lib/` 07:10 |
 | **CAP-02** | Every admission path shares one host-wide quota; a caller-supplied `maxDepth` cannot bypass the ceiling | `vitest run src/capacity.test.ts -t "creation path"`; `vitest run src/capacity-v8-probe.test.ts -t "COLD RESUME"` | continuable / one-shot / direct-factory / workflow-PTC each move the ledger 0→1; **cold resume measured here**: a resumed child is `isSessionBackedChild === true`, `origin: 'subagent'` survives persistence, and it TAKES a slot. `maxDepth: 99` and an omitted `maxDepth` are both REFUSED as `DEPTH_CEILING_EXCEEDED` | **PASS** | `lib/` 07:10 |
-| **CAP-03** | A completion admits a replacement without waiting for the wave; the delay is recorded against the declared SLO | `vitest run src/scheduling.test.ts -t "single completion refills"`; `vitest run src/capacity.test.ts -t "ROLLING REFILL"` | C02 timeline: `+0ms release child-0 / +4ms ended and left the registry / +5ms slot freed by confirmation / +46ms child-500 admitted (+41ms) / +46ms replacement reached a model request`. N=10: three rounds, each completing exactly ONE child while NINE stay active | **PASS (with a stated limit)** — **no SLO is declared anywhere in this repository** (`grep -rn "SLO"` over `src/`, `runners/`, `docs/` finds only comments saying none is frozen). The delay is therefore *reported*, not *asserted against a threshold* | `lib/` 07:10 |
+| **CAP-03** | A completion admits a replacement without waiting for the wave; the delay is recorded against the declared SLO | `vitest run src/scheduling.test.ts -t "single completion refills"`; `vitest run src/capacity.test.ts -t "REAL N=10"` | C02 timeline from `cap03-refill.txt`: `+0ms release child-0 / +12ms child-0 ended and left the registry / +13ms slot freed by confirmation / +36ms child-500 admitted (+23ms) / +36ms replacement reached a model request`. N=10: three rounds, each completing exactly ONE child while NINE stay active | **PASS (with a stated limit)** — **no SLO is declared anywhere in this repository** (`grep -rn "SLO"` over `src/`, `runners/`, `docs/` finds only comments saying none is frozen). The delay is therefore *reported*, not *asserted against a threshold* | `lib/` 07:10 |
 | **CAP-04** | An unconfirmed cancel still occupies; no replacement is admitted into a freed-looking slot | `vitest run src/capacity.test.ts -t "cancel that has only been REQUESTED"`; `vitest run src/scheduling.test.ts -t "C07"` | `stopping` bucket occupies; real interrupt sent, child observed still `status: 'running'` after 200ms, `budget.reserved === 10`, premature refill `accepted: false`, `stopping: 1`; slot released only on the confirmed `cancelled` transition | **PASS** | `lib/` 07:10 |
 | **CAP-05** | The root is not starved and is not counted as a child | `vitest run src/capacity.test.ts -t "the ROOT keeps its own inference budget"`; `vitest run src/scheduling.test.ts -t "settlement-driven turn"` | with ten children parked, the root reaches its OWN provider call (`sessionId === root.id`), `hasChild(root.id) === false`, ledger stays 10, `rootAvailable 500` / `childCeiling 9500`, a 9,501 admission refused for budget | **PASS** | `lib/` 07:10 |
 | **CAP-06** | No filler or idle placeholder children; the shortage is reported with its reason and the root is notified | `vitest run src/capacity.test.ts -t "ready shortage with a high N"`; `vitest run src/scheduling.test.ts -t "C04"` | target 30, 2 ready → exactly **2** real children, `capacityDeficit 28`, `deficitReason 'insufficient_ready_tasks'`, outbox entries ≥2, real registry lists 2 | **PASS** | `lib/` 07:10 |
 | **CAP-07** | The cap is host-wide across roots | `vitest run src/capacity.test.ts -t "two real roots share one host ledger"` | pool raised to 64 on purpose so a refusal can only come from the host ledger: root A takes 2, root B takes the last of 3, then BOTH are refused with `hard capacity is 3`; `highWater 3`, `refusals 2`, neither refused child exists in the registry | **PASS** | `lib/` 07:10 |
 | **CAP-08** | Target changes are honest in both directions | `vitest run src/capacity.test.ts -t "raising and lowering the target"`; `vitest run src/target-setting.test.ts` | 3→5 admits two more immediately; 5→2 admits NONE and kills nothing (all five children still live and still hold slots, every `reservedCost` unchanged, `requestedTarget 2`, `terminalTombstones []`); revision reported and fenced (`SETTINGS_CONFLICT` on a stale write) | **PASS** | `lib/` 07:10 |
 | **CAP-09** | Credit reservation is atomic; exactly one contender wins the last credit; an unknown stays conservatively reserved | `vitest run src/capacity-v8-probe.test.ts -t "last cost credit"` (new here) | **`accepted=1 refused=2 reserved=100 childCeiling=100 reasons=["budget_blocked","budget_blocked"]`** — three concurrent drains against ONE free credit, exactly one wins, ledger lands exactly ON the ceiling, both refusals name the budget. Unknown path: `retainUnknown` keeps the amount reserved and tightens admission (`childHeadroom` falls by 4) | **PASS** | `lib/` 07:10 |
-| **CAP-10** | A completion storm neither duplicates nor misses a top-up; no overshoot past the target; the drain is re-triggerable | `vitest run src/scheduling.test.ts -t "C03"`; `vitest run src/capacity-v8-probe.test.ts -t "completion storm"` | C03 PASSES at the balanced shape (3 freed / 3 requested → exactly 3; later refill admitted; 14 children total, no duplicate id). The **unbalanced** shape is a MEASURED DEFECT: `freedSlots=2 concurrentRequests=3 → admitted=3 heldAgainstTarget3=4` | **FAIL — see §2** | `lib/` 07:10 |
-| **CAP-11** | A pause stops admission and does not silently resume; already-published effects are reported as stopping vs confirmed | `vitest run src/concurrency.test.ts -t "user pauses"`; `vitest run src/host.test.ts -t "paused"` | with free slots remaining, a pause admits nothing (`after.every(o => !o.accepted) === true`) and the real registry still lists exactly 2 children; `admit` while paused throws `/is paused/`; `resume` is a separate explicit call | **PASS (with a stated limit)** — see §3 for the two halves the oracle asks for that the record does NOT carry | `lib/` 07:10 |
-| **CAP-12** | A cost overrun is recorded, not edited away; new admissions pause | `vitest run src/cost.test.ts -t "C11"` | reserve 1 / actual 3 → `spent 3, overage 2`, halt reason `actual spend 3 exceeded the reservation 1 made for this work by 2`; task keeps its own full spend; `admissionCheck` → `budget_overage_halt`; drain refused with that reason; `desiredTarget` unchanged at 10; an aux request that never reported usage is retained as an unknown and can only TIGHTEN admission | **PASS** | `lib/` 07:10 |
+| **CAP-10** | A completion storm neither duplicates nor misses a top-up; no overshoot past the target; the drain is re-triggerable | `vitest run src/scheduling.test.ts -t "C03"`; `vitest run src/concurrency.test.ts -t "coalesces concurrent drains"`; `vitest run src/capacity-v8-probe.test.ts -t "completion storm"` | the BALANCED shape PASSES: 3 freed / 3 requested → exactly 3 admitted, later refill admitted, 14 distinct children, no duplicate id. The **unbalanced** shape is a MEASURED DEFECT: `freedSlots=2 concurrentRequests=3 → admitted=3 heldAgainstTarget3=4` | **FAIL — see §2** | `lib/` 07:10 |
+| **CAP-11** | A pause stops admission and does not silently resume; already-published effects are reported as stopping vs confirmed | `vitest run src/concurrency.test.ts -t "user pauses"`; `vitest run src/host.test.ts -t "paused"` | with free slots remaining, a pause admits nothing (`after.every(o => !o.accepted) === true`) and the real registry still lists exactly 2 children; `admit` while paused throws `/is paused/`; `resume` is a separate explicit call | **PASS (with a stated limit)** — see §3 for the two halves the oracle asks for that the record does NOT carry | `lib/` 07:10 || **CAP-12** | A cost overrun is recorded, not edited away; new admissions pause | `vitest run src/cost.test.ts -t "C11"` | reserve 1 / actual 3 → `spent 3, overage 2`, halt reason `actual spend 3 exceeded the reservation 1 made for this work by 2`; task keeps its own full spend; `admissionCheck` → `budget_overage_halt`; drain refused with that reason; `desiredTarget` unchanged at 10; an aux request that never reported usage is retained as an unknown and can only TIGHTEN admission | **PASS** | `lib/` 07:10 |
 | **CAP-13** | Depth, family and global limits are each applied, and each refusal names which limit fired | `vitest run src/capacity-v8-probe.test.ts -t "depth ceiling and the host cap"` (new here); `vitest run src/capacity.test.ts -t "INDEPENDENT hard cap"` | three limits separated on ONE rig: pool 4 / host gate 30. Pool refusal (verbatim) `subagent limit reached (active child limit: 4); wait for an existing child to finish or complete this work with the current agents`; depth refusal (verbatim) `dailyWork: refusing child "v8-grandchild" at delegation depth 2; the deployment ceiling is 1. A caller-supplied maxDepth cannot raise this: the depth is read from the child's own durable header.`; `hostRefusals {HOST_CAPACITY_REACHED: 0, DEPTH_CEILING_EXCEEDED: 1}`, `hostOccupied 4`, `hostLimit 30` | **PASS** | `lib/` 07:10 |
 
 **Score: 12 PASS, 1 FAIL (CAP-10).** No case is BLOCKED_EXTERNAL: every CAP oracle is
@@ -231,6 +230,46 @@ hashes to `16bc20e5…`, which is exactly `deployment.inputs.agent_preset_digest
 so the preset this boot mounts is the identity's own preset, verified not assumed.
 Its `cordis.patch.yml` hashes to `5b8b2a8e…`, exactly
 `deployment.inputs.host_profile_digest`.
+
+---
+
+## 6. The evidence files, per case
+
+All under `qualification/results/V8-capacity/`, all filed under identity
+`0a0996f3…`. Each transcript is the verbatim `vitest` output of ONE file run with
+`--maxWorkers=1 --no-file-parallelism`, ANSI codes intact, including the exit code.
+
+| Case | Primary transcript(s) | Supporting |
+|---|---|---|
+| CAP-01 | `cap01-boundary.txt`, `cap01-n10-real.txt` | `prod-capacity.json` (real refusal at 30), `prod-capacity-report.json` |
+| CAP-02 | `cap02-paths.txt`, `gap-probe.txt` (cold resume) | `capacity-tests.txt` |
+| CAP-03 | `cap03-refill.txt` (the timeline), `cap01-n10-real.txt` | `scheduling-tests.txt` |
+| CAP-04 | `cap04-cancel.txt`, `cap04-cancel-live.txt` | — |
+| CAP-05 | `cap05-root-budget.txt`, `cap05-root.txt`, `cap05-root-classifier.txt` | — |
+| CAP-06 | `cap06-no-filler.txt`, `cap06-no-filler-live.txt` | — |
+| CAP-07 | `cap07-host-wide.txt` | — |
+| CAP-08 | `cap08-target.txt` | — |
+| CAP-09 | `gap-probe.txt` (`V8/CAP-09 measured: accepted=1 refused=2 …`) | `cap12-cost-overrun.txt` (the unknown-retention half) |
+| CAP-10 | `gap-probe.txt` (`V8/CAP-10 measured: freedSlots=2 … admitted=3`), `cap10-storm-balanced.txt`, `cap10-coalesce.txt` | `capacity-tests.txt` (the same defect through three real children) |
+| CAP-11 | `cap11-pause.txt`, `cap11-pause-service.txt` | — |
+| CAP-12 | `cap12-cost-overrun.txt` (17 tests) | — |
+| CAP-13 | `gap-probe.txt` (`V8/CAP-13 depth refusal:` and `V8/CAP-13 measured:`), `cap02-paths.txt` | — |
+
+`capacity-tests.txt` is the whole `capacity.test.ts` file in one run
+(`41 passed | 1 expected fail (42)`, exit 0) and is the shared transcript for the
+cases whose individual runs are also listed. `scheduling-tests.txt` is the whole
+`scheduling.test.ts` file (`9 passed (9)`, exit 0). `source-digests.txt` records
+the sha256 of every source file this family's verdicts depend on, so a reader can
+tell whether a later edit invalidates them. `create-run-callers.txt` is the
+G-SEAM-31 re-verification. `run-v8-capacity-boot.mjs` is the driver that produced
+the two `prod-capacity*` artifacts.
+
+**The build.** `lib/` was built 2026-09-20 07:10; every capacity source it compiles
+is older (`src/capacity.ts` 05:10, `src/host.ts` 05:10, `src/counting.ts` 04:xx).
+The V8 probe file added here is run from `src/` through vitest's transform, so it
+is measured against the current source; the `lib/` timestamp matters for the boot,
+which loads the built bundle. Recorded because G-SEAM-29 was a stale-`lib/` false
+finding.
 
 ---
 

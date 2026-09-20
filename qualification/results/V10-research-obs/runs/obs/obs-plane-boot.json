@@ -1,0 +1,28 @@
+{
+  "probe": "OBS-02..05 + reach, through the LOADED ctx.dailyHistory service",
+  "presetRoots": [
+    {
+      "path": "D:\\DSH\\src\\dsh-src\\packages\\preset\\agent-presets\\presets\\",
+      "trust": "system"
+    },
+    {
+      "path": "D:/DSH/home/v10-research-obs/profiles/daily/presets/",
+      "trust": "system"
+    },
+    {
+      "path": "D:\\DSH\\home\\v10-research-obs\\.agent-presets",
+      "trust": "user"
+    }
+  ],
+  "servicePresent": true,
+  "sessionQueryPresent": true,
+  "historyAvailable": true,
+  "sessionId": "session-30714cbf-a038-4512-9b0f-f1712cf0062a",
+  "targetSessionId": "v10-obs-target",
+  "obs02WatermarkPinned": null,
+  "obs03OversizedEvent": null,
+  "obs04Replay": null,
+  "obs05Visibilities": null,
+  "reach": null,
+  "error": "Error: append seq mismatch for \"v10-obs-target\": expected 3 at index 0, got 1000"
+}

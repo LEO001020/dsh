@@ -1,0 +1,19 @@
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.8 [39m[90mD:/DSH/work/dsh-native-daily/packages/dsh-daily-work[39m
+
+ [2m[90m↓[39m[22m src/concurrency.test.ts[2m > [22mmandatory concurrency: N=10 rolling top-up on the production loop[2m > [22madmits exactly ten children through the real startContinuable seam
+ [2m[90m↓[39m[22m src/concurrency.test.ts[2m > [22mmandatory concurrency: N=10 rolling top-up on the production loop[2m > [22mdoes not admit an eleventh child while ten hold their slots
+ [2m[90m↓[39m[22m src/concurrency.test.ts[2m > [22mmandatory concurrency: N=10 rolling top-up on the production loop[2m > [22mtops up one completion immediately without waiting for the wave
+ [2m[90m↓[39m[22m src/concurrency.test.ts[2m > [22mmandatory concurrency: N=10 rolling top-up on the production loop[2m > [22mreports a deficit and invents no work when only three tasks are ready
+ [2m[90m↓[39m[22m src/concurrency.test.ts[2m > [22mmandatory concurrency: N=10 rolling top-up on the production loop[2m > [22mrefuses admission past the real capacity even when the record would allow it
+ [2m[90m↓[39m[22m src/concurrency.test.ts[2m > [22mmandatory concurrency: N=10 rolling top-up on the production loop[2m > [22mkeeps the root separate from the ten children
+ [2m[90m↓[39m[22m src/concurrency.test.ts[2m > [22mmandatory concurrency: N=10 rolling top-up on the production loop[2m > [22mrefuses to launch grandchildren because maxDepth is 1
+ [32m✓[39m src/concurrency.test.ts[2m > [22mmandatory concurrency: N=10 rolling top-up on the production loop[2m > [22mcoalesces concurrent drains so a completion storm cannot double-admit[32m 84[2mms[22m[39m
+ [2m[90m↓[39m[22m src/concurrency.test.ts[2m > [22mmandatory concurrency: N=10 rolling top-up on the production loop[2m > [22mstops admitting once the user pauses, with free slots remaining
+
+[2m Test Files [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[32m1 passed[39m[22m[2m | [22m[33m8 skipped[39m[90m (9)[39m
+[2m   Start at [22m 07:58:38
+[2m   Duration [22m 1.21s[2m (transform 694ms, setup 0ms, import 908ms, tests 84ms, environment 0ms)[22m
+
+EXIT_CODE=0

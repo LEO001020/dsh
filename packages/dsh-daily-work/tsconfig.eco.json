@@ -1,0 +1,18 @@
+{
+  // Isolated typecheck for the M9-eco case: ONLY the two files this case owns.
+  //
+  // Why it exists: the shared `tsconfig.check.json` type-checks the WHOLE tree,
+  // and other cases are editing other files concurrently, so its exit code
+  // reports their in-flight errors as well as mine. This config narrows the
+  // program to perf-metrics.ts and eco.test.ts with the IDENTICAL strict flags
+  // (it extends tsconfig.json, so the flags cannot drift), which is what makes
+  // "these two files type-check" a claim about these two files.
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "declaration": false,
+    "outDir": "./.tscheck-eco"
+  },
+  "include": ["src/perf-metrics.ts", "src/eco.test.ts"],
+  "exclude": []
+}

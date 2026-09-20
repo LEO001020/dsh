@@ -658,6 +658,57 @@ export async function apply(ctx) {
         const tamperedOnDisk = existsSync(objectOnDisk) ? readFileSync(objectOnDisk, 'utf8') : null
         finding.fs06.objectOnDiskAfterDirectWrite = tamperedOnDisk
         finding.fs06.objectWasTampered = tamperedOnDisk !== null && tamperedOnDisk.includes('TAMPERED')
+        // The store publishes its objects 0o400 (read-only), so on Windows the
+        // refusal comes from the OS as `ReplaceFileW EACCES`, NOT from a DSH policy
+        // decision. Recorded explicitly because it is the difference between "the
+        // store is protected" and "the store is protected BY A PERMISSION BIT that
+        // the same OS user can clear" -- and this deployment claims no confinement,
+        // so the bit is the whole protection and must be named as such.
+        finding.fs06.objectModeOnDisk = (() => {
+          try {
+            const mode = statSync(objectOnDisk).mode
+            return { octal: (mode & 0o777).toString(8), writableByOwner: (mode & 0o200) !== 0 }
+          } catch { return null }
+        })()
+        finding.fs06.refusalCameFromTheOS = /EACCES/u.test(String(finding.fs06.directObjectWrite.message ?? ''))
+        // The counter-check that keeps the claim honest: the SAME user can clear
+        // the read-only bit, so this is a guard against accident, not a boundary.
+        //
+        // AND THE TAMPERING IS NOT DETECTED ON THE READ PATH. `openRange` reads a
+        // byte window and returns it -- its own source says the verification is
+        // separate (`packages/dsh-daily-work/src/artifacts.ts:391`: "Verify the
+        // whole object against its address. Explicit, so paging stays O(page)").
+        // So a tampered object IS returned as content, and the first version of this
+        // probe asserted the opposite in a CHECK LABEL while the measured value was
+        // right there. The label was a false claim; the measurement is the finding.
+        // `verify()` exists and DOES detect it -- but it has no production caller in
+        // this package, so nothing on the read path performs it. Both are measured.
+        finding.fs06.sameUserCanClearTheBit = await attempt('clear read-only bit and write', async () => {
+          const { chmodSync } = await import('node:fs')
+          chmodSync(objectOnDisk, 0o600)
+          writeFileSync(objectOnDisk, 'V7-FS06 TAMPERED store object\n', 'utf8')
+          const nowTampered = readFileSync(objectOnDisk, 'utf8').includes('TAMPERED')
+          const storeRead = await data.store.openRange(put.value.artifact, { offset: 0, length: 64 })
+          const storeSaw = Buffer.from(storeRead).toString('utf8')
+          // The explicit verifier, which is the thing that CAN tell.
+          const verifySays = await data.store.verify(put.value.artifact)
+          const statSays = await data.store.stat(put.value.artifact)
+          // Restore the object so the store is left as it was found.
+          writeFileSync(objectOnDisk, payload, 'utf8')
+          chmodSync(objectOnDisk, 0o400)
+          return {
+            theBitCouldBeCleared: true,
+            theObjectCouldBeOverwritten: nowTampered,
+            whatTheStoreReturnedWhileTampered: storeSaw.slice(0, 64),
+            // MEASURED: the read path returned the TAMPERED bytes. This is FALSE,
+            // and saying so is the point -- `openRange` does not verify.
+            theReadPathDetectedTheTampering: !storeSaw.startsWith('V7-FS06 store-owned artifact payload'),
+            // MEASURED: the explicit verifier DOES catch it.
+            theExplicitVerifyDetectedTheTampering: verifySays === false,
+            whatStatReportedWhileTampered: statSays ?? null,
+            restored: readFileSync(objectOnDisk, 'utf8') === payload,
+          }
+        })
         // The store's own integrity answer, which is what a reader needs: did the
         // store NOTICE? `openRange` verifies, so a tampered object must not be
         // returned as clean content.

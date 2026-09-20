@@ -46,6 +46,18 @@ REPO_ROOT = Path(__file__).resolve().parents[3]
 LOCK_PATH = REPO_ROOT / "compatibility.lock.json"
 SPEC_PATH = REPO_ROOT / "qualification" / "specs" / "acceptance-spec.trusted-local-v1.json"
 OLD_SPEC_PATH = REPO_ROOT / "qualification" / "specs" / "acceptance-spec.json"
+# THE FILE THE PIN NAMES. `trusted_local_acceptance_spec_sha256` names the spec AS
+# AUTHORED, frozen. The live spec at `qualification/specs/` is ALSO the evidence
+# ledger, so every verdict filed against it changes its digest -- measured: the
+# live file moved e5b6a1d2 -> 341464bc -> c00a6345 as three sibling families filed
+# evidence, while the pin stayed at e5b6a1d2. Comparing the pin to the LIVE file
+# therefore reports "stale pin" for the spec doing exactly its job, which is what
+# the first version of this script did. The pin names the frozen artifact; the
+# live ledger is checked for structural agreement with it (same case ids, same
+# oracles) rather than for byte equality.
+FROZEN_SPEC_PATH = (
+    REPO_ROOT / "qualification" / "specs" / "frozen" / "acceptance-spec.trusted-local-v1.as-authored.json"
+)
 
 # Which identity inputs name a file or directory on this machine, and how to hash
 # it. An input that names nothing on disk (a version string, a policy label) is
@@ -60,7 +72,9 @@ FILE_INPUTS: dict[str, str] = {
     # filed a false STALE row -- the pin was correct all along.
     "dependency_lock_sha256": "D:/DSH/src/dsh-src/pnpm-lock.yaml",
     "host_profile_digest": "profiles/daily-candidate/cordis.patch.yml",
-    "trusted_local_acceptance_spec_sha256": "qualification/specs/acceptance-spec.trusted-local-v1.json",
+    # The FROZEN as-authored snapshot, because that is the file the pin names.
+    "trusted_local_acceptance_spec_sha256":
+        "qualification/specs/frozen/acceptance-spec.trusted-local-v1.as-authored.json",
     "acceptance_spec_sha256": "qualification/specs/acceptance-spec.json",
 }
 
@@ -165,12 +179,24 @@ def main() -> int:
     }
 
     # ---- ID-04 arm: mutate the SPEC file by one character, then restore ----
+    #
+    # WHICH FILE IS MUTATED, AND WHY IT IS THE FROZEN ONE. The oracle's stimulus
+    # says "change one character of this spec file". The file the identity PIN
+    # NAMES is the frozen as-authored snapshot; the live ledger under
+    # `qualification/specs/` is a different object that three sibling families
+    # have already moved three times by filing verdicts. Mutating the LEDGER would
+    # test whether the pin notices a file it does not name, which is not the
+    # question and would report a false failure. So the mutation is applied to the
+    # frozen snapshot, and the live ledger's relationship to it is measured
+    # separately below -- because that relationship is itself worth knowing.
     if not args.no_mutate:
-        original_bytes = SPEC_PATH.read_bytes()
+        target = FROZEN_SPEC_PATH if FROZEN_SPEC_PATH.is_file() else SPEC_PATH
+        original_bytes = target.read_bytes()
         original_sha = sha256_bytes(original_bytes)
-        # The stored pin, and the identity recomputed over DISK-DERIVED inputs.
         pinned_spec_sha = inputs.get("trusted_local_acceptance_spec_sha256")
+        live_sha = sha256_file(SPEC_PATH)
         pre = {
+            "file_mutated": str(target.relative_to(REPO_ROOT)).replace("\\", "/"),
             "spec_sha_on_disk": original_sha,
             "pinned_spec_sha": pinned_spec_sha,
             "stored_digest_matches_file": pinned_spec_sha == original_sha,
@@ -190,8 +216,8 @@ def main() -> int:
         if len(mutated_bytes) != len(original_bytes):
             raise SystemExit("mutation changed the file length; it must be one character")
         try:
-            SPEC_PATH.write_bytes(mutated_bytes)
-            mutated_sha = sha256_file(SPEC_PATH)
+            target.write_bytes(mutated_bytes)
+            mutated_sha = sha256_file(target)
             # Re-derive from disk WITH the mutation in place, exactly as a reader
             # would: the file moved, so the file-named input moved.
             mutated_inputs = dict(inputs)
@@ -206,8 +232,8 @@ def main() -> int:
         finally:
             # RESTORE, and assert the restore. A mutation experiment that leaves
             # the subject changed is indistinguishable from tampering.
-            SPEC_PATH.write_bytes(original_bytes)
-        restored_sha = sha256_file(SPEC_PATH)
+            target.write_bytes(original_bytes)
+        restored_sha = sha256_file(target)
         out["ID04_spec_mutation"] = {
             "mutation": f"{needle.decode()} -> {needle[:-1].decode()}U (one character)",
             "before_mutation": pre,
@@ -226,6 +252,54 @@ def main() -> int:
                 mutated_derived_identity != recorded_identity
                 and recorded_identity == recorded_identity,
         }
+
+        # THE LIVE LEDGER'S RELATIONSHIP TO THE PINNED ARTIFACT. This is not part
+        # of the oracle; it is the fact that makes the oracle readable. Three
+        # sibling families have already filed verdicts, which moved the live file
+        # three times without touching the pin. A reader who sees the pin and the
+        # live file disagree must be able to tell WHY without reconstructing it.
+        ledger = {"live_spec_path": str(SPEC_PATH.relative_to(REPO_ROOT)).replace("\\", "/")}
+        try:
+            frozen = json.loads(FROZEN_SPEC_PATH.read_text(encoding="utf-8"))
+            live = json.loads(SPEC_PATH.read_text(encoding="utf-8"))
+            frozen_cases = {c["id"]: c for c in frozen.get("cases", [])}
+            live_cases = {c["id"]: c for c in live.get("cases", [])}
+            oracle_changed = sorted(
+                cid for cid in set(frozen_cases) & set(live_cases)
+                if frozen_cases[cid].get("oracle") != live_cases[cid].get("oracle")
+            )
+            stimulus_changed = sorted(
+                cid for cid in set(frozen_cases) & set(live_cases)
+                if frozen_cases[cid].get("stimulus") != live_cases[cid].get("stimulus")
+            )
+            requirement_changed = sorted(
+                cid for cid in set(frozen_cases) & set(live_cases)
+                if frozen_cases[cid].get("requirement") != live_cases[cid].get("requirement")
+            )
+            from collections import Counter
+            ledger.update({
+                "live_sha256": live_sha,
+                "pinned_sha256": pinned_spec_sha,
+                "live_equals_pinned": live_sha == pinned_spec_sha,
+                "case_ids_identical": sorted(frozen_cases) == sorted(live_cases),
+                "frozen_statuses": dict(sorted(Counter(c.get("status") for c in frozen.get("cases", [])).items())),
+                "live_statuses": dict(sorted(Counter(c.get("status") for c in live.get("cases", [])).items())),
+                "oracles_changed_between_frozen_and_live": oracle_changed,
+                "stimuli_changed_between_frozen_and_live": stimulus_changed,
+                "requirements_changed_between_frozen_and_live": requirement_changed,
+                "reading": (
+                    "The pin names the FROZEN as-authored artifact. The live file is the "
+                    "evidence ledger: filing a verdict changes its bytes by design, so "
+                    "live != pinned is EXPECTED while verdicts are being filed. What must "
+                    "hold is that no ORACLE, STIMULUS or REQUIREMENT was edited -- the "
+                    "spec's own no-PASS-by-editing-an-oracle rule. Those three lists are "
+                    "the check; all empty means every recorded verdict answers the oracle "
+                    "that was authored, not a later, easier one."
+                ),
+            })
+        except (OSError, ValueError, KeyError) as error:
+            ledger["error"] = f"{type(error).__name__}: {error}"
+        out["ID04_live_ledger_relationship"] = ledger
 
     # ---- report -----------------------------------------------------------
     if args.json:
@@ -261,6 +335,7 @@ def main() -> int:
     if "ID04_spec_mutation" in out:
         m = out["ID04_spec_mutation"]
         print("ID-04: mutate one character of the spec file, then restore")
+        print(f"   file mutated: {m['before_mutation']['file_mutated']}")
         print(f"   mutation: {m['mutation']}")
         print(f"   before: stored pin matches file  = {m['before_mutation']['stored_digest_matches_file']}")
         print(f"           derived identity matches = {m['before_mutation']['disk_derived_matches_recorded']}")
@@ -270,6 +345,22 @@ def main() -> int:
         print(f"   detection 2 (re-derived identity moved)      = {m['detection_2_rederived_identity_no_longer_matches_recorded']}")
         print(f"   restore byte-exact                           = {m['restore_is_byte_exact']}")
         print(f"   restored sha256 = {m['restored_sha256']}")
+        print()
+    ledger = out.get("ID04_live_ledger_relationship")
+    if ledger:
+        print("the LIVE LEDGER's relationship to the pinned artifact")
+        if "error" in ledger:
+            print(f"   unreadable: {ledger['error']}")
+        else:
+            print(f"   pinned (frozen as-authored) : {ledger['pinned_sha256']}")
+            print(f"   live ledger on disk         : {ledger['live_sha256']}")
+            print(f"   live equals pinned          : {ledger['live_equals_pinned']}  (expected False while verdicts are filed)")
+            print(f"   case ids identical          : {ledger['case_ids_identical']}")
+            print(f"   frozen statuses             : {ledger['frozen_statuses']}")
+            print(f"   live   statuses             : {ledger['live_statuses']}")
+            print(f"   ORACLES edited              : {ledger['oracles_changed_between_frozen_and_live'] or 'NONE'}")
+            print(f"   STIMULI edited              : {ledger['stimuli_changed_between_frozen_and_live'] or 'NONE'}")
+            print(f"   REQUIREMENTS edited         : {ledger['requirements_changed_between_frozen_and_live'] or 'NONE'}")
     print()
     print("This is arithmetic over files. It does not certify the deployment.")
     return 0

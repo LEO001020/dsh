@@ -1,0 +1,42 @@
+{
+  "scope": "ID05_CONTROL_ARM",
+  "package": "packages/dsh-daily-work",
+  "target_file": "packages/dsh-daily-work/src/dep-gates.test.ts",
+  "mutation": "append one type error: const id05ControlTypeError: number = 'this is not a number'",
+  "injected_line_number": 1313,
+  "pre_mutation_sha256": "e089c7b4347b16c70f737687129fbbbcebcfcb3f31a2e57c903f7b3a397122aa",
+  "compiles": [
+    {
+      "config": "tsconfig.json",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "config": "tsconfig.check.json",
+      "exit_code": 2,
+      "stdout": "src/dep-gates.test.ts(1313,7): error TS2322: Type 'string' is not assignable to type 'number'.",
+      "stderr": ""
+    }
+  ],
+  "mutation_landed": true,
+  "restored_sha256": "e089c7b4347b16c70f737687129fbbbcebcfcb3f31a2e57c903f7b3a397122aa",
+  "restore_is_byte_exact": true,
+  "build_config_exit": 0,
+  "check_config_exit": 2,
+  "build_config_missed_the_error": true,
+  "check_config_caught_the_error": true,
+  "control_arm_established": true
+}
+
+--- the contrast ---
+  tsconfig.json        (excludes tests) exit=0  -> error INVISIBLE: True
+    output: (none)
+  tsconfig.check.json  (all files)      exit=2  -> error CAUGHT: True
+    output: src/dep-gates.test.ts(1313,7): error TS2322: Type 'string' is not assignable to type 'number'.
+  error reported at the injected line 1313: True
+  restore byte-exact: True
+
+CONTROL ARM ESTABLISHED: True
+  A green run under tsconfig.json alone would NOT have been a PASS, and that
+  is now a measured contrast rather than a claim in a comment.
