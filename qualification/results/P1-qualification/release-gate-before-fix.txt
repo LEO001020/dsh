@@ -1,0 +1,30 @@
+RELEASE=NOT_READY blockers=4 candidate=533c8cb08b2ccd7f
+candidate   533c8cb08b2ccd7f...
+recorded    533c8cb08b2ccd7f...
+recomputed  709a0fcee45b45f4...
+  BLOCKED_EXTERNAL=1, FAIL=13, PASS=95
+
+  [FAIL] 1 verify-spec passes
+          317 problem(s)
+  [FAIL] 2 identity is fresh
+          lock records 533c8cb08b2ccd7f... but the tree recomputes 709a0fcee45b45f4... -- the evidence describes a different artifact
+  [FAIL] 3 no FAIL
+          13: ID-01, ID-05, ID-06, CMP-02, CMP-04, IPY-13, IPY-15, BR-07
+  [ok  ] 4 no FLAKY (spec status and stability ledger)
+          none
+  [ok  ] 5 no NOT_RUN among mandatory cases
+          none
+  [ok  ] 6 no INVALIDATED
+          none
+  [FAIL] 7 no stale evidence
+          3 stale/missing evidence reference(s)
+  [ok  ] 8 only allowlisted BLOCKED_EXTERNAL
+          none
+  [FAIL] 9 post-integration assembled-product evidence at the current identity
+          0 of 61 assembled-product PASS case(s) carry evidence stamped with the current identity
+
+release-gate: NOT_READY -- 4 blocker(s):
+  - STALE IDENTITY: recorded 533c8cb08b2ccd7f... != recomputed 709a0fcee45b45f4...
+  - FAIL: 13 mandatory case(s) failed
+  - STALE EVIDENCE: 3 evidence file(s) missing or hash-mismatched
+  - NO POST-INTEGRATION ASSEMBLED-PRODUCT EVIDENCE: no T2/T3/T4/T6 case carries a PASS with evidence stamped at the current identity. This is the check that makes 'a gate that is not run post-integration is not a gate' mechanical
