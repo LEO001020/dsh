@@ -1,0 +1,272 @@
+{
+  "driver": ".probe/c4/measure-all.mjs",
+  "case": "ID-01 (graph clause), independent instrument",
+  "ranAt": "2026-09-20T15:41:46.468Z",
+  "tree": "D:/DSH/work/wt-c4",
+  "home": "D:/DSH/home/c4",
+  "launcher": "D:/DSH/src/dsh-src/apps/cli/lib/bin.js",
+  "launcherSha256": "69c49c871735dc7ee81ec51f266bbec129f075fd5066e046374f4b13ab02a705",
+  "pinnedArtifactSha256": "69c49c871735dc7ee81ec51f266bbec129f075fd5066e046374f4b13ab02a705",
+  "recorder": "D:/DSH/work/wt-c4/.probe/c4/recorder-all.mjs",
+  "recorderSha256": "c1d0a7e1bd143c1a4bf2df179a9a7dc5eeb01a0b5c37dee0017c7cf384849230",
+  "recorderNote": "records EVERY resolution; the @deepseek-ai filter is applied in the reader, so the filter's coverage is itself reportable",
+  "overlay": "D:/DSH/work/wt-c4/qualification/results/C4-graph/id01-overlay-c4.yml",
+  "rebuilds": [
+    {
+      "package": "packages/dsh-daily-work",
+      "exitCode": 0,
+      "ms": 1950,
+      "error": null
+    },
+    {
+      "package": "packages/dsh-ipython",
+      "exitCode": 0,
+      "ms": 1414,
+      "error": null
+    }
+  ],
+  "buildFreshness": {
+    "dsh-daily-work": {
+      "newestLibMtime": "2026-09-20T15:41:38.717Z",
+      "newestSrcMtime": "2026-09-20T15:38:56.251Z",
+      "libNewerThanSrc": true
+    },
+    "dsh-ipython": {
+      "newestLibMtime": "2026-09-20T15:41:40.133Z",
+      "newestSrcMtime": "2026-09-20T14:56:10.956Z",
+      "libNewerThanSrc": true
+    }
+  },
+  "pluginInstall": {
+    "exitCode": 0,
+    "error": null
+  },
+  "boot": {
+    "port": 2441,
+    "timedOut": false,
+    "exitCode": null,
+    "portReleased": true
+  },
+  "graph": {
+    "allResolutionLines": 3162,
+    "scopedResolutionLines": 708,
+    "distinctSpecifiers": 218,
+    "fromBuilt": 217,
+    "fromSource": 0,
+    "fromOther": 1,
+    "underPackagesLib": 209,
+    "underVendorLib": 7,
+    "underNodeModules": 1,
+    "offenders": [],
+    "mixed": [],
+    "otherRows": [
+      {
+        "specifier": "@deepseek-ai/dsh-web-frontend/package.json",
+        "path": "D:\\DSH\\src\\dsh-src\\apps\\web\\package.json",
+        "parents": [
+          "file:///D:/DSH/src/dsh-src/packages/bundle/web-app/lib/index.js"
+        ]
+      }
+    ],
+    "allSourceResolutions": [
+      {
+        "specifier": "file:///D:/DSH/src/dsh-src/packages/core/tools/src/index.ts",
+        "url": "file:///D:/DSH/src/dsh-src/packages/core/tools/src/index.ts",
+        "parentURL": "file:///D:/DSH/work/wt-c4/qualification/results/T17-identity/probe-plugin.mjs"
+      },
+      {
+        "specifier": "./json-schema.ts",
+        "url": "file:///D:/DSH/src/dsh-src/packages/core/tools/src/json-schema.ts",
+        "parentURL": "file:///D:/DSH/src/dsh-src/packages/core/tools/src/index.ts"
+      },
+      {
+        "specifier": "./ptc.ts",
+        "url": "file:///D:/DSH/src/dsh-src/packages/core/tools/src/ptc.ts",
+        "parentURL": "file:///D:/DSH/src/dsh-src/packages/core/tools/src/index.ts"
+      },
+      {
+        "specifier": "./schema.ts",
+        "url": "file:///D:/DSH/src/dsh-src/packages/core/tools/src/schema.ts",
+        "parentURL": "file:///D:/DSH/src/dsh-src/packages/core/tools/src/ptc.ts"
+      },
+      {
+        "specifier": "./json-schema.ts",
+        "url": "file:///D:/DSH/src/dsh-src/packages/core/tools/src/json-schema.ts",
+        "parentURL": "file:///D:/DSH/src/dsh-src/packages/core/tools/src/schema.ts"
+      },
+      {
+        "specifier": "./index.ts",
+        "url": "file:///D:/DSH/src/dsh-src/packages/core/tools/src/index.ts",
+        "parentURL": "file:///D:/DSH/src/dsh-src/packages/core/tools/src/ptc.ts"
+      },
+      {
+        "specifier": "./ts-types.ts",
+        "url": "file:///D:/DSH/src/dsh-src/packages/core/tools/src/ts-types.ts",
+        "parentURL": "file:///D:/DSH/src/dsh-src/packages/core/tools/src/index.ts"
+      },
+      {
+        "specifier": "./json-schema.ts",
+        "url": "file:///D:/DSH/src/dsh-src/packages/core/tools/src/json-schema.ts",
+        "parentURL": "file:///D:/DSH/src/dsh-src/packages/core/tools/src/ts-types.ts"
+      },
+      {
+        "specifier": "./py-types.ts",
+        "url": "file:///D:/DSH/src/dsh-src/packages/core/tools/src/py-types.ts",
+        "parentURL": "file:///D:/DSH/src/dsh-src/packages/core/tools/src/index.ts"
+      },
+      {
+        "specifier": "./json-schema.ts",
+        "url": "file:///D:/DSH/src/dsh-src/packages/core/tools/src/json-schema.ts",
+        "parentURL": "file:///D:/DSH/src/dsh-src/packages/core/tools/src/py-types.ts"
+      },
+      {
+        "specifier": "./schema.ts",
+        "url": "file:///D:/DSH/src/dsh-src/packages/core/tools/src/schema.ts",
+        "parentURL": "file:///D:/DSH/src/dsh-src/packages/core/tools/src/index.ts"
+      },
+      {
+        "specifier": "./testing.ts",
+        "url": "file:///D:/DSH/src/dsh-src/packages/core/tools/src/testing.ts",
+        "parentURL": "file:///D:/DSH/src/dsh-src/packages/core/tools/src/index.ts"
+      },
+      {
+        "specifier": "./schema.ts",
+        "url": "file:///D:/DSH/src/dsh-src/packages/core/tools/src/schema.ts",
+        "parentURL": "file:///D:/DSH/src/dsh-src/packages/core/tools/src/testing.ts"
+      },
+      {
+        "specifier": "file:///D:/DSH/src/dsh-src/packages/core/tools/src/index.ts",
+        "url": "file:///D:/DSH/src/dsh-src/packages/core/tools/src/index.ts",
+        "parentURL": "file:///D:/DSH/work/wt-c4/qualification/results/T17-identity/probe-plugin.mjs"
+      }
+    ],
+    "scopedSourceResolutionCount": 0,
+    "treeBinding": {
+      "repo": "D:/DSH/work/wt-c4",
+      "distinctParents": 190,
+      "parentsUnderThisTree": [
+        "file:///D:/DSH/work/wt-c4/packages/dsh-daily-work/lib/host.js",
+        "file:///D:/DSH/work/wt-c4/packages/dsh-daily-work/lib/history-plugin.js",
+        "file:///D:/DSH/work/wt-c4/packages/dsh-daily-work/lib/writers-plugin.js",
+        "file:///D:/DSH/work/wt-c4/packages/dsh-daily-work/lib/worktree-isolation.js",
+        "file:///D:/DSH/work/wt-c4/packages/dsh-daily-work/lib/verify.js",
+        "file:///D:/DSH/work/wt-c4/packages/dsh-daily-work/lib/data-service.js",
+        "file:///D:/DSH/work/wt-c4/packages/dsh-daily-work/lib/programmatic-scope-plugin.js",
+        "file:///D:/DSH/work/wt-c4/packages/dsh-daily-work/lib/no-sandbox-contract.js",
+        "file:///D:/DSH/work/wt-c4/packages/dsh-ipython/lib/kernel-plugin.js",
+        "file:///D:/DSH/work/wt-c4/packages/dsh-daily-work/lib/artifacts.js",
+        "file:///D:/DSH/work/wt-c4/packages/dsh-daily-work/lib/data-plane.js",
+        "file:///D:/DSH/work/wt-c4/packages/dsh-daily-work/lib/command-work.js",
+        "file:///D:/DSH/work/wt-c4/packages/dsh-daily-work/lib/web-search-plugin.js",
+        "file:///D:/DSH/work/wt-c4/packages/dsh-daily-work/lib/programmatic-scope.js",
+        "file:///D:/DSH/work/wt-c4/packages/dsh-ipython/lib/native-call.js",
+        "file:///D:/DSH/work/wt-c4/packages/dsh-ipython/lib/ipython-tool.js",
+        "file:///D:/DSH/work/wt-c4/packages/dsh-daily-work/lib/launch-port.js",
+        "file:///D:/DSH/work/wt-c4/packages/dsh-daily-work/lib/history-plane.js",
+        "file:///D:/DSH/work/wt-c4/packages/dsh-daily-work/lib/target-setting.js",
+        "file:///D:/DSH/work/wt-c4/packages/dsh-ipython/lib/bridge-ledger.js",
+        "file:///D:/DSH/work/wt-c4/packages/dsh-daily-work/lib/capacity.js",
+        "file:///D:/DSH/work/wt-c4/packages/dsh-ipython/lib/kernel.js",
+        "file:///D:/DSH/work/wt-c4/packages/dsh-daily-work/lib/tools.js"
+      ],
+      "parentsUnderMainCheckout": [],
+      "parentsUnderAnyOtherWorktree": []
+    }
+  },
+  "probeReadError": null,
+  "checks": [
+    {
+      "label": "the probe wrote its result",
+      "ok": true,
+      "detail": "present"
+    },
+    {
+      "label": "the result names the home this driver booted",
+      "ok": true,
+      "detail": "ok"
+    },
+    {
+      "label": "the probe recorded no error",
+      "ok": true,
+      "detail": "[]"
+    },
+    {
+      "label": "the boot did not time out",
+      "ok": true,
+      "detail": "timedOut=false"
+    },
+    {
+      "label": "the host was killed and the port released",
+      "ok": true,
+      "detail": "portReleased=true"
+    },
+    {
+      "label": "the installed profile patch is the repository one",
+      "ok": true,
+      "detail": "installed=e12edffbbf69d531 repo=e12edffbbf69d531"
+    },
+    {
+      "label": "every rebuilt package compiled",
+      "ok": true,
+      "detail": "[[\"packages/dsh-daily-work\",0],[\"packages/dsh-ipython\",0]]"
+    },
+    {
+      "label": "the built lib/ is newer than src/, so the boot is not running a stale build",
+      "ok": true,
+      "detail": "{\"dsh-daily-work\":{\"newestLibMtime\":\"2026-09-20T15:41:38.717Z\",\"newestSrcMtime\":\"2026-09-20T15:38:56.251Z\",\"libNewerThanSrc\":true},\"dsh-ipython\":{\"newestLibMtime\":\"2026-09-20T15:41:40.133Z\",\"newestSrcMtime\":\"2026-09-20T14:56:10.956Z\",\"libNewerThanSrc\":true}}"
+    },
+    {
+      "label": "the graph was recorded and is non-empty",
+      "ok": true,
+      "detail": "rows=3162 graphReadError=null"
+    },
+    {
+      "label": "THE GRAPH NAMES THIS WORKTREE: no parent is under the main checkout",
+      "ok": true,
+      "detail": "[]"
+    },
+    {
+      "label": "THE GRAPH NAMES THIS WORKTREE: no parent is under another worktree of this project",
+      "ok": true,
+      "detail": "[]"
+    },
+    {
+      "label": "THE GRAPH NAMES THIS WORKTREE: the project's own built lib/ was loaded from here",
+      "ok": true,
+      "detail": "parents under D:/DSH/work/wt-c4: 23"
+    },
+    {
+      "label": "no `@deepseek-ai/*` specifier resolves to a source (.ts) file",
+      "ok": true,
+      "detail": "fromBuilt=217 fromSource=0 fromOther=1; offenders=[]"
+    },
+    {
+      "label": "NO specifier of ANY spelling resolved to a .ts file (the filter's own coverage)",
+      "ok": false,
+      "detail": "[{\"specifier\":\"file:///D:/DSH/src/dsh-src/packages/core/tools/src/index.ts\",\"url\":\"file:///D:/DSH/src/dsh-src/packages/core/tools/src/index.ts\",\"parentURL\":\"file:///D:/DSH/work/wt-c4/qualification/results/T17-identity/probe-plugin.mjs\"},{\"specifier\":\"./json-schema.ts\",\"url\":\"file:///D:/DSH/src/dsh-src/packages/core/tools/src/json-schema.ts\",\"parentURL\":\"file:///D:/DSH/src/dsh-src/packages/core/tools/src/index.ts\"},{\"specifier\":\"./ptc.ts\",\"url\":\"file:///D:/DSH/src/dsh-src/packages/core/tools/src/ptc.ts\",\"parentURL\":\"file:///D:/DSH/src/dsh-src/packages/core/tools/src/index.ts\"},{\"specifier\":\"./schema.ts\",\"url\":\"file:///D:/DSH/src/dsh-src/packages/core/tools/src/schema.ts\",\"parentURL\":\"file:///D:/DSH/src/dsh-src/packages/core/tools/src/ptc.ts\"},{\"specifier\":\"./json-schema.ts\",\"url\":\"file:///D:/DSH/src/dsh-src/packages/core/tools/src/json-schema.ts\",\"parentURL\":\"file:///D:/DSH/src/dsh-src/packages/core/tools/src/schema.ts\"}]"
+    },
+    {
+      "label": "the graph does not mix src and lib for one specifier",
+      "ok": true,
+      "detail": "[]"
+    },
+    {
+      "label": "sha256 of the launcher equals deployment.inputs.artifact_sha256 (REPORTED, not this slice's clause)",
+      "ok": true,
+      "detail": "onDisk=69c49c871735dc7e pinned=69c49c871735dc7e"
+    },
+    {
+      "label": "the first tool call actually succeeded (not `--help`-only)",
+      "ok": true,
+      "detail": "requested=\"read\" isError=false endReason=\"completed\""
+    },
+    {
+      "label": "the tool result carries the file's own text",
+      "ok": true,
+      "detail": "<path>D:\\DSH\\work\\wt-c4\\.probe\\c4\\runs\\id01-all\\first-call-input.txt</path>\n<type>file</type>\n<content>\n1: C4_INDEPENDENT_FIRST_TOOL_CALL\n\n(End of file - total 1 lines)\n</content>"
+    }
+  ],
+  "checksPassed": 17,
+  "checksTotal": 18,
+  "verdict": "FAIL"
+}
