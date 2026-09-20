@@ -1,0 +1,23 @@
+{
+  "arm1_outcome": "ok",
+  "arm1_stdout": "arm1-settled\n",
+  "arm1_late": [
+    {
+      "cellId": "6e9ea59e-301061a2dd8954abaa71148c_49076_3",
+      "text": "S5-BEFORE-POSTRETURN\n",
+      "epoch": 1
+    }
+  ],
+  "arm1_lateText": "S5-BEFORE-POSTRETURN\n",
+  "arm2_cellA_outcome": "ok",
+  "arm2_cellA_stdout": "arm2-cellA-settled\n",
+  "arm2_cellB_outcome": "ok",
+  "arm2_cellB_stdout": "arm2-tick 0\narm2-tick 1\narm2-tick 2\nS5-BEFORE-STRADDLER\narm2-tick 3\narm2-tick 4\narm2-cellB-settled\n",
+  "arm2_cellB_contains_straddler": true,
+  "arm2_late": [],
+  "arm2_lateText": "",
+  "arm3_outcome": "ok",
+  "arm3_stdout": "S5-BEFORE-CONTROL\n",
+  "metadata_probe": "see qualification/results/S5-ipy13/mechanism-probe.json",
+  "verdict": "DEFECT_REPRODUCED: the straddling write is folded into the LATER cell stdout and is NOT reported as late"
+}
