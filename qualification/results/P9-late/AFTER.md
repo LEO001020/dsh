@@ -103,6 +103,32 @@ now carried, so the classification half is unchanged.
 | `packages/dsh-ipython/src/kernel.ts` | `onMessage` carries `stream` into the late entry. |
 | `packages/dsh-ipython/src/broker.py` | `_route_iopub` emits the frame's own `stream` name. |
 
+### REGIONS CHANGED — for a mechanical merge of the contended file
+
+`packages/dsh-ipython/src/kernel-plugin.ts` has five writers this round. My edits,
+by post-change line number, all in the `drainUnattributed` / late-output notice
+region or in declarations it needs:
+
+| lines | what | collides with |
+|---|---|---|
+| 92-101 | import block: `DSH_BACKGROUND_ORIGIN` added to the existing `./protocol.ts` import; new `./late-notice.ts` import appended after it | none |
+| 207-217 | `KernelServiceConfig.lateNoticeBounds` — a NEW field at the end of the interface | none |
+| 249-260 | `UnattributedOutput` docstring only (no shape change) | none |
+| 335-344 | `Entry.lateNotices` — a NEW field after `unattributed` | none |
+| 541-556 | `entryFor`: `LateNoticeQueue` construction, immediately after `const unattributed` | **P10** owns the ledger-open call site (`opened = ...`) ~30 lines below; my insert is above it and does not touch it |
+| 562-577 | `entryFor`: the `onLateOutput` callback now feeds both readers | **P8** owns `runCell`/preamble; this is inside `entryFor`, not `runCell` |
+| 593-597 | `entryFor`: `lateNotices,` added to the Entry literal, next to `unattributed` | none |
+| 808-860 | `drainUnattributed` (docstring only) + NEW `drainLateNotices` + NEW `lateNoticeAccount` | none — this is my owned region |
+
+I did **not** edit `runCell`, the preamble, `defaultEnvironmentDigest`, the status
+surface, the ledger-open call site, or `kernelRoot()`. No import was reordered and
+no adjacent code was reformatted.
+
+`packages/dsh-ipython/src/ipython-tool.ts` line ranges (no other writer this
+round): `renderLateNotices` 165-262, `deliverLateNotices` 266-278, the
+`tools/result`-visible description 325-330, and the two `deliverLateNotices` call
+sites at 391 (success arm) and 404 (failure arm).
+
 ## 5. THE THREE BOUNDS, AND WHY THREE
 
 V5 §10 says "bounded". One bound is not enough, and each of these closes a
