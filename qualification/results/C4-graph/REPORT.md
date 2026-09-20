@@ -208,13 +208,178 @@ not a product defect.
 | `runs/id01-wrong-tree/` | my first run — FAIL, offender parent = main checkout |
 | `runs/id01-negative-control/` | injected offender, rebuilt — FAIL 16/17, parent = `wt-c4` |
 | `gate-5of5.txt` | `no-src-imports.test.ts` 5/5, re-run not quoted |
+| `.probe/c4/recorder-all.mjs` | **§8** an UNFILTERED loader hook (records every resolution) |
+| `.probe/c4/measure-all.mjs` | **§8** the independent driver — 18/18 |
+| `.probe/c4/split-state-probe.mjs` | **§8** the 2 → 1 module-instance measurement |
+| `.probe/c4/runs/id01-all/` | **§8** its artifacts: `graph-all.jsonl`, `verdict.json`, `split-state-{before,after}.txt` |
 
-## 8. HONEST VERDICT
+---
 
-**ID-01's graph clause HOLDS on `wt-c4`: 0 offenders, 17/17 checks, every parent URL
-under this worktree.** G-SEAM-74's CLOSED stands and is not superseded; G-SEAM-76's
-gate blind spot is real and complementary, and the runtime loader hook does not share
-it.
+## 8. SECOND PASS — an UNFILTERED instrument, and what it found
+
+Everything above was measured with `id01-graph-recorder.mjs`, the archived loader
+hook. It is a good instrument, and it has one structural property I did not accept
+without checking: **it filters inside the hook.**
+
+```js
+// qualification/results/V1-identity/id01-graph-recorder.mjs
+if (specifier.startsWith('@deepseek-ai/')) { /* ...append one JSON line... */ }
+```
+
+A filter inside the instrument means the artifact can never represent *"a specifier I
+did not look at"*. The output has no way to say it, so "0 offenders" and "0 offenders
+among the specifiers I happened to log" are the same string. So I wrote a second,
+deliberately less clever hook — `.probe/c4/recorder-all.mjs` — that records **every**
+resolution and leaves the filtering to the reader, and a driver that reports the
+filter's own coverage as a first-class number.
+
+```
+node .probe/c4/measure-all.mjs      -> 18/18 PASS
+
+TOTAL resolutions recorded (unfiltered): 3162
+  of which @deepseek-ai/* specifiers : 708
+  resolutions landing in a .ts file, ANY specifier: 14
+    of which reached from the MEASUREMENT INSTRUMENT : 14
+    of which reached from a PRODUCT artifact         : 0
+```
+
+**There are 14 `.ts` resolutions in a real boot that the archived filter is
+structurally incapable of reporting.** I traced every one of them rather than
+dismissing them:
+
+| parent of the `.ts` resolution | count | what it is |
+|---|---|---|
+| `qualification/results/T17-identity/probe-plugin.mjs` | 2 | the T17 identity probe's `file://` import of `packages/core/tools/src/index.ts` |
+| `packages/core/tools/src/*.ts` (relative `./x.ts` imports) | 12 | that module's own relative imports, pulled in by the two above |
+
+Zero of the 14 originate in a product artifact — I verified this by computing the
+**transitive closure** from the instrument's own seed imports and asserting the
+product-only form:
+
+```
+core/tools/src resolutions NOT parented by the probe or tools/src itself: 0
+```
+
+The probe imports the `src/` copy **on purpose**: its question *is* whether the host's
+`TOOL_RUNTIME_SCHEDULER` Symbol is the lib copy or the src copy. It answered
+`hostInstanceHasLibSymbol: true`, `hostInstanceHasSrcSymbol: false`,
+`libSymbolIsSameAsSrcSymbol: false` — the host mounted the **lib** copy. A probe that
+measures lib-vs-src identity must load both; the hook cannot be made not to see it.
+
+**My driver's first run FAILED this stricter check** (18th check red, 14 rows). I did
+not delete the check. I attributed the 14 rows and re-asserted the product-only claim,
+and both the raw 14 and their attribution are in the committed artifact. This is
+strictly **stronger** than the oracle's clause, not weaker.
+
+### 8.1 The split-state consequence, measured 2 → 1
+
+`.probe/c4/split-state-probe.mjs` reads each boot's own resolution record and asks
+which physical files carrying the module-scope `const durableHomes = new Set()` the
+host actually resolved:
+
+```
+BEFORE (archived V1 boot, main checkout):
+  [BUILT]  attachment-local/lib/index.js       46886 B  RESOLVED=true
+  [BUILT]  attachment-local/lib/types/store.js 18015 B  RESOLVED=false
+  [SOURCE] attachment-local/src/store.ts       19124 B  RESOLVED=true
+  => the host holds 2 live instance(s) of that module-scope state
+
+AFTER (my boot, wt-c4):
+  [BUILT]  attachment-local/lib/index.js       46886 B  RESOLVED=true
+  [BUILT]  attachment-local/lib/types/store.js 18015 B  RESOLVED=false
+  [SOURCE] attachment-local/src/store.ts       19124 B  RESOLVED=false
+  => the host holds 1 live instance(s) of that module-scope state
+```
+
+**2 → 1.** The duplicate module instance is gone, not merely un-resolved.
+
+**An instrument defect I hit, recording it rather than hiding it.** My first version of
+this probe walked `.js` files only. It therefore could not see `src/store.ts` — a `.ts`
+file — and reported *"1 live instance"* for **both** boots: blind to precisely the
+defect it exists to detect, while reporting a confident number. The extension set is now
+`.js/.mjs/.cjs/.ts/.mts/.cts`, and only then does the pair separate. Same class as the
+`/src/` substring classifier §5 of `S4-v2-rejudge/FINDINGS.md` records.
+
+### 8.2 Why the "public subpath" fix was unavailable, checked rung by rung
+
+My brief's preference order was public entry → declared `lib/...` subpath → STOP and
+record. Each rung, verified against the pinned checkout:
+
+```
+attachment-local/package.json
+  "exports": { ".": { "default": "./lib/index.js" },
+               "./src/*": "./src/*",              <-- the ONLY non-"." export
+               "./package.json": "./package.json" }
+```
+
+There is **no declared `./lib/*` subpath**. And the symbol is not reachable from `.`:
+
+```
+lib/index.js:452   async function publishImmutableObjectStream(...)   <- DECLARED
+grep -c "export.*publishImmutableObjectStream"  lib/index.js   -> 0   <- never exported
+grep -c "publishImmutableObjectStream"          src/index.ts   -> 0   <- not even mentioned
+```
+
+So rung 2 does not exist for this symbol, and the `bcc036e` fix — the mounted
+capability seam — was the only route that is both built and declared. Reaching
+`lib/types/store.js` would have been the *same* defect one level down: an undeclared
+subpath into another package's build output, with no `exports` entry promising it
+stays put. I did not take it.
+
+### 8.3 The reconciliation, sharpened: three instruments, three trees
+
+| claim | instrument | tree | says |
+|---|---|---|---|
+| spec `ID-01` = `FAIL` | filtered loader hook | **`dsh-native-daily`** | `fromSource=1`; offender parent = `.../dsh-native-daily/packages/dsh-daily-work/lib/artifacts.js` |
+| `G-SEAM-74` = CLOSED | filtered loader hook | `wt-r2f4` | `fromSource=0`, `sourceRows: []` |
+| `G-SEAM-76` = OPEN | `ts.preProcessFile` (parse) | source files | a computed specifier is invisible to the gate |
+
+All three are true and none contradicts another. The spec's `FAIL` is a true reading of
+a tree **the fix has not reached** — verified directly:
+
+```
+D:\DSH\work\dsh-native-daily\packages\dsh-daily-work\lib\artifacts.js:73
+  import { publishImmutableObjectStream } from '@deepseek-ai/dsh-attachment-local/src/store.ts';
+
+git -C D:/DSH/work/dsh-native-daily merge-base --is-ancestor bcc036e HEAD
+  -> NO. The main checkout does NOT contain the fix (branch `ipython-native`).
+```
+
+`G-SEAM-76`'s two computed specifiers were checked against the boot's own unfiltered
+record and both land in built `lib/`:
+
+```
+koffi                                       -> node_modules/.pnpm/koffi@3.1.1/.../koffi/index.js
+@deepseek-ai/node-addon-system/flock        -> native/system/packages/entry/lib/flock.js
+@deepseek-ai/node-addon-system/landlock-run -> native/system/packages/entry/lib/index.js
+```
+
+So `G-SEAM-76` is a real gap in the **parse-based gate** and not a live defect — and
+the unfiltered hook is now the instrument that would catch it if it became one.
+
+### 8.4 What the second pass could not settle
+
+1. **Whether the 14 instrument-origined `.ts` rows are an oracle problem.** The
+   oracle's wording ("every `@deepseek-ai/*` specifier") does not cover them, so they
+   are not a violation. A stricter reading of "the graph does not mix `src` and `lib`"
+   could be argued to cover them — a spec-wording question I am not authorised to
+   settle. The hook cannot be made not to see them.
+2. **Whether the spec's `ID-01: FAIL` should be re-pointed at the qualified tree, or
+   the main checkout should receive `bcc036e`.** The spec file is the coordinator's; I
+   did not edit it. My evidence says the `FAIL` is stale for this round and still true
+   for the main checkout.
+3. **Whether `G-SEAM-74` should be re-scoped** from "CLOSED" to "CLOSED on the
+   qualified tree, OPEN on the main checkout". GAPS.md is the coordinator's register.
+
+---
+
+
+## 9. HONEST VERDICT
+
+**ID-01's graph clause HOLDS on `wt-c4`: 0 offenders, 17/17 checks on the archived
+instrument and 18/18 on an independent unfiltered one (§8), every parent URL under this
+worktree.** G-SEAM-74's CLOSED stands and is not superseded; G-SEAM-76's gate blind
+spot is real and complementary, and the runtime loader hook does not share it.
 
 The defect I reported was **mine, in my instrument**: I deleted and re-copied a
 correctly-provisioned profile and thereby restored the main-tree `link:` targets,
@@ -222,3 +387,16 @@ then reported the main checkout's stale build as this tree's. I found it by read
 the parent URL my own driver had recorded, fixed it, preserved the wrong-tree run as
 evidence, and added the assertion that makes the class of error impossible to report
 silently again. **There was nothing to fix in the product.**
+
+**One correction to the sentence above, added after §8.** "There was nothing to fix in
+the product" is true *for this tree* and **not** true for the main checkout, which
+still carries the defect at `lib/artifacts.js:73` on a branch that does not contain
+`bcc036e`. The spec's `FAIL` is a true reading of that tree. Neither the spec file nor
+the main checkout is mine to change; both are recorded in §8.3 rather than acted on.
+
+**And the archived instrument's blind spot is now a number, not an assumption.**
+3162 unfiltered resolutions, 708 in the oracle's scope, 14 `.ts` rows the filtered hook
+cannot report — all 14 attributed to the measurement instrument, 0 to a product path.
+The split-state consequence of the original defect is measured at **2 live instances
+before, 1 after**.
+
