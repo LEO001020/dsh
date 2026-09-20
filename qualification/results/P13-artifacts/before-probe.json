@@ -1,0 +1,48 @@
+{
+  "frameLimitBytes": 4194304,
+  "inlineValueBytes": 4096,
+  "armA_belowFrameLimit": {
+    "outcome": "ok",
+    "stdout": [
+      "A_TYPE:Artifact",
+      "A_PATH:C:\\Users\\hzq00\\AppData\\Local\\Temp\\p13-probe-61BefN\\artifacts\\03fb639faff61eb227bd77a217630bc373261ae401674c91d05f50ad450eff92.json",
+      "A_PATH_IS_STR:True",
+      "A_OS_PATH_EXISTS:True",
+      "A_DIRECT_OPEN_OK:True",
+      "A_PARENT_WRITABLE:True",
+      "A_IS_UNDER_SESSION_CWD:True"
+    ]
+  },
+  "armB_aboveFrameLimit": {
+    "outcome": "ok",
+    "stdout": [
+      "B_TYPE:Artifact",
+      "B_BYTES:5242891",
+      "B_VERIFY:True",
+      "B_LEN:5242880"
+    ],
+    "stderrTail": [
+      ""
+    ]
+  },
+  "armC_argumentsOverFrameLimit": {
+    "outcome": "ok",
+    "stdout": [
+      "C_RAISED:no"
+    ]
+  },
+  "armD_artifactDirectory": {
+    "path": "C:\\Users\\hzq00\\AppData\\Local\\Temp\\p13-probe-61BefN\\artifacts",
+    "fileCount": 3,
+    "files": {
+      "03fb639faff61eb227bd77a217630bc373261ae401674c91d05f50ad450eff92.json": 8203,
+      "19f38515e9c6ccb30cda263454a5e82b9a028aeed19a176befa43828115e3736.json": 5242891,
+      "dsh_bridge_client.py": 11975
+    },
+    "surfaceOnBridgeServer": {
+      "hasQuota": false,
+      "hasGc": false,
+      "hasArtifactStoreRef": false
+    }
+  }
+}
