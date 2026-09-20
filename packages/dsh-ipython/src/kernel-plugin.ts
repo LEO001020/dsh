@@ -71,6 +71,7 @@ import {
   DEFAULT_CELL_TIMEOUT_MS,
   DEFAULT_INTERRUPT_GRACE_MS,
   DEFAULT_OUTPUT_CAP_BYTES,
+  KernelBindError,
   KernelHost,
   KernelTransportError,
   type KernelIdentity,
@@ -79,7 +80,6 @@ import {
   BRIDGE_PROTOCOL_VERSION,
   BridgeLedgerWriteError,
   BridgeServer,
-  canPrependPreamble,
   type BridgeEndpoint,
   type CellLease,
   type LeaseCallDisposition,
@@ -569,12 +569,30 @@ export class KernelService extends Service {
    * THIS IS WHERE A CELLLEASE IS MINTED, and it is the reason `runCell` takes an
    * authority rather than only an Agent. A cell is the unit that holds DSH tool
    * authority (V3 §J3), so the lease is created immediately before the cell is
-   * dispatched and closed when it settles -- not before, and not after. A caller
-   * that supplies no authority gets a cell with NO bridge: `dsh` is simply absent
-   * from its namespace, which is the honest outcome for a cell dispatched by a
-   * host that is not a model `ipython` execution (an internal probe, a test).
-   * Inventing an authority there would give an unowned cell the ability to call
-   * tools as somebody else.
+   * dispatched and closed when it settles -- not before, and not after.
+   *
+   * THE USER'S BYTES ARE NEVER REWRITTEN (V5 §9). The capability bind is a
+   * SEPARATE HIDDEN EXECUTION: a `silent` execute_request that runs the bind
+   * program, awaited to its own `execute_reply` AND its own `idle`, before the
+   * user's cell is sent as its own request carrying exactly the bytes the caller
+   * passed. Three measured consequences of the old prepend are gone with it:
+   * traceback and SyntaxError line numbers are the user's own lines; a cell magic
+   * works identically to ordinary code because it is still the first line of the
+   * request that contains it; and the source the kernel records for a cell is the
+   * source the model submitted. See `qualification/results/P8-bind/`.
+   *
+   * IF THE BIND FAILS, THE USER'S CELL DOES NOT RUN. A cell dispatched without a
+   * live capability would be a cell whose `dsh` is either absent or STALE, and
+   * either one is worse than a refused cell: the failure is reported as the cell's
+   * own failure rather than being allowed to look like the user's error.
+   *
+   * A CALLER WITH NO AUTHORITY GETS A REVOKE, NOT AN OMISSION. The kernel
+   * namespace is persistent, so once any bridged cell has run, `dsh` stays in it.
+   * An unbridged cell therefore has `dsh` explicitly removed by a hidden control
+   * request before it runs, so it cannot reach a capability from an earlier cell.
+   * Measured before this existed: an authority-less cell saw `dsh` present with a
+   * settled lease id and a call through it returned `LEASE_UNKNOWN` -- refused,
+   * but with an error that did not explain that the capability was gone by design.
    */
   async runCell(agent: Agent, code: string, signal?: AbortSignal, authority?: CellAuthority): Promise<CellResult> {
     const entry = await this.entryFor(agent)
@@ -582,9 +600,14 @@ export class KernelService extends Service {
       throw new KernelTransportError('the cell was cancelled before it was sent to the kernel')
     }
     if (authority === undefined) {
-      // No bridge for this cell. The preamble is not prepended, so `dsh` does not
-      // exist in the namespace and a cell that tries to use it gets `NameError`
-      // rather than a stale capability from a previous cell.
+      // No bridge for this cell, and the capability is actively revoked rather
+      // than merely not re-bound. The revoke is a hidden control request, so it
+      // does not enter the input history and cannot itself become the source the
+      // kernel records for the user's cell.
+      await entry.host.execute(entry.bridge.server.revoke(), {
+        identity: entry.identity,
+        silent: true,
+      })
       const result = await entry.host.execute(code, { identity: entry.identity })
       if (result.generation !== undefined) entry.pendingGenerationNotice = result.generation.reason
       return result
@@ -592,13 +615,32 @@ export class KernelService extends Service {
 
     const lease = this.mintCellLease(entry, authority, signal)
     entry.bridge.leases.add(lease)
-    const dispatched = canPrependPreamble(code)
-      ? [entry.bridge.server.preamble(lease), code].join('\n')
-      : code
     let result: CellResult
     let ledgerFailure: BridgeLedgerWriteError | undefined
     try {
-      result = await entry.host.execute(dispatched, { identity: entry.identity })
+      // PHASE 1 -- THE HIDDEN BIND. Its own request, its own reply, its own idle.
+      // `storeHistory: false` keeps the bind out of IPython's input history, so
+      // the user's cell is what a later reader finds recorded there.
+      const bind = await entry.host.execute(entry.bridge.server.bind(lease), {
+        identity: entry.identity,
+        silent: true,
+        storeHistory: false,
+      })
+      if (bind.outcome !== 'ok') {
+        // THE BIND DID NOT TAKE. The user's code is NOT sent, and the failure is
+        // reported as the cell's outcome rather than silently running unbridged.
+        // The lease still closes through the same `finally` below, so the
+        // capability it minted cannot outlive this refusal.
+        throw new KernelBindError(
+          `the per-cell bridge bind did not complete (outcome ${bind.outcome}`
+          + `${bind.error === undefined ? '' : `: ${bind.error.ename}: ${bind.error.evalue}`}), `
+          + 'so the cell was not run',
+          bind,
+        )
+      }
+      // PHASE 2 -- THE USER'S EXACT BYTES, as their own request. `storeHistory`
+      // is explicitly true so the recorded source is this cell's own source.
+      result = await entry.host.execute(code, { identity: entry.identity, storeHistory: true })
     } finally {
       // THE CELL SETTLED. Close the lease before returning, so by the time any
       // caller sees this cell's result, every exact call it authorised has
