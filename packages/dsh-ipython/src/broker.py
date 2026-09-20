@@ -61,6 +61,205 @@ DEFAULT_INTERRUPT_GRACE_MS = 5000
 
 CONTROL_FD = 7
 
+# ---------------------------------------------------------------------------
+# IPY-13: CELL ATTRIBUTION FOR OUT-OF-THREAD WRITES
+#
+# THE DEFECT. `_route_iopub` decides attribution from `parent_header.msg_id`
+# (line 518/525). That parent is stamped by ipykernel, not here, and ipykernel
+# resolves it per write from a ContextVar with a PROCESS-WIDE fallback
+# (`ipykernel/iostream.py:596-608`), whose global the setter overwrites on every
+# request (`:605-608`, called from `zmqshell.py:723-737`). A `threading.Thread`
+# starts with an EMPTY context, so a background writer misses the ContextVar and
+# takes the global -- which holds whichever cell ran most recently. The kernel
+# therefore stamps a write made by cell A's thread with cell B's msg_id, and the
+# check at line 525 is genuinely satisfied. The distinction is destroyed before
+# the frame is sent, so no frame-level test here can recover it.
+#
+# THE FIX, AND WHY IT IS IN THE KERNEL RATHER THAN IN THE ROUTER. The information
+# exists only at the moment of the write, so the bootstrap below records it there
+# and stamps the frame accordingly. It does NOT guess:
+#
+#   * a write from a cell's own thread      -> left entirely alone (ipykernel's
+#                                              own ContextVar resolves; measured)
+#   * a write from a thread STARTED IN a cell -> stamped with THAT cell's header,
+#                                              so a thread joined by its own cell
+#                                              still reports as that cell's output
+#   * a write with no cell origin at all    -> stamped with the sentinel below,
+#     (a raw `_thread.start_new_thread`)       which matches no cell and is
+#                                              therefore reported as undecidable
+#
+# The router needs no change: anything whose parent is not the live sink already
+# becomes a `late_output` event at line 528-531, which is exactly the required
+# classification. The oracle's warning -- "a claim that the originating cell's
+# parent id is always preserved is NOT PASS" -- is honoured by the third case:
+# preservation is NOT claimed in general, and the case where it fails is
+# reported as undecidable rather than attributed.
+#
+# HOW IT REACHES THE KERNEL. `KernelManager.start_kernel(extra_arguments=...)`
+# is public and appends to the kernelspec argv
+# (`jupyter_client/provisioning/local_provisioner.py:210,247,250-251`), and
+# `--IPKernelApp.exec_files=` is a public IPython config trait
+# (`IPython/core/shellapp.py:189`, run by `_run_exec_files` at `:446-456`).
+# Measured: the file is executed before the first cell and its namespace is the
+# cells' namespace.
+# ---------------------------------------------------------------------------
+
+DSH_BACKGROUND_ORIGIN = "dsh:background"
+ATTRIBUTION_BOOTSTRAP_NAME = "dsh_attribution_bootstrap.py"
+ATTRIBUTION_MARKER_NAME = "dsh_attribution_bootstrap.loaded"
+
+
+def attribution_bootstrap_source(marker_path):
+    """The kernel-side bootstrap that stamps out-of-thread writes.
+
+    Generated rather than shipped as a second file so the package's `files`
+    list does not change and the marker path travels with the source. The
+    marker is how the broker can TELL whether the bootstrap loaded: without it
+    the fix degrades silently back to the defect, which is the failure mode
+    this project keeps recording.
+    """
+    return _ATTRIBUTION_BOOTSTRAP_TEMPLATE.replace(
+        "__DSH_MARKER_PATH__", json.dumps(marker_path)
+    ).replace("__DSH_BACKGROUND_ORIGIN__", json.dumps(DSH_BACKGROUND_ORIGIN))
+
+
+_ATTRIBUTION_BOOTSTRAP_TEMPLATE = r'''"""DSH cell-attribution bootstrap, injected by broker.py via exec_files.
+
+WHY IT EXISTS. A write made by a thread that a CELL started carries no cell
+identity of its own: ipykernel resolves a stream's parent from a ContextVar and
+falls back to a process-wide global when that lookup fails, and a new thread has
+an empty context. The global holds the most recently started cell, so such a
+write is stamped with a LATER cell's msg_id and is indistinguishable, in every
+field the frame carries, from that cell's own output.
+
+WHAT IT DOES. Records the current cell's parent header while a cell runs, carries
+it into threads the cell starts, and stamps a write from outside a cell with the
+origin it actually has -- or with a sentinel when it has none. It never guesses,
+and it does not wrap user code: the cell body runs exactly as IPython would run
+it.
+"""
+import contextvars
+import os
+import sys
+import threading
+
+_DSH_MARKER = __DSH_MARKER_PATH__
+_DSH_BACKGROUND = __DSH_BACKGROUND_ORIGIN__
+
+# The parent header of the cell currently executing, or None outside a cell.
+_cell_parent = contextvars.ContextVar("dsh_cell_parent", default=None)
+# The parent header of the cell that STARTED this thread, or None.
+_thread_origin = contextvars.ContextVar("dsh_thread_origin", default=None)
+
+_BACKGROUND_HEADER = {
+    "msg_id": _DSH_BACKGROUND,
+    "msg_type": "dsh-background",
+    "username": "dsh",
+    "session": "dsh",
+    "version": "5.3",
+    "date": None,
+}
+
+_installed = []
+
+
+def _install(stream, name):
+    for existing, _ in _installed:
+        if existing is stream:
+            return
+    _installed.append((stream, name))
+    original = stream.write
+
+    def write(string):
+        # Inside a cell's own execution thread: leave ipykernel entirely alone.
+        # Its own ContextVar resolves there (measured), and second-guessing it
+        # would change behaviour for output that is already correct.
+        if _cell_parent.get(None) is not None:
+            return original(string)
+        # Outside a cell: use the origin this thread actually has. `None` here
+        # means the origin is NOT KNOWN -- a raw `_thread.start_new_thread`, a
+        # thread started before any cell -- and that is reported as undecidable
+        # rather than attributed to whichever cell happens to be running.
+        origin = _thread_origin.get(None)
+        previous = stream.parent_header
+        stream.set_parent(origin if origin is not None else _BACKGROUND_HEADER)
+        try:
+            return original(string)
+        finally:
+            stream.set_parent(previous)
+
+    stream.write = write
+
+
+def _install_streams():
+    for stream, name in ((sys.stdout, "stdout"), (sys.stderr, "stderr")):
+        if hasattr(stream, "set_parent") and hasattr(stream, "parent_header"):
+            _install(stream, name)
+
+
+def _pre_run_cell(info):
+    try:
+        parent = get_ipython().kernel.get_parent()
+    except Exception:  # noqa: BLE001
+        parent = None
+    _cell_parent.set(parent if isinstance(parent, dict) and parent else None)
+    # At exec_files time the OutStream normally exists already, but that is an
+    # ipykernel implementation detail rather than a guarantee; by the first cell
+    # it certainly does. Re-checking here costs nothing and removes the ordering
+    # assumption instead of relying on it.
+    _install_streams()
+
+
+def _post_run_cell(result):
+    _cell_parent.set(None)
+
+
+_original_thread_start = threading.Thread.start
+
+
+def _thread_start(self, *args, **kwargs):
+    origin = _cell_parent.get(None)
+    if origin is not None:
+        inner = self.run
+
+        def run_with_origin(*inner_args, **inner_kwargs):
+            _thread_origin.set(origin)
+            return inner(*inner_args, **inner_kwargs)
+
+        self.run = run_with_origin
+    return _original_thread_start(self, *args, **kwargs)
+
+
+threading.Thread.start = _thread_start
+
+_ip = get_ipython()
+_ip.events.register("pre_run_cell", _pre_run_cell)
+_ip.events.register("post_run_cell", _post_run_cell)
+_install_streams()
+
+# Written LAST, so the marker means "the hooks above are installed" and not
+# merely "the file was read". Deliberately silent: a print here would emit a
+# frame with no parent at kernel startup.
+try:
+    with open(_DSH_MARKER, "w", encoding="utf-8") as _handle:
+        _handle.write("installed\n")
+except OSError:
+    pass
+'''
+
+
+def write_attribution_bootstrap(work_dir):
+    """Write the bootstrap into `work_dir` and return (path, marker_path)."""
+    path = os.path.join(work_dir, ATTRIBUTION_BOOTSTRAP_NAME)
+    marker = os.path.join(work_dir, ATTRIBUTION_MARKER_NAME)
+    try:
+        os.remove(marker)
+    except OSError:
+        pass
+    with open(path, "w", encoding="utf-8") as handle:
+        handle.write(attribution_bootstrap_source(marker))
+    return path, marker
+
 
 def log(detail):
     """Diagnostics go to stderr, never to the control channel."""
@@ -345,6 +544,10 @@ class Broker:
         # somewhere else.
         self._kernel_cwd_enforced = False
         self._kernel_cwd = None
+        # IPY-13. Whether the attribution bootstrap loaded into the live kernel.
+        # Reset by every start, because a NEW kernel has its own bootstrap.
+        self._attribution_bootstrap_loaded = False
+        self._attribution_bootstrap_path = None
         self._kernel_log = None
         self._kernel_err_path = None
         self._sink = None
@@ -395,10 +598,21 @@ class Broker:
         # kernel reports the launcher's cwd; with it, the requested directory.
         kernel_cwd = os.environ.get("DSH_IPYTHON_KERNEL_CWD") or work_dir
         self._kernel_cwd = kernel_cwd
+
+        # IPY-13: the attribution bootstrap, injected through `extra_arguments`.
+        # See the block above `DSH_BACKGROUND_ORIGIN` for why the fix lives in
+        # the kernel. Written before the launch so the file exists when the
+        # kernel reads its argv.
+        bootstrap_path, bootstrap_marker = write_attribution_bootstrap(work_dir)
+        self._attribution_bootstrap_path = bootstrap_path
+        self._attribution_bootstrap_loaded = False
+        extra_arguments = ["--IPKernelApp.exec_files=" + json.dumps([bootstrap_path])]
+
         start_kwargs = {
             "stdout": self._kernel_log,
             "stderr": open(self._kernel_err_path, "wb"),
             "cwd": kernel_cwd,
+            "extra_arguments": extra_arguments,
         }
         try:
             km.start_kernel(**start_kwargs)
@@ -412,7 +626,15 @@ class Broker:
                 "directory is NOT the Session's project root"
             )
             self._kernel_cwd_enforced = False
-            km.start_kernel(stdout=self._kernel_log, stderr=open(self._kernel_err_path, "wb"))
+            # `extra_arguments` is NOT dropped along with `cwd`. Without the
+            # bootstrap the kernel cannot attribute out-of-thread writes, and
+            # IPY-13's defect returns with no other symptom; giving up the cwd
+            # guarantee is a recorded degradation, this would be a silent one.
+            km.start_kernel(
+                stdout=self._kernel_log,
+                stderr=open(self._kernel_err_path, "wb"),
+                extra_arguments=extra_arguments,
+            )
         else:
             self._kernel_cwd_enforced = True
         self._km = km
@@ -442,6 +664,18 @@ class Broker:
         # plaintext warning M0 measured. Its ABSENCE is the assertion.
         time.sleep(0.4)
         self._plaintext_warning_seen = self._scan_kernel_log("without encryption")
+
+        # IPY-13: did the attribution bootstrap actually load? Read back from the
+        # marker the bootstrap writes as its LAST action, not assumed from the
+        # argv we passed: an `exec_files` that silently failed would leave the
+        # kernel running with the old, wrong attribution and no other symptom.
+        # The status reports it so a caller can tell the two apart.
+        self._attribution_bootstrap_loaded = os.path.exists(bootstrap_marker)
+        if not self._attribution_bootstrap_loaded:
+            log(
+                "the IPY-13 attribution bootstrap did NOT load; output written by a "
+                "thread started in a cell will be attributed to whichever cell runs next"
+            )
         return self.status()
 
     def _scan_kernel_log(self, needle):
@@ -481,6 +715,11 @@ class Broker:
             # Session's relative paths are not resolving where it asked.
             "kernelCwd": self._kernel_cwd,
             "kernelCwdEnforced": self._kernel_cwd_enforced,
+            # IPY-13. False means out-of-thread output is being attributed to
+            # whichever cell runs next, i.e. the defect is live. Reported rather
+            # than assumed, because an `exec_files` that failed to load leaves no
+            # other trace.
+            "attributionBootstrapLoaded": self._attribution_bootstrap_loaded,
         }
 
     # -- the IOPub pump -----------------------------------------------------

@@ -1,0 +1,358 @@
+{
+ "work_dir": "C:\\Users\\hzq00\\AppData\\Local\\Temp\\s5-ipy13-after-tho32o58",
+ "bootstrap_path": "C:\\Users\\hzq00\\AppData\\Local\\Temp\\s5-ipy13-after-tho32o58\\dsh_attribution_bootstrap.py",
+ "marker_path": "C:\\Users\\hzq00\\AppData\\Local\\Temp\\s5-ipy13-after-tho32o58\\dsh_attribution_bootstrap.loaded",
+ "marker_exists_after_start": true,
+ "armA_cell": {
+  "msg_id": "dbba271c-91cc9953041a61c6d7603fcc_42300_2",
+  "frames": [
+   {
+    "parent": "dbba271c-91cc9953041a61c6d7603fcc_42300_2",
+    "own": true,
+    "msg_type": "status"
+   },
+   {
+    "parent": "dbba271c-91cc9953041a61c6d7603fcc_42300_2",
+    "own": true,
+    "msg_type": "execute_input"
+   },
+   {
+    "parent": "dbba271c-91cc9953041a61c6d7603fcc_42300_2",
+    "own": true,
+    "msg_type": "stream",
+    "text": "A-cell-settled\n",
+    "stream": "stdout"
+   },
+   {
+    "parent": "dbba271c-91cc9953041a61c6d7603fcc_42300_2",
+    "own": true,
+    "msg_type": "status"
+   }
+  ]
+ },
+ "armA_own_text": "A-cell-settled\n",
+ "armA_foreign": [],
+ "armA_orphans": [
+  {
+   "parent": "dbba271c-91cc9953041a61c6d7603fcc_42300_2",
+   "msg_type": "stream",
+   "text": "AFTER-A-POSTRETURN\n"
+  }
+ ],
+ "armB_cellA": {
+  "msg_id": "dbba271c-91cc9953041a61c6d7603fcc_42300_3",
+  "frames": [
+   {
+    "parent": "dbba271c-91cc9953041a61c6d7603fcc_42300_3",
+    "own": true,
+    "msg_type": "status"
+   },
+   {
+    "parent": "dbba271c-91cc9953041a61c6d7603fcc_42300_3",
+    "own": true,
+    "msg_type": "execute_input"
+   },
+   {
+    "parent": "dbba271c-91cc9953041a61c6d7603fcc_42300_3",
+    "own": true,
+    "msg_type": "stream",
+    "text": "B-cellA-settled\n",
+    "stream": "stdout"
+   },
+   {
+    "parent": "dbba271c-91cc9953041a61c6d7603fcc_42300_3",
+    "own": true,
+    "msg_type": "status"
+   }
+  ]
+ },
+ "armB_cellA_own_text": "B-cellA-settled\n",
+ "armB_cellB": {
+  "msg_id": "dbba271c-91cc9953041a61c6d7603fcc_42300_4",
+  "frames": [
+   {
+    "parent": "dbba271c-91cc9953041a61c6d7603fcc_42300_4",
+    "own": true,
+    "msg_type": "status"
+   },
+   {
+    "parent": "dbba271c-91cc9953041a61c6d7603fcc_42300_4",
+    "own": true,
+    "msg_type": "execute_input"
+   },
+   {
+    "parent": "dbba271c-91cc9953041a61c6d7603fcc_42300_4",
+    "own": true,
+    "msg_type": "stream",
+    "text": "b-tick 0\n",
+    "stream": "stdout"
+   },
+   {
+    "parent": "dbba271c-91cc9953041a61c6d7603fcc_42300_4",
+    "own": true,
+    "msg_type": "stream",
+    "text": "b-tick 1\n",
+    "stream": "stdout"
+   },
+   {
+    "parent": "dbba271c-91cc9953041a61c6d7603fcc_42300_4",
+    "own": true,
+    "msg_type": "stream",
+    "text": "b-tick 2\n",
+    "stream": "stdout"
+   },
+   {
+    "parent": "dbba271c-91cc9953041a61c6d7603fcc_42300_3",
+    "own": false,
+    "msg_type": "stream",
+    "text": "AFTER-B-STRADDLER\n",
+    "stream": "stdout"
+   },
+   {
+    "parent": "dbba271c-91cc9953041a61c6d7603fcc_42300_4",
+    "own": true,
+    "msg_type": "stream",
+    "text": "b-tick 3\n",
+    "stream": "stdout"
+   },
+   {
+    "parent": "dbba271c-91cc9953041a61c6d7603fcc_42300_4",
+    "own": true,
+    "msg_type": "stream",
+    "text": "b-tick 4\n",
+    "stream": "stdout"
+   },
+   {
+    "parent": "dbba271c-91cc9953041a61c6d7603fcc_42300_4",
+    "own": true,
+    "msg_type": "stream",
+    "text": "B-cellB-settled\n",
+    "stream": "stdout"
+   },
+   {
+    "parent": "dbba271c-91cc9953041a61c6d7603fcc_42300_4",
+    "own": true,
+    "msg_type": "status"
+   }
+  ]
+ },
+ "armB_cellB_own_text": "b-tick 0\nb-tick 1\nb-tick 2\nb-tick 3\nb-tick 4\nB-cellB-settled\n",
+ "armB_cellB_foreign": [
+  {
+   "parent": "dbba271c-91cc9953041a61c6d7603fcc_42300_3",
+   "own": false,
+   "msg_type": "stream",
+   "text": "AFTER-B-STRADDLER\n",
+   "stream": "stdout"
+  }
+ ],
+ "armB_straddler_rides_cellB": false,
+ "armC_cell": {
+  "msg_id": "dbba271c-91cc9953041a61c6d7603fcc_42300_5",
+  "frames": [
+   {
+    "parent": "dbba271c-91cc9953041a61c6d7603fcc_42300_5",
+    "own": true,
+    "msg_type": "status"
+   },
+   {
+    "parent": "dbba271c-91cc9953041a61c6d7603fcc_42300_5",
+    "own": true,
+    "msg_type": "execute_input"
+   },
+   {
+    "parent": "dbba271c-91cc9953041a61c6d7603fcc_42300_5",
+    "own": true,
+    "msg_type": "stream",
+    "text": "AFTER-C-CONTROL\n",
+    "stream": "stdout"
+   },
+   {
+    "parent": "dbba271c-91cc9953041a61c6d7603fcc_42300_5",
+    "own": true,
+    "msg_type": "status"
+   }
+  ]
+ },
+ "armC_own_text": "AFTER-C-CONTROL\n",
+ "armD_cell": {
+  "msg_id": "dbba271c-91cc9953041a61c6d7603fcc_42300_6",
+  "frames": [
+   {
+    "parent": "dbba271c-91cc9953041a61c6d7603fcc_42300_6",
+    "own": true,
+    "msg_type": "status"
+   },
+   {
+    "parent": "dbba271c-91cc9953041a61c6d7603fcc_42300_6",
+    "own": true,
+    "msg_type": "execute_input"
+   },
+   {
+    "parent": "dbba271c-91cc9953041a61c6d7603fcc_42300_6",
+    "own": true,
+    "msg_type": "stream",
+    "text": "AFTER-D-JOINED-WORKER\nD-cell-settled\n",
+    "stream": "stdout"
+   },
+   {
+    "parent": "dbba271c-91cc9953041a61c6d7603fcc_42300_6",
+    "own": true,
+    "msg_type": "status"
+   }
+  ]
+ },
+ "armD_own_text": "AFTER-D-JOINED-WORKER\nD-cell-settled\n",
+ "armD_foreign": [],
+ "armE_cell": {
+  "msg_id": "dbba271c-91cc9953041a61c6d7603fcc_42300_7",
+  "frames": [
+   {
+    "parent": "dbba271c-91cc9953041a61c6d7603fcc_42300_7",
+    "own": true,
+    "msg_type": "status"
+   },
+   {
+    "parent": "dbba271c-91cc9953041a61c6d7603fcc_42300_7",
+    "own": true,
+    "msg_type": "execute_input"
+   },
+   {
+    "parent": "dsh:background",
+    "own": false,
+    "msg_type": "stream",
+    "text": "AFTER-E-RAW-THREAD\n",
+    "stream": "stdout"
+   },
+   {
+    "parent": "dbba271c-91cc9953041a61c6d7603fcc_42300_7",
+    "own": true,
+    "msg_type": "stream",
+    "text": "E-cell-settled\n",
+    "stream": "stdout"
+   },
+   {
+    "parent": "dbba271c-91cc9953041a61c6d7603fcc_42300_7",
+    "own": true,
+    "msg_type": "status"
+   }
+  ]
+ },
+ "armE_own_text": "E-cell-settled\n",
+ "armE_foreign": [
+  {
+   "parent": "dsh:background",
+   "own": false,
+   "msg_type": "stream",
+   "text": "AFTER-E-RAW-THREAD\n",
+   "stream": "stdout"
+  }
+ ],
+ "armF_await": {
+  "msg_id": "dbba271c-91cc9953041a61c6d7603fcc_42300_8",
+  "frames": [
+   {
+    "parent": "dbba271c-91cc9953041a61c6d7603fcc_42300_8",
+    "own": true,
+    "msg_type": "status"
+   },
+   {
+    "parent": "dbba271c-91cc9953041a61c6d7603fcc_42300_8",
+    "own": true,
+    "msg_type": "execute_input"
+   },
+   {
+    "parent": "dbba271c-91cc9953041a61c6d7603fcc_42300_8",
+    "own": true,
+    "msg_type": "stream",
+    "text": "F-AWAIT-OK\n",
+    "stream": "stdout"
+   },
+   {
+    "parent": "dbba271c-91cc9953041a61c6d7603fcc_42300_8",
+    "own": true,
+    "msg_type": "status"
+   }
+  ]
+ },
+ "armF_magic": {
+  "msg_id": "dbba271c-91cc9953041a61c6d7603fcc_42300_9",
+  "frames": [
+   {
+    "parent": "dbba271c-91cc9953041a61c6d7603fcc_42300_9",
+    "own": true,
+    "msg_type": "status"
+   },
+   {
+    "parent": "dbba271c-91cc9953041a61c6d7603fcc_42300_9",
+    "own": true,
+    "msg_type": "execute_input"
+   },
+   {
+    "parent": "dbba271c-91cc9953041a61c6d7603fcc_42300_9",
+    "own": true,
+    "msg_type": "stream",
+    "text": "asyncio\t i\t later\t raw\t straddler\t t\t time\t worker\t \nF-MAGIC-OK\n",
+    "stream": "stdout"
+   },
+   {
+    "parent": "dbba271c-91cc9953041a61c6d7603fcc_42300_9",
+    "own": true,
+    "msg_type": "status"
+   }
+  ]
+ },
+ "armF_error": {
+  "msg_id": "dbba271c-91cc9953041a61c6d7603fcc_42300_10",
+  "frames": [
+   {
+    "parent": "dbba271c-91cc9953041a61c6d7603fcc_42300_10",
+    "own": true,
+    "msg_type": "status"
+   },
+   {
+    "parent": "dbba271c-91cc9953041a61c6d7603fcc_42300_10",
+    "own": true,
+    "msg_type": "execute_input"
+   },
+   {
+    "parent": "dbba271c-91cc9953041a61c6d7603fcc_42300_10",
+    "own": true,
+    "msg_type": "error",
+    "ename": "ValueError"
+   },
+   {
+    "parent": "dbba271c-91cc9953041a61c6d7603fcc_42300_10",
+    "own": true,
+    "msg_type": "status"
+   }
+  ]
+ },
+ "armF_displayhook": {
+  "msg_id": "dbba271c-91cc9953041a61c6d7603fcc_42300_11",
+  "frames": [
+   {
+    "parent": "dbba271c-91cc9953041a61c6d7603fcc_42300_11",
+    "own": true,
+    "msg_type": "status"
+   },
+   {
+    "parent": "dbba271c-91cc9953041a61c6d7603fcc_42300_11",
+    "own": true,
+    "msg_type": "execute_input"
+   },
+   {
+    "parent": "dbba271c-91cc9953041a61c6d7603fcc_42300_11",
+    "own": true,
+    "msg_type": "execute_result",
+    "text": "2"
+   },
+   {
+    "parent": "dbba271c-91cc9953041a61c6d7603fcc_42300_11",
+    "own": true,
+    "msg_type": "status"
+   }
+  ]
+ },
+ "kernel_alive": true
+}
