@@ -754,14 +754,22 @@ export class CellLease {
    * `drain` can wait for it, and removed on BOTH arms. The promise held in
    * `pendingIntents` never rejects: the caller's refusal is carried by `outcome`,
    * and a rejection nobody awaited would surface as an unhandled rejection.
+   *
+   * BOTH deletions happen inside this promise's own callbacks rather than in a
+   * separate `finally`. `drain` re-checks `pendingIntents.size` on every pass of
+   * its loop, so a removal scheduled on a DIFFERENT microtask than the one
+   * `Promise.allSettled` observes could make the loop take an extra pass with an
+   * already-settled set. Removing it here keeps "this write is still pending" and
+   * "this write has resolved" the same edge.
    */
   private trackIntent(requestId: string, acceptance: Promise<unknown>): void {
-    const tracked = acceptance.then(
-      () => { this.accepting.delete(requestId) },
-      () => { this.accepting.delete(requestId) },
-    )
+    let tracked: Promise<void>
+    const clear = (): void => {
+      this.accepting.delete(requestId)
+      this.pendingIntents.delete(tracked)
+    }
+    tracked = acceptance.then(clear, clear)
     this.pendingIntents.add(tracked)
-    void tracked.finally(() => { this.pendingIntents.delete(tracked) })
   }
 
   /**
