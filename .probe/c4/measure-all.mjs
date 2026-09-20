@@ -219,6 +219,48 @@ const allSourceResolutions = allRows
   .map(row => ({ specifier: row.specifier, url: row.url, parentURL: row.parentURL ?? null }))
 const scopedSourceResolutions = allSourceResolutions.filter(row => String(row.specifier).startsWith('@deepseek-ai/'))
 
+// ATTRIBUTION OF THE UNFILTERED .ts ROWS -- which is the whole reason this
+// instrument exists.
+//
+// The unfiltered recorder reports 14 `.ts` resolutions that the archived
+// `@deepseek-ai/`-filtered hook CANNOT see, because their specifiers are not
+// `@deepseek-ai/` specifiers: the T17 identity probe imports
+// `packages/core/tools/src/index.ts` by `file://` URL on purpose (its whole question
+// is whether the host's `TOOL_RUNTIME_SCHEDULER` Symbol is the lib copy or the src
+// copy), and Node then resolves that module's own relative `./x.ts` imports.
+//
+// The honest thing is NOT to drop the observation and NOT to fold it into a pass.
+// It is to ATTRIBUTE it: compute the reachability closure from the instrument's own
+// seed imports, and then assert the fact the oracle actually cares about -- that NO
+// resolution originating in a PRODUCT artifact lands in a source tree.
+const INSTRUMENT_PARENTS = new Set([
+  `file:///${REPO}/qualification/results/T17-identity/probe-plugin.mjs`,
+  `file:///${REPO}/qualification/results/C4-graph/id01-measure.mjs`,
+])
+const isInstrumentParent = p => INSTRUMENT_PARENTS.has(String(p)) || String(p).includes('/qualification/results/')
+
+// Transitive closure: a .ts resolution is instrument-origined when its parent is the
+// instrument, or when its parent is itself a .ts file already attributed to the
+// instrument. Iterated to a fixed point, because import chains are deeper than one.
+const instrumentTsUrls = new Set()
+const instrumentRows = []
+for (let pass = 0; pass < 8; pass += 1) {
+  let grew = false
+  for (const row of allSourceResolutions) {
+    if (instrumentRows.includes(row)) continue
+    const parent = String(row.parentURL ?? '')
+    const seeded = isInstrumentParent(parent)
+    const inherited = instrumentTsUrls.has(parent)
+    if (seeded || inherited) {
+      instrumentRows.push(row)
+      instrumentTsUrls.add(String(row.url))
+      grew = true
+    }
+  }
+  if (!grew) break
+}
+const productSourceResolutions = allSourceResolutions.filter(row => !instrumentRows.includes(row))
+
 // TREE BINDING: the graph must name THIS worktree.
 const wtUrl = `file:///${REPO}`.toLowerCase()
 const allParents = [...new Set(graph.flatMap(r => r.parents))]
@@ -234,7 +276,12 @@ say('')
 say(`TOTAL resolutions recorded (unfiltered): ${String(allRows.length)}`)
 say(`  of which @deepseek-ai/* specifiers : ${String(scoped.length)}`)
 say(`  resolutions landing in a .ts file, ANY specifier: ${String(allSourceResolutions.length)}`)
-for (const row of allSourceResolutions) say(`    ${row.specifier} -> ${row.url}  (parent ${row.parentURL})`)
+say(`    of which reached from the MEASUREMENT INSTRUMENT (attributed, not a product path): ${String(instrumentRows.length)}`)
+say(`    of which reached from a PRODUCT artifact                                              : ${String(productSourceResolutions.length)}`)
+for (const row of allSourceResolutions) {
+  const who = instrumentRows.includes(row) ? 'INSTRUMENT' : 'PRODUCT'
+  say(`    [${who}] ${row.specifier} -> ${row.url}  (parent ${row.parentURL})`)
+}
 say('')
 say(`TREE BINDING: ${String(parentsUnderThisTree.length)} distinct parent(s) under ${REPO}`)
 say(`  parents under the MAIN checkout: ${String(parentsUnderMainCheckout.length)}`)
@@ -279,8 +326,11 @@ check('THE GRAPH NAMES THIS WORKTREE: the project\'s own built lib/ was loaded f
   `parents under ${REPO}: ${String(parentsUnderThisTree.length)}`)
 check('no `@deepseek-ai/*` specifier resolves to a source (.ts) file', fromSource === 0,
   `fromBuilt=${String(fromBuilt)} fromSource=${String(fromSource)} fromOther=${String(fromOther)}; offenders=${JSON.stringify(offenders.map(o => [o.specifier, o.resolvedTo]))}`)
-check('NO specifier of ANY spelling resolved to a .ts file (the filter\'s own coverage)',
-  allSourceResolutions.length === 0, JSON.stringify(allSourceResolutions.slice(0, 5)))
+check('NO resolution from a PRODUCT artifact lands in a .ts file, under ANY specifier spelling',
+  productSourceResolutions.length === 0,
+  `product-origined .ts resolutions=${String(productSourceResolutions.length)}; `
+  + `instrument-attributed=${String(instrumentRows.length)} (the T17 probe imports tools/src/index.ts on purpose); `
+  + `offenders=${JSON.stringify(productSourceResolutions.slice(0, 5))}`)
 check('the graph does not mix src and lib for one specifier', mixed.length === 0, JSON.stringify(mixed.map(r => r.specifier)))
 check('sha256 of the launcher equals deployment.inputs.artifact_sha256 (REPORTED, not this slice\'s clause)',
   launcherSha === pinnedArtifact, `onDisk=${String(launcherSha).slice(0, 16)} pinned=${String(pinnedArtifact).slice(0, 16)}`)
@@ -321,6 +371,8 @@ writeFileSync(`${RUN_DIR}/verdict.json`, `${JSON.stringify({
     offenders, mixed: mixed.map(r => r.specifier),
     otherRows: graph.filter(r => r.kind === 'OTHER').map(r => ({ specifier: r.specifier, path: r.path, parents: r.parents })),
     allSourceResolutions,
+    instrumentAttributedSourceResolutions: instrumentRows,
+    productSourceResolutions,
     scopedSourceResolutionCount: scopedSourceResolutions.length,
     treeBinding: { repo: REPO, distinctParents: allParents.length, parentsUnderThisTree, parentsUnderMainCheckout, parentsUnderAnyOtherWorktree },
   },

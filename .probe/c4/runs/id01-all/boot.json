@@ -159,7 +159,7 @@
     "excludedOwnRowId": "t17-identity-probe",
     "timeoutMs": 30000,
     "settled": true,
-    "waitedMs": 451,
+    "waitedMs": 461,
     "entryCount": 179,
     "stillMoving": [],
     "note": "loader.await() is NOT used: it waits on this probe's own fiber inertia and would deadlock."
@@ -252,7 +252,7 @@
   },
   "firstToolCall": {
     "sessionCreated": true,
-    "sessionId": "session-1c02daec-5d94-4b7e-99a0-c47c31c44871",
+    "sessionId": "session-d7b91bd2-ecaf-45eb-afe4-adab13f7c480",
     "sessionCwd": "D:/DSH/work/wt-c4/.probe/c4/runs/id01-all/workspace",
     "agentPreset": "daily-standard",
     "agentPresent": true,
@@ -288,7 +288,7 @@
     "promptAccepted": true,
     "promptRejection": null,
     "turnCompleted": true,
-    "turnWaitMs": 1013,
+    "turnWaitMs": 1040,
     "turnTimedOut": false,
     "toolCallRequested": {
       "name": "read",

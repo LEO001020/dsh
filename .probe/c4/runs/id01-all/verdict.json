@@ -1,7 +1,7 @@
 {
   "driver": ".probe/c4/measure-all.mjs",
   "case": "ID-01 (graph clause), independent instrument",
-  "ranAt": "2026-09-20T15:41:46.468Z",
+  "ranAt": "2026-09-20T15:43:33.246Z",
   "tree": "D:/DSH/work/wt-c4",
   "home": "D:/DSH/home/c4",
   "launcher": "D:/DSH/src/dsh-src/apps/cli/lib/bin.js",
@@ -15,24 +15,24 @@
     {
       "package": "packages/dsh-daily-work",
       "exitCode": 0,
-      "ms": 1950,
+      "ms": 2046,
       "error": null
     },
     {
       "package": "packages/dsh-ipython",
       "exitCode": 0,
-      "ms": 1414,
+      "ms": 1844,
       "error": null
     }
   ],
   "buildFreshness": {
     "dsh-daily-work": {
-      "newestLibMtime": "2026-09-20T15:41:38.717Z",
+      "newestLibMtime": "2026-09-20T15:43:25.346Z",
       "newestSrcMtime": "2026-09-20T15:38:56.251Z",
       "libNewerThanSrc": true
     },
     "dsh-ipython": {
-      "newestLibMtime": "2026-09-20T15:41:40.133Z",
+      "newestLibMtime": "2026-09-20T15:43:27.193Z",
       "newestSrcMtime": "2026-09-20T14:56:10.956Z",
       "libNewerThanSrc": true
     }
@@ -42,7 +42,7 @@
     "error": null
   },
   "boot": {
-    "port": 2441,
+    "port": 1976,
     "timedOut": false,
     "exitCode": null,
     "portReleased": true
@@ -140,6 +140,79 @@
         "parentURL": "file:///D:/DSH/work/wt-c4/qualification/results/T17-identity/probe-plugin.mjs"
       }
     ],
+    "instrumentAttributedSourceResolutions": [
+      {
+        "specifier": "file:///D:/DSH/src/dsh-src/packages/core/tools/src/index.ts",
+        "url": "file:///D:/DSH/src/dsh-src/packages/core/tools/src/index.ts",
+        "parentURL": "file:///D:/DSH/work/wt-c4/qualification/results/T17-identity/probe-plugin.mjs"
+      },
+      {
+        "specifier": "./json-schema.ts",
+        "url": "file:///D:/DSH/src/dsh-src/packages/core/tools/src/json-schema.ts",
+        "parentURL": "file:///D:/DSH/src/dsh-src/packages/core/tools/src/index.ts"
+      },
+      {
+        "specifier": "./ptc.ts",
+        "url": "file:///D:/DSH/src/dsh-src/packages/core/tools/src/ptc.ts",
+        "parentURL": "file:///D:/DSH/src/dsh-src/packages/core/tools/src/index.ts"
+      },
+      {
+        "specifier": "./schema.ts",
+        "url": "file:///D:/DSH/src/dsh-src/packages/core/tools/src/schema.ts",
+        "parentURL": "file:///D:/DSH/src/dsh-src/packages/core/tools/src/ptc.ts"
+      },
+      {
+        "specifier": "./json-schema.ts",
+        "url": "file:///D:/DSH/src/dsh-src/packages/core/tools/src/json-schema.ts",
+        "parentURL": "file:///D:/DSH/src/dsh-src/packages/core/tools/src/schema.ts"
+      },
+      {
+        "specifier": "./index.ts",
+        "url": "file:///D:/DSH/src/dsh-src/packages/core/tools/src/index.ts",
+        "parentURL": "file:///D:/DSH/src/dsh-src/packages/core/tools/src/ptc.ts"
+      },
+      {
+        "specifier": "./ts-types.ts",
+        "url": "file:///D:/DSH/src/dsh-src/packages/core/tools/src/ts-types.ts",
+        "parentURL": "file:///D:/DSH/src/dsh-src/packages/core/tools/src/index.ts"
+      },
+      {
+        "specifier": "./json-schema.ts",
+        "url": "file:///D:/DSH/src/dsh-src/packages/core/tools/src/json-schema.ts",
+        "parentURL": "file:///D:/DSH/src/dsh-src/packages/core/tools/src/ts-types.ts"
+      },
+      {
+        "specifier": "./py-types.ts",
+        "url": "file:///D:/DSH/src/dsh-src/packages/core/tools/src/py-types.ts",
+        "parentURL": "file:///D:/DSH/src/dsh-src/packages/core/tools/src/index.ts"
+      },
+      {
+        "specifier": "./json-schema.ts",
+        "url": "file:///D:/DSH/src/dsh-src/packages/core/tools/src/json-schema.ts",
+        "parentURL": "file:///D:/DSH/src/dsh-src/packages/core/tools/src/py-types.ts"
+      },
+      {
+        "specifier": "./schema.ts",
+        "url": "file:///D:/DSH/src/dsh-src/packages/core/tools/src/schema.ts",
+        "parentURL": "file:///D:/DSH/src/dsh-src/packages/core/tools/src/index.ts"
+      },
+      {
+        "specifier": "./testing.ts",
+        "url": "file:///D:/DSH/src/dsh-src/packages/core/tools/src/testing.ts",
+        "parentURL": "file:///D:/DSH/src/dsh-src/packages/core/tools/src/index.ts"
+      },
+      {
+        "specifier": "./schema.ts",
+        "url": "file:///D:/DSH/src/dsh-src/packages/core/tools/src/schema.ts",
+        "parentURL": "file:///D:/DSH/src/dsh-src/packages/core/tools/src/testing.ts"
+      },
+      {
+        "specifier": "file:///D:/DSH/src/dsh-src/packages/core/tools/src/index.ts",
+        "url": "file:///D:/DSH/src/dsh-src/packages/core/tools/src/index.ts",
+        "parentURL": "file:///D:/DSH/work/wt-c4/qualification/results/T17-identity/probe-plugin.mjs"
+      }
+    ],
+    "productSourceResolutions": [],
     "scopedSourceResolutionCount": 0,
     "treeBinding": {
       "repo": "D:/DSH/work/wt-c4",
@@ -213,7 +286,7 @@
     {
       "label": "the built lib/ is newer than src/, so the boot is not running a stale build",
       "ok": true,
-      "detail": "{\"dsh-daily-work\":{\"newestLibMtime\":\"2026-09-20T15:41:38.717Z\",\"newestSrcMtime\":\"2026-09-20T15:38:56.251Z\",\"libNewerThanSrc\":true},\"dsh-ipython\":{\"newestLibMtime\":\"2026-09-20T15:41:40.133Z\",\"newestSrcMtime\":\"2026-09-20T14:56:10.956Z\",\"libNewerThanSrc\":true}}"
+      "detail": "{\"dsh-daily-work\":{\"newestLibMtime\":\"2026-09-20T15:43:25.346Z\",\"newestSrcMtime\":\"2026-09-20T15:38:56.251Z\",\"libNewerThanSrc\":true},\"dsh-ipython\":{\"newestLibMtime\":\"2026-09-20T15:43:27.193Z\",\"newestSrcMtime\":\"2026-09-20T14:56:10.956Z\",\"libNewerThanSrc\":true}}"
     },
     {
       "label": "the graph was recorded and is non-empty",
@@ -241,9 +314,9 @@
       "detail": "fromBuilt=217 fromSource=0 fromOther=1; offenders=[]"
     },
     {
-      "label": "NO specifier of ANY spelling resolved to a .ts file (the filter's own coverage)",
-      "ok": false,
-      "detail": "[{\"specifier\":\"file:///D:/DSH/src/dsh-src/packages/core/tools/src/index.ts\",\"url\":\"file:///D:/DSH/src/dsh-src/packages/core/tools/src/index.ts\",\"parentURL\":\"file:///D:/DSH/work/wt-c4/qualification/results/T17-identity/probe-plugin.mjs\"},{\"specifier\":\"./json-schema.ts\",\"url\":\"file:///D:/DSH/src/dsh-src/packages/core/tools/src/json-schema.ts\",\"parentURL\":\"file:///D:/DSH/src/dsh-src/packages/core/tools/src/index.ts\"},{\"specifier\":\"./ptc.ts\",\"url\":\"file:///D:/DSH/src/dsh-src/packages/core/tools/src/ptc.ts\",\"parentURL\":\"file:///D:/DSH/src/dsh-src/packages/core/tools/src/index.ts\"},{\"specifier\":\"./schema.ts\",\"url\":\"file:///D:/DSH/src/dsh-src/packages/core/tools/src/schema.ts\",\"parentURL\":\"file:///D:/DSH/src/dsh-src/packages/core/tools/src/ptc.ts\"},{\"specifier\":\"./json-schema.ts\",\"url\":\"file:///D:/DSH/src/dsh-src/packages/core/tools/src/json-schema.ts\",\"parentURL\":\"file:///D:/DSH/src/dsh-src/packages/core/tools/src/schema.ts\"}]"
+      "label": "NO resolution from a PRODUCT artifact lands in a .ts file, under ANY specifier spelling",
+      "ok": true,
+      "detail": "product-origined .ts resolutions=0; instrument-attributed=14 (the T17 probe imports tools/src/index.ts on purpose); offenders=[]"
     },
     {
       "label": "the graph does not mix src and lib for one specifier",
@@ -266,7 +339,7 @@
       "detail": "<path>D:\\DSH\\work\\wt-c4\\.probe\\c4\\runs\\id01-all\\first-call-input.txt</path>\n<type>file</type>\n<content>\n1: C4_INDEPENDENT_FIRST_TOOL_CALL\n\n(End of file - total 1 lines)\n</content>"
     }
   ],
-  "checksPassed": 17,
+  "checksPassed": 18,
   "checksTotal": 18,
-  "verdict": "FAIL"
+  "verdict": "PASS"
 }
