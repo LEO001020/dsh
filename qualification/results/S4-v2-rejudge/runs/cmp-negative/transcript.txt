@@ -1,0 +1,40 @@
+=== S4 CMP-02 + CMP-04: one composed boot, two reads ===
+repo: D:/DSH/work/wt-s4
+home: D:/DSH/home/s4
+at:   2026-09-20T10:53:55.969Z
+profile links: dsh-daily-work=link:D:/DSH/work/wt-s4/packages/dsh-daily-work | dsh-ipython=link:D:/DSH/work/wt-s4/packages/dsh-ipython
+profile links all point at THIS worktree: true
+plugin install: exit=0
+port: 12861  portReleased: true  timedOut: false  exitCode: null
+ok   the probe wrote its result
+       observed: "present"
+ok   the result names the home this driver booted
+       observed: {"roots":["D:\\DSH\\src\\dsh-src\\packages\\preset\\agent-presets\\presets\\","D:/DSH/home/s4/profiles/daily/presets/","D:\\DSH\\home\\s4\\.agent-presets"]}
+ok   the boot did not time out
+ok   the host was killed and the port released
+FAIL the probe recorded no error
+       observed: "RemoteError: agent-presets: preset \"daily-standard\" failed to mount: 2 row(s) did not activate:\nworkflow-ptc (@deepseek-ai/dsh-workflow-ptc): waiting for ptcRuntime, sandboxPolicy\ntool-workflow (@deepseek-ai/dsh-tool-workflow): waiting for workflowEngine (D:\\DSH\\home\\s4\\profiles\\daily\\presets\\daily-standard\\agent.cordis.yml)"
+ok   CMP-02: a row with id sandbox-policy is present (NOT deleted)
+       observed: {"rowPresent":true,"rowFiberState":null}
+ok   CMP-02: its configured mode is danger-full-access
+       observed: {"configuredMode":"danger-full-access","configAsComposed":{"mode":"danger-full-access","workspaceRoot":{"__jsExpr":"process.cwd()"}}}
+FAIL CMP-02: its workspaceRoot resolves to an absolute path
+       observed: {"workspaceRoot":null,"resolveWithNoSession":null}
+FAIL CMP-02: the EFFECTIVE mode for a real session is danger-full-access
+       observed: {"defaultMode":null,"perSession":[]}
+FAIL CMP-04: a real Session was created
+       observed: {"sessionId":null,"agentPresent":null}
+FAIL CMP-04: ipython is PRESENT on the model-visible catalog
+FAIL CMP-04: work is PRESENT on the model-visible catalog
+ok   CMP-04: pwsh is ABSENT from the model-visible catalog
+FAIL CMP-04: the probe error is null
+       observed: "RemoteError: agent-presets: preset \"daily-standard\" failed to mount: 2 row(s) did not activate:\nworkflow-ptc (@deepseek-ai/dsh-workflow-ptc): waiting for ptcRuntime, sandboxPolicy\ntool-workflow (@deepseek-ai/dsh-tool-workflow): waiting for workflowEngine (D:\\DSH\\home\\s4\\profiles\\daily\\presets\\daily-standard\\agent.cordis.yml)"
+ok   CMP-04: presetRoots names the home that was actually booted
+       observed: ["D:\\DSH\\src\\dsh-src\\packages\\preset\\agent-presets\\presets\\","D:/DSH/home/s4/profiles/daily/presets/","D:\\DSH\\home\\s4\\.agent-presets"]
+FAIL CMP-04: the tool count was MEASURED and is recorded verbatim
+       observed: {"toolCount":null,"namesSorted":[]}
+
+CMP-02 workspaceRoot: null
+CMP-04 measured tool count: null
+checks_passed: 8/16
+verdict: FAIL

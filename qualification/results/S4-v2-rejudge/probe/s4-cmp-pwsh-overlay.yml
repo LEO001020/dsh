@@ -1,0 +1,18 @@
+# S4 CMP-04 NARROW CONTROL: the `pwsh absent` clause ALONE.
+#
+# The first negative arm (s4-cmp-negative-overlay.yml) disabled `sandbox-policy`
+# as well, which made the WHOLE preset fail to mount -- so the catalog was empty
+# and the `pwsh absent` clause "passed" vacuously, because an empty catalog
+# contains no pwsh either. A clause that passes on an empty catalog is not
+# falsified by that arm.
+#
+# This arm changes ONE row: `tool-pwsh` is re-enabled. `sandbox-policy` is
+# untouched, so the preset mounts and the catalog is real. If the driver's
+# `pwsh absent` check is doing any work, it must now go RED on a NON-EMPTY
+# catalog.
+- id: tool-pwsh
+  disabled: false
+
+- insert:
+    - id: s4-cmp-probe
+      name: 'D:/DSH/work/wt-s4/qualification/results/S4-v2-rejudge/probe/s4-cmp-probe.mjs'

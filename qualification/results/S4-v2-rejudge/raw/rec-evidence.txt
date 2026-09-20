@@ -1,0 +1,161 @@
+=== S4 REC-09 / REC-10 EVIDENCE, measured 2026-09-20 in D:\DSH\work\wt-s4 ===
+Branch wt/s4, HEAD fef7612fa427ce04aed8a329dd22a80fd8fc8e77
+
+########################################################################
+# THE ARM: REC-09 ARM B (the guarantee is NOT claimed)
+########################################################################
+The v2 oracle says explicitly that ARM B is filed NOT_CLAIMED — "never PASS":
+  "ARM B (the guarantee is NOT claimed): the record states that stale-generation
+   settlement is not claimed, names the TOPOLOGY FACT that makes it physically
+   impossible, and the case is filed NOT_CLAIMED -- never PASS. ... Filing ARM B
+   without naming the topology fact is NOT PASS either: NOT_CLAIMED is a statement
+   about the deployment, so it carries the same burden of proof as a claim."
+
+########################################################################
+# THE TOPOLOGY FACT, RE-DERIVED IN THIS TREE (not adopted from R9's document)
+########################################################################
+--- FACT 1: no production call site targets a TERMINAL state ---
+$ grep -rn "to: '" packages/dsh-daily-work/src/*.ts | grep -v "\.test\."
+src/durability-runner.ts:84   to: 'launching'
+src/durability-runner.ts:86   to: 'launching'
+src/durability-runner.ts:87   to: 'accepted'
+src/durability-runner.ts:89   to: 'launching'
+src/durability-runner.ts:90   to: 'accepted'
+src/durability-runner.ts:91   to: 'executing'
+src/host.ts:2223              to: 'launching'
+src/host.ts:2235              to: 'unknown'
+src/host.ts:2264              to: 'unknown'
+src/host.ts:2279              to: 'accepted'
+src/recovery.ts:145           to: 'launching'
+src/recovery.ts:170           to: 'unknown'
+src/recovery.ts:184           to: 'accepted'
+
+$ sed -n '67,70p' packages/dsh-daily-work/src/states.ts
+export const TERMINAL_STATES: readonly AdmissionState[] = Object.freeze([
+  'confirmed',
+  'cancelled',
+])
+
+NO row targets settling, confirmed, cancelled or cancel_requested.
+
+--- FACT 2: the one in-flight state the product DOES write has no exit ---
+The drain's two failure arms write `unknown` with releaseReservation: false, so the
+task holds its slot:
+$ sed -n '55,65p' packages/dsh-daily-work/src/states.ts
+export const SLOT_HOLDING_STATES: readonly AdmissionState[] = Object.freeze([
+  'prepared', 'launching', 'accepted', 'executing', 'settling', 'cancel_requested', 'unknown',
+])
+$ sed -n '93p' packages/dsh-daily-work/src/states.ts
+  unknown: ['accepted', 'executing', 'settling', 'confirmed', 'cancelled', 'cancel_requested'],
+
+Of those six exits: settling/confirmed/cancelled/cancel_requested have NO non-test
+writer (FACT 1); `executing`'s only writer is durability-runner.ts:91, the hand-run
+CLI with ZERO importers; and `accepted` is unreachable for such a task because admit
+refuses a slot-holder:
+$ grep -n "already admitted as" packages/dsh-daily-work/src/host.ts
+1444:            `dailyWork: task "${input.taskId}" is already admitted as ${existing.state}`,
+
+=> A settlement is the act of LEAVING an in-flight state. The product writes one
+   in-flight state it cannot leave, and no production path performs a terminal write
+   in any generation. So no settlement can be delivered, stale or current.
+
+--- FALSIFICATION: the fact is a MEASURED claim, not a reading ---
+INJECTED a production call site targeting the TERMINAL state `confirmed`, appended
+after host.ts:2279:
+    await this.transition({ runId, taskId: request.taskId, to: 'confirmed' })
+$ node node_modules/vitest/vitest.mjs run src/durability-advanced.test.ts -t "DECIDING topology fact"
+  × the DECIDING topology fact: no production call site targets a TERMINAL state
+  Tests  1 failed | 32 skipped (33)
+RESTORED byte-exact (git diff --stat empty).
+So the fact that makes ARM B true is asserted by a test that CAN FAIL.
+
+########################################################################
+# THE GUARD IS DELETED, NOT MERELY UNREACHABLE (REC-10's requirement)
+########################################################################
+$ grep -rn "applyWorkerSettlement\|WorkerSettlement\|RefusalLedger\|refusalRecordSchema\|REFUSAL_DOMAIN_NAME" packages/dsh-daily-work/src/*.ts | grep -v "\.test\."
+src/recovery.ts:191: * This module used to also export a settlement guard: `WorkerSettlement`,
+src/recovery.ts:192: * `applyWorkerSettlement`, and a `RefusalLedger` over a separate
+src/recovery.ts:193: * `dsh_daily_work_refusals` domain. ...
+   -> NON-TEST hits are ONLY the historical comment explaining the removal.
+
+$ grep -rn "dsh_daily_work_refusals" packages/dsh-daily-work/src/ | grep -v "\.test\."
+src/recovery.ts:193: (the same historical comment)
+   -> the domain is never opened.
+
+$ grep -n "^export" packages/dsh-daily-work/src/recovery.ts
+47:export interface RelaunchOutcome {
+85:export async function relaunchPrepared(input: {
+   -> recovery.ts now exports exactly RelaunchOutcome and relaunchPrepared.
+      NEITHER references an epoch. (relaunchPrepared is a DIFFERENT claim -- D03:
+      relaunch a proven-unlaunched task exactly once -- and R9 kept it, recorded
+      as adjacent evidence rather than changed silently.)
+
+$ sed -n '410,413p' packages/dsh-daily-work/src/record.ts
+   * THERE IS NO `epoch` FIELD HERE, and its absence is a decision rather than an
+   * ...
+   -> the run record carries no epoch.
+
+$ grep -rn "epoch" packages/dsh-daily-work/src/*.ts | grep -v "\.test\." | grep -v "^.*kernel-lifecycle\|history-plane\|data-bridge\|host.ts:2[0-9]:\|record.ts:41\|recovery.ts:19\|tool-protocol-guards"
+   -> the only `epoch` identifiers left are the KERNEL epoch (kernel-lifecycle.ts,
+      history-plane.ts) and data-bridge.ts's call-frame field, which are DIFFERENT
+      things (G-SEAM-43). tool-protocol-guards.ts:61-66 records explicitly that it
+      does NOT use a run epoch and that no stale epoch can be presented.
+
+$ node node_modules/vitest/vitest.mjs run src/durability-advanced.test.ts
+  Test Files  1 passed (1)
+       Tests  33 passed (33)
+   including: "the deleted settlement machinery has no surviving reference",
+              "no production code references a run epoch" (kernel-lifecycle.ts
+              excluded BY NAME as the different KERNEL epoch),
+              "the v1 FAIL is preserved",
+              "the DECIDING topology fact: no production call site targets a
+              TERMINAL state".
+
+$ node node_modules/vitest/vitest.mjs run src/durability-advanced.test.ts -t "v1 FAIL is preserved"
+  Tests  1 passed | 32 skipped (33)
+   -> v1's FAIL is preserved and asserted by a test, so it cannot be quietly
+      improved.
+
+########################################################################
+# WHAT IS CLAIMED INSTEAD, so NOT_CLAIMED is not read as "nothing is enforced"
+########################################################################
+Authority for the `work` tool is bound to the EXACT LIVE AGENT OBJECT, enforced by
+tool-protocol-guards.ts comparing the live registry entry by object identity
+(ctx.agents.get(id) === owner). That covers the IN-PROCESS resume case, which is
+reachable. The CROSS-PROCESS generation case is NOT covered and v2 does not claim it.
+
+########################################################################
+# THE ADJACENT DEFECT R9 REPORTED AND DID NOT FIX — carried forward
+########################################################################
+The product can enter the state `unknown` and has NO production path out of it, so a
+task left `unknown` holds a child slot indefinitely and permanently reduces N by each
+failed launch. reconcile.ts's reconcileRun — the mechanism named for resolving it —
+has no production caller either; its decisions are computed and never applied.
+THIS IS OUTSIDE THIS WRITER'S SLICE: recorded, not fixed. It is also why this verdict
+is NOT_CLAIMED rather than PASS -- the honest statement is that the guarantee is not
+claimed, not that the system is safe.
+
+########################################################################
+# R9's OWN FALSIFICATION RECORD, verified rather than trusted
+########################################################################
+qualification/results/R9-recovery-topology/TOPOLOGY.md carries a falsification record
+of its OWN first revision: an earlier version rested the decision on "no production
+call site targets a terminal state" but supported it with a hand-picked state list
+that OMITTED unknown, and the prose overclaimed it into "the product never performs
+a terminal-state write". Root falsified that; host.ts writes unknown on the drain
+path. The corrected section 1.5 FACT 2 is STRONGER than the sentence it replaced and
+is what I re-derived above. R9's document uses POST-CHANGE line numbers for this
+reason, and they do not match mine (R9 cites host.ts:1342/:1364 for the unknown
+writes; my tree has them at :2235/:2264) because the file has grown since. A reader
+checking R9's citations in this tree will not find them; the citations are correct
+for R9's tree.
+
+########################################################################
+# ROUND 1's CLAIM, JUDGED
+########################################################################
+The round-2 brief section 2 lists F8 as closed by "the epoch/settlement machinery was
+DELETED; v2 stops claiming it", evidence qualification/results/R9-recovery-topology/.
+THAT CLAIM HOLDS UP: the machinery is deleted, the field is gone, the topology fact
+is real and re-derivable, and v2 files the case NOT_CLAIMED rather than PASS. The one
+thing round 1 did NOT do is fix the unknown-with-no-exit defect it discovered, and
+it says so itself.

@@ -1,0 +1,104 @@
+=== S4 BR-07 EVIDENCE, measured 2026-09-20 in D:\DSH\work\wt-s4 ===
+Branch wt/s4, HEAD fef7612fa427ce04aed8a329dd22a80fd8fc8e77
+
+ORACLE (v2 definition, BR-07):
+STIMULUS: "Return a cell while native child calls are still in flight."
+ORACLE: "Every in-flight call carries one disposition from `settled`, `cancelled`,
+`handed-to-jobs`, `abandoned-unstarted`, and any call handed to Jobs names its job id.
+Nothing continues silently in the background with no record."
+
+########################################################################
+# 1. THE RUN
+########################################################################
+$ cd packages/dsh-ipython
+$ node node_modules/vitest/vitest.mjs run src/r5-product-bridge.test.ts
+  Test Files  1 passed (1)
+       Tests  24 passed (24)
+       Duration 78.61s
+
+The eight R5-BR-07 arms, verbatim from the run:
+  ok  R5-BR-07 > a completed call carries `settled`, and the durable ledger row is STARTED then SETTLED
+  ok  R5-BR-07 > a cell returning with calls in flight records `cancelled` and `abandoned-unstarted`
+  ok  R5-BR-07 > a call still queued when the cell returns is never dispatched, whatever its disposition
+  ok  R5-BR-07 > the four dispositions are the scope route vocabulary, not a parallel one
+  ok  R5-BR-07 > a handoff names its job id; with no handoff the call is abandoned-unstarted
+  ok  R5-BR-07 > a FAILED disposition write is reported, not swallowed, and CLOSED still happens
+  ok  R5-BR-07 > a healthy close records every disposition and reports no failure
+
+WHAT EACH ORACLE CLAUSE IS MET BY:
+  `settled`            -> "a completed call carries `settled`, and the durable ledger row
+                           is STARTED then SETTLED". Both stamps present, and the
+                           settlement carries a sha256 DIGEST of the delivered value
+                           rather than the value itself. The subCallId is derived from
+                           the OUTER call id, so a reader holding the Session's `ipython`
+                           execution can find every exact call it authorised.
+  `cancelled`          -> the in-flight arm: a call dispatched and in the registry when
+                           the cell settles is recorded `cancelled`.
+  `abandoned-unstarted`-> a call still QUEUED BEHIND a serial lease when the cell returns.
+                           The serial queue is what makes this deterministic rather than
+                           a race (the test's own comment records that an earlier version
+                           without the in-cell wait was FLAKY, returning zero ledger rows).
+  `handed-to-jobs` + job id -> "a handoff names its job id; with no handoff the call is
+                           abandoned-unstarted".
+  "Nothing continues silently" -> "a call still queued when the cell returns is NEVER
+                           DISPATCHED, whatever its disposition", plus "a FAILED
+                           disposition write is reported, not swallowed, and CLOSED still
+                           happens".
+
+########################################################################
+# 2. THE MECHANISM IN THIS TREE
+########################################################################
+packages/dsh-ipython/src/bridge.ts:635-660, `settleQueuedCalls`, whose two arms ARE the
+oracle's own distinction. The code's own comment states why mapping either onto the
+other would erase the difference:
+    "The two arms are the oracle's own distinction. A host handoff that takes ownership
+     produces `handed-to-jobs` WITH the job id; with no handoff, the call is
+     `abandoned-unstarted`. Mapping either onto the other would erase the difference
+     between 'someone else owns this now' and 'this was refused', which is exactly what
+     the oracle asks a reader to be able to tell apart."
+The `disposition` identifier appears in bridge.ts at :352, :644, :648, :649, :712 and :823
+(compared with v1's record that it appeared NOWHERE).
+
+########################################################################
+# 3. FALSIFICATION
+########################################################################
+The `this.report(...)` call inside `settleQueuedCalls` was REMOVED, so a queued call would
+be rejected with NO disposition recorded — the oracle's "nothing continues silently in the
+background with no record" failure mode.
+$ node node_modules/vitest/vitest.mjs run src/r5-product-bridge.test.ts -t "R5-BR-07"
+  ✓ a completed call carries `settled`, ...
+  × a cell returning with calls in flight records `cancelled` and `abandoned-unstarted`
+  ✓ a call still queued when the cell returns is never dispatched, ...
+  ✓ the four dispositions are the scope route vocabulary, ...
+  ✓ a handoff names its job id; ...
+  ✓ a FAILED disposition write is reported, ...
+  ✓ a healthy close records every disposition ...
+  Tests  1 failed | 6 passed | 17 skipped (24)
+EXACTLY the arm the oracle's stimulus names went red. RESTORED byte-exact:
+git hash-object = git rev-parse HEAD:<path> = 6a553bbc4b8b94707d17375d223d6d6afc1d8818.
+
+########################################################################
+# 4. ROUND 1's CLAIM, JUDGED
+########################################################################
+qualification/results/V4-bridge/GATES.md's BR-07 row records the v1 FAIL as a SPLIT:
+  "the bridge route's DRAIN holds (`revoke` waited 1499 ms for the in-flight call; a
+   post-revoke call is refused `LEASE_REVOKED`), but the bridge route has NO disposition
+   vocabulary — `disposition`/`jobId`/`handoff` appear nowhere in `bridge.ts` or
+   `native-call.ts`. The scope route has all four dispositions"
+THAT CLAIM HOLDS UP, and the fix closed exactly the half that was missing: the identifiers
+are now present in bridge.ts and all four dispositions are exercised ON THE BRIDGE ROUTE.
+The round-2 brief section 2 does not list BR-07 explicitly; the v2 provenance records its
+treatment as "verbatim" with authority D5 — "the oracle is kept unchanged, and the bridge
+adopts the programmatic-scope route's EXISTING disposition vocabulary rather than inventing
+a parallel one" — which is precisely what "the four dispositions are the scope route
+vocabulary, not a parallel one" asserts.
+
+########################################################################
+# 5. WHAT THIS PASS DOES NOT ESTABLISH
+########################################################################
+The oracle is about DISPOSITION RECORDING, not about reachability from the assembled daily
+composition. V4-bridge/GATES.md section 1 records a separate reachability FAIL (G-SEAM-34)
+that applies to the BR family, and the file says so explicitly: "The reachability FAIL is
+not a case here, and that is deliberate... it is what a reader must carry alongside every
+PASS in the table." This verdict is a PASS for BR-07's oracle and does NOT claim the bridge
+route is reached by a real daily boot.

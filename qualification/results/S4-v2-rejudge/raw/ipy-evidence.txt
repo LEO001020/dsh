@@ -1,0 +1,125 @@
+=== S4 IPY-13 / IPY-15 EVIDENCE, measured 2026-09-20 in D:\DSH\work\wt-s4 ===
+
+########################################################################
+# IPY-13 — late output classified separately, never riding another cell
+########################################################################
+$ cd packages/dsh-ipython
+$ node node_modules/vitest/vitest.mjs run src/v3-spec-gates.test.ts -t "IPY-13"
+  Test Files  1 passed (1)
+       Tests  2 passed | 10 skipped (12)
+
+CLAUSE 1 — HOLDS:
+[V3-MEASURED] IPY-13-clause1 {"lateCount":1,"lateText":"IPY13-LATE-AFTER-RETURN",
+  "lateCellId":"b18e6242-9ada5751f2711ddb200aed1b_40996_3","lateEpoch":1,
+  "firstCellContainsLateText":false,"secondCellContainsLateText":false}
+The post-return write is reported as late WITH the originating cell's id, and it
+rode neither the cell that spawned it nor the cell that ran next.
+
+CLAUSE 2 — FAILS:
+[V3-MEASURED] IPY-13-clause2 {"specRequires":"reported as undecidable rather than attributed",
+  "measuredAttributedToLaterCell":true,"measuredLateCount":0,"measuredLateText":"",
+  "thirdCellStdout":"tick 0\ntick 1\nIPY13-DURING-LATER-CELL\ntick 2\ntick 3\ncell-three-settled",
+  "mechanism":"ipykernel iostream resolves the parent from a contextvar; a threading.Thread has an empty context and falls back to the global, which holds the later cell id",
+  "verdict":"CLAUSE_NOT_MET"}
+The straddling write is SILENTLY ATTRIBUTED to the later cell: it is not late
+(lateCount 0) and not flagged undecidable; it is folded into cell three's stdout,
+where a model reading that result will attribute it to cell three's own code.
+
+MECHANISM (platform fact, upstream of this project's router): ipykernel/iostream.py
+resolves a stream's parent header from a contextvars.ContextVar, falling back to a
+GLOBAL when unset. threading.Thread starts with an EMPTY context (an asyncio Task
+would copy one), so a background writer takes the global — which holds whichever
+cell most recently set it, i.e. the LATER cell. The kernel stamps the straddling
+write with the later cell's msg_id before it is ever sent, so the broker's router
+sees `parent == sink.msg_id` with the cell not yet idle and cannot separate the two.
+
+STATE OF THIS TREE AT MEASUREMENT — the fix is NOT here:
+$ grep -c "metadata" packages/dsh-ipython/src/broker.py
+0
+The broker does not attach a DSH cell id to execute_request.metadata, and there is
+no kernel-side ContextVar hook. Round 1 wrote the isolated experiment
+(qualification/results/R8-ipy13-experiment/EXPERIMENT.md) and did NOT implement it.
+Writer S5 is implementing it in a parallel worktree.
+=> THIS VERDICT MUST BE RE-RUN AFTER S5 MERGES.
+
+A SECOND HONEST LIMIT: the clause-2 test PINS the defect (it asserts the measured
+attribution so a fix fails the gate loudly and must update the gate and the case
+together). So "the test file is green" does NOT mean "the oracle is met" here; the
+printed [V3-MEASURED] line carries verdict CLAUSE_NOT_MET.
+
+########################################################################
+# IPY-15 — transport authentic
+
+########################################################################
+# IPY-15 — transport authenticated, frames bounded
+########################################################################
+$ node node_modules/vitest/vitest.mjs run src/v3-spec-gates.test.ts -t "IPY-15"
+  Test Files  1 passed (1)
+       Tests  1 passed | 11 skipped (12)
+
+[V3-MEASURED] IPY-15 {"transport":"tcp","curveKeysPresent":true,"plaintextWarningSeen":false,
+  "connectionFile":"C:\Users\hzq00\AppData\Local\Temp\tmppg2kz16.json",
+  "connectionFileHasCurvePublic":true,"connectionFileHasCurveSecret":true,
+  "connectionFileModeOctal":"0o666","connectionFileWorldReadable":true,
+  "maxFrameBytes":4194304,"overLimitRejectedOnEncode":true,"overLimitRejectedOnDecode":true,
+  "decodeFailureMessage":"declared frame length 4194305 exceeds the 4194304-byte limit",
+  "normalCellDroppedFrames":0,"noteDroppedFrameDefinitionCount":0,
+  "rendererHasUnreachableDropBranch":true}
+
+CLAUSES 1-3 HOLD: TCP with CurveZMQ keys, no plaintext start, both curve keys in
+the connection file, and the over-limit frame REFUSED in both directions (the
+decoder refusing on the DECLARED length before buffering).
+
+--- SUPPLEMENTARY GATE, written for this re-judgement ---
+Preserved at qualification/results/S4-v2-rejudge/probe/s4-ipy15-supplementary.test.ts
+(it was run from packages/dsh-ipython/src/ and then REMOVED from src/, because this
+writer owns only qualification/results/S4-v2-rejudge/**).
+$ node node_modules/vitest/vitest.mjs run src/zz-s4-ipy15-supplementary.test.ts
+  Test Files  1 passed (1)
+       Tests  2 passed (2)
+
+(a) "The kernel remains usable after the refusal" — THE CLAUSE THE SHIPPED GATE
+    NEVER MEASURES. Measured on a REAL KernelHost:
+[S4-MEASURED] IPY-15-kernel-usable {"refused":true,
+  "refusalMessage":"frame of 4194316 bytes exceeds the 4194304-byte limit",
+  "beforeOutcome":"ok","beforeText":"S4-IPY15-BEFORE",
+  "afterOutcome":"ok","afterText":"S4-IPY15-AFTER",
+  "kernelStillUsable":true,"epochUnchanged":true,"beforeEpoch":1,"afterEpoch":1}
+    THIS CLAUSE PASSES.
+
+(b) "the refusal is a structured, machine-readable outcome naming the byte limit in
+    force and the declared length that exceeded it" — THIS CLAUSE DOES NOT HOLD:
+[S4-MEASURED] IPY-15-structure {"encode":{"name":"FrameError","message":"frame of 4194325 bytes exceeds the 4194304-byte limit",
+    "ownEnumerableKeys":["name"],"hasCode":false,"hasLimitBytes":false,"hasDeclaredLength":false},
+  "decode":{"name":"FrameError","message":"declared frame length 4194305 exceeds the 4194304-byte limit",
+    "ownEnumerableKeys":["name"],"hasCode":false,"hasLimitBytes":false,"hasDeclaredLength":false},
+  "maxFrameBytes":4194304,"declaredLengthSent":4194305,
+  "messageNamesLimit":true,"messageNamesDeclaredLength":true,
+  "numbersAreInFieldsNotMessage":false}
+
+The two numbers exist ONLY inside a PROSE message. ownEnumerableKeys is ["name"]
+— no `code`, no `limitBytes`/`limit`, no `declaredLength` on either error.
+
+SOURCE CONFIRMATION (packages/dsh-ipython/src/protocol.ts):
+  :41  export const MAX_FRAME_BYTES = 4 * 1024 * 1024
+  :44  export class FrameError extends Error { constructor(message: string) { super(message); this.name = 'FrameError' } }
+  :58-62  encodeFrame throws `frame of ${payload.byteLength} bytes exceeds the ${MAX_FRAME_BYTES}-byte limit`
+  :122-126 FrameDecoder throws `declared frame length ${length} exceeds the ${MAX_FRAME_BYTES}-byte limit`
+And the operation-level error has the same shape — packages/dsh-ipython/src/kernel.ts:110
+`class KernelTransportError extends Error { constructor(message: string) }`, with
+kernel.ts:340 building the message as `${message.error.code}: ${message.error.message}`,
+i.e. the broker's code is PREFIXED into a string rather than carried as a field.
+
+WHY ROUND 1's CLAIM DOES NOT HOLD UP HERE: the round-2 brief §2 does not list IPY-15
+among what round 1 closed, and the v2 provenance records the rewrite under authority
+D2 — "v2 keeps fail-hard and requires a structured refusal that names the limit". The
+product's half was already fail-hard; the STRUCTURED half the rewritten oracle now
+demands was never added. The shipped gate asserts only that the message CONTAINS the
+substring "exceeds", which is a weaker oracle than the case it is filed under
+(G-FIX-04: an oracle weaker than its scenario passes while the product is broken).
+
+LABEL-COLLISION TRAP, recorded because a careless reader will hit it here:
+qualification/results/T6-ipython/GATES.md uses the label "IPY-15" for the KERNEL-CWD
+oracle (IPY-15a..d, all PASS), which is the SPEC's IPY-11, not the spec's IPY-15.
+T6's own §7 states the spec's IPY-15 (transport authentication) "is not covered by"
+that file. This verdict is about the SPEC's IPY-15, mapped by ORACLE, never by label.

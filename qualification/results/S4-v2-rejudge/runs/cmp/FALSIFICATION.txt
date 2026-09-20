@@ -1,0 +1,46 @@
+=== CMP-02 / CMP-04 FALSIFICATION ARMS ===
+
+The PASS in ./verdict.json (16/16) is only worth something if the same checks go
+red when the defects they name are present. TWO arms were run, and the SECOND was
+necessary because the first was too coarse to falsify one clause.
+
+── ARM 1 (runs/cmp-negative/): sandbox-policy DISABLED + tool-pwsh re-enabled ──
+checks_passed: 8/16   verdict: FAIL
+
+  FAIL the probe recorded no error
+       "RemoteError: agent-presets: preset \"daily-standard\" failed to mount:
+        2 row(s) did not activate:
+        workflow-ptc (dsh-workflow-ptc): waiting for ptcRuntime, sandboxPolicy
+        tool-workflow (dsh-tool-workflow): waiting for workflowEngine"
+  FAIL CMP-02: its workspaceRoot resolves to an absolute path   (workspaceRoot: null)
+  FAIL CMP-02: the EFFECTIVE mode for a real session            (defaultMode: null, perSession: [])
+  FAIL CMP-04: a real Session was created                       (sessionId: null)
+  FAIL CMP-04: ipython is PRESENT / work is PRESENT
+  FAIL CMP-04: the tool count was MEASURED                      (toolCount: null)
+
+This CONFIRMS CMP-02's named failure mode: disabling the row leaves dependent rows
+pending (workflow-ptc waiting on sandboxPolicy) and collapses the tool face.
+
+BUT IT DOES NOT FALSIFY THE `pwsh ABSENT` CLAUSE, and saying so is the point:
+`ok CMP-04: pwsh is ABSENT` is listed as PASS in this arm -- because the catalog
+was EMPTY (toolCount null), and an empty catalog contains no pwsh either. A clause
+that passes vacuously is not evidence for the clause. So a second arm was needed.
+
+── ARM 2 (runs/cmp-pwsh-control/): tool-pwsh re-enabled ONLY ──
+checks_passed: 15/16   verdict: FAIL
+
+  FAIL CMP-04: pwsh is ABSENT from the model-visible catalog
+  measured toolCount: 28  (the clean run measures 27)
+  namesSorted now contains "pwsh" and the rest of the set is unchanged
+
+EXACTLY ONE check moved, on a NON-EMPTY catalog. That is what makes the `pwsh
+absent` clause load-bearing rather than vacuous, and it independently reproduces
+the v1 CMP-04/CMP-13 contradiction's arithmetic: v1's oracle pinned 28 because
+`pwsh` was present, and commit 35c829d disabled it, giving 27.
+
+── WHAT THE CONTROL ESTABLISHES, AND WHAT IT DOES NOT ──
+It establishes that the driver's clauses discriminate. It does NOT establish that
+the CLEAN run's 27 is a product fact rather than an overlay artifact: that rests
+on the overlay's own content, which inserts exactly ONE row (the probe) and
+restates no product row. The overlay is archived beside the verdict and its sha256
+is recorded in it.

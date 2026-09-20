@@ -1,0 +1,141 @@
+=== S4 DATA-09 / DATA-11 EVIDENCE, measured 2026-09-20 in D:\DSH\work\wt-s4 ===
+Branch wt/s4, HEAD fef7612fa427ce04aed8a329dd22a80fd8fc8e77
+
+########################################################################
+# DATA-09 — every ACQUISITION gap is attributed to a stage
+########################################################################
+ORACLE (v2): "Every ACQUISITION gap ... appears in acquisition.gaps with its stage from
+the closed set provider-acquisition, native-acquisition, transform, retention, plus a
+recovery from page/refetch/none/unknown. A loss at one of those four stages that is
+not recorded as a gap is NOT PASS. TWO STAGES ARE DELIBERATELY ABSENT ... model-projection
+is not an acquisition gap but a projection choice ... transport is not an acquisition
+gap because the product REJECTS an over-limit frame before any successful value exists."
+
+--- THE CLOSED SET AND THE RECOVERY SET, verified in THIS tree ---
+$ sed -n '139,150p' packages/dsh-daily-work/src/observations.ts
+export const OBSERVATION_GAP_STAGES = [
+  'provider-acquisition',   /* the provider itself never sent the bytes */
+  'native-acquisition',     /* a native tool clipped or capped */
+  'transform',              /* a derivation dropped information */
+  'retention',              /* storage refused or expired the object */
+] as const
+
+$ sed -n '179p' packages/dsh-daily-work/src/observations.ts
+export const OBSERVATION_GAP_RECOVERIES = ['page', 'refetch', 'none', 'unknown'] as const
+
+$ sed -n '328,331p' packages/dsh-daily-work/src/observations.ts
+export const observationGapSchema = z.object({  stage: z.enum(OBSERVATION_GAP_STAGES),
+  reason: z.string().min(1).max(MAX_GAP_REASON_CHARS),
+  recovery: z.enum(OBSERVATION_GAP_RECOVERIES),
+})
+   -> the gap schema BINDS both closed sets, so an out-of-set stage is rejected by
+      the schema rather than merely documented.
+
+--- EVERY STAGE HAS A REAL PRODUCTION PRODUCER (non-test source) ---
+$ for s in provider-acquisition native-acquisition transform retention; do grep -rn "stage: '<s>'" packages/dsh-daily-work/src/*.ts | grep -v '\.test\.'; done
+provider-acquisition  web-provenance.ts:355
+native-acquisition    artifacts.ts:2339
+transform             web-provenance.ts:500, web-provenance.ts:516
+retention             artifacts.ts:2292, artifacts.ts:2395, artifacts.ts:2417
+
+--- THE GATE THAT IS THE ORACLE ---
+$ node node_modules/vitest/vitest.mjs run src/data-plane.test.ts -t "ALL FOUR acquisition stages"
+  Tests  1 passed | 81 skipped (82)
+It asserts: the closed set is EXACTLY the four (not "six minus two"); transport and
+model-projection are ABSENT BY NAME so a re-addition is a visible failure; ALL FOUR
+have a real producer, found by PARSING non-test sources (a declaration is not a
+producer, comments excluded); the producer count is exactly 4, "so a future fix that
+re-adds two names and two fake producers cannot pass by satisfying the emptiness
+check alone"; AND the negative half — the two removed names have NO gap producer
+anywhere, so the split changed what the product EMITS and not only what it allows.
+
+$ node node_modules/vitest/vitest.mjs run src/data-plane.test.ts -t DATA-09
+  Tests  12 passed | 70 skipped (82)   (includes the schema-version refusal arms)
+
+--- BEHAVIOURAL COVERAGE ---
+$ node node_modules/vitest/vitest.mjs run src/data-r6.test.ts
+  Test Files  1 passed (1)
+       Tests  38 passed (38)
+  "marks a provider-capped fetch PARTIAL with a provider-acquisition gap and a refetch recovery"
+  "records a COMPLETE fetch as complete-within-request, so the partial marking is not vacuous"
+  "a REFETCH creates a NEW observation; the earlier partial record is never rewritten into full"
+  "reports a QUOTA refusal as a partial observation with a retention gap and NO artifact"
+  "the projection manifest is a SEPARATE fact from acquisition"
+
+--- FALSIFICATION ---
+Retagged the native-acquisition producer at artifacts.ts:2339 to stage: 'retention',
+leaving a stage in the closed set with NO producer — the v1 FAIL, relocated:
+$ node node_modules/vitest/vitest.mjs run src/data-plane.test.ts -t "ALL FOUR acquisition stages"
+  Tests  1 failed | 81 skipped (82)
+RESTORED byte-exact (git diff --stat empty).
+
+--- ROUND 1's BEFORE/AFTER, and its numbers reproduce here ---
+qualification/results/R8-taxonomy-split/BEFORE-data09.json: closedSetSize 6, with
+  transport AND model-projection present, BOTH at producerCount 0, and the note that
+  v1 recorded "a provider that sent less than we asked for" and "a complete artifact
+  we chose to summarize" in the SAME field with the SAME recovery vocabulary.
+qualification/results/R8-taxonomy-split/AFTER-data09.json: closedSetSize 4,
+  coverageMatchesGapStages true, producerCount 4, stagesWithNoProducer [].
+  model-projection -> a ProjectionManifest with NO stage and NO recovery field (so it
+  cannot be mistaken for a loss); transport -> an error path.
+THE ROUND-2 BRIEF section 2 lists F7 as closed by "ProjectionManifest split, schema
+v1->v2", evidence R8-taxonomy/. THAT CLAIM HOLDS UP.
+
+--- SCOPE LIMIT ---
+This case was SPLIT in v2: treatment "split", v2_case_ids ["DATA-09","DATA-13"], and
+the v2-only case DATA-13 is the ProjectionManifest half. DATA-13 is OUTSIDE this
+writer's 13-case slice; this verdict does not speak for it.
+
+########################################################################
+# DATA-11 — a page cursor is not a bearer token
+########################################################################
+ORACLE (v2): "Replay a valid cursor against a different store or a different revision.
+... The cursor is refused and the refusal is recorded. A cursor that yields pages from
+a store it was not issued for is NOT PASS."
+
+$ node node_modules/vitest/vitest.mjs run src/data11-cursor-realm.test.ts
+  Test Files  1 passed (1)
+       Tests  32 passed (32)
+  REFUSED: arm 3 refuses store A's cursor presented to store B holding the SAME bytes;
+    "refuses the cross-store replay BEFORE any byte is read, so no unverified content
+    escapes"; refuses a store holding DIFFERENT bytes under the same address; refuses
+    even when the other store has no object at all. Arm 2 refuses a cursor after the
+    grant revision moves. Arm 4 refuses a tampered, re-signed and realm-edited cursor.
+  RECORDED: "journals a cross-store refusal durably, naming both realms and the step";
+    "records the refusal through the request sink even when no journal is mounted";
+    "maps every refusal code to the read-order step that produced it"; "keeps recording
+    refusals across many attempts rather than only the first".
+  DURABLE REALM: "survives a REAL process restart: the realm read by one process is
+    the one a second process reads"; "lets a cursor minted before a restart resume
+    after it, which a per-boot realm could not"; "refuses rather than silently minting
+    a new realm when the realm file is malformed".
+
+--- THE MECHANISM IN THIS TREE ---
+artifacts.ts:180, :382   storeRealmId is a durable field of the store record
+artifacts.ts:415-430     minted ONCE per store root and PERSISTED; a concurrent
+                         creator converges on the winner's realm
+artifacts.ts:466-473     a realm file with no storeRealmId is REFUSED, not re-minted
+artifacts.ts:1513-1520   assertRealm(cursor, storeRealmId) compares the cursor's realm
+                         against the SERVING store's and throws ArtifactError(
+                         'pagination-realm-denied', { realmRefused: true }) with the
+                         message "a cursor is not a bearer token and cannot be
+                         replayed against another store"
+   -> NOTE THE CONTRAST WITH IPY-15: this refusal carries a STRUCTURED code and a
+      structured flag, which is what the IPY-15 oracle asks for and does not get.
+
+--- FALSIFICATION ---
+Neutered assertRealm's comparison to `if (false && cursor.storeRealmId !== storeRealmId)`,
+making the cursor a bearer token again — exactly the v1 defect:
+$ node node_modules/vitest/vitest.mjs run src/data11-cursor-realm.test.ts
+  Tests  7 failed | 25 passed (32)
+  The 7 red: all four arm-3 cross-store refusals, plus the journal, request-sink and
+  repeated-attempt arms in "the refusal is RECORDED, not merely raised".
+RESTORED byte-exact (git diff --stat empty).
+
+--- ROUND 1's CLAIM, JUDGED ---
+The round-2 brief section 2 lists F6 (cursor was a bearer token across stores) as
+closed by "durable store realm, bound as a SIGNED cursor field", evidence
+data11-cursor-realm.test.ts 32/32. THAT CLAIM HOLDS UP, and my independent
+falsification corroborates it. qualification/results/R7-cursor-realm/ holds the
+before/after pair (before.json = the bearer-token state, after.json = the realm-bound
+state, plus boot1.json / product-boot.json showing the fix reached a real boot).

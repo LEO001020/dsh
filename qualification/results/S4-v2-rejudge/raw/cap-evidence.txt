@@ -1,0 +1,107 @@
+=== S4 CAP-10 EVIDENCE, measured 2026-09-20 in D:\DSH\work\wt-s4 ===
+Branch wt/s4, HEAD fef7612fa427ce04aed8a329dd22a80fd8fc8e77
+
+ORACLE (v2 definition, CAP-10): "No duplicate launch, no overshoot past the target,
+and no missed replacement; the coalesced drain is shown to be re-triggerable. The
+exact launch count is recorded."
+
+########################################################################
+# 1. THE EXACT LAUNCH COUNT, and the v1 comparison
+########################################################################
+$ cd packages/dsh-daily-work
+$ node node_modules/vitest/vitest.mjs run src/capacity-v8-probe.test.ts -t CAP-10
+[V8/CAP-10 measured] freedSlots=2 concurrentRequests=3 admitted=2 heldAgainstTarget3=3 acceptedIds=["child-70","child-71"] deficitAfter=0
+  Tests  1 passed | 3 skipped (4)
+
+ARCHIVED v1 BEFORE (qualification/results/R3-f5-admission/before-cap10-probe.txt):
+[V8/CAP-10 measured] freedSlots=2 concurrentRequests=3 admitted=3 heldAgainstTarget3=4 deficitAfter=0
+  (an it.fails / "expected fail" at the time)
+ARCHIVED v1 AFTER (qualification/results/R3-f5-admission/after-cap10-probe.txt):
+[V8/CAP-10 measured] freedSlots=2 concurrentRequests=3 admitted=2 heldAgainstTarget3=3 acceptedIds=["child-70","child-71"] deficitAfter=0
+
+Same stimulus. v1 admitted THREE against two free slots and left FOUR tasks holding
+slots against a target of three; this tree admits TWO and holds exactly three.
+
+########################################################################
+# 2. THE OTHER THREE CLAUSES, in f5-admission.test.ts
+########################################################################
+$ node node_modules/vitest/vitest.mjs run src/f5-admission.test.ts
+  Test Files  1 passed (1)
+       Tests  20 passed (20)
+
+  no duplicate launch:
+    "the same taskId submitted concurrently admits once, and its credit is reserved once"
+    "exactly ONE of the six duplicates is admitted"
+  no overshoot past the target:
+    "F5/H4-1: a storm of concurrent drains cannot hold more than the target"
+    "four completions at once admit exactly four replacements, and the storm does not exceed"
+  no missed replacement:
+    the same H4-3 arm (four completions -> exactly four replacements)
+  the coalesced drain is RE-TRIGGERABLE (the oracle's own phrase):
+    "F5/layers: the invariant holds WITHOUT the coalescer" >
+    "THE COALESCER IS RE-TRIGGERABLE: a later arrival still causes a new pass"
+    plus "WITH THE COALESCER DEFEATED: concurrent reservations still never exceed the
+    target" and "...the generation refuses a caller that decided from a stale revision"
+
+########################################################################
+# 3. THE FIX IN THIS TREE
+########################################################################
+(a) The v1 defect is GONE AT THE SOURCE. `pendingDrain` no longer exists as the
+    coalescer; host.ts:408-418 documents its replacement:
+      "Replaces the old `pendingDrain: Map<string, Promise<LaunchOutcome[]>>`, whose
+       coalescing was a one-shot `await` that let every waiter start its own pass."
+    and host.ts:1957-1975 quotes the old code and explains why the await was the
+    mechanism that SYNCHRONIZED the callers rather than the protection:
+      const inFlight = this.pendingDrain.get(runId)
+      if (inFlight !== undefined) await inFlight          // awaits the OTHER drain
+      const task = this.runDrain(runId, requests, signal) // <-- no re-check
+    The replacement is a generation/dirty loop: one leader per run runs passes while
+    `requestedGeneration > handledGeneration`, and an arrival during a pass only
+    advances the generation and joins the leader.
+(b) THE TARGET CHECK MOVED INSIDE THE STORAGE-DOMAIN UPDATE, which is what actually
+    closes the hole. host.ts:1499 `if (held >= target)` sits INSIDE the
+    `this.runs().update(...)` transform (opened at host.ts:1379), where the domain's
+    per-run write chain serializes it against every other write to that run. That is
+    the same place the BUDGET check already was, which is why the sibling case CAP-09
+    never had this hole.
+
+########################################################################
+# 4. FALSIFICATION — and it took TWO layers, which is itself a finding
+########################################################################
+ARM A: neuter the target check ALONE (host.ts:1499 -> `if (false && held >= target)`)
+  $ node node_modules/vitest/vitest.mjs run src/capacity-v8-probe.test.ts -t CAP-10
+  [V8/CAP-10 measured] ... admitted=2 heldAgainstTarget3=3 ...   -> STILL 2, test PASSED
+  The overshoot did NOT return. A probe that instrumented WHICH refusal fired found
+  the third call refused by the `mayAdmit` pre-check at host.ts:2150 instead:
+  [S4-MEASURED] CAP-10-refusals {"firstAccepted":3,"accepted":["child-70","child-71"],
+    "refusals":[{"taskId":"task-72"}]}
+  THIS IS A REAL LAYERING FACT and is recorded rather than hidden: the invariant has
+  TWO independent enforcers, and neutering one does not restore the defect.
+
+ARM B: neuter BOTH layers — the target check AND `mayAdmit`'s slot comparison
+  (counting.ts:353 `return counts.capacityDeficit > 0` -> `return true`)
+  $ node node_modules/vitest/vitest.mjs run src/capacity-v8-probe.test.ts -t CAP-10
+  [V8/CAP-10 measured] freedSlots=2 concurrentRequests=3 admitted=3 heldAgainstTarget3=4 deficitAfter=0
+  Tests  1 failed | 3 skipped (4)
+  THE V1 SIGNATURE REPRODUCED BYTE-FOR-BYTE, and the gate went red.
+  BOTH FILES RESTORED byte-exact (git diff --stat empty; git status --porcelain shows
+  only the untracked results directory).
+
+########################################################################
+# 5. A MEASUREMENT BUG I MADE AND CORRECTED — the first reading was WRONG
+########################################################################
+My first attribution probe read `o.reason` off a LaunchOutcome and printed
+`reason: 'none'` for the REFUSED third call, which reads as "refused with no reason".
+That was MY bug, not the product's: `reason` is optional on LaunchOutcome
+(host.ts:124-130) and `'none'` is the SUCCESS reason on the DIFFERENT
+AdmissionReservation type (host.ts:142-149). The LaunchOutcome for a refused task
+carries no reason at all, which is why the corrected probe above prints only the
+taskId. The refusal is real and is produced by mayAdmit, established by ARM B.
+
+########################################################################
+# 6. ROUND 1's CLAIM, JUDGED
+########################################################################
+The round-2 brief section 2 lists F5 (target over-admission) as closed by
+"tryReserveAdmission inside ONE storage-domain update", evidence f5-admission.test.ts
+20/20. THAT CLAIM HOLDS UP: 20/20 measured, the mechanism is where the brief says it
+is, and the archived after-probe reports the same admitted=2 that my own run reports.

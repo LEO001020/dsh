@@ -1,0 +1,124 @@
+=== S4 ID-01 EVIDENCE, measured 2026-09-20 in D:\DSH\work\wt-s4 ===
+Branch wt/s4, HEAD fef7612fa427ce04aed8a329dd22a80fd8fc8e77
+Home D:/DSH/home/s4. Launcher D:/DSH/src/dsh-src/apps/cli/lib/bin.js
+
+ORACLE (v2 definition, ID-01): "The first tool call actually succeeds and the resolved
+module graph is recorded: every `@deepseek-ai/*` specifier resolves under
+`D:\DSH\src\dsh-src\packages\*\lib\`, and sha256 of the launcher equals
+`deployment.inputs.artifact_sha256`. A run whose only success is `--help`, or whose
+graph mixes `src` and `lib`, is NOT PASS."
+
+########################################################################
+# 1. THE RUN
+########################################################################
+$ node qualification/results/S4-v2-rejudge/probe/s4-id01-driver.mjs
+port: 7471  portReleased: true  timedOut: false  exitCode: null
+checks_passed: 23/23
+verdict: PASS
+artifact: D:/DSH/work/wt-s4/qualification/results/S4-v2-rejudge/runs/id01/verdict.json
+
+Build freshness, recorded so a STALE BUILD cannot be mistaken for a product fact:
+rebuild packages/dsh-daily-work: exit=0 in 2132ms
+rebuild packages/dsh-ipython:    exit=0 in 1393ms
+build dsh-daily-work: lib newest=2026-09-20T10:51:27.823Z src newest=2026-09-20T10:47:34.593Z libNewerThanSrc=true files=39
+build dsh-ipython:    lib newest=2026-09-20T10:51:29.451Z src newest=2026-09-20T10:27:34.065Z libNewerThanSrc=true files=13
+
+THE IDENTITY CLAUSE:
+sha256 of the launcher = 69c49c871735dc7ee81ec51f266bbec129f075fd5066e046374f4b13ab02a705
+deployment.inputs.artifact_sha256 (compatibility.lock.json) = 69c49c871735dc7ee81ec51f266bbec129f075fd5066e046374f4b13ab02a705  -> EQUAL
+and the probe confirms the RUNNING process IS that launcher:
+runningArgv1Realpath = D:\DSH\src\dsh-src\apps\cli\lib\bin.js
+lockedRealpath       = D:\DSH\src\dsh-src\apps\cli\lib\bin.js
+runningMatchesLockedRealpath = true; launcherSha256MatchesLockedArtifact = true
+
+THE FIRST-CALL CLAUSE (not merely `--help`):
+a real Session was created (session-2e9657ac-5666-4a21-9332-c042d5f2a767, agentPreset daily-standard)
+the turn completed rather than hanging (turnWaitMs 1934, turnTimedOut false, turnEndReason "completed")
+the first tool call SUCCEEDED: toolCallRequested {name "read", callId "t17-first-call"},
+  toolResultSeen true, toolResultIsError false
+the tool result CARRIES THE FILE'S OWN TEXT, so the call reached a real tool body:
+  "<path>D:\DSH\work\wt-s4\qualification\results\S4-v2-rejudge\runs\id01\first-call-input.txt</path>
+   <type>file</type><content>1: S4_ID01_FIRST_TOOL_CALL_ROUND_TRIP
+   (End of file - total 1 lines)</content>"
+the turn did NOT die on the module-identity symptom (identityDefectSymptom: "absent")
+the peers the host mounted are ONE physical copy each (singletonVerdict pass true, 6/6 from BUILT, 0 from SOURCE)
+
+THE GRAPH CLAUSE — THE ONE V1 FAILED ON, and it is now CLEAN:
+graph: 723 resolution lines, 222 distinct @deepseek-ai specifiers
+  from BUILT: 221  SOURCE: 0  OTHER: 1
+  under packages\*\lib\: 213   vendor\*\lib\: 7   node_modules: 1
+  no @deepseek-ai specifier resolved to a source (.ts) file  -> PASS (offenders [])
+  no specifier resolved to two different files               -> PASS ([])
+  every resolved file is inside the pinned checkout           -> PASS ([])
+  the only non-lib resolution is the web app manifest read    -> PASS
+    (@deepseek-ai/dsh-web-frontend/package.json -> apps/web/package.json; a manifest
+     read, not a module load; EXCLUDED BY NAME and the exclusion asserted to be
+     exactly that one row)
+  the resolved files sit under the checkout lib/ trees        -> PASS
+    (221 == 213 packages + 7 vendor + 1 node_modules)
+
+########################################################################
+# 2. FALSIFICATION — the negative control the PASS rests on
+########################################################################
+The v1 defect was re-injected into packages/dsh-daily-work/src/artifacts.ts so the
+driver's own rebuild would emit it into the BUILT artifact:
+    import { publishImmutableObjectStream as __S4_PROBE } from '@deepseek-ai/dsh-attachment-local/src/store.ts'
+    export const __s4Probe = __S4_PROBE
+
+$ node qualification/results/S4-v2-rejudge/probe/s4-id01-driver.mjs
+FAIL no @deepseek-ai specifier resolved to a source (.ts) file
+     observed: {"fromBuilt":221,"fromSource":1,"fromOther":1,
+                "offenders":[["@deepseek-ai/dsh-attachment-local/src/store.ts",
+                              "D:\\DSH\\src\\dsh-src\\packages\\attachment\\attachment-local\\src\\store.ts"]]}
+checks_passed: 22/23
+verdict: FAIL
+Archived at qualification/results/S4-v2-rejudge/runs/id01-falsification/
+
+THE OFFENDER IS BYTE-FOR-BYTE THE ONE V1 RECORDED, including the resolved path. That
+is what makes this a reproduction of v1's FAIL rather than a new defect.
+
+A WEAKER CONTROL WAS RUN FIRST AND IS RECORDED because it initially looked like a
+failed falsification: injecting the import into the BUILT lib/artifacts.js ALONE left
+the graph clause GREEN, because the driver REBUILDS both packages before booting and
+the rebuild overwrote the injected lib/. That is the driver working as designed
+(trap 1, stale build) — the graph clause is a property of the built tree the boot
+actually loads, and the driver proves freshness before measuring.
+
+RESTORED: git diff --stat on the source file is empty; git hash-object equals
+git rev-parse HEAD:<path> = 6d639744625b7871b7a0abdd23a5670bc0bb471f; lib/ rebuilt from
+the restored source and contains no src/store.ts import (only a comment citing it).
+
+########################################################################
+# 3. THE INSTRUMENT, and what it costs
+########################################################################
+qualification/results/S4-v2-rejudge/probe/s4-id01-driver.mjs is a COPY of
+qualification/results/V1-identity/id01-driver.mjs with every path rewritten at this
+worktree (REPO D:/DSH/work/wt-s4, HOME D:/DSH/home/s4, RUN_DIR under S4-v2-rejudge/).
+Running v1's driver unchanged would have measured the MAIN checkout's profile and
+probe, not this writer's tree. The original instruments are recorded BY HASH in the
+verdict artifact so the divergence is visible:
+  v1 probe   qualification/results/T17-identity/probe-plugin.mjs     sha256 387f610e...
+  v1 adapter qualification/results/T17-identity/first-call-adapter.mjs sha256 01b2a254...
+  this probe qualification/results/S4-v2-rejudge/probe/s4-id01-probe.mjs  (REPO rewritten, name changed)
+  this adapter = the v1 adapter UNCHANGED (no path in it)
+NO CHECK WAS DROPPED AND NO THRESHOLD WAS MOVED.
+
+THE TRAP THE DRIVER ITSELF FELL INTO, recorded because it produced a FALSE FAIL on the
+first run: the repository's own profiles/daily-candidate/package.json links the MAIN
+checkout (link:D:/DSH/work/dsh-native-daily/...). new-writer.ps1 rewrites those targets
+at the writer's worktree when it provisions the home, but this driver DELETES the
+provisioned profile and re-copies the REPOSITORY one, restoring the main-checkout links.
+MEASURED CONSEQUENCE: the boot resolved dsh-daily-work to
+D:\DSH\work\dsh-native-daily\packages\dsh-daily-work, whose BUILT lib/artifacts.js
+still contains the F4 deep import at line 73, and whose daily-work-command row failed to
+activate. The driver reported FAIL on the graph clause and on the first tool call — a
+measurement of the MAIN checkout presented as a measurement of this tree, i.e. exactly
+the stale-artifact defect class (G-SEAM-29/36) the brief names. The driver now
+REPRODUCES the provisioner's rewrite and ASSERTS it, and refuses (exit 3) if the
+profile does not link this worktree.
+
+THE GRAPH CLASSIFIER is copied from v1's driver verbatim, because the classification IS
+part of the oracle. My first version used a `/src/` substring fallback and produced
+three false FAILs: the checkout is D:\DSH\src\dsh-src, so EVERY path inside it contains
+a `src` segment. A URL is SOURCE only when the file ends in .ts; BUILT only when it
+names a lib/*.js|mjs|cjs at ANY DEPTH (the build emits a nested lib/types/ tree).

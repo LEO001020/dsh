@@ -1,0 +1,86 @@
+=== S4 ID-06 EVIDENCE — the pinned checkout's state, measured 2026-09-20 ===
+Checkout: D:\DSH\src\dsh-src   (READ-ONLY; nothing was written there)
+
+--- 1. THE STIMULUS, run verbatim ---
+$ git status --porcelain
+ M packages/deliverables/workspace-changes/src/index.ts
+$ git rev-parse HEAD
+ddefc45fbc7f8e46dd73185e68295696d1297887
+
+ONE entry, and it is a tracked modification. HEAD equals the pinned commit.
+
+--- 2. THE ORACLE, quoted ---
+v2 definition, ID-06: "The working tree is clean and HEAD equals
+`ddefc45fbc7f8e46dd73185e68295696d1297887`. Any tracked modification, any staged
+change, or a moved HEAD is NOT PASS."
+
+A tracked modification IS reported. The oracle admits no carve-out. => FAIL.
+
+--- 3. THE ENTRY IS AN EOL/STAT ARTIFACT — four independent measurements ---
+(a) No content delta:
+    $ git diff --numstat
+    (empty; only the warning "CRLF will be replaced by LF the next time Git touches it")
+    $ git diff --quiet ; echo $?
+    0
+(b) The blob ids are identical:
+    $ git rev-parse HEAD:packages/deliverables/workspace-changes/src/index.ts
+    c05787d931870defacfdfcb4feca85f4ae733d8e
+    $ git hash-object packages/deliverables/workspace-changes/src/index.ts
+    c05787d931870defacfdfcb4feca85f4ae733d8e
+(c) The bytes differ only in line endings:
+    disk: 7251 bytes, 165 CR, 0 bare LF, sha256 945c691953c05448dfd7c281ed23fe9de7b7860b994cbc92c3966513495a306d
+    HEAD: 7086 bytes,   0 CR, 165 LF, sha256 706b9801c821c56eeda03bc82e755a11cce6eff6386fddca1f5bc2c6ab27c0a7
+    $ git check-attr -a -- packages/deliverables/workspace-changes/src/index.ts
+    ...: text: auto
+    ...: eol: lf
+    $ git config core.autocrlf
+    true
+(d) THE MECHANISM IS GENERAL, not a property of this checkout. Control experiment
+    in a throwaway repo (/tmp/s4-ctl): a committed LF file under `* text=auto eol=lf`,
+    rewritten on disk as CRLF, produces exactly the same signature:
+      $ git status --porcelain   ->  " M f.ts"
+      $ git diff --quiet         ->  exit 0
+      $ git hash-object f.ts == git rev-parse HEAD:f.ts  ->  9e55dd91d22e0dba87f197b1f93525a31c2a815c
+      $ git update-index --refresh -> "f.ts: needs update", exit 1, status still " M"
+
+--- 4. WHAT I DID TO TRY TO MAKE IT PASS ---
+I never wrote to the shared index. Two attempts, both against a COPY of it:
+(a) GIT_INDEX_FILE=/tmp/s4-index-copy git update-index --refresh
+    -> "packages/deliverables/workspace-changes/src/index.ts: needs update"
+    -> GIT_INDEX_FILE=/tmp/s4-index-copy git status --porcelain  -> STILL " M"
+(b) A temp index built from HEAD, then git add of the disk file:
+    $ GIT_INDEX_FILE=/tmp/s4-idx2 git read-tree HEAD
+    $ GIT_INDEX_FILE=/tmp/s4-idx2 git add packages/deliverables/workspace-changes/src/index.ts
+    $ GIT_INDEX_FILE=/tmp/s4-idx2 git diff --cached --numstat HEAD
+    (EMPTY — staging produces NO change)
+    $ GIT_INDEX_FILE=/tmp/s4-idx2 git ls-files -s <path>
+    100644 c05787d931870defacfdfcb4feca85f4ae733d8e 0  <path>
+    $ git ls-tree HEAD <path>
+    100644 blob c05787d931870defacfdfcb4feca85f4ae733d8e  <path>
+    -> the entry cannot be cleared by staging, because there is no content delta to stage.
+The real index was verified UNCHANGED: sha256 cfb2958b0bec566de42648d54b440da7aa7b49b247972184daa79a2abff18dda,
+mtime 2026-09-19 10:42:49, identical before and after every probe.
+
+--- 5. THE TWO UNTRACKED DIRECTORIES ARE GONE ---
+$ git status --porcelain --untracked-files=all
+ M packages/deliverables/workspace-changes/src/index.ts
+(no `??` lines at all). `DSHhomem914/` and `data-artifacts/` no longer exist.
+The tree went from 3 entries (the v1 record) to 1.
+
+--- 6. PROVENANCE OF THE ENTRY (it predates this project's session) ---
+$ stat -c '%y %n' packages/deliverables/workspace-changes/src/index.ts
+2026-09-19 19:19:47.523704400 +0800
+$ git ls-files --debug <path>   ->  ctime/mtime 1789785717:474320000 = 2026-09-19 10:41:57 local
+It is the ONLY CRLF file among a 400-file tracked sample:
+$ git ls-files | head -400 | <grep for CR> | wc -l   ->  0
+$ git grep -l -I -P '\r' -- '*.ts' '*.json' '*.md'  ->  1 file (this one)
+
+--- 7. THE JUDGEMENT, AND ITS LIMIT ---
+FAIL, on the oracle's own unconditional text. But the FAIL is about the
+QUALIFICATION ENVIRONMENT, not the product: the qualified artifact is the BUILT
+apps/cli/lib/bin.js, whose sha256 still equals deployment.inputs.artifact_sha256
+(verified in the ID-01 run: 69c49c871735dc7ee81ec51f266bbec129f075fd5066e046374f4b13ab02a705),
+and no source byte differs. A future PASS needs one of two changes to a tree this
+writer does not own: a qualification checkout created with core.autocrlf=false, or
+`git add --renormalize` on that path (which rewrites the shared index). NEITHER WAS
+PERFORMED.

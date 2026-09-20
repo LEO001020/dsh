@@ -1,0 +1,40 @@
+=== S4 CMP-02 + CMP-04: one composed boot, two reads ===
+repo: D:/DSH/work/wt-s4
+home: D:/DSH/home/s4
+at:   2026-09-20T10:54:07.211Z
+profile links: dsh-daily-work=link:D:/DSH/work/wt-s4/packages/dsh-daily-work | dsh-ipython=link:D:/DSH/work/wt-s4/packages/dsh-ipython
+profile links all point at THIS worktree: true
+plugin install: exit=0
+port: 10381  portReleased: true  timedOut: false  exitCode: null
+ok   the probe wrote its result
+       observed: "present"
+ok   the result names the home this driver booted
+       observed: {"roots":["D:\\DSH\\src\\dsh-src\\packages\\preset\\agent-presets\\presets\\","D:/DSH/home/s4/profiles/daily/presets/","D:\\DSH\\home\\s4\\.agent-presets"]}
+ok   the boot did not time out
+ok   the host was killed and the port released
+ok   the probe recorded no error
+       observed: null
+ok   CMP-02: a row with id sandbox-policy is present (NOT deleted)
+       observed: {"rowPresent":true,"rowFiberState":2}
+ok   CMP-02: its configured mode is danger-full-access
+       observed: {"configuredMode":"danger-full-access","configAsComposed":{"mode":"danger-full-access","workspaceRoot":{"__jsExpr":"process.cwd()"}}}
+ok   CMP-02: its workspaceRoot resolves to an absolute path
+       observed: {"workspaceRoot":"C:\\Windows\\Temp","resolveWithNoSession":{"mode":"danger-full-access","workspaceRoot":"C:\\Windows\\Temp"}}
+ok   CMP-02: the EFFECTIVE mode for a real session is danger-full-access
+       observed: {"defaultMode":"danger-full-access","perSession":[{"sessionId":"session-d0cf0e9c-999f-4ec1-89e6-e72f0398dd98","override":null,"resolved":"danger-full-access","resolvedWorkspaceRoot":"D:/DSH/work/wt-s4"}]}
+ok   CMP-04: a real Session was created
+       observed: {"sessionId":"session-d0cf0e9c-999f-4ec1-89e6-e72f0398dd98","agentPresent":true}
+ok   CMP-04: ipython is PRESENT on the model-visible catalog
+ok   CMP-04: work is PRESENT on the model-visible catalog
+FAIL CMP-04: pwsh is ABSENT from the model-visible catalog
+ok   CMP-04: the probe error is null
+       observed: null
+ok   CMP-04: presetRoots names the home that was actually booted
+       observed: ["D:\\DSH\\src\\dsh-src\\packages\\preset\\agent-presets\\presets\\","D:/DSH/home/s4/profiles/daily/presets/","D:\\DSH\\home\\s4\\.agent-presets"]
+ok   CMP-04: the tool count was MEASURED and is recorded verbatim
+       observed: {"toolCount":28,"namesSorted":["ask_user_question","create_goal","edit","exit_plan_mode","get_goal","glob","grep","interrupt_agent","ipython","job_kill","job_list","job_output","list_agents","present","pwsh","read","read_image","send_message","skill","subagent","subagent_fork","todo_write","update_goal","web_fetch","web_search","work","workflow","write"]}
+
+CMP-02 workspaceRoot: "C:\\Windows\\Temp"
+CMP-04 measured tool count: 28
+checks_passed: 15/16
+verdict: FAIL

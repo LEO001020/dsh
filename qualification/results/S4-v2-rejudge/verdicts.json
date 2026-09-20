@@ -1,0 +1,534 @@
+{
+  "schema_version": 1,
+  "kind": "TRUSTED_LOCAL_V2_VERDICTS_NOT_A_DSH_ARTIFACT",
+  "qualification_contract_identity": "ea50307307130900d48fa867fa45d9d2b8a1978f73f0efb16bcc1c89520164df",
+  "runtime_deployment_identity": "1a900e389a5d9622d7c0dd248892ec6625c36141c16268bf542eca82f9133c22",
+  "acceptance_definition_digest": "115aa092d0279c005d6f83d0412c1e00d374b60f803dd10f56eaba878ed664e1",
+  "verdict_vocabulary": [
+    "NOT_RUN",
+    "PASS",
+    "FAIL",
+    "NOT_CLAIMED",
+    "BLOCKED_EXTERNAL",
+    "REUSED_EVIDENCE (a binding, not a verdict)"
+  ],
+  "produced_by": {
+    "writer": "S4",
+    "slice": "re-judge the 13 v1 FAILs under the v2 definition, one case at a time, with a real run per case",
+    "worktree": "D:\\DSH\\work\\wt-s4",
+    "branch": "wt/s4",
+    "head_at_measurement": "fef7612fa427ce04aed8a329dd22a80fd8fc8e77",
+    "dsh_home": "D:\\DSH\\home\\s4",
+    "measured_at": "2026-09-20",
+    "note": "A PARTIAL file by design: it covers ONLY the 13 cases this writer was assigned. It is not a filing for the other 97 cases, which remain NOT_RUN in qualification/results/trusted-local-v2.88834ae45ad7/verdicts.json. The two files share a schema and a vocabulary; only the verdicts array here is a subset.",
+    "identity_note": "The two identity values above were computed by qualification/runners/qualification-identity.py against THIS worktree, so they differ from the archived trusted-local-v2.88834ae45ad7 values. `implementation_commit` is a runtime-identity input, and this tree is 88 commits ahead of the archived fe3ef72a. That is the intended behaviour of the split (a result must name the revision it was measured at), and it means this file's verdicts are bound to fef7612, not to the archived identity. The acceptance_definition_digest is UNCHANGED and re-verified: the v2 definition file is byte-identical to the one the archived identity names."
+  },
+  "verdicts": [
+    {
+      "case_id": "ID-01",
+      "verdict": "PASS",
+      "evidence": [
+        {
+          "kind": "run",
+          "path": "qualification/results/S4-v2-rejudge/runs/id01/verdict.json",
+          "sha256": "28d8f56eab904e4fa540f7d7a7b78073c7418897803b737786f929edace8421e",
+          "note": "23/23 checks. Real built-launcher boot from this worktree (home D:/DSH/home/s4, launcher D:/DSH/src/dsh-src/apps/cli/lib/bin.js, port 7471, portReleased true). Launcher sha256 = 69c49c871735dc7ee81ec51f266bbec129f075fd5066e046374f4b13ab02a705 = deployment.inputs.artifact_sha256. Graph recorded from inside the host by a loader hook: 723 resolution lines, 222 distinct @deepseek-ai specifiers, fromBuilt 221 / fromSource 0 / fromOther 1 (the @deepseek-ai/dsh-web-frontend/package.json manifest read, excluded by name). First tool call SUCCEEDED: read returned the file's own text S4_ID01_FIRST_TOOL_CALL_ROUND_TRIP, toolResultIsError false, turnEndReason completed. THE CLAUSE V1 FAILED ON IS NOW CLEAN: fromSource 0."
+        },
+        {
+          "kind": "run",
+          "path": "qualification/results/S4-v2-rejudge/runs/id01/transcript.txt",
+          "sha256": "e2ec3fdcdf87488f7b62307c3b31fa5706b92c713c043cb455553b8fe06d05d3",
+          "note": "The driver transcript with all 23 checks and the build-freshness numbers (lib newest 10:51:27 vs src newest 10:47:34, libNewerThanSrc true for both packages)."
+        },
+        {
+          "kind": "run",
+          "path": "qualification/results/S4-v2-rejudge/runs/id01/graph.jsonl",
+          "sha256": "afe223ca3fe1c2e712e79b85b56978033e6fc3a1d00ec88e6dd02221ecf4625a",
+          "note": "The raw 723-line resolution record, one JSON object per @deepseek-ai resolution with seq, specifier, url and parentURL."
+        },
+        {
+          "kind": "falsification",
+          "path": "qualification/results/S4-v2-rejudge/runs/id01-falsification/README.txt",
+          "sha256": "c231dd1b5e0b625b951fb257288435c4b06ae9303a3a8a9e88408d4bfc7bcd01",
+          "note": "THE NEGATIVE CONTROL. The v1 defect was re-injected into packages/dsh-daily-work/src/artifacts.ts and the SAME driver went 22/23 with verdict FAIL, reporting the byte-identical offender v1 recorded: @deepseek-ai/dsh-attachment-local/src/store.ts -> D:\\DSH\\src\\dsh-src\\packages\\attachment\\attachment-local\\src\\store.ts. Restored byte-exact afterwards (git hash-object = git rev-parse HEAD:<path> = 6d639744625b7871b7a0abdd23a5670bc0bb471f)."
+        },
+        {
+          "kind": "test",
+          "path": "qualification/results/S4-v2-rejudge/raw/id01-evidence.txt",
+          "sha256": "c3ae2f227359415c38270a8047112374705af3e20ce4030318d09f9d2837b1ef",
+          "note": "vitest run src/no-src-imports.test.ts -> 5 passed. The F4 build gate: emitted lib/ of every package clean, non-test src/ clean, the frozen justified-test allowlist exact in both directions, and the gate's own detector asserted to FAIL on an injected forbidden specifier.",
+          "cited": "packages/dsh-daily-work/src/no-src-imports.test.ts"
+        },
+        {
+          "kind": "note",
+          "path": "qualification/results/S4-v2-rejudge/probe/s4-id01-driver.mjs",
+          "sha256": "6d1b17d8aa574642f4063f72375a938f30b59bc78bd232796833bd537fc16d37",
+          "note": "The instrument, and it is a COPY of V1-identity/id01-driver.mjs with every path rewritten at this worktree. The original instruments are recorded by hash in the verdict artifact (v1 probe 387f610e…, v1 adapter 01b2a254…). No check was dropped and no threshold moved; only the tree under measurement changed."
+        }
+      ]
+    },
+    {
+      "case_id": "ID-05",
+      "verdict": "FAIL",
+      "evidence": [
+        {
+          "kind": "test",
+          "path": "qualification/results/S4-v2-rejudge/raw/id05-evidence.txt",
+          "sha256": "52af2309c3f8aad5ee4fe049a8395752368d7e2c750a7ce8a2974b63db73ecff",
+          "note": "CLAUSE 1 and CLAUSE 2 HOLD. Clean tree: tsc -p tsconfig.check.json exits 0 for BOTH packages. Mutation: appending `const S4_INJECTED: number = \"not a number\"` to src/capacity.test.ts makes it exit 2 at exactly src/capacity.test.ts(2144,7) error TS2322. CONTROL ARM, which the oracle names: the SAME injected error under tsconfig.json --noEmit exits 0, so it MISSES the error because that config excludes src/**/*.test.ts. Restored byte-exact (sha256 52cbe802ecdbbdf9118a7324a8672b33fbed276c0b308163a57f029585940926, git diff empty).",
+          "cited": "packages/dsh-daily-work/tsconfig.check.json"
+        },
+        {
+          "kind": "test",
+          "path": "qualification/results/S4-v2-rejudge/raw/id05-evidence.txt",
+          "sha256": "52af2309c3f8aad5ee4fe049a8395752368d7e2c750a7ce8a2974b63db73ecff",
+          "note": "The one official command: `node helpers/typecheck.mjs` exits 0, tsc Version 6.0.3 from the pinned checkout, covering dsh-daily-work (92 files = 39 production + 53 test) and dsh-ipython (24 files = 13 production + 11 test). The script asserts its own coverage by resolving each config with --showConfig and refusing to pass if no *.test.ts is in the program.",
+          "cited": "helpers/typecheck.mjs"
+        },
+        {
+          "kind": "run",
+          "path": "qualification/results/S4-v2-rejudge/raw/id05-evidence.txt",
+          "sha256": "52af2309c3f8aad5ee4fe049a8395752368d7e2c750a7ce8a2974b63db73ecff",
+          "note": "THE FAILING CLAUSE, DECIDED BY EXPERIMENT. The oracle names TWO IDIOMS and states that a CONFIG-position `as never` is NOT PASS, naming the exact masked diagnostic: \"Argument of type '{}' is not assignable to parameter of type 'undefined'\". packages/dsh-daily-work/src/durability-runner.ts:37 is `await ctx.plugin(Storage, {} as never)` -- CONFIG position, idiom (b). Measured: (3a) omitting the argument (`ctx.plugin(Storage)`) compiles clean, EXIT 0; (3b) writing `ctx.plugin(Storage, {})` without the cast reproduces the oracle's diagnostic VERBATIM -- src/durability-runner.ts(37,29): error TS2345: Argument of type '{}' is not assignable to parameter of type 'undefined', EXIT 2. The cast MASKS that diagnostic, which the oracle says is NOT PASS."
+        },
+        {
+          "kind": "run",
+          "path": "qualification/results/S4-v2-rejudge/raw/id05-evidence.txt",
+          "sha256": "52af2309c3f8aad5ee4fe049a8395752368d7e2c750a7ce8a2974b63db73ecff",
+          "note": "THE OTHER CLAUSES, measured rather than read. `as any` in non-test src: 0 real (the two grep hits are prose and a scanner regex). `as never` was NOT traded for `as any`. No private symbol deep-imported across a package boundary: grep for `from '@deepseek-ai/<pkg>/(src|lib)/` in non-test src returns ZERO. The other 8 non-test `as never` casts are noise, shown by removing them: durability-runner.ts:38,:39 plugin-position casts are noise (removing both compiles clean, EXIT 0) and data-plane.ts:720 removed compiles clean (EXIT 0)."
+        },
+        {
+          "kind": "note",
+          "path": "qualification/results/S4-v2-rejudge/raw/id05-evidence.txt",
+          "sha256": "52af2309c3f8aad5ee4fe049a8395752368d7e2c750a7ce8a2974b63db73ecff",
+          "note": "WHY THIS IS A FAIL AND NOT AN UNFINISHED TASK. The provenance records the ID-05 decision (authority D4): 'v2 keeps the clause and names the two idioms so the case can be decided without a judgement call... The sweep is deliberately deferred to round 2 (D4) because 478 of the 488 occurrences are in test files under concurrent edit.' Round 2 did the typecheck half (F10, one official command) and did NOT sweep the non-test config-position casts. So the clause the oracle states is unmet, and it is unmet in NON-TEST source -- the half that is not under concurrent edit.",
+          "cited": "qualification/specs/acceptance-spec.trusted-local-v2.provenance.json"
+        },
+        {
+          "kind": "note",
+          "path": "qualification/results/R2-F10F11/FINDINGS.md",
+          "sha256": "51b3348d8b6bf7cd435d5b030a6d592ac34527693a7425f01e3695c45c6deccc",
+          "note": "ROUND 1 DID NOT ADDRESS THIS CLAUSE, and its own record says so. R2-F10F11's §2 is titled 'F10 -- one authoritative typecheck' and its mutation table covers the clean/mutation/restore arms and the tsconfig.json control. It records no `as never` sweep and no config-position analysis. The v1 FAIL was 'FAIL on the escape-hatch clause; every other clause PASSES' (v1 note), so round 1 closed the OTHER clauses and left the failing one."
+        }
+      ]
+    },
+    {
+      "case_id": "ID-06",
+      "verdict": "FAIL",
+      "evidence": [
+        {
+          "kind": "run",
+          "path": "qualification/results/S4-v2-rejudge/raw/id06-evidence.txt",
+          "sha256": "1db630341fd1911c8ac47784e561bcf57cad33358c77c41afb8eb8bfcd869dba",
+          "note": "MEASURED, and the oracle is UNCONDITIONAL. `git status --porcelain` in D:\\DSH\\src\\dsh-src returns exactly ONE entry: ` M packages/deliverables/workspace-changes/src/index.ts`. `git rev-parse HEAD` = ddefc45fbc7f8e46dd73185e68295696d1297887 = the pinned commit. The oracle's words: 'The working tree is clean and HEAD equals ddefc45f... Any tracked modification, any staged change, or a moved HEAD is NOT PASS.' A tracked modification IS reported, so this is FAIL on the oracle's own text."
+        },
+        {
+          "kind": "run",
+          "path": "qualification/results/S4-v2-rejudge/raw/id06-evidence.txt",
+          "sha256": "1db630341fd1911c8ac47784e561bcf57cad33358c77c41afb8eb8bfcd869dba",
+          "note": "THE ENTRY IS AN EOL/STAT ARTIFACT, PROVEN BY FOUR INDEPENDENT MEASUREMENTS, and the mechanism is GENERAL rather than a property of this checkout. (1) `git diff --numstat` is EMPTY and `git diff --quiet` exits 0. (2) `git hash-object <path>` = c05787d931870defacfdfcb4feca85f4ae733d8e = `git rev-parse HEAD:<path>` -- the same blob id. (3) A control experiment in a throwaway repo: a committed LF file with `* text=auto eol=lf`, rewritten as CRLF under core.autocrlf=true, produces exactly ` M f.ts`, with git diff --quiet exit 0 and an identical blob id -- the same signature. (4) The file is the ONLY CRLF file among a 400-file tracked sample, its mtime is 2026-09-19 19:19:47 (pre-existing, not this session), and its index entry mtime is 2026-09-19 10:41:57."
+        },
+        {
+          "kind": "run",
+          "path": "qualification/results/S4-v2-rejudge/raw/id06-evidence.txt",
+          "sha256": "1db630341fd1911c8ac47784e561bcf57cad33358c77c41afb8eb8bfcd869dba",
+          "note": "THE TWO UNTRACKED DIRECTORIES THE OLDER RECORD NAMES ARE GONE. `git status --porcelain --untracked-files=all` returns no `??` entries at all, so `DSHhomem914/` and `data-artifacts/` no longer exist in the checkout. The tree went from 3 entries to 1."
+        },
+        {
+          "kind": "run",
+          "path": "qualification/results/S4-v2-rejudge/raw/id06-evidence.txt",
+          "sha256": "1db630341fd1911c8ac47784e561bcf57cad33358c77c41afb8eb8bfcd869dba",
+          "note": "WHAT I DID TO TRY TO MAKE IT PASS, and why the attempt FAILED. I copied the index to a temp file and ran `git update-index --refresh` against the COPY (never the shared index): it prints `packages/deliverables/workspace-changes/src/index.ts: needs update` and exits 1, and `git status --porcelain` against that refreshed temp index STILL reports ` M`. I then ran `git add` of the file against a temp index built with `git read-tree HEAD`: the result is blob c05787d931870defacfdfcb4feca85f4ae733d8e, IDENTICAL to HEAD, and `git diff --cached --numstat HEAD` is EMPTY. So the entry cannot be cleared by staging, because there is no content delta to stage; the real .git/index was verified byte-identical before and after (sha256 cfb2958b0bec566de42648d54b440da7aa7b49b247972184daa79a2abff18dda, unchanged, mtime 2026-09-19 10:42:49)."
+        },
+        {
+          "kind": "note",
+          "path": "qualification/results/S4-v2-rejudge/raw/id06-evidence.txt",
+          "sha256": "1db630341fd1911c8ac47784e561bcf57cad33358c77c41afb8eb8bfcd869dba",
+          "note": "THE JUDGEMENT, AND ITS HONEST LIMIT. The oracle does not admit an EOL carve-out, and I am not inventing one: the case is FAIL. But the FAIL is about the QUALIFICATION ENVIRONMENT and not about the product -- the qualified artifact is the BUILT apps/cli/lib/bin.js, whose sha256 still equals deployment.inputs.artifact_sha256 (verified in the ID-01 run), and no source byte differs. A future PASS requires one of two changes to a tree this writer does not own: a qualification checkout created with core.autocrlf=false, or `git add --renormalize` on that path, which rewrites the shared index. Both are recorded, neither was performed."
+        }
+      ]
+    },
+    {
+      "case_id": "CMP-02",
+      "verdict": "PASS",
+      "evidence": [
+        {
+          "kind": "run",
+          "path": "qualification/results/S4-v2-rejudge/runs/cmp/verdict.json",
+          "sha256": "3f9a8f0e8aaf61ea559aff460b04afc4817a7d2b4b0e49ac2b18295a9782ddae",
+          "note": "16/16 checks on ONE real composed boot of THIS worktree (home D:/DSH/home/s4, foreign cwd C:/Windows/Temp, port 6873, portReleased true). The probe inserts NO product row -- its only row is itself -- so the row it reads is the profile's own. declared.rowPresent true, rowFiberState 2 (ACTIVE), configAsComposed {mode: 'danger-full-access', workspaceRoot: {__jsExpr: 'process.cwd()'}}, effective.workspaceRoot 'C:\\\\Windows\\\\Temp' (ABSOLUTE), resolveWithNoSession {mode: 'danger-full-access', workspaceRoot: 'C:\\\\Windows\\\\Temp'}, and the effective mode for a REAL session resolved 'danger-full-access' with override null."
+        },
+        {
+          "kind": "run",
+          "path": "qualification/results/S4-v2-rejudge/runs/cmp-negative/verdict.json",
+          "sha256": "7e7c53232d2962f1ce3fdb163362b8d9ef1d7630d2f9e28551e8ff4d012616e3",
+          "note": "FALSIFICATION ARM 1, and it CONFIRMS the oracle's named failure mode. With `sandbox-policy` disabled: 8/16, verdict FAIL. The probe error names the consequence verbatim -- 'preset \"daily-standard\" failed to mount: 2 row(s) did not activate: workflow-ptc (dsh-workflow-ptc): waiting for ptcRuntime, sandboxPolicy; tool-workflow (dsh-tool-workflow): waiting for workflowEngine' -- i.e. dependent rows go PENDING, exactly as the oracle says ('it leaves seven entries pending'). workspaceRoot null, defaultMode null, perSession empty, toolCount null."
+        },
+        {
+          "kind": "note",
+          "path": "qualification/results/S4-v2-rejudge/runs/cmp/FALSIFICATION.txt",
+          "sha256": "2390aa939da3a7ed1c822b72b1ebbc4b1df16be81054408d24437570da83632e",
+          "note": "ARM 1's honest limit, recorded rather than glossed: it is TOO COARSE to falsify CMP-04's `pwsh absent` clause, because the whole preset failed to mount and an EMPTY catalog contains no pwsh either -- that check PASSED vacuously. That is why arm 2 exists."
+        },
+        {
+          "kind": "note",
+          "path": "qualification/results/S4-v2-rejudge/probe/s4-cmp-overlay.yml",
+          "sha256": "32180700010911304f30cc2e457e4aeb21ebc7e1c4469f7715dda08d741f8154",
+          "note": "The overlay, and its CONTENT is what makes the PASS a product fact rather than an overlay artifact: it inserts exactly ONE row (the probe) and restates NO product row. No sandbox, sandbox-policy, approval or subagent row appears, deliberately, so each subject is read from the profile's own composition."
+        }
+      ]
+    },
+    {
+      "case_id": "CMP-04",
+      "verdict": "PASS",
+      "evidence": [
+        {
+          "kind": "run",
+          "path": "qualification/results/S4-v2-rejudge/runs/cmp/verdict.json",
+          "sha256": "3f9a8f0e8aaf61ea559aff460b04afc4817a7d2b4b0e49ac2b18295a9782ddae",
+          "note": "All five clauses the oracle names, on the SAME boot as CMP-02, through a probe that inserts NO tool row: ipython PRESENT, work PRESENT, pwsh ABSENT, error null, and presetRoots naming the home actually booted (D:/DSH/home/s4/profiles/daily/presets/ among the three roots). A real Session was created (session-812f85b5-...) with a live agent."
+        },
+        {
+          "kind": "run",
+          "path": "qualification/results/S4-v2-rejudge/runs/cmp/verdict.json",
+          "sha256": "3f9a8f0e8aaf61ea559aff460b04afc4817a7d2b4b0e49ac2b18295a9782ddae",
+          "note": "THE COUNT IS MEASURED AND RECORDED VERBATIM, not pinned, exactly as the oracle requires: toolCount 27, with the full measured name set recorded -- ask_user_question, create_goal, edit, exit_plan_mode, get_goal, glob, grep, interrupt_agent, ipython, job_kill, job_list, job_output, list_agents, present, read, read_image, send_message, skill, subagent, subagent_fork, todo_write, update_goal, web_fetch, web_search, work, workflow, write. This agrees with the archived identity.json's agent_tool_count of 27."
+        },
+        {
+          "kind": "run",
+          "path": "qualification/results/S4-v2-rejudge/runs/cmp-pwsh-control/verdict.json",
+          "sha256": "0708ae6ee4baa09728632550f9750d03ea1c7420976b72c23095dc97f564d581",
+          "note": "FALSIFICATION, and it is the arm that makes the `pwsh absent` clause load-bearing. With `tool-pwsh` re-enabled and NOTHING else changed: 15/16, verdict FAIL, with EXACTLY ONE check red -- 'CMP-04: pwsh is ABSENT from the model-visible catalog'. The measured count moved 27 -> 28 and the name set gained exactly 'pwsh'. A clause that passes on a non-empty catalog and fails on a non-empty catalog is doing work."
+        },
+        {
+          "kind": "note",
+          "path": "qualification/results/S4-v2-rejudge/runs/cmp/FALSIFICATION.txt",
+          "sha256": "2390aa939da3a7ed1c822b72b1ebbc4b1df16be81054408d24437570da83632e",
+          "note": "WHY THIS IS A PASS AND NOT A REPAIR OF A SPEC DEFECT. v1's CMP-04 FAILed because its oracle pinned `toolCountAgentKey is 28` and required pwsh PRESENT, contradicting CMP-13 (pwsh ABSENT, PASS on the same measurement). v2 rewrote CMP-04 to drop both assertions and to state the current architecture. The control arm above independently reproduces the arithmetic of the v1 contradiction: pwsh present => 28, absent => 27. This writer did NOT edit either oracle; the v1 contradiction is preserved in the frozen spec and in the provenance record."
+        }
+      ]
+    },
+    {
+      "case_id": "IPY-13",
+      "verdict": "FAIL",
+      "evidence": [
+        {
+          "kind": "test",
+          "path": "qualification/results/S4-v2-rejudge/raw/ipy-evidence.txt",
+          "sha256": "57ddcb3554b1d70b7cac13ef9a6f3b5304824105892bf1541794d1ce08578c90",
+          "note": "MEASURED, and the two oracle clauses come out differently. `vitest run src/v3-spec-gates.test.ts -t IPY-13` -> 2 passed. CLAUSE 1 HOLDS: [V3-MEASURED] IPY-13-clause1 {lateCount:1, lateText:'IPY13-LATE-AFTER-RETURN', lateCellId:'b18e6242-..._3', lateEpoch:1, firstCellContainsLateText:false, secondCellContainsLateText:false} -- the post-return write is reported as late with the ORIGINATING cell's id, and it rode neither the spawning cell nor the next one. CLAUSE 2 FAILS: [V3-MEASURED] IPY-13-clause2 {specRequires:'reported as undecidable rather than attributed', measuredAttributedToLaterCell:true, measuredLateCount:0, measuredLateText:'', thirdCellStdout:'tick 0\\ntick 1\\nIPY13-DURING-LATER-CELL\\ntick 2\\ntick 3\\ncell-three-settled', verdict:'CLAUSE_NOT_MET'}.",
+          "cited": "packages/dsh-ipython/src/v3-spec-gates.test.ts"
+        },
+        {
+          "kind": "note",
+          "path": "qualification/results/S4-v2-rejudge/raw/ipy-evidence.txt",
+          "sha256": "57ddcb3554b1d70b7cac13ef9a6f3b5304824105892bf1541794d1ce08578c90",
+          "note": "THE MECHANISM, and it is upstream of this project's router. ipykernel/iostream.py resolves a stream's parent header from a contextvars.ContextVar, falling back to a GLOBAL when unset. `threading.Thread` starts with an EMPTY context, so a background writer takes the global -- which holds whichever cell most recently set it, i.e. the LATER cell. The kernel itself stamps the straddling write with the later cell's msg_id, so the broker's router sees parent == sink.msg_id before idle and cannot separate it from the cell's own output. This matches R8-ipy13-experiment/EXPERIMENT.md's independent measurement of the same fact (a ContextVar is NOT inherited by a plain threading.Thread).",
+          "cited": "packages/dsh-ipython/src/v3-spec-gates.test.ts"
+        },
+        {
+          "kind": "note",
+          "path": "qualification/results/S4-v2-rejudge/raw/ipy-evidence.txt",
+          "sha256": "57ddcb3554b1d70b7cac13ef9a6f3b5304824105892bf1541794d1ce08578c90",
+          "note": "STATE OF THIS TREE AT MEASUREMENT, which is the point the assignment asks to be explicit about. The fix is NOT in this tree: grep for 'metadata' in packages/dsh-ipython/src/broker.py returns NOTHING, so the broker does not attach a DSH cell id to execute_request.metadata and there is no kernel-side ContextVar hook. Round 1 wrote the isolated experiment (qualification/results/R8-ipy13-experiment/EXPERIMENT.md) and did NOT implement it. Writer S5 is implementing it in a parallel worktree. THIS VERDICT WILL NEED RE-RUNNING AFTER S5 MERGES: it is a verdict about fef7612, not about the integrated tree."
+        },
+        {
+          "kind": "note",
+          "path": "qualification/results/S4-v2-rejudge/raw/ipy-evidence.txt",
+          "sha256": "57ddcb3554b1d70b7cac13ef9a6f3b5304824105892bf1541794d1ce08578c90",
+          "note": "A second honest limit: the test PINS the defect rather than passing over it (the clause-2 case asserts the measured attribution so a fix fails the gate loudly and must update the gate and the case together). So 'test file is green' does NOT mean 'the oracle is met' here -- the green is the pin, and the printed [V3-MEASURED] line carries the actual verdict CLAUSE_NOT_MET.",
+          "cited": "packages/dsh-ipython/src/v3-spec-gates.test.ts"
+        }
+      ]
+    },
+    {
+      "case_id": "IPY-15",
+      "verdict": "FAIL",
+      "evidence": [
+        {
+          "kind": "test",
+          "path": "qualification/results/S4-v2-rejudge/raw/ipy-evidence.txt",
+          "sha256": "57ddcb3554b1d70b7cac13ef9a6f3b5304824105892bf1541794d1ce08578c90",
+          "note": "CLAUSES 1-3 HOLD. `vitest run src/v3-spec-gates.test.ts -t IPY-15` -> 1 passed. [V3-MEASURED] IPY-15 {transport:'tcp', curveKeysPresent:true, plaintextWarningSeen:false, connectionFileHasCurvePublic:true, connectionFileHasCurveSecret:true, maxFrameBytes:4194304, overLimitRejectedOnEncode:true, overLimitRejectedOnDecode:true, decodeFailureMessage:'declared frame length 4194305 exceeds the 4194304-byte limit'}. So the transport is TCP WITH CurveZMQ keys and no plaintext start, and the over-limit frame is REFUSED in both directions, the decoder refusing on the DECLARED length before buffering.",
+          "cited": "packages/dsh-ipython/src/v3-spec-gates.test.ts"
+        },
+        {
+          "kind": "test",
+          "path": "qualification/results/S4-v2-rejudge/probe/s4-ipy15-supplementary.test.ts",
+          "sha256": "4c93973597d078161af2905d32810b6433af480f09424218df6b1446172299d9",
+          "note": "THE TWO CLAUSES THE SHIPPED GATE DOES NOT ASSERT, measured by a supplementary gate written for this re-judgement (2 passed). (a) 'The kernel remains usable after the refusal' -- measured on a REAL KernelHost: [S4-MEASURED] IPY-15-kernel-usable {refused:true, refusalMessage:'frame of 4194316 bytes exceeds the 4194304-byte limit', beforeOutcome:'ok', beforeText:'S4-IPY15-BEFORE', afterOutcome:'ok', afterText:'S4-IPY15-AFTER', kernelStillUsable:true, epochUnchanged:true}. THIS CLAUSE PASSES. (b) THE STRUCTURED-OUTCOME CLAUSE DOES NOT."
+        },
+        {
+          "kind": "run",
+          "path": "qualification/results/S4-v2-rejudge/raw/ipy-evidence.txt",
+          "sha256": "57ddcb3554b1d70b7cac13ef9a6f3b5304824105892bf1541794d1ce08578c90",
+          "note": "THE FAILING CLAUSE, in the oracle's words: 'the refusal is a structured, machine-readable outcome naming the byte limit in force and the declared length that exceeded it.' MEASURED: [S4-MEASURED] IPY-15-structure {encode:{name:'FrameError', ownEnumerableKeys:['name'], hasCode:false, hasLimitBytes:false, hasDeclaredLength:false}, decode:{name:'FrameError', ownEnumerableKeys:['name'], hasCode:false, hasLimitBytes:false, hasDeclaredLength:false}, maxFrameBytes:4194304, declaredLengthSent:4194305, messageNamesLimit:true, messageNamesDeclaredLength:true, numbersAreInFieldsNotMessage:false}. The two numbers exist ONLY inside a PROSE message; there is no code, no limit field and no declared-length field on either error. `FrameError` is declared at packages/dsh-ipython/src/protocol.ts:44 as `constructor(message: string)` and nothing else, and the operation-level `KernelTransportError` (kernel.ts:110) has the same shape -- it PREFIXES the broker's code into the message string rather than carrying a field. A human-readable sentence is not a machine-readable outcome."
+        },
+        {
+          "kind": "note",
+          "path": "qualification/results/S4-v2-rejudge/raw/ipy-evidence.txt",
+          "sha256": "57ddcb3554b1d70b7cac13ef9a6f3b5304824105892bf1541794d1ce08578c90",
+          "note": "ROUND 1's CLAIM, AND WHERE IT DOES NOT HOLD UP. The round-2 brief §2 does not list IPY-15 among what round 1 closed, and the v2 provenance records the rewrite as authority D2 -- 'v2 keeps fail-hard and requires a structured refusal that names the limit'. The product's half was already fail-hard; the STRUCTURED half the rewritten oracle now demands was not added. The shipped gate asserts only that the message CONTAINS the substring 'exceeds', which is a weaker oracle than the case it is filed under (G-FIX-04: an oracle weaker than its scenario passes while the product is broken)."
+        },
+        {
+          "kind": "note",
+          "path": "qualification/results/T6-ipython/GATES.md",
+          "sha256": "732bb11e3876f5d66a8ee03228dc99d813116dfac2d52a73d756bfd8fec96f2c",
+          "note": "A LABEL-COLLISION TRAP, recorded because it cost this project time and a careless reader will hit it here: T6-ipython's GATES.md uses the label 'IPY-15' for the kernel-cwd oracle (IPY-15a..d, all PASS), which is the SPEC's IPY-11, not the spec's IPY-15. T6's own §7 states the spec's IPY-15 (transport authentication) 'is not covered by' that file. This verdict is about the SPEC's IPY-15, mapped by ORACLE."
+        }
+      ]
+    },
+    {
+      "case_id": "BR-07",
+      "verdict": "PASS",
+      "evidence": [
+        {
+          "kind": "test",
+          "path": "qualification/results/S4-v2-rejudge/raw/br-evidence.txt",
+          "sha256": "7904ec84afa8ff664ee7551daf2142e9c1dcf4613a2ea6ecfe5c9194c90b0dbd",
+          "note": "24/24 passed, of which 8 are the R5-BR-07 disposition block. The oracle's four-member vocabulary is implemented and measured on the PRODUCT path: `settled` (a completed call, with the durable ledger row STARTED then SETTLED carrying a sha256 result digest), `cancelled` (a dispatched call aborted by the close), `abandoned-unstarted` (a call still queued when the cell returned), and `handed-to-jobs` WITH a job id. Also asserted: a call still queued is NEVER dispatched whatever its disposition; the four dispositions are the scope route's existing vocabulary rather than a parallel one; and a FAILED disposition write is reported rather than swallowed.",
+          "cited": "packages/dsh-ipython/src/r5-product-bridge.test.ts"
+        },
+        {
+          "kind": "source",
+          "path": "qualification/results/S4-v2-rejudge/raw/br-evidence.txt",
+          "sha256": "7904ec84afa8ff664ee7551daf2142e9c1dcf4613a2ea6ecfe5c9194c90b0dbd",
+          "note": "The mechanism, at bridge.ts:635-660 `settleQueuedCalls`, whose two arms are the oracle's own distinction: a host handoff that takes ownership reports `handed-to-jobs` WITH the job id, and with no handoff the call is `abandoned-unstarted`. The code comment states why mapping either onto the other would erase the difference between 'someone else owns this now' and 'this was refused' -- which is exactly what the oracle asks a reader to be able to tell apart.",
+          "cited": "packages/dsh-ipython/src/bridge.ts"
+        },
+        {
+          "kind": "falsification",
+          "path": "qualification/results/S4-v2-rejudge/raw/br-evidence.txt",
+          "sha256": "7904ec84afa8ff664ee7551daf2142e9c1dcf4613a2ea6ecfe5c9194c90b0dbd",
+          "note": "THE NEGATIVE CONTROL. The `this.report(...)` call in `settleQueuedCalls` was REMOVED (so a queued call would be rejected with NO disposition recorded -- the oracle's 'nothing continues silently with no record' failure), and the gate went red: `vitest run src/r5-product-bridge.test.ts -t R5-BR-07` -> 1 failed | 6 passed, with the red case being exactly 'a cell returning with calls in flight records `cancelled` and `abandoned-unstarted`'. Restored byte-exact (git hash-object = git rev-parse HEAD:<path> = 6a553bbc4b8b94707d17375d223d6d6afc1d8818).",
+          "cited": "packages/dsh-ipython/src/bridge.ts"
+        },
+        {
+          "kind": "note",
+          "path": "qualification/results/V4-bridge/GATES.md",
+          "sha256": "8538e50b5cdc8dea9de4de62747a56b3c6090001ea676271c2f8621e70ce24d6",
+          "note": "ROUND 1's CLAIM, and it HOLDS UP. v1's BR-07 FAIL was split: the bridge route's DRAIN worked (revoke waited for the in-flight call) but 'the bridge route has NO disposition vocabulary -- disposition/jobId/handoff appear nowhere in bridge.ts or native-call.ts'. Those identifiers now appear in bridge.ts (disposition at :352, :644, :648, :649, :712, :823) and the disposition block above exercises all four members on that route."
+        }
+      ]
+    },
+    {
+      "case_id": "DATA-09",
+      "verdict": "PASS",
+      "evidence": [
+        {
+          "kind": "test",
+          "path": "qualification/results/S4-v2-rejudge/raw/data-evidence.txt",
+          "sha256": "d767ca7fe0edf19ee0089c8e1e7fbdb0646f85a50eb7d6df3feb1abcc103b7c1",
+          "note": "The gate that IS the oracle, and it passes. `vitest run src/data-plane.test.ts -t 'ALL FOUR acquisition stages'` -> 1 passed. It asserts the closed set is EXACTLY the four acquisition stages, that `transport` and `model-projection` are ABSENT BY NAME, that ALL FOUR stages have a real production producer found by parsing (not grepping) non-test sources, that the producer count is exactly 4 so a future 'fix' re-adding two names and two fake producers cannot pass the emptiness check alone, AND the negative half -- that the two removed names have NO gap producer anywhere, so the split changed what the product EMITS and not merely what the schema allows.",
+          "cited": "packages/dsh-daily-work/src/data-plane.test.ts"
+        },
+        {
+          "kind": "source",
+          "path": "qualification/results/S4-v2-rejudge/raw/data-evidence.txt",
+          "sha256": "d767ca7fe0edf19ee0089c8e1e7fbdb0646f85a50eb7d6df3feb1abcc103b7c1",
+          "note": "Verified independently in THIS tree: OBSERVATION_GAP_STAGES is exactly ['provider-acquisition','native-acquisition','transform','retention'] (observations.ts:139-150), OBSERVATION_GAP_RECOVERIES is exactly ['page','refetch','none','unknown'] (observations.ts:179) -- the recovery set the oracle names -- and the gap schema binds `stage: z.enum(OBSERVATION_GAP_STAGES)` with `recovery: z.enum(OBSERVATION_GAP_RECOVERIES)` (:328-331). Every stage has a producer in non-test source: provider-acquisition web-provenance.ts:355, native-acquisition artifacts.ts:2339, transform web-provenance.ts:500 and :516, retention artifacts.ts:2292, :2395, :2417.",
+          "cited": "packages/dsh-daily-work/src/observations.ts"
+        },
+        {
+          "kind": "test",
+          "path": "qualification/results/S4-v2-rejudge/raw/data-evidence.txt",
+          "sha256": "d767ca7fe0edf19ee0089c8e1e7fbdb0646f85a50eb7d6df3feb1abcc103b7c1",
+          "note": "38/38 passed, covering the loss stages behaviourally rather than only structurally: a provider-capped fetch is marked PARTIAL with a provider-acquisition gap and a refetch recovery; a COMPLETE fetch is recorded complete-within-request so the partial marking is not vacuous; a QUOTA refusal is a partial observation with a retention gap and NO artifact; a REFETCH creates a NEW observation and never rewrites the earlier partial record into full.",
+          "cited": "packages/dsh-daily-work/src/data-r6.test.ts"
+        },
+        {
+          "kind": "falsification",
+          "path": "qualification/results/S4-v2-rejudge/raw/data-evidence.txt",
+          "sha256": "d767ca7fe0edf19ee0089c8e1e7fbdb0646f85a50eb7d6df3feb1abcc103b7c1",
+          "note": "THE NEGATIVE CONTROL. The native-acquisition producer at artifacts.ts:2339 was retagged `stage: 'retention'`, leaving a stage in the closed set with NO producer -- the v1 FAIL relocated. The gate went red: `vitest run src/data-plane.test.ts -t 'ALL FOUR acquisition stages'` -> 1 failed. Restored byte-exact (git diff empty).",
+          "cited": "packages/dsh-daily-work/src/artifacts.ts"
+        },
+        {
+          "kind": "run",
+          "path": "qualification/results/R8-taxonomy-split/AFTER-data09.json",
+          "sha256": "526c2aad4b938d866d0018e66478f7a943a5bb1f8dd56a8cc151dea06387706e",
+          "note": "Round 1's before/after pair, and its numbers reproduce here. AFTER: closedSetSize 4, coverageMatchesGapStages true, producerCount 4, stagesWithNoProducer []. BEFORE: closedSetSize 6 with `transport` and `model-projection` present and BOTH at producerCount 0 -- i.e. v1 demanded attribution for two stages no production path could emit. The split moves `model-projection` to a ProjectionManifest that has no `stage` and no `recovery` field at all (so it cannot be mistaken for a loss) and turns `transport` into an error path."
+        },
+        {
+          "kind": "note",
+          "path": "qualification/results/S4-v2-rejudge/raw/data-evidence.txt",
+          "sha256": "d767ca7fe0edf19ee0089c8e1e7fbdb0646f85a50eb7d6df3feb1abcc103b7c1",
+          "note": "THIS CASE WAS SPLIT IN V2, and the verdict is filed against the acquisition half only. The v2 provenance records treatment 'split', v2_case_ids ['DATA-09','DATA-13'], dropping `transport` and `model-projection` as required acquisition stages. The projection half is DATA-13, a v2-only case, and is OUTSIDE this writer's 13-case slice -- this verdict does not speak for it."
+        }
+      ]
+    },
+    {
+      "case_id": "DATA-11",
+      "verdict": "PASS",
+      "evidence": [
+        {
+          "kind": "test",
+          "path": "qualification/results/S4-v2-rejudge/raw/data-evidence.txt",
+          "sha256": "d767ca7fe0edf19ee0089c8e1e7fbdb0646f85a50eb7d6df3feb1abcc103b7c1",
+          "note": "32/32 passed, covering BOTH oracle clauses. 'The cursor is refused': arm 3 refuses store A's cursor presented to store B holding the SAME bytes, refuses it BEFORE any byte is read, refuses a store holding DIFFERENT bytes under the same address, and refuses even when the other store has no object at all; arm 2 refuses a cursor after the grant revision moves; arm 4 refuses a tampered, re-signed and realm-edited cursor. 'And the refusal is recorded': the refusal is journalled durably naming both realms and the step, is recorded through the request sink even with no journal mounted, every refusal code maps to the read-order step that produced it, and refusals keep being recorded across many attempts rather than only the first.",
+          "cited": "packages/dsh-daily-work/src/data11-cursor-realm.test.ts"
+        },
+        {
+          "kind": "source",
+          "path": "qualification/results/S4-v2-rejudge/raw/data-evidence.txt",
+          "sha256": "d767ca7fe0edf19ee0089c8e1e7fbdb0646f85a50eb7d6df3feb1abcc103b7c1",
+          "note": "The mechanism in THIS tree: `storeRealmId` is a durable field (artifacts.ts:180, :382), minted once per store root and PERSISTED (:415-430, :466-473 -- a malformed or realm-less file is refused rather than re-minted), and `assertRealm` (:1513-1520) compares the cursor's realm against the serving store's, refusing with `pagination-realm-denied` and `realmRefused: true` and the message 'a cursor is not a bearer token and cannot be replayed against another store'. The refusal carries a STRUCTURED code, which is the contrast with IPY-15 above.",
+          "cited": "packages/dsh-daily-work/src/artifacts.ts"
+        },
+        {
+          "kind": "falsification",
+          "path": "qualification/results/S4-v2-rejudge/raw/data-evidence.txt",
+          "sha256": "d767ca7fe0edf19ee0089c8e1e7fbdb0646f85a50eb7d6df3feb1abcc103b7c1",
+          "note": "THE NEGATIVE CONTROL. `assertRealm`'s comparison was neutered to `if (false && cursor.storeRealmId !== storeRealmId)` -- making the cursor a bearer token again, which is exactly the v1 defect. 7 tests went red, all in arm 3 (the four cross-store refusals) and in the 'refusal is RECORDED' block (journal, request sink, repeated attempts). Restored byte-exact (git diff empty).",
+          "cited": "packages/dsh-daily-work/src/artifacts.ts"
+        },
+        {
+          "kind": "note",
+          "path": "qualification/results/R7-cursor-realm/after.json",
+          "sha256": "1d547f5a660365cf45456b18162006663c86d54d8a4fdaa865c6d8f81dc1ecc9",
+          "note": "Round 1's evidence for the fix, which this re-judgement's independent falsification corroborates: R7 measured the cursor as a SIGNED, realm-bound field against a durable store realm, with before.json recording the bearer-token state. The round-2 brief §2 lists F6 (cursor was a bearer token across stores) as closed by 'durable store realm, bound as a SIGNED cursor field', evidence data11-cursor-realm.test.ts 32/32 -- and that is what I measured."
+        }
+      ]
+    },
+    {
+      "case_id": "REC-09",
+      "verdict": "NOT_CLAIMED",
+      "evidence": [
+        {
+          "kind": "note",
+          "path": "qualification/results/S4-v2-rejudge/raw/rec-evidence.txt",
+          "sha256": "e6545b1755ee472e58a58d00c58463719cca1da52786c680597ddd7d932d54c4",
+          "note": "ARM B IS THE ARM THAT HOLDS, and the v2 oracle says explicitly that ARM B is filed NOT_CLAIMED -- 'never PASS'. The oracle's words: 'ARM B (the guarantee is NOT claimed): the record states that stale-generation settlement is not claimed, names the TOPOLOGY FACT that makes it physically impossible, and the case is filed NOT_CLAIMED -- never PASS. ... Filing ARM B without naming the topology fact is NOT PASS either.'",
+          "cited": "qualification/specs/acceptance-spec.trusted-local-v2.definition.json"
+        },
+        {
+          "kind": "run",
+          "path": "qualification/results/S4-v2-rejudge/raw/rec-evidence.txt",
+          "sha256": "e6545b1755ee472e58a58d00c58463719cca1da52786c680597ddd7d932d54c4",
+          "note": "THE TOPOLOGY FACT, RE-DERIVED IN THIS TREE rather than adopted from R9's document. (1) NO production call site targets a TERMINAL state: exhaustive `to: '<state>'` grep over non-test src gives exactly launching, unknown, unknown, accepted (host.ts:2223,2235,2264,2279), launching/unknown/accepted (recovery.ts:145,170,184) and launching/accepted/executing (durability-runner.ts:84-91) -- and TERMINAL_STATES is Object.freeze(['confirmed','cancelled']) at states.ts:67-70. No row targets settling, confirmed, cancelled or cancel_requested. (2) THE ONE IN-FLIGHT STATE THE PRODUCT DOES WRITE HAS NO EXIT: `unknown` is written at host.ts:2235 and :2264 with releaseReservation false, it is in SLOT_HOLDING_STATES (states.ts:55-65), the machine permits six exits from it (states.ts:93: accepted|executing|settling|confirmed|cancelled|cancel_requested), and of those four have no non-test writer, `executing`'s only writer is durability-runner.ts:91 (the hand-run CLI with ZERO importers), and `accepted` is unreachable for such a task because `admit` refuses a slot-holder -- host.ts:1444 'dailyWork: task \"...\" is already admitted as ...'. Since a settlement is the act of LEAVING an in-flight state, no settlement can be delivered in any generation, stale or current."
+        },
+        {
+          "kind": "falsification",
+          "path": "qualification/results/S4-v2-rejudge/raw/rec-evidence.txt",
+          "sha256": "e6545b1755ee472e58a58d00c58463719cca1da52786c680597ddd7d932d54c4",
+          "note": "THE NEGATIVE CONTROL, and it makes the topology fact a measured claim rather than a reading. A production call site targeting the TERMINAL state `confirmed` was INJECTED after host.ts:2279 (`await this.transition({ runId, taskId: request.taskId, to: 'confirmed' })`). The gate went red: `vitest run src/durability-advanced.test.ts -t 'DECIDING topology fact'` -> 1 failed, on exactly 'the DECIDING topology fact: no production call site targets a TERMINAL state'. Restored byte-exact (git diff empty). So the fact that makes ARM B true is asserted by a test that can fail.",
+          "cited": "packages/dsh-daily-work/src/host.ts"
+        },
+        {
+          "kind": "test",
+          "path": "qualification/results/S4-v2-rejudge/raw/rec-evidence.txt",
+          "sha256": "e6545b1755ee472e58a58d00c58463719cca1da52786c680597ddd7d932d54c4",
+          "note": "33/33 passed. The T9-A block asserts the deleted settlement machinery has no surviving reference, that no production code references a run epoch, that the v1 FAIL is PRESERVED (so it cannot be quietly improved), and the DECIDING topology fact above.",
+          "cited": "packages/dsh-daily-work/src/durability-advanced.test.ts"
+        },
+        {
+          "kind": "run",
+          "path": "qualification/results/S4-v2-rejudge/raw/rec-evidence.txt",
+          "sha256": "e6545b1755ee472e58a58d00c58463719cca1da52786c680597ddd7d932d54c4",
+          "note": "WHAT WAS DELETED, verified by grep in this tree: `applyWorkerSettlement`, `WorkerSettlement`, `RefusalLedger`, `refusalRecordSchema` and `REFUSAL_DOMAIN_NAME` appear in NON-TEST source ONLY inside the historical comment at recovery.ts:191-193 explaining their removal. `dsh_daily_work_refusals` appears only in comments and in tests. `recovery.ts` exports exactly RelaunchOutcome (:47) and relaunchPrepared (:85) -- neither references an epoch. `record.ts:410-413` states that the record deliberately carries no `epoch` field. The only `epoch` identifiers left in non-test source are the KERNEL epoch (kernel-lifecycle.ts, history-plane.ts) and data-bridge.ts's call-frame field, which are different things (G-SEAM-43)."
+        },
+        {
+          "kind": "note",
+          "path": "qualification/results/R9-recovery-topology/TOPOLOGY.md",
+          "sha256": "bdb22eb6255380733751639d8a0997ec351f2579f314f9e04dd74c7318ca531e",
+          "note": "ROUND 1's CLAIM, and it HOLDS UP, with one caveat this writer verified rather than trusted. R9's document carries a FALSIFICATION RECORD of its own first revision: an earlier version rested the decision on 'no production call site targets a terminal state' but supported it with a hand-picked state list that OMITTED `unknown`, and the surrounding prose overclaimed it. The corrected §1.5 FACT 2 is stronger and is what I re-derived above. The document's line numbers are POST-CHANGE for this reason, and they resolve in my tree (host.ts:2235/:2264 for the `unknown` writes, against R9's :1342/:1364, because the file has since grown)."
+        },
+        {
+          "kind": "note",
+          "path": "qualification/results/S4-v2-rejudge/raw/rec-evidence.txt",
+          "sha256": "e6545b1755ee472e58a58d00c58463719cca1da52786c680597ddd7d932d54c4",
+          "note": "THE ADJACENT DEFECT R9 REPORTED AND DID NOT FIX, carried forward because it must not be lost: the product can enter the state `unknown` and has NO production path out of it, so a task left `unknown` holds a child slot indefinitely and permanently reduces N by each failed launch. `reconcile.ts`'s `reconcileRun` -- the mechanism named for resolving it -- has no production caller either. This is OUTSIDE this writer's slice and is recorded, not fixed. It is also why this verdict is NOT_CLAIMED rather than PASS: the honest statement is that the guarantee is not claimed, not that the system is safe."
+        }
+      ],
+      "not_claimed_basis": "No production call site targets a TERMINAL task state, and the one in-flight state the product DOES write has no reachable exit. Measured in this tree (D:\\DSH\\work\\wt-s4 @ fef7612): (1) TERMINAL_STATES is Object.freeze([confirmed, cancelled]) (packages/dsh-daily-work/src/states.ts:67-70), and an exhaustive grep of to: <state> literals over NON-TEST source finds only launching, unknown and accepted (host.ts:2223,2235,2264,2279; recovery.ts:145,170,184; durability-runner.ts:84-91) -- no row targets settling, confirmed, cancelled or cancel_requested. (2) The drain s two failure arms write unknown with releaseReservation:false (host.ts:2235, :2264), unknown is in SLOT_HOLDING_STATES (states.ts:55-65), and the state machine permits six exits from it (states.ts:93). Of those six, settling/confirmed/cancelled/cancel_requested have NO non-test writer anywhere; executing s only writer is durability-runner.ts:91, the hand-run CLI with ZERO importers; and accepted s only production writer (host.ts:2279) is UNREACHABLE for such a task because admit refuses a task that still holds its slot -- host.ts:1444 dailyWork: task ... is already admitted as <state>. Since a settlement is the act of LEAVING an in-flight state, and the product writes one in-flight state it cannot leave, no settlement can be delivered in any generation, stale or current -- so no epoch or fencing token has anything to guard. MEASURED, NOT MERELY READ: injecting a production call site targeting the terminal state confirmed makes the gate durability-advanced.test.ts > the DECIDING topology fact: no production call site targets a TERMINAL state go RED (1 failed), and it passes again after the byte-exact restore. CONSEQUENCE FOR THIS CASE: the settlement producer does not exist, so the guard has nothing to protect; implementing fencing would mean MANUFACTURING that producer, which the audit forbids. The v1 FAIL is PRESERVED in the frozen spec and asserted by a test, so it cannot be quietly improved.",
+      "v1_verdict": "FAIL"
+    },
+    {
+      "case_id": "REC-10",
+      "verdict": "NOT_CLAIMED",
+      "evidence": [
+        {
+          "kind": "note",
+          "path": "qualification/results/S4-v2-rejudge/raw/rec-evidence.txt",
+          "sha256": "e6545b1755ee472e58a58d00c58463719cca1da52786c680597ddd7d932d54c4",
+          "note": "The oracle is CONDITIONAL on REC-09's arm, and it says so: 'WHEN the deployment does not claim it (REC-09 ARM B), the guard is DELETED and this case is NOT_CLAIMED, naming the topology fact -- an unreachable guard left in the tree is NOT PASS in either arm, because a mechanism the product cannot reach is the defect class this project has recorded more than twelve times.' REC-09 is filed ARM B above, so this case is filed NOT_CLAIMED, and the topology fact is the one recorded under REC-09.",
+          "cited": "qualification/specs/acceptance-spec.trusted-local-v2.definition.json"
+        },
+        {
+          "kind": "run",
+          "path": "qualification/results/S4-v2-rejudge/raw/rec-evidence.txt",
+          "sha256": "e6545b1755ee472e58a58d00c58463719cca1da52786c680597ddd7d932d54c4",
+          "note": "THE GUARD IS DELETED, NOT MERELY UNREACHABLE, measured by grep over non-test source in this tree: `applyWorkerSettlement` and `WorkerSettlement` survive only in the removal-explaining comment at recovery.ts:191-193; `RefusalLedger`, `refusalRecordSchema` and `REFUSAL_DOMAIN_NAME` likewise; and the `epoch` field is absent from both `runRecordSchema` and `initialRunRecord` (record.ts:410-413 documents the absence as a decision). So the 'unreachable guard left in the tree' failure the oracle names is NOT present."
+        },
+        {
+          "kind": "test",
+          "path": "qualification/results/S4-v2-rejudge/raw/rec-evidence.txt",
+          "sha256": "e6545b1755ee472e58a58d00c58463719cca1da52786c680597ddd7d932d54c4",
+          "note": "33/33 passed, including the arm that asserts no production code references a run epoch (with kernel-lifecycle.ts excluded BY NAME as the different KERNEL epoch, G-SEAM-43) and the arm that asserts the v1 FAIL is preserved. The test derives its terminal set from TERMINAL_STATES rather than hand-picking it, which is the instrument correction R9 records in its CONTROL-FALSIFICATION.txt.",
+          "cited": "packages/dsh-daily-work/src/durability-advanced.test.ts"
+        },
+        {
+          "kind": "note",
+          "path": "qualification/results/R9-recovery-topology/CONTROL-FALSIFICATION.txt",
+          "sha256": "179ba7ba948e7960bc176ce8ff16fef8b6477c1cbb9b35615add4efd116c111e",
+          "note": "Round 1's negative control for this gate, and it is a real one: reverting the call-site pattern from the hardened form to the loose `/to:\\s*'([a-z_]+)'/gu` makes the control FAIL with 'control: a type annotation must NOT match: expected [ 'settling' ] to deeply equal []'. So the annotation false positive is caught mechanically rather than by a human noticing, and the 'no writer' results are not the empty negative of a broken matcher."
+        },
+        {
+          "kind": "note",
+          "path": "qualification/results/S4-v2-rejudge/raw/rec-evidence.txt",
+          "sha256": "e6545b1755ee472e58a58d00c58463719cca1da52786c680597ddd7d932d54c4",
+          "note": "WHAT IS CLAIMED INSTEAD, so a reader does not mistake NOT_CLAIMED for 'nothing is enforced': authority for the `work` tool is bound to the exact live Agent object, enforced by tool-protocol-guards.ts comparing the live registry entry by OBJECT IDENTITY. That covers the in-process resume case, which is reachable. The CROSS-PROCESS generation case is NOT covered and v2 does not claim it.",
+          "cited": "qualification/specs/acceptance-spec.trusted-local-v2.provenance.json"
+        }
+      ],
+      "not_claimed_basis": "No production call site targets a TERMINAL task state, and the one in-flight state the product DOES write has no reachable exit. Measured in this tree (D:\\DSH\\work\\wt-s4 @ fef7612): (1) TERMINAL_STATES is Object.freeze([confirmed, cancelled]) (packages/dsh-daily-work/src/states.ts:67-70), and an exhaustive grep of to: <state> literals over NON-TEST source finds only launching, unknown and accepted (host.ts:2223,2235,2264,2279; recovery.ts:145,170,184; durability-runner.ts:84-91) -- no row targets settling, confirmed, cancelled or cancel_requested. (2) The drain s two failure arms write unknown with releaseReservation:false (host.ts:2235, :2264), unknown is in SLOT_HOLDING_STATES (states.ts:55-65), and the state machine permits six exits from it (states.ts:93). Of those six, settling/confirmed/cancelled/cancel_requested have NO non-test writer anywhere; executing s only writer is durability-runner.ts:91, the hand-run CLI with ZERO importers; and accepted s only production writer (host.ts:2279) is UNREACHABLE for such a task because admit refuses a task that still holds its slot -- host.ts:1444 dailyWork: task ... is already admitted as <state>. Since a settlement is the act of LEAVING an in-flight state, and the product writes one in-flight state it cannot leave, no settlement can be delivered in any generation, stale or current -- so no epoch or fencing token has anything to guard. MEASURED, NOT MERELY READ: injecting a production call site targeting the terminal state confirmed makes the gate durability-advanced.test.ts > the DECIDING topology fact: no production call site targets a TERMINAL state go RED (1 failed), and it passes again after the byte-exact restore. CONSEQUENCE FOR THIS CASE: the settlement producer does not exist, so the guard has nothing to protect; implementing fencing would mean MANUFACTURING that producer, which the audit forbids. The v1 FAIL is PRESERVED in the frozen spec and asserted by a test, so it cannot be quietly improved.",
+      "v1_verdict": "FAIL"
+    },
+    {
+      "case_id": "CAP-10",
+      "verdict": "PASS",
+      "evidence": [
+        {
+          "kind": "test",
+          "path": "qualification/results/S4-v2-rejudge/raw/cap-evidence.txt",
+          "sha256": "a935751476b7cbf6e2157a1e4737592857986f5e9d40a3621abaf05d40647e26",
+          "note": "20/20 passed, including the arms the oracle names. 'No duplicate launch': the same taskId submitted concurrently admits once and its credit is reserved once. 'No overshoot past the target': the H4-1 storm of concurrent drains cannot hold more than the target, and H4-3's four simultaneous completions admit exactly four replacements. 'No missed replacement': the same H4-3 arm. 'THE COALESCED DRAIN IS SHOWN TO BE RE-TRIGGERABLE': an explicit arm titled exactly that -- 'a later arrival still causes a new pass' -- plus an arm proving the invariant holds WITH THE COALESCER DEFEATED, so the property does not depend on the efficiency layer.",
+          "cited": "packages/dsh-daily-work/src/f5-admission.test.ts"
+        },
+        {
+          "kind": "test",
+          "path": "qualification/results/S4-v2-rejudge/raw/cap-evidence.txt",
+          "sha256": "a935751476b7cbf6e2157a1e4737592857986f5e9d40a3621abaf05d40647e26",
+          "note": "THE EXACT LAUNCH COUNT IS RECORDED, as the oracle requires, and it reproduces v1's own probe shape: [V8/CAP-10 measured] freedSlots=2 concurrentRequests=3 admitted=2 heldAgainstTarget3=3 acceptedIds=[\"child-70\",\"child-71\"] deficitAfter=0. Compare the ARCHIVED v1 BEFORE run (qualification/results/R3-f5-admission/before-cap10-probe.txt): freedSlots=2 concurrentRequests=3 admitted=3 heldAgainstTarget3=4 deficitAfter=0 -- the same stimulus, one fewer admission, and the fourth task no longer holding a slot against a target of three.",
+          "cited": "packages/dsh-daily-work/src/capacity-v8-probe.test.ts"
+        },
+        {
+          "kind": "source",
+          "path": "qualification/results/S4-v2-rejudge/raw/cap-evidence.txt",
+          "sha256": "a935751476b7cbf6e2157a1e4737592857986f5e9d40a3621abaf05d40647e26",
+          "note": "The fix, in this tree. The v1 defect is gone at the source: `pendingDrain` no longer exists as the coalescer (host.ts:408-418 documents the replacement by `drainLeaders`, a one-leader-per-run generation/dirty loop), and the target check now lives INSIDE one storage-domain update -- host.ts:1499 `if (held >= target)` inside the `this.runs().update(...)` transform at :1379, where the domain's per-run write chain serializes it against every other write. That is the same place the BUDGET check already was, which is why the sibling case CAP-09 never had this hole.",
+          "cited": "packages/dsh-daily-work/src/host.ts"
+        },
+        {
+          "kind": "falsification",
+          "path": "qualification/results/S4-v2-rejudge/raw/cap-evidence.txt",
+          "sha256": "a935751476b7cbf6e2157a1e4737592857986f5e9d40a3621abaf05d40647e26",
+          "note": "THE NEGATIVE CONTROL, and it reproduced v1's defect EXACTLY. Neutering the target check alone (host.ts:1499 -> `if (false && held >= target)`) did NOT restore the overshoot: admitted stayed 2, refused by the `mayAdmit` pre-check at host.ts:2150 instead. That is a real layering fact and it is recorded rather than hidden. Neutering BOTH layers (counting.ts:353 `return counts.capacityDeficit > 0` -> `return true`, plus the target check) restored the v1 signature byte-for-byte: [V8/CAP-10 measured] freedSlots=2 concurrentRequests=3 admitted=3 heldAgainstTarget3=4 deficitAfter=0, and the gate went red. Both files restored byte-exact (git diff empty).",
+          "cited": "packages/dsh-daily-work/src/host.ts"
+        },
+        {
+          "kind": "note",
+          "path": "qualification/results/R3-f5-admission/after-cap10-probe.txt",
+          "sha256": "210cf2a23b746575369c3ea4257dcc2fc1db4bd1d3e4c380d61dda2adee5b19c",
+          "note": "ROUND 1's CLAIM, and it HOLDS UP. The brief §2 lists F5 (target over-admission) as closed by 'tryReserveAdmission inside ONE storage-domain update', evidence f5-admission.test.ts 20/20 -- which is what I measured, and the archived after-probe reports the same admitted=2 that my own run of the same test reports."
+        },
+        {
+          "kind": "note",
+          "path": "qualification/results/S4-v2-rejudge/raw/cap-evidence.txt",
+          "sha256": "a935751476b7cbf6e2157a1e4737592857986f5e9d40a3621abaf05d40647e26",
+          "note": "A MEASUREMENT BUG I MADE AND CORRECTED, recorded because the first reading was wrong and a reader should see both. My initial attribution probe read `o.reason` off a LaunchOutcome and reported `reason: 'none'` for the REFUSED third call, which reads as 'refused with no reason'. `reason` is optional on LaunchOutcome (host.ts:128-129) and `'none'` is the SUCCESS reason on the different AdmissionReservation type (host.ts:146); the LaunchOutcome for the refused task carries no reason at all. The refusal is real and is produced by mayAdmit, established by the two-layer falsification above."
+        }
+      ]
+    }
+  ]
+}
