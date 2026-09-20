@@ -41,6 +41,7 @@
  */
 import { createHash } from 'node:crypto'
 import type { Context } from '@deepseek-ai/cordis'
+import { AttachmentId } from '@deepseek-ai/dsh-attachment'
 import type { FileSystem, FsTarget } from '@deepseek-ai/dsh-fs'
 import type { SessionId } from '@deepseek-ai/dsh-session'
 import type { WebFetchResult, WebSearchResult } from '@deepseek-ai/dsh-web'
@@ -717,7 +718,22 @@ export class DataPlane {
     this.#assertLive(caller)
     const attachments = this.#attachments()
     const ref = {
-      attachmentId: input.attachmentId as never,
+      // `FileAttachmentRef.attachmentId` is the BRANDED `AttachmentId`. The input
+      // arrives as a plain string because it is caller-supplied, and
+      // `AttachmentId(...)` is the package's own compile-time brand constructor --
+      // it returns the same string with the brand and validates nothing, so the
+      // runtime value is unchanged.
+      //
+      // WHY THIS IS A REAL FIX AND NOT COSMETIC, even though removing the old
+      // `as never` reported NO diagnostic: `#attachments()` is typed
+      // `NonNullable<ReturnType<Context['get']>>`, and `Context.get` carries a
+      // catch-all overload returning `any` (`vendor/cordis/src/reflect.ts:26`), so
+      // `ReturnType` picks up `any` and the whole call is unchecked. The cast was
+      // therefore suppressing nothing HERE only because an `any` had already
+      // erased the check upstream -- a latent hole, not a clean removal. Branding
+      // at the boundary keeps the value's type honest, and the digest comparison
+      // below is what actually validates the id.
+      attachmentId: AttachmentId(input.attachmentId),
       name: input.name,
       bytes: input.bytes,
     }

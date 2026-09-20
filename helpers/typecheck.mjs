@@ -58,9 +58,10 @@
  *
  * Exit codes:
  *   0  every package type-checks, and every check config was verified to include
- *      its test files
+ *      its test files, and the escape-hatch scan found no NEW cast
  *   1  a package failed to type-check, or a check config was found to exclude
- *      the test files (a degraded gate, treated as a failure rather than a pass)
+ *      the test files (a degraded gate, treated as a failure rather than a pass),
+ *      or the escape-hatch scan found an unjustified NEW cast
  *   2  the invocation or the toolchain is unusable -- no `tsc`, no configs, a
  *      config that does not resolve. NOT a verdict about the code.
  *
@@ -68,6 +69,27 @@
  *   pnpm typecheck              # every package
  *   pnpm typecheck --json       # machine-readable summary
  *   pnpm typecheck --pkg dsh-ipython
+ *
+ * THE ESCAPE-HATCH GATE (ID-05, second clause). A green typecheck is only half of
+ * ID-05. The other half is that the green light is not bought with a cast: `tsc`
+ * cannot be told "no `as never`", and the V1 audit measured that at least one
+ * config-position cast MASKS a real diagnostic (`Argument of type '{}' is not
+ * assignable to parameter of type 'undefined'`). So this script also counts
+ * `as never` casts in NON-TEST sources and refuses to report success if the count
+ * GREW against a recorded baseline.
+ *
+ * WHY A BASELINE RATHER THAN ZERO. The V1 case FAILed because the oracle named no
+ * carve-out and 475 occurrences existed. Sweeping 509 test-file casts is a
+ * per-site review, not a mechanical edit -- instances of one syntactic shape
+ * genuinely differ (a `ctx.plugin(x as never, cfg as never)` whose plugin declares
+ * a `Config` schema masks a different thing from one whose plugin declares none).
+ * So the gate does not pretend zero is reachable today; it makes the count
+ * NON-INCREASING, which is the property that can actually be enforced now, and it
+ * names the baseline so a reader can see it was measured rather than chosen.
+ *
+ * WHAT THIS GATE DOES NOT DO, stated so it is not over-read: it does not prove any
+ * individual cast is justified, and it does not fail on a REMOVAL (the count going
+ * down is the intended direction). It is a ratchet, not a proof.
  */
 import { execFileSync } from 'node:child_process'
 import { existsSync, readFileSync, readdirSync } from 'node:fs'
@@ -76,6 +98,7 @@ import { dirname, join, resolve } from 'node:path'
 const REPO_ROOT = resolve(import.meta.dirname, '..')
 const PACKAGES_DIR = join(REPO_ROOT, 'packages')
 const CHECK_CONFIG = 'tsconfig.check.json'
+const BASELINE_PATH = join(REPO_ROOT, 'qualification', 'results', 'S10-id05', 'as-never-baseline.json')
 
 function die(message) {
   process.stderr.write(`typecheck: ${message}\n`)
@@ -230,10 +253,90 @@ function inspectConfig(tscPath, pkg) {
   }
 }
 
+/**
+ * Count `as never` CASTS in NON-TEST sources, comments stripped.
+ *
+ * WHY COMMENTS ARE STRIPPED AND WHY THIS IS NOT A GREP. A raw `grep "as never"`
+ * over non-test sources reports 48 hits on this tree, but most are the English
+ * words in prose ("was never written", "never a product question"). Counting those
+ * would make the gate fire on documentation. The comment stripper preserves
+ * newlines so a reported line number still addresses the original file.
+ *
+ * Test files are excluded from the GATE deliberately: 509 of the 511 casts live
+ * there, they are the `ctx.plugin(...)` mount idiom of test rigs, and a ratchet
+ * over a number that large would fire on ordinary test authoring. The non-test
+ * count is the one that can be kept honest, because it is small enough that every
+ * instance can be read.
+ */
+function countAsNeverCasts() {
+  const stripComments = (text) =>
+    text.replace(/\/\*[\s\S]*?\*\//gu, (m) => '\n'.repeat((m.match(/\n/gu) ?? []).length))
+      .replace(/\/\/[^\n]*/gu, '')
+
+  const found = []
+  for (const entry of readdirSync(PACKAGES_DIR, { withFileTypes: true })) {
+    if (!entry.isDirectory()) continue
+    const src = join(PACKAGES_DIR, entry.name, 'src')
+    if (!existsSync(src)) continue
+    const walk = (dir) => {
+      for (const item of readdirSync(dir, { withFileTypes: true })) {
+        const full = join(dir, item.name)
+        if (item.isDirectory()) {
+          walk(full)
+          continue
+        }
+        if (!item.name.endsWith('.ts') || item.name.endsWith('.test.ts')) continue
+        const code = stripComments(readFileSync(full, 'utf8'))
+        for (const match of code.matchAll(/\bas\s+never\b/gu)) {
+          const line = code.slice(0, match.index).split('\n').length
+          found.push({
+            file: full.slice(REPO_ROOT.length + 1).replace(/\\/gu, '/'),
+            line,
+            text: (code.split('\n')[line - 1] ?? '').trim().slice(0, 160),
+          })
+        }
+      }
+    }
+    walk(src)
+  }
+  return found.sort((a, b) => a.file.localeCompare(b.file) || a.line - b.line)
+}
+
+function escapeHatchGate() {
+  const casts = countAsNeverCasts()
+  if (!existsSync(BASELINE_PATH)) {
+    return {
+      ok: false,
+      status: 'NO_BASELINE',
+      count: casts.length,
+      reason: `no baseline at ${BASELINE_PATH.slice(REPO_ROOT.length + 1)}; the ratchet has nothing to compare against, `
+        + 'so a green run here would not establish the ID-05 clause',
+      casts,
+    }
+  }
+  const baseline = JSON.parse(readFileSync(BASELINE_PATH, 'utf8'))
+  const allowed = baseline.non_test_as_never_count
+  const justified = Array.isArray(baseline.justified) ? baseline.justified : []
+  return {
+    ok: casts.length <= allowed,
+    status: casts.length <= allowed ? 'PASS' : 'GREW',
+    count: casts.length,
+    allowed,
+    baseline,
+    justified,
+    reason: casts.length <= allowed
+      ? null
+      : `non-test \`as never\` casts grew from ${String(allowed)} to ${String(casts.length)}. `
+        + 'ID-05 forbids using a cast to make a gate pass: if the new cast is legitimate, add it to '
+        + `\`justified\` in ${BASELINE_PATH.slice(REPO_ROOT.length + 1)} WITH the reason it is not a mask, `
+        + 'and raise the baseline in the same commit so the justification is reviewed.',
+    casts,
+  }
+}
+
 function main() {
   const options = parseArgs(process.argv.slice(2))
   const packages = discoverPackages(options.only)
-
   // One tsc identity for the whole run: resolving per package could silently
   // measure two different compilers and report one verdict.
   const tsc = resolveTsc(packages[0].dir)
@@ -311,16 +414,31 @@ function main() {
     say('')
   }
 
+  // ID-05's second clause runs AFTER the compile, and a failure here is a FAILURE
+  // of the run: a green compile bought with a new cast is exactly the trade the
+  // oracle forbids.
+  say('--- escape-hatch gate (ID-05, non-test `as never`) ---')
+  const hatch = escapeHatchGate()
+  if (hatch.ok) {
+    say(`[ok  ] ${String(hatch.count)} non-test cast(s); baseline allows ${String(hatch.allowed)}`)
+  } else {
+    failed += 1
+    say(`[FAIL] ${hatch.reason}`)
+    for (const cast of hatch.casts) say(`         ${cast.file}:${String(cast.line)}  ${cast.text}`)
+  }
+  say('')
+
   if (options.json) {
     process.stdout.write(`${JSON.stringify({
       tsc: { path: tsc.path, how: tsc.how, version },
       packages: results,
+      escapeHatch: hatch,
       verdict: failed === 0 ? 'PASS' : 'FAIL',
     }, null, 2)}\n`)
   } else {
     say(failed === 0
       ? `typecheck: PASS -- ${String(packages.length)} package(s), complete production graph, tests included.`
-      : `typecheck: FAIL -- ${String(failed)} of ${String(packages.length)} package(s) did not pass.`)
+      : `typecheck: FAIL -- ${String(failed)} check(s) did not pass (compile, coverage, or escape hatch).`)
     say('This is the ONE official command. Do not cite `tsc -p tsconfig.json` as its')
     say('equivalent: that config excludes src/**/*.test.ts and exits 0 with or without')
     say('a test file present, which is the F10 / ID-05 false pass.')

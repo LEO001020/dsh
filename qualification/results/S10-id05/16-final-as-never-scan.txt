@@ -1,0 +1,29 @@
+=== ID-05: the `as never` CAST, comment-stripped ===
+
+                         measured  D4 recorded   drift
+as_never_total                511          488     +23
+as_never_test                 509          478     +31
+as_never_non_test               2           10      -8
+
+=== by package ===
+  packages/dsh-daily-work
+    files 92 (39 production + 53 test)
+    casts 498 (497 test + 1 non-test)
+  packages/dsh-ipython
+    files 24 (13 production + 11 test)
+    casts 13 (12 test + 1 non-test)
+
+=== SHAPE histogram (the characterisation) ===
+  shape                test  non-test  total
+  plugin-arg            280         0    280
+  object-literal         82         1     83
+  call-argument          55         1     56
+  other                  44         0     44
+  config-arg             25         0     25
+  object-property        23         0     23
+
+=== EVERY non-test occurrence (examined exhaustively) ===
+  packages/dsh-daily-work/src/durability-runner.ts
+       93  [object-literal ] root: { session: { header: { id: 'root-session' } } } as never,
+  packages/dsh-ipython/src/v4-bridge-probe.ts
+      378  [call-argument  ] targetAfterTheCell: ctx.tools.get('v4_target' as never) === undefined ? 'UNREGISTERED' : 'STILL-PRESENT',

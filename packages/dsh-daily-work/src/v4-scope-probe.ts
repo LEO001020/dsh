@@ -32,6 +32,7 @@
  * Run:  node --experimental-strip-types src/v4-scope-probe.ts
  */
 import { Context } from '@deepseek-ai/cordis'
+import { AttachmentId } from '@deepseek-ai/dsh-attachment'
 import { createUserMessage } from '@deepseek-ai/dsh-llm'
 import type { ContentBlock, UserMessage } from '@deepseek-ai/dsh-llm'
 import SystemPrompt from '@deepseek-ai/dsh-system-prompt'
@@ -72,7 +73,13 @@ function registerImageTool(ctx: Context, name: string): { calls: number } {
         {
           type: 'image',
           attachment: {
-            attachmentId: 'cafebabe' as never,
+            // `attachmentId` is the BRANDED `AttachmentId`, not a plain string.
+            // `AttachmentId(...)` is the package's own compile-time brand
+            // constructor: it returns the same string with the brand and validates
+            // nothing, so this is type-level only. The previous `as never`
+            // suppressed `TS2322: Type 'string' is not assignable to type
+            // 'AttachmentId'`.
+            attachmentId: AttachmentId('cafebabe'),
             mediaType: 'image/png',
             bytes: IMAGE_BYTES,
             width: 64,

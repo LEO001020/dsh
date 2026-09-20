@@ -1,0 +1,37 @@
+package: dsh-daily-work
+non-test `as never` occurrences: 8
+
+baseline (nothing mutated): exit 0, 0 diagnostic(s)
+
+[1/8] data-plane.ts:720 exit 0 (0 diag) restore_exact=True
+[2/8] durability-runner.ts:37 exit 2 (1 diag) restore_exact=True
+[3/8] durability-runner.ts:38 exit 0 (0 diag) restore_exact=True
+[4/8] durability-runner.ts:38 exit 2 (1 diag) restore_exact=True
+[5/8] durability-runner.ts:39 exit 0 (0 diag) restore_exact=True
+[6/8] durability-runner.ts:39 exit 2 (1 diag) restore_exact=True
+[7/8] durability-runner.ts:65 exit 2 (1 diag) restore_exact=True
+[8/8] v4-scope-probe.ts:75 exit 2 (1 diag) restore_exact=True
+
+wrote qualification/results/S10-id05/08-removal-probe-dsh-daily-work.json
+
+=== MASKED (removing the cast reveals a diagnostic) ===
+  packages/dsh-daily-work/src/durability-runner.ts:37
+    source: await ctx.plugin(Storage, {} as never)
+    -> TS2345 (37,29): Argument of type '{}' is not assignable to parameter of type 'undefined'.
+  packages/dsh-daily-work/src/durability-runner.ts:38
+    source: await ctx.plugin(storageJsonPlugin as never, { root } as never)
+    -> TS2345 (38,48): Argument of type '{ root: string; }' is not assignable to parameter of type 'never'.
+  packages/dsh-daily-work/src/durability-runner.ts:39
+    source: await ctx.plugin(storageDomainPlugin as never, { backend: 'json' } as never)
+    -> TS2345 (39,50): Argument of type '{ backend: string; }' is not assignable to parameter of type 'never'.
+  packages/dsh-daily-work/src/durability-runner.ts:65
+    source: root: { session: { header: { id: 'root-session' } } } as never,
+    -> TS2322 (65,34): Type 'string' is not assignable to type 'SessionId'.
+  packages/dsh-daily-work/src/v4-scope-probe.ts:75
+    source: attachmentId: 'cafebabe' as never,
+    -> TS2322 (75,13): Type 'string' is not assignable to type 'AttachmentId'.
+
+=== CLEAN REMOVAL (no diagnostic appears) ===
+  packages/dsh-daily-work/src/data-plane.ts:720  attachmentId: input.attachmentId as never,
+  packages/dsh-daily-work/src/durability-runner.ts:38  await ctx.plugin(storageJsonPlugin as never, { root } as never)
+  packages/dsh-daily-work/src/durability-runner.ts:39  await ctx.plugin(storageDomainPlugin as never, { backend: 'json' } as never)

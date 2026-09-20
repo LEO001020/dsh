@@ -1,0 +1,40 @@
+{
+  "scope": "S10_ID05_INJECTION_ARM",
+  "package": "dsh-ipython",
+  "target_file": "packages/dsh-ipython/src/bridge-seam.test.ts",
+  "target_sha256_before": "7e27e25794ff9c94dfdc3e274d752fd8409bb1ffc973fc93b2d19f07fe5a17af",
+  "injected_line_number": 66,
+  "injected_text": "const __s10InjectedTypeError: number = 's10-injected'",
+  "expected_error_code": "TS2322",
+  "arms": [
+    {
+      "config": "tsconfig.check.json",
+      "exit_code": 2,
+      "stdout": "src/bridge-seam.test.ts(66,7): error TS2322: Type 'string' is not assignable to type 'number'.\n",
+      "stderr": ""
+    },
+    {
+      "config": "tsconfig.json",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    }
+  ],
+  "target_sha256_after": "7e27e25794ff9c94dfdc3e274d752fd8409bb1ffc973fc93b2d19f07fe5a17af",
+  "restore_byte_exact": true,
+  "verdict": {
+    "check_config_caught_the_error": true,
+    "check_config_exit_code": 2,
+    "check_config_named_the_injected_line": true,
+    "build_config_missed_the_error": true,
+    "build_config_exit_code": 0,
+    "restore_byte_exact": true
+  },
+  "oracle_established": true
+}
+
+--- the injected line, from the CHECK config's diagnostics ---
+  src/bridge-seam.test.ts(66,7): error TS2322: Type 'string' is not assignable to type 'number'.
+
+--- the BUILD config's diagnostics (the control arm) ---
+  exit 0; output EMPTY

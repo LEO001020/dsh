@@ -1,0 +1,28 @@
+scanner: the archived V1 scanner's pattern '\\bas\\s+never\\b', comment-stripped
+
+rev            total    test  non-test  files
+733c31b          484     474        10     45   733c31b decisions: the v2 oracle resolutions root owns, so no writer i
+84faca0          484     474        10     45   84faca0 D1: add the measured before/after tool-count pair
+fef7612          520     509        11     51   fef7612 round 2: the shared brief, and the honest boundary on 'delete 
+
+recorded by D4 (in docs/decisions/V3-v2-oracle-resolutions.md):
+D4 recorded      488     478        10
+
+non-test files at 733c31b:
+    6  packages/dsh-daily-work/src/durability-runner.ts
+    1  packages/dsh-daily-work/src/v4-scope-probe.ts
+    3  packages/dsh-ipython/src/v4-bridge-probe.ts
+
+non-test files at 84faca0:
+    6  packages/dsh-daily-work/src/durability-runner.ts
+    1  packages/dsh-daily-work/src/v4-scope-probe.ts
+    3  packages/dsh-ipython/src/v4-bridge-probe.ts
+
+non-test files at fef7612:
+    1  packages/dsh-daily-work/src/data-plane.ts
+    6  packages/dsh-daily-work/src/durability-runner.ts
+    1  packages/dsh-daily-work/src/v4-scope-probe.ts
+    3  packages/dsh-ipython/src/v4-bridge-probe.ts
+
+733c31b: RAW(no strip) total=488 test=478 non-test=10  |  STRIPPED total=484 test=474 non-test=10
+HEAD: RAW(no strip) total=524 test=513 non-test=11  |  STRIPPED total=520 test=509 non-test=11

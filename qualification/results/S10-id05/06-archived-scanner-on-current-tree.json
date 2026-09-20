@@ -1,0 +1,1949 @@
+{
+  "scope": "ID05_ESCAPE_HATCH_SCAN",
+  "note": "as_any/as_never/angle_any/colon_any and deep imports are decided here. non_null_assertion is COUNTED AND LOCATED ONLY: whether a given `!` hides a genuinely undefined value is a reading, not a token match, so this scanner does not claim a verdict on it.",
+  "packages": {
+    "packages/dsh-daily-work": {
+      "file_count": 92,
+      "per_file": {
+        "packages/dsh-daily-work/src/authorization-path.test.ts": {
+          "as_never": 11
+        },
+        "packages/dsh-daily-work/src/capacity-v8-probe.test.ts": {
+          "as_never": 5,
+          "non_null_assertion": 10
+        },
+        "packages/dsh-daily-work/src/capacity.test.ts": {
+          "as_never": 19,
+          "non_null_assertion": 18
+        },
+        "packages/dsh-daily-work/src/concurrency.test.ts": {
+          "as_never": 4,
+          "non_null_assertion": 5
+        },
+        "packages/dsh-daily-work/src/control-plane.test.ts": {
+          "as_never": 6,
+          "non_null_assertion": 8
+        },
+        "packages/dsh-daily-work/src/cost.test.ts": {
+          "as_never": 31
+        },
+        "packages/dsh-daily-work/src/data-plane.test.ts": {
+          "non_null_assertion": 10
+        },
+        "packages/dsh-daily-work/src/data-plane.ts": {
+          "as_never": 1
+        },
+        "packages/dsh-daily-work/src/data-r6.test.ts": {
+          "as_never": 7
+        },
+        "packages/dsh-daily-work/src/dep-gates.test.ts": {
+          "as_any": 1,
+          "as_never": 19,
+          "non_null_assertion": 4
+        },
+        "packages/dsh-daily-work/src/durability-advanced.test.ts": {
+          "as_never": 21,
+          "non_null_assertion": 3
+        },
+        "packages/dsh-daily-work/src/durability-records.test.ts": {
+          "as_never": 65,
+          "non_null_assertion": 17
+        },
+        "packages/dsh-daily-work/src/durability-runner.ts": {
+          "as_never": 6,
+          "non_null_assertion": 1
+        },
+        "packages/dsh-daily-work/src/eco.test.ts": {
+          "as_never": 1,
+          "non_null_assertion": 1
+        },
+        "packages/dsh-daily-work/src/effects.test.ts": {
+          "as_never": 7
+        },
+        "packages/dsh-daily-work/src/f5-admission.test.ts": {
+          "as_never": 15,
+          "non_null_assertion": 27
+        },
+        "packages/dsh-daily-work/src/goal.test.ts": {
+          "as_never": 5,
+          "non_null_assertion": 8
+        },
+        "packages/dsh-daily-work/src/history-plane.ts": {
+          "non_null_assertion": 1
+        },
+        "packages/dsh-daily-work/src/history-web.test.ts": {
+          "as_never": 21
+        },
+        "packages/dsh-daily-work/src/homelock.test.ts": {
+          "as_never": 4
+        },
+        "packages/dsh-daily-work/src/host.test.ts": {
+          "as_never": 11
+        },
+        "packages/dsh-daily-work/src/host.ts": {
+          "non_null_assertion": 1
+        },
+        "packages/dsh-daily-work/src/isolation.test.ts": {
+          "as_never": 13,
+          "non_null_assertion": 28
+        },
+        "packages/dsh-daily-work/src/launch-port.test.ts": {
+          "as_never": 2
+        },
+        "packages/dsh-daily-work/src/lifecycle.test.ts": {
+          "as_never": 5,
+          "non_null_assertion": 3
+        },
+        "packages/dsh-daily-work/src/no-sandbox-contract.test.ts": {
+          "non_null_assertion": 12
+        },
+        "packages/dsh-daily-work/src/plugin.test.ts": {
+          "as_never": 40,
+          "non_null_assertion": 11
+        },
+        "packages/dsh-daily-work/src/production-port.test.ts": {
+          "as_never": 10
+        },
+        "packages/dsh-daily-work/src/profile-config.test.ts": {
+          "as_never": 7,
+          "non_null_assertion": 6
+        },
+        "packages/dsh-daily-work/src/profile-isolation.test.ts": {
+          "as_never": 5
+        },
+        "packages/dsh-daily-work/src/programmatic-scope.test.ts": {
+          "as_never": 9,
+          "non_null_assertion": 8
+        },
+        "packages/dsh-daily-work/src/reconcile.test.ts": {
+          "as_never": 6
+        },
+        "packages/dsh-daily-work/src/research-chain.test.ts": {
+          "as_never": 9,
+          "non_null_assertion": 36
+        },
+        "packages/dsh-daily-work/src/research.test.ts": {
+          "as_never": 4
+        },
+        "packages/dsh-daily-work/src/scheduling.test.ts": {
+          "as_never": 5,
+          "non_null_assertion": 24
+        },
+        "packages/dsh-daily-work/src/sec-gates.test.ts": {
+          "as_never": 26,
+          "non_null_assertion": 11
+        },
+        "packages/dsh-daily-work/src/security-denial.test.ts": {
+          "as_never": 4,
+          "non_null_assertion": 4
+        },
+        "packages/dsh-daily-work/src/security.test.ts": {
+          "as_never": 10,
+          "non_null_assertion": 6
+        },
+        "packages/dsh-daily-work/src/signal.test.ts": {
+          "as_never": 11
+        },
+        "packages/dsh-daily-work/src/target-setting.test.ts": {
+          "non_null_assertion": 4
+        },
+        "packages/dsh-daily-work/src/terminal-advanced.test.ts": {
+          "as_never": 8
+        },
+        "packages/dsh-daily-work/src/terminal.test.ts": {
+          "as_never": 7
+        },
+        "packages/dsh-daily-work/src/tool-protocol.test.ts": {
+          "as_never": 27,
+          "non_null_assertion": 9
+        },
+        "packages/dsh-daily-work/src/u02-research-loop.test.ts": {
+          "non_null_assertion": 3
+        },
+        "packages/dsh-daily-work/src/u03-sustained-load.test.ts": {
+          "as_never": 4,
+          "non_null_assertion": 10
+        },
+        "packages/dsh-daily-work/src/u04-paired-comparison.test.ts": {
+          "as_never": 1,
+          "non_null_assertion": 1
+        },
+        "packages/dsh-daily-work/src/upg-gates.test.ts": {
+          "colon_any": 1,
+          "as_never": 11,
+          "non_null_assertion": 17
+        },
+        "packages/dsh-daily-work/src/v4-scope-probe.ts": {
+          "as_never": 1
+        },
+        "packages/dsh-daily-work/src/verification-gates.test.ts": {
+          "as_never": 9,
+          "non_null_assertion": 10
+        },
+        "packages/dsh-daily-work/src/verify.test.ts": {
+          "non_null_assertion": 3
+        },
+        "packages/dsh-daily-work/src/verify.ts": {
+          "non_null_assertion": 7
+        },
+        "packages/dsh-daily-work/src/web-search.test.ts": {
+          "as_never": 4,
+          "non_null_assertion": 4
+        },
+        "packages/dsh-daily-work/src/wire-faults.test.ts": {
+          "as_never": 8,
+          "non_null_assertion": 4
+        }
+      }
+    },
+    "packages/dsh-ipython": {
+      "file_count": 24,
+      "per_file": {
+        "packages/dsh-ipython/src/bridge-seam.test.ts": {
+          "as_never": 1
+        },
+        "packages/dsh-ipython/src/ipython-tool.ts": {
+          "colon_any": 1
+        },
+        "packages/dsh-ipython/src/r5-product-bridge.test.ts": {
+          "as_never": 5
+        },
+        "packages/dsh-ipython/src/r5-restart-epoch.test.ts": {
+          "as_never": 1
+        },
+        "packages/dsh-ipython/src/requirements.test.ts": {
+          "as_never": 1
+        },
+        "packages/dsh-ipython/src/v3-spec-gates.test.ts": {
+          "as_never": 4
+        },
+        "packages/dsh-ipython/src/v4-bridge-probe.ts": {
+          "as_never": 3
+        }
+      }
+    }
+  },
+  "totals": {
+    "as_any": 1,
+    "angle_any": 0,
+    "colon_any": 2,
+    "as_never": 520,
+    "non_null_assertion": 335,
+    "ts_ignore": 0
+  },
+  "deep_cross_package_imports": [
+    {
+      "file": "packages/dsh-daily-work/src/data-plane.test.ts",
+      "specifier": "@deepseek-ai/dsh-tool-fs/src/read-render.ts"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/data-plane.test.ts",
+      "specifier": "@deepseek-ai/dsh-tool-fs/src/read.ts"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/eco.test.ts",
+      "specifier": "@deepseek-ai/dsh-headless/src/json-stream.ts"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/no-src-imports.test.ts",
+      "specifier": "@deepseek-ai/dsh-attachment-local/src/store.ts"
+    }
+  ],
+  "non_null_assertions": [
+    {
+      "file": "packages/dsh-daily-work/src/capacity-v8-probe.test.ts",
+      "line": 152,
+      "context": "expect(isSessionBackedChild(first!), 'and is classified as a child').toBe(true)"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/capacity-v8-probe.test.ts",
+      "line": 224,
+      "context": "expect(service.budget(runId).childCommitted ?? service.getRun(runId)!.budget.reserved).toBe(99)"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/capacity-v8-probe.test.ts",
+      "line": 232,
+      "context": "service.drain(runId, [contenders[0]!], signal),"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/capacity-v8-probe.test.ts",
+      "line": 233,
+      "context": "service.drain(runId, [contenders[1]!], signal),"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/capacity-v8-probe.test.ts",
+      "line": 234,
+      "context": "service.drain(runId, [contenders[2]!], signal),"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/capacity-v8-probe.test.ts",
+      "line": 243,
+      "context": "const record = service.getRun(runId)!"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/capacity-v8-probe.test.ts",
+      "line": 337,
+      "context": "const record = service.getRun(runId)!"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/capacity-v8-probe.test.ts",
+      "line": 437,
+      "context": "await start('v8-grandchild', 99, childA!)"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/capacity-v8-probe.test.ts",
+      "line": 487,
+      "context": "expect(poolError!, 'the pool refusal names the ACTIVE CHILD LIMIT, not the host cap')"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/capacity-v8-probe.test.ts",
+      "line": 489,
+      "context": "expect(poolError!, 'and it does NOT claim the host hard capacity').not.toMatch(/hard capacity is 30/i)"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/capacity.test.ts",
+      "line": 237,
+      "context": "held[0]!.release()"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/capacity.test.ts",
+      "line": 480,
+      "context": "parent: parentAgent!,"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/capacity.test.ts",
+      "line": 528,
+      "context": "const parentAgent = r.ctx.agents.get(SessionId(parentId))!"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/capacity.test.ts",
+      "line": 547,
+      "context": "const parentAgent = r.ctx.agents.get(SessionId(parentId))!"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/capacity.test.ts",
+      "line": 565,
+      "context": "const parentAgent = r.ctx.agents.get(SessionId(parentId))!"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/capacity.test.ts",
+      "line": 648,
+      "context": "const record = r.service.getRun(runId)!"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/capacity.test.ts",
+      "line": 805,
+      "context": "expect(idle!.activity).toBe('inactive')"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/capacity.test.ts",
+      "line": 835,
+      "context": "expect(first[3]!.accepted).toBe(false)"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/capacity.test.ts",
+      "line": 854,
+      "context": "const record = r.service.getRun('run-raise')!"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/capacity.test.ts",
+      "line": 909,
+      "context": "const parentAgent = r.ctx.agents.get(SessionId(parentId))!"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/capacity.test.ts",
+      "line": 1135,
+      "context": "const settling = liveChildrenOf(r.ctx, r.root)[0]!"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/capacity.test.ts",
+      "line": 1207,
+      "context": "const victim = liveChildrenOf(r.ctx, r.root)[0]!"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/capacity.test.ts",
+      "line": 1315,
+      "context": "const record = r.service.getRun(runId)!"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/capacity.test.ts",
+      "line": 1553,
+      "context": "const record = r.service.getRun(runId)!"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/capacity.test.ts",
+      "line": 1592,
+      "context": "const record = r.service.getRun(runId)!"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/capacity.test.ts",
+      "line": 1787,
+      "context": "held[0]!.release()"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/capacity.test.ts",
+      "line": 1839,
+      "context": "expect(isSessionBackedChild(child!), 'a child IS a session-backed child').toBe(true)"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/capacity.test.ts",
+      "line": 1931,
+      "context": "const victim = before[0]!"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/concurrency.test.ts",
+      "line": 179,
+      "context": "const states = Object.values(record!.tasks).map(t => t.state)"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/concurrency.test.ts",
+      "line": 232,
+      "context": "const record = r.service.getRun('run-topup')!"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/concurrency.test.ts",
+      "line": 233,
+      "context": "const firstTask = Object.keys(record.tasks)[0]!"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/concurrency.test.ts",
+      "line": 323,
+      "context": "const childId = children[0]!.id"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/concurrency.test.ts",
+      "line": 330,
+      "context": "expect(delegationDepthOf(child!)).toBe(1)"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/control-plane.test.ts",
+      "line": 170,
+      "context": "expect(artifact.requests.indexUnauthenticated!.status).toBe(401)"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/control-plane.test.ts",
+      "line": 171,
+      "context": "expect(artifact.requests.indexUnauthenticated!.bodyHead).toContain('authentication required')"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/control-plane.test.ts",
+      "line": 174,
+      "context": "expect(artifact.requests.apiUnauthenticated!.status).toBe(401)"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/control-plane.test.ts",
+      "line": 180,
+      "context": "expect(artifact.requests.indexGuessedToken!.status).toBe(401)"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/control-plane.test.ts",
+      "line": 181,
+      "context": "expect(artifact.requests.indexGuessedToken!.bodyHead)"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/control-plane.test.ts",
+      "line": 182,
+      "context": ".toBe(artifact.requests.indexUnauthenticated!.bodyHead)"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/control-plane.test.ts",
+      "line": 204,
+      "context": "expect(artifact.requests.apiUntrustedHost!.status).toBe(403)"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/control-plane.test.ts",
+      "line": 208,
+      "context": "expect(artifact.requests.indexUntrustedHost!.status).toBe(401)"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/data-plane.test.ts",
+      "line": 497,
+      "context": "const lineBytes = await readLineBytes(store, capture.descriptor, index.entries[0]!, io)"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/data-plane.test.ts",
+      "line": 518,
+      "context": "const lineBytes = await readLineBytes(store, capture.descriptor, index.entries[0]!)"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/data-plane.test.ts",
+      "line": 540,
+      "context": "const last = index.entries.at(-1)!"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/data-plane.test.ts",
+      "line": 1200,
+      "context": "descriptor: capture.descriptor, maxBytes: 64, grants, callerScope: scope, cursor: page1.nextCursor!,"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/data-plane.test.ts",
+      "line": 1240,
+      "context": "descriptor: captureA.descriptor, maxBytes: 64, grants, callerScope: scope, cursor: firstPage.nextCursor!,"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/data-plane.test.ts",
+      "line": 1262,
+      "context": "descriptor: capture.descriptor, maxBytes: 64, grants, callerScope: scope, cursor: first.nextCursor!,"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/data-plane.test.ts",
+      "line": 1876,
+      "context": "const bytes = await service.readLine(descriptor, index.entries[0]!)"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/data-plane.test.ts",
+      "line": 2119,
+      "context": "const orphan = reconciled.orphans[0]!"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/data-plane.test.ts",
+      "line": 2667,
+      "context": "producers.get(stage)!.push(`${file}:${String(line)}`)"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/data-plane.test.ts",
+      "line": 2671,
+      "context": "const unproduced = [...OBSERVATION_GAP_STAGES].filter(stage => producers.get(stage)!.length === 0)"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/dep-gates.test.ts",
+      "line": 226,
+      "context": "for (const c of spec.cases) families.set(c.id.split('-')[0]!, (families.get(c.id.split('-')[0]!) ?? 0) + 1)"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/dep-gates.test.ts",
+      "line": 226,
+      "context": "for (const c of spec.cases) families.set(c.id.split('-')[0]!, (families.get(c.id.split('-')[0]!) ?? 0) + 1)"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/dep-gates.test.ts",
+      "line": 338,
+      "context": "const file = line.split('(')[0]!.replace(/\\\\/gu, '/')"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/dep-gates.test.ts",
+      "line": 463,
+      "context": "const specifier = match[1]!"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/durability-advanced.test.ts",
+      "line": 640,
+      "context": "const decision = reconcileTask(task!, {"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/durability-advanced.test.ts",
+      "line": 1028,
+      "context": "expect(holdsSlot(afterFailure!.tasks['t1']!.state), '`unknown` holds a slot').toBe(true)"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/durability-advanced.test.ts",
+      "line": 1028,
+      "context": "expect(holdsSlot(afterFailure!.tasks['t1']!.state), '`unknown` holds a slot').toBe(true)"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/durability-records.test.ts",
+      "line": 321,
+      "context": "const committed = changes[0]!.value as {"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/durability-records.test.ts",
+      "line": 334,
+      "context": "const stored = r.service.getRun('run-d01')!"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/durability-records.test.ts",
+      "line": 468,
+      "context": "const decision = reconcileTask(run!.tasks['t1']!, {"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/durability-records.test.ts",
+      "line": 468,
+      "context": "const decision = reconcileTask(run!.tasks['t1']!, {"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/durability-records.test.ts",
+      "line": 1281,
+      "context": "expect(JSON.stringify(assistant!.data)).toContain('THE ARTIFACT CONTENT')"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/durability-records.test.ts",
+      "line": 1487,
+      "context": "document.tables.runs['r']!.requestedTarget = 'not-a-number'"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/durability-records.test.ts",
+      "line": 1552,
+      "context": "expect(holdsSlot(after!.tasks['t1']!.state)).toBe(true)"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/durability-records.test.ts",
+      "line": 1552,
+      "context": "expect(holdsSlot(after!.tasks['t1']!.state)).toBe(true)"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/durability-records.test.ts",
+      "line": 1553,
+      "context": "expect(Object.hasOwn(after!, 'epoch')).toBe(false)"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/durability-records.test.ts",
+      "line": 1782,
+      "context": "expect(reloaded!.getRun('run-d11')?.runId).toBe('run-d11')"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/durability-records.test.ts",
+      "line": 1786,
+      "context": "await expect(reloaded!.open()).rejects.toThrow(/already open/)"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/durability-records.test.ts",
+      "line": 1787,
+      "context": "await expect(gen2.get('storageDomain')!.open(workDomainSpec)).rejects.toMatchObject({ code: 'already-open' })"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/durability-records.test.ts",
+      "line": 1791,
+      "context": "expect(gen2.get('storageDomain')!.get(WORK_DOMAIN_NAME)).toBeUndefined()"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/durability-records.test.ts",
+      "line": 1819,
+      "context": "await service!.createRun({"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/durability-records.test.ts",
+      "line": 1833,
+      "context": "const service = finalScope.get('dailyWork')!"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/durability-records.test.ts",
+      "line": 1902,
+      "context": "const run = recovered.getRun('run-d13k')!"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/durability-records.test.ts",
+      "line": 1917,
+      "context": "const after = recovered.getRun('run-d13k')!"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/durability-runner.ts",
+      "line": 60,
+      "context": "const target = states[i]!"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/eco.test.ts",
+      "line": 226,
+      "context": "const event = session.eventAt(index as never)!"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/f5-admission.test.ts",
+      "line": 139,
+      "context": "const record = service.getRun(runId)!"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/f5-admission.test.ts",
+      "line": 184,
+      "context": "expect(r.service.getRun(runId)!.reservationGeneration, 'exactly three admissions committed').toBe(3)"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/f5-admission.test.ts",
+      "line": 186,
+      "context": "expect(r.service.getRun(runId)!.budget.reserved, 'exactly three credits are reserved').toBe(3)"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/f5-admission.test.ts",
+      "line": 209,
+      "context": "const record = r.service.getRun(runId)!"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/f5-admission.test.ts",
+      "line": 262,
+      "context": "const record = r.service.getRun(runId)!"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/f5-admission.test.ts",
+      "line": 315,
+      "context": "expect(r.service.getRun(runId)!.budget.reserved, 'exactly four credits are held').toBe(4)"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/f5-admission.test.ts",
+      "line": 384,
+      "context": "expect(first.getRun(runId)!.budget.reserved, 'two credits are committed').toBe(2)"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/f5-admission.test.ts",
+      "line": 385,
+      "context": "expect(first.getRun(runId)!.reservationGeneration, 'two reservations committed').toBe(2)"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/f5-admission.test.ts",
+      "line": 399,
+      "context": "const recovered = second.getRun(runId)!"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/f5-admission.test.ts",
+      "line": 469,
+      "context": "const record = r.service.getRun(runId)!"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/f5-admission.test.ts",
+      "line": 504,
+      "context": "const record = r.service.getRun(runId)!"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/f5-admission.test.ts",
+      "line": 536,
+      "context": "const record = r.service.getRun(runId)!"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/f5-admission.test.ts",
+      "line": 586,
+      "context": "expect(r.service.getRun(runId)!.budget.reserved, 'and the credit is still held').toBe(2)"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/f5-admission.test.ts",
+      "line": 623,
+      "context": "expect(r.service.getRun(runId)!.budget.reserved, 'and its credit').toBe(2)"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/f5-admission.test.ts",
+      "line": 663,
+      "context": "expect(r.service.getRun(runId)!.budget.reserved, 'one credit remains').toBe(99)"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/f5-admission.test.ts",
+      "line": 673,
+      "context": "const record = r.service.getRun(runId)!"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/f5-admission.test.ts",
+      "line": 745,
+      "context": "const before = first.getRun(runId)!"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/f5-admission.test.ts",
+      "line": 759,
+      "context": "const after = second.getRun(runId)!"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/f5-admission.test.ts",
+      "line": 832,
+      "context": "expect(r.service.getRun(runId)!.budget.reserved, 'no credit leaked either').toBe(2)"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/f5-admission.test.ts",
+      "line": 833,
+      "context": "expect(r.service.getRun(runId)!.reservationGeneration, 'and no generation advanced').toBe(2)"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/f5-admission.test.ts",
+      "line": 941,
+      "context": "expect(r.service.getRun(runId)!.tasks['task-typed'], 'no task was written').toBeUndefined()"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/f5-admission.test.ts",
+      "line": 942,
+      "context": "expect(r.service.getRun(runId)!.budget.reserved, 'no credit was reserved').toBe(0)"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/f5-admission.test.ts",
+      "line": 943,
+      "context": "expect(r.service.getRun(runId)!.reservationGeneration, 'no generation advanced').toBe(0)"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/f5-admission.test.ts",
+      "line": 1097,
+      "context": "expect(r.service.getRun(runId)!.reservationGeneration, 'exactly three generations advanced').toBe(3)"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/f5-admission.test.ts",
+      "line": 1098,
+      "context": "expect(r.service.getRun(runId)!.budget.reserved, 'exactly three credits committed').toBe(3)"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/f5-admission.test.ts",
+      "line": 1132,
+      "context": "const fresh = r.service.getRun(runId)!.reservationGeneration"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/f5-admission.test.ts",
+      "line": 1152,
+      "context": "expect(r.service.getRun(runId)!.budget.reserved, 'and reserved nothing').toBe(1)"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/goal.test.ts",
+      "line": 90,
+      "context": "const goals = r.ctx.get('goals')!"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/goal.test.ts",
+      "line": 103,
+      "context": "const after = goals.get(root)!"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/goal.test.ts",
+      "line": 118,
+      "context": "const goals = r.ctx.get('goals')!"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/goal.test.ts",
+      "line": 128,
+      "context": "const goals = r.ctx.get('goals')!"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/goal.test.ts",
+      "line": 138,
+      "context": "const otherGoal = goals.get(other)!"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/goal.test.ts",
+      "line": 147,
+      "context": "const goals = r.ctx.get('goals')!"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/goal.test.ts",
+      "line": 156,
+      "context": "const after = goals.get(root)!"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/goal.test.ts",
+      "line": 167,
+      "context": "const goals = r.ctx.get('goals')!"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/history-plane.ts",
+      "line": 925,
+      "context": "while (end > 0 && (bytes[end] !== undefined) && (bytes[end]! & 0xc0) === 0x80) end -= 1"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/host.ts",
+      "line": 1347,
+      "context": "const mine = outcomes.get(entry)!"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/isolation.test.ts",
+      "line": 189,
+      "context": "const childAgent = r.ctx.agents.get(child.childId)!"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/isolation.test.ts",
+      "line": 225,
+      "context": "const childAgent = r.ctx.agents.get(child.childId)!"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/isolation.test.ts",
+      "line": 275,
+      "context": "const childAgent = r.ctx.agents.get(child.childId)!"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/isolation.test.ts",
+      "line": 334,
+      "context": "const childAgent = r.ctx.agents.get(child.childId)!"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/isolation.test.ts",
+      "line": 389,
+      "context": "expect(provider!.capabilities.depthLimit).toBe(false)"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/isolation.test.ts",
+      "line": 390,
+      "context": "expect(provider!.capabilities.toolFilter).toBe(false)"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/isolation.test.ts",
+      "line": 392,
+      "context": "expect(provider!.prepareContinuable).toBeUndefined()"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/isolation.test.ts",
+      "line": 434,
+      "context": "(schema!.parameters as { properties?: Record<string, unknown> }).properties ?? {},"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/isolation.test.ts",
+      "line": 483,
+      "context": "const deniedAgent = r.ctx.agents.get(denied.childId)!"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/isolation.test.ts",
+      "line": 499,
+      "context": "const unfilteredAgent = r.ctx.agents.get(unfiltered.childId)!"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/isolation.test.ts",
+      "line": 551,
+      "context": "const childAgent = r.ctx.agents.get(child.childId)!"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/isolation.test.ts",
+      "line": 725,
+      "context": "const child = r.ctx.agents.get(SessionId('c-1'))!"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/isolation.test.ts",
+      "line": 826,
+      "context": "const goals = r.ctx.get('goals')!"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/isolation.test.ts",
+      "line": 836,
+      "context": "const after = goals.get(r.root)!"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/isolation.test.ts",
+      "line": 855,
+      "context": "const goals = r.ctx.get('goals')!"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/isolation.test.ts",
+      "line": 876,
+      "context": "const goals = r.ctx.get('goals')!"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/isolation.test.ts",
+      "line": 884,
+      "context": "const otherGoal = goals.get(other)!"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/isolation.test.ts",
+      "line": 903,
+      "context": "const goals = r.ctx.get('goals')!"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/isolation.test.ts",
+      "line": 923,
+      "context": "const goals = r.ctx.get('goals')!"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/isolation.test.ts",
+      "line": 997,
+      "context": "const record = r.service.getRun('run-refs')!"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/isolation.test.ts",
+      "line": 1002,
+      "context": "expect(stored!.childId).toBe(request.childId)"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/isolation.test.ts",
+      "line": 1003,
+      "context": "expect(stored!.attempt).toBe(1)"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/isolation.test.ts",
+      "line": 1004,
+      "context": "expect(stored!.state).toBe('accepted')"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/isolation.test.ts",
+      "line": 1005,
+      "context": "expect(stored!.assignmentDigest).toBe(request.prompt)"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/isolation.test.ts",
+      "line": 1062,
+      "context": "const record = r.service.getRun('run-partial')!"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/isolation.test.ts",
+      "line": 1199,
+      "context": "const notice = notices[0]!"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/isolation.test.ts",
+      "line": 1365,
+      "context": "const record = r.service.getRun('run-edge-2')!"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/isolation.test.ts",
+      "line": 1388,
+      "context": "const record = r.service.getRun('run-fail')!"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/lifecycle.test.ts",
+      "line": 132,
+      "context": "const end = r.ends[0]!"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/lifecycle.test.ts",
+      "line": 183,
+      "context": "const decision = reconcileTask(r.service.getRun('run-unknown')!.tasks['t1']!, {"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/lifecycle.test.ts",
+      "line": 183,
+      "context": "const decision = reconcileTask(r.service.getRun('run-unknown')!.tasks['t1']!, {"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/no-sandbox-contract.test.ts",
+      "line": 44,
+      "context": "const ownIndent = indentOf(lines[start]!)"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/no-sandbox-contract.test.ts",
+      "line": 47,
+      "context": "const line = lines[index]!"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/no-sandbox-contract.test.ts",
+      "line": 144,
+      "context": "const check = checks.find(candidate => candidate.id === 'fs.provider')!"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/no-sandbox-contract.test.ts",
+      "line": 172,
+      "context": "const check = checks.find(candidate => candidate.id === 'sandboxPolicy.defaultMode')!"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/no-sandbox-contract.test.ts",
+      "line": 184,
+      "context": "const check = checks.find(candidate => candidate.id === 'sandboxPolicy.defaultMode')!"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/no-sandbox-contract.test.ts",
+      "line": 264,
+      "context": "const present = checks.find(check => check.id === 'startup.sandboxPolicy.present')!"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/no-sandbox-contract.test.ts",
+      "line": 275,
+      "context": "const mode = checks.find(check => check.id === 'startup.sandboxPolicy.mode')!"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/no-sandbox-contract.test.ts",
+      "line": 319,
+      "context": "const check = checks.find(candidate => candidate.id === 'surface.escalation-parameters')!"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/no-sandbox-contract.test.ts",
+      "line": 491,
+      "context": "expect(entry!.default).toBe('./lib/no-sandbox-contract.js')"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/no-sandbox-contract.test.ts",
+      "line": 492,
+      "context": "expect(entry!.types).toBe('./lib/no-sandbox-contract.d.ts')"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/no-sandbox-contract.test.ts",
+      "line": 495,
+      "context": "for (const target of [entry!.default, entry!.types]) {"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/no-sandbox-contract.test.ts",
+      "line": 495,
+      "context": "for (const target of [entry!.default, entry!.types]) {"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/plugin.test.ts",
+      "line": 66,
+      "context": "const record = await service!.createRun({"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/plugin.test.ts",
+      "line": 97,
+      "context": "const service1 = gen1.get('dailyWork')!"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/plugin.test.ts",
+      "line": 107,
+      "context": "const service2 = gen2.get('dailyWork')!"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/plugin.test.ts",
+      "line": 126,
+      "context": "const names = tools!.schemas().map(s => s.name)"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/plugin.test.ts",
+      "line": 135,
+      "context": "expect(r.ctx.get('tools')!.schemas().some(s => s.name === 'work')).toBe(true)"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/plugin.test.ts",
+      "line": 137,
+      "context": "expect(r.ctx.get('tools')!.schemas().some(s => s.name === 'work')).toBe(false)"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/plugin.test.ts",
+      "line": 145,
+      "context": "const count = r.ctx.get('tools')!.schemas().filter(s => s.name === 'work').length"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/plugin.test.ts",
+      "line": 149,
+      "context": "expect(r.ctx.get('tools')!.schemas().filter(s => s.name === 'work').length).toBe(0)"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/plugin.test.ts",
+      "line": 159,
+      "context": "const schema = r.ctx.get('tools')!.schemas().find(s => s.name === 'work')"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/plugin.test.ts",
+      "line": 163,
+      "context": "const params = schema!.parameters as {"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/plugin.test.ts",
+      "line": 183,
+      "context": "const assembly = await r.ctx.get('systemPrompt')!.assemble({})"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/profile-config.test.ts",
+      "line": 631,
+      "context": "await expect(ctx.get('web')!.search({ query: 'x' })).rejects.toMatchObject({"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/profile-config.test.ts",
+      "line": 637,
+      "context": "const registered = ctx.effect(() => ctx.get('web')!.registerSearchProvider({"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/profile-config.test.ts",
+      "line": 643,
+      "context": "await expect(ctx.get('web')!.search({ query: 'x' })).rejects.toMatchObject({"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/profile-config.test.ts",
+      "line": 653,
+      "context": "await expect(bare.get('web')!.search({ query: 'x' })).rejects.toMatchObject({"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/profile-config.test.ts",
+      "line": 690,
+      "context": "ctx.effect(() => ctx.get('web')!.registerSearchProvider({"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/profile-config.test.ts",
+      "line": 698,
+      "context": "resolved = await ctx.get('web')!.search({ query: 'x' })"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/programmatic-scope.test.ts",
+      "line": 212,
+      "context": "const value = await request.bindings[0]!.functions.echo!({ value: 'one' })"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/programmatic-scope.test.ts",
+      "line": 251,
+      "context": "value: await request.bindings[0]!.functions.echo!({ value: 'one' })"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/programmatic-scope.test.ts",
+      "line": 782,
+      "context": "const nested = await nestedScope!.invoke('inner', { value: args.id }, 'value')"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/programmatic-scope.test.ts",
+      "line": 821,
+      "context": "const deeper = await nestedScope!.invoke('recur', { depth: args.depth - 1 }, 'value')"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/programmatic-scope.test.ts",
+      "line": 1290,
+      "context": "const stored = await scope.read(retained[0]!.reference)"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/programmatic-scope.test.ts",
+      "line": 1450,
+      "context": "const functions = request.bindings[0]!.functions"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/programmatic-scope.test.ts",
+      "line": 1521,
+      "context": "await request.bindings[0]!.functions.finalize!({})"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/programmatic-scope.test.ts",
+      "line": 1559,
+      "context": "await request.bindings[0]!.functions.shot!({})"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/research-chain.test.ts",
+      "line": 287,
+      "context": "expect('publishedDate' in exaShaped[0]!).toBe(true)"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/research-chain.test.ts",
+      "line": 288,
+      "context": "expect('publishedAt' in exaShaped[0]!).toBe(false)"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/research-chain.test.ts",
+      "line": 1153,
+      "context": "expect(rig.toolCallSeqs.get('effect-1')!).toBeLessThan(rig.toolResultSeqs.get('probe-1')!)"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/research-chain.test.ts",
+      "line": 1153,
+      "context": "expect(rig.toolCallSeqs.get('effect-1')!).toBeLessThan(rig.toolResultSeqs.get('probe-1')!)"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/research-chain.test.ts",
+      "line": 1193,
+      "context": "expect(rig.toolResultSeqs.get('probe-1')!).toBeLessThan(rig.toolCallSeqs.get('effect-1')!)"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/research-chain.test.ts",
+      "line": 1193,
+      "context": "expect(rig.toolResultSeqs.get('probe-1')!).toBeLessThan(rig.toolCallSeqs.get('effect-1')!)"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/research-chain.test.ts",
+      "line": 1218,
+      "context": "expect(rig.toolResultSeqs.get('probe-1')!).toBeLessThan(rig.toolCallSeqs.get('effect-1')!)"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/research-chain.test.ts",
+      "line": 1218,
+      "context": "expect(rig.toolResultSeqs.get('probe-1')!).toBeLessThan(rig.toolCallSeqs.get('effect-1')!)"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/research-chain.test.ts",
+      "line": 1274,
+      "context": "expect(firstRequestIndexContaining(after.adapter, 'PROBE-OBSERVATION-BODY')!)"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/research-chain.test.ts",
+      "line": 1275,
+      "context": ".toBeLessThan(firstRequestIndexContaining(after.adapter, 'X')!)"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/research-chain.test.ts",
+      "line": 1278,
+      "context": "const discriminating = after.adapter.requests[firstRequestIndexContaining(after.adapter, 'PROBE-OBSERVATION-BODY')]!"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/research-chain.test.ts",
+      "line": 1287,
+      "context": "rig.toolCallSeqs.get('effect-1')! < rig.toolResultSeqs.get('probe-1')!"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/research-chain.test.ts",
+      "line": 1287,
+      "context": "rig.toolCallSeqs.get('effect-1')! < rig.toolResultSeqs.get('probe-1')!"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/research-chain.test.ts",
+      "line": 1348,
+      "context": "expect(after.toolResultSeqs.get('probe-1')!).toBeLessThan(after.toolCallSeqs.get('effect-1')!)"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/research-chain.test.ts",
+      "line": 1348,
+      "context": "expect(after.toolResultSeqs.get('probe-1')!).toBeLessThan(after.toolCallSeqs.get('effect-1')!)"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/research-chain.test.ts",
+      "line": 1415,
+      "context": "const first = wireFacts(adapter.requests[0]!)"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/research-chain.test.ts",
+      "line": 1416,
+      "context": "const second = wireFacts(adapter.requests[1]!)"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/research-chain.test.ts",
+      "line": 1430,
+      "context": "const priorMessages = adapter.requests[1]!.messages.slice(0, first.messageRoles.length)"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/research-chain.test.ts",
+      "line": 1431,
+      "context": "expect(JSON.stringify(priorMessages)).toBe(JSON.stringify(adapter.requests[0]!.messages))"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/research-chain.test.ts",
+      "line": 1478,
+      "context": "const request = adapter.requests[0]!"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/research-chain.test.ts",
+      "line": 1552,
+      "context": "expect(adapter.requests[0]!.tools?.map(tool => tool.name)).toEqual(['alpha', 'zulu'])"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/research-chain.test.ts",
+      "line": 1553,
+      "context": "expect(adapter.requests[1]!.tools?.map(tool => tool.name)).toEqual(['alpha', 'mike'])"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/research-chain.test.ts",
+      "line": 1554,
+      "context": "expect(wireFacts(adapter.requests[1]!).systemNode).toBe(wireFacts(adapter.requests[0]!).systemNode)"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/research-chain.test.ts",
+      "line": 1554,
+      "context": "expect(wireFacts(adapter.requests[1]!).systemNode).toBe(wireFacts(adapter.requests[0]!).systemNode)"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/research-chain.test.ts",
+      "line": 1585,
+      "context": "const wire = adapter.requests[0]!.tools?.map(tool => tool.name)"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/research-chain.test.ts",
+      "line": 1594,
+      "context": "config: loggedHeader(agent.session.snapshotEvents())!.config,"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/research-chain.test.ts",
+      "line": 1596,
+      "context": "...(loggedHeader(agent.session.snapshotEvents())!.tools ?? []),"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/research-chain.test.ts",
+      "line": 1601,
+      "context": "expect(headerEquals(estimated, loggedHeader(agent.session.snapshotEvents())!)).toBe(false)"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/research-chain.test.ts",
+      "line": 1606,
+      "context": "canonicalHeader({ ...loggedHeader(agent.session.snapshotEvents())!, tools: [...(loggedHeader(agent.session.snapshotEvent"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/research-chain.test.ts",
+      "line": 1606,
+      "context": "canonicalHeader({ ...loggedHeader(agent.session.snapshotEvents())!, tools: [...(loggedHeader(agent.session.snapshotEvent"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/research-chain.test.ts",
+      "line": 1607,
+      "context": "loggedHeader(agent.session.snapshotEvents())!,"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/research-chain.test.ts",
+      "line": 1614,
+      "context": "expect(adapter.requests[0]!.tools?.map(tool => tool.name)).not.toContain('ghost')"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/research-chain.test.ts",
+      "line": 1640,
+      "context": "expect(wireFacts(adapter.requests[0]!).tools).toBe(wireFacts(adapter.requests[1]!).tools)"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/research-chain.test.ts",
+      "line": 1640,
+      "context": "expect(wireFacts(adapter.requests[0]!).tools).toBe(wireFacts(adapter.requests[1]!).tools)"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/research-chain.test.ts",
+      "line": 1641,
+      "context": "expect(wireFacts(adapter.requests[0]!).systemNode).toBe(wireFacts(adapter.requests[1]!).systemNode)"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/research-chain.test.ts",
+      "line": 1641,
+      "context": "expect(wireFacts(adapter.requests[0]!).systemNode).toBe(wireFacts(adapter.requests[1]!).systemNode)"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/scheduling.test.ts",
+      "line": 369,
+      "context": "expect(delegationDepthOf(agent!)).toBe(1)"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/scheduling.test.ts",
+      "line": 370,
+      "context": "expect(agent!.session.header.origin).toBe('subagent')"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/scheduling.test.ts",
+      "line": 371,
+      "context": "expect(agent!.session.header.parentSession).toBe(r.root.id)"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/scheduling.test.ts",
+      "line": 376,
+      "context": "const record = r.service.getRun('run-c01')!"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/scheduling.test.ts",
+      "line": 405,
+      "context": "const settling = childRequestSessions(r)[0]!"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/scheduling.test.ts",
+      "line": 425,
+      "context": "const record = r.service.getRun('run-c01b')!"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/scheduling.test.ts",
+      "line": 456,
+      "context": "const settling = childRequestSessions(r)[0]!"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/scheduling.test.ts",
+      "line": 505,
+      "context": ".map((entry, index) => `${index === 0 ? '+0ms' : `+${entry.at - timeline[0]!.at}ms`} ${entry.what}`)"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/scheduling.test.ts",
+      "line": 564,
+      "context": "const refills = [requests(1, 700)[0]!, requests(1, 701)[0]!, requests(1, 702)[0]!]"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/scheduling.test.ts",
+      "line": 564,
+      "context": "const refills = [requests(1, 700)[0]!, requests(1, 701)[0]!, requests(1, 702)[0]!]"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/scheduling.test.ts",
+      "line": 564,
+      "context": "const refills = [requests(1, 700)[0]!, requests(1, 701)[0]!, requests(1, 702)[0]!]"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/scheduling.test.ts",
+      "line": 566,
+      "context": "r.service.drain('run-c03', [refills[0]!], signal),"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/scheduling.test.ts",
+      "line": 567,
+      "context": "r.service.drain('run-c03', [refills[1]!], signal),"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/scheduling.test.ts",
+      "line": 568,
+      "context": "r.service.drain('run-c03', [refills[2]!], signal),"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/scheduling.test.ts",
+      "line": 596,
+      "context": "const nextToSettle = secondWave[0]!"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/scheduling.test.ts",
+      "line": 617,
+      "context": "const record = r.service.getRun('run-c03')!"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/scheduling.test.ts",
+      "line": 674,
+      "context": "const duplicate = requests(1, 400)[0]!"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/scheduling.test.ts",
+      "line": 693,
+      "context": "const record = r.service.getRun('run-c04')!"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/scheduling.test.ts",
+      "line": 716,
+      "context": "const victim = childRequestSessions(r)[0]!"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/scheduling.test.ts",
+      "line": 741,
+      "context": "const afterCancel = r.service.getRun('run-c07')!"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/scheduling.test.ts",
+      "line": 922,
+      "context": "const record = r.service.getRun('run-c09')!"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/scheduling.test.ts",
+      "line": 964,
+      "context": "expect(turnEnd!.data.reason.kind).toBe('error')"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/scheduling.test.ts",
+      "line": 965,
+      "context": "const failure = turnEnd!.data.reason.kind === 'error' ? turnEnd!.data.reason.error : undefined"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/scheduling.test.ts",
+      "line": 965,
+      "context": "const failure = turnEnd!.data.reason.kind === 'error' ? turnEnd!.data.reason.error : undefined"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/sec-gates.test.ts",
+      "line": 90,
+      "context": "stdout: (await handle.collected.stdout!.readFrom(0)).text,"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/sec-gates.test.ts",
+      "line": 91,
+      "context": "stderr: (await handle.collected.stderr!.readFrom(0)).text,"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/sec-gates.test.ts",
+      "line": 187,
+      "context": "const policyBody = policyMatch![1]!"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/sec-gates.test.ts",
+      "line": 194,
+      "context": "const baseBody = baseMatch![1]!"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/sec-gates.test.ts",
+      "line": 240,
+      "context": "const fields = confinedMatch![1]!"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/sec-gates.test.ts",
+      "line": 247,
+      "context": "const fieldNames = [...fields.matchAll(/^\\s{2}(?:readonly )?([a-zA-Z]+)[?]?:/gmu)].map(m => m[1]!)"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/sec-gates.test.ts",
+      "line": 378,
+      "context": "const cases = [...runnerSource.matchAll(/case '(--[a-z-]+)':/gu)].map(m => m[1]!)"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/sec-gates.test.ts",
+      "line": 409,
+      "context": "expect(chains![1]!, 'win32 must have exactly one candidate runner').toMatch(/win32: \\['windows-acl'\\]/u)"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/sec-gates.test.ts",
+      "line": 421,
+      "context": "const fenced = [...fence.matchAll(/override async ([a-zA-Z]+)\\(/gu)].map(m => m[1]!)"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/sec-gates.test.ts",
+      "line": 759,
+      "context": "const flags = [...profiles.matchAll(/'(--[a-z-]+)'/gu)].map(m => m[1]!)"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/sec-gates.test.ts",
+      "line": 976,
+      "context": "const headers = headersMatch![1]!"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/security-denial.test.ts",
+      "line": 99,
+      "context": "const stdout = await handle.collected.stdout!.readFrom(0)"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/security-denial.test.ts",
+      "line": 100,
+      "context": "const stderr = await handle.collected.stderr!.readFrom(0)"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/security-denial.test.ts",
+      "line": 112,
+      "context": "const child = spawn(argv[0]!, argv.slice(1), { stdio: ['ignore', 'pipe', 'pipe'] })"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/security-denial.test.ts",
+      "line": 323,
+      "context": "const out = await handle.collected.stdout!.readFrom(0)"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/security.test.ts",
+      "line": 27,
+      "context": "const names = ctx.get('tools')!.schemas().map(s => s.name)"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/security.test.ts",
+      "line": 49,
+      "context": "const names = ctx.get('tools')!.schemas().map(s => s.name)"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/security.test.ts",
+      "line": 63,
+      "context": "const schema = ctx.get('tools')!.schemas().find(s => s.name === 'work')!"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/security.test.ts",
+      "line": 63,
+      "context": "const schema = ctx.get('tools')!.schemas().find(s => s.name === 'work')!"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/security.test.ts",
+      "line": 91,
+      "context": "const schema = ctx.get('tools')!.schemas().find(s => s.name === 'work')!"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/security.test.ts",
+      "line": 91,
+      "context": "const schema = ctx.get('tools')!.schemas().find(s => s.name === 'work')!"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/target-setting.test.ts",
+      "line": 70,
+      "context": "expect(descriptor!.base).toEqual({ targetActiveChildren: 5 })"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/target-setting.test.ts",
+      "line": 71,
+      "context": "expect(descriptor!.value).toEqual({ targetActiveChildren: 5 })"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/target-setting.test.ts",
+      "line": 74,
+      "context": "expect(descriptor!.applies).toBe('live')"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/target-setting.test.ts",
+      "line": 336,
+      "context": "const parameters = definition!.parameters as { properties?: Record<string, unknown> }"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/tool-protocol.test.ts",
+      "line": 305,
+      "context": "expect(Object.hasOwn(r.service.getRun('run-1')!, 'epoch'), 'no epoch field may exist').toBe(false)"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/tool-protocol.test.ts",
+      "line": 314,
+      "context": "expect(Object.hasOwn(r.service.getRun('run-1')!, 'epoch')).toBe(false)"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/tool-protocol.test.ts",
+      "line": 631,
+      "context": "const ptcSchema = r.ctx.tools.get(RUN_CODE_NAME, agent)!.output.schema as { additionalProperties?: boolean }"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/tool-protocol.test.ts",
+      "line": 711,
+      "context": "const schema = definition!.output.schema as {"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/tool-protocol.test.ts",
+      "line": 786,
+      "context": "const body = r.ctx.tools.get('work', agent)!.execute"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/tool-protocol.test.ts",
+      "line": 788,
+      "context": "...r.ctx.tools.get('work', agent)!,"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/tool-protocol.test.ts",
+      "line": 862,
+      "context": "const schema = r.ctx.tools.get('work', agent)!"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/tool-protocol.test.ts",
+      "line": 1015,
+      "context": "const task = r.service.getRun('run-b08')!.tasks['t1']!"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/tool-protocol.test.ts",
+      "line": 1015,
+      "context": "const task = r.service.getRun('run-b08')!.tasks['t1']!"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/u02-research-loop.test.ts",
+      "line": 278,
+      "context": "expect(disputed!.status).toBe('disputed')"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/u02-research-loop.test.ts",
+      "line": 279,
+      "context": "const unknowns = disputed!.unknowns.join(' ')"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/u02-research-loop.test.ts",
+      "line": 284,
+      "context": "expect(disputed!.wouldBeOverturnedBy.join(' ')).toContain('measured denial')"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/u03-sustained-load.test.ts",
+      "line": 154,
+      "context": "largestStep = Math.max(largestStep, Math.abs(series[index]! - series[index - 1]!))"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/u03-sustained-load.test.ts",
+      "line": 154,
+      "context": "largestStep = Math.max(largestStep, Math.abs(series[index]! - series[index - 1]!))"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/u03-sustained-load.test.ts",
+      "line": 263,
+      "context": "expect(spentSeries[index]! - spentSeries[index - 1]!).toBe(TARGET)"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/u03-sustained-load.test.ts",
+      "line": 263,
+      "context": "expect(spentSeries[index]! - spentSeries[index - 1]!).toBe(TARGET)"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/u03-sustained-load.test.ts",
+      "line": 297,
+      "context": "expect(Object.keys(recordB!.tasks)).toEqual([])"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/u03-sustained-load.test.ts",
+      "line": 298,
+      "context": "expect(recordB!.budget.spent).toBe(0)"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/u03-sustained-load.test.ts",
+      "line": 299,
+      "context": "expect(recordB!.budget.reserved).toBe(0)"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/u03-sustained-load.test.ts",
+      "line": 300,
+      "context": "expect(recordB!.terminalTombstones).toEqual([])"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/u03-sustained-load.test.ts",
+      "line": 306,
+      "context": "expect(r.service.getRun('run-a')!.budget.spent).toBe(TARGET)"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/u03-sustained-load.test.ts",
+      "line": 352,
+      "context": "expect(series[series.length - 1]!.spent).toBe(CYCLES * TARGET)"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/u04-paired-comparison.test.ts",
+      "line": 276,
+      "context": "const rowIds = (text: string): string[] => [...text.matchAll(/^- id: (.+)$/gm)].map(match => match[1]!.trim())"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/upg-gates.test.ts",
+      "line": 178,
+      "context": "const rows = [...patch.matchAll(/name:\\s*'?([^'\\n]+)'?/gu)].map(m => m[1]!.trim())"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/upg-gates.test.ts",
+      "line": 192,
+      "context": "const bundleRows = [...bundle.matchAll(/name:\\s*'?([^'\\n]+)'?/gu)].map(m => m[1]!.trim())"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/upg-gates.test.ts",
+      "line": 622,
+      "context": "expect(Object.hasOwn(record!, 'epoch'), 'the restored record carries no epoch').toBe(false)"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/upg-gates.test.ts",
+      "line": 827,
+      "context": "const r9 = byId.get('R9')!"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/upg-gates.test.ts",
+      "line": 831,
+      "context": "const r8 = byId.get('R8')!"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/upg-gates.test.ts",
+      "line": 979,
+      "context": "const v2 = await ctxV2.get('storageDomain')!.open(V2_PER_RECORD)"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/upg-gates.test.ts",
+      "line": 983,
+      "context": "const carried = v2.table('runs').get('run-from-v1')!"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/upg-gates.test.ts",
+      "line": 1009,
+      "context": "const v1AfterRollback = await ctxRollback.get('storageDomain')!.open(V1_PER_RECORD)"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/upg-gates.test.ts",
+      "line": 1029,
+      "context": "const v1Restored = await ctxRestored.get('storageDomain')!.open(V1_SINGLE)"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/upg-gates.test.ts",
+      "line": 1042,
+      "context": "const v2Single = await ctxV2Single.get('storageDomain')!.open(V2_SINGLE)"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/upg-gates.test.ts",
+      "line": 1056,
+      "context": "const opened = await ctxV1Single.get('storageDomain')!.open(V1_SINGLE)"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/upg-gates.test.ts",
+      "line": 1108,
+      "context": "const fields = optionsMatch![1]!"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/upg-gates.test.ts",
+      "line": 1370,
+      "context": "expect(row!.mandatory).toBe(true)"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/upg-gates.test.ts",
+      "line": 1371,
+      "context": "expect(row!.oracle).toContain('mock\u7ed3\u679c\u4e0d\u66ff\u4ee3\u672c\u95e8')"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/upg-gates.test.ts",
+      "line": 1483,
+      "context": "const path = row.evidence.split('#')[0]!"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/upg-gates.test.ts",
+      "line": 1495,
+      "context": "const family = row.id.split('-')[0]!"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/upg-gates.test.ts",
+      "line": 1525,
+      "context": "const blocked = GATES.find(row => row.id === 'UPG-07')!"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/verification-gates.test.ts",
+      "line": 590,
+      "context": "expect(existsSync(join(receiptBefore.snapshot!.dir, 'src', 'app.mjs'))).toBe(true)"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/verification-gates.test.ts",
+      "line": 591,
+      "context": "expect(existsSync(join(receiptBefore.snapshot!.dir, 'oracle'))).toBe(false)"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/verification-gates.test.ts",
+      "line": 782,
+      "context": "expect(existsSync(join(blindBefore.snapshot!.dir, 'src', 'app.mjs'))).toBe(true)"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/verification-gates.test.ts",
+      "line": 783,
+      "context": "expect(existsSync(join(blindBefore.snapshot!.dir, 'suite.acceptance.mjs'))).toBe(false)"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/verification-gates.test.ts",
+      "line": 1290,
+      "context": "readFileSync(join(snapshotted.snapshot!.dir, 'src', 'observed.json'), 'utf8'),"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/verification-gates.test.ts",
+      "line": 2322,
+      "context": "while ((match = pattern.exec(source)) !== null) invoked.add(match[1]!)"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/verification-gates.test.ts",
+      "line": 2360,
+      "context": "const applyCalls = [...source.matchAll(/git(?:Run|Ok)\\([^)]*\\['apply'([^\\]]*)\\]/g)].map(m => m[1]!)"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/verification-gates.test.ts",
+      "line": 2558,
+      "context": "const executed = [...source.matchAll(/git(?:Run|Ok)\\(\\s*ctx\\s*,\\s*[^,]+,\\s*\\[\\s*'([a-z-]+)'/g)].map(m => m[1]!)"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/verification-gates.test.ts",
+      "line": 2903,
+      "context": "const builtEntry = join(import.meta.dirname, '..', writersExport!.default)"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/verification-gates.test.ts",
+      "line": 2909,
+      "context": "expect(existsSync(join(import.meta.dirname, '..', writersExport!.types))).toBe(true)"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/verify.test.ts",
+      "line": 417,
+      "context": "expect(readFileSync(join(snapshotted.snapshot!.dir, 'src', 'observed.txt'), 'utf8')).toBe('console.log(\"A\")')"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/verify.test.ts",
+      "line": 435,
+      "context": "rmSync(snapshotted.snapshot!.dir, { recursive: true, force: true, maxRetries: 5, retryDelay: 50 })"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/verify.test.ts",
+      "line": 499,
+      "context": "expect(existsSync(receipt.snapshot!.dir)).toBe(false)"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/verify.ts",
+      "line": 340,
+      "context": "const body = summary[1]!"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/verify.ts",
+      "line": 349,
+      "context": "const kind = match[2]!"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/verify.ts",
+      "line": 641,
+      "context": "const requested = definition.command[0]!"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/verify.ts",
+      "line": 725,
+      "context": "const after = treeDigest(hashExactPaths(snapshotRoot!, copiedPaths))"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/verify.ts",
+      "line": 728,
+      "context": "extraPathsCreated = [...walkAndHash([snapshotRoot!], snapshotRoot!, exclude).keys()]"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/verify.ts",
+      "line": 728,
+      "context": "extraPathsCreated = [...walkAndHash([snapshotRoot!], snapshotRoot!, exclude).keys()]"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/verify.ts",
+      "line": 888,
+      "context": "const receipt = attempts[attempts.length - 1]!.receipt"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/web-search.test.ts",
+      "line": 95,
+      "context": "expect('title' in sources[0]!).toBe(false)"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/web-search.test.ts",
+      "line": 334,
+      "context": "await expect(ctx.get('web')!.search({ query: 'x' })).rejects.toMatchObject({"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/web-search.test.ts",
+      "line": 348,
+      "context": "await expect(ctx.get('web')!.search({ query: 'x' })).rejects.toMatchObject({"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/web-search.test.ts",
+      "line": 355,
+      "context": "await expect(ctx.get('web')!.search({ query: 'x' })).rejects.toMatchObject({"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/wire-faults.test.ts",
+      "line": 200,
+      "context": "const decision = reconcileTask(svc.getRun('run-lost')!.tasks['t1']!, {"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/wire-faults.test.ts",
+      "line": 200,
+      "context": "const decision = reconcileTask(svc.getRun('run-lost')!.tasks['t1']!, {"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/wire-faults.test.ts",
+      "line": 262,
+      "context": "const decision = reconcileTask(svc.getRun('run-vocab')!.tasks['t1']!, {"
+    },
+    {
+      "file": "packages/dsh-daily-work/src/wire-faults.test.ts",
+      "line": 262,
+      "context": "const decision = reconcileTask(svc.getRun('run-vocab')!.tasks['t1']!, {"
+    }
+  ],
+  "forbidden_construct_totals": {
+    "as_any": 1,
+    "angle_any": 0,
+    "colon_any": 2,
+    "as_never": 520,
+    "ts_ignore": 0
+  },
+  "forbidden_constructs_absent": false
+}
+
+--- summary ---
+  angle_any              0
+  as_any                 1
+  as_never               520
+  colon_any              2
+  non_null_assertion     335
+  ts_ignore              0
+  deep cross-package imports: 4
+
+forbidden constructs absent : False
+non-null assertions (listed, not judged): 335
