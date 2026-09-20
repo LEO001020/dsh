@@ -1,0 +1,5 @@
+# P10 negative arm: the composition stays INTACT; only the bridge ledger's
+# open is made to fail, by occupying its domain name first.
+- insert:
+    - id: p10-ledger-occupier
+      name: 'D:/DSH/work/wt-p10/qualification/runners/p10-ledger-occupier.mjs'

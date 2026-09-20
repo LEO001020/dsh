@@ -42,6 +42,12 @@ const finding = {
   sessionCreated: false,
   cellOutcome: null,
   cellPrinted: null,
+  // The refusal classification, kept separate from the raw outcome because the
+  // tool surfaces a refusal as ordinary text with `isError: false` -- see the
+  // note in the body. A reader must be able to tell the two apart.
+  cellOutcomeIsErrorFlag: null,
+  cellRefused: null,
+  cellRan: null,
   kernelEpoch: null,
   kernelLifecycle: null,
   // The accessor the code-path tier used, kept so the status field can be checked
@@ -86,9 +92,21 @@ export async function apply(ctx) {
       signal: new AbortController().signal,
     })
     finding.cellOutcome = result.isError ? 'error' : 'ok'
-    finding.cellPrinted = (result.isError
+    const printed = (result.isError
       ? String(result.error?.message ?? '')
       : String(result.value?.text ?? '')).slice(0, 2000)
+    finding.cellPrinted = printed
+
+    // THE TOOL REPORTS A REFUSAL AS TEXT, NOT AS `isError`, and that is worth
+    // recording rather than working around: `ipython-tool.ts` maps a
+    // `KernelTransportError` to `'outcome: transport_failure\n' + message` as an
+    // ordinary successful tool RESULT, so `result.isError` is FALSE for a kernel
+    // that refused to publish. A reader who trusted `isError` alone would record
+    // this boot as a successful cell -- measured, in the first run of this probe,
+    // which is why the classification below reads the text.
+    finding.cellOutcomeIsErrorFlag = result.isError === true
+    finding.cellRefused = /^outcome:\s*(transport_failure|failed|refused)/mu.test(printed)
+    finding.cellRan = finding.cellOutcomeIsErrorFlag === false && finding.cellRefused === false
 
     finding.kernelEpoch = service.currentEpoch?.(agent) ?? null
     finding.kernelLifecycle = service.lifecycleOf?.(agent) ?? null

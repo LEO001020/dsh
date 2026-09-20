@@ -1,0 +1,17 @@
+{
+  "probe": "p10-ledger-durable",
+  "serviceResolved": true,
+  "storageDomainPresent": true,
+  "sessionCreated": true,
+  "cellOutcome": "ok",
+  "cellPrinted": "outcome: ok\nkernel epoch: 1\n--- stdout ---\nP10_BOOT_CELL_OK\n\n[1 shell frame(s) for other requests were ignored while waiting for this cell. They did not complete it.]",
+  "cellOutcomeIsErrorFlag": false,
+  "cellRefused": false,
+  "cellRan": true,
+  "kernelEpoch": 1,
+  "kernelLifecycle": "READY",
+  "ledgerIsDurable": true,
+  "bridgeLedgerDurable": true,
+  "statusRead": true,
+  "error": null
+}

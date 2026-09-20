@@ -1,0 +1,75 @@
+{
+  "scope": "P10 composition tier",
+  "tree": "D:\\DSH\\work\\wt-p10",
+  "home": "D:/DSH/home/p10",
+  "profile": "daily",
+  "positive": {
+    "label": "daily-as-composed",
+    "outPath": "D:\\DSH\\work\\wt-p10\\qualification\\results\\P10-ledger\\composition-tier.json",
+    "port": 9465,
+    "portReleased": true,
+    "hostExitCode": null,
+    "timedOut": false,
+    "finding": {
+      "probe": "p10-ledger-durable",
+      "serviceResolved": true,
+      "storageDomainPresent": true,
+      "sessionCreated": true,
+      "cellOutcome": "ok",
+      "cellPrinted": "outcome: ok\nkernel epoch: 1\n--- stdout ---\nP10_BOOT_CELL_OK\n\n[1 shell frame(s) for other requests were ignored while waiting for this cell. They did not complete it.]",
+      "cellOutcomeIsErrorFlag": false,
+      "cellRefused": false,
+      "cellRan": true,
+      "kernelEpoch": 1,
+      "kernelLifecycle": "READY",
+      "ledgerIsDurable": true,
+      "bridgeLedgerDurable": true,
+      "statusRead": true,
+      "error": null
+    },
+    "readError": null,
+    "stderrTail": "",
+    "stdoutTail": "dsh web: http://127.0.0.1:9465/?token=TPN_VBKQ5CWUhNBXos5snVUSf6z8Jhf2Kf-cwVf3Z_Q\n"
+  },
+  "negative": {
+    "label": "ledger-domain-occupied",
+    "outPath": "D:\\DSH\\work\\wt-p10\\qualification\\results\\P10-ledger\\composition-tier.no-storage.json",
+    "port": 9936,
+    "portReleased": true,
+    "hostExitCode": null,
+    "timedOut": false,
+    "finding": {
+      "probe": "p10-ledger-durable",
+      "serviceResolved": true,
+      "storageDomainPresent": true,
+      "sessionCreated": true,
+      "cellOutcome": "ok",
+      "cellPrinted": "outcome: transport_failure\nthe durable bridge ledger was requested but could not be opened, so this kernel is refused: a kernel whose cells cannot record what they did cannot establish whether an external effect may have happened, and the retry rule depends on that record. Cause: domain 'dsh_ipython_bridge_ledger' is already open",
+      "cellOutcomeIsErrorFlag": false,
+      "cellRefused": true,
+      "cellRan": false,
+      "kernelEpoch": 0,
+      "kernelLifecycle": null,
+      "ledgerIsDurable": false,
+      "bridgeLedgerDurable": null,
+      "statusRead": false,
+      "error": null
+    },
+    "readError": null,
+    "stderrTail": "",
+    "stdoutTail": "dsh web: http://127.0.0.1:9936/?token=-ck_CyHgOy3_2kSY7xy_UQPng5qVx1HQUtdlTAtkfGs\n"
+  },
+  "positiveClaims": {
+    "serviceResolved": true,
+    "storageDomainPresent": true,
+    "cellRan": true,
+    "ledgerIsDurable": true,
+    "bridgeLedgerDurableOnStatus": true
+  },
+  "negativeClaims": {
+    "probeRan": true,
+    "cellRefused": true,
+    "refusalNamesLedger": true,
+    "noKernelPublished": true
+  }
+}

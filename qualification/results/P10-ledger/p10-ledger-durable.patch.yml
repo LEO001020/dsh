@@ -1,0 +1,6 @@
+# P10 overlay: the PROBE ONLY, materialised at run time with this tree's own
+# probe path. See the driver for why a committed literal would be cross-tree
+# code execution.
+- insert:
+    - id: p10-ledger-durable-probe
+      name: 'D:/DSH/work/wt-p10/qualification/runners/p10-ledger-durable.mjs'
