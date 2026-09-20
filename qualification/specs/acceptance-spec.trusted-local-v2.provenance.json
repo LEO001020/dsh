@@ -1,0 +1,1670 @@
+{
+  "schema_version": 1,
+  "kind": "TRUSTED_LOCAL_V2_CASE_PROVENANCE_NOT_A_DSH_ARTIFACT",
+  "contract_id": "trusted-local-v2",
+  "definition_version": "trusted-local-v2.definition/1",
+  "why_this_file_exists": "V3 R0 requires that a dropped invariant be recorded as dropped rather than silently omitted. This file is that record. It is a CONTRACT artifact: it describes what v2 says about each v1 case, and carries no status, no evidence and no verdict -- the explanations here are about the CONTRACT, not about a measurement.",
+  "totals": {
+    "v1_cases": 109,
+    "v2_cases": 110,
+    "by_treatment": {
+      "verbatim": 103,
+      "rewritten": 5,
+      "split": 1
+    },
+    "carried_verbatim": [
+      "BR-01",
+      "BR-02",
+      "BR-03",
+      "BR-04",
+      "BR-05",
+      "BR-06",
+      "BR-07",
+      "BR-08",
+      "BR-09",
+      "BR-10",
+      "BR-11",
+      "BR-12",
+      "CAP-01",
+      "CAP-02",
+      "CAP-03",
+      "CAP-04",
+      "CAP-05",
+      "CAP-06",
+      "CAP-07",
+      "CAP-08",
+      "CAP-09",
+      "CAP-10",
+      "CAP-11",
+      "CAP-12",
+      "CAP-13",
+      "CMP-01",
+      "CMP-02",
+      "CMP-03",
+      "CMP-05",
+      "CMP-06",
+      "CMP-07",
+      "CMP-08",
+      "CMP-09",
+      "CMP-10",
+      "CMP-11",
+      "CMP-12",
+      "CMP-13",
+      "CMP-14",
+      "DATA-01",
+      "DATA-02",
+      "DATA-03",
+      "DATA-04",
+      "DATA-05",
+      "DATA-06",
+      "DATA-07",
+      "DATA-08",
+      "DATA-10",
+      "DATA-11",
+      "DATA-12",
+      "FS-01",
+      "FS-02",
+      "FS-03",
+      "FS-04",
+      "FS-05",
+      "FS-06",
+      "ID-01",
+      "ID-02",
+      "ID-03",
+      "ID-04",
+      "ID-06",
+      "IPY-01",
+      "IPY-02",
+      "IPY-03",
+      "IPY-04",
+      "IPY-05",
+      "IPY-06",
+      "IPY-07",
+      "IPY-08",
+      "IPY-09",
+      "IPY-10",
+      "IPY-11",
+      "IPY-12",
+      "IPY-13",
+      "IPY-14",
+      "OBS-01",
+      "OBS-02",
+      "OBS-03",
+      "OBS-04",
+      "OBS-05",
+      "OBS-06",
+      "REC-01",
+      "REC-02",
+      "REC-03",
+      "REC-04",
+      "REC-05",
+      "REC-06",
+      "REC-07",
+      "REC-08",
+      "RES-01",
+      "RES-02",
+      "RES-03",
+      "RES-04",
+      "RES-05",
+      "RES-06",
+      "VER-01",
+      "VER-02",
+      "VER-03",
+      "VER-04",
+      "VER-05",
+      "VER-06",
+      "VER-07",
+      "VER-08",
+      "VER-09"
+    ],
+    "rewritten": [
+      "CMP-04",
+      "ID-05",
+      "IPY-15",
+      "REC-09",
+      "REC-10"
+    ],
+    "split": [
+      "DATA-09"
+    ],
+    "not_claimed": [],
+    "oracles_changed": [
+      "CMP-04",
+      "DATA-09",
+      "ID-05",
+      "IPY-15",
+      "REC-09",
+      "REC-10"
+    ],
+    "untreated": [],
+    "v2_only_cases": [
+      "DATA-13"
+    ]
+  },
+  "rule": "Every v1 case is EMITTED, because the generator iterates the frozen v1 cases. A silent drop is therefore impossible by construction. Every case whose oracle text differs from v1 appears in `decisions` below with a reason; a changed oracle with no recorded decision fails the build, and so does a decision that claims a rewrite the text does not make.",
+  "decisions": [
+    {
+      "v1_case_id": "ID-01",
+      "v2_case_ids": [
+        "ID-01"
+      ],
+      "treatment": "verbatim",
+      "oracle_changed": false,
+      "authority": "D6",
+      "reason": "The failure is a product defect (an upstream `src/*` import reached at runtime), not a spec defect. Root's decision D6: carry it into v2 verbatim and do not soften it.",
+      "dropped_assertions": [],
+      "why_not_a_loss": null,
+      "note_on_counts": null
+    },
+    {
+      "v1_case_id": "ID-02",
+      "v2_case_ids": [
+        "ID-02"
+      ],
+      "treatment": "verbatim",
+      "oracle_changed": false,
+      "authority": null,
+      "reason": null,
+      "dropped_assertions": [],
+      "why_not_a_loss": null,
+      "note_on_counts": null
+    },
+    {
+      "v1_case_id": "ID-03",
+      "v2_case_ids": [
+        "ID-03"
+      ],
+      "treatment": "verbatim",
+      "oracle_changed": false,
+      "authority": null,
+      "reason": null,
+      "dropped_assertions": [],
+      "why_not_a_loss": null,
+      "note_on_counts": null
+    },
+    {
+      "v1_case_id": "ID-04",
+      "v2_case_ids": [
+        "ID-04"
+      ],
+      "treatment": "verbatim",
+      "oracle_changed": false,
+      "authority": null,
+      "reason": null,
+      "dropped_assertions": [],
+      "why_not_a_loss": null,
+      "note_on_counts": null
+    },
+    {
+      "v1_case_id": "ID-05",
+      "v2_case_ids": [
+        "ID-05"
+      ],
+      "treatment": "rewritten",
+      "oracle_changed": true,
+      "authority": "D4",
+      "reason": "v1 FAILed on the `as never` clause alone, with the oracle naming neither carve-out. D4 measured that the clause is about something real in CONFIG position (`ctx.plugin(Storage, {} as never)` MASKS a true diagnostic) while the cast on the PLUGIN argument is noise. v2 keeps the clause and names the two idioms so the case can be decided without a judgement call, and so `as never` is never traded for an invisible `as any`. The sweep is deliberately deferred to round 2 (D4) because 478 of the 488 occurrences are in test files under concurrent edit.",
+      "dropped_assertions": [],
+      "why_not_a_loss": null,
+      "note_on_counts": "v1's note says 475; D4's scanner says 488 (478 test, 10 non-test). The 13-count delta is NOT reconciled and v2 states no count, so v2 cannot inherit an unreconciled number."
+    },
+    {
+      "v1_case_id": "ID-06",
+      "v2_case_ids": [
+        "ID-06"
+      ],
+      "treatment": "verbatim",
+      "oracle_changed": false,
+      "authority": null,
+      "reason": null,
+      "dropped_assertions": [],
+      "why_not_a_loss": null,
+      "note_on_counts": null
+    },
+    {
+      "v1_case_id": "CMP-01",
+      "v2_case_ids": [
+        "CMP-01"
+      ],
+      "treatment": "verbatim",
+      "oracle_changed": false,
+      "authority": null,
+      "reason": null,
+      "dropped_assertions": [],
+      "why_not_a_loss": null,
+      "note_on_counts": null
+    },
+    {
+      "v1_case_id": "CMP-02",
+      "v2_case_ids": [
+        "CMP-02"
+      ],
+      "treatment": "verbatim",
+      "oracle_changed": false,
+      "authority": null,
+      "reason": null,
+      "dropped_assertions": [],
+      "why_not_a_loss": null,
+      "note_on_counts": null
+    },
+    {
+      "v1_case_id": "CMP-03",
+      "v2_case_ids": [
+        "CMP-03"
+      ],
+      "treatment": "verbatim",
+      "oracle_changed": false,
+      "authority": null,
+      "reason": null,
+      "dropped_assertions": [],
+      "why_not_a_loss": null,
+      "note_on_counts": null
+    },
+    {
+      "v1_case_id": "CMP-04",
+      "v2_case_ids": [
+        "CMP-04"
+      ],
+      "treatment": "rewritten",
+      "oracle_changed": true,
+      "authority": "D1",
+      "reason": "v1 pinned `toolCountAgentKey is 28` and required `pwsh` present. The pinned literal encoded a COMPOSITION FACT as a pass condition, which is what created the contradiction with CMP-13 (which requires `pwsh` absent) when commit 35c829d disabled tool-pwsh 19 minutes after this case was authored. v2 states the CURRENT architecture: `ipython` present, `work` present, `pwsh` absent, `error` null, and the tool count MEASURED INTO THE EVIDENCE rather than pinned. The count remains a change detector in evidence; it is not a pass condition. CMP-13 is unchanged.",
+      "dropped_assertions": [
+        "toolCountAgentKey is 28",
+        "pwsh is present"
+      ],
+      "why_not_a_loss": "Both dropped assertions are recorded as dropped, and the measured count they pinned is still required in evidence. Nothing is silently omitted.",
+      "note_on_counts": null
+    },
+    {
+      "v1_case_id": "CMP-05",
+      "v2_case_ids": [
+        "CMP-05"
+      ],
+      "treatment": "verbatim",
+      "oracle_changed": false,
+      "authority": null,
+      "reason": null,
+      "dropped_assertions": [],
+      "why_not_a_loss": null,
+      "note_on_counts": null
+    },
+    {
+      "v1_case_id": "CMP-06",
+      "v2_case_ids": [
+        "CMP-06"
+      ],
+      "treatment": "verbatim",
+      "oracle_changed": false,
+      "authority": null,
+      "reason": null,
+      "dropped_assertions": [],
+      "why_not_a_loss": null,
+      "note_on_counts": null
+    },
+    {
+      "v1_case_id": "CMP-07",
+      "v2_case_ids": [
+        "CMP-07"
+      ],
+      "treatment": "verbatim",
+      "oracle_changed": false,
+      "authority": null,
+      "reason": null,
+      "dropped_assertions": [],
+      "why_not_a_loss": null,
+      "note_on_counts": null
+    },
+    {
+      "v1_case_id": "CMP-08",
+      "v2_case_ids": [
+        "CMP-08"
+      ],
+      "treatment": "verbatim",
+      "oracle_changed": false,
+      "authority": null,
+      "reason": null,
+      "dropped_assertions": [],
+      "why_not_a_loss": null,
+      "note_on_counts": null
+    },
+    {
+      "v1_case_id": "CMP-09",
+      "v2_case_ids": [
+        "CMP-09"
+      ],
+      "treatment": "verbatim",
+      "oracle_changed": false,
+      "authority": null,
+      "reason": null,
+      "dropped_assertions": [],
+      "why_not_a_loss": null,
+      "note_on_counts": null
+    },
+    {
+      "v1_case_id": "CMP-10",
+      "v2_case_ids": [
+        "CMP-10"
+      ],
+      "treatment": "verbatim",
+      "oracle_changed": false,
+      "authority": null,
+      "reason": null,
+      "dropped_assertions": [],
+      "why_not_a_loss": null,
+      "note_on_counts": null
+    },
+    {
+      "v1_case_id": "CMP-11",
+      "v2_case_ids": [
+        "CMP-11"
+      ],
+      "treatment": "verbatim",
+      "oracle_changed": false,
+      "authority": null,
+      "reason": null,
+      "dropped_assertions": [],
+      "why_not_a_loss": null,
+      "note_on_counts": null
+    },
+    {
+      "v1_case_id": "CMP-12",
+      "v2_case_ids": [
+        "CMP-12"
+      ],
+      "treatment": "verbatim",
+      "oracle_changed": false,
+      "authority": null,
+      "reason": null,
+      "dropped_assertions": [],
+      "why_not_a_loss": null,
+      "note_on_counts": null
+    },
+    {
+      "v1_case_id": "CMP-13",
+      "v2_case_ids": [
+        "CMP-13"
+      ],
+      "treatment": "verbatim",
+      "oracle_changed": false,
+      "authority": null,
+      "reason": null,
+      "dropped_assertions": [],
+      "why_not_a_loss": null,
+      "note_on_counts": null
+    },
+    {
+      "v1_case_id": "CMP-14",
+      "v2_case_ids": [
+        "CMP-14"
+      ],
+      "treatment": "verbatim",
+      "oracle_changed": false,
+      "authority": null,
+      "reason": null,
+      "dropped_assertions": [],
+      "why_not_a_loss": null,
+      "note_on_counts": null
+    },
+    {
+      "v1_case_id": "IPY-01",
+      "v2_case_ids": [
+        "IPY-01"
+      ],
+      "treatment": "verbatim",
+      "oracle_changed": false,
+      "authority": null,
+      "reason": null,
+      "dropped_assertions": [],
+      "why_not_a_loss": null,
+      "note_on_counts": null
+    },
+    {
+      "v1_case_id": "IPY-02",
+      "v2_case_ids": [
+        "IPY-02"
+      ],
+      "treatment": "verbatim",
+      "oracle_changed": false,
+      "authority": null,
+      "reason": null,
+      "dropped_assertions": [],
+      "why_not_a_loss": null,
+      "note_on_counts": null
+    },
+    {
+      "v1_case_id": "IPY-03",
+      "v2_case_ids": [
+        "IPY-03"
+      ],
+      "treatment": "verbatim",
+      "oracle_changed": false,
+      "authority": null,
+      "reason": null,
+      "dropped_assertions": [],
+      "why_not_a_loss": null,
+      "note_on_counts": null
+    },
+    {
+      "v1_case_id": "IPY-04",
+      "v2_case_ids": [
+        "IPY-04"
+      ],
+      "treatment": "verbatim",
+      "oracle_changed": false,
+      "authority": null,
+      "reason": null,
+      "dropped_assertions": [],
+      "why_not_a_loss": null,
+      "note_on_counts": null
+    },
+    {
+      "v1_case_id": "IPY-05",
+      "v2_case_ids": [
+        "IPY-05"
+      ],
+      "treatment": "verbatim",
+      "oracle_changed": false,
+      "authority": null,
+      "reason": null,
+      "dropped_assertions": [],
+      "why_not_a_loss": null,
+      "note_on_counts": null
+    },
+    {
+      "v1_case_id": "IPY-06",
+      "v2_case_ids": [
+        "IPY-06"
+      ],
+      "treatment": "verbatim",
+      "oracle_changed": false,
+      "authority": null,
+      "reason": null,
+      "dropped_assertions": [],
+      "why_not_a_loss": null,
+      "note_on_counts": null
+    },
+    {
+      "v1_case_id": "IPY-07",
+      "v2_case_ids": [
+        "IPY-07"
+      ],
+      "treatment": "verbatim",
+      "oracle_changed": false,
+      "authority": null,
+      "reason": null,
+      "dropped_assertions": [],
+      "why_not_a_loss": null,
+      "note_on_counts": null
+    },
+    {
+      "v1_case_id": "IPY-08",
+      "v2_case_ids": [
+        "IPY-08"
+      ],
+      "treatment": "verbatim",
+      "oracle_changed": false,
+      "authority": null,
+      "reason": null,
+      "dropped_assertions": [],
+      "why_not_a_loss": null,
+      "note_on_counts": null
+    },
+    {
+      "v1_case_id": "IPY-09",
+      "v2_case_ids": [
+        "IPY-09"
+      ],
+      "treatment": "verbatim",
+      "oracle_changed": false,
+      "authority": null,
+      "reason": null,
+      "dropped_assertions": [],
+      "why_not_a_loss": null,
+      "note_on_counts": null
+    },
+    {
+      "v1_case_id": "IPY-10",
+      "v2_case_ids": [
+        "IPY-10"
+      ],
+      "treatment": "verbatim",
+      "oracle_changed": false,
+      "authority": null,
+      "reason": null,
+      "dropped_assertions": [],
+      "why_not_a_loss": null,
+      "note_on_counts": null
+    },
+    {
+      "v1_case_id": "IPY-11",
+      "v2_case_ids": [
+        "IPY-11"
+      ],
+      "treatment": "verbatim",
+      "oracle_changed": false,
+      "authority": null,
+      "reason": null,
+      "dropped_assertions": [],
+      "why_not_a_loss": null,
+      "note_on_counts": null
+    },
+    {
+      "v1_case_id": "IPY-12",
+      "v2_case_ids": [
+        "IPY-12"
+      ],
+      "treatment": "verbatim",
+      "oracle_changed": false,
+      "authority": null,
+      "reason": null,
+      "dropped_assertions": [],
+      "why_not_a_loss": null,
+      "note_on_counts": null
+    },
+    {
+      "v1_case_id": "IPY-13",
+      "v2_case_ids": [
+        "IPY-13"
+      ],
+      "treatment": "verbatim",
+      "oracle_changed": false,
+      "authority": null,
+      "reason": null,
+      "dropped_assertions": [],
+      "why_not_a_loss": null,
+      "note_on_counts": null
+    },
+    {
+      "v1_case_id": "IPY-14",
+      "v2_case_ids": [
+        "IPY-14"
+      ],
+      "treatment": "verbatim",
+      "oracle_changed": false,
+      "authority": null,
+      "reason": null,
+      "dropped_assertions": [],
+      "why_not_a_loss": null,
+      "note_on_counts": null
+    },
+    {
+      "v1_case_id": "IPY-15",
+      "v2_case_ids": [
+        "IPY-15"
+      ],
+      "treatment": "rewritten",
+      "oracle_changed": true,
+      "authority": "D2",
+      "reason": "v1 required an over-limit frame be 'reported as LOST with a count'. Measured: `CellResult.stdout.droppedFrames` is structurally always 0 and `OutputBuffer.note_dropped_frame` (its only writer) has zero call sites, so the v1 clause describes drop-and-continue behaviour the product does not have and should not have. The product rejects: the encoder refuses and the decoder refuses on the DECLARED length before buffering. v2 keeps fail-hard and requires a structured refusal that names the limit.",
+      "dropped_assertions": [
+        "an over-limit frame is reported as LOST with a count"
+      ],
+      "why_not_a_loss": "A failed transport is a failed OPERATION, not a partial successful observation. Requiring a drop counter would require inventing a producer for a behaviour the product deliberately does not have.",
+      "note_on_counts": null
+    },
+    {
+      "v1_case_id": "BR-01",
+      "v2_case_ids": [
+        "BR-01"
+      ],
+      "treatment": "verbatim",
+      "oracle_changed": false,
+      "authority": null,
+      "reason": null,
+      "dropped_assertions": [],
+      "why_not_a_loss": null,
+      "note_on_counts": null
+    },
+    {
+      "v1_case_id": "BR-02",
+      "v2_case_ids": [
+        "BR-02"
+      ],
+      "treatment": "verbatim",
+      "oracle_changed": false,
+      "authority": null,
+      "reason": null,
+      "dropped_assertions": [],
+      "why_not_a_loss": null,
+      "note_on_counts": null
+    },
+    {
+      "v1_case_id": "BR-03",
+      "v2_case_ids": [
+        "BR-03"
+      ],
+      "treatment": "verbatim",
+      "oracle_changed": false,
+      "authority": null,
+      "reason": null,
+      "dropped_assertions": [],
+      "why_not_a_loss": null,
+      "note_on_counts": null
+    },
+    {
+      "v1_case_id": "BR-04",
+      "v2_case_ids": [
+        "BR-04"
+      ],
+      "treatment": "verbatim",
+      "oracle_changed": false,
+      "authority": null,
+      "reason": null,
+      "dropped_assertions": [],
+      "why_not_a_loss": null,
+      "note_on_counts": null
+    },
+    {
+      "v1_case_id": "BR-05",
+      "v2_case_ids": [
+        "BR-05"
+      ],
+      "treatment": "verbatim",
+      "oracle_changed": false,
+      "authority": null,
+      "reason": null,
+      "dropped_assertions": [],
+      "why_not_a_loss": null,
+      "note_on_counts": null
+    },
+    {
+      "v1_case_id": "BR-06",
+      "v2_case_ids": [
+        "BR-06"
+      ],
+      "treatment": "verbatim",
+      "oracle_changed": false,
+      "authority": null,
+      "reason": null,
+      "dropped_assertions": [],
+      "why_not_a_loss": null,
+      "note_on_counts": null
+    },
+    {
+      "v1_case_id": "BR-07",
+      "v2_case_ids": [
+        "BR-07"
+      ],
+      "treatment": "verbatim",
+      "oracle_changed": false,
+      "authority": "D5",
+      "reason": "Root's decision D5: the oracle is kept unchanged, and the bridge adopts the programmatic-scope route's EXISTING disposition vocabulary rather than inventing a parallel one. R5 owns the implementation.",
+      "dropped_assertions": [],
+      "why_not_a_loss": null,
+      "note_on_counts": null
+    },
+    {
+      "v1_case_id": "BR-08",
+      "v2_case_ids": [
+        "BR-08"
+      ],
+      "treatment": "verbatim",
+      "oracle_changed": false,
+      "authority": null,
+      "reason": null,
+      "dropped_assertions": [],
+      "why_not_a_loss": null,
+      "note_on_counts": null
+    },
+    {
+      "v1_case_id": "BR-09",
+      "v2_case_ids": [
+        "BR-09"
+      ],
+      "treatment": "verbatim",
+      "oracle_changed": false,
+      "authority": null,
+      "reason": null,
+      "dropped_assertions": [],
+      "why_not_a_loss": null,
+      "note_on_counts": null
+    },
+    {
+      "v1_case_id": "BR-10",
+      "v2_case_ids": [
+        "BR-10"
+      ],
+      "treatment": "verbatim",
+      "oracle_changed": false,
+      "authority": null,
+      "reason": null,
+      "dropped_assertions": [],
+      "why_not_a_loss": null,
+      "note_on_counts": null
+    },
+    {
+      "v1_case_id": "BR-11",
+      "v2_case_ids": [
+        "BR-11"
+      ],
+      "treatment": "verbatim",
+      "oracle_changed": false,
+      "authority": null,
+      "reason": null,
+      "dropped_assertions": [],
+      "why_not_a_loss": null,
+      "note_on_counts": null
+    },
+    {
+      "v1_case_id": "BR-12",
+      "v2_case_ids": [
+        "BR-12"
+      ],
+      "treatment": "verbatim",
+      "oracle_changed": false,
+      "authority": null,
+      "reason": null,
+      "dropped_assertions": [],
+      "why_not_a_loss": null,
+      "note_on_counts": null
+    },
+    {
+      "v1_case_id": "DATA-01",
+      "v2_case_ids": [
+        "DATA-01"
+      ],
+      "treatment": "verbatim",
+      "oracle_changed": false,
+      "authority": null,
+      "reason": null,
+      "dropped_assertions": [],
+      "why_not_a_loss": null,
+      "note_on_counts": null
+    },
+    {
+      "v1_case_id": "DATA-02",
+      "v2_case_ids": [
+        "DATA-02"
+      ],
+      "treatment": "verbatim",
+      "oracle_changed": false,
+      "authority": null,
+      "reason": null,
+      "dropped_assertions": [],
+      "why_not_a_loss": null,
+      "note_on_counts": null
+    },
+    {
+      "v1_case_id": "DATA-03",
+      "v2_case_ids": [
+        "DATA-03"
+      ],
+      "treatment": "verbatim",
+      "oracle_changed": false,
+      "authority": null,
+      "reason": null,
+      "dropped_assertions": [],
+      "why_not_a_loss": null,
+      "note_on_counts": null
+    },
+    {
+      "v1_case_id": "DATA-04",
+      "v2_case_ids": [
+        "DATA-04"
+      ],
+      "treatment": "verbatim",
+      "oracle_changed": false,
+      "authority": null,
+      "reason": null,
+      "dropped_assertions": [],
+      "why_not_a_loss": null,
+      "note_on_counts": null
+    },
+    {
+      "v1_case_id": "DATA-05",
+      "v2_case_ids": [
+        "DATA-05"
+      ],
+      "treatment": "verbatim",
+      "oracle_changed": false,
+      "authority": null,
+      "reason": null,
+      "dropped_assertions": [],
+      "why_not_a_loss": null,
+      "note_on_counts": null
+    },
+    {
+      "v1_case_id": "DATA-06",
+      "v2_case_ids": [
+        "DATA-06"
+      ],
+      "treatment": "verbatim",
+      "oracle_changed": false,
+      "authority": null,
+      "reason": null,
+      "dropped_assertions": [],
+      "why_not_a_loss": null,
+      "note_on_counts": null
+    },
+    {
+      "v1_case_id": "DATA-07",
+      "v2_case_ids": [
+        "DATA-07"
+      ],
+      "treatment": "verbatim",
+      "oracle_changed": false,
+      "authority": null,
+      "reason": null,
+      "dropped_assertions": [],
+      "why_not_a_loss": null,
+      "note_on_counts": null
+    },
+    {
+      "v1_case_id": "DATA-08",
+      "v2_case_ids": [
+        "DATA-08"
+      ],
+      "treatment": "verbatim",
+      "oracle_changed": false,
+      "authority": null,
+      "reason": null,
+      "dropped_assertions": [],
+      "why_not_a_loss": null,
+      "note_on_counts": null
+    },
+    {
+      "v1_case_id": "DATA-09",
+      "v2_case_ids": [
+        "DATA-09",
+        "DATA-13"
+      ],
+      "treatment": "split",
+      "oracle_changed": true,
+      "authority": "D2",
+      "reason": "v1 conflated two different epistemic things in one closed set: whether the WORLD gave us complete data (an acquisition fact) and how much of complete data the LLM was shown (a projection choice). v2 splits them. This case keeps the acquisition half.",
+      "dropped_assertions": [
+        "`transport` as a required acquisition stage",
+        "`model-projection` as a required acquisition stage"
+      ],
+      "why_not_a_loss": "`transport` has no producer because the product REJECTS an oversized frame before any successful value exists, so there is no partial success to attribute; requiring the stage would mean degrading a hard failure into a silent one. `model-projection` becomes DATA-13's ProjectionManifest, where an intentional projection is recorded as a manifest rather than as a loss.",
+      "note_on_counts": null
+    },
+    {
+      "v1_case_id": "DATA-10",
+      "v2_case_ids": [
+        "DATA-10"
+      ],
+      "treatment": "verbatim",
+      "oracle_changed": false,
+      "authority": null,
+      "reason": null,
+      "dropped_assertions": [],
+      "why_not_a_loss": null,
+      "note_on_counts": null
+    },
+    {
+      "v1_case_id": "DATA-11",
+      "v2_case_ids": [
+        "DATA-11"
+      ],
+      "treatment": "verbatim",
+      "oracle_changed": false,
+      "authority": null,
+      "reason": null,
+      "dropped_assertions": [],
+      "why_not_a_loss": null,
+      "note_on_counts": null
+    },
+    {
+      "v1_case_id": "DATA-12",
+      "v2_case_ids": [
+        "DATA-12"
+      ],
+      "treatment": "verbatim",
+      "oracle_changed": false,
+      "authority": null,
+      "reason": null,
+      "dropped_assertions": [],
+      "why_not_a_loss": null,
+      "note_on_counts": null
+    },
+    {
+      "v1_case_id": "REC-01",
+      "v2_case_ids": [
+        "REC-01"
+      ],
+      "treatment": "verbatim",
+      "oracle_changed": false,
+      "authority": null,
+      "reason": null,
+      "dropped_assertions": [],
+      "why_not_a_loss": null,
+      "note_on_counts": null
+    },
+    {
+      "v1_case_id": "REC-02",
+      "v2_case_ids": [
+        "REC-02"
+      ],
+      "treatment": "verbatim",
+      "oracle_changed": false,
+      "authority": null,
+      "reason": null,
+      "dropped_assertions": [],
+      "why_not_a_loss": null,
+      "note_on_counts": null
+    },
+    {
+      "v1_case_id": "REC-03",
+      "v2_case_ids": [
+        "REC-03"
+      ],
+      "treatment": "verbatim",
+      "oracle_changed": false,
+      "authority": null,
+      "reason": null,
+      "dropped_assertions": [],
+      "why_not_a_loss": null,
+      "note_on_counts": null
+    },
+    {
+      "v1_case_id": "REC-04",
+      "v2_case_ids": [
+        "REC-04"
+      ],
+      "treatment": "verbatim",
+      "oracle_changed": false,
+      "authority": null,
+      "reason": null,
+      "dropped_assertions": [],
+      "why_not_a_loss": null,
+      "note_on_counts": null
+    },
+    {
+      "v1_case_id": "REC-05",
+      "v2_case_ids": [
+        "REC-05"
+      ],
+      "treatment": "verbatim",
+      "oracle_changed": false,
+      "authority": null,
+      "reason": null,
+      "dropped_assertions": [],
+      "why_not_a_loss": null,
+      "note_on_counts": null
+    },
+    {
+      "v1_case_id": "REC-06",
+      "v2_case_ids": [
+        "REC-06"
+      ],
+      "treatment": "verbatim",
+      "oracle_changed": false,
+      "authority": null,
+      "reason": null,
+      "dropped_assertions": [],
+      "why_not_a_loss": null,
+      "note_on_counts": null
+    },
+    {
+      "v1_case_id": "REC-07",
+      "v2_case_ids": [
+        "REC-07"
+      ],
+      "treatment": "verbatim",
+      "oracle_changed": false,
+      "authority": null,
+      "reason": null,
+      "dropped_assertions": [],
+      "why_not_a_loss": null,
+      "note_on_counts": null
+    },
+    {
+      "v1_case_id": "REC-08",
+      "v2_case_ids": [
+        "REC-08"
+      ],
+      "treatment": "verbatim",
+      "oracle_changed": false,
+      "authority": null,
+      "reason": null,
+      "dropped_assertions": [],
+      "why_not_a_loss": null,
+      "note_on_counts": null
+    },
+    {
+      "v1_case_id": "REC-09",
+      "v2_case_ids": [
+        "REC-09"
+      ],
+      "treatment": "rewritten",
+      "oracle_changed": true,
+      "authority": "D3",
+      "reason": "v1 presumed fencing is REQUIRED and FAILed because a stale settlement lands on the reachable write path. Writer R9 is measuring whether stale-generation settlement is physically possible at all. v2 must express either outcome, so this oracle is satisfied by a refusal OR by an explicit statement that the guarantee is not claimed, naming the topology fact that makes settlement impossible. The NOT_CLAIMED verdict exists for the second arm; neither arm is a PASS.",
+      "dropped_assertions": [],
+      "why_not_a_loss": "The invariant is not dropped -- it is made honest in both directions. What is forbidden is manufacturing a caller to make it green, and what is forbidden is forcing a deleted claim into FAIL.",
+      "note_on_counts": null
+    },
+    {
+      "v1_case_id": "REC-10",
+      "v2_case_ids": [
+        "REC-10"
+      ],
+      "treatment": "rewritten",
+      "oracle_changed": true,
+      "authority": "D3",
+      "reason": "v1 required the epoch guard be reachable from a non-test production path, and measured it INERT. Same topology dependency as REC-09: if R9 finds stale-generation settlement impossible, the guard is deleted and the case becomes NOT_CLAIMED with the v1 FAIL preserved. v2 therefore states the reachability requirement CONDITIONAL on the claim being made at all.",
+      "dropped_assertions": [],
+      "why_not_a_loss": "Reachability remains the requirement WHENEVER the guard exists. The case stops asserting that a guard must exist.",
+      "note_on_counts": null
+    },
+    {
+      "v1_case_id": "FS-01",
+      "v2_case_ids": [
+        "FS-01"
+      ],
+      "treatment": "verbatim",
+      "oracle_changed": false,
+      "authority": null,
+      "reason": null,
+      "dropped_assertions": [],
+      "why_not_a_loss": null,
+      "note_on_counts": null
+    },
+    {
+      "v1_case_id": "FS-02",
+      "v2_case_ids": [
+        "FS-02"
+      ],
+      "treatment": "verbatim",
+      "oracle_changed": false,
+      "authority": null,
+      "reason": null,
+      "dropped_assertions": [],
+      "why_not_a_loss": null,
+      "note_on_counts": null
+    },
+    {
+      "v1_case_id": "FS-03",
+      "v2_case_ids": [
+        "FS-03"
+      ],
+      "treatment": "verbatim",
+      "oracle_changed": false,
+      "authority": null,
+      "reason": null,
+      "dropped_assertions": [],
+      "why_not_a_loss": null,
+      "note_on_counts": null
+    },
+    {
+      "v1_case_id": "FS-04",
+      "v2_case_ids": [
+        "FS-04"
+      ],
+      "treatment": "verbatim",
+      "oracle_changed": false,
+      "authority": null,
+      "reason": null,
+      "dropped_assertions": [],
+      "why_not_a_loss": null,
+      "note_on_counts": null
+    },
+    {
+      "v1_case_id": "FS-05",
+      "v2_case_ids": [
+        "FS-05"
+      ],
+      "treatment": "verbatim",
+      "oracle_changed": false,
+      "authority": null,
+      "reason": null,
+      "dropped_assertions": [],
+      "why_not_a_loss": null,
+      "note_on_counts": null
+    },
+    {
+      "v1_case_id": "FS-06",
+      "v2_case_ids": [
+        "FS-06"
+      ],
+      "treatment": "verbatim",
+      "oracle_changed": false,
+      "authority": null,
+      "reason": null,
+      "dropped_assertions": [],
+      "why_not_a_loss": null,
+      "note_on_counts": null
+    },
+    {
+      "v1_case_id": "CAP-01",
+      "v2_case_ids": [
+        "CAP-01"
+      ],
+      "treatment": "verbatim",
+      "oracle_changed": false,
+      "authority": null,
+      "reason": null,
+      "dropped_assertions": [],
+      "why_not_a_loss": null,
+      "note_on_counts": null
+    },
+    {
+      "v1_case_id": "CAP-02",
+      "v2_case_ids": [
+        "CAP-02"
+      ],
+      "treatment": "verbatim",
+      "oracle_changed": false,
+      "authority": null,
+      "reason": null,
+      "dropped_assertions": [],
+      "why_not_a_loss": null,
+      "note_on_counts": null
+    },
+    {
+      "v1_case_id": "CAP-03",
+      "v2_case_ids": [
+        "CAP-03"
+      ],
+      "treatment": "verbatim",
+      "oracle_changed": false,
+      "authority": null,
+      "reason": null,
+      "dropped_assertions": [],
+      "why_not_a_loss": null,
+      "note_on_counts": null
+    },
+    {
+      "v1_case_id": "CAP-04",
+      "v2_case_ids": [
+        "CAP-04"
+      ],
+      "treatment": "verbatim",
+      "oracle_changed": false,
+      "authority": null,
+      "reason": null,
+      "dropped_assertions": [],
+      "why_not_a_loss": null,
+      "note_on_counts": null
+    },
+    {
+      "v1_case_id": "CAP-05",
+      "v2_case_ids": [
+        "CAP-05"
+      ],
+      "treatment": "verbatim",
+      "oracle_changed": false,
+      "authority": null,
+      "reason": null,
+      "dropped_assertions": [],
+      "why_not_a_loss": null,
+      "note_on_counts": null
+    },
+    {
+      "v1_case_id": "CAP-06",
+      "v2_case_ids": [
+        "CAP-06"
+      ],
+      "treatment": "verbatim",
+      "oracle_changed": false,
+      "authority": null,
+      "reason": null,
+      "dropped_assertions": [],
+      "why_not_a_loss": null,
+      "note_on_counts": null
+    },
+    {
+      "v1_case_id": "CAP-07",
+      "v2_case_ids": [
+        "CAP-07"
+      ],
+      "treatment": "verbatim",
+      "oracle_changed": false,
+      "authority": null,
+      "reason": null,
+      "dropped_assertions": [],
+      "why_not_a_loss": null,
+      "note_on_counts": null
+    },
+    {
+      "v1_case_id": "CAP-08",
+      "v2_case_ids": [
+        "CAP-08"
+      ],
+      "treatment": "verbatim",
+      "oracle_changed": false,
+      "authority": null,
+      "reason": null,
+      "dropped_assertions": [],
+      "why_not_a_loss": null,
+      "note_on_counts": null
+    },
+    {
+      "v1_case_id": "CAP-09",
+      "v2_case_ids": [
+        "CAP-09"
+      ],
+      "treatment": "verbatim",
+      "oracle_changed": false,
+      "authority": null,
+      "reason": null,
+      "dropped_assertions": [],
+      "why_not_a_loss": null,
+      "note_on_counts": null
+    },
+    {
+      "v1_case_id": "CAP-10",
+      "v2_case_ids": [
+        "CAP-10"
+      ],
+      "treatment": "verbatim",
+      "oracle_changed": false,
+      "authority": null,
+      "reason": null,
+      "dropped_assertions": [],
+      "why_not_a_loss": null,
+      "note_on_counts": null
+    },
+    {
+      "v1_case_id": "CAP-11",
+      "v2_case_ids": [
+        "CAP-11"
+      ],
+      "treatment": "verbatim",
+      "oracle_changed": false,
+      "authority": null,
+      "reason": null,
+      "dropped_assertions": [],
+      "why_not_a_loss": null,
+      "note_on_counts": null
+    },
+    {
+      "v1_case_id": "CAP-12",
+      "v2_case_ids": [
+        "CAP-12"
+      ],
+      "treatment": "verbatim",
+      "oracle_changed": false,
+      "authority": null,
+      "reason": null,
+      "dropped_assertions": [],
+      "why_not_a_loss": null,
+      "note_on_counts": null
+    },
+    {
+      "v1_case_id": "CAP-13",
+      "v2_case_ids": [
+        "CAP-13"
+      ],
+      "treatment": "verbatim",
+      "oracle_changed": false,
+      "authority": null,
+      "reason": null,
+      "dropped_assertions": [],
+      "why_not_a_loss": null,
+      "note_on_counts": null
+    },
+    {
+      "v1_case_id": "VER-01",
+      "v2_case_ids": [
+        "VER-01"
+      ],
+      "treatment": "verbatim",
+      "oracle_changed": false,
+      "authority": null,
+      "reason": null,
+      "dropped_assertions": [],
+      "why_not_a_loss": null,
+      "note_on_counts": null
+    },
+    {
+      "v1_case_id": "VER-02",
+      "v2_case_ids": [
+        "VER-02"
+      ],
+      "treatment": "verbatim",
+      "oracle_changed": false,
+      "authority": null,
+      "reason": null,
+      "dropped_assertions": [],
+      "why_not_a_loss": null,
+      "note_on_counts": null
+    },
+    {
+      "v1_case_id": "VER-03",
+      "v2_case_ids": [
+        "VER-03"
+      ],
+      "treatment": "verbatim",
+      "oracle_changed": false,
+      "authority": null,
+      "reason": null,
+      "dropped_assertions": [],
+      "why_not_a_loss": null,
+      "note_on_counts": null
+    },
+    {
+      "v1_case_id": "VER-04",
+      "v2_case_ids": [
+        "VER-04"
+      ],
+      "treatment": "verbatim",
+      "oracle_changed": false,
+      "authority": null,
+      "reason": null,
+      "dropped_assertions": [],
+      "why_not_a_loss": null,
+      "note_on_counts": null
+    },
+    {
+      "v1_case_id": "VER-05",
+      "v2_case_ids": [
+        "VER-05"
+      ],
+      "treatment": "verbatim",
+      "oracle_changed": false,
+      "authority": null,
+      "reason": null,
+      "dropped_assertions": [],
+      "why_not_a_loss": null,
+      "note_on_counts": null
+    },
+    {
+      "v1_case_id": "VER-06",
+      "v2_case_ids": [
+        "VER-06"
+      ],
+      "treatment": "verbatim",
+      "oracle_changed": false,
+      "authority": null,
+      "reason": null,
+      "dropped_assertions": [],
+      "why_not_a_loss": null,
+      "note_on_counts": null
+    },
+    {
+      "v1_case_id": "VER-07",
+      "v2_case_ids": [
+        "VER-07"
+      ],
+      "treatment": "verbatim",
+      "oracle_changed": false,
+      "authority": null,
+      "reason": null,
+      "dropped_assertions": [],
+      "why_not_a_loss": null,
+      "note_on_counts": null
+    },
+    {
+      "v1_case_id": "VER-08",
+      "v2_case_ids": [
+        "VER-08"
+      ],
+      "treatment": "verbatim",
+      "oracle_changed": false,
+      "authority": null,
+      "reason": null,
+      "dropped_assertions": [],
+      "why_not_a_loss": null,
+      "note_on_counts": null
+    },
+    {
+      "v1_case_id": "VER-09",
+      "v2_case_ids": [
+        "VER-09"
+      ],
+      "treatment": "verbatim",
+      "oracle_changed": false,
+      "authority": null,
+      "reason": null,
+      "dropped_assertions": [],
+      "why_not_a_loss": null,
+      "note_on_counts": null
+    },
+    {
+      "v1_case_id": "RES-01",
+      "v2_case_ids": [
+        "RES-01"
+      ],
+      "treatment": "verbatim",
+      "oracle_changed": false,
+      "authority": null,
+      "reason": null,
+      "dropped_assertions": [],
+      "why_not_a_loss": null,
+      "note_on_counts": null
+    },
+    {
+      "v1_case_id": "RES-02",
+      "v2_case_ids": [
+        "RES-02"
+      ],
+      "treatment": "verbatim",
+      "oracle_changed": false,
+      "authority": null,
+      "reason": null,
+      "dropped_assertions": [],
+      "why_not_a_loss": null,
+      "note_on_counts": null
+    },
+    {
+      "v1_case_id": "RES-03",
+      "v2_case_ids": [
+        "RES-03"
+      ],
+      "treatment": "verbatim",
+      "oracle_changed": false,
+      "authority": null,
+      "reason": null,
+      "dropped_assertions": [],
+      "why_not_a_loss": null,
+      "note_on_counts": null
+    },
+    {
+      "v1_case_id": "RES-04",
+      "v2_case_ids": [
+        "RES-04"
+      ],
+      "treatment": "verbatim",
+      "oracle_changed": false,
+      "authority": null,
+      "reason": null,
+      "dropped_assertions": [],
+      "why_not_a_loss": null,
+      "note_on_counts": null
+    },
+    {
+      "v1_case_id": "RES-05",
+      "v2_case_ids": [
+        "RES-05"
+      ],
+      "treatment": "verbatim",
+      "oracle_changed": false,
+      "authority": null,
+      "reason": null,
+      "dropped_assertions": [],
+      "why_not_a_loss": null,
+      "note_on_counts": null
+    },
+    {
+      "v1_case_id": "RES-06",
+      "v2_case_ids": [
+        "RES-06"
+      ],
+      "treatment": "verbatim",
+      "oracle_changed": false,
+      "authority": null,
+      "reason": null,
+      "dropped_assertions": [],
+      "why_not_a_loss": null,
+      "note_on_counts": null
+    },
+    {
+      "v1_case_id": "OBS-01",
+      "v2_case_ids": [
+        "OBS-01"
+      ],
+      "treatment": "verbatim",
+      "oracle_changed": false,
+      "authority": null,
+      "reason": null,
+      "dropped_assertions": [],
+      "why_not_a_loss": null,
+      "note_on_counts": null
+    },
+    {
+      "v1_case_id": "OBS-02",
+      "v2_case_ids": [
+        "OBS-02"
+      ],
+      "treatment": "verbatim",
+      "oracle_changed": false,
+      "authority": null,
+      "reason": null,
+      "dropped_assertions": [],
+      "why_not_a_loss": null,
+      "note_on_counts": null
+    },
+    {
+      "v1_case_id": "OBS-03",
+      "v2_case_ids": [
+        "OBS-03"
+      ],
+      "treatment": "verbatim",
+      "oracle_changed": false,
+      "authority": null,
+      "reason": null,
+      "dropped_assertions": [],
+      "why_not_a_loss": null,
+      "note_on_counts": null
+    },
+    {
+      "v1_case_id": "OBS-04",
+      "v2_case_ids": [
+        "OBS-04"
+      ],
+      "treatment": "verbatim",
+      "oracle_changed": false,
+      "authority": null,
+      "reason": null,
+      "dropped_assertions": [],
+      "why_not_a_loss": null,
+      "note_on_counts": null
+    },
+    {
+      "v1_case_id": "OBS-05",
+      "v2_case_ids": [
+        "OBS-05"
+      ],
+      "treatment": "verbatim",
+      "oracle_changed": false,
+      "authority": null,
+      "reason": null,
+      "dropped_assertions": [],
+      "why_not_a_loss": null,
+      "note_on_counts": null
+    },
+    {
+      "v1_case_id": "OBS-06",
+      "v2_case_ids": [
+        "OBS-06"
+      ],
+      "treatment": "verbatim",
+      "oracle_changed": false,
+      "authority": null,
+      "reason": null,
+      "dropped_assertions": [],
+      "why_not_a_loss": null,
+      "note_on_counts": null
+    }
+  ],
+  "v2_requirements_without_a_v1_case": [
+    {
+      "u_section": "U1",
+      "requirement": "DSH singleton realpaths",
+      "why_absent": "v1 has no oracle for it. T17 measured it (singletonVerdict: 6 peers from the BUILT entry, 0 from source) but no v1 case states it."
+    },
+    {
+      "u_section": "U1",
+      "requirement": "clean qualification source checkout (F11)",
+      "why_absent": "ID-06 measures checkout cleanliness but under v1's absolute oracle, which FAILs on untracked generated state. V3 G2 wants the source plane split from the generated plane, which is a different requirement from 'the tree is clean'."
+    },
+    {
+      "u_section": "U1",
+      "requirement": "authoritative typecheck mutation-sensitive (F10)",
+      "why_absent": "ID-05 covers a mutation-sensitive compile, but under the product's own tsconfig.check.json rather than one official `pnpm typecheck` command. V3 G3 requires naming exactly one official command."
+    },
+    {
+      "u_section": "U2",
+      "requirement": "fs-local active; fs-observation-policy active",
+      "why_absent": "v1 has no case naming either row."
+    },
+    {
+      "u_section": "U2",
+      "requirement": "final ToolRuntime presentation mode = native; Node PTC / run_code / workflow-ptc absent",
+      "why_absent": "v1 has no case for the presentation mode. This is a R1 (F3) requirement."
+    },
+    {
+      "u_section": "U2",
+      "requirement": "permission-presets absent; ui-permission absent",
+      "why_absent": "CMP-06 measures the approval policy and its non-model-writability, but no v1 case requires these two rows be absent."
+    },
+    {
+      "u_section": "U2",
+      "requirement": "Agent Preset GRAPH verified, not only the host graph",
+      "why_absent": "CMP-08/CMP-10 read the preset's own inventory, but no v1 oracle requires the preset graph be resolved and digested as an identity input. v2 adds that digest as a RUNTIME identity input, so it is measured even without a case."
+    },
+    {
+      "u_section": "U3",
+      "requirement": "explicit `/work start` product path (F1)",
+      "why_absent": "No v1 case states it. G-SEAM-31 records that WorkService.createRun has no production caller, so no N=10 measurement exercised the composed profile."
+    },
+    {
+      "u_section": "U4",
+      "requirement": "top-level await (U4) and Session/kernel epoch identity",
+      "why_absent": "IPY-03 covers top-level await. Epoch IDENTITY as a durable binding (as opposed to IPY-14's epoch ADVANCE) has no v1 case."
+    },
+    {
+      "u_section": "U4",
+      "requirement": "graceful shutdown cleans descendants",
+      "why_absent": "dsh-ipython/src/cleanup.test.ts asserts it; no v1 case states it."
+    },
+    {
+      "u_section": "U5",
+      "requirement": "product-reachable BridgeServer owner",
+      "why_absent": "No BR oracle asks whether the product STARTS the bridge -- the family records it as reachability_fail (G-SEAM-34) precisely because asserting it on a BR case would claim an oracle that case does not state. V3 U5 requires it as a v2 case, so it must be WRITTEN, not inferred."
+    },
+    {
+      "u_section": "U5",
+      "requirement": "one bridge per kernel epoch; request-id dedupe/conflict; expired lease reject; wrong epoch reject",
+      "why_absent": "BR-02/BR-10 measure revocation and close, but not these four."
+    },
+    {
+      "u_section": "U6",
+      "requirement": "provider truncation honest; no per-page whole-log reload",
+      "why_absent": "RES-04 and OBS-04 measure the two facts, but no v1 case states them as requirements."
+    },
+    {
+      "u_section": "U9",
+      "requirement": "isolated writer worktree; integrated tree reverified; Git expected-ref publication",
+      "why_absent": "v1's VER family covers verification integrity but not the writer-isolation and publication discipline V3 U9 requires."
+    },
+    {
+      "u_section": "U10",
+      "requirement": "stable tool catalog/order",
+      "why_absent": "CMP-13 records the measured name SET; no v1 case requires the ORDER be stable across boots. v2 makes the order part of the runtime identity's tool-catalog digest, which detects drift, but a case stating the invariant is still needed."
+    }
+  ],
+  "unresolved_counts": [
+    {
+      "what": "ID-05 `as never` occurrence count",
+      "v1_note_says": 475,
+      "d4_scanner_says": 488,
+      "delta": 13,
+      "status": "NOT RECONCILED -- the two counts may use different scanners. v2 states no count, so v2 cannot inherit an unreconciled number."
+    }
+  ],
+  "v1_contradiction_preserved": {
+    "cases": [
+      "CMP-04",
+      "CMP-13"
+    ],
+    "statement": "v1 requires `pwsh` present (CMP-04) and absent (CMP-13) on one catalog. v1 keeps both, and its CMP-04 FAIL / CMP-13 PASS pair is the record that the spec and the deployment diverged. v2 rewrites CMP-04 only.",
+    "v1_verdicts_unchanged": {
+      "CMP-04": "FAIL",
+      "CMP-13": "PASS"
+    }
+  }
+}
