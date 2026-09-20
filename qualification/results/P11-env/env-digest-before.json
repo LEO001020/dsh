@@ -1,0 +1,48 @@
+{
+  "measuredAt": "2026-09-20T13:00:33.995Z",
+  "platform": "win32/x64",
+  "pythonExecutable": "C:/Users/hzq00/AppData/Local/Programs/Python/Python314/python.exe",
+  "realBroker": {
+    "path": "D:\\DSH\\work\\wt-integrate\\packages\\dsh-ipython\\src\\broker.py",
+    "sha256Prefix": "3def193646b2d76f"
+  },
+  "decoyBroker": {
+    "path": "D:\\DSH\\work\\wt-integrate\\qualification\\results\\P11-env\\scratch\\decoy-broker.py",
+    "sha256Prefix": "7b402c0677ee58b7"
+  },
+  "arms": {
+    "baseline (real broker)": "0526e28116906fcc",
+    "DIFFERENT broker code": "0526e28116906fcc",
+    "pythonw.exe (same interpreter)": "f3013b4585d0ed18",
+    "different kernel root": "0526e28116906fcc",
+    "backslashes (same file, DSH_PYTHON spelling)": "9d54eebf1cf721d5",
+    "upper case (same file)": "d3195189b50671d1"
+  },
+  "verdicts": {
+    "FALSE_IDENTITY": {
+      "question": "does the digest move when the EXECUTING CODE changes?",
+      "brokerScriptChanged": false,
+      "result": "FALSE IDENTITY -- digest did NOT move"
+    },
+    "FALSE_DISTINCTION": {
+      "question": "does the digest move when the ENVIRONMENT is unchanged?",
+      "interpreterSpellingChanged": true,
+      "result": "FALSE DISTINCTION -- digest DID move for one environment"
+    },
+    "REACHABLE_FALSE_DISTINCTION": {
+      "question": "is the false distinction reachable through the documented override?",
+      "backslashSpelling": true,
+      "upperCaseSpelling": true,
+      "result": "REACHABLE -- DSH_PYTHON spelling alone changes the environment identity"
+    },
+    "control": {
+      "question": "is the digest sensitive to config at all?",
+      "kernelRootChanged": false
+    }
+  },
+  "environmentEqualityEvidence": {
+    "pythonw.exe exists": true,
+    "python.exe exists": true,
+    "same directory": true
+  }
+}
