@@ -1,7 +1,7 @@
 {
   "probe": "c3-memo",
   "label": "after",
-  "measuredAt": "2026-09-20T15:40:29.528Z",
+  "measuredAt": "2026-09-20T15:44:08.144Z",
   "identity": {
     "srcArtifactsTs": "78f634cc158da13b401cd59a8ec1e1429301758f4675815d788154551fc0b38a",
     "libArtifactsJs": "a9ccbcfe95957a304d7a9a63b736fda36198dc43e413fed8dfca897fc06fc703"
@@ -12,7 +12,7 @@
       "sha256": "1959faf57b16e7566778429f8a07def9b482ad60f6aa9586fe117be073d24d8d"
     },
     "pinnedMtime": {
-      "mtimeMs": 1789918829000,
+      "mtimeMs": 1789919048000,
       "isWholeSecond": true
     },
     "firstPage": {
