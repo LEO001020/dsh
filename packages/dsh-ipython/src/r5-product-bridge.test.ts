@@ -586,6 +586,86 @@ describe('R5-BR-07: dispositions, the half that was missing', () => {
     expect(ledger.get('outer-healthy:ipython:1')?.disposition).toBe('settled')
     await bridge.close()
   }, 60_000)
+
+  it('a call that NEVER DISPATCHED is not reported as the crash window', async () => {
+    // THE DEFECT THIS ARM EXISTS FOR, measured on a real `daily` boot before it
+    // was written down (S13 / BR-07, composition-tier.json).
+    //
+    // `unknownOutcomes()` filters on `settledAt === undefined` alone, and the ONLY
+    // writer of `settledAt` is `runOne` -- which is reached only when a call was
+    // actually dispatched. A call that was ACCEPTED, never dispatched, and then
+    // disposed `abandoned-unstarted` therefore carries no `settledAt` and was
+    // returned by `unknownOutcomes()` as the crash window, whose stated meaning is
+    // "the outcome is unknown". Its own disposition proves the opposite: nothing
+    // ran, so there is no unknown effect to reconcile.
+    //
+    // WHY THAT MATTERS RATHER THAN BEING PEDANTRY. The crash window is the set a
+    // human reconciles against reality, and the project's standing constraint is
+    // that an unknown effect must never be auto-replayed. A reader told "these
+    // outcomes are unknown" about calls that provably never ran is being sent to
+    // reconcile effects that cannot exist -- and the REAL crash window is diluted
+    // by every ordinary cell that returned with a call still queued, which is the
+    // ordinary case BR-07 is about.
+    //
+    // THE FIXTURE IS THE PRODUCT'S OWN DRAIN, not a hand-written row: one call is
+    // dispatched and blocks, a second is accepted behind it in the serial queue,
+    // and the close disposes the second without ever dispatching it.
+    let entered = 0
+    const ledger = new MemoryBridgeLedger()
+    const bridge = new BridgeServer({ artifactDirectory: join(root, 'ledger-unknown') })
+    await bridge.start()
+    const lease = bridge.mintLease({
+      sessionId: 'r5-unknown', cellId: 'cell-1', epoch: 1,
+      outerCallId: 'outer-unknown', rootCallId: 'outer-unknown',
+      ledger,
+      handler: async (_call, context) => {
+        entered += 1
+        await new Promise<void>(resolveDelay => {
+          const timer = setTimeout(resolveDelay, 30_000)
+          // The lease's own controller is what aborts a dispatched call.
+          const onAbort = () => { clearTimeout(timer); resolveDelay() }
+          lease.signal.addEventListener('abort', onAbort, { once: true })
+        })
+        return { ok: true, value: { ran: true, sequence: context.sequence } }
+      },
+    })
+
+    const first = lease.invoke({ requestId: 'req-a', tool: 'r5_slow', arguments: {}, cellId: 'cell-1', epoch: 1, leaseId: lease.id })
+    // Wait until the first call is genuinely INSIDE the handler, so the second is
+    // deterministically queued behind it rather than racing it.
+    for (let i = 0; i < 200 && entered === 0; i += 1) await new Promise(r => setTimeout(r, 10))
+    expect(entered).toBe(1)
+    const second = lease.invoke({ requestId: 'req-b', tool: 'r5_queued', arguments: {}, cellId: 'cell-1', epoch: 1, leaseId: lease.id })
+    // Let the second frame reach the lease so its STARTED row exists.
+    await new Promise(r => setTimeout(r, 50))
+
+    await lease.close('completed', 'the cell settled')
+    await Promise.allSettled([first, second])
+
+    // THE FIXTURE IS THE CASE: one dispatched, one never dispatched.
+    expect(ledger.get('outer-unknown:ipython:1')?.disposition).toBe('cancelled')
+    expect(ledger.get('outer-unknown:ipython:2')?.disposition).toBe('abandoned-unstarted')
+    // The never-dispatched call never ran -- this is what makes its outcome KNOWN.
+    expect(entered).toBe(1)
+
+    // THE ASSERTION THE OLD CODE FAILED: the unknown set is EMPTY. Nothing here
+    // has an unknown outcome: one call was aborted and settled, the other never
+    // started.
+    expect(ledger.unknownOutcomes()).toHaveLength(0)
+
+    // AND THE CONTRAST, so this is not satisfied by returning nothing ever: a row
+    // with NO disposition at all -- the real crash window, a dispatch whose result
+    // was never learned -- IS still reported.
+    await ledger.started({
+      subCallId: 'outer-crash:ipython:1', sessionId: 'r5-unknown', kernelEpoch: 1,
+      cellId: 'cell-1', outerCallId: 'outer-crash', rootCallId: 'outer-crash',
+      requestId: 'req-crash', argsDigest: 'a'.repeat(64), name: 'r5_mutating',
+    })
+    const unknown = ledger.unknownOutcomes()
+    expect(unknown).toHaveLength(1)
+    expect(unknown[0]?.subCallId).toBe('outer-crash:ipython:1')
+    await bridge.close()
+  }, 60_000)
 })
 
 describe('R5-J4/J5: composite semantics, idempotency, unknown outcomes', () => {

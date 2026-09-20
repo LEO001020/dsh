@@ -127,6 +127,38 @@ export const bridgeCallRecordSchema = z.object({
 
 export type BridgeCallRecord = z.infer<typeof bridgeCallRecordSchema>
 
+/**
+ * Whether one row's outcome is genuinely UNKNOWN, i.e. whether it belongs to the
+ * crash window a reader must reconcile.
+ *
+ * WHY THIS IS NOT `settledAt === undefined`. That was the first version, and it
+ * was WRONG IN THE ORDINARY CASE. `settledAt` is written only by the runner that
+ * dispatches a call, so a call that was ACCEPTED, never dispatched, and then
+ * disposed by the close path carries no `settledAt` -- and was therefore reported
+ * as the crash window, whose stated meaning is "the outcome is unknown".
+ *
+ * MEASURED on a real `daily` boot (S13 / BR-07, `composition-tier.json`): a cell
+ * returned with one call in flight and one still queued. The queued call was
+ * disposed `abandoned-unstarted` and NEVER ENTERED ITS TOOL, and the ledger
+ * nevertheless listed it among the unknown outcomes.
+ *
+ * WHY THE DISPOSITION SETTLES IT. `abandoned-unstarted` and `handed-to-jobs` are
+ * the two arms that mean "this call never reached the registry": the first was
+ * refused, the second had its ownership transferred to a job. Neither can have
+ * produced an effect, so neither has an outcome to reconcile, and reporting them
+ * as unknown sends a reader to reconcile effects that cannot exist while diluting
+ * the REAL crash window with every ordinary cell that returned with work queued.
+ *
+ * THE REAL CRASH WINDOW IS UNCHANGED: a row with no `settledAt` and no
+ * disposition proving it never ran -- a dispatch whose result was never learned.
+ * It is still reported, which is what the contrast arm of the test asserts.
+ */
+export function outcomeIsUnknown(row: BridgeCallRecord): boolean {
+  if (row.settledAt !== undefined) return false
+  // The two dispositions that establish the call never dispatched.
+  return row.disposition !== 'abandoned-unstarted' && row.disposition !== 'handed-to-jobs'
+}
+
 /** The domain: one table, keyed by subcall id. */
 export const bridgeLedgerDomainSpec = defineDomain({
   name: BRIDGE_LEDGER_DOMAIN_NAME,
@@ -229,9 +261,14 @@ export interface BridgeLedger {
   /** Every row for one session, newest epoch first. */
   forSession(sessionId: string): BridgeCallRecord[]
   /**
-   * Rows that were STARTED and never SETTLED: the crash window, reported as
+   * Rows whose outcome is genuinely UNKNOWN: the crash window, reported as
    * `OUTCOME_UNKNOWN` rather than as a failure. Never auto-replayed by this
    * module or any caller of it.
+   *
+   * A row is NOT in this set merely because it has no settlement stamp: a call
+   * disposed `abandoned-unstarted` or `handed-to-jobs` never reached the registry,
+   * so its outcome is known to be "nothing happened". See
+   * {@link outcomeIsUnknown} for why that distinction is load-bearing.
    */
   unknownOutcomes(): BridgeCallRecord[]
   /** Every row, for audit. */
@@ -299,7 +336,7 @@ export class MemoryBridgeLedger implements BridgeLedger {
   }
 
   unknownOutcomes(): BridgeCallRecord[] {
-    return [...this.rows.values()].filter(row => row.settledAt === undefined)
+    return [...this.rows.values()].filter(row => outcomeIsUnknown(row))
   }
 
   all(): BridgeCallRecord[] {
@@ -381,7 +418,7 @@ export class StorageBridgeLedger implements BridgeLedger {
   }
 
   unknownOutcomes(): BridgeCallRecord[] {
-    return [...this.table.entries()].map(([, row]) => row).filter(row => row.settledAt === undefined)
+    return [...this.table.entries()].map(([, row]) => row).filter(row => outcomeIsUnknown(row))
   }
 
   all(): BridgeCallRecord[] {
