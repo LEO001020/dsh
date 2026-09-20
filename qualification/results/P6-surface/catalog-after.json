@@ -1,9 +1,9 @@
 {
   "probe": "p6-surface",
-  "ranAt": "2026-09-20T13:09:32.977Z",
+  "ranAt": "2026-09-20T13:12:32.364Z",
   "profileName": "unknown",
   "agentPreset": "daily-standard",
-  "sessionId": "session-64460154-a5ee-42be-aa52-1cebaf8e65b5",
+  "sessionId": "session-c6eed02b-fb53-4a81-a51b-b777e3a480a4",
   "tools": [
     "ask_user_question",
     "create_goal",
@@ -415,6 +415,17 @@
         "childId"
       ]
     }
+  },
+  "substrateSeam": {
+    "servicePresent": true,
+    "startContinuableIsCallable": true,
+    "startIsCallable": true,
+    "registeredProviders": [
+      "spawn",
+      "fork"
+    ],
+    "agentsCreateIsCallable": true,
+    "note": "these seams are reachable from an IN-PROCESS caller holding a Context; the model-facing catalog measured above does not expose them"
   },
   "presetRoots": [
     "D:/DSH/home/p6-surface-after/profiles/daily/presets/",
