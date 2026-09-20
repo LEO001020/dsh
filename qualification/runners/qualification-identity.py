@@ -491,17 +491,44 @@ def staleness_report(model: dict[str, Any]) -> dict[str, Any]:
         # when only the definition changed.
         runtime_moved = filed_rt != model["runtime_deployment_identity"]
         contract_moved = filed_id != current
+
+        # WHICH INPUTS ACTUALLY MOVED, not just "the identity moved".
+        #
+        # MEASURED PROBLEM THIS SOLVES. `implementation_commit` is a runtime identity
+        # input, so EVERY commit moves the runtime identity -- including a commit that
+        # changed nothing the identity otherwise covers. Measured over the last six
+        # commits of this slice: the `lib/` trees and the acceptance definition were
+        # byte-identical at every one, yet the runtime identity differed at every one.
+        # A reader told only "runtime moved, RE-MEASURE" would re-run a boot to learn
+        # that nothing changed.
+        #
+        # So the report names the fields that differ. A commit-only move is then
+        # visibly different from a real artifact move, and the reader can decide.
+        changed_fields: list[str] = []
+        filed_inputs = filed.get("runtime_inputs") or {}
+        current_inputs = model["runtime_inputs"]
+        for key in sorted(set(filed_inputs) | set(current_inputs)):
+            if filed_inputs.get(key) != current_inputs.get(key):
+                changed_fields.append(key)
+        artifact_fields = [f for f in changed_fields if f != "implementation_commit"]
+        commit_only = changed_fields == ["implementation_commit"]
+
         if not contract_moved:
             why = "current"
+        elif commit_only:
+            why = ("STALE, COMMIT MOVED ONLY: the implementation revision changed and every "
+                   "other runtime input is byte-identical, so the deployment is materially the "
+                   "same and the previous measurements still describe it. This is the expected "
+                   "state at a writer's tip. RE-DERIVE the identity (cheap); RE-MEASURE only if "
+                   "the artifact digests below also moved.")
         elif runtime_moved:
-            why = ("STALE, RUNTIME MOVED: the deployment changed since this result was filed, so "
-                   "the measurements no longer describe this tree. RE-MEASURE. "
-                   "(`implementation_commit` is a runtime input, so any commit moves this; a "
-                   "result filed at a writer's tip is expected to be stale at a later revision.)")
+            why = ("STALE, RUNTIME MOVED: runtime inputs other than the commit changed, so the "
+                   "measurements no longer describe this tree. RE-MEASURE. Changed: "
+                   + ", ".join(artifact_fields))
         else:
             why = ("STALE, CONTRACT MOVED ONLY: the deployment is unchanged and the contract "
                    "moved -- an oracle, a dependency, or a runner digest. RE-QUALIFY the "
-                   "contract; the existing measurements may still apply under E3 reuse.")
+                   "contract; existing measurements may still apply under E3 reuse.")
         rows.append({
             "directory": name,
             "filed_contract_identity": filed_id,
@@ -509,6 +536,9 @@ def staleness_report(model: dict[str, Any]) -> dict[str, Any]:
             "is_current": contract_moved is False,
             "runtime_moved": runtime_moved,
             "contract_moved": contract_moved,
+            "runtime_inputs_changed": changed_fields,
+            "runtime_artifacts_changed": artifact_fields,
+            "commit_moved_only": commit_only,
             "why": why,
         })
     return {
