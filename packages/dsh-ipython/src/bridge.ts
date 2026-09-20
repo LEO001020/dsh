@@ -1946,7 +1946,7 @@ export function renderBridgeBind(input: BridgePreambleInput): string {
       'with open(_dsh_data_path, \'rb\') as _dsh_data_handle:',
       '    _dsh_data_src = _dsh_data_handle.read()',
       "_dsh_data_mod = _dsh_types.ModuleType('dsh_data_client')",
-      "    _dsh_data_mod.__dict__['__file__'] = _dsh_data_path",
+      "_dsh_data_mod.__dict__['__file__'] = _dsh_data_path",
       "exec(compile(_dsh_data_src, _dsh_data_path, 'exec'), _dsh_data_mod.__dict__)",
       "_dsh_data_api = getattr(_dsh_data_mod, 'DATA_API_VERSION', None)",
       `if _dsh_data_api != ${String(input.dataApiVersion ?? 1)}:`,
@@ -1955,7 +1955,7 @@ export function renderBridgeBind(input: BridgePreambleInput): string {
       + `${String(input.dataApiVersion ?? 1)}`
       + "; refusing to expose a live dsh.data capability'",
       '        % (_dsh_data_path, _dsh_data_api))',
-      'async def _dsh_data_call(_dsh_tool, _dsh_args):',
+      'async def _dsh_data_call(_dsh_tool, _dsh_args, _dsh_mod=_dsh_mod):',
       '    return await _dsh_mod._channel.call_async(_dsh_tool, _dsh_args, _dsh_mod._DEFAULT_TIMEOUT)',
       '_dsh_data_mod.install(_dsh_mod, _dsh_data_call)',
       'del _dsh_data_path, _dsh_data_handle, _dsh_data_src, _dsh_data_mod, _dsh_data_api, _dsh_data_call',

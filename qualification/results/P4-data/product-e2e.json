@@ -1,0 +1,37 @@
+{
+  "scope": "P4 composition tier: a real daily boot serves a data:* call through the plane",
+  "profileBooted": true,
+  "homeBooted": "D:\\DSH\\home\\p4",
+  "cwd": "D:\\DSH\\work\\wt-p4",
+  "presetDefaultId": "daily-standard",
+  "presetRoots": [
+    "D:/DSH/home/p4/profiles/daily/presets/",
+    "D:\\DSH\\home\\p4\\.agent-presets"
+  ],
+  "kernelServicePresent": true,
+  "dataPlanePresent": true,
+  "dataPlaneIsService": true,
+  "dataClientPath": "D:\\DSH\\work\\wt-p4\\packages\\dsh-daily-work\\src\\dsh_data_client.py",
+  "dataClientExists": true,
+  "sessionCreated": true,
+  "sessionId": "session-b78ee5ad-a99b-4740-8751-89b78a4febb1",
+  "ipythonToolPresent": true,
+  "toolCountAgentKey": 27,
+  "toolCallDispatched": true,
+  "toolCallOutcome": "ok",
+  "cellPrinted": "outcome: ok\nkernel epoch: 1\n--- stdout ---\nDSH_BOUND=True\nHAS_DATA=True\nDATA_SURFACE=[\"artifacts\", \"fs\", \"history\", \"projection\", \"web\"]\nOBS={\"acquired\":54,\"id\":\"obs_78f942a2-ad3f-4314-8925-fd8a7e427fab\",\"sha\":\"5029cef72211fb83a5ee9385b294b99d1fa728337aee4da5b5dda35f121219e3\"}\nWALK={\"artifact_bytes\":54,\"bytes\":8,\"pages\":1}\nPAGE={\"len\":8,\"offset\":null,\"sha\":\"5029cef72211fb83a5ee9385b294b99d1fa728337aee4da5b5dda35f121219e3\"}\nUNKNOWN_OP=DATA_INVALID_REQUEST\n\n[1 shell frame(s) for other requests were ignored while waiting for this cell. They did not complete it.]",
+  "dshBoundInCell": "True",
+  "dataNamespaceInCell": "True",
+  "dataSurfaceInCell": "[\"artifacts\", \"fs\", \"history\", \"projection\", \"web\"]",
+  "captureObservationId": "obs_78f942a2-ad3f-4314-8925-fd8a7e427fab",
+  "captureAcquiredBytes": 54,
+  "pageOffset": 8,
+  "pageByteLength": 54,
+  "pageSha256": "5029cef72211fb83a5ee9385b294b99d1fa728337aee4da5b5dda35f121219e3",
+  "dataNamesSeenByPipeline": [],
+  "toolNamesSeenByPipeline": [
+    "ipython"
+  ],
+  "error": null,
+  "unknownDataOpRefusal": "DATA_INVALID_REQUEST"
+}

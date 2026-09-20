@@ -1,0 +1,40 @@
+{
+  "scope": "P4 composition tier: a real daily boot serves a data:* call through the plane",
+  "profileBooted": true,
+  "homeBooted": "D:\\DSH\\home\\p4",
+  "cwd": "D:\\DSH\\work\\wt-p4",
+  "presetDefaultId": "daily-standard",
+  "presetRoots": [
+    "D:/DSH/home/p4/profiles/daily/presets/",
+    "D:\\DSH\\home\\p4\\.agent-presets"
+  ],
+  "kernelServicePresent": true,
+  "dataPlanePresent": true,
+  "dataPlaneIsService": true,
+  "dataClientPath": "D:\\DSH\\work\\wt-p4\\packages\\dsh-daily-work\\src\\dsh_data_client.py",
+  "dataClientExists": true,
+  "sessionCreated": true,
+  "sessionId": "session-b76dc0ee-6fa7-467f-bcdc-ce64ac77a247",
+  "ipythonToolPresent": true,
+  "toolCountAgentKey": 27,
+  "toolCallDispatched": true,
+  "toolCallOutcome": "ok",
+  "cellPrinted": "outcome: error\nkernel epoch: 1\n--- stdout ---\nDSH_BOUND=True\nHAS_DATA=True\nDATA_SURFACE=[\"artifacts\", \"fs\", \"history\", \"projection\", \"web\"]\n\n--- stderr ---\n\u001b[31m---------------------------------------------------------------------------\u001b[39m\n\u001b[31mBridgeError\u001b[39m                               Traceback (most recent call last)\n\u001b[36mFile \u001b[39m\u001b[32mD:\\DSH\\work\\wt-p4\\packages\\dsh-daily-work\\src\\dsh_data_client.py:396\u001b[39m, in \u001b[36m_DataClient._call\u001b[39m\u001b[34m(self, method, arguments)\u001b[39m\n\u001b[32m    395\u001b[39m \u001b[38;5;28;01mtry\u001b[39;00m:\n\u001b[32m--> \u001b[39m\u001b[32m396\u001b[39m     payload = \u001b[38;5;28;01mawait\u001b[39;00m \u001b[38;5;28mself\u001b[39m._call_async(_PREFIX + method, arguments)\n\u001b[32m    397\u001b[39m \u001b[38;5;28;01mexcept\u001b[39;00m \u001b[38;5;167;01mException\u001b[39;00m \u001b[38;5;28;01mas\u001b[39;00m exc:\n\u001b[32m    398\u001b[39m     \u001b[38;5;66;03m# The bridge raises BridgeError for a transport-level refusal. Its\u001b[39;00m\n\u001b[32m    399\u001b[39m     \u001b[38;5;66;03m# `code` is already stable, so it is re-raised under this module's own\u001b[39;00m\n\u001b[32m    400\u001b[39m     \u001b[38;5;66;03m# type ONLY when it carries one; otherwise the original is preserved so\u001b[39;00m\n\u001b[32m    401\u001b[39m     \u001b[38;5;66;03m# a caller does not lose the classification.\u001b[39;00m\n\n\u001b[36mCell\u001b[39m\u001b[36m \u001b[39m\u001b[32mIn[1]\u001b[39m\u001b[32m, line 22\u001b[39m, in \u001b[36m_dsh_data_call\u001b[39m\u001b[34m(_dsh_tool, _dsh_args, _dsh_mod)\u001b[39m\n\u001b[32m     21\u001b[39m \u001b[38;5;28;01masync\u001b[39;00m \u001b[38;5;28;01mdef\u001b[39;00m _dsh_data_call(_dsh_tool, _dsh_args, _dsh_mod=_dsh_mod):\n\u001b[32m---> \u001b[39m\u001b[32m22\u001b[39m     \u001b[38;5;28;01mreturn\u001b[39;00m \u001b[38;5;28;01mawait\u001b[39;00m _dsh_mod._channel.call_async(_dsh_tool, _dsh_args, _dsh_mod._DEFAULT_TIMEOUT)\n\n\u001b[36mFile \u001b[39m\u001b[32mD:\\DSH\\work\\wt-p4\\packages\\dsh-ipython\\.ipython-kernels\\session-b76dc0ee-6fa7-467f-bcdc-ce64ac77a247\\bridge\\dsh_bridge_client.py:219\u001b[39m, in \u001b[36m_Channel.call_async\u001b[39m\u001b[34m(self, tool, arguments, timeout)\u001b[39m\n\u001b[32m    218\u001b[39m \u001b[38;5;28;01mtry\u001b[39;00m:\n\u001b[32m--> \u001b[39m\u001b[32m219\u001b[39m     \u001b[38;5;28;01mreturn\u001b[39;00m \u001b[38;5;28;01mawait\u001b[39;00m _asyncio.wait_for(waiter.future, timeout)\n\u001b[32m    220\u001b[39m \u001b[38;5;28;01mexcept\u001b[39;00m _asyncio.TimeoutError:\n\u001b[32m    221\u001b[39m     \u001b[38;5;66;03m# wait_for raises asyncio.TimeoutError, which is NOT a BridgeError\u001b[39;00m\n\u001b[32m    222\u001b[39m     \u001b[38;5;66;03m# and carries no code. Letting it through would make the async path\u001b[39;00m\n\u001b[32m   (...)\u001b[39m\u001b[32m    228\u001b[39m     \u001b[38;5;66;03m# timeout=1.0 raised TimeoutError (MRO TimeoutError,OSError,\u001b[39;00m\n\u001b[32m    229\u001b[39m     \u001b[38;5;66;03m# Exception) with isinstance(exc, BridgeError) False and no .code.\u001b[39;00m\n\n\u001b[36mFile \u001b[39m\u001b[32mC:\\Users\\hzq00\\AppData\\Local\\Programs\\Python\\Python314\\Lib\\asyncio\\tasks.py:488\u001b[39m, in \u001b[36mwait_for\u001b[39m\u001b[34m(fut, timeout)\u001b[39m\n\u001b[32m    487\u001b[39m \u001b[38;5;28;01masync\u001b[39;00m \u001b[38;5;28;01mwith\u001b[39;00m timeouts.timeout(timeout):\n\u001b[32m--> \u001b[39m\u001b[32m488\u001b[39m     \u001b[38;5;28;01mreturn\u001b[39;00m \u001b[38;5;28;01mawait\u001b[39;00m fut\n\n\u001b[31mBridgeError\u001b[39m: UNKNOWN_TOOL: unknown tool \"data:fs.capture\"\n\nDuring handling of the above exception, another exception occurred:\n\n\u001b[31mDataError\u001b[39m                                 Traceback (most recent call last)\n\u001b[36mCell\u001b[39m\u001b[36m \u001b[39m\u001b[32mIn[1]\u001b[39m\u001b[32m, line 32\u001b[39m\n\u001b[32m     28\u001b[39m \u001b[38;5;28;01mimport\u001b[39;00m json\n\u001b[32m     29\u001b[39m print(\u001b[33m'DSH_BOUND='\u001b[39m + str(\u001b[33m'dsh'\u001b[39m \u001b[38;5;28;01min\u001b[39;00m dir()))\n\u001b[32m     30\u001b[39m print(\u001b[33m'HAS_DATA='\u001b[39m + str(hasattr(dsh, \u001b[33m'data'\u001b[39m)))\n\u001b[32m     31\u001b[39m print(\u001b[33m'DATA_SURFACE='\u001b[39m + json.dumps(sorted(n \u001b[38;5;28;01mfor\u001b[39;00m n \u001b[38;5;28;01min\u001b[39;00m dir(dsh.data) \u001b[38;5;28;01mif\u001b[39;00m \u001b[38;5;28;01mnot\u001b[39;00m n.startswith(\u001b[33m'_'\u001b[39m))))\n\u001b[32m---> \u001b[39m\u001b[32m32\u001b[39m obs = \u001b[38;5;28;01mawait\u001b[39;00m dsh.data.fs.capture(\u001b[33m\"D:\\\\DSH\\\\work\\\\wt-p4\\\\p4-data-product-input.txt\"\u001b[39m)\n\u001b[32m     33\u001b[39m print(\u001b[33m'OBS='\u001b[39m + json.dumps({\u001b[33m'id'\u001b[39m: obs.observation_id, \u001b[33m'acquired'\u001b[39m: obs.acquired_bytes, \u001b[33m'sha'\u001b[39m: obs.sha256}, sort_keys=\u001b[38;5;28;01mTrue\u001b[39;00m, separators=(\u001b[33m','\u001b[39m,",
+  "dshBoundInCell": "True",
+  "dataNamespaceInCell": "True",
+  "dataSurfaceInCell": "[\"artifacts\", \"fs\", \"history\", \"projection\", \"web\"]",
+  "captureObservationId": null,
+  "captureAcquiredBytes": null,
+  "pageOffset": null,
+  "pageByteLength": null,
+  "pageSha256": null,
+  "dataNamesSeenByPipeline": [
+    "data:fs.capture"
+  ],
+  "toolNamesSeenByPipeline": [
+    "ipython",
+    "data:fs.capture"
+  ],
+  "error": null,
+  "unknownDataOpRefusal": null
+}

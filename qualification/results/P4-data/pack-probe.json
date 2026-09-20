@@ -1,0 +1,23 @@
+{
+  "scope": "V5 5.4 / DATA-PACKAGE: a foreign packed install carries the Python data client",
+  "packTool": "pnpm",
+  "packSucceeded": true,
+  "tarballBytes": 489758,
+  "foreignRoot": "C:\\Users\\hzq00\\AppData\\Local\\Temp\\p4-foreign-sR0IvO",
+  "sourceTreeOnPath": false,
+  "clientPresentInTarball": true,
+  "clientPresentInExtract": true,
+  "clientPathResolvedFromPackage": "C:\\Users\\hzq00\\AppData\\Local\\Temp\\p4-foreign-sR0IvO\\pkg\\package\\src\\dsh_data_client.py",
+  "resolvedPathIsInsideForeignRoot": true,
+  "dataApiVersionRead": "1",
+  "installSucceeded": true,
+  "dataNamespacePresent": true,
+  "dataSurface": "[\"artifacts\", \"fs\", \"history\", \"projection\", \"web\"]",
+  "oneCallServedByHost": true,
+  "servedTool": "[\"data:fs.capture\"]",
+  "servedValue": "{\"id\": \"obs-packed\", \"bytes\": 7}",
+  "refusal": null,
+  "notes": [],
+  "pathRulePresentInPackedBuild": true,
+  "filenameConstantInPackedBuild": "dsh_data_client.py"
+}
