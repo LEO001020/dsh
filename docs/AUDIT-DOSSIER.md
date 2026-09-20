@@ -172,7 +172,7 @@ The 6 BLOCKED_EXTERNAL split into two kinds: **four need a live provider budget 
 | `CMP-02` | sandbox row resolved `workspace-write` | **`danger-full-access`**, all three clauses, real boot | **negative control**: reverting the mode flips the same instrument to `STILL FAILS` with `ptcConfineDecision: WOULD CONFINDE` |
 | `BR-07` | bridge route had no disposition vocabulary | vocabulary exists and is reachable; **the original probe, unmodified**, flips both vocabulary booleans while drain timing is unchanged (1514 ms) | 10/10 in the r5 product-bridge suite: `cancelled`, `abandoned-unstarted`, `handed-to-jobs` with `jobId: "job-77"` |
 | `CAP-10` | `drain` overshot under a completion storm | **the same V8 probe arm** that measured the defect now reads `admitted=2 heldAgainstTarget3=3 deficitAfter=0` (was `admitted=3`) | Storm suite adds control (`admitted=6 held=6 overshoot=0`), N+2-against-N (`admitted=6 launches=12 highWater=6`), duplicate arm, sweep 3/5/10 of 10, all `overshoot=0`. 7/7 |
-| `IPY-15` | dropped-frame counter had zero call sites | the loss was **worse than recorded**: a 4,456,448-byte background write after its cell settled raised inside the iopub pump, whose bare `except Exception` swallowed it — 4.4 MB gone, model told nothing. Arms 2/3/4: `FRAME_TOO_LARGE` with `errorCarriesCellResult: false` | Pump **and** reply path now both count through the existing `note_dropped_frame`. `noteDroppedFrameDefinitionCount` 0→1. 12/12 |
+| `IPY-15` | dropped-frame counter had zero call sites | the loss was **worse than recorded**, and there were **two** loss paths: (a) a 4,456,448-byte background write after its cell settled raised inside the iopub pump, whose bare `except Exception` swallowed it — 4.4 MB gone, model told nothing; (b) the over-limit reply is reachable at the **shipped 256 KiB cap** — 200 × 64 KiB `display()` entries → a **13,118,726-byte** reply, so it is not a raised-cap-only curiosity | The refusal now reads `FRAME_TOO_LARGE: N frame(s) LOST; frame of … exceeds the limit; declared … bytes, limit … bytes; the cell ran and its result was not delivered` — it states that the bytes are **gone**, not merely that a bound was exceeded. `noteDroppedFrameDefinitionCount` 0→1; `transportDroppedFrames` declared on the host's `KernelStatus` type. **Mutation-tested**: reverting the reply to bare `str(exc)` turns the gate RED, then restored |
 | `DATA-09` | two stages have no producer so the clause cannot hold | the recorded reasoning **conflated stimulus with oracle**. The real defect: `captureFile` forced the shortfall to 0, so a 400-byte file read with `length: 1000` reported `complete-within-request`, `gaps: []`, `isDeliverableAsComplete: true` while 600 bytes were absent | Before/after: `partial, native-acquisition/none, deliverable FALSE`. Control (range inside file) unchanged. New pin **falsified** against a reverted build (1 failed / 47 passed) |
 | `DATA-11` | a cursor yielded pages from a foreign store | named arms already held; the **harm** was reachable because the identity memo stamped on `(size, mtimeMs)`, both attacker-settable. Adding `ctimeMs` closes it | Before-arm reproduces the **exact digest the audit archived** (`cc7321cc…`); after: `artifact-integrity-error`. Pin **falsified** (1 failed / 37 passed) |
 
@@ -338,6 +338,26 @@ Governing constraint, quoted from `compatibility.lock.json` → `runtime_authori
 
 Authoritative typecheck: `node helpers/typecheck.mjs` → `typecheck: PASS -- 2 package(s), complete production graph, tests included`, with `0 non-test cast(s); baseline allows 0`. The resolved program covers 102 files (41 prod + 61 test) in `dsh-daily-work` and 49 (28 + 21) in `dsh-ipython`.
 
+### 7.3 Test suite results, measured at the published commit
+
+`dsh-ipython`, run from the package directory, `--no-file-parallelism`:
+
+```
+Test Files  2 failed | 19 passed (21)
+     Tests  2 failed | 206 passed (208)
+```
+
+**Both failures are the same defect, and both pass in isolation.** They are:
+
+| test | elapsed | note |
+|---|---|---|
+| "the record carries the kernel EPOCH, and a restart cannot deliver across generations" | 70524 ms | hit the 60 s `wait_for_ready` budget |
+| "the straddling write is undecidable, and ordinary in-cell output still works" | 68138 ms | same |
+
+Both are the intermittent `restart()` defect of §10.1c. The 68–70 s figures are **the test's own 60 s budget plus teardown**, not a measurement of work: the child never became ready. This is the single most important number in this section — **a reviewer who reads "2 failed" as two independent product failures would be wrong, and a reviewer who reads "206 passed" as "the IPython surface is fully sound" would also be wrong**, because the restart path is exactly the path a long-running session depends on.
+
+`dsh-daily-work` was not completed for this document; its earlier full run (before the c11 cwd fix) is superseded and should not be cited. A reviewer wanting its current number should run it from `packages/dsh-daily-work`, which now passes 33/33 for the previously-failing `durability-advanced` file.
+
 ---
 
 ## 8. Publish hygiene
@@ -367,18 +387,34 @@ Stated so the audit can attack them:
 ## 10. What I got wrong during this round, recorded
 
 - **I marked IPY-13 PASS, then reversed it** after writer c7's independent class probe showed the gate asserted only the weaker property. The gate was an oracle weaker than its scenario.
-- **My serial suite had a cwd defect** that made four product tests look broken (§7.2).
-- **My first IPY-15 fix wired the pump and missed the reply path.** Writer c1 found it; fixed in `82ac3ee`.
+- **My serial suite had a cwd defect** that made four product tests look broken (§7.2). Writer c11 independently found the same root cause and fixed it properly at all five spawn sites.
+- **My first IPY-15 fix wired the pump and missed the reply path.** Writer c1 found it; I closed that gap in `82ac3ee`, and c1 then went further — see §10.1.
 - **I initially read the 315 verify-spec problems as a blocker.** They are reported and append no blocker by design; I verified this in source rather than inferring it from the FAIL marker.
 - **A subagent reported a "collision" with a second writer in `wt-c1`.** It was me — I had finished that slice after the original agent died. I corrected it and redirected the agent to the two real gaps it had found.
+- **I asserted "99 PASSes at the current identity" in a draft of §9.** Measured: **3**. Corrected before publication.
+
+### 10.1 Two corrections that a reviewer should treat as substantive
+
+**(a) A prior GAPS entry's central inference is invalid, and its refutation method was unsound.** Writer c11 examined `G-SEAM-39` (the `IPY-06` flake) and found:
+
+- Its central inference reads an empty `kernel.err` as "the replacement kernel never started". **Empty `kernel.err` is the normal state on a fully successful start** (0 bytes, measured), and on failing trials the `dsh_attribution_bootstrap.loaded` marker **is present** — the replacement *did* start. The inference should be withdrawn.
+- Its refutation method used a **two-trial** experiment. The baseline failure rate for this case ranges **1/8 to 5/8 on identical code**, so two trials cannot refute anything. c11 demonstrated this on itself: its first `newports` result read 5/6 vs 3/6, and an **8-trial** run reversed it (5/8 against a 7/8 baseline). Further work needs **≥20 trials per arm**.
+
+**(b) The `dep-gates` DEP-02 failure is an environment artifact, and the correct diagnosis is NOT "deleted".** Writer c11 reported the external audit package as "deleted from `Downloads/` mid-session". **That conclusion is wrong and I corrected it by direct check: the package MOVED to `C:\Users\hzq00\Downloads\dsh\DSH_NATIVE_IPYTHON_ARCHITECTURE_AUDIT_2026-09-20\`**, and its `delivery/acceptance-spec.json` still hashes to `2fe95835425eb98eb3bac9ee…` — byte-identical to the repo copy. So the test's subject exists; the test hardcodes the old path. The failure is a **stale path in the test**, not a provenance failure, and the honest fix is to locate the package rather than to weaken the assertion. c11 was right to leave it failing rather than loosen it, and right that it is outside its eight assigned failures.
+
+**(c) c11's IPY-06 attribution stands as a REAL product defect**, reported not fixed: `packages/dsh-ipython/src/broker.py` — `self._kc.wait_for_ready(timeout=60)` inside `restart()`. The decisive observation is that the **bare arm (start → restart, no cell, no status) fails while IPY-06's exact sequence passes 5/5**, so the injection is not the variable. Five hypotheses were tested and refuted, including `newports=True` (5/8 against a 7/8 baseline — worse). The variable that decides restart pass/fail remains **undetermined**; the highest-value next step is a broker log line naming the replacement kernel's pid and bound ports.
+
+**Consequence for this dossier's test evidence:** the two `×` lines in the suite output at the time of writing — "the record carries the kernel EPOCH…" (70524 ms) and "the straddling write is undecidable…" (68138 ms) — are **both the same IPY-06/restart defect surfacing at the 60 s `wait_for_ready` budget**, not independent failures. Both pass in isolation. This is a real, reproducible, *intermittent* product defect, and it is the strongest open technical item in the repository.
 
 ---
 
 ## 11. Minimal next steps, ordered by value
 
-1. **G-SEAM-44 / reachability** — 8 unreachable non-test modules in `dsh-work`, of which `kernel-lifecycle.ts` makes three PASSing RECOVERY cases statements about a mechanism. Cheap to run the import-graph scan as a standing gate; no budget needed.
-2. **G-SEAM-19 / host-wide capacity** — the authority's `CAP-01` requires "任何时刻不超过30". The ledger is host-wide; DSH's pool is not. This is the core capacity claim.
-3. **G-SEAM-18 / depth ceiling** — `maxDepth: 99` lifts the cap and an omitted value equals 99 on the workflow/PTC path.
-4. **Decide `CMP-04` and `IPY-13`** — both need a deliberate spec revision, which invalidates verdicts at the current identity. That is the delivery owner's call, not a measurement.
-5. **Decide the identity regime** — adopt the V5 §14 contract identity in the gate, or record why the superseded one stays. The 315 problems clear the moment that decision is made and the evidence is re-measured under whichever regime is chosen.
-6. **`SEC-01`/`SEC-03`** — either provision the Linux execution world or record them as non-claims, as the v1 spec already did for five authority cases it marks `NOT_APPLICABLE` while the authority provides no such status.
+1. **The IPY-06 / restart defect (§10.1c)** — `broker.py`'s `wait_for_ready(timeout=60)` inside `restart()`. It is **intermittent** (1/8 to 5/8 on identical code), it passes in isolation, and it is the strongest open technical item because `ipython` is the model's **only** execution surface. Add the broker log line naming the replacement kernel's pid and bound ports so the next failure is attributable from the log rather than by elimination, then run **≥20 trials per arm**.
+2. **G-SEAM-44 / reachability** — 8 unreachable non-test modules in `dsh-daily-work`, of which `kernel-lifecycle.ts` makes three PASSing RECOVERY cases statements about a mechanism. Cheap to run the import-graph scan as a standing gate; no budget needed.
+3. **G-SEAM-19 / host-wide capacity** — the authority's `CAP-01` requires "任何时刻不超过30". The ledger is host-wide; DSH's pool is not. This is the core capacity claim.
+4. **G-SEAM-18 / depth ceiling** — `maxDepth: 99` lifts the cap and an omitted value equals 99 on the workflow/PTC path.
+5. **Decide `CMP-04` and `IPY-13`** — both need a deliberate spec revision, which invalidates verdicts at the current identity. That is the delivery owner's call, not a measurement.
+6. **Decide the identity regime** — adopt the V5 §14 contract identity in the gate, or record why the superseded one stays. The 315 problems clear the moment that decision is made and the evidence is re-measured under whichever regime is chosen.
+7. **Fix the two stale records** — `compatibility.lock.json` → `promotion.decision_reason` names superseded identities and pairs `spec_path` with the wrong digest (§2.1); `dep-gates` DEP-02 hardcodes the audit package's old path (§10.1b).
+8. **`SEC-01`/`SEC-03`** — either provision the Linux execution world or record them as non-claims, as the v1 spec already did for five authority cases it marks `NOT_APPLICABLE` while the authority provides no such status.

@@ -1,0 +1,278 @@
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.8 [39m[90mD:/DSH/work/wt-integrate/packages/dsh-ipython[39m
+
+ [31m❯[39m src/p9-late-notice.test.ts [2m([22m[2m12 tests[22m[2m | [22m[31m1 failed[39m[2m)[22m[33m 140930[2mms[22m[39m
+     [32m✓[39m classifyOrigin reports a sentinel or empty origin as undecidable, and a cell id as known-late[32m 9[2mms[22m[39m
+     [32m✓[39m a record carries sessionId, epoch, origin, class, stream and a timestamp[32m 3[2mms[22m[39m
+     [32m✓[39m draining is destructive, so one write is never delivered twice[32m 3[2mms[22m[39m
+     [32m✓[39m two queues with different Session ids share nothing[32m 3[2mms[22m[39m
+     [32m✓[39m a flood is BOUNDED: overflow spills, and past the spill it is counted and dropped[32m 10[2mms[22m[39m
+     [33m[2m✓[22m[39m A starts a thread, A settles, B runs, the thread prints: B excludes it and a later cell carries the notice [33m 11052[2mms[22m[39m
+     [33m[2m✓[22m[39m a raw _thread origin is reported UNDECIDABLE, and no cell is named [33m 10730[2mms[22m[39m
+     [33m[2m✓[22m[39m a late FLOOD is bounded and spilled through the real product path [33m 15481[2mms[22m[39m
+     [33m[2m✓[22m[39m a background print does NOT wake the model: the write is held, and nothing is delivered until a cell runs [33m 8706[2mms[22m[39m
+     [33m[2m✓[22m[39m KNOWN LIMITATION, measured: a policy-BLOCKED call discards the notice, at-most-once [33m 14798[2mms[22m[39m
+     [33m[2m✓[22m[39m notices are SESSION-scoped: another Session cannot drain them [33m 9608[2mms[22m[39m
+[31m     [31m×[31m the record carries the kernel EPOCH, and a restart cannot deliver across generations[39m[33m 70524[2mms[22m[39m
+[90mstdout[2m | src/faults.test.ts[2m > [22m[2mIPY-07: restart replaces the kernel and preserves its working directory[2m > [22m[2mrestart advances the epoch, replaces the process, loses the namespace, and keeps the cwd
+[22m[39m[T6-MEASURED] IPY-07-restart {"epochBefore":1,"epochAfter":2,"pidBefore":15868,"pidAfter":40324,"alive":true,"kernelCwd":"C:\\Users\\hzq00\\AppData\\Local\\Temp\\t6-restart-project-zeT3Kn","kernelCwdEnforced":true,"sessionCwd":"C:\\Users\\hzq00\\AppData\\Local\\Temp\\t6-restart-project-zeT3Kn"}
+
+[90mstdout[2m | src/faults.test.ts[2m > [22m[2mIPY-12: the cap bounds the cell projection, and a direct fd-1 write is a measured boundary[2m > [22m[2mstdout written through the cell's own fd 1 is NOT capped, and is recorded as such
+[22m[39m[T6-MEASURED] IPY-12-fd1-boundary {"cap":4096,"reportedStdoutTotalBytes":10,"reportedTruncated":false,"reportedSpillPath":null,"kernelOutBytesBefore":0,"kernelOutBytesAfter":5000000,"kernelOutGrowth":5000000,"kernelOutPath":"C:/Users/hzq00/AppData/Local/Temp/dsh-ipython-fault-Wr71Th/kernel.out"}
+
+ [32m✓[39m src/faults.test.ts [2m([22m[2m11 tests[22m[2m)[22m[33m 69459[2mms[22m[39m
+     [33m[2m✓[22m[39m a CPU loop is interrupted, KeyboardInterrupt is reported, and the kernel is reusable [33m 4444[2mms[22m[39m
+     [33m[2m✓[22m[39m an interrupt of an await-suspended cell reports unknown and resets, never a false success [33m 11568[2mms[22m[39m
+     [33m[2m✓[22m[39m hundreds of MB of stdout is capped, reported truncated, and spilled [33m 5953[2mms[22m[39m
+     [33m[2m✓[22m[39m a cell under the cap reports no truncation, so the flag is not always-on [33m 2548[2mms[22m[39m
+     [33m[2m✓[22m[39m a giant display payload is bounded too, not just stdout [33m 2879[2mms[22m[39m
+     [33m[2m✓[22m[39m killing the kernel reports a NEW epoch and a lost-state notice [33m 7227[2mms[22m[39m
+     [33m[2m✓[22m[39m after the death is reported, the replacement kernel is usable and empty [33m 6404[2mms[22m[39m
+     [33m[2m✓[22m[39m a timeout reports unknown with a NEW epoch and a replaced kernel, never a false success [33m 11062[2mms[22m[39m
+     [33m[2m✓[22m[39m the replacement kernel after a timeout is genuinely usable [33m 9316[2mms[22m[39m
+     [33m[2m✓[22m[39m restart advances the epoch, replaces the process, loses the namespace, and keeps the cwd [33m 4894[2mms[22m[39m
+     [33m[2m✓[22m[39m stdout written through the cell's own fd 1 is NOT capped, and is recorded as such [33m 3162[2mms[22m[39m
+[90mstdout[2m | src/s5-ipy13.test.ts[2m > [22m[2mIPY-13: late output is classified separately and never rides another cell[2m > [22m[2mthe straddling write is undecidable, and ordinary in-cell output still works
+[22m[39m[S5-MEASURED] IPY-13 {"bootstrapLoaded":true,"straddlerInCellB":false,"straddlerInCellA":false,"lateCount":1,"lateText":"IPY13-STRADDLER-WRITE","lateCellIds":["0d8f3cab-5437f0b11a32db6a25568cc8_36584_3"],"cellBStdout":"tick 0\ntick 1\ntick 2\ntick 3\ntick 4\ncellB-settled"}
+
+ [31m❯[39m src/s5-ipy13.test.ts [2m([22m[2m2 tests[22m[2m | [22m[31m1 failed[39m[2m)[22m[33m 68145[2mms[22m[39m
+     [32m✓[39m the sentinel is the SAME string in broker.py and protocol.ts[32m 6[2mms[22m[39m
+[31m     [31m×[31m the straddling write is undecidable, and ordinary in-cell output still works[39m[33m 68138[2mms[22m[39m
+[90mstdout[2m | src/lifecycle.test.ts[2m > [22m[2mIPY-14: host-side loss is reconciled, and crash orphans are observed[2m > [22m[2ma broker killed out from under the host is reported, and its kernel is not left stranded
+[22m[39m[T6-MEASURED] IPY-14-crash-orphan {"brokerPid":45548,"kernelPid":44476,"unexpectedExitReported":"broker exited with code 1 signal null","kernelSurvivedBroker":false,"kernelAliveAfterBrokerKilled":false}
+
+[90mstdout[2m | src/lifecycle.test.ts[2m > [22m[2mIPY-15: the kernel working directory is the Session's project root[2m > [22m[2mos.getcwd() inside the kernel is the Session header cwd, per Session
+[22m[39m[T6-MEASURED] IPY-15-kernel-cwd {"kernelCwdReportedByCell":"c:/users/hzq00/appdata/local/temp/t6-project-a-ayecfe","sessionCwdRequested":"c:/users/hzq00/appdata/local/temp/t6-project-a-ayecfe","secondSessionCwd":"c:/users/hzq00/appdata/local/temp/t6-project-b-8al8q0","secondSessionRequested":"c:/users/hzq00/appdata/local/temp/t6-project-b-8al8q0"}
+
+[90mstdout[2m | src/lifecycle.test.ts[2m > [22m[2mIPY-15: the kernel working directory is the Session's project root[2m > [22m[2mthe kernel cwd and the scratch dir are SEPARATE, and each holds what it should
+[22m[39m[T6-MEASURED] IPY-15-cwd-vs-scratch {"kernelOsGetcwd":"c:/users/hzq00/appdata/local/temp/t6-cwd-scratch-jpluer","kernelEnvKernelCwd":"c:/users/hzq00/appdata/local/temp/t6-cwd-scratch-jpluer","kernelEnvKernelDir":"c:/users/hzq00/appdata/local/temp/dsh-ipython-lifecycle-pylubr/3c1e8a27294b7cfc8e9eef31068b36f2/0","kernelEnvSpillDir":"c:/users/hzq00/appdata/local/temp/dsh-ipython-lifecycle-pylubr/3c1e8a27294b7cfc8e9eef31068b36f2/0","sessionProjectRoot":"c:/users/hzq00/appdata/local/temp/t6-cwd-scratch-jpluer","hostScratchDir":"c:/users/hzq00/appdata/local/temp/dsh-ipython-lifecycle-pylubr/3c1e8a27294b7cfc8e9eef31068b36f2/0","cwdEqualsSessionRoot":true,"dirEqualsScratch":true,"spillEqualsScratch":true,"scratchDiffersFromCwd":true}
+
+[90mstdout[2m | src/lifecycle.test.ts[2m > [22m[2mIPY-10: the model cannot own kernel lifecycle[2m > [22m[2mno lifecycle surface is reachable from inside a cell, and the cap/timeout are not cell state
+[22m[39m[T6-MEASURED] IPY-10-lifecycle-surface {"builtin_lifecycle_names":["__IPYTHON__","get_ipython"],"has_ctx":false,"has_kernel_service":false,"has_ipython_service":false,"lifecycle_callables":[],"control_env":"pipe","cap_or_timeout_symbols":[]}
+
+ [32m✓[39m src/lifecycle.test.ts [2m([22m[2m15 tests[22m[2m)[22m[33m 101897[2mms[22m[39m
+     [33m[2m✓[22m[39m two Agent objects on one Session reach the same kernel PROCESS, and two Sessions do not [33m 10069[2mms[22m[39m
+     [33m[2m✓[22m[39m ending an activation leaves the kernel alive, unchanged, and still bound to the Session [33m 7548[2mms[22m[39m
+     [33m[2m✓[22m[39m evict is the explicit way to end a kernel, and it is host-only [33m 5636[2mms[22m[39m
+     [33m[2m✓[22m[39m stdout order and display order are each preserved, and they are separate sequences [33m 2637[2mms[22m[39m
+     [33m[2m✓[22m[39m stderr is its own ordered sequence, separate from stdout [33m 2464[2mms[22m[39m
+     [33m[2m✓[22m[39m a cell that kills its own kernel is not re-run in the replacement [33m 6760[2mms[22m[39m
+     [33m[2m✓[22m[39m the classifier has teeth: it reports nothing when nothing of ours runs, and finds a started kernel [33m 13231[2mms[22m[39m
+     [33m[2m✓[22m[39m the broker runs under the subprocess-local runner, not a bare spawn [33m 12867[2mms[22m[39m
+     [33m[2m✓[22m[39m a broker killed out from under the host is reported, and its kernel is not left stranded [33m 10355[2mms[22m[39m
+     [33m[2m✓[22m[39m os.getcwd() inside the kernel is the Session header cwd, per Session [33m 5636[2mms[22m[39m
+     [33m[2m✓[22m[39m a Session with no declared cwd falls back to the host root, never to an arbitrary directory [33m 3040[2mms[22m[39m
+     [33m[2m✓[22m[39m the kernel cwd and the scratch dir are SEPARATE, and each holds what it should [33m 2984[2mms[22m[39m
+     [33m[2m✓[22m[39m the scratch dir is created for a Session, and its spill/log files are bounded by the cap [33m 5057[2mms[22m[39m
+     [33m[2m✓[22m[39m no lifecycle surface is reachable from inside a cell, and the cap/timeout are not cell state [33m 2650[2mms[22m[39m
+     [33m[2m✓[22m[39m a cell that shuts down its own kernel is reported as a NEW generation with the loss stated [33m 10962[2mms[22m[39m
+ [32m✓[39m src/requirements.test.ts [2m([22m[2m19 tests[22m[2m)[22m[33m 55349[2mms[22m[39m
+     [33m[2m✓[22m[39m get_ipython() is a ZMQInteractiveShell and a magic executes [33m 3162[2mms[22m[39m
+     [33m[2m✓[22m[39m a second magic that inspects the shell state also runs [33m 2668[2mms[22m[39m
+     [33m[2m✓[22m[39m the connection file carries curve keys and the plaintext warning is absent [33m 2556[2mms[22m[39m
+     [33m[2m✓[22m[39m IPC is not available on this platform, and the start path does not pretend otherwise [33m 2810[2mms[22m[39m
+     [33m[2m✓[22m[39m a DataFrame and a function built in cell 1 are usable in cell 2 [33m 3387[2mms[22m[39m
+     [33m[2m✓[22m[39m a mutation in cell 2 is visible in cell 3, so the object is genuinely shared [33m 3260[2mms[22m[39m
+     [33m[2m✓[22m[39m a bare await at cell top level returns a value [33m 2879[2mms[22m[39m
+     [33m[2m✓[22m[39m await works on a coroutine defined and called in the same cell [33m 2862[2mms[22m[39m
+     [33m[2m✓[22m[39m a coroutine created in one cell can be awaited in the next [33m 2672[2mms[22m[39m
+     [33m[2m✓[22m[39m an assignment before a raise survives, and the error is reported clearly [33m 2906[2mms[22m[39m
+     [33m[2m✓[22m[39m an assignment made BEFORE the failing statement survives even when a later one does not [33m 2962[2mms[22m[39m
+     [33m[2m✓[22m[39m input() fails explainably instead of hanging [33m 3349[2mms[22m[39m
+     [33m[2m✓[22m[39m getpass fails the same way, and the kernel is still usable afterwards [33m 3029[2mms[22m[39m
+     [33m[2m✓[22m[39m a foreign shell frame during a cell does not end it [33m 4439[2mms[22m[39m
+     [33m[2m✓[22m[39m a stray reply left by wait_for_ready does not satisfy the first cell [33m 2591[2mms[22m[39m
+     [33m[2m✓[22m[39m output written after the cell went idle is classified late, not folded into the cell [33m 4982[2mms[22m[39m
+     [33m[2m✓[22m[39m output stamped with the live cell id but arriving after its idle is still classified late [33m 4772[2mms[22m[39m
+[90mstdout[2m | src/v3-spec-gates.test.ts[2m > [22m[2mIPY-01: a real IPython shell, not a CPython imitation[2m > [22m[2mget_ipython() and a magic both work IN ONE CELL through the service
+[22m[39m[V3-MEASURED] IPY-01 {"outcome":"ok","shellModule":"ipykernel.zmqshell","shellClass":"ZMQInteractiveShell","isZmqShell":"True","magicOutputContainsMarker":true,"kernelImplementation":"ipython","kernelImplementationVersion":"9.16.1","languageName":"python","languageVersion":"3.14.3","protocolVersion":"5.3"}
+
+[90mstdout[2m | src/v3-spec-gates.test.ts[2m > [22m[2mIPY-02: the namespace persists across cells[2m > [22m[2mcell 2 uses a DataFrame, a function and an import it does NOT define
+[22m[39m[V3-MEASURED] IPY-02 {"cellOneSourceDefines":["import json as persisted_json","import pandas as pd","persisted_frame = pd.DataFrame(...)","def persisted_fn"],"cellTwoSourceContainsDefinitions":false,"cellTwoStdout":"CELL2_OK 12 200 {\"a\": 1}","sameEpoch":true,"epoch":1}
+
+[90mstdout[2m | src/v3-spec-gates.test.ts[2m > [22m[2mIPY-03: top-level await works with no wrapper[2m > [22m[2man asyncio task and a native tool call both settle at top level, unwrapped
+[22m[39m[V3-MEASURED] IPY-03 {"outcome":"ok","asyncioValue":42,"nativeValue":{"marker":"NATIVE-SETTLED","tag":"from-the-cell"},"sourceHasAsyncDef":false,"sourceHasWrapper":false,"cellId":"v3-cell-1","projectRoot":"C:\\Users\\hzq00\\AppData\\Local\\Temp\\dsh-ipython-v3-DyjgHG"}
+
+[90mstdout[2m | src/v3-spec-gates.test.ts[2m > [22m[2mIPY-04: an exception leaves partial state and does not claim rollback[2m > [22m[2mthe assignment survives, the traceback is present, and the MODEL TEXT claims no rollback
+[22m[39m[V3-MEASURED] IPY-04 {"outcome":"error","ename":"ValueError","tracebackHasFailingLine":true,"survivorReadBack":"ipy04_survivor is still assigned","modelTextOutcome":"error","modelTextMentionsRollback":false}
+
+[90mstdout[2m | src/v3-spec-gates.test.ts[2m > [22m[2mIPY-05: stdin is disabled and fails fast[2m > [22m[2minput() and getpass() each fail promptly and do NOT hold the execution slot
+[22m[39m[V3-MEASURED] IPY-05 {"probes":[{"label":"input","outcome":"error","ename":"StdinNotImplementedError","elapsedMs":475,"busyAfter":false},{"label":"getpass","outcome":"error","ename":"StdinNotImplementedError","elapsedMs":34,"busyAfter":false}],"cellTimeoutMs":30000,"note":"each cell settled well inside the budget, and the host was not busy afterwards"}
+
+[90mstdout[2m | src/v3-spec-gates.test.ts[2m > [22m[2mIPY-06: only the matching reply and idle settle a cell[2m > [22m[2mforeign frames are ignored AND COUNTED, and a restart mid-sequence is a new epoch
+[22m[39m[V3-MEASURED] IPY-06 {"outcome":"ok","baselineForeignFramesControlArm":0,"foreignFramesReportedWithInjection":0,"injectedCorrelatedRequests":3,"injectedRequestsWereCorrelatedNotForeign":true,"cellEpoch":1,"lastLinePresent":true}
+
+[90mstdout[2m | src/v3-spec-gates.test.ts[2m > [22m[2mIPY-11: the kernel cwd is the project root[2m > [22m[2ma real project root is reported verbatim and a relative path resolves inside it
+[22m[39m[V3-MEASURED] IPY-11 {"cwdReportedByCell":"D:\\DSH\\work\\wt-integrate","cwdNormalised":"d:/dsh/work/wt-integrate","projectRootRequested":"D:\\DSH\\work\\wt-integrate","projectRootNormalised":"d:/dsh/work/wt-integrate","cwdEqualsProjectRoot":true,"statusKernelCwd":"D:\\DSH\\work\\wt-integrate","statusKernelCwdEnforced":true,"relativePathResolvedTo":"D:\\DSH\\work\\wt-integrate\\packages","relativeResolvesInsideRoot":true,"packagesDirVisibleFromCwd":true,"isTempDir":false}
+
+[90mstdout[2m | src/v3-spec-gates.test.ts[2m > [22m[2mIPY-12: output is bounded and the loss is stated[2m > [22m[2mthe model text says TRUNCATED, names the true total and the spill path, and the cap is recorded
+[22m[39m[V3-MEASURED] IPY-12 {"capBytesInForce":8192,"reportedTotalBytes":3276818,"reportedTruncated":true,"spillPath":"C:/Users/hzq00/AppData/Local/Temp/dsh-ipython-v3-JQYWzM/ipython-spill-10520-1789921581974.bin","spillSizeBytes":3276818,"modelTextSaysTruncated":true,"modelTextNamesTrueTotal":true,"modelTextNamesSpillPath":true,"modelTextSaysNotComplete":true}
+
+[90mstdout[2m | src/v3-spec-gates.test.ts[2m > [22m[2mIPY-13: late output is classified separately and never rides another cell[2m > [22m[2mCLAUSE 1 PASSES: a post-return write is late/unattributed and never rides a later cell
+[22m[39m[V3-MEASURED] IPY-13-clause1 {"lateCount":1,"lateText":"IPY13-LATE-AFTER-RETURN","lateCellId":"6511e407-c4000c69fe611b77110f1b5b_18180_2","lateEpoch":1,"firstCellContainsLateText":false,"secondCellContainsLateText":false}
+
+[90mstdout[2m | src/v3-spec-gates.test.ts[2m > [22m[2mIPY-13: late output is classified separately and never rides another cell[2m > [22m[2mCLAUSE 2: a write DURING a later cell is undecidable, not attributed
+[22m[39m[V3-MEASURED] IPY-13-clause2 {"specRequires":"reported as undecidable rather than attributed","measuredAttributedToLaterCell":false,"measuredLateCount":1,"measuredLateText":"IPY13-DURING-LATER-CELL","thirdCellStdout":"tick 0\ntick 1\ntick 2\ntick 3\ncell-three-settled","mechanism":"ipykernel iostream resolves the parent from a contextvar with a process-wide global fallback; a threading.Thread has an empty context, so the kernel stamps the LATER cell id. The broker-side bootstrap now carries the originating cell header into cell-started threads and sentinels the rest.","verdict":"clause_met"}
+
+[90mstdout[2m | src/v3-spec-gates.test.ts[2m > [22m[2mIPY-14: kernel death is visible and nothing is replayed[2m > [22m[2mthe model text reports a NEW epoch, the LOST state, no replay, and the Session survives
+[22m[39m[V3-MEASURED] IPY-14 {"epochBefore":1,"epochAfter":2,"pidBefore":42608,"pidAfter":42164,"pidReplaced":true,"generationReported":true,"generationReason":"the kernel process is gone; see C:\\Users\\hzq00\\AppData\\Local\\Temp\\dsh-ipython-v3-toM52a\\c2be2e281ba0928732c80a8e056adce3\\0\\kernel.err","volatileStateLost":true,"reportedAsThrow":false,"modelTextMentionsNewEpoch":true,"modelTextSaysLOST":true,"modelTextSaysNothingReplayed":true,"sessionStillRegistered":true,"survivorReadBack":"ipy14_precious present: False"}
+
+[90mstdout[2m | src/v3-spec-gates.test.ts[2m > [22m[2mIPY-15: the kernel transport is authenticated and frames are bounded[2m > [22m[2mthe transport is curve-encrypted, and an over-limit frame is LOST with a count
+[22m[39m[V3-MEASURED] IPY-15 {"transport":"tcp","curveKeysPresent":true,"plaintextWarningSeen":false,"connectionFile":"C:\\Users\\hzq00\\AppData\\Local\\Temp\\tmp7pc0icxe.json","connectionFileHasCurvePublic":true,"connectionFileHasCurveSecret":true,"connectionFileModeOctal":"0o666","connectionFileModeIsPlatformArtifact":true,"connectionFileKeyPresent":true,"connectionFileKeyLengthChars":33,"signatureScheme":"hmac-sha256","maxFrameBytes":4194304,"overLimitRejectedOnEncode":true,"overLimitRejectedOnDecode":true,"decodeFailureMessage":"declared frame length 4194305 exceeds the 4194304-byte limit","normalCellDroppedFrames":0,"noteDroppedFrameDefinitionCount":1,"rendererHasUnreachableDropBranch":true,"brokerDefinesFrameLimitError":true,"brokerEmitsStructuredRefusal":true,"structuredEventDecodes":true,"malformedRefusalRejected":true}
+
+ [32m✓[39m src/v3-spec-gates.test.ts [2m([22m[2m12 tests[22m[2m)[22m[33m 50968[2mms[22m[39m
+     [33m[2m✓[22m[39m get_ipython() and a magic both work IN ONE CELL through the service [33m 2806[2mms[22m[39m
+     [33m[2m✓[22m[39m cell 2 uses a DataFrame, a function and an import it does NOT define [33m 3612[2mms[22m[39m
+     [33m[2m✓[22m[39m an asyncio task and a native tool call both settle at top level, unwrapped [33m 3533[2mms[22m[39m
+     [33m[2m✓[22m[39m the assignment survives, the traceback is present, and the MODEL TEXT claims no rollback [33m 3612[2mms[22m[39m
+     [33m[2m✓[22m[39m input() and getpass() each fail promptly and do NOT hold the execution slot [33m 3071[2mms[22m[39m
+     [33m[2m✓[22m[39m foreign frames are ignored AND COUNTED, and a restart mid-sequence is a new epoch [33m 7673[2mms[22m[39m
+     [33m[2m✓[22m[39m a real project root is reported verbatim and a relative path resolves inside it [33m 3141[2mms[22m[39m
+     [33m[2m✓[22m[39m the model text says TRUNCATED, names the true total and the spill path, and the cap is recorded [33m 2948[2mms[22m[39m
+     [33m[2m✓[22m[39m CLAUSE 1 PASSES: a post-return write is late/unattributed and never rides a later cell [33m 4868[2mms[22m[39m
+     [33m[2m✓[22m[39m CLAUSE 2: a write DURING a later cell is undecidable, not attributed [33m 5356[2mms[22m[39m
+     [33m[2m✓[22m[39m the model text reports a NEW epoch, the LOST state, no replay, and the Session survives [33m 7475[2mms[22m[39m
+     [33m[2m✓[22m[39m the transport is curve-encrypted, and an over-limit frame is LOST with a count [33m 2869[2mms[22m[39m
+ [32m✓[39m src/r5-product-bridge.test.ts [2m([22m[2m30 tests[22m[2m)[22m[33m 47554[2mms[22m[39m
+     [33m[2m✓[22m[39m model -> ipython -> dsh.call -> ToolRuntime -> Python value, on the product path [33m 3060[2mms[22m[39m
+     [33m[2m✓[22m[39m three exact calls produce exactly three ToolRuntime dispatches in one outer model turn [33m 2993[2mms[22m[39m
+     [33m[2m✓[22m[39m concurrent Python submission SERIALIZES: at most one exact call is ever in the registry [33m 3988[2mms[22m[39m
+     [33m[2m✓[22m[39m a completed call carries `settled`, and the durable ledger row is STARTED then SETTLED [33m 2927[2mms[22m[39m
+     [33m[2m✓[22m[39m a cell returning with calls in flight records `cancelled` and `abandoned-unstarted` [33m 3892[2mms[22m[39m
+     [33m[2m✓[22m[39m a call still queued when the cell returns is never dispatched, whatever its disposition [33m 3109[2mms[22m[39m
+     [33m[2m✓[22m[39m additionalContexts reach the OUTER ipython execution, in subcall order [33m 2906[2mms[22m[39m
+     [33m[2m✓[22m[39m concludesTurn reaches the outer execution [33m 3131[2mms[22m[39m
+     [33m[2m✓[22m[39m an oversized exact result arrives as a REFERENCE with paging helpers, not truncated [33m 2735[2mms[22m[39m
+     [33m[2m✓[22m[39m the same request id with the same args joins the first result; with changed args it CONFLICTS [33m 3082[2mms[22m[39m
+     [33m[2m✓[22m[39m an expired lease gets a stable CELL_LEASE_EXPIRED from the live bridge [33m 3041[2mms[22m[39m
+     [33m[2m✓[22m[39m a real cell cannot forge authority: a frame naming agent is REFUSED, and kwargs are only arguments [33m 2879[2mms[22m[39m
+     [33m[2m✓[22m[39m CANCELLATION: aborting the outer ipython call refuses further calls and aborts the in-flight one [33m 3356[2mms[22m[39m
+     [33m[2m✓[22m[39m STRUCTURED ERROR PARITY: a tool failure reaches sync and async clients as the same code and message [33m 3120[2mms[22m[39m
+     [33m[2m✓[22m[39m NESTED IMAGE SEMANTICS: a successful image-bearing result is DEFERRED, never silently dropped [33m 3021[2mms[22m[39m
+ [32m✓[39m src/p8-bind.test.ts [2m([22m[2m12 tests[22m[2m)[22m[33m 36444[2mms[22m[39m
+     [33m[2m✓[22m[39m the recorded source IS the model's own bytes, with no prefix and no shift [33m 3499[2mms[22m[39m
+     [33m[2m✓[22m[39m the hidden bind does NOT enter the input history: the user cell is the last entry [33m 3010[2mms[22m[39m
+     [33m[2m✓[22m[39m a traceback reports the USER's line number, not a shifted one [33m 3042[2mms[22m[39m
+     [33m[2m✓[22m[39m a SyntaxError reports the USER's line number, not a shifted one [33m 2828[2mms[22m[39m
+     [33m[2m✓[22m[39m top-level await and `%who` still work, and neither rewrites the source [33m 3028[2mms[22m[39m
+     [33m[2m✓[22m[39m a real cell magic runs, is the first line of its own request, and has a LIVE dsh [33m 2808[2mms[22m[39m
+     [33m[2m✓[22m[39m the lease CHANGES every cell, and a STALE lease presented to the host is refused [33m 3115[2mms[22m[39m
+     [33m[2m✓[22m[39m when the bind request fails, the user's code does NOT run and nothing it contains takes effect [33m 3430[2mms[22m[39m
+     [33m[2m✓[22m[39m a failed bind still closes its lease, so no capability outlives the refusal [33m 3302[2mms[22m[39m
+     [33m[2m✓[22m[39m an internal cell with no authority cannot reuse a previous dsh capability [33m 2801[2mms[22m[39m
+     [33m[2m✓[22m[39m the revoke leaves the rest of the namespace intact, so it is a revoke and not a reset [33m 2873[2mms[22m[39m
+     [33m[2m✓[22m[39m a BRIDGED cell after an authority-less one gets a fresh live capability [33m 2707[2mms[22m[39m
+ [32m✓[39m src/bridge-seam.test.ts [2m([22m[2m17 tests[22m[2m)[22m[33m 36393[2mms[22m[39m
+     [33m[2m✓[22m[39m a cell calling dsh.call lands in the real ToolRuntime pipeline, and the value comes back [33m 2759[2mms[22m[39m
+     [33m[2m✓[22m[39m the bridge is the ONLY caller: the same cell with no lease gets no tool [33m 3029[2mms[22m[39m
+     [33m[2m✓[22m[39m a mounted terminalController is never touched while a cell calls a tool [33m 3056[2mms[22m[39m
+     [33m[2m✓[22m[39m N nested calls produce N dispatches and N results, with no turn taken by the bridge [33m 3031[2mms[22m[39m
+     [33m[2m✓[22m[39m a tool that throws reaches the cell as a structured BridgeError, not a crash [33m 2829[2mms[22m[39m
+     [33m[2m✓[22m[39m an UNKNOWN tool reaches the cell as UNKNOWN_TOOL [33m 3087[2mms[22m[39m
+     [33m[2m✓[22m[39m a tool DENIED by a monotonic guard reaches the cell as a structured refusal [33m 3358[2mms[22m[39m
+     [33m[2m✓[22m[39m a pre-execute denial that supplies a code keeps it through the bridge [33m 2974[2mms[22m[39m
+     [33m[2m✓[22m[39m a call that TIMES OUT fails in the cell with TIMEOUT, and the kernel stays usable [33m 6552[2mms[22m[39m
+     [33m[2m✓[22m[39m a value too large to inline comes back as an Artifact whose bytes verify [33m 2673[2mms[22m[39m
+     [33m[2m✓[22m[39m the kernel namespace a cell sees carries no terminal handle either [33m 2985[2mms[22m[39m
+ [32m✓[39m src/p13-artifact-plane.test.ts [2m([22m[2m11 tests[22m[2m)[22m[33m 31250[2mms[22m[39m
+     [33m[2m✓[22m[39m P13-1 a SMALL result is still inline, so the artifact door is not vacuous [33m 3137[2mms[22m[39m
+     [33m[2m✓[22m[39m P13-2 with NO retention port the scratch plane is USED and NAMED, not silent [33m 2620[2mms[22m[39m
+     [33m[2m✓[22m[39m P13-3 with a port mounted the reply carries a typed ref and NO host path [33m 3069[2mms[22m[39m
+     [33m[2m✓[22m[39m P13-4 load() on the unified plane is REFUSED, so no filesystem fallback exists [33m 2769[2mms[22m[39m
+     [33m[2m✓[22m[39m P13-5 a plane that retains DIFFERENT bytes is refused, not bound to Python [33m 3311[2mms[22m[39m
+     [33m[2m✓[22m[39m P13-6 a plane that REFUSES is an error, not a fallback to scratch [33m 2800[2mms[22m[39m
+     [33m[2m✓[22m[39m P13-7 paging by reference with NO dsh.data installed names the missing piece [33m 2914[2mms[22m[39m
+     [33m[2m✓[22m[39m P13-9 the serial dsh.call lane is UNCHANGED: two calls, two dispatches, in order [33m 2782[2mms[22m[39m
+     [33m[2m✓[22m[39m P13-10 the DURABLE LEDGER carries a typed ref, never a host path [33m 5275[2mms[22m[39m
+     [33m[2m✓[22m[39m P13-11 the PRODUCTION path binds the plane: KernelService config -> bridge -> ref [33m 2569[2mms[22m[39m
+ [32m✓[39m src/cleanup.test.ts [2m([22m[2m5 tests[22m[2m)[22m[33m 28749[2mms[22m[39m
+     [33m[2m✓[22m[39m the classifier reports nothing of ours when nothing of ours is running [33m 4334[2mms[22m[39m
+     [33m[2m✓[22m[39m a started kernel is attributed to this package, so the classifier has teeth [33m 4840[2mms[22m[39m
+     [33m[2m✓[22m[39m shutdown leaves none of this package's processes running [33m 5620[2mms[22m[39m
+     [33m[2m✓[22m[39m two sequential kernels do not accumulate this package's processes [33m 6583[2mms[22m[39m
+     [33m[2m✓[22m[39m a kernel killed out from under the host is still cleaned up by shutdown [33m 7370[2mms[22m[39m
+ [32m✓[39m src/p10-ledger-durable.test.ts [2m([22m[2m8 tests[22m[2m)[22m[33m 25403[2mms[22m[39m
+     [33m[2m✓[22m[39m refuses when the deployment has NO storage facility and durability was not opted out of [33m 2587[2mms[22m[39m
+     [33m[2m✓[22m[39m refuses when the storage facility is present but the ledger domain cannot open [33m 3013[2mms[22m[39m
+     [33m[2m✓[22m[39m refuses without publishing READY: no kernel, no bridge, and no entry left behind [33m 2784[2mms[22m[39m
+     [33m[2m✓[22m[39m runs a cell with durableLedger: false and reports non-durability rather than claiming it [33m 2853[2mms[22m[39m
+     [33m[2m✓[22m[39m runs a cell on the durable default and reports durability, with no opt-out needed [33m 2715[2mms[22m[39m
+     [33m[2m✓[22m[39m gives a SECOND session in the same process a durable ledger too [33m 5801[2mms[22m[39m
+     [33m[2m✓[22m[39m reports bridgeLedgerDurable: true for a durable kernel [33m 2876[2mms[22m[39m
+     [33m[2m✓[22m[39m reports bridgeLedgerDurable: false for the explicit development configuration [33m 2773[2mms[22m[39m
+ [32m✓[39m src/service.test.ts [2m([22m[2m9 tests[22m[2m)[22m[33m 22427[2mms[22m[39m
+     [33m[2m✓[22m[39m two Sessions get two namespaces, and neither sees the other [33m 5136[2mms[22m[39m
+     [33m[2m✓[22m[39m a NEW Agent object on the SAME Session reaches the SAME kernel [33m 2738[2mms[22m[39m
+     [33m[2m✓[22m[39m a changed execution world is refused rather than served by the old kernel [33m 2970[2mms[22m[39m
+     [33m[2m✓[22m[39m evict removes the kernel and reports whether one existed [33m 3019[2mms[22m[39m
+     [33m[2m✓[22m[39m close shuts down every kernel it owns [33m 5633[2mms[22m[39m
+     [33m[2m✓[22m[39m a cancelled cell is refused before it is sent, not abandoned mid-flight [33m 2911[2mms[22m[39m
+[90mstdout[2m | src/s6-ipy15.test.ts[2m > [22m[2mIPY-15: the transport is authenticated and the connection file is owner-only[2m > [22m[2mthe live kernel reports curve-encrypted tcp, and the connection file ACL grants no other user
+[22m[39m[S6-MEASURED] ipy15-transport {"transport":"tcp","curveKeysPresent":true,"plaintextWarningSeen":false,"transportInFile":"tcp","hasCurvePublic":true,"hasCurveSecret":true,"signatureScheme":"hmac-sha256","keyPresent":true,"keyLengthChars":33}
+
+[90mstdout[2m | src/s6-ipy15.test.ts[2m > [22m[2mIPY-15: the transport is authenticated and the connection file is owner-only[2m > [22m[2mthe live kernel reports curve-encrypted tcp, and the connection file ACL grants no other user
+[22m[39m[S6-MEASURED] ipy15-connection-file {"connectionFile":"C:\\Users\\hzq00\\AppData\\Local\\Temp\\tmp2nhhyoau.json","aclGrantsNoWorldPrincipal":true,"aclMentionsOwner":true,"controlAclDiffersFromConnectionFileAcl":true,"stModeOctal":"0o666","stModeIsPlatformArtifact":true}
+
+[90mstdout[2m | src/s6-ipy15.test.ts[2m > [22m[2mIPY-15: an over-limit frame is refused by name in both directions, and the session survives[2m > [22m[2mthe host refuses to encode it, the decoder refuses to buffer it, and a normal cell still runs
+[22m[39m[S6-MEASURED] ipy15-both-directions {"maxFrameBytes":4194304,"encodeRefused":true,"bytesProducedOnRefusal":0,"decodeRefused":true,"decodeError":"declared frame length 4194305 exceeds the 4194304-byte limit","decodedFrameCount":0,"decoderFailed":true,"recoveryOutcome":"ok","recoveryStdout":"s6-after-over-limit"}
+
+[90mstdout[2m | src/s6-ipy15.test.ts[2m > [22m[2mIPY-15: an over-limit frame is refused by name in both directions, and the session survives[2m > [22m[2ma REFUSED request leaves no pending entry behind (the leak that escaped shutdown)
+[22m[39m[S6-MEASURED] ipy15-refused-request-leak {"unhandledRejectionCount":0,"unhandledRejections":[]}
+
+[90mstdout[2m | src/s6-ipy15.test.ts[2m > [22m[2mIPY-15: an over-limit frame that actually ARRIVES is refused by name, and the broker does not die silently[2m > [22m[2mthe broker names FRAME_TOO_LARGE, tells the host, and the host refuses the next cell promptly
+[22m[39m[S6-MEASURED] ipy15-structured-refusal {"unexpectedExit":"broker exited with code 2 signal null","transportRefusals":[{"code":"FRAME_TOO_LARGE","detail":"1 frame(s) LOST; declared frame length 4195328 exceeds the limit; declared 4195328 bytes, limit 4194304 bytes; nothing was run","limitBytes":4194304,"declaredBytes":4195328}],"controlChannelErrors":["Error: write EOF"]}
+
+[90mstdout[2m | src/s6-ipy15.test.ts[2m > [22m[2mIPY-15: an over-limit frame that actually ARRIVES is refused by name, and the broker does not die silently[2m > [22m[2mthe broker names FRAME_TOO_LARGE, tells the host, and the host refuses the next cell promptly
+[22m[39m[S6-MEASURED] ipy15-after-broker-death {"waitedMs":0,"errorName":"KernelTransportError","errorMessage":"the broker is not running: broker exited with code 2 signal null"}
+
+ [32m✓[39m src/s6-ipy15.test.ts [2m([22m[2m4 tests[22m[2m)[22m[33m 11475[2mms[22m[39m
+     [33m[2m✓[22m[39m the live kernel reports curve-encrypted tcp, and the connection file ACL grants no other user [33m 2628[2mms[22m[39m
+     [33m[2m✓[22m[39m the host refuses to encode it, the decoder refuses to buffer it, and a normal cell still runs [33m 2875[2mms[22m[39m
+     [33m[2m✓[22m[39m a REFUSED request leaves no pending entry behind (the leak that escaped shutdown) [33m 3438[2mms[22m[39m
+     [33m[2m✓[22m[39m the broker names FRAME_TOO_LARGE, tells the host, and the host refuses the next cell promptly [33m 2533[2mms[22m[39m
+ [32m✓[39m src/p11-env-digest.test.ts [2m([22m[2m7 tests[22m[2m)[22m[33m 8143[2mms[22m[39m
+     [33m[2m✓[22m[39m a changed broker.py moves the digest AND makes a live kernel be refused [33m 3513[2mms[22m[39m
+     [33m[2m✓[22m[39m every manifest field is an input to the digest, and the client hash is the real one [33m 632[2mms[22m[39m
+     [33m[2m✓[22m[39m the same environment gives the same digest twice, so a healthy kernel is not refused [33m 388[2mms[22m[39m
+     [33m[2m✓[22m[39m a RESPELLING of the interpreter path does not move the digest [33m 826[2mms[22m[39m
+     [33m[2m✓[22m[39m a probe that HANGS is bounded by the timeout and fails loud, not silently digested [33m 2279[2mms[22m[39m
+ [32m✓[39m src/smoke.test.ts [2m([22m[2m2 tests[22m[2m)[22m[33m 5690[2mms[22m[39m
+     [33m[2m✓[22m[39m starts a kernel with curve keys and no plaintext warning [33m 2846[2mms[22m[39m
+     [33m[2m✓[22m[39m runs one cell and reports ok [33m 2843[2mms[22m[39m
+ [32m✓[39m src/p4-data-routing.test.ts [2m([22m[2m3 tests[22m[2m)[22m[33m 5102[2mms[22m[39m
+     [33m[2m✓[22m[39m serves a data:* call on the data lane, refuses an unknown data:* op as a DATA error, and keeps dsh.call intact [33m 2601[2mms[22m[39m
+     [33m[2m✓[22m[39m a lease with NO data plane refuses data:* with DATA_NO_CAPABILITY and does NOT dispatch it as a tool [33m 2499[2mms[22m[39m
+ [32m✓[39m src/r5-restart-epoch.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 5070[2mms[22m[39m
+     [33m[2m✓[22m[39m the epoch advances, the capability identity rotates, and no lease survives [33m 5069[2mms[22m[39m
+ [32m✓[39m src/bri-waiter.test.ts [2m([22m[2m5 tests[22m[2m)[22m[33m 1520[2mms[22m[39m
+     [33m[2m✓[22m[39m the PRE-FIX client loses the reply -- the control arm, watched failing [33m 539[2mms[22m[39m
+     [33m[2m✓[22m[39m the LIVE client returns the reply (async), and the PRE-FIX client loses it [33m 704[2mms[22m[39m
+ [32m✓[39m src/p3-lease-started.test.ts [2m([22m[2m10 tests[22m[2m)[22m[33m 357[2mms[22m[39m
+ [32m✓[39m src/protocol.test.ts [2m([22m[2m13 tests[22m[2m)[22m[32m 14[2mms[22m[39m
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 2 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m src/p9-late-notice.test.ts[2m > [22mP9 IPY-LATE-VISIBLE: late output is delivered separately, never merged[2m > [22mthe record carries the kernel EPOCH, and a restart cannot deliver across generations
+[41m[1m FAIL [22m[49m src/s5-ipy13.test.ts[2m > [22mIPY-13: late output is classified separately and never rides another cell[2m > [22mthe straddling write is undecidable, and ordinary in-cell output still works
+[31m[1mKernelTransportError[22m: BROKER_FAILURE: RuntimeError: Kernel didn't respond in 60 seconds[39m
+[36m [2m❯[22m KernelHost.onMessage src/kernel.ts:[2m442:22[22m[39m
+    [90m441|[39m     [35mif[39m (message[33m.[39mok) pending[33m.[39m[34mresolve[39m(message[33m.[39mresult)
+    [90m442|[39m     [35melse[39m {
+    [90m443|[39m       // The broker's code is carried structurally, not only inside th…
+    [90m   |[39m [31m^[39m
+    [90m444|[39m       // `FRAME_TOO_LARGE` is a bounded refusal a caller can act on; a…
+    [90m445|[39m       [90m// had to match prose to find it would break on any rewording.[39m
+[90m [2m❯[22m FrameDecoder.onFrame src/kernel.ts:[2m320:23[22m[39m
+[90m [2m❯[22m FrameDecoder.drain src/protocol.ts:[2m137:12[22m[39m
+[90m [2m❯[22m FrameDecoder.push src/protocol.ts:[2m105:12[22m[39m
+[90m [2m❯[22m Socket.<anonymous> src/kernel.ts:[2m323:65[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m2 failed[39m[22m[2m | [22m[1m[32m19 passed[39m[22m[90m (21)[39m
+[2m      Tests [22m [1m[31m2 failed[39m[22m[2m | [22m[1m[32m206 passed[39m[22m[90m (208)[39m
+[2m   Start at [22m 00:18:34
+[2m   Duration [22m 758.46s[2m (transform 697ms, setup 0ms, import 2.66s, tests 752.34s, environment 1ms)[22m
+
+EXIT=1
