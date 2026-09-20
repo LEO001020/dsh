@@ -375,7 +375,7 @@ async function main(): Promise<void> {
     revokeCalls,
     // The target must be gone from the registry after the cell, proving the
     // disposer ran and the revocation is durable rather than per-call.
-    targetAfterTheCell: ctx.tools.get('v4_target' as never) === undefined ? 'UNREGISTERED' : 'STILL-PRESENT',
+    targetAfterTheCell: ctx.tools.get('v4_target') === undefined ? 'UNREGISTERED' : 'STILL-PRESENT',
     // And the refusal code the cell saw for the revoked name.
     refusalCodeSeenByTheCell: 'UNKNOWN_TOOL (see SEQUENCE)',
   }

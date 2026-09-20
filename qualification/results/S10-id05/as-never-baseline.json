@@ -17,9 +17,26 @@
  ],
  "measured_by": "helpers/typecheck.mjs (escapeHatchGate), comments stripped, non-test src only",
  "measured_at": "2026-09-20",
- "non_test_as_never_count": 3,
+ "non_test_as_never_count": 2,
  "count_before_this_slice": 11,
  "count_removed_by_this_slice": 9,
+ "count_removed_after_this_slice": 1,
+ "why_the_count_moved_to_2": [
+  "The third cast was the one THIS FILE ITSELF classified as `REMOVABLE (not a",
+  "mask)` -- `packages/dsh-ipython/src/v4-bridge-probe.ts:378`, the argument to",
+  "`ctx.tools.get(...)`. The classification was measured, not asserted: the",
+  "entry records `revealed_error: none -- measured, removing this cast exits 0`.",
+  "It was therefore removed rather than justified, and the ratchet was lowered to",
+  "match, which is the direction this gate exists to move. The other two entries",
+  "are unchanged: one is a genuine MASK in an unreachable hand-run CLI, one is a",
+  "deliberate minimal stand-in. Neither is a candidate for removal by editing a",
+  "cast, so the baseline is now 2 and the remaining two are the whole story.",
+  "",
+  "MEASURED AFTER THE REMOVAL: `node helpers/typecheck.mjs` -> `2 non-test",
+  "cast(s); baseline allows 2`, `typecheck: PASS -- 2 package(s), complete",
+  "production graph, tests included.` A gate that still allowed 3 would permit the",
+  "hole to widen back to where it was."
+ ],
  "justified": [
   {
    "file": "packages/dsh-daily-work/src/durability-runner.ts",
@@ -42,17 +59,23 @@
   {
    "file": "packages/dsh-ipython/src/v4-bridge-probe.ts",
    "line": 378,
-   "text": "targetAfterTheCell: ctx.tools.get('v4_target' as never) === undefined ? 'UNREGISTERED' : 'STILL-PRESENT',",
-   "verdict": "REMOVABLE (not a mask)",
+   "text": "targetAfterTheCell: ctx.tools.get('v4_target') === undefined ? 'UNREGISTERED' : 'STILL-PRESENT',",
+   "verdict": "REMOVED -- no longer a cast",
    "revealed_error": "none -- measured, removing this cast exits 0",
-   "why_left_in_place": [
-    "Removing it compiles clean, so it is redundant rather than masking. It is not",
-    "removed here because the probe's INTENT is to read a tool name that is",
-    "deliberately outside the typed tool catalog (`v4_target` is registered at",
-    "runtime by the probe), and `ctx.tools.get` is keyed on the known tool-name",
-    "union. The cast documents that the name is intentionally outside the catalog.",
-    "Either form compiles; this one keeps the intent visible. It is counted in the",
-    "baseline so the ratchet accounts for it rather than silently tolerating it."
+   "why_it_was_removed": [
+    "This entry used to read `REMOVABLE (not a mask)` and then keep the cast, on the",
+    "argument that the cast documented an intent: the probe reads a tool name",
+    "deliberately outside the typed tool catalog, because `v4_target` is registered",
+    "at runtime. The argument for KEEPING it does not survive its own measurement.",
+    "A cast that changes nothing -- removing it compiles clean, as this entry's own",
+    "`revealed_error` records -- is not documenting a type fact, it is decorating a",
+    "line. The intent is carried by the probe's prose, which is where a reader looks",
+    "for it, and by the neighbouring comment about the registry.",
+    "",
+    "So it was removed and the ratchet was lowered to 2. The general rule this",
+    "follows: an entry that says REMOVABLE is a TODO, not a justification. A",
+    "baseline that lists a removable cast as `justified` converts a known-clean",
+    "removal into a permanent allowance."
    ],
    "reachability": "NOT REACHABLE from the product: a hand-run probe file, no production importer."
   },
