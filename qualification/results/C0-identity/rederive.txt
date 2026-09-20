@@ -1,0 +1,38 @@
+RECORDED identity : 533c8cb08b2ccd7f94b8e0231ca9ea62918107dc6e8733471d23ca57c8d8a6fb
+RECORDED inputs digest: 533c8cb08b2ccd7f94b8e0231ca9ea62918107dc6e8733471d23ca57c8d8a6fb
+
+=== the four file inputs: recorded vs computed ===
+host_profile_digest: MOVED
+   path     : profiles/daily-candidate/cordis.patch.yml
+   recorded : 0e8e370e06375ad4a289fa36f783232dde4159a69844422d6363b874af7445f2
+   computed : e12edffbbf69d531454f83a242863b7586e65f222f7c2f8c4151bf4918b43114
+agent_preset_digest: MOVED
+   path     : profiles/daily-candidate/presets/daily-standard/agent.cordis.yml
+   recorded : 05f7a029739692db4245efad803e6bbbec7caf309b2ac7bb2dd57b97f764a19c
+   computed : db31885e4688f443c701077fc2e388b05565c3021f747a634e3fe0581a2d2eb0
+acceptance_spec_sha256: SAME
+   path     : qualification/specs/acceptance-spec.json
+   recorded : 2fe95835425eb98eb3bac9eead17985df5bf951669460c8d7a87b8887afb1e0b
+   computed : 2fe95835425eb98eb3bac9eead17985df5bf951669460c8d7a87b8887afb1e0b
+trusted_local_acceptance_spec_sha256: SAME
+   path     : qualification/specs/frozen/acceptance-spec.trusted-local-v1.as-authored.json
+   recorded : e5b6a1d2481f39c52a6012ec6b48a72e4618ff713f1927b6b0d6827a24b10ce7
+   computed : e5b6a1d2481f39c52a6012ec6b48a72e4618ff713f1927b6b0d6827a24b10ce7
+
+=== artifact input (the launcher, hashed from the path the lock names) ===
+launcher_realpath: D:\DSH\src\dsh-src\apps\cli\lib\bin.js
+exists: True
+artifact_sha256 recorded: 69c49c871735dc7ee81ec51f266bbec129f075fd5066e046374f4b13ab02a705
+artifact_sha256 computed: 69c49c871735dc7ee81ec51f266bbec129f075fd5066e046374f4b13ab02a705
+   -> SAME
+
+=== recomputed identity over the corrected inputs ===
+RECOMPUTED identity: 152e5c45c4aef97ba986b917077849173a66585146b67032ec7be64472c39b78
+
+=== which inputs moved, in full ===
+  host_profile_digest
+     recorded: 0e8e370e06375ad4a289fa36f783232dde4159a69844422d6363b874af7445f2
+     computed: e12edffbbf69d531454f83a242863b7586e65f222f7c2f8c4151bf4918b43114
+  agent_preset_digest
+     recorded: 05f7a029739692db4245efad803e6bbbec7caf309b2ac7bb2dd57b97f764a19c
+     computed: db31885e4688f443c701077fc2e388b05565c3021f747a634e3fe0581a2d2eb0
