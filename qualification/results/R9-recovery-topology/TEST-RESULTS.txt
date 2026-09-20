@@ -1,4 +1,4 @@
-=== R9 TEST RESULTS (REVISED after root's falsification) ===
+=== R9 TEST RESULTS (final, after the oracle hardening) ===
 worktree D:\DSH\work\wt-r9   branch wt/r9
 runner: node node_modules/vitest/vitest.mjs run <one file>  (one at a time, per the CPU rule)
 
@@ -15,11 +15,10 @@ lifecycle.test.ts                Tests  7 passed (7)
 wire-faults.test.ts              Tests  8 passed (8)
 production-port.test.ts          Tests  2 passed (2)
 
-=== TYPECHECK / BUILD ===
+=== TYPECHECK ===
 tsc -p tsconfig.json --noEmit       -> exit 0
-tsc -p tsconfig.check.json --noEmit -> exit 0 (the stricter checker the ID-05 gate uses)
+tsc -p tsconfig.check.json --noEmit -> exit 0
 
-=== BOOT (assembled daily profile) ===
-DSH_HOME=D:\DSH\home\r9 node <dsh-src>/apps/cli/lib/bin.js --profile daily --no-open --port 0
--> printed the web URL and ran until the harness timeout killed it; no 'did not activate', no error.
---dump-config -> exit 0; the daily-work-host row activates.
+=== CONTROL FALSIFICATION ===
+See CONTROL-FALSIFICATION.txt: the negative control fails when the loose
+pattern is injected, and passes when the hardened pattern is restored.
