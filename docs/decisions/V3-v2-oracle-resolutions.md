@@ -43,6 +43,21 @@ fact and in the diff as a change detector; it does not become a pass condition.*
 spec and the deployment diverged stays in the history, which is the whole reason v1
 is frozen rather than repaired.
 
+**The measured before/after pair, so v2's number is not taken on trust.** The
+existing evidence already contains the two arms, and they differ by exactly one
+tool:
+
+| Evidence | `toolCountAgentKey` | `pwsh` present |
+|---|---|---|
+| `qualification/results/T4-preset/boot-before.json` | **28** | **true** |
+| `qualification/results/T4-preset/boot-after.json` | **27** | **false** |
+
+So the composition change removed exactly one tool from the model-visible surface,
+and `CMP-13` passes on the same measurement `CMP-04` fails on. **That is the whole
+contradiction in one table**, and it is why the count belongs in evidence rather
+than in an oracle: a future composition change should move the count without
+turning a correct product into a failure.
+
 ---
 
 ## D2 — F7 / `DATA-09` and IPY-15: two different things were conflated
