@@ -285,3 +285,36 @@ The full suite was NOT run: the brief forbids it, and every file touched is abov
   once.
 - **The durable write is proven against the JSON backend only.** A different
   storage backend is untested.
+
+---
+
+## 9. Environment note: the pinned checkout is not perfectly clean (NOT mine)
+
+`node qualification/runners/check-source-plane.mjs` reports:
+
+```
+HEAD:   ddefc45fbc7f8e46dd73185e68295696d1297887
+pinned: ddefc45fbc7f8e46dd73185e68295696d1297887
+[ok  ] HEAD equals the pinned commit
+[FAIL] git status --porcelain reports 1 entry/entries:
+   M packages/deliverables/workspace-changes/src/index.ts
+      class:  EOL_STAT_DIRTY
+      why:    no content delta: worktree blob == HEAD blob (c05787d93187...)
+```
+
+Recorded because ID-06's oracle is that `D:\DSH\src\dsh-src` is unmodified, and a
+reader of my boot should know the precondition's state rather than assume it.
+
+- It is **not mine**: the file's mtime is `2026-09-19 19:19`, a day before this
+  session began, and I never wrote into the pinned checkout.
+- It is **not a content change**: the checker's own classification says the
+  worktree blob equals HEAD's blob, so it is a `core.autocrlf` line-ending
+  artifact. The remedy rewrites the shared index, which the checker itself says
+  must be run deliberately and never from a gate — so I did **not** run it.
+- **It does not affect my measurement**: my boot uses the pinned checkout's
+  launcher plus THIS worktree's two packages through `link:`, and the entry is in
+  an unrelated package (`deliverables/workspace-changes`) with no content delta.
+- **Honest caveat**: my composition-tier boot ran with
+  `DSH_REQUIRE_CLEAN_SOURCE_PLANE` unset, which is the harness default, so the
+  boot did NOT assert source-plane cleanliness. The pinned checkout IS at the
+  pinned commit, which is the part of ID-06 that bears on identity.
