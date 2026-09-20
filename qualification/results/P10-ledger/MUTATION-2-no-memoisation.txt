@@ -1,0 +1,38 @@
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.8 [39m[90mD:/DSH/work/wt-p10/packages/dsh-ipython[39m
+
+ [32m✓[39m src/p10-ledger-durable.test.ts[2m > [22mLEDGER-DURABLE: a requested durable ledger that cannot open refuses READY[2m > [22mrefuses when the deployment has NO storage facility and durability was not opted out of[33m 3092[2mms[22m[39m
+ [32m✓[39m src/p10-ledger-durable.test.ts[2m > [22mLEDGER-DURABLE: a requested durable ledger that cannot open refuses READY[2m > [22mrefuses when the storage facility is present but the ledger domain cannot open[33m 3420[2mms[22m[39m
+ [32m✓[39m src/p10-ledger-durable.test.ts[2m > [22mLEDGER-DURABLE: a requested durable ledger that cannot open refuses READY[2m > [22mrefuses without publishing READY: no kernel, no bridge, and no entry left behind[33m 3211[2mms[22m[39m
+ [32m✓[39m src/p10-ledger-durable.test.ts[2m > [22mLEDGER-DURABLE: an explicit development configuration still works[2m > [22mruns a cell with durableLedger: false and reports non-durability rather than claiming it[33m 3113[2mms[22m[39m
+ [32m✓[39m src/p10-ledger-durable.test.ts[2m > [22mLEDGER-DURABLE: the control arm, without which the refusals prove nothing[2m > [22mruns a cell on the durable default and reports durability, with no opt-out needed[33m 3330[2mms[22m[39m
+ [31m×[39m src/p10-ledger-durable.test.ts[2m > [22mLEDGER-DURABLE: the control arm, without which the refusals prove nothing[2m > [22mgives a SECOND session in the same process a durable ledger too[33m 6503[2mms[22m[39m
+[31m   → the durable bridge ledger was requested but could not be opened, so this kernel is refused: a kernel whose cells cannot record what they did cannot establish whether an external effect may have happened, and the retry rule depends on that record. Cause: domain 'dsh_ipython_bridge_ledger' is already open[39m
+ [32m✓[39m src/p10-ledger-durable.test.ts[2m > [22mLEDGER-DURABLE: the status surface reports the ledger it actually obtained[2m > [22mreports bridgeLedgerDurable: true for a durable kernel[33m 3335[2mms[22m[39m
+ [32m✓[39m src/p10-ledger-durable.test.ts[2m > [22mLEDGER-DURABLE: the status surface reports the ledger it actually obtained[2m > [22mreports bridgeLedgerDurable: false for the explicit development configuration[33m 3336[2mms[22m[39m
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 1 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m src/p10-ledger-durable.test.ts[2m > [22mLEDGER-DURABLE: the control arm, without which the refusals prove nothing[2m > [22mgives a SECOND session in the same process a durable ledger too
+[31m[1mKernelTransportError[22m: the durable bridge ledger was requested but could not be opened, so this kernel is refused: a kernel whose cells cannot record what they did cannot establish whether an external effect may have happened, and the retry rule depends on that record. Cause: domain 'dsh_ipython_bridge_ledger' is already open[39m
+[36m [2m❯[22m src/kernel-plugin.ts:[2m580:17[22m[39m
+    [90m578|[39m         }
+    [90m579|[39m         opened = await openBridgeLedger(facility).catch((error: unknow…
+    [90m580|[39m           [35mthrow[39m [35mnew[39m [33mKernelTransportError[39m(
+    [90m   |[39m                 [31m^[39m
+    [90m581|[39m             'the durable bridge ledger was requested but could not be …
+    [90m582|[39m             + 'a kernel whose cells cannot record what they did cannot…
+[90m [2m❯[22m KernelService.entryFor src/kernel-plugin.ts:[2m579:18[22m[39m
+[90m [2m❯[22m KernelService.runCell src/kernel-plugin.ts:[2m632:19[22m[39m
+[90m [2m❯[22m src/p10-ledger-durable.test.ts:[2m229:5[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[22m[39m
+[31m[1mSerialized Error:[22m[39m [90m{ code: undefined }[39m
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m1 failed[39m[22m[2m | [22m[1m[32m7 passed[39m[22m[90m (8)[39m
+[2m   Start at [22m 21:09:02
+[2m   Duration [22m 30.07s[2m (transform 386ms, setup 0ms, import 526ms, tests 29.34s, environment 0ms)[22m
+
