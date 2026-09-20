@@ -103,6 +103,32 @@ now carried, so the classification half is unchanged.
 | `packages/dsh-ipython/src/kernel.ts` | `onMessage` carries `stream` into the late entry. |
 | `packages/dsh-ipython/src/broker.py` | `_route_iopub` emits the frame's own `stream` name. |
 
+### REGIONS CHANGED — for a mechanical merge of the contended file
+
+`packages/dsh-ipython/src/kernel-plugin.ts` has five writers this round. My edits,
+by post-change line number, all in the `drainUnattributed` / late-output notice
+region or in declarations it needs:
+
+| lines | what | collides with |
+|---|---|---|
+| 92-101 | import block: `DSH_BACKGROUND_ORIGIN` added to the existing `./protocol.ts` import; new `./late-notice.ts` import appended after it | none |
+| 207-217 | `KernelServiceConfig.lateNoticeBounds` — a NEW field at the end of the interface | none |
+| 249-260 | `UnattributedOutput` docstring only (no shape change) | none |
+| 335-344 | `Entry.lateNotices` — a NEW field after `unattributed` | none |
+| 541-556 | `entryFor`: `LateNoticeQueue` construction, immediately after `const unattributed` | **P10** owns the ledger-open call site (`opened = ...`) ~30 lines below; my insert is above it and does not touch it |
+| 562-577 | `entryFor`: the `onLateOutput` callback now feeds both readers | **P8** owns `runCell`/preamble; this is inside `entryFor`, not `runCell` |
+| 593-597 | `entryFor`: `lateNotices,` added to the Entry literal, next to `unattributed` | none |
+| 808-860 | `drainUnattributed` (docstring only) + NEW `drainLateNotices` + NEW `lateNoticeAccount` | none — this is my owned region |
+
+I did **not** edit `runCell`, the preamble, `defaultEnvironmentDigest`, the status
+surface, the ledger-open call site, or `kernelRoot()`. No import was reordered and
+no adjacent code was reformatted.
+
+`packages/dsh-ipython/src/ipython-tool.ts` line ranges (no other writer this
+round): `renderLateNotices` 165-262, `deliverLateNotices` 266-278, the
+`tools/result`-visible description 325-330, and the two `deliverLateNotices` call
+sites at 391 (success arm) and 404 (failure arm).
+
 ## 5. THE THREE BOUNDS, AND WHY THREE
 
 V5 §10 says "bounded". One bound is not enough, and each of these closes a
@@ -141,7 +167,21 @@ is the load-sensitivity the brief documents for restart arms, not a defect this
 slice introduced — but it is recorded rather than smoothed over, because "one
 rerun green ⇒ flaky case is stable" is on V5's never-infer list.
 
-## 7. V5 §10's REQUIRED TESTS — where each one is
+## 7. TEST RESULTS (exact commands)
+
+| command | result |
+|---|---|
+| `node node_modules/vitest/vitest.mjs run src/p9-late-notice.test.ts` | **12 passed / 0 failed** |
+| `node node_modules/vitest/vitest.mjs run src/s5-ipy13.test.ts` | 2 passed / 0 failed (S5's classification gate, unregressed) |
+| `node node_modules/vitest/vitest.mjs run src/v3-spec-gates.test.ts -t IPY-13` | 2 passed / 0 failed (both clauses, unregressed) |
+| `node node_modules/vitest/vitest.mjs run src/requirements.test.ts -t "requirement 9"` | 2 passed / 0 failed |
+| `node node_modules/vitest/vitest.mjs run src/requirements.test.ts -t "requirement 12"` | 2 passed / 0 failed |
+| `node helpers/typecheck.mjs` | **PASS** — both packages, tests included, 0 escape-hatch drift |
+| `node qualification/results/P9-late/reachability-check.mjs` | **exit 0**, `verdict: REACHABLE` |
+
+One test file at a time, per the brief. No full-suite run, no `--pool` override.
+
+## 8. V5 §10's REQUIRED TESTS — where each one is
 
 | required case | arm |
 |---|---|
@@ -152,16 +192,55 @@ rerun green ⇒ flaky case is stable" is on V5's never-infer list.
 | notices Session-scoped | `notices are SESSION-scoped: another Session cannot drain them` |
 | restart/epoch included | `the record carries the kernel EPOCH, and a restart cannot deliver across generations` |
 
-## 8. WHAT IS *NOT* CLAIMED
+Two arms beyond V5's list, added because they are the two ways this slice could
+be wrong in the direction that matters:
+
+| extra arm | why |
+|---|---|
+| `a background print does NOT wake the model` | V5 §10's first rule had no dedicated arm. Counts dispatches from the registry pipeline across a window in which a thread prints and no cell runs: the count does not move, and the write is still held. Separates "does not wake" from "drops". |
+| `KNOWN LIMITATION, measured: a policy-BLOCKED call discards the notice` | the adversarial case found by trying to break this slice's own result. See §9. |
+
+## 9. THE LIMITATION I FOUND BY ATTACKING MY OWN RESULT
+
+`packages/core/tools/src/index.ts:1746-1748` (pinned checkout) states:
+
+> *Context deferred by the tool body survives an accepted result but is DISCARDED
+> when the outer call is blocked; a block exposes only context the blocking
+> decision explicitly supplied.*
+
+So a `tools/post-execute` listener that **blocks** the `ipython` call discards the
+notice this slice defers — and because the drain is destructive, those records are
+gone. Measured, with a control arm proving delivery works with the block off.
+
+**Why it is not fixed by re-queueing.** The tool body is never told its result was
+blocked, so re-queueing cannot distinguish "delivered" from "discarded". It would
+therefore re-deliver notices that WERE seen, making one background write look like
+two — a worse error than a bounded loss, because the model would reason about
+output that never happened twice. The delivery is **at-most-once**, deliberately,
+and this is the boundary of that choice.
+
+## 10. WHAT IS *NOT* CLAIMED
 
 - **No model turn was driven.** A notice reaching `additionalContexts` proves the
   product delivers it to the boundary the agent loop consumes
   (`tool-calls.ts:157` → `agent.ts:491`). It does NOT prove a model read it or
   acted on it. No live provider is authorized this round.
-- **The `daily` profile was not booted.** Every arm mounts the real registry and
-  the real `KernelService` and drives the tool through `ctx.tools.execute`, which
-  is the loop's own call shape — but composition-tier reachability is measured by
-  other slices' runners, not here.
+- **The `daily` profile was not booted.** Reachability is measured at the
+  module-resolution level through the installed profile (`reachability.json`): the
+  profile resolves `dsh-ipython` to this worktree and the BUILT `lib/` carries the
+  delivery path. That is one hop short of an assembled boot, and it is the hop
+  this slice's own oracle needs; composition-tier boot evidence belongs to the
+  runners that own it.
 - **`drainUnattributed` is retained, not deleted.** The delivery path is
   `drainLateNotices`; the old accessor is documented as host-only so the existing
-  classification gates keep measuring what they measured.
+  classification gates keep measuring what they measured. Both gates were re-run
+  and still pass (`s5-ipy13.test.ts` 2/2, `v3-spec-gates.test.ts` IPY-13 2/2).
+- **The notice is not re-delivered across a restart.** The queue is created with
+  the kernel `Entry`, so a new epoch starts empty. That is intentional — a notice
+  about a namespace that no longer exists is not a fact about the current kernel —
+  but a reader should not read the epoch arm as a claim about cross-restart
+  durability.
+- **One flake is recorded, not smoothed over.** See §6.
+- **No live provider, no network, no `dsh.data` path is involved.** This slice
+  touches only the kernel output path.
+
