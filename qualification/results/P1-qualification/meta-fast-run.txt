@@ -1,0 +1,15 @@
+--- META-SUMMARY ---
+  [HELD] summary exit=1 full exit=1 agree=True summary begins VALIDATION=FAIL=True | corrupted ID-01:qualification/results/V1-identity/GATES.md | control(unmutated) prints EXITCODE 1: True
+--- META-DATA-ROUTE ---
+  [HELD] routing branches matching 'data:' in bridge.ts = 0; the gate is RED on this tree, which is the correct verdict and the one V5 fact 7 records (root measured 0). A gate that could not go red here could not go red on a DISCONNECTED branch either. The assembled data e2e that V5 §4.3 names belongs to V5 §5's slice and is NOT_RUN here.
+--- META-GRAPH ---
+  [HELD] baseline exit=1 RED=True (identity_fresh=False recorded=533c8cb08b2ccd7f... recomputed=709a0fcee45b45f4...); named-stale-candidate refused=True (exit=1)
+--- META-IMPORT ---
+  [HELD] static scan sees the hidden import: False (must be False -- a variable-held specifier is invisible to it); runtime resolution succeeds: True (must be True). The premise of META-IMPORT holds: a text scanner cannot see this import and a runtime check can. The runtime-resolved graph CHECK that would use this against the real product is NOT_RUN -- no such runner exists in this tree yet.
+
+META-MUTATIONS: 4/4 arm(s) held in 1.7s
+  [HELD] META-SUMMARY: one evidence/hash problem makes BOTH --summary and the full path exit nonzero
+  [HELD] META-DATA-ROUTE: the data-route reachability gate reports RED when the bridge's data branch is absent
+  [HELD] META-GRAPH: a stale graph/identity artifact makes release-gate's freshness check RED
+  [HELD] META-IMPORT: a variable-held specifier is invisible to a text scan but caught by runtime resolution
+META-MUTATIONS=PASS every arm produced the required observation
