@@ -166,6 +166,24 @@ pending intent into `unknown` tasks that would hold slots and commit credit. Tha
 interaction is what makes the sweep callable from the plugin's `apply`, where no
 root Agent is in hand.
 
+### 2.7 A hole found by reading, not by a failing test
+
+**`authorizeRun` returns EARLY when the root already has a run, and that branch
+did nothing else.** `installDefaultLaunchPort` is called from `createRun` — the
+branch NOT taken — so after a restart, where the run is *found* rather than
+*created*, the process held a run with pending work and **no launch port**. A wake
+in that state correctly refuses and changes nothing, so the pending work could
+never start no matter how many completions arrived.
+
+That is §7.5's recovery clause failing in exactly the case §7.5 exists for. The
+fix installs the port and wakes on that branch, placed there because it is the
+moment the exact live root Agent is in hand for an existing run.
+
+This is the only defect in the slice that no arm was looking for, and it was found
+by reading the recovery path after the implementation was complete — which is an
+argument for reading the paths adjacent to a change rather than only the ones the
+oracle names.
+
 ---
 
 ## 3. MEASUREMENTS
@@ -176,7 +194,10 @@ root Agent is in hand.
 |---|---|---|
 | `src/ready-assignments.test.ts` | 10 | 10 passed |
 | `src/rolling-n.test.ts` | 10 | 10 passed |
-| `src/boot-sweep.test.ts` | 4 | 4 passed |
+| `src/boot-sweep.test.ts` | 5 | 5 passed |
+
+(The boot-sweep arms were 4 before §2.7's fix added the resume arm. Every
+regression suite below was re-run after that fix.)
 
 The rolling arms are the ones that matter, and the claim they establish is
 ORDERING, not timing: **each arm submits once, wakes once, and then never calls
@@ -220,10 +241,11 @@ times slower, and no number is compared against a figure from a paper.
 | **C** `completed` added to `SLOT_HOLDING_STATES` | **the pre-fix tree's behaviour** | 4 of 10 in `rolling-n.test.ts` |
 | **D** observer writes `settling` | my own first draft | 4 of 10 in `rolling-n.test.ts` |
 | **E** listener not mounted | **gap 1, exactly as it was** | 4 of 10 in `rolling-n.test.ts` |
+| **F** port install removed from `authorizeRun`'s early return | the resume hole of §2.7 | 1 of 5 in `boot-sweep.test.ts` |
 
 C and E are the important ones: each restores a state this repository actually
 had, and each turns the rolling arms red. The arms therefore measure the defect,
-not a description of it.
+not a description of it. F is the same argument for the recovery path.
 
 ### 3.3 Regression surface
 
