@@ -57,7 +57,7 @@ import Subprocess from '@deepseek-ai/dsh-subprocess-local'
 import type { Agent } from '@deepseek-ai/dsh-agent'
 import { createHash } from 'node:crypto'
 import { execFile } from 'node:child_process'
-import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises'
+import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -319,6 +319,68 @@ describe('V5 §18 ENV-DIGEST: the environment digest follows a real environment 
     refresh(s)
     s.reconfigure({ pythonExecutable: resolve(root, 'no-such-interpreter.exe'), brokerScript: BROKER, root })
     await expect(s.environmentStatus()).rejects.toBeInstanceOf(KernelTransportError)
+  }, 300_000)
+
+  it('a probe that HANGS is bounded by the timeout and fails loud, not silently digested', async () => {
+    // THE TIMEOUT ARM, which the test above does NOT reach. That one takes the
+    // ERROR path (the process exits non-zero); this one takes the TIMER path (the
+    // process never exits), and the two are different code. A probe with no
+    // timeout would hang activation forever -- the failure mode V5 §11.2's
+    // "bounded" requirement exists for -- and nothing above this line would catch
+    // it.
+    //
+    // THE HANG IS REAL AND THE INTERPRETER IS REAL. CPython imports `sitecustomize`
+    // from `PYTHONPATH` during startup, before it runs `-c` source, so a
+    // `sitecustomize.py` that sleeps hangs the probe with no fake provider, no
+    // stubbed spawn and no substituted argv: the production code path runs exactly
+    // as written, against a real interpreter that simply never finishes. Measured
+    // standalone before this test existed: 2118 ms elapsed against a 2000 ms bound.
+    //
+    // WHY NOT A STUBBED PROVIDER. Two attempts were made first and both are
+    // recorded because each looked reasonable. (1) Passing `process.execPath` as the
+    // interpreter makes node read `-c` as `--check` and exit immediately, so the
+    // test hit the error arm and never reached the timer. (2) Wrapping
+    // `ctx.subprocess` with an object whose `spawn` swaps argv does NOT work here:
+    // `ctx.subprocess` is a Cordis service accessor whose getter is not satisfied by
+    // a property override, so the wrapper was silently ignored (`ctx.subprocess ===
+    // wrapped` read back `false`). A faked provider would also have been the weaker
+    // evidence.
+    const hangDir = join(root, 'hang')
+    await mkdir(hangDir, { recursive: true })
+    await writeFile(join(hangDir, 'sitecustomize.py'), 'import time\ntime.sleep(3600)\n', 'utf8')
+
+    const previousPythonPath = process.env['PYTHONPATH']
+    // The subprocess provider merges the ambient environment onto its scrubbed
+    // base, so this reaches the child. Restored in `finally` so a failure cannot
+    // leak into another test file.
+    process.env['PYTHONPATH'] = hangDir
+    const s = makeService()
+    s.reconfigure({ pythonExecutable: PYTHON, brokerScript: BROKER, root, environmentProbeTimeoutMs: 2_000 })
+
+    const started = Date.now()
+    let error: unknown
+    try {
+      error = await s.environmentStatus().catch((caught: unknown) => caught)
+    } finally {
+      if (previousPythonPath === undefined) delete process.env['PYTHONPATH']
+      else process.env['PYTHONPATH'] = previousPythonPath
+    }
+    const elapsed = Date.now() - started
+
+    expect(error).toBeInstanceOf(KernelTransportError)
+    expect((error as Error).message).toContain('did not finish within')
+    expect((error as Error).message).toContain('2000')
+    // The bound is a real bound: the call RETURNED, and it returned near the
+    // deadline rather than after the sleeping program's own hour.
+    expect(elapsed).toBeLessThan(30_000)
+
+    // AND THE REFUSAL IS NOT CACHED. A host whose filesystem was briefly busy must
+    // be able to try again rather than being pinned into a permanent failure for
+    // the life of the process. Re-resolving now that PYTHONPATH is restored
+    // succeeds, which proves the failed probe did not poison the memo.
+    refresh(s)
+    const recovered = await s.environmentStatus()
+    expect(recovered.digest).toMatch(/^[0-9a-f]{64}$/u)
   }, 300_000)
 })
 
