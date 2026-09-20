@@ -1,0 +1,81 @@
+{
+  "repo": "D:/DSH/work/wt-p7",
+  "checkout": "D:/DSH/src/dsh-src",
+  "packages": [
+    {
+      "package": "dsh-daily-work",
+      "manifest": "D:\\DSH\\work\\wt-p7\\packages\\dsh-daily-work\\package.json",
+      "dsh.client declaration": null,
+      "would be a client row": false,
+      "exports[\"./client\"]": null,
+      "export error": null,
+      "bundle path": null
+    },
+    {
+      "package": "dsh-ipython",
+      "manifest": "D:\\DSH\\work\\wt-p7\\packages\\dsh-ipython\\package.json",
+      "dsh.client declaration": null,
+      "would be a client row": false,
+      "exports[\"./client\"]": null,
+      "export error": null,
+      "bundle path": null
+    }
+  ],
+  "rows": [
+    {
+      "loader row name": "dsh-daily-work/host",
+      "exactPackageSpecifier": null,
+      "scan reaches a manifest": false
+    },
+    {
+      "loader row name": "dsh-daily-work/web-search",
+      "exactPackageSpecifier": null,
+      "scan reaches a manifest": false
+    },
+    {
+      "loader row name": "dsh-daily-work/history",
+      "exactPackageSpecifier": null,
+      "scan reaches a manifest": false
+    },
+    {
+      "loader row name": "dsh-daily-work/tool-protocol-guards",
+      "exactPackageSpecifier": null,
+      "scan reaches a manifest": false
+    },
+    {
+      "loader row name": "dsh-daily-work/writers",
+      "exactPackageSpecifier": null,
+      "scan reaches a manifest": false
+    },
+    {
+      "loader row name": "dsh-daily-work/data-host",
+      "exactPackageSpecifier": null,
+      "scan reaches a manifest": false
+    },
+    {
+      "loader row name": "dsh-daily-work/programmatic-scope",
+      "exactPackageSpecifier": null,
+      "scan reaches a manifest": false
+    },
+    {
+      "loader row name": "dsh-daily-work/no-sandbox-contract",
+      "exactPackageSpecifier": null,
+      "scan reaches a manifest": false
+    }
+  ],
+  "conclusion": {
+    "dsh-daily-work declares dsh.client": false,
+    "dsh-daily-work client bundle exists": false,
+    "every loader row is a subpath": true,
+    "any browser card exists for the daily-work namespace": false
+  },
+  "control": {
+    "1. parseDshClient accepts the declaration": true,
+    "2. clientExportOf returns undefined without exports[\"./client\"]": true,
+    "2. so resolveMeta (index.ts:803-806) throws \"declares dsh.client but exports no ./client bundle\"": true,
+    "2b. clientExportOf throws on a non-string default": true,
+    "3. the declared bundle path exists today": false,
+    "3. lib/ is gitignored, so it is absent in a fresh clone": true,
+    "consequence": "declaring dsh.client without a committed, buildable client bundle would fail the modules fiber the browser surface depends on"
+  }
+}
