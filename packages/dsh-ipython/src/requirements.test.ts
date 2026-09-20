@@ -378,13 +378,13 @@ describe('requirement 7: only the matching reply and idle complete a cell', () =
 // ---------------------------------------------------------------------------
 // 9. Late / unattributed output.
 //
-// THE MEASURED MECHANISM, and why the requirement is not satisfiable in full.
-// `ipykernel/iostream.py:600-607` resolves a stream's parent header from a
-// `contextvars.ContextVar`, falling back to a GLOBAL when the contextvar is
-// unset. A `threading.Thread` starts with an empty context (an asyncio Task would
-// copy one), so a background writer never sees the contextvar and always takes
-// the global -- which holds whichever cell most recently set it. Probe
-// `probe-late-attribution.py` confirms this directly:
+// THE MEASURED MECHANISM. `ipykernel/iostream.py:596-608` resolves a stream's
+// parent header from a `contextvars.ContextVar`, falling back to a GLOBAL when
+// the contextvar is unset, and the setter (`:605-608`) overwrites that global on
+// every request. A `threading.Thread` starts with an empty context (an asyncio
+// Task would copy one), so a background writer never sees the contextvar and
+// always takes the global -- which holds whichever cell most recently set it.
+// Probe `probe-late-attribution.py` confirms this directly:
 //
 //   A. background write with NO next cell  -> parent IS the originating cell
 //   B. background write DURING the next cell -> parent is the NEW cell
@@ -392,10 +392,18 @@ describe('requirement 7: only the matching reply and idle complete a cell', () =
 // So the kernel does NOT preserve the originating cell's id in general. What IS
 // decidable is the pair of facts tested below: (a) output arriving after a cell
 // went idle is classified as late rather than folded into that cell, and (b)
-// output from a still-open cell never leaks into the cell that runs next. The
-// case the kernel makes undecidable -- a background write that lands during a
-// later cell, stamped with that later cell's id -- is recorded as NOT closed in
-// FINDINGS rather than papered over.
+// output from a still-open cell never leaks into the cell that runs next.
+//
+// THE THIRD CASE IS NOW CLOSED, and this comment used to say it was not. The
+// straddling write -- landing DURING a later cell, stamped with that later
+// cell's id -- was recorded as NOT closed here because no frame-level check can
+// recover the distinction. It is closed kernel-side instead: `broker.py`
+// injects an attribution bootstrap (see the block above `DSH_BACKGROUND_ORIGIN`)
+// through the public `KernelManager.start_kernel(extra_arguments=)` ->
+// `--IPKernelApp.exec_files=` path, which carries the cell's parent header into
+// threads the cell starts and sentinels a write with no discoverable origin.
+// `v3-spec-gates.test.ts` CLAUSE 2 and `s5-ipy13.test.ts` are its gates; the
+// arms below are unchanged and still must hold.
 // ---------------------------------------------------------------------------
 
 describe('requirement 9: late output is classified separately, never attached to the next cell', () => {
