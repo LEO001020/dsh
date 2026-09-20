@@ -16,7 +16,8 @@
         "timeoutSeconds": 10
       },
       "driver": {
-        "elapsedMs": 1.5159999966272153,
+        "callerCleanupPops": 0,
+        "elapsedMs": 1.5225999959511682,
         "forcedWaitMs": 0,
         "mode": "sync",
         "ok": true,
@@ -39,15 +40,16 @@
         "timeoutSeconds": 0.4
       },
       "driver": {
-        "elapsedMs": 407.67570000025444,
+        "callerCleanupPops": 1,
+        "elapsedMs": 402.14949999790406,
         "error": {
           "code": "TIMEOUT",
           "message": "TIMEOUT: probe_echo did not answer within 0.4s"
         },
-        "forcedWaitMs": 0.3117000014754012,
+        "forcedWaitMs": 0.302100001135841,
         "mode": "sync",
         "ok": false,
-        "readerLookups": 2,
+        "readerLookups": 1,
         "readerLookupsWithoutWaiter": 1,
         "readerWaitExpired": false,
         "registrationSendCount": 1,
@@ -62,12 +64,13 @@
         "timeoutSeconds": 10
       },
       "driver": {
-        "elapsedMs": 1.699400003417395,
+        "callerCleanupPops": 1,
+        "elapsedMs": 1.2802999990526587,
         "forcedWaitMs": 0,
         "mode": "async",
         "ok": true,
-        "readerLookups": 2,
-        "readerLookupsWithoutWaiter": 1,
+        "readerLookups": 1,
+        "readerLookupsWithoutWaiter": 0,
         "readerWaitExpired": false,
         "registrationSendCount": 0,
         "sends": 1,
@@ -85,15 +88,16 @@
         "timeoutSeconds": 0.4
       },
       "driver": {
-        "elapsedMs": 409.56290000031004,
+        "callerCleanupPops": 1,
+        "elapsedMs": 403.64899999985937,
         "error": {
           "code": "TIMEOUT",
           "message": "TIMEOUT: probe_echo did not answer within 0.4s"
         },
-        "forcedWaitMs": 0.36130000080447644,
+        "forcedWaitMs": 0.29540000105043873,
         "mode": "async",
         "ok": false,
-        "readerLookups": 2,
+        "readerLookups": 1,
         "readerLookupsWithoutWaiter": 1,
         "readerWaitExpired": false,
         "registrationSendCount": 1,
@@ -108,7 +112,8 @@
         "timeoutSeconds": 0.4
       },
       "driver": {
-        "elapsedMs": 0.05130000499775633,
+        "callerCleanupPops": 1,
+        "elapsedMs": 0.037500001781154424,
         "error": {
           "code": "OSError",
           "message": "injected send failure"
@@ -116,7 +121,7 @@
         "forcedWaitMs": 0,
         "mode": "sendfail",
         "ok": false,
-        "readerLookups": 1,
+        "readerLookups": 0,
         "readerLookupsWithoutWaiter": 0,
         "readerWaitExpired": false,
         "registrationSendCount": 0,

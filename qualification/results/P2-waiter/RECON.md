@@ -4,6 +4,11 @@ Commit-early discipline (round-3 `ROUND3-COMMIT-EARLY.md`). This file records
 what was READ, with line numbers, so that a lost model call does not lose the
 reconnaissance.
 
+> **LINE NUMBERS BELOW ARE PRE-FIX** (the state at `3081207`, before the edit).
+> Post-fix, in the same file: `_send` `:1503`, `call_sync` `:1557`,
+> `call_async` `:1566`. `_read_loop` `:1464` and `_ensure_locked` `:1497` were
+> not touched.
+
 ## The defect, re-verified in THIS worktree (not taken on trust)
 
 `packages/dsh-ipython/src/bridge.ts`, embedded Python client
