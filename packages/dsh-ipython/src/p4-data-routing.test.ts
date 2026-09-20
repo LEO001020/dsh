@@ -139,10 +139,14 @@ describe('P4 [real kernel] the bridge routes data:* to a second dispatcher and n
       artifactDirectory: join(root, 'artifacts'),
       dataClientPath: resolve(HERE, '..', '..', 'dsh-daily-work', 'src', 'dsh_data_client.py'),
     })
+    // A DEVELOPMENT HOST by declaration: this file mounts no storage domain, and
+    // since V5 11.1 made the durable ledger REQUIRED, an unset durableLedger
+    // would refuse the kernel before the data lane under test is reached.
     const service = new KernelService(ctx, {
       pythonExecutable: PYTHON,
       brokerScript: BROKER,
       root: join(root, 'kernels'),
+      durableLedger: false,
     })
     cleanup.push(async () => { await b.close() }, async () => { await service.close() }, async () => { await ctx.fiber.dispose() }, async () => { await rm(root, { recursive: true, force: true }) })
 
@@ -300,10 +304,14 @@ describe('P4 [real kernel] the bridge routes data:* to a second dispatcher and n
     }))
 
     const b = new BridgeServer({ artifactDirectory: join(root, 'artifacts-none') })
+    // A DEVELOPMENT HOST by declaration: this file mounts no storage domain, and
+    // since V5 11.1 made the durable ledger REQUIRED, an unset durableLedger
+    // would refuse the kernel before the data lane under test is reached.
     const service = new KernelService(ctx, {
       pythonExecutable: PYTHON,
       brokerScript: BROKER,
       root: join(root, 'kernels'),
+      durableLedger: false,
     })
     cleanup.push(async () => { await b.close() }, async () => { await service.close() }, async () => { await ctx.fiber.dispose() }, async () => { await rm(root, { recursive: true, force: true }) })
 

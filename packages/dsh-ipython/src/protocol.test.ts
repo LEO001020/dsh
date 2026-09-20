@@ -111,7 +111,23 @@ describe('broker message shape', () => {
 
   it('accepts a late_output event and defaults missing fields rather than throwing', () => {
     const message = asBrokerMessage({ type: 'event', event: 'late_output', epoch: 3 })
-    expect(message).toEqual({ type: 'event', event: 'late_output', epoch: 3, cellId: '', text: '' })
+    // `stream` is G-SEAM-78's additive field and defaults to `unknown` rather
+    // than being absent: the delivery record names the stream, and a frame that
+    // carried none is a fact worth reporting, not a hole to leave undefined.
+    expect(message).toEqual({
+      type: 'event', event: 'late_output', epoch: 3, cellId: '', text: '', stream: 'unknown',
+    })
+  })
+
+  it('carries a recognised late_output stream through, and coerces an unrecognised one to unknown', () => {
+    // The validation half of the additive field: a stream name this protocol does
+    // not carry must not reach the delivery record as a string no reader can act
+    // on. Both arms are asserted, so the coercion cannot silently become a
+    // pass-through.
+    expect(asBrokerMessage({ type: 'event', event: 'late_output', epoch: 3, stream: 'stderr' }))
+      .toMatchObject({ stream: 'stderr' })
+    expect(asBrokerMessage({ type: 'event', event: 'late_output', epoch: 3, stream: 'banana' }))
+      .toMatchObject({ stream: 'unknown' })
   })
 
   it('rejects an event with no epoch, because it cannot be attributed to a generation', () => {

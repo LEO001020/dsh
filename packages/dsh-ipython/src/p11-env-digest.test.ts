@@ -96,13 +96,17 @@ function agentFor(sessionId: string): Agent {
 }
 
 function makeService(): KernelService {
-  service = new KernelService(ctx, { pythonExecutable: PYTHON, brokerScript: BROKER, root })
+  // A GENUINE DEVELOPMENT HOST: this file's subject is the environment digest,
+  // and it mounts no storage domain. Since V5 11.1 made the durable ledger
+  // REQUIRED, an unset durableLedger would refuse every kernel here and the
+  // digest arms would measure nothing. The durable path has its own gate.
+  service = new KernelService(ctx, { pythonExecutable: PYTHON, brokerScript: BROKER, root, durableLedger: false })
   return service
 }
 
 /** `reconfigure` with the same values: the host's way to say "re-read the environment". */
 function refresh(s: KernelService): void {
-  s.reconfigure({ pythonExecutable: PYTHON, brokerScript: BROKER, root })
+  s.reconfigure({ pythonExecutable: PYTHON, brokerScript: BROKER, root, durableLedger: false })
 }
 
 function sha256(buffer: Buffer): string {

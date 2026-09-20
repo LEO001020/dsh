@@ -736,9 +736,20 @@ describe('IPY-12: output is bounded and the loss is stated', () => {
     // ---- the MODEL-FACING projection --------------------------------------
     const { apply } = await import('./ipython-tool.ts')
     const registered: Array<{ definition: unknown }> = []
+    // The double carries the late-notice accessors too: since G-SEAM-78 the
+    // tool's return path drains them, so a double without them throws before the
+    // rendering under test is reached. `undefined`/`[]` is the honest answer for
+    // a double that never ran a kernel -- nothing was written late.
     const toolCtx = {
       tools: { register: (definition: unknown) => { registered.push({ definition }); return () => undefined } },
-      get: (name: string) => (name === 'ipython' ? { runCell: async () => result, currentEpoch: () => result.epoch } : undefined),
+      get: (name: string) => (name === 'ipython'
+        ? {
+            runCell: async () => result,
+            currentEpoch: () => result.epoch,
+            drainLateNotices: () => [],
+            lateNoticeAccount: () => undefined,
+          }
+        : undefined),
     }
     apply(toolCtx as never)
     const definition = registered[0]?.definition as {
@@ -1033,7 +1044,14 @@ describe('IPY-14: kernel death is visible and nothing is replayed', () => {
     const toolCtx = {
       tools: { register: (definition: unknown) => { registered.push({ definition }); return () => undefined } },
       get: (name: string) => (name === 'ipython'
-        ? { runCell: async () => capturedResult, currentEpoch: () => s.currentEpoch(agent) }
+        ? {
+            runCell: async () => capturedResult,
+            currentEpoch: () => s.currentEpoch(agent),
+            // Same as the flood double above: G-SEAM-78 put the late-notice drain
+            // on the tool's return path, so a double must answer for it.
+            drainLateNotices: () => [],
+            lateNoticeAccount: () => undefined,
+          }
         : undefined),
     }
     apply(toolCtx as never)

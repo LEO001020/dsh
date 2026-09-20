@@ -1146,6 +1146,13 @@ describe('T7-07 the bridge IS wired into the product (MEASURED — F2 closed)', 
       'packages/dsh-ipython/src/v4-bridge-approval-probe.ts',
       'packages/dsh-ipython/src/v4-bridge-drain-probe.ts',
       'packages/dsh-ipython/src/r5-f2-before.ts',
+      // ADDED DELIBERATELY, which is what this set asks for. P13's plane probe
+      // constructs two bridges to compare the raw-path plane against the unified
+      // one. It is run by hand (`node --experimental-strip-types
+      // src/p13-artifact-plane-probe.ts`), is in no entry point, and no file
+      // imports it -- verified, not assumed. Counting it as a production caller
+      // would hide exactly what this arm reports.
+      'packages/dsh-ipython/src/p13-artifact-plane-probe.ts',
     ])
     // `file` arrives ABSOLUTE (the walk joins from `repo`), so it is reduced to
     // the repo-relative form the set is keyed by.
