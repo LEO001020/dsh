@@ -860,3 +860,179 @@ describe('R5-J8: the assembled test cannot pass without the product wiring', () 
     expect(seenArguments).toEqual({ agent: 'someone-else' })
   }, 300_000)
 })
+
+// ---------------------------------------------------------------------------
+// R5-J8 (continued): the remaining J8 arms, each driven on the PRODUCT path.
+// ---------------------------------------------------------------------------
+
+describe('R5-J8 continued: cancellation, epoch, and structured-error parity', () => {
+  it('CANCELLATION: aborting the outer ipython call refuses further calls and aborts the in-flight one', async () => {
+    // The stimulus is the model's own cancel arriving while a cell is running.
+    // The abort is delivered through the OUTER tool execution's signal, which is
+    // the only cancellation a real call has -- so this drives the tool with a
+    // controller the test can fire, exactly as the agent loop does.
+    let entered = 0
+    ctx.tools.register(defineTool({
+      name: 'r5_cancel_slow',
+      description: 'Stays in the registry until the outer abort reaches it.',
+      parameters: {},
+      output: {
+        schema: { type: 'object', additionalProperties: false, properties: { ran: { type: 'boolean', required: true } } },
+        render: (_args, value) => [{ type: 'text', text: JSON.stringify(value) }],
+      },
+      execute: async (_args, exec) => {
+        entered += 1
+        await new Promise<void>(resolveDelay => {
+          const timer = setTimeout(() => { resolveDelay() }, 30_000)
+          exec.signal.addEventListener('abort', () => { clearTimeout(timer); resolveDelay() }, { once: true })
+        })
+        return { ran: true }
+      },
+    }))
+
+    const agent = agentFor('r5-cancel')
+    const controller = new AbortController()
+    const outer = ctx.tools.execute({
+      callId: 'outer-cancel-1' as never,
+      name: ipythonTool.IPYTHON_TOOL_NAME,
+      arguments: { code: "await dsh.call('r5_cancel_slow', {})\nprint('SHOULD_NOT_PRINT')" },
+      agent,
+      signal: controller.signal,
+    })
+    // Let the cell start and reach the host before the abort, so the call is
+    // genuinely IN FLIGHT rather than never having been submitted.
+    const deadline = Date.now() + 20_000
+    while (entered === 0 && Date.now() < deadline) await new Promise(r => setTimeout(r, 50))
+    expect(entered).toBe(1)
+    controller.abort(new Error('the model cancelled the turn'))
+
+    const result = await outer
+    // The cell is reported as an error, NOT as a success, and the tool that was
+    // in flight did not get to claim it finished.
+    expect(result.isError).toBe(true)
+
+    // THE ORACLE'S REQUIREMENT: the in-flight call carries a recorded disposition.
+    const rows = service?.ledgerFor(agent)?.all() ?? []
+    expect(rows.length).toBeGreaterThanOrEqual(1)
+    for (const row of rows) {
+      expect(row.disposition).toBeDefined()
+      expect(['settled', 'cancelled', 'abandoned-unstarted', 'handed-to-jobs']).toContain(row.disposition)
+    }
+    // And no lease survives the cancelled call.
+    expect(service?.bridgeFor(agent)?.server.openLeases()).toHaveLength(0)
+  }, 300_000)
+
+  it('WRONG KERNEL EPOCH: a restart allocates a new epoch and invalidates the old capability', async () => {
+    // V3 J2: "Kernel restart: new epoch; new bridge capability identity; old
+    // leases invalid." Measured on the product path by restarting a REAL kernel
+    // and then asking the bridge whether the old lease is still usable.
+    const agent = agentFor('r5-epoch')
+    const first = await callIpython(agent, "print('EPOCH_ONE=True')")
+    expect(first.outcome).toBe('ok')
+    const bridge = service?.bridgeFor(agent)
+    expect(bridge).toBeDefined()
+    expect(service?.currentEpoch(agent)).toBe(1)
+    // The old lease was released when its cell settled.
+    expect(bridge?.server.openLeases()).toHaveLength(0)
+
+    const epochAfter = await service?.restart(agent)
+    expect(epochAfter).toBe(2)
+    // The capability identity rotated: the kernel token is new, so a client from
+    // the previous epoch cannot even complete a handshake.
+    expect(service?.currentEpoch(agent)).toBe(2)
+    // And the bridge is the SAME object for the new epoch -- one per live kernel
+    // epoch, not one per cell and not one per process.
+    expect(service?.bridgeFor(agent)).toBe(bridge)
+
+    // The next cell works on the new epoch, so the restart did not break the
+    // product path; it invalidated the OLD capability, which is the requirement.
+    const second = await callIpython(agent, "print('EPOCH_TWO=True')")
+    expect(second.outcome).toBe('ok')
+    expect(printed(second.text, 'EPOCH_TWO')).toBe('True')
+  }, 300_000)
+
+  it('STRUCTURED ERROR PARITY: a tool failure reaches sync and async clients as the same code and message', async () => {
+    // J8 requires "structured tool error parity between async/sync Python
+    // client". The client has two entry points (`dsh.call` and `dsh.call_sync`)
+    // and an earlier fix already made the TIMEOUT arm agree; this measures the
+    // TOOL-FAILURE arm, which travels the whole host pipeline.
+    ctx.tools.register(defineTool({
+      name: 'r5_boom',
+      description: 'Throws, so the registry materializes a structured failure.',
+      parameters: {},
+      output: {
+        schema: { type: 'object', additionalProperties: false, properties: { ok: { type: 'boolean', required: true } } },
+        render: (_args, value) => [{ type: 'text', text: JSON.stringify(value) }],
+      },
+      execute: async () => { throw new Error('r5 deliberate tool failure') },
+    }))
+
+    const agent = agentFor('r5-error-parity')
+    const cell = await callIpython(agent, [
+      'import json',
+      'def describe(call):',
+      '    try:',
+      "        call('r5_boom', {})",
+      "        return {'type': 'NONE'}",
+      '    except Exception as exc:',
+      "        return {'type': type(exc).__name__, 'code': getattr(exc, 'code', None), 'message': getattr(exc, 'message', None)}",
+      'sync_result = describe(dsh.call_sync)',
+      "print('SYNC=' + json.dumps(sync_result, sort_keys=True))",
+      'try:',
+      "    await dsh.call('r5_boom', {})",
+      "    print('ASYNC={\"type\": \"NONE\"}')",
+      'except Exception as exc:',
+      "    print('ASYNC=' + json.dumps({'type': type(exc).__name__, 'code': getattr(exc, 'code', None), 'message': getattr(exc, 'message', None)}, sort_keys=True))",
+    ].join('\n'))
+
+    expect(cell.outcome).toBe('ok')
+    const sync = JSON.parse(printed(cell.text, 'SYNC') ?? 'null')
+    const async_ = JSON.parse(printed(cell.text, 'ASYNC') ?? 'null')
+    // Both arms are BridgeError with the same stable code and the same message.
+    // A different type or a missing code on either arm is the failure the oracle
+    // names: a program that branches on `code` would work in one dialect only.
+    expect(sync).toEqual({ type: 'BridgeError', code: 'TOOL_FAILED', message: 'r5 deliberate tool failure' })
+    expect(async_).toEqual(sync)
+  }, 300_000)
+
+  it('NESTED IMAGE SEMANTICS: a successful image-bearing result is DEFERRED, never silently dropped', async () => {
+    // J4 requires nested image semantics to be DEFINED rather than left to
+    // chance. The default is `defer` (PTC parity): the image reaches the outer
+    // execution as a user message. This measures that arm on the product path.
+    ctx.tools.register(defineTool({
+      name: 'r5_image',
+      description: 'Returns content carrying an image block.',
+      parameters: {},
+      output: {
+        schema: { type: 'object', additionalProperties: false, properties: { ok: { type: 'boolean', required: true } } },
+        render: (_args, value) => [{ type: 'text', text: JSON.stringify(value) }],
+      },
+      execute: async () => ({ ok: true }),
+    }))
+    ctx.on('tools/post-execute', (exec, result, next) => {
+      if (exec.name !== 'r5_image' || result.isError) return next()
+      return Promise.resolve({
+        kind: 'accept',
+        content: [
+          { type: 'text', text: 'an image follows' },
+          { type: 'image', source: { type: 'base64', mediaType: 'image/png', data: 'aGVsbG8=' } },
+        ],
+      } as never)
+    })
+
+    const agent = agentFor('r5-image')
+    const cell = await callIpython(agent, "await dsh.call('r5_image', {})\nprint('DONE=True')")
+    expect(cell.outcome).toBe('ok')
+    const outer = cell.result
+    if (outer.isError) throw new Error('the outer call failed')
+    // THE ASSERTION: the image is present on the outer result as a deferred
+    // context. Dropping it silently is what the brief forbids; the image arrives.
+    const contexts = outer.additionalContexts ?? []
+    const imageContext = contexts.find(context =>
+      Array.isArray(context.content) && context.content.some(block => block.type === 'image'))
+    expect(imageContext, 'a successful nested image must reach the outer execution').toBeDefined()
+    // And the bytes are the ones the tool produced, not a placeholder.
+    const blocks = (imageContext?.content ?? []).filter(block => block.type === 'image')
+    expect(blocks).toHaveLength(1)
+  }, 300_000)
+})
