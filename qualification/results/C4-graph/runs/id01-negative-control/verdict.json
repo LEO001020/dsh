@@ -1,7 +1,7 @@
 {
   "driver": "qualification/results/C4-graph/id01-measure.mjs",
   "case": "ID-01",
-  "ranAt": "2026-09-20T15:37:37.044Z",
+  "ranAt": "2026-09-20T15:37:09.389Z",
   "tree": "D:/DSH/work/wt-c4",
   "home": "D:/DSH/home/c4",
   "launcher": "D:/DSH/src/dsh-src/apps/cli/lib/bin.js",
@@ -14,24 +14,24 @@
     {
       "package": "packages/dsh-daily-work",
       "exitCode": 0,
-      "ms": 2202,
+      "ms": 2221,
       "error": null
     },
     {
       "package": "packages/dsh-ipython",
       "exitCode": 0,
-      "ms": 1775,
+      "ms": 1472,
       "error": null
     }
   ],
   "buildFreshness": {
     "dsh-daily-work": {
-      "newestLibMtime": "2026-09-20T15:37:29.822Z",
-      "newestSrcMtime": "2026-09-20T15:37:18.817Z",
+      "newestLibMtime": "2026-09-20T15:37:02.465Z",
+      "newestSrcMtime": "2026-09-20T15:36:49.757Z",
       "libNewerThanSrc": true
     },
     "dsh-ipython": {
-      "newestLibMtime": "2026-09-20T15:37:31.600Z",
+      "newestLibMtime": "2026-09-20T15:37:03.941Z",
       "newestSrcMtime": "2026-09-20T14:56:10.956Z",
       "libNewerThanSrc": true
     }
@@ -41,21 +41,29 @@
     "error": null
   },
   "boot": {
-    "port": 14476,
+    "port": 4738,
     "timedOut": false,
     "exitCode": null,
     "portReleased": true
   },
   "graph": {
-    "lineCount": 708,
-    "distinctSpecifiers": 218,
+    "lineCount": 713,
+    "distinctSpecifiers": 219,
     "fromBuilt": 217,
-    "fromSource": 0,
+    "fromSource": 1,
     "fromOther": 1,
     "underPackagesLib": 209,
     "underVendorLib": 7,
     "underNodeModules": 1,
-    "offenders": [],
+    "offenders": [
+      {
+        "specifier": "@deepseek-ai/dsh-attachment-local/src/store.ts",
+        "resolvedTo": "D:\\DSH\\src\\dsh-src\\packages\\attachment\\attachment-local\\src\\store.ts",
+        "parents": [
+          "file:///D:/DSH/work/wt-c4/packages/dsh-daily-work/lib/artifacts.js"
+        ]
+      }
+    ],
     "otherRows": [
       {
         "specifier": "@deepseek-ai/dsh-web-frontend/package.json",
@@ -68,7 +76,7 @@
     "mixed": [],
     "treeBinding": {
       "repo": "D:/DSH/work/wt-c4",
-      "distinctParents": 190,
+      "distinctParents": 194,
       "parentsUnderThisTree": [
         "file:///D:/DSH/work/wt-c4/packages/dsh-daily-work/lib/host.js",
         "file:///D:/DSH/work/wt-c4/packages/dsh-daily-work/lib/history-plugin.js",
@@ -137,12 +145,12 @@
     {
       "label": "the built lib/ is newer than src/, so the boot is not running a stale build",
       "ok": true,
-      "detail": "{\"dsh-daily-work\":{\"newestLibMtime\":\"2026-09-20T15:37:29.822Z\",\"newestSrcMtime\":\"2026-09-20T15:37:18.817Z\",\"libNewerThanSrc\":true},\"dsh-ipython\":{\"newestLibMtime\":\"2026-09-20T15:37:31.600Z\",\"newestSrcMtime\":\"2026-09-20T14:56:10.956Z\",\"libNewerThanSrc\":true}}"
+      "detail": "{\"dsh-daily-work\":{\"newestLibMtime\":\"2026-09-20T15:37:02.465Z\",\"newestSrcMtime\":\"2026-09-20T15:36:49.757Z\",\"libNewerThanSrc\":true},\"dsh-ipython\":{\"newestLibMtime\":\"2026-09-20T15:37:03.941Z\",\"newestSrcMtime\":\"2026-09-20T14:56:10.956Z\",\"libNewerThanSrc\":true}}"
     },
     {
       "label": "the graph was recorded and is non-empty",
       "ok": true,
-      "detail": "rows=708 graphReadError=null"
+      "detail": "rows=713 graphReadError=null"
     },
     {
       "label": "THE GRAPH NAMES THIS WORKTREE: no parent is under the main checkout",
@@ -161,8 +169,8 @@
     },
     {
       "label": "no `@deepseek-ai/*` specifier resolves to a source (.ts) file",
-      "ok": true,
-      "detail": "fromBuilt=217 fromSource=0 fromOther=1; offenders=[]"
+      "ok": false,
+      "detail": "fromBuilt=217 fromSource=1 fromOther=1; offenders=[[\"@deepseek-ai/dsh-attachment-local/src/store.ts\",\"D:\\\\DSH\\\\src\\\\dsh-src\\\\packages\\\\attachment\\\\attachment-local\\\\src\\\\store.ts\"]]"
     },
     {
       "label": "the graph does not mix src and lib for one specifier",
@@ -185,7 +193,7 @@
       "detail": "<path>D:\\DSH\\work\\wt-c4\\qualification\\results\\C4-graph\\runs\\id01\\first-call-input.txt</path>\n<type>file</type>\n<content>\n1: C4_FIRST_TOOL_CALL_ROUND_TRIP\n\n(End of file - total 1 lines)\n</content>"
     }
   ],
-  "checksPassed": 17,
+  "checksPassed": 16,
   "checksTotal": 17,
-  "verdict": "PASS"
+  "verdict": "FAIL"
 }
