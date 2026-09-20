@@ -467,6 +467,80 @@ describe('P9 IPY-LATE-VISIBLE: late output is delivered separately, never merged
     expect(ferried.length).toBe(callsAfterA)
   }, 300_000)
 
+  it('KNOWN LIMITATION, measured: a policy-BLOCKED call discards the notice, at-most-once', async () => {
+    // THE ADVERSARIAL CASE I FOUND WHILE TRYING TO BREAK MY OWN RESULT.
+    //
+    // `packages/core/tools/src/index.ts:1746-1748` states the semantics: "Context
+    // deferred by the tool body survives an accepted result but is DISCARDED when
+    // the outer call is blocked; a block exposes only context the blocking
+    // decision explicitly supplied."
+    //
+    // So if a `tools/post-execute` listener blocks the `ipython` call, the notice
+    // this slice defers is discarded -- and because the drain is destructive, the
+    // records are gone. This arm MEASURES that rather than asserting it away, so
+    // the boundary is a fact on disk instead of a sentence in a comment.
+    //
+    // WHY THIS IS NOT FIXED BY RE-DELIVERING. A signal that says "your result was
+    // blocked" is not exposed to the tool body, so the only ways to avoid the loss
+    // are to re-queue on a guess or to hold records across calls. Re-queueing
+    // cannot tell "delivered" from "discarded" and would make ONE background write
+    // look like TWO to the model -- a worse error than a bounded loss, because the
+    // model would reason about output that never happened twice. The choice is
+    // therefore at-most-once with a measured boundary, and this arm is the
+    // measurement. It is recorded in `AFTER.md` under CLAIMS I AM NOT MAKING.
+    const agent = agentFor('p9-blocked')
+    let blockNext = false
+    ctx.on('tools/post-execute', (exec, result, next) => {
+      if (exec.name !== ipythonTool.IPYTHON_TOOL_NAME || !blockNext || result.isError) return next()
+      return Promise.resolve({
+        kind: 'block',
+        feedback: [{ type: 'text', text: 'blocked by policy for this arm' }],
+      } as never)
+    })
+
+    const a = await callIpython(agent, [
+      'import threading, time',
+      'def background():',
+      '    time.sleep(4)',
+      '    print("P9-BLOCKED-MARK")',
+      'threading.Thread(target=background, daemon=True).start()',
+      'print("cell-A-settled")',
+    ].join('\n'))
+    expect(a.outcome).toBe('ok')
+    await sleep(6000)
+
+    // The record IS in the queue, so the write was observed and classified.
+    expect((service as KernelService).lateNoticeAccount(agent)?.held).toBe(1)
+
+    // Now the boundary call is BLOCKED. The notice is deferred and discarded.
+    blockNext = true
+    const blocked = await callIpython(agent, 'print("cell-B-output")')
+    expect(blocked.result.isError, 'the blocking decision must make the call an error').toBe(true)
+    expect(contextsOf(blocked.result), 'a blocked result carries no body-deferred context').toEqual([])
+
+    // AND THE RECORDS ARE GONE: the drain already happened, so the loss is real
+    // and this is the honest account of it.
+    expect((service as KernelService).lateNoticeAccount(agent)?.held).toBe(0)
+    expect((service as KernelService).drainLateNotices(agent)).toEqual([])
+
+    // CONTROL: with the block off, the same sequence DOES deliver -- so this arm
+    // measures the block's effect rather than a broken delivery path.
+    blockNext = false
+    const a2 = await callIpython(agent, [
+      'import threading, time',
+      'def background2():',
+      '    time.sleep(4)',
+      '    print("P9-BLOCKED-MARK-2")',
+      'threading.Thread(target=background2, daemon=True).start()',
+      'print("cell-C-settled")',
+    ].join('\n'))
+    expect(a2.outcome).toBe('ok')
+    await sleep(6000)
+    const c = await callIpython(agent, 'print("cell-D-output")')
+    expect(contextsOf(c.result).join('\n')).toContain('P9-BLOCKED-MARK-2')
+    expect(c.text).not.toContain('P9-BLOCKED-MARK-2')
+  }, 300_000)
+
   it('notices are SESSION-scoped: another Session cannot drain them', async () => {
     const agentA = agentFor('p9-session-a')
     const agentB = agentFor('p9-session-b')
