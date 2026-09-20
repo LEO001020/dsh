@@ -1,69 +1,91 @@
 {
-  "scope": "S10_ID05_AS_NEVER_BASELINE",
-  "why_this_file_exists": [
-    "ID-05's second clause forbids a cast that hides a genuine type error, and a",
-    "green typecheck is not evidence about that: `tsc` has no flag for `no as",
-    "never`. This baseline is what turns the count into a RATCHET: `pnpm typecheck`",
-    "fails if the number of non-test `as never` casts GROWS.",
-    "",
-    "WHY A BASELINE AND NOT ZERO. The V1 case FAILed on this clause with 475",
-    "occurrences. Sweeping them is per-site review, not a mechanical edit: measured",
-    "on this tree, two instances of the SAME syntactic shape behave differently --",
-    "removing both casts from `ctx.plugin(storageJsonPlugin as never, { root } as",
-    "never)` compiles clean, while removing only the config cast from",
-    "`ctx.plugin(Storage, {} as never)` reports TS2345. A gate that demanded zero",
-    "today would be a gate nobody could pass honestly. A gate that forbids GROWTH is",
-    "enforceable now and is the property that stops the hole widening."
-  ],
-  "measured_by": "helpers/typecheck.mjs (escapeHatchGate), comments stripped, non-test src only",
-  "measured_at": "2026-09-20",
-  "non_test_as_never_count": 2,
-  "count_before_this_slice": 11,
-  "count_removed_by_this_slice": 9,
-  "justified": [
-    {
-      "file": "packages/dsh-daily-work/src/durability-runner.ts",
-      "line": 93,
-      "text": "root: { session: { header: { id: 'root-session' } } } as never,",
-      "verdict": "MASK -- REPORTED, NOT FIXED",
-      "revealed_error": "TS2322: Type 'string' is not assignable to type 'SessionId' (and, once the id is branded, TS2740: the literal is missing 24 members of the `Session` class)",
-      "why_left_in_place": [
-        "This cast hides a REAL error, so it is not justified as clean. It is left in",
-        "place because the honest fix is not type-level: `createRun` takes a real",
-        "`Agent` whose `session` is the `Session` CLASS with 24 required members, and",
-        "this crash rig fabricates a header instead of creating an Agent. The sibling",
-        "rigs do it correctly via `ctx.agentLoop.create(SessionId(...), ...)`",
-        "(`concurrency.test.ts:151`), which requires mounting the AgentLoop into a rig",
-        "whose child is SIGKILLed mid-run -- a topology change to a crash test, outside",
-        "ID-05's type-level scope. Recorded as a finding rather than silently widened."
-      ],
-      "reachability": "NOT REACHABLE from the product: `durability-runner.ts` is absent from the package's `exports` and has no production importer (`durability-advanced.test.ts:1080` asserts this). It is a hand-run CLI. So this is an oracle violation in a test rig, not a product defect -- both facts are true and the distinction is the finding."
-    },
-    {
-      "file": "packages/dsh-ipython/src/v4-bridge-probe.ts",
-      "line": 378,
-      "text": "targetAfterTheCell: ctx.tools.get('v4_target' as never) === undefined ? 'UNREGISTERED' : 'STILL-PRESENT',",
-      "verdict": "REMOVABLE (not a mask)",
-      "revealed_error": "none -- measured, removing this cast exits 0",
-      "why_left_in_place": [
-        "Removing it compiles clean, so it is redundant rather than masking. It is not",
-        "removed here because the probe's INTENT is to read a tool name that is",
-        "deliberately outside the typed tool catalog (`v4_target` is registered at",
-        "runtime by the probe), and `ctx.tools.get` is keyed on the known tool-name",
-        "union. The cast documents that the name is intentionally outside the catalog.",
-        "Either form compiles; this one keeps the intent visible. It is counted in the",
-        "baseline so the ratchet accounts for it rather than silently tolerating it."
-      ],
-      "reachability": "NOT REACHABLE from the product: a hand-run probe file, no production importer."
-    }
-  ],
-  "how_to_add_a_justified_cast": [
-    "1. Add an entry here with file, line, the verdict, the error that removing it",
-    "   reveals (or `none`), and why it is not a mask.",
-    "2. Raise `non_test_as_never_count` by one IN THE SAME COMMIT, so the",
-    "   justification and the permission are reviewed together.",
-    "3. `pnpm typecheck` then passes. A cast added WITHOUT this edit fails the gate.",
-    "NEVER `as any`, and never an inline `@ts-ignore`: the point of the ratchet is",
-    "that the cast stays VISIBLE and REVIEWED."
-  ]
+ "scope": "S10_ID05_AS_NEVER_BASELINE",
+ "why_this_file_exists": [
+  "ID-05's second clause forbids a cast that hides a genuine type error, and a",
+  "green typecheck is not evidence about that: `tsc` has no flag for `no as",
+  "never`. This baseline is what turns the count into a RATCHET: `pnpm typecheck`",
+  "fails if the number of non-test `as never` casts GROWS.",
+  "",
+  "WHY A BASELINE AND NOT ZERO. The V1 case FAILed on this clause with 475",
+  "occurrences. Sweeping them is per-site review, not a mechanical edit: measured",
+  "on this tree, two instances of the SAME syntactic shape behave differently --",
+  "removing both casts from `ctx.plugin(storageJsonPlugin as never, { root } as",
+  "never)` compiles clean, while removing only the config cast from",
+  "`ctx.plugin(Storage, {} as never)` reports TS2345. A gate that demanded zero",
+  "today would be a gate nobody could pass honestly. A gate that forbids GROWTH is",
+  "enforceable now and is the property that stops the hole widening."
+ ],
+ "measured_by": "helpers/typecheck.mjs (escapeHatchGate), comments stripped, non-test src only",
+ "measured_at": "2026-09-20",
+ "non_test_as_never_count": 3,
+ "count_before_this_slice": 11,
+ "count_removed_by_this_slice": 9,
+ "justified": [
+  {
+   "file": "packages/dsh-daily-work/src/durability-runner.ts",
+   "line": 93,
+   "text": "root: { session: { header: { id: 'root-session' } } } as never,",
+   "verdict": "MASK -- REPORTED, NOT FIXED",
+   "revealed_error": "TS2322: Type 'string' is not assignable to type 'SessionId' (and, once the id is branded, TS2740: the literal is missing 24 members of the `Session` class)",
+   "why_left_in_place": [
+    "This cast hides a REAL error, so it is not justified as clean. It is left in",
+    "place because the honest fix is not type-level: `createRun` takes a real",
+    "`Agent` whose `session` is the `Session` CLASS with 24 required members, and",
+    "this crash rig fabricates a header instead of creating an Agent. The sibling",
+    "rigs do it correctly via `ctx.agentLoop.create(SessionId(...), ...)`",
+    "(`concurrency.test.ts:151`), which requires mounting the AgentLoop into a rig",
+    "whose child is SIGKILLed mid-run -- a topology change to a crash test, outside",
+    "ID-05's type-level scope. Recorded as a finding rather than silently widened."
+   ],
+   "reachability": "NOT REACHABLE from the product: `durability-runner.ts` is absent from the package's `exports` and has no production importer (`durability-advanced.test.ts:1080` asserts this). It is a hand-run CLI. So this is an oracle violation in a test rig, not a product defect -- both facts are true and the distinction is the finding."
+  },
+  {
+   "file": "packages/dsh-ipython/src/v4-bridge-probe.ts",
+   "line": 378,
+   "text": "targetAfterTheCell: ctx.tools.get('v4_target' as never) === undefined ? 'UNREGISTERED' : 'STILL-PRESENT',",
+   "verdict": "REMOVABLE (not a mask)",
+   "revealed_error": "none -- measured, removing this cast exits 0",
+   "why_left_in_place": [
+    "Removing it compiles clean, so it is redundant rather than masking. It is not",
+    "removed here because the probe's INTENT is to read a tool name that is",
+    "deliberately outside the typed tool catalog (`v4_target` is registered at",
+    "runtime by the probe), and `ctx.tools.get` is keyed on the known tool-name",
+    "union. The cast documents that the name is intentionally outside the catalog.",
+    "Either form compiles; this one keeps the intent visible. It is counted in the",
+    "baseline so the ratchet accounts for it rather than silently tolerating it."
+   ],
+   "reachability": "NOT REACHABLE from the product: a hand-run probe file, no production importer."
+  },
+  {
+   "file": "packages/dsh-ipython/src/s5-ipy13-delivery-probe.ts",
+   "line": 60,
+   "text": "apply(toolCtx as never)",
+   "verdict": "JUSTIFIED -- a deliberate minimal stand-in, not a mask of a product error",
+   "revealed_error": "TS2345: Argument of type '{ tools: { register(...): () => undefined }; get: (name: string) => KernelService | undefined }' is not assignable to parameter of type 'Context'",
+   "why_it_is_not_a_mask": [
+    "Removing the cast DOES reveal a real diagnostic, so this entry is not claiming",
+    "the cast is noise -- that is what separates it from the durability-runner entry",
+    "above. The diagnostic is about the PROBE's own fabricated object, not about the",
+    "product: this file is a standalone instrument (run directly, `node",
+    "--experimental-strip-types src/s5-ipy13-delivery-probe.ts`) that mounts the",
+    "model-facing tool against a hand-built context carrying exactly the two members",
+    "`apply` reads. Building a full cordis `Context` would require booting the",
+    "composition the probe exists to observe from OUTSIDE.",
+    "The alternative -- mounting the real composition -- is what the OTHER arms do;",
+    "this arm exists to read the tool's own text, so it stands in for the context on",
+    "purpose. The cast is therefore a stated boundary of the instrument rather than a",
+    "suppressed product error, which is the distinction ID-05's clause is about."
+   ],
+   "reachability": "NOT REACHABLE from the product: no file imports it, it is not a package export, and its own header says it is run directly as an instrument. Added by S5 for IPY-13."
+  }
+ ],
+ "how_to_add_a_justified_cast": [
+  "1. Add an entry here with file, line, the verdict, the error that removing it",
+  "   reveals (or `none`), and why it is not a mask.",
+  "2. Raise `non_test_as_never_count` by one IN THE SAME COMMIT, so the",
+  "   justification and the permission are reviewed together.",
+  "3. `pnpm typecheck` then passes. A cast added WITHOUT this edit fails the gate.",
+  "NEVER `as any`, and never an inline `@ts-ignore`: the point of the ratchet is",
+  "that the cast stays VISIBLE and REVIEWED."
+ ]
 }
