@@ -507,4 +507,48 @@ describe('P13 — the large-result plane is the project artifact plane, not a pa
       expect(row.artifactRef).not.toContain('/')
     }
   }, 240_000)
+
+  it('P13-11 the PRODUCTION path binds the plane: KernelService config -> bridge -> ref', async () => {
+    // P13-3 and P13-4 construct a BridgeServer BY HAND, so they prove the
+    // mechanism and say nothing about whether the product can reach it. That is
+    // this project's most-recorded defect -- the mechanism is implemented,
+    // unit-tested, correct, and nothing in the product calls it. This arm drives
+    // the same property through `KernelService`, which is what `host-plugin.ts`
+    // mounts and therefore what a boot actually gets.
+    const plane = recordingPlane()
+    registerBlob('prod')
+    const service = new KernelService(ctx, {
+      pythonExecutable: PYTHON,
+      brokerScript: BROKER,
+      root: join(root, 'kernels-prod'),
+      inlineValueBytes: 4096,
+      // THE CONFIG FIELD UNDER TEST. It is passed through KernelServiceConfig,
+      // not looked up inside the plugin, so the composition owns the choice.
+      artifactRetention: plane.port,
+    })
+    services.push(service)
+    const agent = agentFor('session-prod', root)
+
+    // `runCell` alone reaches a kernel the service builds and OWNS, including its
+    // bridge -- the lease is minted by the SERVICE, not by hand here. That is the
+    // difference between this arm and P13-3, which hand-built both.
+    const result = await service.runCell(agent, [
+      "value = await dsh.call('p13_blob_prod', {'chars': 8192})",
+      "print('PROD_PLANE:' + str(value.plane))",
+      "print('PROD_PATH_NONE:' + str(value.path is None))",
+      "print('PROD_REF:' + str(str(value.artifact).startswith('artifact:sha256:')))",
+    ].join('\n'), undefined, {
+      callId: 'ipython-call-prod',
+      rootCallId: 'ipython-call-prod',
+      token: Symbol('p13-prod-token') as unknown as EnclosingAuthority['token'],
+      agent,
+      cellId: 'cell-prod-1',
+    })
+    expect(result.outcome).toBe('ok')
+    expect(result.stdout.text).toContain('PROD_PLANE:unified')
+    expect(result.stdout.text).toContain('PROD_PATH_NONE:True')
+    expect(result.stdout.text).toContain('PROD_REF:True')
+    // The plane really was the retention path, driven by the service's own bridge.
+    expect(plane.calls.length).toBeGreaterThan(0)
+  }, 240_000)
 })

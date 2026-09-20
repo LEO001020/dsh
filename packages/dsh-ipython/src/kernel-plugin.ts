@@ -80,6 +80,7 @@ import {
   BridgeLedgerWriteError,
   BridgeServer,
   canPrependPreamble,
+  type BridgeArtifactRetention,
   type BridgeEndpoint,
   type CellLease,
   type LeaseCallDisposition,
@@ -169,6 +170,24 @@ export interface KernelServiceConfig {
    * `Artifact`.
    */
   readonly inlineValueBytes?: number
+  /**
+   * The unified project Artifact/Attachment plane, when the composition mounted
+   * one. Absent, an oversized exact result is retained in the bridge's own
+   * per-kernel scratch directory and reported on the `bridge-scratch` plane.
+   *
+   * A PORT RATHER THAN AN IMPORT, and the reason is layering: the unified store
+   * lives in `dsh-daily-work` (`artifacts.ts`), which this package does not depend
+   * on and must not start to. The composition mounts both, so the composition is
+   * where the ONE store is bound here -- exactly as it already binds
+   * `ctx.attachments` for the same reason. Nothing is re-implemented: no quota,
+   * retention, provenance or paging policy is defined on this side.
+   *
+   * A HOST-OWNED INPUT, never model-reachable. A program cannot name a plane, and
+   * `deliver` treats a mounted-but-refusing plane as a FAILURE rather than
+   * falling back to scratch, so a quota refusal cannot become an untracked
+   * object.
+   */
+  readonly artifactRetention?: BridgeArtifactRetention
   /**
    * Whether to record the bridge ledger in the DSH storage domain when one is
    * mounted. Default true.
@@ -494,6 +513,11 @@ export class KernelService extends Service {
       artifactDirectory: join(bridgeDirectory, 'artifacts'),
       clientDirectory: bridgeDirectory,
       ...this.config.inlineValueBytes === undefined ? {} : { inlineValueBytes: this.config.inlineValueBytes },
+      // The unified artifact plane, when the composition bound one. Passed
+      // straight through rather than looked up here, so the ONE store is chosen
+      // in the composition and this module never grows a second opinion about
+      // which retention policy applies.
+      ...this.config.artifactRetention === undefined ? {} : { retention: this.config.artifactRetention },
     })
     let capability: BridgeCapability
     let host: KernelHost | undefined
