@@ -254,34 +254,11 @@ export interface WorkStatusView {
   readonly fields: readonly StatusField[]
   /**
    * Counts V5 section 13 asks the card to display that `/work status` does NOT
-   * report. Named rather than silently omitted, so the card can show the gap
-   * instead of a blank that reads as zero.
-   *
-   * MEASURED against `command-work.ts` `renderStatus` (`:180-193`), which emits
-   * exactly: Run, Phase, Target, Durably admitted, Launching, Active assignments,
-   * Stopping, Quarantined (unknown), Confirmed, Capacity deficit (reason) and
-   * optionally Authorized by. Everything below is a field `Counts` carries
-   * (`counting.ts`) that no line renders:
-   *
-   *   - `readyTasks` (:39) -- V5 names "ready"; the durable READY queue is writer
-   *     P5's concurrent work this round, and P5 may name the concept differently,
-   *     so this module does NOT invent a field name.
-   *   - `waitingOwnedTool` (:47) and `providerWaiting` (:49) -- the two "waiting"
-   *     counts, which `counting.ts`'s own header keeps separate on purpose.
-   *   - `heldReservations` (:68) -- the AUTHORITATIVE occupancy, and the one this
-   *     list most wants. It is the field that makes an over-admission visible,
-   *     because `capacityDeficit` clamps at zero and reads identically for a full
-   *     wave and an overshoot. V5 asks for "admitted/reserved"; `Durably admitted`
-   *     IS rendered, but this stricter number is not.
-   *   - `targetOvershoot` (:83) -- the other half of the same CAP-10 story.
-   *   - the global hard cap -- V5 asks for "global hard-cap occupancy". It lives on
-   *     `CapacitySnapshot` (`capacity.ts:159`), a different service call, and no
-   *     command surfaces it.
-   *
-   * Extending `renderStatus` is a small change in P5's file, not mine, so it is
-   * REPORTED rather than made.
+   * report, as `{label, probe}` pairs. Named rather than silently omitted, so the
+   * card can show the gap instead of a blank that reads as zero. See
+   * {@link STATUS_FIELDS_NOT_REPORTED} for the measurements behind each entry.
    */
-  readonly unreported: readonly string[]
+  readonly unreported: readonly { readonly label: string; readonly probe: string }[]
   /** The raw host text, so a card can show exactly what the host said. */
   readonly raw: string
 }
@@ -289,17 +266,39 @@ export interface WorkStatusView {
 /**
  * The display fields V5 section 13 names that the command plane does not report.
  *
- * Declared as data so the test asserts the SET rather than a hand-typed list in
- * two places, and so a future `renderStatus` extension that adds one makes this
- * list shrink rather than leaving a stale claim in a comment.
+ * Each entry carries BOTH a human `label` and the `probe` — the exact line prefix
+ * `renderStatus` would emit if it reported the field. The probe exists so
+ * `ui-card.test.ts` can check this list against REAL host output rather than
+ * trusting it: a hand-kept list of "what the host does not report" is exactly the
+ * kind of claim that goes stale, and if writer P5 adds a `Ready:` line the test
+ * fails and the list must shrink.
+ *
+ * The probe is a line PREFIX rather than a bare word because a word check
+ * collides: `Target overshoot` contains `target`, and `Target:` IS a rendered
+ * line. The first version of that test used words and failed on exactly that
+ * collision, which is why the mapping is explicit here.
  */
-export const STATUS_FIELDS_NOT_REPORTED: readonly string[] = [
-  'ready',
-  'waiting (owned tool)',
-  'waiting (provider)',
-  'held reservations (authoritative occupancy)',
-  'target overshoot',
-  'global hard-cap occupancy',
+export const STATUS_FIELDS_NOT_REPORTED: readonly { readonly label: string; readonly probe: string }[] = [
+  // V5 names "ready". `Counts.readyTasks` exists (counting.ts:39) and is
+  // populated by `setReadyTasks`; writer P5 is concurrently adding the durable
+  // READY queue and may name the concept differently, so this module does NOT
+  // invent a field name for it.
+  { label: 'ready', probe: 'Ready' },
+  // The two waiting counts, which counting.ts's own header keeps separate on
+  // purpose: one is blocked inside its own tool call, the other is queued
+  // upstream and is NOT physical concurrency.
+  { label: 'waiting (owned tool)', probe: 'Waiting (owned tool)' },
+  { label: 'waiting (provider)', probe: 'Waiting (provider)' },
+  // THE ONE THIS LIST MOST WANTS. `heldReservations` is the AUTHORITATIVE
+  // occupancy and the field that makes an over-admission visible, because
+  // `capacityDeficit` clamps at zero and reads identically for a healthy full
+  // wave and an overshoot (counting.ts:58-68). V5 asks for "admitted/reserved";
+  // `Durably admitted` IS rendered, but this stricter number is not.
+  { label: 'held reservations (authoritative occupancy)', probe: 'Held reservations' },
+  { label: 'target overshoot', probe: 'Target overshoot' },
+  // V5 asks for "global hard-cap occupancy". It lives on `CapacitySnapshot`
+  // (capacity.ts:159), a different service call, and no command surfaces it.
+  { label: 'global hard-cap occupancy', probe: 'Global hard-cap occupancy' },
 ]
 
 /** The label prefix of each count line `renderStatus` emits, in its order. */

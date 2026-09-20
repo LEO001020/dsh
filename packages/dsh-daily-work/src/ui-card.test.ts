@@ -246,18 +246,36 @@ describe('P7 card: the display reads the host text and names what it cannot show
     // concurrent work this round. So the card must not invent a value: it
     // reports the field as unreported.
     const r = await rig()
-    const card = createWorkCardActions(r.sessionId, async (_sessionId, line) => {
-      const execution = await r.ctx.commands.execute(r.agent, line, [], new AbortController().signal)
-      return execution === undefined
-        ? { ok: true, value: undefined }
-        : { ok: true, value: { result: { kind: execution.result.kind, text: execution.result.text ?? '' } } }
-    })
+    const card = cardOver(r)
     await card.start(4)
     const view = parseStatusText((await card.status()).text)
-    expect(view.unreported).toContain('ready')
-    expect(view.unreported).toContain('global hard-cap occupancy')
+    expect(view.unreported.map(entry => entry.label)).toContain('ready')
+    expect(view.unreported.map(entry => entry.label)).toContain('global hard-cap occupancy')
     // And NOT reported as zero: an absent field has no value at all.
     expect(view.fields.map(field => field.label)).not.toContain('Ready')
+  })
+
+  it('THE LIST CANNOT GO STALE: no unreported entry is actually a rendered line', async () => {
+    // A hand-kept list of "what the host does not report" is exactly the kind of
+    // claim this project records going stale. So the list is CHECKED against real
+    // host output rather than trusted: if writer P5 (or anyone) adds a `Ready:`
+    // line to `renderStatus`, this arm fails and the list must shrink.
+    //
+    // It is the mirror of the arms above: those assert the card does not invent
+    // fields, this one asserts the card does not keep claiming a field is missing
+    // after it arrives.
+    const r = await rig()
+    const card = cardOver(r)
+    await card.start(4)
+    const text = (await card.status()).text
+    const lines = text.split('\n').map(line => line.trim())
+    for (const { label, probe } of STATUS_FIELDS_NOT_REPORTED) {
+      const rendered = lines.some(line => line.toLowerCase().startsWith(`${probe.toLowerCase()}:`))
+      expect(rendered, `"${label}" is listed unreported but "${probe}:" IS a rendered line in:\n${text}`).toBe(false)
+    }
+    // CONTROL ARM: the same check DOES find a field that is reported. Without it,
+    // a probe list full of typos would pass by matching nothing.
+    expect(lines.some(line => line.startsWith('Target:'))).toBe(true)
   })
 
   it('distinguishes "no run" from a run with zero counts', async () => {
@@ -297,7 +315,7 @@ describe('P7 card: the display reads the host text and names what it cannot show
     // reason distinguishes them (counting.ts's CAP-10 note).
     const exceeded = parseDeficit('Capacity deficit: 0 (target_exceeded)')
     expect(exceeded).toEqual({ deficit: 0, reason: 'target_exceeded' })
-    expect(STATUS_FIELDS_NOT_REPORTED).toContain('ready')
+    expect(STATUS_FIELDS_NOT_REPORTED.map(entry => entry.label)).toContain('ready')
   })
 })
 

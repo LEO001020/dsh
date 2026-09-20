@@ -191,11 +191,22 @@ rendering `0`, and an absent field parses as `undefined`, never `0` — the same
 distinction `counting.ts` draws between `capacityDeficit` (clamps) and
 `heldReservations` (does not).
 
-**SEQUENCING, as the dispatch instructed:** `ready` is exactly the field writer
-**P5** is concurrently adding as a durable READY queue. P5's state is **not** in
-this worktree (`wt-p5` HEAD is `3ec71e5`, "WORK-READY step 1: the source map",
-with no new field in `counting.ts`), so this slice **does not invent a name for
-it**. It displays what exists and names `ready` as pending P5.
+**SEQUENCING, as the dispatch instructed.** `ready` is exactly the field writer
+**P5** is concurrently adding as a durable READY queue. Measured at P5's HEAD
+`72165a1` ("WORK-READY step 3+4: requestDrain, the oldest-ready pass, and the
+completion observer"): their `host.ts` now has `record.readyAssignments`,
+`submitReady` and `ReadyAssignment`, but their `command-work.ts:renderStatus`
+**still emits no `Ready:` line**, so nothing is displayed for it by any surface
+yet. This slice therefore **does not invent a name** for P5's concept — it
+displays what the command plane reports and names `ready` as pending.
+
+**The list cannot go stale.** It is checked against real host output by an arm
+with its own control: if P5 adds a `Ready:` line, the test fails and the list must
+shrink; a control arm confirms the same check *does* find `Target:`, so a list of
+typos cannot pass by matching nothing. (The first version of that check compared
+bare words and failed on a real collision — `target overshoot` contains `target`,
+and `Target:` **is** a rendered line. The mapping is now an explicit line prefix,
+and the correction is recorded in the module.)
 
 ---
 
