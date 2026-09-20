@@ -62,6 +62,7 @@ import * as storageJsonPlugin from '@deepseek-ai/dsh-storage-json'
 import { mkdtempSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { afterEach, describe, expect, it } from 'vitest'
 import { WorkService, type LaunchRequest } from './host.ts'
 import { createContinuableLaunchPort } from './launch-port.ts'
@@ -460,9 +461,28 @@ describe('U03: sustained load — resources, cost and state, measured', () => {
         'a modest load: a small series bounds a leak over the range run, it does not exclude a slow one',
       ],
     }
-    writeFileSync(
-      process.env.U03_ARTIFACT ?? 'D:/DSH/work/dsh-native-daily/qualification/results/M9.20-real-tasks/u03-load.json',
-      `${JSON.stringify(artifact, null, 2)}\n`,
-    )
+    // THE OUTPUT PATH IS DERIVED FROM THIS FILE'S OWN LOCATION, not hardcoded.
+    //
+    // It used to be `process.env.U03_ARTIFACT ?? 'D:/DSH/work/dsh-native-daily/
+    // qualification/results/M9.20-real-tasks/u03-load.json'` -- an ABSOLUTE path
+    // into one checkout, with only an optional env override. That is a
+    // cross-tree write: a writer running this suite from a git worktree (which
+    // the multi-agent discipline requires) deposited its measurement into the
+    // MAIN tree. It happened twice during round 1, and it is invisible as a diff
+    // because the file is a NONDETERMINISTIC load measurement -- resource counts
+    // and heap MB that differ on every run, so the overwrite reads as "the numbers
+    // moved" rather than "another tree wrote here". Recorded as G-SEAM-61.
+    //
+    // `import.meta.url` is `.../packages/dsh-daily-work/src/u03-sustained-load.test.ts`,
+    // so three levels up is the repository root of whichever tree is running --
+    // measured for BOTH the source and the built layout (`src/x.test.ts` and
+    // `lib/x.test.js` are the same depth), and for a worktree, where it correctly
+    // resolves to `D:\DSH\work\wt-<name>\` rather than to the main checkout. The
+    // artifact therefore lands in THAT tree's evidence directory, beside the run
+    // record it describes. `U03_ARTIFACT` still overrides for an explicit target.
+    const repoRoot = fileURLToPath(new URL('../../..', import.meta.url))
+    const artifactPath = process.env.U03_ARTIFACT
+      ?? join(repoRoot, 'qualification', 'results', 'M9.20-real-tasks', 'u03-load.json')
+    writeFileSync(artifactPath, `${JSON.stringify(artifact, null, 2)}\n`)
   }, 300_000)
 })

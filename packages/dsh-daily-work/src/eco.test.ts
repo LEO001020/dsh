@@ -1270,7 +1270,20 @@ describe('ECO-06: enabling a shadow projection sends no second LLM request and r
  * would change the digest rather than pass unnoticed.
  */
 describe('ECO-07: the stock control arm is not secretly modified, and the variables are fixed (live half BLOCKED_EXTERNAL)', () => {
-  const REPO = 'D:/DSH/work/dsh-native-daily'
+  // DERIVED FROM THIS FILE'S LOCATION, not hardcoded to one checkout.
+  //
+  // It used to be `const REPO = 'D:/DSH/work/dsh-native-daily'`. This block READS
+  // profile files and hashes them, so the consequence is not an overwrite: it is
+  // that a writer running this suite from a git worktree (which the multi-agent
+  // discipline requires) would hash the MAIN tree's profiles and report a verdict
+  // about a tree it does not own. That is the stale-artifact trap that produced
+  // two retracted findings in this project (G-SEAM-29, G-SEAM-36), and it is the
+  // read-side twin of G-SEAM-61's write-side cross-tree hazard.
+  //
+  // `import.meta.url` is `.../packages/dsh-daily-work/src/eco.test.ts`, so three
+  // levels up is the repository root of whichever tree is running -- verified for
+  // both the `src/` and `lib/` layouts, which are the same depth.
+  const REPO = fileURLToPath(new URL('../../..', import.meta.url)).replace(/\\/g, '/').replace(/\/$/, '')
   const DSH_SRC = 'D:/DSH/src/dsh-src'
 
   /** The stock profile as committed, and the digest the project recorded at M0.5. */
