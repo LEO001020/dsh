@@ -684,7 +684,7 @@ Anything in step 3 whose only callers are tests is a candidate for this class.
 **It should be run as a standing check**, because the three instances were found by
 reading a graph, not by running a suite.
 
-#### 3.8.1 The run `epoch` field is inert in the product — the third instance
+#### 3.8.1 The run `epoch` field WAS inert in the product — the third instance (CLOSED BY DELETION; the finding is preserved below as history)
 
 > **RESOLVED, AND NOT BY THE ROUTE THIS SECTION RECOMMENDS.** The finding below is
 > preserved as written (it is the audit's own record of how the defect was found),
