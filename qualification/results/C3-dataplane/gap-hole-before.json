@@ -1,0 +1,69 @@
+{
+  "probe": "c3-gap-hole",
+  "label": "before",
+  "measuredAt": "2026-09-20T15:28:36.514Z",
+  "identity": {
+    "srcArtifactsTs": "3e781b38b8e31dd4769e32ea1fd9f2858375139984896f038c3abc918f8e789a",
+    "libArtifactsJs": "8220d779717a6515a64cb5df01388ea5b04a5e062307bbbca1c9d6877feb7da9"
+  },
+  "arms": {
+    "rangeInsideFile": {
+      "fileBytes": 4096,
+      "requestedRange": {
+        "offset": 0,
+        "length": 1024
+      },
+      "requestedBytes": 1024,
+      "publishedBytes": 4096,
+      "completeness": "complete-within-request",
+      "coverageVerdict": "full-for-requested-scope",
+      "gaps": [],
+      "bytesMissingFromRequestedRange": 0,
+      "deliverableAsComplete": true
+    },
+    "rangePastEof": {
+      "fileBytes": 400,
+      "requestedRange": {
+        "offset": 0,
+        "length": 1000
+      },
+      "requestedBytes": 1000,
+      "publishedBytes": 400,
+      "completeness": "complete-within-request",
+      "coverageVerdict": "full-for-requested-scope",
+      "gaps": [],
+      "bytesMissingFromRequestedRange": 600,
+      "deliverableAsComplete": true
+    },
+    "rangeEntirelyPastEof": {
+      "fileBytes": 400,
+      "requestedRange": {
+        "offset": 1000,
+        "length": 512
+      },
+      "requestedBytes": 512,
+      "publishedBytes": 400,
+      "completeness": "complete-within-request",
+      "coverageVerdict": "full-for-requested-scope",
+      "gaps": [],
+      "bytesMissingFromRequestedRange": 112,
+      "deliverableAsComplete": true
+    },
+    "wholeFileShortReader": {
+      "publishedBytes": 400,
+      "completeness": "partial",
+      "gaps": [
+        {
+          "stage": "native-acquisition",
+          "recovery": "refetch"
+        }
+      ]
+    }
+  },
+  "finding": {
+    "rangePastEofIsUnrecordedLoss": true,
+    "rangeEntirelyPastEofIsUnrecordedLoss": true,
+    "controlInsideRangeRecordsNoGap": true,
+    "controlShortReaderRecordsGap": true
+  }
+}

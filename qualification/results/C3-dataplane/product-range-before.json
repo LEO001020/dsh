@@ -1,0 +1,60 @@
+{
+  "probe": "c3-product-range",
+  "label": "before",
+  "measuredAt": "2026-09-20T15:30:44.652Z",
+  "identity": {
+    "srcDataPlaneTs": "bb039c72dfaff13d30be68a72f28c2ace120b0cd0cc49bef4352e73385e3b8c5",
+    "srcArtifactsTs": "3e781b38b8e31dd4769e32ea1fd9f2858375139984896f038c3abc918f8e789a",
+    "libDataPlaneJs": "499bef361a82d91cc5fd39e6a3ab48dbe996590057d7195ee4251860bc6948c5",
+    "libArtifactsJs": "8220d779717a6515a64cb5df01388ea5b04a5e062307bbbca1c9d6877feb7da9"
+  },
+  "arms": {
+    "control_rangeInsideFile": {
+      "fileBytes": 4096,
+      "requestedRange": {
+        "offset": 0,
+        "length": 1024
+      },
+      "requestedBytes": 1024,
+      "publishedBytes": 1024,
+      "completeness": "complete-within-request",
+      "coverageVerdict": "full-for-requested-scope",
+      "gaps": [],
+      "bytesAbsentInsideRequestedRange": 0,
+      "deliverableAsComplete": true
+    },
+    "rangePastEof": {
+      "fileBytes": 400,
+      "requestedRange": {
+        "offset": 0,
+        "length": 1000
+      },
+      "requestedBytes": 1000,
+      "publishedBytes": 400,
+      "completeness": "complete-within-request",
+      "coverageVerdict": "full-for-requested-scope",
+      "gaps": [],
+      "bytesAbsentInsideRequestedRange": 600,
+      "deliverableAsComplete": true
+    },
+    "rangeStartsPastEof": {
+      "fileBytes": 400,
+      "requestedRange": {
+        "offset": 1000,
+        "length": 512
+      },
+      "requestedBytes": 512,
+      "publishedBytes": 0,
+      "completeness": "complete-within-request",
+      "coverageVerdict": "full-for-requested-scope",
+      "gaps": [],
+      "bytesAbsentInsideRequestedRange": 512,
+      "deliverableAsComplete": true
+    }
+  },
+  "finding": {
+    "controlInsideRangeHasNoGap": true,
+    "rangePastEofIsAnUnrecordedLoss": true,
+    "rangeStartsPastEofIsAnUnrecordedLoss": true
+  }
+}
