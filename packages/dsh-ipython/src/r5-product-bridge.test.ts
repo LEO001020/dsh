@@ -33,11 +33,17 @@
  * `tools/pre-execute` listener and a `tools/result` listener) or from what the
  * cell PRINTED — never from what the bridge says about itself.
  *
- * WHAT THIS FILE DOES NOT CLAIM. It does not boot the `daily` profile; the
- * profile-level reachability is measured separately by
- * `qualification/runners/r5-bridge-product.mjs`, which is the assembled daily
- * COMPOSITION rather than the assembled code path. Both are needed and neither
- * substitutes for the other.
+ * WHAT THIS FILE DOES NOT CLAIM. It does NOT boot the `daily` profile. The
+ * profile-level reachability is measured by
+ * `qualification/runners/r5-bridge-product.mjs`, which boots the real profile
+ * through the port-safe harness and drives the same tool out of THAT boot's own
+ * service context; its result is archived at
+ * `qualification/results/R5-bridge/composition-tier.json`. Both tiers are
+ * needed and neither substitutes for the other -- and that is not a
+ * formality: the composition tier found a real defect on its first run
+ * (`cannot get property "tools" without inject`) that this file could not see,
+ * because this file mounts the registry into the context the service receives
+ * while the product does not.
  */
 import { Context } from '@deepseek-ai/cordis'
 import Subprocess from '@deepseek-ai/dsh-subprocess-local'
