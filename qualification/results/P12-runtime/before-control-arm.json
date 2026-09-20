@@ -1,0 +1,60 @@
+{
+  "probe": "P12 runtime location",
+  "arm": "EXPLICIT root=D:\\DSH\\home\\p12\\runtime\\control-arm",
+  "dshHome": "D:\\DSH\\home\\p12",
+  "packageRoot": "D:\\DSH\\work\\wt-p12\\packages\\dsh-ipython",
+  "python": "C:/Users/hzq00/AppData/Local/Programs/Python/Python314/python.exe",
+  "defaultKernelRootConstant": "D:\\DSH\\work\\wt-p12\\packages\\dsh-ipython\\.ipython-kernels",
+  "defaultKernelRootInsidePackage": true,
+  "cellOutcome": "ok",
+  "cellStdout": "KERNEL_CWD=D:\\DSH\\work\\wt-p12",
+  "kernelCwd": "D:\\DSH\\work\\wt-p12",
+  "transport": "tcp",
+  "curveKeysPresent": true,
+  "packageScratchEntries": [],
+  "homeRuntimeEntries": [
+    "runtime/",
+    "runtime\\control-arm/",
+    "runtime\\control-arm\\p12-probe-session/",
+    "runtime\\control-arm\\p12-probe-session\\bridge/",
+    "runtime\\control-arm\\p12-probe-session\\bridge\\artifacts/",
+    "runtime\\control-arm\\p12-probe-session\\bridge\\dsh_bridge_client.py",
+    "runtime\\control-arm\\p12-probe-session\\dsh_attribution_bootstrap.loaded",
+    "runtime\\control-arm\\p12-probe-session\\dsh_attribution_bootstrap.py",
+    "runtime\\control-arm\\p12-probe-session\\kernel.err",
+    "runtime\\control-arm\\p12-probe-session\\kernel.out"
+  ],
+  "errors": [],
+  "scratchTree": {
+    "D:\\DSH\\work\\wt-p12\\packages\\dsh-ipython\\.ipython-kernels": {
+      "exists": true,
+      "entries": [
+        "p12-probe-session/",
+        "p12-probe-session\\bridge/",
+        "p12-probe-session\\bridge\\artifacts/",
+        "p12-probe-session\\bridge\\dsh_bridge_client.py",
+        "p12-probe-session\\dsh_attribution_bootstrap.loaded",
+        "p12-probe-session\\dsh_attribution_bootstrap.py",
+        "p12-probe-session\\kernel.err",
+        "p12-probe-session\\kernel.out"
+      ]
+    },
+    "D:\\DSH\\home\\p12\\runtime\\ipython": {
+      "exists": false,
+      "entries": []
+    },
+    "D:\\DSH\\home\\p12\\runtime\\control-arm": {
+      "exists": true,
+      "entries": [
+        "p12-probe-session/",
+        "p12-probe-session\\bridge/",
+        "p12-probe-session\\bridge\\artifacts/",
+        "p12-probe-session\\bridge\\dsh_bridge_client.py",
+        "p12-probe-session\\dsh_attribution_bootstrap.loaded",
+        "p12-probe-session\\dsh_attribution_bootstrap.py",
+        "p12-probe-session\\kernel.err",
+        "p12-probe-session\\kernel.out"
+      ]
+    }
+  }
+}

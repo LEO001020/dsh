@@ -1,0 +1,46 @@
+{
+  "probe": "P12 runtime location",
+  "arm": "DEFAULT (no root configured)",
+  "dshHome": "D:\\DSH\\home\\p12",
+  "packageRoot": "D:\\DSH\\work\\wt-p12\\packages\\dsh-ipython",
+  "python": "C:/Users/hzq00/AppData/Local/Programs/Python/Python314/python.exe",
+  "defaultKernelRootConstant": "D:\\DSH\\work\\wt-p12\\packages\\dsh-ipython\\.ipython-kernels",
+  "defaultKernelRootInsidePackage": true,
+  "cellOutcome": "ok",
+  "cellStdout": "KERNEL_CWD=D:\\DSH\\work\\wt-p12",
+  "kernelCwd": "D:\\DSH\\work\\wt-p12",
+  "transport": "tcp",
+  "curveKeysPresent": true,
+  "packageScratchEntries": [
+    ".ipython-kernels/",
+    ".ipython-kernels\\p12-probe-session/",
+    ".ipython-kernels\\p12-probe-session\\bridge/",
+    ".ipython-kernels\\p12-probe-session\\bridge\\artifacts/",
+    ".ipython-kernels\\p12-probe-session\\bridge\\dsh_bridge_client.py",
+    ".ipython-kernels\\p12-probe-session\\dsh_attribution_bootstrap.loaded",
+    ".ipython-kernels\\p12-probe-session\\dsh_attribution_bootstrap.py",
+    ".ipython-kernels\\p12-probe-session\\kernel.err",
+    ".ipython-kernels\\p12-probe-session\\kernel.out"
+  ],
+  "homeRuntimeEntries": [],
+  "errors": [],
+  "scratchTree": {
+    "D:\\DSH\\work\\wt-p12\\packages\\dsh-ipython\\.ipython-kernels": {
+      "exists": true,
+      "entries": [
+        "p12-probe-session/",
+        "p12-probe-session\\bridge/",
+        "p12-probe-session\\bridge\\artifacts/",
+        "p12-probe-session\\bridge\\dsh_bridge_client.py",
+        "p12-probe-session\\dsh_attribution_bootstrap.loaded",
+        "p12-probe-session\\dsh_attribution_bootstrap.py",
+        "p12-probe-session\\kernel.err",
+        "p12-probe-session\\kernel.out"
+      ]
+    },
+    "D:\\DSH\\home\\p12\\runtime\\ipython": {
+      "exists": false,
+      "entries": []
+    }
+  }
+}
