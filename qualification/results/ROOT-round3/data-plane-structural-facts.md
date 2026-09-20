@@ -85,3 +85,41 @@ rather than two. This class is the second, ad-hoc place.
 - It does not decide where the data client should live. That is a design choice with
   three defensible answers (V5 §5.3 permits moving it, shipping it from its current
   package, or generating it from a package-owned resource), and P4 owns it.
+
+## 5. CORRECTION to §1 above: there are TWO client mechanisms, and I conflated them
+
+Section 1 says the Python data client is cross-package and neither package ships
+it. That is true of `dsh_data_client.py`. **It is NOT true of the bridge client**,
+and the difference changes the design space. Found by writer P13's probe, whose
+artifact directory contained `dsh_bridge_client.py`, then traced to source.
+
+`packages/dsh-ipython/src/bridge.ts:944-946`, inside `BridgeServer.start()`:
+
+```ts
+this.clientPath = join(clientDirectory, BRIDGE_CLIENT_FILENAME)   // 'dsh_bridge_client.py'
+writeFileSync(this.clientPath, PYTHON_CLIENT_SOURCE, 'utf8')
+```
+
+So the **bridge** client is **materialised to disk at runtime from a TS template
+string** (`PYTHON_CLIENT_SOURCE`) into `clientDirectory ?? artifactDirectory`. It is
+not imported from a package at all, so it has no packaging problem — it ships as
+code. Its own comment states the deliberate security property:
+
+> *"the token is minted here and nowhere else. It is written into the client's
+> module namespace by the per-cell preamble rather than into the client source, so
+> the on-disk client is not itself a capability and can be rewritten without
+> invalidating a live kernel."*
+
+**The two mechanisms, stated separately so they are not conflated again:**
+
+| client | mechanism | packaging |
+|---|---|---|
+| `dsh_bridge_client.py` | generated at runtime from `PYTHON_CLIENT_SOURCE` in `dsh-ipython` | **no problem** — it is code, not a shipped file |
+| `dsh_data_client.py` | a real file in `dsh-daily-work/src/`, absent from both packages' `files` | **the actual gap** |
+
+**Consequence for the fix:** V5 §5.3 permits three routes (move / ship / generate),
+and the **generate** route is not merely permitted — it is the pattern this codebase
+already trusts for exactly this problem. A fix taking that route must preserve the
+property the bridge client has: **the generated file must not carry the token**, or
+it would turn an on-disk file into a capability, which is strictly worse than the
+cross-package import it replaces.
