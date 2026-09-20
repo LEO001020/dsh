@@ -308,6 +308,30 @@ S13 实测 `r5-restart-epoch.test.ts`：四次**孤立**运行（同一 commit�
 
 ---
 
+## 8.6 凭证扫描结果（P1，事后审计）— GO，但有一项历史披露
+
+**判定：GO，无需轮换任何凭证。** 但这是**发布之后**的审计，无法作为门。P1 独立克隆了公开仓库并审计 `8c4be404`（比 `a476fc1` 更严，因为它包含后者为祖先）。
+
+### 确认无真凭证- 两个 canary fixture —— **伪造**，值自证惰性（`CANARY-FAKE`、`NOT-A-REAL-CREDENTIAL`）
+- V2-composition 的 `sk-EXAMPLEKEYFORTESTINGONLY...` —— **伪造**。它位于 `syntheticRawControl` 之下，标注 `"CONSTRUCTED control, not captured"`，存在目的是证明 scrubber **能**触发。那个 JWT 是 **2 段而非3段** —— **没有签名**- **2011 个已删除但仍发布的历史 blob 全部做了二进制安全的内容扫描**：3 个 web token +1 个上游 `sk-`测试 fixture。零私钥、零 assignment 形式、零 auth header。`ghp_`/`AKIA`/`-----BEGIN`/`xoxb_`/`client_secret` 全部 **0**
+- P2 报的 **794 个文件含 `D:/DSH` 绝对路径** —— P1 同意可接受：那是项目布局而非个人标识，**抹掉它会摧毁这个包存在的意义（可复现性）**。唯一真正的个人数据是 OS 账户名 `C:/Users/hzq00`（约103处），属假名性质
+
+### 一项需要记录的历史披露**`qualification/results/M9.14-profile-config/runs/a12-web-boot.stdout`** 在 `24515d1` 被删除，**但其 blob（`01fb5f48…`）仍可从公开克隆取回**，内含一个 loopback session token。
+
+**我独立复核了 P1 的"惰性"论断，四条独立理由全部成立**：
+- 51 个文件含 `127.0.0.1:<port>/?token=<43字符>`，**53 处**
+- **端口3080 在三次运行里带 3 个不同 token** —— 这是**每次启动的 nonce，不是固定凭证**（我实测确认）
+- **全部51个端口探测，零监听**
+- 全部 loopback 绑定
+
+**结论：一个读者拿到的是一个不授权任何东西的字符串。** 这是**审计包的观感问题，不是泄露**。项目自己的策略（`SECURITY.md`、`run-a12.mjs`）本来就会 redact 它们，最新的 A12 产物 `grep -c 'token='` 确实是 **0**。
+
+### 两条非阻塞建议（P1）
+1. `.gitignore` **没有凭证模式**（`.env`、`*.pem`、`.key`、`.credentials*`）。今天零个未跟踪且未忽略的凭证形状文件，所以**无活跃泄露** —— 但 `GAPS.md` 指出真正的凭证库是 `$DSH_HOME/.credentials.yaml`，只是这台机器上恰好不存在。**潜在风险**
+2. 若将来重推：把51个产物里的 `?token=…` redact 掉，并重写那3个历史 blob。**仓库里已有做这件事的 redaction helper**
+
+---
+
 ## 9. 附：当前未完成项
 
 | 项 | 状态 |
