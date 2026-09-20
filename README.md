@@ -4,6 +4,26 @@ A DSH-native personal daily system for coding and research, built on
 DeepSeek Harness. **Status: NOT READY FOR DAILY USE.** See the honest summary at
 the bottom before using anything here.
 
+## Cloning this repository (read this first on Windows)
+
+**A plain `git clone` can fail on Windows and leave an apparently empty
+checkout.** Several evidence paths are deep, and the failure is a path-length
+limit, not a missing file: `git clone` prints `Filename too long`, exits non-zero,
+and never writes the index — so `git ls-files` returns 0 and the tree looks empty.
+
+The longest path is 222 characters, so whether it fails depends on **where you
+clone it**: a short destination such as `D:/dsh` works, a deep temporary directory
+does not.
+
+```sh
+# either clone somewhere short...
+git clone https://github.com/LEO001020/dsh D:/dsh
+# ...or enable long paths for this clone
+git -c core.longpaths=true clone https://github.com/LEO001020/dsh D:/dsh
+```
+
+Measured and narrowed in `qualification/results/ROOT-round2/clone-path-length.md`.
+
 > **Target architecture changed on 2026-09-20.** The new contract
 > (`DSH_NATIVE_IPYTHON_ARCHITECTURE_AUDIT_2026-09-20`) makes a **persistent
 > IPython kernel** the model's primary execution surface, adds a native
