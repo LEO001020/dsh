@@ -1,7 +1,7 @@
 # trusted-local-v2 gate table
 
-**QualificationContractIdentity:** `e102849cbb2ead52f8816ec0cc65daf5825ae61edf40db5eaf42b86e12823579`
-**RuntimeDeploymentIdentity:** `3ff8c1cb7f06f19f45ca87294abe6b98fc7dfa976b269d09928c4d6d855fec15`
+**QualificationContractIdentity:** `2ba8d059d65286114a4e96f7cc68dc07023734c818a3a53f06b9979fb23b602c`
+**RuntimeDeploymentIdentity:** `3d4b9a3584b0b763159399e33c0d69ad98a5ef6a721370a3c3a625e688a575e7`
 **Acceptance definition digest:** `115aa092d0279c005d6f83d0412c1e00d374b60f803dd10f56eaba878ed664e1`
 
 This table is a RESULT. It is not an identity input, and filing it does not move either identity above. That is the property the v2 definition/result split exists for, and `file-result.py` proves it by recomputing both identities before and after the write.

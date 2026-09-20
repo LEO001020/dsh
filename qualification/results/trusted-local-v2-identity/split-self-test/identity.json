@@ -3,7 +3,7 @@
   "kind": "TRUSTED_LOCAL_V2_QUALIFICATION_IDENTITY_NOT_A_DSH_ARTIFACT",
   "algorithm": "sha256(UTF8(json.dumps(inputs, sort_keys=True, separators=(',', ':'), ensure_ascii=True)))",
   "algorithm_note": "The lock's own declared algorithm, reused verbatim so a reader who can reproduce v1's identity reproduces v2's the same way: sha256(UTF8(json.dumps(inputs, sort_keys=True, separators=(',',':'), ensure_ascii=True))).",
-  "runtime_deployment_identity": "3ff8c1cb7f06f19f45ca87294abe6b98fc7dfa976b269d09928c4d6d855fec15",
+  "runtime_deployment_identity": "3d4b9a3584b0b763159399e33c0d69ad98a5ef6a721370a3c3a625e688a575e7",
   "runtime_inputs": {
     "upstream_commit": "ddefc45fbc7f8e46dd73185e68295696d1297887",
     "upstream_repository": "deepseek-ai/deepseek-harness",
@@ -22,7 +22,7 @@
     "authority_policy_digest": "user-authorizes-n-model-cannot-widen",
     "trust_model_statement": "The OS user account is the execution authority boundary. No sandbox, no WSL, no Linux VM, no SSH execution world. Every process this deployment starts -- including the persistent IPython kernel -- runs as the invoking OS user with that user's full filesystem, network and process visibility. This deployment claims NO confinement of reads, writes, network or process visibility, and no case in qualification/specs/acceptance-spec.trusted-local-v1.json may be read as establishing one.",
     "trust_model_name": null,
-    "implementation_commit": "f0223e3f0c1906e35cfe594e32927bed3dcb3615",
+    "implementation_commit": "0b7adeb47d85b32ffd75469b460fff8b58c9299e",
     "python_identity": {
       "python_version": "3.14.3",
       "python_executable": "C:\\Users\\hzq00\\AppData\\Local\\Programs\\Python\\Python314\\python.exe",
@@ -75,8 +75,8 @@
   },
   "v1_lock_identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
   "qualification_contract": {
-    "contract_id": "trusted-local-v2.e102849cbb2e",
-    "qualification_contract_identity": "e102849cbb2ead52f8816ec0cc65daf5825ae61edf40db5eaf42b86e12823579",
+    "contract_id": "trusted-local-v2.2ba8d059d652",
+    "qualification_contract_identity": "2ba8d059d65286114a4e96f7cc68dc07023734c818a3a53f06b9979fb23b602c",
     "acceptance_definition_path": "qualification/specs/acceptance-spec.trusted-local-v2.definition.json",
     "acceptance_definition_digest": "115aa092d0279c005d6f83d0412c1e00d374b60f803dd10f56eaba878ed664e1",
     "provenance_path": "qualification/specs/acceptance-spec.trusted-local-v2.provenance.json",
@@ -89,7 +89,7 @@
       "qualification/specs/frozen/verify-freeze.py": "b4d05c80094c4c813dae4dd92ff4c2a3834d3e31728877efab94f79e58cc842e",
       ".gitattributes": "a7c77786b5f1d95cf22ddbb1f3f37bdcf77c2ff6bab01c14a8fbc46e0bd22c5e"
     },
-    "results_location": "qualification/results/trusted-local-v2.e102849cbb2e/"
+    "results_location": "qualification/results/trusted-local-v2.2ba8d059d652/"
   },
   "field_provenance": [
     {
@@ -251,20 +251,20 @@
     ]
   },
   "staleness": {
-    "current_contract_identity": "e102849cbb2ead52f8816ec0cc65daf5825ae61edf40db5eaf42b86e12823579",
-    "current_runtime_identity": "3ff8c1cb7f06f19f45ca87294abe6b98fc7dfa976b269d09928c4d6d855fec15",
+    "current_contract_identity": "2ba8d059d65286114a4e96f7cc68dc07023734c818a3a53f06b9979fb23b602c",
+    "current_runtime_identity": "3d4b9a3584b0b763159399e33c0d69ad98a5ef6a721370a3c3a625e688a575e7",
     "filed_results": [
       {
         "directory": "trusted-local-v2.e102849cbb2e",
         "filed_contract_identity": "e102849cbb2ead52f8816ec0cc65daf5825ae61edf40db5eaf42b86e12823579",
         "filed_runtime_identity": "3ff8c1cb7f06f19f45ca87294abe6b98fc7dfa976b269d09928c4d6d855fec15",
-        "is_current": true,
-        "contract_matches": true,
-        "runtime_matches": true,
-        "why": "current"
+        "is_current": false,
+        "contract_matches": false,
+        "runtime_matches": false,
+        "why": "STALE: this result was filed at a different revision or definition. It remains a true statement about the identity it names, and it is NOT a result for the current tree. Re-derive with `--init-results` after the final integration commit."
       }
     ],
-    "all_current": true,
+    "all_current": false,
     "note": "`implementation_commit` is a runtime identity input, so committing a result directory moves the identity that directory names. This is intended: a result must name the revision it was measured at. The consequence to state plainly is that a result filed before the FINAL integration commit is stale by construction, and the root agent re-derives at integration."
   },
   "probe_path": "qualification/results/trusted-local-v2-identity/probe.json",
