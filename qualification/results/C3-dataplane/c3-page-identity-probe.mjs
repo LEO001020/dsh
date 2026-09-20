@@ -117,6 +117,18 @@ const capture = await captureFile({
   observationId: 'obs-c3-page-identity', mediaType: 'application/octet-stream',
 })
 const objectPathOnDisk = await objectPath(plane.store, capture.descriptor.captured.sha256)
+
+// PIN THE MTIME TO A WHOLE SECOND before the benign page.
+//
+// `assertObjectIdentity` memoizes on `${size}:${mtimeMs}`, and this filesystem
+// keeps sub-millisecond mtime precision, so restoring a captured `mtimeMs` with
+// `utimesSync` lands a fraction of a millisecond off and the stamp differs -- the
+// check re-hashes and the arm measures nothing. Pinning to a whole second first
+// makes the stamp exactly reproducible, which is the condition the memo is
+// vulnerable to. An attacker with write access can set a file's mtime, so this is
+// a real capability and not a laboratory convenience.
+const pinnedSeconds = Math.floor(Date.now() / 1000) - 60
+utimesSync(objectPathOnDisk, pinnedSeconds, pinnedSeconds)
 const beforeStat = statSync(objectPathOnDisk)
 
 const first = await pages(plane.store, {
@@ -138,12 +150,10 @@ out.arms.benignFirstPage = {
 const replacement = Buffer.alloc(payload.length, 0x5a)
 chmodSync(objectPathOnDisk, 0o600)
 writeFileSync(objectPathOnDisk, replacement)
-// `utimesSync` takes SECONDS and accepts a float, while `stat().mtimeMs` can carry
-// a fractional part. Passing a `Date` truncates to whole milliseconds, which is
-// enough to make the stamp differ and the arm measure nothing -- measured: the
-// first attempt restored `mtimeMs` to a different value and `assertObjectIdentity`
-// re-hashed, so the cursor was refused for the wrong reason.
-utimesSync(objectPathOnDisk, beforeStat.atimeMs / 1000, beforeStat.mtimeMs / 1000)
+// The stamp is `size:mtimeMs`, and both are attacker-settable. The mtime is
+// restored to the SAME whole second the benign page was verified under, so the
+// memo cannot tell the replacement from the object it verified.
+utimesSync(objectPathOnDisk, pinnedSeconds, pinnedSeconds)
 const afterStat = statSync(objectPathOnDisk)
 out.arms.replacement = {
   sameLength: afterStat.size === beforeStat.size,

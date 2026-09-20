@@ -1,10 +1,10 @@
 {
   "probe": "c3-page-identity",
   "label": "before",
-  "measuredAt": "2026-09-20T15:33:07.499Z",
+  "measuredAt": "2026-09-20T15:34:48.978Z",
   "identity": {
-    "srcArtifactsTs": "3e781b38b8e31dd4769e32ea1fd9f2858375139984896f038c3abc918f8e789a",
-    "libArtifactsJs": "8220d779717a6515a64cb5df01388ea5b04a5e062307bbbca1c9d6877feb7da9"
+    "srcArtifactsTs": "ecbb31a5aa7520224ab4e540df903991c9f6451fddbff329c372044636a6b39a",
+    "libArtifactsJs": "f22ef649e211e1c7c7c4fb3da798051bce9c75a0d90ebacb56e831a51ef270ca"
   },
   "arms": {
     "benignFirstPage": {
@@ -16,24 +16,24 @@
     },
     "replacement": {
       "sameLength": true,
-      "sameMtimeMs": false,
+      "sameMtimeMs": true,
       "storedSha256": "4d06b09eea8b7ee7266c9b36cd03d8354187889bf428120a034921f0da827194",
       "descriptorSha256": "e0626d0ac9504f04ae26bc4796d355e988ecbba8114fd9eef1b0b6c1279f78a8",
       "bytesAreTheNamedArtifact": false
     },
     "cursorAfterReplacement": {
-      "refused": true,
-      "code": "artifact-integrity-error",
-      "name": "ArtifactError",
-      "message": "artifact artifact:sha256:e0626d0ac9504f04ae26bc4796d355e988ecbba8114fd9eef1b0b6c1279f78a8 is recorded as e0626d0ac9504f04ae26bc4796d355e988ecbba8114fd9eef1b0b6c1279f78a8 (920 bytes) but the stored object hashes to 4d06b09eea8b7ee7266c9b36cd03d8354187889bf428120a034921f0da827194 (920 bytes read); the bytes are not the artifact that was recorded",
-      "yieldedIsTheNamedArtifact": null
+      "refused": false,
+      "bytes": 64,
+      "sha256": "cc7321cce5e4409bd8077d58422e1214969059bbd40b4eeb0de0a642f40f7282",
+      "offset": 64,
+      "yieldedIsTheNamedArtifact": false
     },
     "resolveReferenceOnSameObject": {
       "refused": true,
       "code": "artifact-integrity-error",
       "message": "artifact artifact:sha256:e0626d0ac9504f04ae26bc4796d355e988ecbba8114fd9eef1b0b6c1279f78a8 declares 920 bytes hashing to e0626d0ac9504f04ae26bc4796d355e988ecbba8114fd9eef1b0b6c1279f78a8 but the stored object hashes to 4d06b09eea8b7ee7266c9b36cd03d8354187889bf428120a034921f0da827194 (920 bytes read)"
     },
-    "pagingAndResolveDisagree": false,
+    "pagingAndResolveDisagree": true,
     "freshStoreSameRootCursor": {
       "refused": true,
       "code": "artifact-integrity-error",
@@ -43,11 +43,11 @@
   },
   "verdicts": {
     "firstPageWasTheArtifact": true,
-    "replacementPreservedLengthAndMtime": false,
+    "replacementPreservedLengthAndMtime": true,
     "replacementIsNotTheNamedArtifact": true,
-    "cursorServedReplacedBytes": false,
+    "cursorServedReplacedBytes": true,
     "resolveReferenceRefused": true,
     "freshStoreRefused": true,
-    "PAGE_IDENTITY_HOLDS": true
+    "PAGE_IDENTITY_HOLDS": false
   }
 }
