@@ -456,6 +456,12 @@ async function mountIpythonTool(root: string): Promise<{ ctx: Context; dispose: 
       pythonExecutable: string
       brokerScript: string
       root: string
+      // The cross-package import is typed structurally by hand, so every field
+      // this call passes must appear here. `durableLedger` is declared because
+      // V5 §11.1 made an UNSET value mean REQUIRED: this harness mounts no
+      // storage domain, so it must opt out explicitly or every kernel in this
+      // file refuses to publish.
+      durableLedger?: boolean
     }) => { close: () => Promise<void> }
   }
   const ipyTool = await import(pathToFileURL(join(pkg, 'src', 'ipython-tool.ts')).href) as {
