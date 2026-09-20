@@ -37,14 +37,45 @@
  * workspace, a different approval subject, or a different filesystem root.
  *
  * THE LIFECYCLE RULE. The capability is valid only while the owning cell is
- * alive. A lease is minted immediately before a cell is dispatched and revoked
- * when that cell settles, and `revoke` DRAINS in-flight calls before it returns.
- * A callback arriving after settlement is rejected with `LEASE_REVOKED`, and the
- * three other staleness channels are rejected separately so a reader can tell
- * them apart: a mismatched kernel `epoch`, a mismatched `cellId`, and an unknown
- * lease id. A background thread that outlives its cell therefore cannot invoke a
- * native tool with stale authority; long-lived work must go through DSH
- * Jobs/subagents or a fresh live cell.
+ * alive. A lease is minted immediately before a cell is dispatched and closed
+ * when that cell settles, and closing DRAINS in-flight calls before it returns.
+ * A callback arriving after settlement is rejected with `CELL_LEASE_EXPIRED`, and
+ * the other staleness channels are rejected separately so a reader can tell them
+ * apart: a mismatched kernel `epoch`, a mismatched `cellId`, an unknown lease id,
+ * and a host disposal that is not a cell settlement (`LEASE_REVOKED`). A
+ * background thread that outlives its cell therefore cannot invoke a native tool
+ * with stale authority; long-lived work must go through DSH Jobs/subagents or a
+ * fresh live cell.
+ *
+ * THE LEASE STATES, AND WHY A BOOLEAN WAS NOT ENOUGH. `OPEN -> CLOSING ->
+ * CLOSED` (V3 §J3). The intermediate state is what makes "stop accepting new
+ * calls" and "every started call has reached quiescence" two DIFFERENT facts a
+ * reader can observe, instead of one flag that flips somewhere in between. A
+ * call refused in `CLOSING` and a call refused in `CLOSED` are the same refusal
+ * to a program and different facts to an auditor.
+ *
+ * THE DISPOSITION RECORD, WHICH IS THE HALF THAT WAS MISSING. `BR-07`'s oracle
+ * requires that every in-flight call carry one disposition from `settled` /
+ * `cancelled` / `handed-to-jobs` / `abandoned-unstarted`, that a call handed to
+ * Jobs name its job id, and that "nothing continues silently in the background
+ * with no record". Before this change the lease drained correctly (a `revoke`
+ * waited 1499 ms for an in-flight call) and recorded NOTHING about what became of
+ * it, so a reader could not tell settled from cancelled from abandoned. The four
+ * names and their meanings are copied from `packages/dsh-daily-work/src/
+ * programmatic-scope.ts` so the repository has ONE vocabulary rather than two;
+ * see `bridge-ledger.ts` for why the record is a storage-domain ledger and not a
+ * custom Session event.
+ *
+ * THE SERIAL BASELINE. Each lease owns a FIFO exact-tool-call queue and runs it
+ * ONE AT A TIME (V3 §J1). Public `ctx.tools.execute()` runs one complete
+ * ToolRuntime call and does NOT expose the native/PTC sibling scheduler, so
+ * concurrent `execute()` calls cannot be claimed to have native scheduling
+ * parity; and the private `TOOL_RUNTIME_SCHEDULER` symbol is a module-local
+ * `Symbol()` that a second physical copy of the package makes undefined
+ * (upstream Discussion #6529), so it must never be imported. Serial execution is
+ * therefore the honest baseline, and it has a second consequence this file
+ * relies on: deferred contexts are emitted in subcall order for free, because
+ * the calls settle in that order.
  *
  * TRANSPORT. The kernel is a GRANDCHILD of the host (host -> broker -> kernel),
  * so the broker's inherited control descriptor is not available to it, and
@@ -76,6 +107,12 @@ import { mkdirSync, writeFileSync } from 'node:fs'
 import { createServer, type Server, type Socket } from 'node:net'
 import { join } from 'node:path'
 import { encodeFrame, FrameDecoder, FrameError, MAX_FRAME_BYTES } from './protocol.ts'
+import {
+  digestOf,
+  type BridgeCloseReason,
+  type BridgeDisposition,
+  type BridgeLedger,
+} from './bridge-ledger.ts'
 
 /**
  * Wire version. A kernel holding a client from a different version is refused
@@ -159,6 +196,56 @@ export interface NativeCallRequest {
   readonly leaseId: string
 }
 
+/** The lease's lifecycle state. See the module docstring for why this is not a boolean. */
+export type LeaseState = 'OPEN' | 'CLOSING' | 'CLOSED'
+
+/**
+ * Why a lease was refused. Every arm is a distinct, testable rejection.
+ *
+ * `CELL_LEASE_EXPIRED` is the STABLE, PROGRAM-FACING code for "the cell that
+ * held this capability has settled". V3 §J3 names it verbatim: background Python
+ * using an old lease must get a stable `CELL_LEASE_EXPIRED` rather than whichever
+ * internal reason happened to fire. The finer internal reason is kept as `detail`
+ * on the rejection (and in the ledger), so the distinction is not lost for an
+ * auditor while a program still branches on one code.
+ *
+ * `LEASE_REVOKED` remains for the one case that is NOT a cell settlement: the
+ * HOST disposed the kernel or the bridge while the lease was live. Collapsing it
+ * into `CELL_LEASE_EXPIRED` would tell a program its cell had settled when in
+ * fact its kernel was shut down underneath it, which is a different fact with a
+ * different remedy.
+ */
+export type LeaseRejectionCode =
+  | 'CELL_LEASE_EXPIRED'
+  | 'LEASE_REVOKED'
+  | 'LEASE_UNKNOWN'
+  | 'LEASE_ABORTED'
+  | 'EPOCH_MISMATCH'
+  | 'CELL_MISMATCH'
+  | 'REQUEST_ID_CONFLICT'
+  | 'FORGED_AUTHORITY'
+  | 'TOOL_NAME_INVALID'
+  | 'ARGUMENTS_NOT_JSON'
+  | 'BRIDGE_CLOSED'
+
+/** A refusal, carrying the code and the values that disagreed. */
+export class LeaseRejection extends Error {
+  readonly code: LeaseRejectionCode
+  /**
+   * The internal reason this lease is no longer usable, when the code is a
+   * coarse one. It is NOT sent to Python: it is for the host's own ledger and
+   * log, where a reader wants the fine distinction the program does not need.
+   */
+  readonly detail: string | undefined
+
+  constructor(code: LeaseRejectionCode, message: string, detail?: string) {
+    super(message)
+    this.name = 'LeaseRejection'
+    this.code = code
+    this.detail = detail
+  }
+}
+
 /**
  * Host-bound authority for one cell. NONE of this comes from Python.
  *
@@ -170,85 +257,217 @@ export interface CellLeaseInput {
   readonly sessionId: string
   readonly cellId: string
   readonly epoch: number
-  readonly handler: (call: NativeCallRequest) => Promise<NativeCallOutcome>
+  /**
+   * Run one accepted call. The second argument is the HOST's identity for it, so
+   * the handler never has to invent a subcall id and cannot disagree with the
+   * ledger about which call it is running.
+   */
+  readonly handler: (call: NativeCallRequest, context: ExactCallContext) => Promise<NativeCallOutcome>
   /** Cell-scoped cancellation. An aborted lease accepts no new calls. */
   readonly signal?: AbortSignal
+  /** The outer model `ipython` call this lease was minted for. Recorded on every ledger row. */
+  readonly outerCallId: string
+  /** The outer execution's root call id. Recorded on every ledger row. */
+  readonly rootCallId: string
+  /** Where the durable intent/settlement rows and dispositions go. */
+  readonly ledger: BridgeLedger
+  /**
+   * The host handoff for calls that had NOT started when the lease closed.
+   *
+   * ABSENT MEANS REFUSED, NEVER SILENTLY RUN — the same rule
+   * `programmatic-scope.ts` states for its own handoff. A composition with no
+   * Jobs service therefore records `abandoned-unstarted`, which is a truthful
+   * account of what happened rather than a fabricated success.
+   */
+  readonly handoffToJobs?: (call: { subCallId: string, name: string, args: unknown }) => { jobId: string } | undefined
+  /** Host-owned disposition sink, so the enclosing log records the drain too. */
+  readonly onDisposition?: (disposition: LeaseCallDisposition) => void
+  /**
+   * The controller whose signal the HOST already handed to the exact-call
+   * dispatcher. Closing the lease aborts THIS controller.
+   *
+   * WHY THE HOST SUPPLIES IT RATHER THAN THE LEASE OWNING ONE. The signal that
+   * must be aborted at close is the one the registry call is already holding, and
+   * that signal has to exist before the handler is built -- which is before the
+   * lease is constructed, because the handler is a construction input. Letting the
+   * lease mint its own controller would therefore produce a SECOND signal that no
+   * in-flight call is listening to, so a close would refuse new calls while an
+   * already-started call ran on unbounded. One controller, supplied by the host
+   * and aborted by the lease, is what makes "abort lease-owned calls" (V3 §J3 step
+   * 2) true of the calls that are actually running.
+   */
+  readonly controller?: AbortController
 }
 
-/** Why a lease was refused. Every arm is a distinct, testable rejection. */
-export type LeaseRejectionCode =
-  | 'LEASE_UNKNOWN'
-  | 'LEASE_REVOKED'
-  | 'LEASE_ABORTED'
-  | 'EPOCH_MISMATCH'
-  | 'CELL_MISMATCH'
-  | 'DUPLICATE_REQUEST_ID'
-  | 'FORGED_AUTHORITY'
-  | 'TOOL_NAME_INVALID'
-  | 'ARGUMENTS_NOT_JSON'
+/**
+ * What the host tells a handler about the call it is about to run.
+ *
+ * `subCallId` is minted by the LEASE, from the enclosing call id and the lease's
+ * own monotonic sequence, so it is correlatable with the `ipython` execution in
+ * the session log and cannot be chosen by a program.
+ */
+export interface ExactCallContext {
+  readonly subCallId: string
+  /** Monotonic within the lease, starting at 1. */
+  readonly sequence: number
+}
 
-/** A refusal, carrying the code and the values that disagreed. */
-export class LeaseRejection extends Error {
-  readonly code: LeaseRejectionCode
+/**
+ * One call's disposition, as the lease reports it.
+ *
+ * The vocabulary and the `jobId`-exactly-when-handed rule are copied from
+ * `programmatic-scope.ts`'s `ScopeCallDisposition`; see the module docstring.
+ */
+export interface LeaseCallDisposition {
+  readonly subCallId: string
+  readonly name: string
+  readonly disposition: BridgeDisposition
+  /** Present exactly when `disposition` is `handed-to-jobs`. */
+  readonly jobId?: string
+  readonly closeReason?: BridgeCloseReason
+  /** True when the call had been dispatched to the registry when the close began. */
+  readonly started: boolean
+}
 
-  constructor(code: LeaseRejectionCode, message: string) {
-    super(message)
-    this.name = 'LeaseRejection'
-    this.code = code
-  }
+/** One accepted call's mutable state, held in the lease's FIFO. */
+interface AcceptedCall {
+  readonly call: NativeCallRequest
+  readonly subCallId: string
+  readonly sequence: number
+  /** The exact normalized arguments, so a duplicate can be recognised losslessly. */
+  readonly argsDigest: string
+  /** Resolved with the outcome. A duplicate submission joins THIS promise. */
+  readonly settled: Promise<NativeCallOutcome>
+  readonly resolve: (outcome: NativeCallOutcome) => void
+  readonly reject: (error: unknown) => void
+  started: boolean
 }
 
 /**
  * One live cell's capability.
  *
- * `inFlight` is what makes revocation a real barrier rather than a flag: a
- * nested call that was already accepted when the cell settled is awaited before
- * `revoke` resolves, so the host never reports a cell finished while a tool call
- * it authorised is still running.
+ * `inFlight` is what makes closing a real barrier rather than a flag: a nested
+ * call that was already accepted when the cell settled is awaited before `close`
+ * resolves, so the host never reports a cell finished while a tool call it
+ * authorised is still running.
+ *
+ * THE FIFO IS THE SERIAL BASELINE. Every accepted call is executed one at a
+ * time, in bridge-accepted order, because public `ctx.tools.execute()` runs one
+ * complete ToolRuntime call and does not expose the native scheduler. See the
+ * module docstring. The queue is also why a duplicate submission can be
+ * answered from the first call's own promise instead of being dispatched twice.
  */
 export class CellLease {
   readonly id: string
   readonly sessionId: string
   readonly cellId: string
   readonly epoch: number
-  private readonly handler: (call: NativeCallRequest) => Promise<NativeCallOutcome>
+  readonly outerCallId: string
+  readonly rootCallId: string
+  private readonly handler: (call: NativeCallRequest, context: ExactCallContext) => Promise<NativeCallOutcome>
+  private readonly ledger: BridgeLedger
+  private readonly handoffToJobs: CellLeaseInput['handoffToJobs']
+  private readonly onDisposition: CellLeaseInput['onDisposition']
   private readonly inFlight = new Set<Promise<unknown>>()
-  private readonly seenRequestIds = new Set<string>()
-  private revoked: string | undefined
+  /**
+   * The idempotency table: request id -> the call it identified and its outcome.
+   *
+   * The KEY is the protocol request id, which Python chooses; the VALUE records
+   * the operation and the arguments digest it was first used for, so a second
+   * frame can be classified as an exact duplicate (join the first result) or a
+   * conflict (`REQUEST_ID_CONFLICT`) rather than being refused indiscriminately.
+   */
+  private readonly byRequestId = new Map<string, { subCallId: string, name: string, argsDigest: string, settled: Promise<NativeCallOutcome> }>()
+  private readonly queue: AcceptedCall[] = []
+  private readonly reported: LeaseCallDisposition[] = []
+  private readonly controller: AbortController
+  private sequence = 0
+  private state: LeaseState = 'OPEN'
+  private closing: Promise<void> | undefined
+  private drainScheduled = false
 
   constructor(input: CellLeaseInput) {
     this.id = randomUUID()
     this.sessionId = input.sessionId
     this.cellId = input.cellId
     this.epoch = input.epoch
+    this.outerCallId = input.outerCallId
+    this.rootCallId = input.rootCallId
     this.handler = input.handler
+    this.ledger = input.ledger
+    this.handoffToJobs = input.handoffToJobs
+    this.onDisposition = input.onDisposition
+    this.controller = input.controller ?? new AbortController()
     if (input.signal !== undefined) {
-      if (input.signal.aborted) this.revoked = 'the enclosing call was already cancelled'
-      else input.signal.addEventListener('abort', () => { this.revoked ??= 'the enclosing call was cancelled' }, { once: true })
+      if (input.signal.aborted) this.beginClose('aborted', 'the enclosing call was already cancelled')
+      else input.signal.addEventListener('abort', () => { this.beginClose('aborted', 'the enclosing call was cancelled') }, { once: true })
     }
   }
 
-  /** True while this lease may still authorise a call. */
+  /** True while this lease may still accept a new call. */
   get live(): boolean {
-    return this.revoked === undefined
+    return this.state === 'OPEN'
   }
 
-  /** Why this lease is no longer live, or undefined while it is. */
-  get revokedReason(): string | undefined {
-    return this.revoked
+  /** The lifecycle state, for a host that asserts quiescence. */
+  get lifecycle(): LeaseState {
+    return this.state
   }
+
+  /** Why this lease stopped accepting, or undefined while it is open. */
+  get revokedReason(): string | undefined {
+    return this.closeDetail
+  }
+
+  /**
+   * The signal every exact call this lease owns is dispatched under.
+   *
+   * This is the SAME controller the host passed in, not a second one, so aborting
+   * it here reaches the registry call that is already in flight.
+   */
+  get signal(): AbortSignal {
+    return this.controller.signal
+  }
+
+  /**
+   * The controller the host must hand to the exact-call dispatcher.
+   *
+   * Read by the host BEFORE the lease is constructed, so the signal the handler
+   * stamps onto `ToolExecutionInput` is the one a close will abort. See
+   * {@link CellLeaseInput.controller}.
+   */
+  get abortController(): AbortController {
+    return this.controller
+  }
+
+  /** Every disposition reported so far, in reporting order. */
+  dispositions(): readonly LeaseCallDisposition[] {
+    return Object.freeze([...this.reported])
+  }
+
+  /** How many accepted calls have not reached a terminal state. */
+  get pending(): number {
+    return this.inFlight.size + this.queue.length
+  }
+
+  private closeReason: BridgeCloseReason | undefined
+  private closeDetail: string | undefined
 
   /**
    * Validate one incoming call against this lease and run it.
    *
-   * The checks run in the order a reader would ask them -- is the lease live, is
+   * The checks run in the order a reader would ask them — is the lease open, is
    * the caller in the epoch it thinks it is, is it the cell it thinks it is, has
-   * this exact request already been answered -- so the FIRST failure names the
+   * this exact request already been answered — so the FIRST failure names the
    * most fundamental disagreement.
    */
   async invoke(call: NativeCallRequest): Promise<NativeCallOutcome> {
-    if (this.revoked !== undefined) {
-      throw new LeaseRejection('LEASE_REVOKED', `the cell that held this capability has settled: ${this.revoked}`)
+    if (this.state !== 'OPEN') {
+      throw new LeaseRejection(
+        'CELL_LEASE_EXPIRED',
+        `the cell that held this capability has ${this.state === 'CLOSED' ? 'settled' : 'settled and is draining'}: ${this.closeDetail ?? 'the cell settled'}`,
+        this.closeDetail,
+      )
     }
     if (call.epoch !== this.epoch) {
       throw new LeaseRejection(
@@ -265,43 +484,254 @@ export class CellLease {
     if (call.leaseId !== this.id) {
       throw new LeaseRejection('LEASE_UNKNOWN', 'the capability id in this call is not the live one for this kernel')
     }
-    if (this.seenRequestIds.has(call.requestId)) {
-      // DEFINED BEHAVIOUR, not an accident. A repeated request id is refused
-      // rather than served twice or silently deduplicated: the caller cannot
-      // distinguish "already ran" from "ran again" from the reply alone, so
-      // serving it twice could double a mutation, and deduplicating would make
-      // a lost reply look like a success. Refusing is the only answer that
-      // never misrepresents what happened.
+
+    // The arguments are normalized ONCE, here, and the digest is what both the
+    // idempotency check and the ledger use. A caller cannot submit a frame whose
+    // digest is computed over a different representation than the one dispatched.
+    const digest = digestOf(call.arguments)
+
+    const previous = this.byRequestId.get(call.requestId)
+    if (previous !== undefined) {
+      if (previous.name === call.tool && previous.argsDigest === digest.digest) {
+        // EXACT DUPLICATE: the same request id, the same operation and the same
+        // arguments. It JOINS the first call's outcome instead of being refused
+        // or dispatched again, so a lost reply can be recovered without a second
+        // execution and a mutation cannot be doubled.
+        return await previous.settled
+      }
       throw new LeaseRejection(
-        'DUPLICATE_REQUEST_ID',
-        `request id ${call.requestId} was already answered on this capability; it is refused rather than replayed`,
+        'REQUEST_ID_CONFLICT',
+        `request id ${call.requestId} was first used for "${previous.name}" with different arguments; `
+        + `it is refused rather than replayed as "${call.tool}"`,
       )
     }
-    this.seenRequestIds.add(call.requestId)
 
-    const flight = this.handler(call)
-    this.inFlight.add(flight)
-    try {
-      return await flight
-    } finally {
-      this.inFlight.delete(flight)
+    this.sequence += 1
+    const subCallId = `${this.outerCallId}:ipython:${String(this.sequence)}`
+    let resolve!: (outcome: NativeCallOutcome) => void
+    let reject!: (error: unknown) => void
+    const settled = new Promise<NativeCallOutcome>((res, rej) => { resolve = res; reject = rej })
+    const accepted: AcceptedCall = { call, subCallId, sequence: this.sequence, argsDigest: digest.digest, settled, resolve, reject, started: false }
+    this.byRequestId.set(call.requestId, { subCallId, name: call.tool, argsDigest: digest.digest, settled })
+    this.queue.push(accepted)
+    this.inFlight.add(settled)
+    void settled.catch(() => undefined).finally(() => { this.inFlight.delete(settled) })
+
+    // DURABLE INTENT, BEFORE ANY DISPATCH. Written here rather than inside the
+    // runner so it happens at ACCEPTANCE: a call that is queued behind others and
+    // then abandoned at close must still have left a record, which is the case
+    // BR-07's oracle names ("nothing continues silently ... with no record").
+    await this.ledger.started({
+      subCallId,
+      sessionId: this.sessionId,
+      kernelEpoch: this.epoch,
+      cellId: this.cellId,
+      outerCallId: this.outerCallId,
+      rootCallId: this.rootCallId,
+      requestId: call.requestId,
+      argsDigest: digest.digest,
+      name: call.tool,
+    })
+
+    this.scheduleDrain()
+    return await settled
+  }
+
+  /**
+   * Close the capability and wait for everything it authorised.
+   *
+   * The five steps are V3 §J3's, in its order: stop accepting, abort owned calls,
+   * await quiescence, flush the ledger, mark CLOSED. Idempotent: a second call
+   * waits for the same drain and does not change the recorded reason, so the
+   * first (true) cause is what a later reader sees.
+   */
+  async close(reason: BridgeCloseReason, detail?: string): Promise<void> {
+    const started = this.beginClose(reason, detail)
+    await started
+  }
+
+  /** The synchronous half of `close`: flip to CLOSING and abort, without waiting. */
+  private beginClose(reason: BridgeCloseReason, detail?: string): Promise<void> {
+    this.closeReason ??= reason
+    this.closeDetail ??= detail ?? 'the cell settled'
+    if (this.closing !== undefined) return this.closing
+    // STEP 1: stop accepting new calls. Atomic in the sense that matters here --
+    // `invoke` reads `state` synchronously and there is no await between the read
+    // and the queue push, so no call can be accepted after this line runs.
+    this.state = 'CLOSING'
+    // STEP 2: abort every call this lease owns. A started call settles under the
+    // abort; a queued call is refused before it ever reaches the registry.
+    this.controller.abort(new Error(`the cell lease closed (${reason}): ${this.closeDetail}`))
+    this.closing = this.drain(reason)
+    return this.closing
+  }
+
+  /**
+   * STEP 3 + 4 + 5: quiesce every started call, record every disposition, close.
+   *
+   * The loop is not a single await because a runner settling can let the next
+   * queued entry start, and reporting quiescence with work outstanding is the one
+   * thing a close barrier exists to prevent.
+   */
+  private async drain(reason: BridgeCloseReason): Promise<void> {
+    for (;;) {
+      this.settleQueuedCalls(reason)
+      if (this.inFlight.size === 0) break
+      await Promise.allSettled([...this.inFlight])
+    }
+    this.settleQueuedCalls(reason)
+    // STEP 4: flush the ledger BEFORE the lease reports itself closed, so a
+    // reader that observes CLOSED can rely on every disposition being durable.
+    await this.flush()
+    this.state = 'CLOSED'
+  }
+
+  /**
+   * Dispose of calls that will never start, recording WHY for each.
+   *
+   * The two arms are the oracle's own distinction. A host handoff that takes
+   * ownership produces `handed-to-jobs` WITH the job id; with no handoff, the
+   * call is `abandoned-unstarted`. Mapping either onto the other would erase the
+   * difference between "someone else owns this now" and "this was refused",
+   * which is exactly what the oracle asks a reader to be able to tell apart.
+   */
+  private settleQueuedCalls(reason: BridgeCloseReason): void {
+    while (this.queue.length > 0) {
+      const entry = this.queue.shift()
+      if (entry === undefined) return
+      if (entry.started) continue
+      const handed = this.handoffToJobs?.({ subCallId: entry.subCallId, name: entry.call.tool, args: entry.call.arguments })
+      const refusal = new LeaseRejection(
+        'CELL_LEASE_EXPIRED',
+        handed === undefined
+          ? `the cell settled before "${entry.call.tool}" started, so the call was abandoned unstarted`
+          : `the cell settled before "${entry.call.tool}" started; the host handed it to job ${handed.jobId}`,
+      )
+      this.report(
+        handed === undefined
+          ? { subCallId: entry.subCallId, name: entry.call.tool, disposition: 'abandoned-unstarted', closeReason: reason, started: false }
+          : { subCallId: entry.subCallId, name: entry.call.tool, disposition: 'handed-to-jobs', jobId: handed.jobId, closeReason: reason, started: false },
+      )
+      entry.reject(refusal)
+    }
+  }
+
+  /** Record one disposition: to the durable ledger, to the sink, and in memory. */
+  private report(disposition: LeaseCallDisposition): void {
+    this.reported.push(disposition)
+    this.onDisposition?.(disposition)
+    // The ledger write is fire-and-forget here ON PURPOSE and the reason is
+    // recorded rather than left implicit: `report` is called from the drain path
+    // that `close()` is already awaiting, and awaiting a durable write inside the
+    // synchronous queue-disposal loop would deadlock the loop against itself.
+    // `drain` awaits `flush()` before it flips to CLOSED, so the write is still
+    // ordered before the lease reports itself closed.
+    this.pendingWrites.push(this.ledger.disposed(disposition.subCallId, disposition.disposition, {
+      ...disposition.jobId === undefined ? {} : { jobId: disposition.jobId },
+      ...disposition.closeReason === undefined ? {} : { closeReason: disposition.closeReason },
+    }))
+  }
+
+  private readonly pendingWrites: Promise<void>[] = []
+
+  /** Await every ledger write this lease has issued. */
+  private async flush(): Promise<void> {
+    while (this.pendingWrites.length > 0) {
+      await Promise.allSettled(this.pendingWrites.splice(0, this.pendingWrites.length))
+    }
+  }
+
+  /** Start the FIFO runner if it is not already running. */
+  private scheduleDrain(): void {
+    if (this.drainScheduled) return
+    this.drainScheduled = true
+    void this.runQueue().catch(() => undefined)
+  }
+
+  /**
+   * Run accepted calls ONE AT A TIME, in bridge-accepted order.
+   *
+   * This is the serial baseline V3 §J1 requires. A call that is still queued when
+   * the lease begins closing is never started; a call already in the registry
+   * runs to quiescence under the aborted signal, which the registry reports as
+   * `ABORTED` / `ABORTED_BEFORE_DISPATCH` rather than as a dropped promise.
+   */
+  private async runQueue(): Promise<void> {
+    for (;;) {
+      const entry = this.queue.shift()
+      if (entry === undefined) {
+        this.drainScheduled = false
+        // A submission may have arrived between the shift and this line.
+        if (this.queue.length > 0) this.scheduleDrain()
+        return
+      }
+      if (this.state === 'CLOSED') {
+        // The close path already disposed of this entry; nothing to run.
+        continue
+      }
+      if (this.state === 'CLOSING' || this.controller.signal.aborted) {
+        // Closing began while this call waited. It never started, so it is
+        // disposed by the close path, which records the reason.
+        this.queue.unshift(entry)
+        this.settleQueuedCalls(this.closeReason ?? 'completed')
+        continue
+      }
+      entry.started = true
+      const outcome = await this.runOne(entry)
+      entry.resolve(outcome)
     }
   }
 
   /**
-   * Revoke the capability and wait for everything it authorised.
+   * Run one accepted call and record its settlement and disposition.
    *
-   * Idempotent: a second call waits for the same drain and does not change the
-   * recorded reason, so the first (true) cause is what a later reader sees.
+   * A THROW HERE MUST STILL SETTLE THE CALLER. The handler's own contract is to
+   * return structured outcomes rather than throw, but a host-level failure (a
+   * ledger write, a bug) would otherwise leave the accepted promise pending
+   * forever and hang the cell. So the catch is a real arm and not decoration.
    */
-  async revoke(reason: string): Promise<void> {
-    this.revoked ??= reason
-    // Loop rather than await-once: a handler may itself be settling another
-    // accepted call, and reporting quiescence with work outstanding is the one
-    // thing a revocation barrier exists to prevent.
-    while (this.inFlight.size > 0) {
-      await Promise.allSettled([...this.inFlight])
+  private async runOne(entry: AcceptedCall): Promise<NativeCallOutcome> {
+    let outcome: NativeCallOutcome
+    try {
+      outcome = await this.handler(entry.call, { subCallId: entry.subCallId, sequence: entry.sequence })
+    } catch (error) {
+      outcome = {
+        ok: false,
+        error: {
+          code: error instanceof LeaseRejection ? error.code : 'BRIDGE_FAILED',
+          message: error instanceof Error ? error.message : String(error),
+        },
+      }
     }
+
+    // SETTLED, AFTER the final ToolRuntime result is known. The digest identifies
+    // the delivered value without storing it, and an oversized result is already
+    // retained on disk by then, so its artifact ref is what the ledger carries.
+    const digest = outcome.ok
+      ? ('artifact' in outcome
+        ? { digest: outcome.artifact.sha256, bytes: outcome.artifact.bytes, artifactRef: outcome.artifact.path }
+        : { ...digestOf(outcome.value), artifactRef: undefined })
+      : { ...digestOf({ code: outcome.error.code, message: outcome.error.message }), artifactRef: undefined }
+
+    await this.ledger.settled(entry.subCallId, {
+      isError: !outcome.ok,
+      resultDigest: digest.digest,
+      resultBytes: digest.bytes,
+      ...digest.artifactRef === undefined ? {} : { artifactRef: digest.artifactRef },
+    })
+
+    // `settled` vs `cancelled` is decided by whether the close was already under
+    // way when this call finished -- not by whether the result happens to be an
+    // ABORTED error. A tool can legitimately fail with its own error, and calling
+    // that `cancelled` would misreport a real tool failure as a shutdown.
+    this.report({
+      subCallId: entry.subCallId,
+      name: entry.call.tool,
+      disposition: this.state === 'OPEN' ? 'settled' : 'cancelled',
+      ...this.state === 'OPEN' ? {} : { closeReason: this.closeReason ?? 'completed' },
+      started: true,
+    })
+    return outcome
   }
 }
 
@@ -417,7 +847,7 @@ export class BridgeServer {
    *
    * A new kernel token is NOT minted per cell: the token proves which kernel is
    * calling, and the lease proves which cell. Keeping them separate is what lets
-   * the host report `EPOCH_MISMATCH` and `LEASE_REVOKED` as different facts
+   * the host report `EPOCH_MISMATCH` and `CELL_LEASE_EXPIRED` as different facts
    * instead of collapsing both into "bad token".
    */
   mintLease(input: CellLeaseInput): CellLease {
@@ -428,13 +858,26 @@ export class BridgeServer {
     return lease
   }
 
-  /** Drop a lease from the live table. Called after {@link CellLease.revoke}. */
+  /** Drop a lease from the live table. Called after {@link CellLease.close}. */
   releaseLease(lease: CellLease): void {
     this.leases.delete(lease.id)
     if (this.activeLease === lease) this.activeLease = undefined
   }
 
-  /** Resolve a lease by id, or undefined. Never returns a revoked lease as live. */
+  /**
+   * Every lease this server has minted and not released.
+   *
+   * Exposed so a host can report ACTIVE LEASES as a fact (V3 §J2 lists them on
+   * the kernel record) and so a disposal can assert quiescence rather than
+   * assume it. A closed lease stays in this table until its owner releases it,
+   * which is what lets a reader see the difference between "no lease was ever
+   * minted" and "every lease was closed".
+   */
+  openLeases(): readonly CellLease[] {
+    return Object.freeze([...this.leases.values()])
+  }
+
+  /** Resolve a lease by id, or undefined. Never returns a closed lease as live. */
   lease(id: string): CellLease | undefined {
     return this.leases.get(id)
   }
@@ -456,14 +899,18 @@ export class BridgeServer {
     })
   }
 
-  /** Stop listening and revoke everything. Idempotent. */
+  /** Stop listening and close everything. Idempotent. */
   async close(): Promise<void> {
     if (this.closed) return
     this.closed = true
     const leases = [...this.leases.values()]
     this.leases.clear()
     this.activeLease = undefined
-    await Promise.allSettled(leases.map(async lease => { await lease.revoke('the bridge server was shut down') }))
+    // `LEASE_REVOKED`, not `CELL_LEASE_EXPIRED`: the HOST is disposing the
+    // bridge, so no cell settled. The distinction is kept because a program that
+    // sees its kernel shut down underneath it has a different remedy from one
+    // whose cell simply finished.
+    await Promise.allSettled(leases.map(async lease => { await lease.close('aborted', 'the bridge server was shut down') }))
     for (const connection of [...this.connections]) {
       connection.socket.destroy()
     }

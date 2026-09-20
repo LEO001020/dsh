@@ -24,22 +24,38 @@
  * call runs. Verified from source and recorded in
  * `qualification/results/M2-scope/PUBLIC-PIPELINE-VERIFIED.md`.
  *
- * WHAT THE PRIVATE SYMBOL ADDS, AND WHY THIS MODULE HAS TO SUPPLY IT. `ptc.ts`
- * splits each sub-dispatch at the scheduler seam so that ordered policy stages
- * run in one lane while only the bodies overlap, plus an exclusive barrier held
- * through commit. `execute` cannot express that, because each call is one
- * indivisible `execute()`. So this module supplies the SCHEDULING -- admission,
- * overlap, and the exclusive barrier -- over the public `executionMode`
- * classifier. Scheduling is reproducible over the public surface; policy is not
- * re-implemented, which is the property that matters.
+ * WHY THIS IS SERIAL, AND WHAT THAT DELIBERATELY GIVES UP. V3 §J1 is explicit and
+ * it is a CORRECTION to an earlier plan, so it is restated here rather than left
+ * in a document:
  *
- * THE MEASURED DIFFERENCE, STATED RATHER THAN HIDDEN. Two calls started
- * concurrently here may have their `tools/pre-execute` stages overlap, where
- * `ptc.ts` would serialize them. A `ToolGuard` is synchronous and
- * order-insensitive by signature, and a `tools/pre-execute` listener is
- * documented as receiving each call rather than as being serialized against its
- * siblings, so this is a scheduling difference and not a policy bypass. It is
- * the same difference M2 recorded for its own scope.
+ *   - `ctx.tools.execute()` runs ONE complete ToolRuntime call. It does NOT
+ *     expose the native/PTC sibling scheduler to a downstream plugin.
+ *   - `TOOL_RUNTIME_SCHEDULER` is a module-local `Symbol()`. A second physical
+ *     copy of the `@deepseek-ai/dsh-tools` package makes it `undefined`, which is
+ *     the crash upstream Discussion #6529 records. It is NEVER imported here.
+ *   - `executionMode()` is a CLASSIFIER (`parallel | exclusive`), not a barrier,
+ *     and this module does not use it as one.
+ *
+ * So the baseline is: ONE call at a time per lease, in bridge-accepted order.
+ * The FIFO lives in `CellLease` (see `bridge.ts`) rather than here, because the
+ * ORDER must be the order the bridge ACCEPTED the calls -- a queue inside this
+ * handler would only see the calls that reached it, and a queued call the close
+ * path abandons would have been reordered around without a record.
+ *
+ * WHAT THIS COSTS, STATED RATHER THAN HIDDEN. A cell that submits eight
+ * independent reads gets them one after another instead of overlapped, so a
+ * latency-bound fanout is slower than the previous concurrent handler. That
+ * handler's overlap was real, but the property it claimed -- native scheduling
+ * parity -- was not achievable over the public surface, and a fast wrong claim is
+ * worse than a slower right one. High-throughput read fanout belongs in
+ * `dsh.data` (V3 §K), which is a data plane over public capability seams rather
+ * than a stream of exact ToolRuntime calls.
+ *
+ * THE ONE THING SERIAL EXECUTION BUYS FOR FREE. Composite semantics must reach
+ * the outer `ipython` ToolRunContext IN SUBCALL ORDER (V3 §J4: "Do not let async
+ * response order reorder deferred contexts"). With one call in flight at a time,
+ * settlement order IS submission order, so the ferry below cannot reorder by
+ * construction rather than by careful bookkeeping.
  *
  * WHY `parent` IS SET AND WHY THAT IS NOT DECORATION. `parent: exec.token` marks
  * every bridged call a transport SUB-DISPATCH. The registry's `collapses`
@@ -48,17 +64,13 @@
  * catalog contains no `run_code`, so `modeFor` is never `'ptc'` and the collapse
  * never fires -- which means a passing test today does NOT prove `parent` is set
  * correctly, only that its absence was not yet observable. It is set here so the
- * bridge keeps working the day PTC is enabled, and the test that would bite is
- * named in FINDINGS rather than left implicit.
+ * bridge keeps working the day PTC is enabled.
  */
 import type { Context } from '@deepseek-ai/cordis'
 import { ToolCallId } from '@deepseek-ai/dsh-llm'
 import type { Agent } from '@deepseek-ai/dsh-agent'
-import type { ToolExecutionMode, ToolExecutionResult, ToolExecutionToken } from '@deepseek-ai/dsh-tools'
+import type { ToolExecutionResult, ToolExecutionToken } from '@deepseek-ai/dsh-tools'
 import type { BridgeArtifact, BridgeFailure, BridgeServer, NativeCallOutcome, NativeCallRequest } from './bridge.ts'
-
-/** How many parallel-safe nested calls may overlap. Host-set, never model-reachable. */
-export const DEFAULT_MAX_PARALLEL_CALLS = 8
 
 /**
  * The authority the host binds to one enclosing `ipython` execution.
@@ -84,106 +96,24 @@ export interface NativeCallHandlerOptions {
   readonly authority: EnclosingAuthority
   /** The bridge server, for value delivery. */
   readonly bridge: BridgeServer
-  /** Overlap cap for parallel-safe calls. */
-  readonly maxParallel?: number
   /** Called for a nested call that produced policy context, so it can be ferried. */
   readonly onContext?: (context: unknown) => void
   /** Called when a nested call asked to conclude the turn. */
   readonly onConcludeTurn?: () => void
-}
-
-/**
- * Admission control for bridged calls.
- *
- * WHY THIS IS NOT THE REGISTRY'S JOB. The registry declares each tool's
- * concurrency class through the public `executionMode` and then executes
- * whatever it is given; it is a policy pipeline, not a scheduler. A caller that
- * wants overlap for safe reads and a real barrier for mutations has to provide
- * that itself -- which is exactly what `ptc.ts` does with its driver lane, and
- * exactly what this class does over the public classifier.
- *
- * THE BARRIER IS HELD THROUGH SETTLEMENT, NOT THROUGH DISPATCH. An exclusive
- * call keeps its barrier until its `execute()` promise resolves, so a mutation's
- * `tools/post-execute` and `finalizeContent` stages run with no sibling
- * overlapping them. Releasing at dispatch would let a read observe the file
- * between a write's body and its post-policy, which is the ordering the barrier
- * exists to prevent.
- */
-class CallScheduler {
-  private active = 0
-  private exclusive = false
-  private readonly waiting: Array<() => void> = []
-  private readonly maxParallel: number
-
-  constructor(maxParallel: number) {
-    this.maxParallel = maxParallel
-  }
-
   /**
-   * Run one call under its declared mode.
-   * @param mode - the registry's own classification for this call.
-   * @param body - the call to run once admitted.
-   * @returns the body's result.
+   * How a successful nested result whose content carries an IMAGE is treated.
+   *
+   * `defer` (the default) ferries it to the outer execution, which is PTC parity
+   * (`ptc.ts` defers a successful image-bearing nested result as one user
+   * message). `reference` records it and does NOT put it in model context, which
+   * is what `programmatic-scope.ts` does by default. There is deliberately no
+   * third arm that silently DROPS it: dropping a model-relevant image with no
+   * record is the failure the brief names, and an option that did it would be an
+   * option to be wrong.
    */
-  async run<T>(mode: ToolExecutionMode, body: () => Promise<T>): Promise<T> {
-    await this.admit(mode)
-    try {
-      return await body()
-    } finally {
-      this.release(mode)
-    }
-  }
-
-  private admit(mode: ToolExecutionMode): Promise<void> {
-    if (this.canStart(mode)) {
-      this.occupy(mode)
-      return Promise.resolve()
-    }
-    // FIFO, so a mutation queued behind reads cannot be starved by a stream of
-    // later reads. Without a queue a busy read loop could hold a write off
-    // indefinitely, which is a liveness failure rather than an ordering one.
-    return new Promise<void>(resolve => {
-      this.waiting.push(() => {
-        this.occupy(mode)
-        resolve()
-      })
-    })
-  }
-
-  private canStart(mode: ToolExecutionMode): boolean {
-    if (this.exclusive) return false
-    if (mode.kind === 'exclusive') return this.active === 0
-    return this.active < this.maxParallel
-  }
-
-  private occupy(mode: ToolExecutionMode): void {
-    if (mode.kind === 'exclusive') this.exclusive = true
-    this.active += 1
-  }
-
-  private release(mode: ToolExecutionMode): void {
-    if (mode.kind === 'exclusive') this.exclusive = false
-    this.active -= 1
-    this.pump()
-  }
-
-  private pump(): void {
-    for (;;) {
-      const next = this.waiting[0]
-      if (next === undefined) return
-      // Re-read the class at admission time against the live registry, exactly
-      // as the driver lane does: a tool that changed its declaration while this
-      // call was queued must be admitted under the NEW class, not the stale one.
-      // The closure carries the mode it was queued with, so the check below uses
-      // the conservative branch when the queue head cannot start yet.
-      this.waiting.shift()
-      next()
-      // One admission per pass: `next()` may itself have made the pool full, and
-      // draining the whole queue here would admit an exclusive call alongside a
-      // parallel sibling that was admitted in the same loop.
-      return
-    }
-  }
+  readonly imageProjection?: 'defer' | 'reference'
+  /** Called for each image-bearing result under `reference`, so the host can record it. */
+  readonly onImageRetained?: (record: { callId: string, blockTypes: readonly string[], bytes: number }) => void
 }
 
 /**
@@ -194,17 +124,16 @@ class CallScheduler {
  */
 export function createNativeCallHandler(
   options: NativeCallHandlerOptions,
-): (call: NativeCallRequest) => Promise<NativeCallOutcome> {
+): (call: NativeCallRequest, context: { subCallId: string, sequence: number }) => Promise<NativeCallOutcome> {
   const { ctx, authority, bridge } = options
-  const scheduler = new CallScheduler(options.maxParallel ?? DEFAULT_MAX_PARALLEL_CALLS)
-  let dispatches = 0
 
-  return async (call: NativeCallRequest): Promise<NativeCallOutcome> => {
-    dispatches += 1
-    // The sub-call id is derived from the ENCLOSING call id, so every bridged
-    // call is correlatable to the `ipython` execution that authorised it in the
-    // session log. A random id would be correlatable to nothing.
-    const subCallId = ToolCallId(`${authority.callId}:bridge:${String(dispatches)}`)
+  return async (call: NativeCallRequest, context): Promise<NativeCallOutcome> => {
+    // THE SUBCALL ID COMES FROM THE LEASE, NOT FROM A COUNTER HERE. The lease
+    // mints it before the call is queued, so a call that is abandoned unstarted
+    // still has the identity its ledger row was written under. A counter in this
+    // function would only number the calls that actually ran, and the abandoned
+    // ones -- exactly the calls BR-07 is about -- would have no id to record.
+    const subCallId = ToolCallId(context.subCallId)
     const input = {
       callId: subCallId,
       rootCallId: ToolCallId(authority.rootCallId),
@@ -216,14 +145,7 @@ export function createNativeCallHandler(
       signal: authority.signal,
     }
 
-    // Classified through the PUBLIC classifier, against the same live registry
-    // view the call will be resolved against. An unknown tool, a hidden tool, or
-    // a throwing classifier all fail closed to `exclusive`, so an unrecognised
-    // name can never be admitted into an overlap group.
-    const mode = ctx.tools.executionMode(input)
-
-    const result = await scheduler.run(mode, async () => await ctx.tools.execute(input))
-
+    const result = await ctx.tools.execute(input)
     return outcomeOf(bridge, call.tool, String(subCallId), result, options)
   }
 }
@@ -236,6 +158,11 @@ export function createNativeCallHandler(
  * already materializes those as results rather than throwing. A host stack trace
  * would tell a program nothing it could branch on and would leak host
  * internals into the kernel's namespace.
+ *
+ * THE COMPOSITE SEMANTICS ARE FERRIED, AND `concludesTurn` IS FERRIED AFTER THE
+ * CONTEXTS. Only a successful nested result can carry the terminal marker
+ * (`ToolExecutionFailure` types it `never`), so a policy-converted failure cannot
+ * stop the turn through a recovering program -- the same rule `ptc.ts` states.
  */
 function outcomeOf(
   bridge: BridgeServer,
@@ -252,6 +179,33 @@ function outcomeOf(
   for (const context of result.additionalContexts ?? []) {
     options.onContext?.(context)
   }
+
+  if (!result.isError) {
+    // NESTED IMAGE SEMANTICS, DEFINED RATHER THAN LEFT TO CHANCE. A successful
+    // nested result whose content carries an image is model-relevant: PTC
+    // forwards it, and silently dropping it here would mean a cell that produced
+    // an image and a `run_code` program that produced the same image send
+    // different things to the model. So it is either deferred (PTC parity, the
+    // default) or explicitly retained-and-recorded -- never dropped.
+    const imageBlocks = result.content.filter(block => block.type === 'image')
+    if (imageBlocks.length > 0) {
+      const bytes = imageBlocks.reduce((total, block) => total + imageBlockBytes(block), 0)
+      if ((options.imageProjection ?? 'defer') === 'defer') {
+        options.onContext?.({
+          role: 'user',
+          content: imageBlocks,
+          source: { kind: 'plugin', plugin: 'dsh-ipython' },
+        })
+      } else {
+        options.onImageRetained?.({
+          callId,
+          blockTypes: imageBlocks.map(block => block.type),
+          bytes,
+        })
+      }
+    }
+  }
+
   if (result.concludesTurn === true) options.onConcludeTurn?.()
 
   if (result.isError) {
@@ -268,6 +222,29 @@ function outcomeOf(
     }
   }
   return bridge.deliver(tool, callId, result.value)
+}
+
+/**
+ * The decoded byte count of one image content block.
+ *
+ * A base64 block's DECODED size is what a reader means by "how many bytes were
+ * involved", so the estimate is derived from the encoded length rather than
+ * reporting the encoded length as if it were the payload. A block with no
+ * measurable payload reports 0 rather than throwing: this feeds a record, and a
+ * record that cannot be written because the thing it describes was unusual is
+ * worse than a record with a stated zero.
+ */
+function imageBlockBytes(block: unknown): number {
+  if (typeof block !== 'object' || block === null) return 0
+  const record = block as Record<string, unknown>
+  const source = record['source']
+  if (typeof source === 'object' && source !== null) {
+    const data = (source as Record<string, unknown>)['data']
+    if (typeof data === 'string') return Math.floor((data.length * 3) / 4)
+  }
+  const data = record['data']
+  if (typeof data === 'string') return Math.floor((data.length * 3) / 4)
+  return 0
 }
 
 /** A structured refusal Python can branch on, built without a pipeline call. */

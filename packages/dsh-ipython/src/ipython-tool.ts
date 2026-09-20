@@ -15,6 +15,36 @@
  * host-side decisions taken from trusted configuration. A tool that let the
  * model widen its own resource ceiling would not be a resource ceiling.
  *
+ * ===========================================================================
+ * THIS TOOL IS THE PRODUCT PATH THAT REACHES THE NATIVE-TOOL BRIDGE (F2)
+ * ===========================================================================
+ *
+ * `bridge.ts` and `native-call.ts` were, until this change, outside the
+ * transitive closure of every package entry point: `new BridgeServer` had zero
+ * production call sites (G-SEAM-34). The mechanism was implemented, unit-tested
+ * and correct, and a Python cell could reach NO DSH tool, which made `ipython`
+ * a dead end for everything except pure computation.
+ *
+ * The path is now: a model turn calls `ipython` -> the registry dispatches this
+ * tool's `execute` with a live `ToolRunContext` -> this function builds a
+ * {@link CellAuthority} from that context -> `KernelService.runCell` mints a
+ * CellLease on the Session's kernel bridge and prepends the bridge preamble to
+ * the cell -> Python's `dsh.call(...)` travels the loopback channel back to that
+ * lease -> the lease's handler runs `ctx.tools.execute` -> the value returns to
+ * the cell. Every link is a production call.
+ *
+ * WHY THE AUTHORITY IS BUILT HERE AND NOT PASSED IN. `exec` is the registry's own
+ * live execution object. Its `token` is a value only the registry can mint, so
+ * building the authority from it is what makes "Python cannot choose the Agent,
+ * the Session, the root call id, or the token" true by construction rather than
+ * by a check. Nothing in this file reads a value the model supplied.
+ *
+ * WHY `deferContext` IS FORWARDED RATHER THAN REPLACED. A nested exact call that
+ * attached policy context or asked to conclude the turn must reach the SAME outer
+ * execution this tool is running under (V3 §J4). `exec.deferContext` and
+ * `exec.concludeTurn` ARE that outer execution's own capabilities, so forwarding
+ * them is the whole mechanism -- there is no second ferry to keep in sync.
+ *
  * The schema is declared ONCE, so the native call path and any programmatic path
  * are generated from the same definition and cannot drift.
  */
@@ -22,7 +52,7 @@ import type { Context } from '@deepseek-ai/cordis'
 import { defineTool } from '@deepseek-ai/dsh-tools'
 import { KernelBusyError, KernelOutcomeUnknownError, KernelTransportError } from './kernel.ts'
 import type { CellResult } from './protocol.ts'
-import type { KernelService } from './kernel-plugin.ts'
+import type { CellAuthority, KernelService } from './kernel-plugin.ts'
 
 export const name = 'dsh-ipython-tool'
 export const inject = ['tools']
@@ -186,8 +216,25 @@ export function apply(ctx: Context): void {
           throw new Error('the ipython tool requires an Agent-backed session')
         }
 
+        // THE AUTHORITY, READ FROM THE LIVE EXECUTION. Every field here is the
+        // registry's own value for THIS call: the Agent it resolved, the root call
+        // id it propagated, the token only it can mint, and its own call id. The
+        // model supplied none of them and has no parameter through which it could.
+        const authority: CellAuthority = {
+          callId: String(exec.callId),
+          rootCallId: String(exec.rootCallId),
+          token: exec.token,
+          agent: exec.agent,
+          cellId: String(exec.callId),
+          // The composite ferry, forwarded rather than reimplemented: these ARE
+          // the outer execution's capabilities, so a nested call's policy context
+          // and turn conclusion reach the same place a native sibling's would.
+          onContext: context => { exec.deferContext(context as Parameters<typeof exec.deferContext>[0]) },
+          onConcludeTurn: () => { exec.concludeTurn() },
+        }
+
         try {
-          const result = await service.runCell(exec.agent, args.code, exec.signal)
+          const result = await service.runCell(exec.agent, args.code, exec.signal, authority)
           const epoch = service.currentEpoch(exec.agent)
           return {
             outcome: result.outcome,
