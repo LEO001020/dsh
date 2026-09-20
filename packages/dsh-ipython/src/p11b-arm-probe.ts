@@ -101,7 +101,8 @@ async function main(): Promise<void> {
   const differingFields = baseManifest === undefined || pywManifest === undefined
     ? null
     : Object.keys(baseManifest).filter(
-      key => (baseManifest as Record<string, unknown>)[key] !== (pywManifest as Record<string, unknown>)[key],
+      key => (baseManifest as unknown as Record<string, unknown>)[key]
+        !== (pywManifest as unknown as Record<string, unknown>)[key],
     )
 
   // ARM 3 -- CONTROL: a config change that is NOT part of the environment must

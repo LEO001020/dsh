@@ -75,32 +75,32 @@ async function main(): Promise<void> {
   const base = { pythonExecutable: PYTHON, brokerScript: BROKER, root: join(scratch, 'kernels') }
   const service = new KernelService(ctx, base)
 
-  const identityFor = (config: typeof base): string => {
+  const identityFor = async (config: typeof base): Promise<string> => {
     service.reconfigure(config)
-    return service.identityFor(agent).environmentDigest
+    return (await service.identityFor(agent)).environmentDigest
   }
 
   // ARM 1 -- FALSE IDENTITY: vary the code that executes.
-  const realBrokerDigest = identityFor(base)
-  const decoyBrokerDigest = identityFor({ ...base, brokerScript: decoyBroker })
+  const realBrokerDigest = await identityFor(base)
+  const decoyBrokerDigest = await identityFor({ ...base, brokerScript: decoyBroker })
 
   // ARM 2 -- FALSE DISTINCTION: vary the spelling of one interpreter.
   const exeDigest = identityFor(base)
-  const exeWAliasDigest = identityFor({ ...base, pythonExecutable: PYTHON_W })
+  const exeWAliasDigest = await identityFor({ ...base, pythonExecutable: PYTHON_W })
 
   // ARM 3 -- a third input that also is not in the identity, as a control that the
   // arm-1 result is about brokerScript and not about any config change at all.
-  const otherRootDigest = identityFor({ ...base, root: join(scratch, 'other-kernels') })
+  const otherRootDigest = await identityFor({ ...base, root: join(scratch, 'other-kernels') })
 
   // ARM 4 -- the reachable form of arm 2. A Windows user setting `DSH_PYTHON`
   // types backslashes; the committed patch file uses forward slashes. Same file,
   // same interpreter, two spellings -- and `!!js process.env.DSH_PYTHON` flows the
   // string into the digest verbatim.
-  const backslashDigest = identityFor({
+  const backslashDigest = await identityFor({
     ...base,
     pythonExecutable: PYTHON.replace(/\//g, '\\'),
   })
-  const upperCaseDigest = identityFor({ ...base, pythonExecutable: PYTHON.toUpperCase() })
+  const upperCaseDigest = await identityFor({ ...base, pythonExecutable: PYTHON.toUpperCase() })
 
   const sameEnvironment = {
     'pythonw.exe exists': existsSync(PYTHON_W),
@@ -130,8 +130,8 @@ async function main(): Promise<void> {
       },
       FALSE_DISTINCTION: {
         question: 'does the digest move when the ENVIRONMENT is unchanged?',
-        interpreterSpellingChanged: exeDigest !== exeWAliasDigest,
-        result: exeDigest !== exeWAliasDigest
+        interpreterSpellingChanged: realBrokerDigest !== exeWAliasDigest,
+        result: realBrokerDigest !== exeWAliasDigest
           ? 'FALSE DISTINCTION -- digest DID move for one environment'
           : 'stable across spellings',
       },
