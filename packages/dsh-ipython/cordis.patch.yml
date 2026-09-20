@@ -40,14 +40,34 @@
         # different Python would be a different environment, and the identity
         # digest in `KernelService` is derived from this path.
         #
-        # THE DEFAULT BELOW IS THIS MACHINE'S INTERPRETER, and it is a DEFAULT
-        # rather than a hardcoded path for the same reason `brokerScript` and
-        # `root` are derived: a value that names one machine makes the package
-        # unbootable on every other one. `DSH_PYTHON` overrides it, which is what
-        # a clone on a different host must set. Found by the pre-publish audit:
-        # the path was absolute with no override, so a fresh clone built and
-        # booted but could not start a kernel.
-        pythonExecutable: !!js process.env.DSH_PYTHON ?? 'C:/Users/hzq00/AppData/Local/Programs/Python/Python314/python.exe'
+        # THERE IS NO DEFAULT, DELIBERATELY (V5 §11.3 / finding N). This line
+        # used to read
+        #
+        #   !!js process.env.DSH_PYTHON ?? 'C:/Users/hzq00/.../Python314/python.exe'
+        #
+        # The override was an improvement over an unoverrideable path, and the
+        # fallback still made a fresh clone unbootable on every other machine --
+        # because a default is not made portable by being overridable, it is made
+        # portable by not naming a machine. So the personal fallback is GONE and
+        # the value is now derived from $DSH_HOME, which every deployment has and
+        # no deployment shares by accident:
+        #
+        #   1. `DSH_PYTHON`, when the host set it -- the operator's explicit choice;
+        #   2. otherwise the DSH-owned venv at `$DSH_HOME/runtime/python`, which
+        #      `dsh-ipython doctor --bootstrap` creates from a discovered system
+        #      CPython.
+        #
+        # `dshHomePath` is provided to Loader config expressions by the launcher
+        # (`packages/boot/app-boot/src/index.ts:940`), so this expression needs no
+        # literal path and no `process.env.DSH_HOME` spelling of its own -- the
+        # same resolver the agent-presets roster uses for its user root.
+        #
+        # WHEN NEITHER RESOLVES, the kernel fails LOUD with the doctor command
+        # rather than starting against some other interpreter. The exact
+        # instruction is one string shared by the failure and the doctor
+        # (`pythonConfigurationInstruction` in `src/runtime-root.ts`), so the two
+        # cannot drift apart.
+        pythonExecutable: !!js process.env.DSH_PYTHON ?? (process.platform === 'win32' ? dshHomePath('runtime', 'python', 'Scripts', 'python.exe') : dshHomePath('runtime', 'python', 'bin', 'python'))
         # `brokerScript` and `root` are deliberately NOT SET HERE.
         #
         # They used to be absolute paths into one developer's checkout
@@ -61,11 +81,20 @@
         # the FIRST checkout's `broker.py`. Every kernel measurement taken in that
         # worktree would have been a measurement of the other tree.
         #
-        # Both fields now default inside the package, derived from the module's own
-        # location (`DEFAULT_BROKER_SCRIPT`, `DEFAULT_KERNEL_ROOT` in
-        # `kernel-plugin.ts`). Leaving them unset is correct for any normal
-        # deployment; a host that vendors a broker elsewhere can still set
-        # `brokerScript` explicitly.
+        # `brokerScript` now defaults inside the package, derived from the module's
+        # own location (`DEFAULT_BROKER_SCRIPT` in `kernel-plugin.ts`), which is
+        # correct for both layouts and for an installed package. Leaving it unset is
+        # correct for any normal deployment; a host that vendors a broker elsewhere
+        # can still set it explicitly.
+        #
+        # `root` now defaults to `$DSH_HOME/runtime/ipython` (V5 §11.4). It used to
+        # default to `<package>/.ipython-kernels`, which put runtime scratch inside
+        # an installed package that may be read-only and inside a source checkout
+        # that must stay clean. MEASURED: one real cell created nine entries under
+        # `packages/dsh-ipython/` and none under `$DSH_HOME`
+        # (`qualification/results/P12-runtime/before-default-root.json`). The
+        # per-checkout separation the old default bought is now provided by
+        # `$DSH_HOME`, which is the boundary that actually isolates deployments.
         #
         # Part of the kernel identity. Changing either value invalidates every
         # live kernel rather than letting a namespace built under one authority

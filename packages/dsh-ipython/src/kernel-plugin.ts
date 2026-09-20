@@ -93,6 +93,14 @@ import {
   type BridgeLedger,
 } from './bridge-ledger.ts'
 import type { CellResult, KernelStatus, LateOutput } from './protocol.ts'
+import {
+  defaultKernelRoot as runtimeDefaultKernelRoot,
+  interpreterPathProblem,
+  jupyterRuntimeDir,
+  pythonConfigurationInstruction,
+  resolveRuntimeDshHome,
+  sessionScratchKey,
+} from './runtime-root.ts'
 
 /**
  * This package's own root directory, derived from the module's location.
@@ -121,15 +129,45 @@ const PACKAGE_ROOT = dirname(dirname(fileURLToPath(import.meta.url)))
 export const DEFAULT_BROKER_SCRIPT = join(PACKAGE_ROOT, 'src', 'broker.py')
 
 /**
- * Default kernel scratch root: inside the package, so a second checkout gets its
- * own kernels instead of sharing the first one's.
+ * Default kernel scratch root: `$DSH_HOME/runtime/ipython`, NOT the package.
  *
- * A host that wants them elsewhere (a temp volume, a shared scratch disk) still
- * sets `root` explicitly; this is only the default. It is `.gitignore`d, because a
- * runtime directory must not appear as an untracked change in a tree where
- * untracked files have meant real defects twice (G-SEAM-30, G-SEAM-42).
+ * WHY THIS MOVED (V5 §11.4 / finding O). It used to be
+ * `join(PACKAGE_ROOT, '.ipython-kernels')`, and the reasoning recorded here for
+ * that was that "a second checkout gets its own kernels instead of sharing the
+ * first one's". That property is real, but it was bought with two worse ones:
+ * runtime state inside an INSTALLED package, which may be read-only, and inside a
+ * SOURCE checkout, which must not accumulate untracked files. MEASURED, by
+ * running one real cell and walking the tree: nine new entries under
+ * `packages/dsh-ipython/` and none under `$DSH_HOME`
+ * (`qualification/results/P12-runtime/before-default-root.json`).
+ *
+ * The per-checkout separation is now provided by `$DSH_HOME` instead, which is
+ * the boundary that actually isolates deployments -- every writer, every
+ * profile install and every real user already has a distinct one. A second
+ * checkout that shares one `$DSH_HOME` is not two deployments; it is one
+ * deployment whose code was recompiled, and sharing scratch is correct there.
+ *
+ * A host that wants scratch elsewhere (a temp volume, a shared scratch disk)
+ * still sets `root` explicitly; this is only the default.
+ *
+ * This is a GETTER rather than a constant because `$DSH_HOME` is read at CALL
+ * time: a constant would capture whatever the environment held when the module
+ * was first imported, and a test or a host that sets `DSH_HOME` after import
+ * would silently get the old value. `DEFAULT_KERNEL_ROOT` remains exported for
+ * readers that want the value, and it is now documented as a snapshot.
  */
-export const DEFAULT_KERNEL_ROOT = join(PACKAGE_ROOT, '.ipython-kernels')
+export function defaultKernelRoot(): string {
+  return runtimeDefaultKernelRoot()
+}
+
+/**
+ * The default kernel root, as a value.
+ *
+ * Kept exported because callers outside this package read it (the runtime-location
+ * probe does, and a host that logs its scratch location should). Prefer
+ * {@link defaultKernelRoot} in code that runs after the environment can change.
+ */
+export const DEFAULT_KERNEL_ROOT = defaultKernelRoot()
 
 /** Configuration. Every bound is host-set; none of it is model-reachable. */
 export interface KernelServiceConfig {
@@ -422,16 +460,42 @@ export class KernelService extends Service {
   }
 
   /**
-   * The kernel scratch root: the configured one, or this package's own directory.
+   * The kernel scratch root: the configured one, or `$DSH_HOME/runtime/ipython`.
    *
    * WHY A DEFAULT AND NOT A REQUIRED FIELD. A required field means every profile
    * patch must name an absolute path, and a profile patch is shared by every
    * checkout that installs this package -- so the second checkout inherits the
    * first one's directory. That is not hypothetical: it is why a git worktree's
    * kernel wrote its connection files into the main checkout until this changed.
+   *
+   * The default is now resolved at CALL time (see `defaultKernelRoot`), so a host
+   * or a test that sets `DSH_HOME` after this module is imported still gets the
+   * value it set rather than the one captured at import.
    */
   private kernelRoot(): string {
-    return this.config.root ?? DEFAULT_KERNEL_ROOT
+    return this.config.root ?? defaultKernelRoot()
+  }
+
+  /**
+   * The scratch directory for one Session, at the epoch the kernel was allocated
+   * for (V5 §11.4: `$DSH_HOME/runtime/ipython/<session-hash>/<epoch>`).
+   *
+   * WHY THE SESSION IS HASHED RATHER THAN SANITIZED. `sanitize` is LOSSY --
+   * `a/b` and `a\b` both become `a_b` -- so two distinct Sessions could be given
+   * one scratch directory and one kernel could read another's connection file.
+   * A truncated SHA-256 does not collide, and it stays stable across processes so
+   * an orphaned directory is attributable to a Session after a crash.
+   *
+   * WHAT THE EPOCH COMPONENT DOES AND DOES NOT NAME. It names the ALLOCATION: a
+   * kernel created for this Session gets `<epoch>` for the epoch it started at,
+   * which is 0 for a fresh kernel. A `restart()` advances the host's epoch but
+   * does NOT move these files, because the broker keeps its connection file and
+   * ports across `restart_kernel` by design and a running broker has already
+   * captured its scratch env. So this component is not a live-generation marker
+   * for a restarted kernel, and reading it as one would be wrong.
+   */
+  private scratchDirectoryFor(sessionId: string, kernelEpoch: number): string {
+    return join(this.kernelRoot(), sessionScratchKey(sessionId), String(kernelEpoch))
   }
 
   /**
@@ -475,8 +539,37 @@ export class KernelService extends Service {
       return existing
     }
 
-    const workingDirectory = join(this.kernelRoot(), sanitize(identity.sessionId))
+    // ---- THE INTERPRETER GATE, BEFORE ANYTHING IS CREATED ------------------
+    // V5 §11.3: a deployment with no usable interpreter must fail LOUD with an
+    // exact doctor instruction rather than starting against some other Python.
+    // This is checked FIRST, before the scratch tree and the bridge, so a
+    // misconfigured interpreter cannot leave a half-built kernel behind and
+    // cannot be mistaken for a kernel-startup failure.
+    //
+    // The message is the SAME STRING the doctor prints
+    // (`pythonConfigurationInstruction`), so the instruction and the failure
+    // cannot drift apart. A configured path that is blank or relative is refused
+    // here rather than passed to `spawn`, where the failure would be an opaque
+    // ENOENT at the first cell.
+    const interpreter = this.config.pythonExecutable
+    const interpreterProblem = interpreterPathProblem(interpreter)
+    if (interpreterProblem !== undefined) {
+      throw new KernelTransportError(
+        `${pythonConfigurationInstruction({ dshHome: resolveRuntimeDshHome() })}\n\n${interpreterProblem}`,
+      )
+    }
+
+    // The scratch tree is `<root>/<session-hash>/0` for a NEW kernel: epoch 0 is
+    // the allocation this creation is making. See `scratchDirectoryFor` for why
+    // the epoch is a directory level and what it does NOT mean after a restart.
+    const workingDirectory = this.scratchDirectoryFor(identity.sessionId, 0)
     mkdirSync(workingDirectory, { recursive: true })
+    // The Jupyter connection file is written by `jupyter_client` through
+    // `jupyter_core.paths.jupyter_runtime_dir()`, which is a THIRD location
+    // outside both this package and `$DSH_HOME` unless it is pinned. It carries
+    // the HMAC key that authorises execution on the kernel's sockets, so it is
+    // pinned into this Session's scratch tree (see `runtime-root.ts`).
+    mkdirSync(jupyterRuntimeDir(workingDirectory), { recursive: true })
     const kernelWorkingDirectory = this.kernelWorkingDirectoryFor(agent)
     // The kernel's directory is created if absent, so a Session whose project root
     // is new does not fail to start a kernel. A path that cannot be created is a
@@ -861,7 +954,11 @@ export class KernelService extends Service {
   }
 }
 
-/** Keep one Session's files inside its own directory. */
-function sanitize(value: string): string {
-  return value.replace(/[^A-Za-z0-9._-]/g, '_').slice(0, 120)
-}
+// `sanitize()` lived here until P12. It turned a Session id into a directory name
+// by replacing every character outside `[A-Za-z0-9._-]` with `_`, which is LOSSY:
+// `a/b` and `a\b` both become `a_b`, so two distinct Sessions could be handed one
+// scratch directory and one kernel could read another's connection file. Its only
+// caller was the scratch-directory line in `entryFor`, which now uses
+// `sessionScratchKey` (a truncated SHA-256) from `runtime-root.ts`. It was deleted
+// rather than kept "for later", because a lossy path encoder left in a module
+// whose whole subject is path identity is an invitation to reuse it.
