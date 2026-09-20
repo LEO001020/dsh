@@ -1,0 +1,23 @@
+{
+ "note": "Mutation H targets the settle group.",
+ "mutations": {
+  "H-healthy-left-failed": {
+   "artifacts": "PASS",
+   "cmp02": "PASS",
+   "cmp04": "PASS",
+   "cmp13": "PASS",
+   "negativeArm": "PASS",
+   "control": "PASS",
+   "settle": "FAIL"
+  },
+  "RESTORED-UNMUTATED": {
+   "artifacts": "PASS",
+   "cmp02": "PASS",
+   "cmp04": "PASS",
+   "cmp13": "PASS",
+   "negativeArm": "PASS",
+   "control": "PASS",
+   "settle": "PASS"
+  }
+ }
+}

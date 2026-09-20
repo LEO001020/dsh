@@ -1,0 +1,41 @@
+{
+ "note": "Mutations E/F/G target the control and negative-arm groups. RESTORED-UNMUTATED is the control: every group PASS.",
+ "mutations": {
+  "E-control-stderr-dirty": {
+   "artifacts": "PASS",
+   "cmp02": "PASS",
+   "cmp04": "PASS",
+   "cmp13": "PASS",
+   "negativeArm": "PASS",
+   "control": "FAIL",
+   "settle": "PASS"
+  },
+  "F-negative-arm-silent": {
+   "artifacts": "PASS",
+   "cmp02": "PASS",
+   "cmp04": "PASS",
+   "cmp13": "PASS",
+   "negativeArm": "FAIL",
+   "control": "FAIL",
+   "settle": "PASS"
+  },
+  "G-confined-copy-not-confined": {
+   "artifacts": "PASS",
+   "cmp02": "PASS",
+   "cmp04": "PASS",
+   "cmp13": "PASS",
+   "negativeArm": "FAIL",
+   "control": "PASS",
+   "settle": "PASS"
+  },
+  "RESTORED-UNMUTATED": {
+   "artifacts": "PASS",
+   "cmp02": "PASS",
+   "cmp04": "PASS",
+   "cmp13": "PASS",
+   "negativeArm": "PASS",
+   "control": "PASS",
+   "settle": "PASS"
+  }
+ }
+}

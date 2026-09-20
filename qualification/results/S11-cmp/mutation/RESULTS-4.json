@@ -1,0 +1,25 @@
+{
+ "note": "Mutation I targets the provenance group by making the artifact name ANOTHER home (the G-FIX-13 fixed-output-path trap). RESTORED-UNMUTATED is the control.",
+ "mutations": {
+  "I-foreign-home": {
+   "artifacts": "FAIL",
+   "cmp02": "PASS",
+   "cmp04": "PASS",
+   "cmp13": "PASS",
+   "negativeArm": "PASS",
+   "control": "PASS",
+   "settle": "PASS",
+   "provenance": "FAIL"
+  },
+  "RESTORED-UNMUTATED": {
+   "artifacts": "PASS",
+   "cmp02": "PASS",
+   "cmp04": "PASS",
+   "cmp13": "PASS",
+   "negativeArm": "PASS",
+   "control": "PASS",
+   "settle": "PASS",
+   "provenance": "PASS"
+  }
+ }
+}

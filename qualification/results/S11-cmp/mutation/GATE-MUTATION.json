@@ -1,0 +1,122 @@
+{
+ "schema_version": 1,
+ "kind": "S11_GATE_MUTATION_TEST_NOT_A_DSH_ARTIFACT",
+ "subject": "Is every group in MEASUREMENT.json reachable by a mutation, or does some group pass unconditionally?",
+ "method": "Each mutation is written over the artifact its group reads, s11-cmp-verdict.mjs is run as a child process, and the REAL artifact is restored. RESTORED-UNMUTATED is the control: every group must be PASS there, or the gate is red for an unrelated reason.",
+ "control_all_pass": true,
+ "mutation_count": 9,
+ "per_group_reached_by": {
+  "artifacts": "D-probe-error",
+  "cmp02": "A-confined-mode",
+  "cmp04": "B-catalog-plus-pwsh",
+  "cmp13": "B-catalog-plus-pwsh",
+  "negativeArm": "F-negative-arm-silent",
+  "control": "E-control-stderr-dirty",
+  "settle": "H-healthy-left-failed",
+  "provenance": "I-foreign-home"
+ },
+ "every_group_reachable": true,
+ "mutations": {
+  "A-confined-mode": {
+   "artifacts": "PASS",
+   "cmp02": "FAIL",
+   "cmp04": "PASS",
+   "cmp13": "PASS",
+   "negativeArm": "PASS",
+   "control": "PASS",
+   "settle": "PASS",
+   "provenance": "PASS"
+  },
+  "B-catalog-plus-pwsh": {
+   "artifacts": "PASS",
+   "cmp02": "PASS",
+   "cmp04": "FAIL",
+   "cmp13": "FAIL",
+   "negativeArm": "PASS",
+   "control": "PASS",
+   "settle": "PASS",
+   "provenance": "PASS"
+  },
+  "C-blind-instrument": {
+   "artifacts": "PASS",
+   "cmp02": "PASS",
+   "cmp04": "FAIL",
+   "cmp13": "PASS",
+   "negativeArm": "PASS",
+   "control": "PASS",
+   "settle": "PASS",
+   "provenance": "PASS"
+  },
+  "D-probe-error": {
+   "artifacts": "FAIL",
+   "cmp02": "PASS",
+   "cmp04": "PASS",
+   "cmp13": "PASS",
+   "negativeArm": "PASS",
+   "control": "PASS",
+   "settle": "PASS",
+   "provenance": "PASS"
+  },
+  "E-control-stderr-dirty": {
+   "artifacts": "PASS",
+   "cmp02": "PASS",
+   "cmp04": "PASS",
+   "cmp13": "PASS",
+   "negativeArm": "PASS",
+   "control": "FAIL",
+   "settle": "PASS"
+  },
+  "F-negative-arm-silent": {
+   "artifacts": "PASS",
+   "cmp02": "PASS",
+   "cmp04": "PASS",
+   "cmp13": "PASS",
+   "negativeArm": "FAIL",
+   "control": "FAIL",
+   "settle": "PASS"
+  },
+  "G-confined-copy-not-confined": {
+   "artifacts": "PASS",
+   "cmp02": "PASS",
+   "cmp04": "PASS",
+   "cmp13": "PASS",
+   "negativeArm": "FAIL",
+   "control": "PASS",
+   "settle": "PASS"
+  },
+  "H-healthy-left-failed": {
+   "artifacts": "PASS",
+   "cmp02": "PASS",
+   "cmp04": "PASS",
+   "cmp13": "PASS",
+   "negativeArm": "PASS",
+   "control": "PASS",
+   "settle": "FAIL"
+  },
+  "RESTORED-UNMUTATED": {
+   "artifacts": "PASS",
+   "cmp02": "PASS",
+   "cmp04": "PASS",
+   "cmp13": "PASS",
+   "negativeArm": "PASS",
+   "control": "PASS",
+   "settle": "PASS",
+   "provenance": "PASS"
+  },
+  "I-foreign-home": {
+   "artifacts": "FAIL",
+   "cmp02": "PASS",
+   "cmp04": "PASS",
+   "cmp13": "PASS",
+   "negativeArm": "PASS",
+   "control": "PASS",
+   "settle": "PASS",
+   "provenance": "FAIL"
+  }
+ },
+ "coupling_notes": [
+  "Mutation F flips negativeArm AND control, and that coupling is CORRECT: the control group asserts the two probe-free arms are DISTINGUISHABLE, so silencing the confined arm must break it. Recorded rather than smoothed away.",
+  "Mutation B flips cmp04 AND cmp13, which is the point of CMP-04 depending on CMP-13: ONE catalog answers both cases. A mutation that flipped only one would be evidence a case was reading a summary rather than the catalog -- and the first version of the verdict script did exactly that. See the CMP-13 comment in s11-cmp-verdict.mjs.",
+  "Mutation I flips provenance AND artifacts, which is also correct: naming a foreign home breaks both the ownership check and the provenance check. It is the G-FIX-13 fixed-output-path trap."
+ ]
+}
