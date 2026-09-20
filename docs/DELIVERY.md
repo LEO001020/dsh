@@ -98,6 +98,34 @@ That resolved to the **global** pnpm 11.24.0, which refused because the repo
 declares `packageManager: pnpm@11.7.0`. Corepack does not switch versions once
 invoked. The fix is the shim directory above. The global pnpm was not modified.
 
+### The qualification source plane must be clean before a run — F11 / ID-06
+
+```sh
+cd /d/DSH/work/dsh-native-daily
+node qualification/runners/check-source-plane.mjs
+```
+
+**A developer workspace may be dirty; the qualification source plane may not.**
+Run this before a qualification run and read exit 1 as "do not start": a verdict
+produced on a tree whose source identity nobody can state is not a verdict. Exit 0
+is clean, exit 1 is dirty, and exit 2 is a broken invocation — kept distinct so a
+broken rig can never be read as a statement about the source.
+
+**This is an environment precondition, NOT part of the artifact identity.** The
+identity is the built launcher digest + lockfile + profile/preset digests + the
+resolved graph, and `python helpers/doctor.py` re-derives and verifies it — that is
+the check that survives a dirty checkout. Neither check substitutes for the other.
+
+**Do not place DSH_HOME, generated artifacts, qualification output, or test temp
+directories inside `D:\DSH\src\dsh-src`.** That is where the two untracked
+directories in the `ID-06` FAIL came from. Use `D:\DSH\home\<name>` for homes and a
+directory outside the checkout for qualification output; use disposable worktrees
+(`helpers/new-writer.ps1`) for upstream experiments.
+
+Never `git checkout`/`reset`/`clean` the pinned checkout to make this gate green —
+it is shared by every writer and by the deployment, and the gate names the remedy
+rather than applying it for exactly that reason.
+
 ### The extension package
 
 ```sh
@@ -252,11 +280,15 @@ with the probe adding no row, and `presetRoots[1].path` confirming the home
 `toolCountContextKey` is recorded alongside as `0`,
 which is the contrast that shows the agent-keyed scope is the one that matters.
 
-**Trap 4 — the build and the typecheck are different configs.**
+**Trap 4 — the build and the typecheck are different configs, and there is now ONE
+official command for the typecheck.**
 
 ```sh
-tsc -p tsconfig.json        --noEmit   # WRONG for gate evidence: EXCLUDES src/**/*.test.ts
-tsc -p tsconfig.check.json  --noEmit   # the one to cite: identical strict flags, exclude cleared
+cd /d/DSH/work/dsh-native-daily
+pnpm typecheck                          # THE official gate: both packages, tests included
+
+tsc -p tsconfig.json        --noEmit    # WRONG for gate evidence: EXCLUDES src/**/*.test.ts
+tsc -p tsconfig.check.json  --noEmit    # the config the official command drives, per package
 ```
 
 `tsconfig.json` excludes test files so the build never emits them into `lib/`.
@@ -264,6 +296,24 @@ That exclusion is correct for the build and makes `tsc -p tsconfig.json --noEmit
 exit 0 **with or without** a test file present — a false pass. This was caught and
 recorded in `qualification/results/M9.2-terminal-advanced/FINDINGS.md`; the
 corrected config immediately surfaced two real type errors the old one hid.
+
+**Cite `pnpm typecheck`, not either `tsc` line, as the typecheck.** The two configs
+are not meant to mean the same thing — one is the BUILD face, one is the CHECK
+face — so the fix is not to merge them but to give the project a single entry
+point that covers the complete production graph. `pnpm typecheck`
+(`helpers/typecheck.mjs`) discovers every package carrying a `tsconfig.check.json`,
+resolves each with `--showConfig` and **refuses to pass if the resolved program
+contains no `*.test.ts`** — so a future edit that re-adds the exclude cannot turn
+the gate back into a false pass. Measured in both directions, with the control arm
+`ID-05` names, in `qualification/results/R2-F10F11/mutation-test.txt`:
+
+| Arm | Command | Result |
+|---|---|---|
+| clean tree | `pnpm typecheck` | exit 0 |
+| type error in a PRODUCTION file | `pnpm typecheck` | exit 1, names `src/protocol.ts(335,7)` |
+| restored byte-exact | `pnpm typecheck` | exit 0 |
+| the SAME error in a TEST file | `tsc -p tsconfig.json --noEmit` | **exit 0 — MISSED it** |
+| the SAME error in a TEST file | `pnpm typecheck` | exit 1, names `src/protocol.test.ts(129,7)` |
 
 **Test count: 1084 collected across 47 files**, measured with `vitest list` at
 commit `a1d6e6d`. That is a **collection** count, not a passing count: no

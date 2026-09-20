@@ -36,6 +36,14 @@ say(`probe out: ${OUT}`)
 for (const pkg of ['packages/dsh-daily-work']) {
   const cwd = `${REPO}/${pkg}`
   try {
+    // NOTE (F10): this uses `tsconfig.json` -- the BUILD config -- on purpose, and it
+    // is NOT the typecheck gate. The build must EXCLUDE `src/**/*.test.ts` so test
+    // code never emits into `lib/`, which is exactly why `tsconfig.json` cannot be
+    // cited as evidence that "the tests type-check": it exits 0 with or without a
+    // test file present. The official typecheck is `pnpm typecheck`, which drives
+    // `tsconfig.check.json` (exclude cleared, `noEmit`) across every package. This
+    // call is here to REBUILD `lib/` so the measurement below describes this tree's
+    // source; it must not be read as a compiler gate.
     execFileSync(process.execPath, [`${DSH_SRC}/node_modules/typescript/bin/tsc`, '-p', 'tsconfig.json'], {
       cwd, stdio: 'pipe', timeout: 300_000,
     })

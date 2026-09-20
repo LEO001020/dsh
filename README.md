@@ -160,10 +160,12 @@ path** (it is a non-test importer of `host.ts` and is imported by it), and
 cd packages/dsh-daily-work
 powershell -NoProfile -ExecutionPolicy Bypass -File link-all-dsh.ps1
 vitest run
-tsc -p tsconfig.check.json   # the config that includes test files
 
-# 3. Regenerate the gate report from evidence.
+# 3. Typecheck — the ONE official command. Both packages, tests included.
 cd ../..
+pnpm typecheck
+
+# 4. Regenerate the gate report from evidence.
 python qualification/runners/build-gates.py
 ```
 
@@ -176,9 +178,12 @@ under active concurrent edit, so read it as "at `a1d6e6d`", not as a standing
 claim: a mid-edit tree does not parse, and a collection count can move with no
 test added or removed.
 
-`tsc -p tsconfig.json` is **not** the check to cite: it excludes
-`src/**/*.test.ts` and therefore exits 0 with or without a test file present.
-`tsconfig.check.json` keeps identical strict flags and clears only that exclude.
+`pnpm typecheck` is **the** typecheck to cite. `tsc -p tsconfig.json` is **not**:
+it excludes `src/**/*.test.ts` and therefore exits 0 with or without a test file
+present. `tsconfig.check.json` keeps identical strict flags and clears only that
+exclude, and the official command drives it for every package while refusing to
+pass if a config stops including the tests. Measured both ways, with the control
+arm, in `qualification/results/R2-F10F11/mutation-test.txt`.
 
 ## What is actually proven
 

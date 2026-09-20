@@ -1,0 +1,16 @@
+=== SOURCE PLANE AFTER RELOCATION (captured 2026-09-20T09:34:44+08:00) ===
+--- git rev-parse HEAD ---
+ddefc45fbc7f8e46dd73185e68295696d1297887
+--- git status --porcelain ---
+ M packages/deliverables/workspace-changes/src/index.ts
+--- git diff --exit-code ---
+warning: in the working copy of 'packages/deliverables/workspace-changes/src/index.ts', CRLF will be replaced by LF the next time Git touches it
+diff exit=0
+--- git diff --cached --stat ---
+(empty = nothing staged)
+--- blob comparison ---
+worktree hash-object: c05787d931870defacfdfcb4feca85f4ae733d8e
+HEAD blob:            c05787d931870defacfdfcb4feca85f4ae733d8e
+--- dirs gone? ---
+ls: cannot access 'DSHhomem914': No such file or directory
+ls: cannot access 'data-artifacts': No such file or directory

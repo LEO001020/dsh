@@ -1,0 +1,24 @@
+=== SOURCE PLANE BEFORE (captured 2026-09-20T09:21:23+08:00) ===
+--- pwd ---
+/d/DSH/src/dsh-src
+--- git rev-parse HEAD ---
+ddefc45fbc7f8e46dd73185e68295696d1297887
+--- git status --porcelain ---
+ M packages/deliverables/workspace-changes/src/index.ts
+?? DSHhomem914/
+?? data-artifacts/
+--- git status --porcelain=v2 ---
+1 .M N... 100644 100644 100644 c05787d931870defacfdfcb4feca85f4ae733d8e c05787d931870defacfdfcb4feca85f4ae733d8e packages/deliverables/workspace-changes/src/index.ts
+? DSHhomem914/
+? data-artifacts/
+--- git diff --cached --stat ---
+(empty above = nothing staged)
+--- git diff --exit-code ---
+warning: in the working copy of 'packages/deliverables/workspace-changes/src/index.ts', CRLF will be replaced by LF the next time Git touches it
+diff exit=0
+--- git diff-files --name-status ---
+M	packages/deliverables/workspace-changes/src/index.ts
+--- git hash-object (filtered) ---
+c05787d931870defacfdfcb4feca85f4ae733d8e
+--- git rev-parse HEAD:<path> ---
+c05787d931870defacfdfcb4feca85f4ae733d8e
