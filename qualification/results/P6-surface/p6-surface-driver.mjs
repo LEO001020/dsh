@@ -356,12 +356,18 @@ function loadRecorded(outPath, home, label) {
   })
   const used = attempts.find(attempt => attempt.probe !== null)
   return {
-    boot: { replay: true, label },
+    // THE SAME SHAPE AS A BOOTED SIDE, with `booted: false`. A block whose keys
+    // change with the mode forces every reader to special-case it, and the
+    // first version of this file did exactly that -- the report's `boots` object
+    // threw on a missing `timedOut` for a loaded side. A uniform shape with an
+    // explicit `booted` flag is the honest form: the fields are absent as
+    // VALUES, not as KEYS.
+    boot: { booted: false, label, port: null, portReleased: null, exitCode: null, timedOut: null, stderr: null },
     probe: used?.probe ?? null,
     probeError: used === undefined ? attempts.map(a => a.error).join('\n  ') : null,
     artifactUsed: used?.candidate ?? null,
     partial: used?.candidate === partialPath,
-    buildIdentity: { artifacts: null, changedDuringBoot: [] },
+    buildIdentity: { artifacts: null, changedDuringBoot: null },
   }
 }
 
@@ -481,11 +487,30 @@ const assertions = {
   // observed this run. Recording it as `true` would be a free pass for a fact
   // nobody measured -- the vacuous-truth trap. `null` is reported as NOT_RUN.
   buildsStableDuringBothBoots: bootBefore && bootAfter
-    ? before.buildIdentity.changedDuringBoot.length === 0 && after.buildIdentity.changedDuringBoot.length === 0
+    ? (before.buildIdentity.changedDuringBoot ?? []).length === 0
+      && (after.buildIdentity.changedDuringBoot ?? []).length === 0
     : null,
   // The hidden arm: Python could not reach a creation route either.
   bridgeArmDidNotExecute: after.probe?.bridgeArm?.anyExecuted === false
     || after.probe?.bridgeArm?.available === false,
+
+  // THE HONEST BOUNDARY, ASSERTED SO IT CANNOT BE MISREAD.
+  //
+  // These are the OPPOSITE direction from the assertions above: they must be
+  // TRUE, because the change does NOT remove the capability. An assertion that
+  // the seam were gone would be a claim this slice cannot support and must not
+  // make -- and if the seam ever DID disappear, that would be a different,
+  // larger change than the one under test, and a reader deserves to be told.
+  //
+  // A null/undefined here FAILS: it means the arm did not run, so the boundary
+  // was not measured. NOT_RUN is not PASS.
+  substrateSeamStillPresent: after.probe?.substrateSeam?.servicePresent === true,
+  substrateSeamStillCallable:
+    after.probe?.substrateSeam?.startContinuableIsCallable === true
+    && after.probe?.substrateSeam?.startIsCallable === true,
+  // A seam with no provider would be present in signature and absent in fact,
+  // so the registry is part of the claim rather than a detail.
+  substrateSeamHasProviders: (after.probe?.substrateSeam?.registeredProviders ?? []).length > 0,
 }
 
 /**
@@ -517,14 +542,19 @@ const report = {
       port: before.boot.port, portReleased: before.boot.portReleased, exitCode: before.boot.exitCode,
       timedOut: before.boot.timedOut, probeError: before.probeError,
       artifactUsed: before.artifactUsed, partial: before.partial,
-      activationWarnings: (before.boot.stderr ?? '').split('\n').filter(l => /did not activate|startup failed/i.test(l)),
+      // NULL, not [], when the side was not booted. An empty list would read as
+      // "a boot ran and emitted no warnings", which is a stronger claim than
+      // "no boot ran" -- the same vacuous-truth trap as the assertion below.
+      activationWarnings: before.boot.stderr === null ? null
+        : before.boot.stderr.split('\n').filter(l => /did not activate|startup failed/i.test(l)),
       buildIdentity: before.buildIdentity,
     },
     after: {
       port: after.boot.port, portReleased: after.boot.portReleased, exitCode: after.boot.exitCode,
       timedOut: after.boot.timedOut, probeError: after.probeError,
       artifactUsed: after.artifactUsed, partial: after.partial,
-      activationWarnings: (after.boot.stderr ?? '').split('\n').filter(l => /did not activate|startup failed/i.test(l)),
+      activationWarnings: after.boot.stderr === null ? null
+        : after.boot.stderr.split('\n').filter(l => /did not activate|startup failed/i.test(l)),
       buildIdentity: after.buildIdentity,
     },
   },
@@ -551,6 +581,10 @@ const report = {
   hiddenArm: { after: after.probe?.bridgeArm ?? null, before: before.probe?.bridgeArm ?? null },
   managementSurface: { before: before.probe?.managementSurface ?? null, after: after.probe?.managementSurface ?? null },
   subagentRowConfig: { before: before.probe?.subagentRowConfig ?? null, after: after.probe?.subagentRowConfig ?? null },
+  // THE HONEST BOUNDARY, reported beside the catalog it qualifies. A reader who
+  // takes only the diff away must not conclude the substrate became
+  // unreachable; this field is what says otherwise, from the boot itself.
+  substrateSeam: { before: before.probe?.substrateSeam ?? null, after: after.probe?.substrateSeam ?? null },
   assertions,
   failedAssertions: failed,
   notRunAssertions: notRun,

@@ -1,11 +1,11 @@
 {
   "driver": "p6-surface-driver",
   "slice": "P6 — the model-facing child-creation surface, before and after",
-  "ranAt": "2026-09-20T13:12:37.351Z",
-  "mode": "boot:after",
+  "ranAt": "2026-09-20T13:14:03.434Z",
+  "mode": "replay",
   "bootedSides": {
     "before": false,
-    "after": true
+    "after": false
   },
   "homes": {
     "before": "D:/DSH/home/p6-surface-before/profiles/daily",
@@ -15,33 +15,31 @@
   "cwd": "C:/Windows/Temp",
   "boots": {
     "before": {
+      "port": null,
+      "portReleased": null,
+      "exitCode": null,
+      "timedOut": null,
       "probeError": null,
       "artifactUsed": "D:/DSH/work/wt-p6/qualification/results/P6-surface/catalog-before.json",
       "partial": false,
-      "activationWarnings": [],
+      "activationWarnings": null,
       "buildIdentity": {
         "artifacts": null,
-        "changedDuringBoot": []
+        "changedDuringBoot": null
       }
     },
     "after": {
-      "port": 9675,
-      "portReleased": true,
+      "port": null,
+      "portReleased": null,
       "exitCode": null,
-      "timedOut": false,
+      "timedOut": null,
       "probeError": null,
       "artifactUsed": "D:/DSH/work/wt-p6/qualification/results/P6-surface/catalog-after.json",
       "partial": false,
-      "activationWarnings": [],
+      "activationWarnings": null,
       "buildIdentity": {
-        "artifacts": {
-          "packages/dsh-daily-work/lib/host-plugin.js": "fb553116e31cde9e8230fe7d1fc97bf00b9c783b201579c9e0758da262b8f888",
-          "packages/dsh-daily-work/lib/capacity.js": "04dcb60367afa5134903a7569e01a7eb0f60961db563475826361c6f113bc359",
-          "packages/dsh-daily-work/lib/tools.js": "d024715f9bda05ff91290a3224d44bc661f399b8faf3863af235e4d8ad9073fb",
-          "packages/dsh-ipython/lib/kernel-plugin.js": "819e1476fe701c1bb91016b589c1cb19a622a8bee535076cc8f24a8790296d0a",
-          "packages/dsh-ipython/lib/host-plugin.js": "d91aba164c8143fdb1d0c8f4913598a51daf67f8dc2bea2c7afd02998cd87e7e"
-        },
-        "changedDuringBoot": []
+        "artifacts": null,
+        "changedDuringBoot": null
       }
     }
   },
@@ -568,6 +566,20 @@
       "fiberState": 2
     }
   },
+  "substrateSeam": {
+    "before": null,
+    "after": {
+      "servicePresent": true,
+      "startContinuableIsCallable": true,
+      "startIsCallable": true,
+      "registeredProviders": [
+        "spawn",
+        "fork"
+      ],
+      "agentsCreateIsCallable": true,
+      "note": "these seams are reachable from an IN-PROCESS caller holding a Context; the model-facing catalog measured above does not expose them"
+    }
+  },
   "assertions": {
     "bothBootsProducedACatalog": true,
     "bothArtifactsAreComplete": true,
@@ -585,7 +597,10 @@
     "noUnexpectedToolsAdded": true,
     "presetSurvivedTheDisable": true,
     "buildsStableDuringBothBoots": null,
-    "bridgeArmDidNotExecute": true
+    "bridgeArmDidNotExecute": true,
+    "substrateSeamStillPresent": true,
+    "substrateSeamStillCallable": true,
+    "substrateSeamHasProviders": true
   },
   "failedAssertions": [],
   "notRunAssertions": [
