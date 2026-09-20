@@ -63,7 +63,7 @@ import type { Context } from '@deepseek-ai/cordis'
 import { Service } from '@deepseek-ai/cordis'
 import type { Agent } from '@deepseek-ai/dsh-agent'
 import type { ToolExecutionToken } from '@deepseek-ai/dsh-tools'
-import { mkdirSync } from 'node:fs'
+import { mkdirSync, readFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { createHash, randomUUID } from 'node:crypto'
@@ -121,6 +121,83 @@ const PACKAGE_ROOT = dirname(dirname(fileURLToPath(import.meta.url)))
 export const DEFAULT_BROKER_SCRIPT = join(PACKAGE_ROOT, 'src', 'broker.py')
 
 /**
+ * The environment manifest V5 §11.2 requires, and the ONLY input to the
+ * environment digest.
+ *
+ * WHY A MANIFEST AND NOT A PATH STRING. The digest this replaces was
+ * `sha256(pythonExecutable + platform + arch)`, truncated to 16 hex chars: a hash
+ * of a PATH. Every one of the changes V5 §18's `ENV-DIGEST` case is about -- a
+ * patch bump of Python, an IPython major upgrade, a different `ipykernel`, a
+ * changed `broker.py` -- leaves that path string byte-identical, so the digest did
+ * not move and a kernel whose namespace was built against the old environment was
+ * served as if it were the same environment. Measured before the change:
+ * `qualification/results/P11-env/before-weak-digest.json` shows the old digest
+ * constant across a REAL `broker.py` content change whose own sha256 moved.
+ *
+ * WHY THE LOCAL FILES ARE IN HERE. The four package versions bind the INSTALLED
+ * distribution; they cannot see the code this repository ships. `broker.py` is
+ * the file the configured interpreter actually executes (`argv = [pythonExecutable,
+ * brokerScript]` in `kernel.ts`), and the bridge client is injected into every
+ * kernel namespace, so a change to either is a real environment change that a
+ * package-version-only manifest would miss. Hashing them is what makes the
+ * identity bind the CODE rather than only the path.
+ *
+ * EVERY FIELD IS A STRING OR NULL, AND NULL IS MEANINGFUL. A field that could not
+ * be established is `null`, never omitted and never a placeholder: `null` says
+ * "this was asked and could not be answered", which is a different fact from
+ * "this was answered", and both are visible in the digest input.
+ */
+export interface EnvironmentManifest {
+  /** `os.path.realpath(sys.executable)`, as the INTERPRETER reports it, not as configured. */
+  readonly sys_executable_realpath: string | null
+  /** `platform.python_implementation()`. */
+  readonly python_implementation: string | null
+  /** `platform.python_version()`. */
+  readonly python_version: string | null
+  /** The `ipython` distribution version. */
+  readonly ipython: string | null
+  /** The `ipykernel` distribution version. */
+  readonly ipykernel: string | null
+  /** The `jupyter_client` distribution version. */
+  readonly jupyter_client: string | null
+  /** The `pyzmq` distribution version. */
+  readonly pyzmq: string | null
+  /** sha256 of the broker script the host will spawn. LOCAL FILE. */
+  readonly broker_sha256: string | null
+  /** sha256 of the bridge Python client injected into the kernel. LOCAL FILE. */
+  readonly bridge_python_client_sha256: string | null
+  /**
+   * sha256 of the `dsh.data` Python client, when the host can name it. LOCAL FILE.
+   *
+   * The file lives in `dsh-daily-work`, which this package does not depend on and
+   * must not import: a kernel service that required the data plane in order to
+   * compute its own identity would make the data plane a boot prerequisite of
+   * every cell. So the path is HOST-SUPPLIED (see
+   * {@link KernelServiceConfig.dataClientScript}) and this field is `null` when no
+   * host supplies one. `null` is the honest value; inventing a path this package
+   * guessed would put a fabricated fact into an identity.
+   */
+  readonly data_client_sha256: string | null
+}
+
+/**
+ * How long the environment probe may take before the host refuses to activate.
+ *
+ * BOUNDED, AND THE BOUND IS THE POINT. The probe runs on the activation path, so a
+ * probe that could hang would block every cell behind it. Measured cost of the
+ * metadata-only probe on this host: 0.136 s wall. 10 s is ~70x that, which leaves
+ * room for a cold filesystem and a slow antivirus scan while still failing inside
+ * a user's patience.
+ *
+ * ON TIMEOUT THE HOST FAILS LOUD. There is no partial-manifest arm and no
+ * fallback to the path-string digest: digesting a partial manifest would produce
+ * an identity that is stable, plausible, and WRONG, and the entire defect being
+ * fixed is an identity that cannot see a real change. A probe that cannot answer
+ * is an environment this host cannot identify, which is a refusal, not a default.
+ */
+export const DEFAULT_ENV_PROBE_TIMEOUT_MS = 10_000
+
+/**
  * Default kernel scratch root: inside the package, so a second checkout gets its
  * own kernels instead of sharing the first one's.
  *
@@ -153,6 +230,34 @@ export interface KernelServiceConfig {
   readonly executionWorld?: string
   /** Environment digest; part of the kernel identity. Changing it invalidates every kernel. */
   readonly environmentDigest?: string
+  /**
+   * Absolute path to the `dsh.data` Python client, when the host has one.
+   *
+   * OPTIONAL, and its absence is recorded as `data_client_sha256: null` rather
+   * than defaulted. The client belongs to `dsh-daily-work`; this package must not
+   * import that package to identify itself, so the host that owns both names the
+   * path here. A host with no data plane leaves it unset and gets the honest
+   * `null`, not a guess.
+   */
+  readonly dataClientScript?: string
+  /**
+   * How long the environment probe may run before activation is refused.
+   *
+   * Defaults to {@link DEFAULT_ENV_PROBE_TIMEOUT_MS}. Exposed because a host on a
+   * cold or instrumented filesystem may legitimately need longer, and because a
+   * test needs to force the timeout arm without waiting 10 s.
+   */
+  readonly environmentProbeTimeoutMs?: number
+  /**
+   * How to build the environment manifest, when the host wants to control it.
+   *
+   * OMITTED, the host runs the bounded Python probe. A host that sets this takes
+   * over the whole manifest -- including the local-file hashes -- and is
+   * responsible for it being real. It exists because a composition-tier probe or
+   * a test may need a deterministic manifest without paying for a probe, and
+   * because an injected digest computed by a fake would be a fabricated identity.
+   */
+  readonly environmentManifest?: () => Promise<EnvironmentManifest>
   /** Per-cell output cap in bytes. */
   readonly outputCapBytes?: number
   /** Per-cell wall clock budget. */
