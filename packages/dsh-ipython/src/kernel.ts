@@ -422,6 +422,10 @@ export class KernelHost {
           detail: message.detail,
           limitBytes: message.limitBytes,
           ...message.declaredBytes === undefined ? {} : { declaredBytes: message.declaredBytes },
+          // THE COUNT, CARRIED THROUGH THE RECORD. Dropping it here would make the
+          // field the broker sends unreachable from the only place the host keeps a
+          // refusal, which is how a count becomes decorative.
+          ...message.refusedFrames === undefined ? {} : { refusedFrames: message.refusedFrames },
         })
       }
       return
@@ -687,12 +691,17 @@ export class KernelHost {
    * The one this module can produce today is `FRAME_TOO_LARGE`: a frame that
    * violated {@link MAX_FRAME_BYTES}. It is a bounded refusal with a name, which
    * is what the v2 oracle decision (D2) requires in place of a bare count.
+   *
+   * `refusedFrames` is the COUNT the oracle's clause asks for, carried beside the
+   * name rather than only inside `detail`: a reader must not have to parse a
+   * number out of prose to learn how much was lost.
    */
   get transportRefusals(): readonly {
     code: string
     detail: string
     limitBytes: number
     declaredBytes?: number
+    refusedFrames?: number
   }[] {
     return this.refusals
   }

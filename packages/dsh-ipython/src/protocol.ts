@@ -432,6 +432,20 @@ export type BrokerEvent =
     readonly limitBytes: number
     /** What the frame claimed, when the peer declared it. Absent otherwise. */
     readonly declaredBytes?: number
+    /**
+     * How many frames this refusal accounts for.
+     *
+     * Always present on a refusal the broker emits today, and always `1`: a
+     * refusal IS one frame, because both the encoder and the decoder refuse a
+     * frame as a unit. It is a FIELD rather than a sentence because the oracle's
+     * clause is that the loss be reported "with a count", and a reader must not
+     * have to parse the number back out of prose that may be reworded.
+     *
+     * Optional because it is decoded from a frame: a broker that predates the
+     * field still produces a valid refusal, and refusing to decode it would turn
+     * a bounded refusal into a protocol violation.
+     */
+    readonly refusedFrames?: number
   }
 
 export type BrokerMessage = BrokerReply | BrokerEvent
@@ -503,6 +517,13 @@ export function asBrokerMessage(value: unknown): BrokerMessage {
         throw new FrameError('transport_refused is missing a numeric limitBytes')
       }
       const declaredBytes = record['declaredBytes']
+      // THE COUNT IS VALIDATED, NOT PASSED THROUGH. A non-numeric or negative
+      // `refusedFrames` becomes absent rather than reaching a reader as a value no
+      // arithmetic can use -- the same discipline `declaredBytes` gets. Unlike
+      // `limitBytes` it is NOT required: a refusal whose count is missing is still
+      // a bounded refusal, and rejecting it would report a protocol violation
+      // where the peer reported a loss.
+      const refusedFrames = record['refusedFrames']
       return {
         type: 'event',
         event,
@@ -512,6 +533,9 @@ export function asBrokerMessage(value: unknown): BrokerMessage {
         limitBytes,
         ...typeof declaredBytes === 'number' && Number.isFinite(declaredBytes)
           ? { declaredBytes }
+          : {},
+        ...typeof refusedFrames === 'number' && Number.isFinite(refusedFrames) && refusedFrames >= 0
+          ? { refusedFrames }
           : {},
       }
     }

@@ -161,6 +161,14 @@ async function main(): Promise<void> {
           'arm2_errorHasDroppedFramesField',
           /droppedFrames|dropped frame/i.test(error instanceof Error ? error.message : ''),
         )
+        // THE CLAUSE UNDER TEST, read from the text the MODEL would receive rather
+        // than from the fields: the oracle says the loss must be reported as LOST
+        // with a count, never as empty output. This is that sentence.
+        record(
+          'arm2_reportedAsLostWithCount',
+          /frame\(s\) LOST/i.test(error instanceof Error ? error.message : ''),
+        )
+        record('arm2_modelText', error instanceof Error ? error.message.slice(0, 400) : String(error))
       }
       // What the host recorded about refusals on the stream itself.
       record('arm2_host_transportRefusals', host.transportRefusals.length)
