@@ -1,0 +1,58 @@
+{
+  "probe": "c3-memo",
+  "label": "before",
+  "measuredAt": "2026-09-20T15:39:13.742Z",
+  "identity": {
+    "srcArtifactsTs": "ecbb31a5aa7520224ab4e540df903991c9f6451fddbff329c372044636a6b39a",
+    "libArtifactsJs": "f22ef649e211e1c7c7c4fb3da798051bce9c75a0d90ebacb56e831a51ef270ca"
+  },
+  "arms": {
+    "capture": {
+      "bytes": 908,
+      "sha256": "1959faf57b16e7566778429f8a07def9b482ad60f6aa9586fe117be073d24d8d"
+    },
+    "pinnedMtime": {
+      "mtimeMs": 1789918753000,
+      "isWholeSecond": true
+    },
+    "firstPage": {
+      "refused": false,
+      "bytes": 64,
+      "sha256": "3fe388082e31d84336c5de9bfd721cd18c7697db5cedf0508df65736fdb2f564",
+      "hasCursor": true,
+      "isTheNamedArtifactPrefix": true
+    },
+    "replacement": {
+      "sameLength": true,
+      "sameMtimeMs": true,
+      "stampMatches": true,
+      "storedSha256": "3229b5c9c3901e92c2af100e6329786ec70ef055cc0ab033f992ca6974f54ecb",
+      "descriptorSha256": "1959faf57b16e7566778429f8a07def9b482ad60f6aa9586fe117be073d24d8d",
+      "bytesAreTheNamedArtifact": false
+    },
+    "cursorAfterReplacement": {
+      "refused": false,
+      "bytes": 64,
+      "sha256": "16da1e97ac6e07f5b2c20e0d0eb3dcda692f32344528f698aab2c07373ab538e",
+      "yieldedIsTheNamedArtifact": false,
+      "refusals": []
+    },
+    "resolveReference": {
+      "refused": true,
+      "code": "artifact-orphaned",
+      "message": "observation artifact:sha256:1959faf57b16e7566778429f8a07def9b482ad60f6aa9586fe117be073d24d8d has no committed Session reference; any object on disk is an orphan, not a delivered observation"
+    },
+    "freshStoreColdMemo": {
+      "refused": true,
+      "code": "artifact-integrity-error"
+    }
+  },
+  "verdicts": {
+    "pinnedStampIsReproducible": true,
+    "replacementIsNotTheNamedArtifact": true,
+    "cursorServedReplacedBytes": true,
+    "resolveReferenceRefused": true,
+    "coldMemoRefusesTheReplacement": true,
+    "PAGING_IS_THE_WEAKER_ROUTE": true
+  }
+}
