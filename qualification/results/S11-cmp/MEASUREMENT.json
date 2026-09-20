@@ -1,0 +1,240 @@
+{
+ "schema_version": 1,
+ "kind": "S11_CMP02_CMP04_MEASUREMENT_NOT_A_DSH_ARTIFACT",
+ "ranAt": "2026-09-20T11:06:25.570Z",
+ "identity": {
+  "worktree": "D:/DSH/work/wt-s11",
+  "branch": "wt/s11",
+  "head": "fef7612fa427ce04aed8a329dd22a80fd8fc8e77",
+  "head_note": "the commit this wave was measured under; the load-bearing identity inputs are the built/profile digests below",
+  "dsh_src": "D:/DSH/src/dsh-src",
+  "dsh_home": "D:/DSH/home/s11",
+  "built": {
+   "packages/dsh-daily-work/lib/no-sandbox-contract.js": "842ef677bf5c58fc9ee64e7b30175b81731be3cfccde2b038a5aefbeb0731b98",
+   "packages/dsh-ipython/lib/ipython-tool.js": "40f42421129ddc371340a7fd5c1a92ce336b22836f12ad407500c49c63d12222"
+  },
+  "source": {
+   "packages/dsh-daily-work/src/no-sandbox-contract.ts": "eebf7a59470b25fa127f4b565ce3323ca38e4670f4c375eb76db4eaf5c9a07f1"
+  },
+  "profiles": {
+   "home/profiles/daily/cordis.patch.yml (HEALTHY)": "0e8e370e06375ad4a289fa36f783232dde4159a69844422d6363b874af7445f2",
+   "home/profiles/daily-s11-confined/cordis.patch.yml (NEGATIVE ARM)": "65b6ade73af1c1b7cd0e8312ff6863ccd56d0ad8e228cb0b86207962fd420239",
+   "repo/profiles/daily-candidate/cordis.patch.yml (must equal HEALTHY)": "0e8e370e06375ad4a289fa36f783232dde4159a69844422d6363b874af7445f2"
+  },
+  "probes": {
+   "qualification/runners/s11-cmp-probe.mjs": "346473aac232184c4d3914ee3ea5a404a1241b96f97a4822ddfe7a39155b4344",
+   "qualification/runners/s11-cmp-probe.patch.yml": "03c3c7a1f24461d3fa81ddf35cba40b913aba76a78aa73dd084fd5c5e43c4286"
+  }
+ },
+ "sources": {
+  "healthy-probe.json": "the CMP-02 / CMP-04 / CMP-13 measurement. Real profile, foreign cwd, ONE overlay row (the probe).",
+  "confined-probe.json": "the mode-sensitivity control: a COPY of the profile with mode: workspace-write.",
+  "healthy-noprobe.boot.json": "the loudness CONTROL: real profile, NO probe in the tree.",
+  "confined-noprobe.boot.json": "the loudness ARM: confined copy, NO probe in the tree.",
+  "dumpconfig-baseline.txt": "the composed profile tree WITHOUT the overlay, from the launcher itself.",
+  "dumpconfig-with-probe.txt": "the same tree WITH the overlay, proving it adds exactly one row."
+ },
+ "catalogVerbatim": {
+  "count": 27,
+  "namesSorted": [
+   "ask_user_question",
+   "create_goal",
+   "edit",
+   "exit_plan_mode",
+   "get_goal",
+   "glob",
+   "grep",
+   "interrupt_agent",
+   "ipython",
+   "job_kill",
+   "job_list",
+   "job_output",
+   "list_agents",
+   "present",
+   "read",
+   "read_image",
+   "send_message",
+   "skill",
+   "subagent",
+   "subagent_fork",
+   "todo_write",
+   "update_goal",
+   "web_fetch",
+   "web_search",
+   "work",
+   "workflow",
+   "write"
+  ],
+  "namesInRegistryOrder": [
+   "work",
+   "read",
+   "write",
+   "edit",
+   "glob",
+   "grep",
+   "job_output",
+   "job_list",
+   "job_kill",
+   "skill",
+   "ask_user_question",
+   "web_search",
+   "web_fetch",
+   "present",
+   "ipython",
+   "read_image",
+   "send_message",
+   "interrupt_agent",
+   "list_agents",
+   "todo_write",
+   "workflow",
+   "get_goal",
+   "create_goal",
+   "update_goal",
+   "exit_plan_mode",
+   "subagent_fork",
+   "subagent"
+  ],
+  "assembledCount": 27,
+  "assembledNamesSorted": [
+   "ask_user_question",
+   "create_goal",
+   "edit",
+   "exit_plan_mode",
+   "get_goal",
+   "glob",
+   "grep",
+   "interrupt_agent",
+   "ipython",
+   "job_kill",
+   "job_list",
+   "job_output",
+   "list_agents",
+   "present",
+   "read",
+   "read_image",
+   "send_message",
+   "skill",
+   "subagent",
+   "subagent_fork",
+   "todo_write",
+   "update_goal",
+   "web_fetch",
+   "web_search",
+   "work",
+   "workflow",
+   "write"
+  ],
+  "ipythonParameters": [
+   "code"
+  ],
+  "shellEquivalentsPresent": []
+ },
+ "checks": {
+  "artifacts": {
+   "healthy-probe.json names the home this wave booted": true,
+   "confined-probe.json names the home this wave booted": true,
+   "healthy-probe.json recorded NO probe error": true,
+   "confined-probe.json recorded NO probe error": true,
+   "the probe overlay added exactly ONE loader row (the probe itself)": true
+  },
+  "cmp02": {
+   "the sandbox-policy row is PRESENT (not deleted)": true,
+   "the row is not disabled and its fiber is ACTIVE (2)": true,
+   "the configured mode is the LITERAL string \"danger-full-access\"": true,
+   "the configured mode is NOT an unresolved !!js expression": true,
+   "both config keys survive the patch (mode + workspaceRoot)": true,
+   "the mounted service resolves defaultMode to \"danger-full-access\"": true,
+   "the workspaceRoot resolves to an ABSOLUTE path": true,
+   "resolve({}) with no session returns the trusted-local mode": true,
+   "a REAL session resolves to the trusted-local mode": true,
+   "that session carries NO confining override": true,
+   "the model-facing narration names danger-full-access": true,
+   "the narration does NOT name workspace-write": true,
+   "the narration was read by RUNNING assemble(), not restated from source": true,
+   "the sandbox:policy context entry IS contributed": true,
+   "the PTC confine decision is NOT taken": true,
+   "the guard reports this graph as satisfied": true,
+   "the guard RECORDED the startup boundary on this graph": true,
+   "the startup record itself is ok and names danger-full-access": true
+  },
+  "cmp04": {
+   "a REAL session was created and its Agent is live": true,
+   "the catalog was read with NO error": true,
+   "ipython is present": true,
+   "work is present": true,
+   "pwsh is absent": true,
+   "the full name set was recorded (sorted length equals the count)": true,
+   "the SECOND instrument (assembled request tool list) agrees with the registry": true,
+   "the catalog does NOT contain the probe sentinel": true,
+   "the probe's own derived flags AGREE with this recomputation": true,
+   "the overlay adds exactly ONE row and it is NOT a tool row": true,
+   "the probe registered ZERO tool rows before the sensitivity arm": true,
+   "SENSITIVITY: registering a tool row DOES change the measured catalog (+1)": true,
+   "SENSITIVITY: the sentinel appeared in the re-read catalog": true,
+   "SENSITIVITY: disposing it returns the catalog to the original count": true
+  },
+  "cmp13": {
+   "pwsh is ABSENT from the daily catalog": true,
+   "no shell-equivalent tool is present either (pwsh/bash/shell/run_code)": true,
+   "ipython IS present": true,
+   "the full measured name set is recorded verbatim (sorted length equals the count)": true,
+   "the probe's own derived flags AGREE with this recomputation": true
+  },
+  "negativeArm": {
+   "the confined profile copy really carries workspace-write": true,
+   "the copy resolves defaultMode to workspace-write": true,
+   "the NARRATION changes to the confining sentence (the channel is mode-sensitive)": true,
+   "the narration names the session workspace, i.e. it is a LIVE render": true,
+   "the PTC confine decision WOULD confine": true,
+   "the guard service is NOT published, because its own entry FAILED at apply": true,
+   "PROBE-FREE boot is SERVED (not a dead boot)": true,
+   "PROBE-FREE stderr carries the activation warning line": true,
+   "PROBE-FREE stderr names the guard entry": true,
+   "PROBE-FREE stderr carries the refusal text": true,
+   "PROBE-FREE stderr names the failing check id": true,
+   "PROBE-FREE stderr reports the observed confining mode": true,
+   "PROBE-FREE stderr contains NO probe (the product wrote it)": true
+  },
+  "control": {
+   "HEALTHY probe-free boot is SERVED (the control is alive, so empty stderr is not a dead boot)": true,
+   "HEALTHY probe-free stderr is EMPTY": true,
+   "HEALTHY probe-free stderr has NO activation warning": true,
+   "HEALTHY probe-free stderr does NOT name the guard (no false alarm)": true,
+   "the two probe-free arms are DISTINGUISHABLE on stderr": true
+  },
+  "settle": {
+   "HEALTHY: the mid-mount read DOES see entries still loading (so the race is real, not imagined)": true,
+   "HEALTHY: after settling, NOTHING is left in a FAILED state": true,
+   "CONFINED: after settling, the guard entry IS left FAILED (a real finding, not a race)": true,
+   "the two arms differ in EXACTLY this: healthy settles clean, confined keeps the guard FAILED": true
+  },
+  "provenance": {
+   "git reports a HEAD for this worktree (so the identity is READ, not typed)": true,
+   "the worktree the artifacts name is the one this script runs from": true,
+   "both probe artifacts name this wave's DSH_HOME": true,
+   "the repo profile is byte-identical to the healthy installed profile (no silent edit)": true,
+   "the negative arm profile DIFFERS from the healthy one (so the arm is a real change)": true,
+   "every built/source digest the report cites resolved": true
+  }
+ },
+ "verdicts": {
+  "artifacts": "PASS",
+  "cmp02": "PASS",
+  "cmp04": "PASS",
+  "cmp13": "PASS",
+  "negativeArm": "PASS",
+  "control": "PASS",
+  "settle": "PASS",
+  "provenance": "PASS"
+ },
+ "boundaryStatement": {
+  "what_was_removed": "NOTHING was removed. The pinned checkout D:/DSH/src/dsh-src is untouched and read-only for this wave.",
+  "what_was_measured": "The deployment surface, on this worktree, from a foreign cwd, with a probe that adds one loader row (itself) and zero tool rows.",
+  "negative_arm_profile": "D:/DSH/home/s11/profiles/daily-s11-confined is a COPY. The real profile D:/DSH/home/s11/profiles/daily was NOT edited, and the repo profile profiles/daily-candidate was NOT edited."
+ },
+ "notes": [
+  "A boot without an LLM is NOT a model turn. Every reading here is a boot-time composition fact or a host-side assembly read; no model was invoked and no request was sent.",
+  "The catalog is the surface OFFERED to a model, not what a model used. Nothing here shows a model called any tool.",
+  "The probe's own LOADING readings (ui-deliverables, hmr) are a WITHIN-BOOT timing artifact of reading the loader table early; the product's own activation audit, which runs at boot completion, reports them active. See the healthy-noprobe control: zero inactive entries."
+ ]
+}

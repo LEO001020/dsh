@@ -1,0 +1,360 @@
+{
+ "probe": "s11-cmp-probe",
+ "ranAt": "2026-09-20T11:02:05.908Z",
+ "presetRoots": [
+  {
+   "path": "D:\\DSH\\src\\dsh-src\\packages\\preset\\agent-presets\\presets\\",
+   "trust": "system"
+  },
+  {
+   "path": "D:/DSH/home/s11/profiles/daily/presets/",
+   "trust": "system"
+  },
+  {
+   "path": "D:\\DSH\\home\\s11\\.agent-presets",
+   "trust": "user"
+  }
+ ],
+ "presetDefaultId": "daily-standard",
+ "bootCwd": "C:\\Windows\\Temp",
+ "sessionCwd": "C:\\Windows\\Temp",
+ "error": null,
+ "cmp02": {
+  "declared": {
+   "rowPresent": true,
+   "rowIdAsComposed": "sandbox-policy",
+   "rowFiberState": 2,
+   "rowDisabled": false,
+   "configAsComposed": {
+    "mode": "danger-full-access",
+    "workspaceRoot": {
+     "__jsExpr": "process.cwd()"
+    }
+   },
+   "configKeys": [
+    "mode",
+    "workspaceRoot"
+   ],
+   "modeIsLiteral": true
+  },
+  "effective": {
+   "policyServicePresent": true,
+   "defaultMode": "danger-full-access",
+   "workspaceRoot": "C:\\Windows\\Temp",
+   "workspaceRootIsAbsolute": true,
+   "modeSource": "unobservable",
+   "resolveNoSession": {
+    "mode": "danger-full-access",
+    "workspaceRoot": "C:\\Windows\\Temp"
+   },
+   "perSession": [
+    {
+     "sessionId": "session-a7589c51-5371-439d-b881-54e388a14701",
+     "agentPreset": "daily-standard",
+     "agentPresent": true,
+     "override": null,
+     "resolved": "danger-full-access",
+     "resolvedWorkspaceRoot": "C:\\Windows\\Temp"
+    }
+   ],
+   "defaultModeIsTrustedLocal": true,
+   "perSessionResolvesTrustedLocal": true
+  },
+  "narration": {
+   "systemPromptServicePresent": true,
+   "assembleRan": true,
+   "assembleError": null,
+   "policyContextPresent": true,
+   "policyContextText": "Current DSH file policy: danger-full-access. The DSH file sandbox does not restrict file modifications by available operations.",
+   "contextNames": [
+    "sandbox:policy",
+    "approval:policy"
+   ],
+   "saysConfining": false,
+   "saysUnconfined": true
+  },
+  "ptc": {
+   "runtimePresent": true,
+   "runtimeName": "NodePtcRuntime",
+   "sandboxMode": "danger-full-access",
+   "confineDecision": "no confinement (mode is exactly 'danger-full-access')",
+   "runCodeOnSurface": false
+  },
+  "guard": {
+   "servicePresent": true,
+   "reportOk": true,
+   "violations": [],
+   "startupBoundaryRecorded": true,
+   "startupBoundaryRecord": {
+    "boundary": "startup",
+    "ok": true,
+    "violations": [],
+    "defaultMode": "danger-full-access",
+    "checkedAt": 1789902125862
+   }
+  }
+ },
+ "cmp04": {
+  "sessionId": "session-a7589c51-5371-439d-b881-54e388a14701",
+  "agentPreset": "daily-standard",
+  "agentPresent": true,
+  "sessionCreateError": null,
+  "catalog": {
+   "toolCount": 28,
+   "toolNamesInRegistryOrder": [
+    "work",
+    "read",
+    "write",
+    "edit",
+    "glob",
+    "grep",
+    "job_output",
+    "job_list",
+    "job_kill",
+    "skill",
+    "ask_user_question",
+    "web_search",
+    "web_fetch",
+    "present",
+    "ipython",
+    "read_image",
+    "send_message",
+    "interrupt_agent",
+    "list_agents",
+    "todo_write",
+    "workflow",
+    "get_goal",
+    "create_goal",
+    "update_goal",
+    "exit_plan_mode",
+    "subagent_fork",
+    "subagent",
+    "pwsh"
+   ],
+   "toolNamesSorted": [
+    "ask_user_question",
+    "create_goal",
+    "edit",
+    "exit_plan_mode",
+    "get_goal",
+    "glob",
+    "grep",
+    "interrupt_agent",
+    "ipython",
+    "job_kill",
+    "job_list",
+    "job_output",
+    "list_agents",
+    "present",
+    "read",
+    "read_image",
+    "send_message",
+    "skill",
+    "subagent",
+    "subagent_fork",
+    "todo_write",
+    "update_goal",
+    "web_fetch",
+    "web_search",
+    "work",
+    "workflow",
+    "write",
+    "pwsh"
+   ],
+   "ipythonPresent": true,
+   "workPresent": true,
+   "pwshPresent": true,
+   "shellEquivalentsPresent": [],
+   "catalogContainsSentinelName": false,
+   "ipythonParameters": [
+    "code"
+   ]
+  },
+  "assembledToolNamesSorted": [
+   "ask_user_question",
+   "create_goal",
+   "edit",
+   "exit_plan_mode",
+   "get_goal",
+   "glob",
+   "grep",
+   "interrupt_agent",
+   "ipython",
+   "job_kill",
+   "job_list",
+   "job_output",
+   "list_agents",
+   "present",
+   "read",
+   "read_image",
+   "send_message",
+   "skill",
+   "subagent",
+   "subagent_fork",
+   "todo_write",
+   "update_goal",
+   "web_fetch",
+   "web_search",
+   "work",
+   "workflow",
+   "write"
+  ],
+  "assembledToolCount": 27,
+  "assembledMatchesRegistry": true,
+  "error": null
+ },
+ "cmp13": {
+  "pwshAbsent": true,
+  "shellEquivalentsPresent": [],
+  "ipythonPresent": true,
+  "fullNameSetRecorded": true,
+  "note": "Read from the same session catalog as cmp04. CMP-04 DEPENDS on CMP-13 in the v2 definition, so this half is what decides whether a CMP-04 verdict is even available."
+ },
+ "probeAddsNoRow": {
+  "overlayToolRows": [],
+  "overlayRows": [
+   {
+    "id": "s11-cmp-probe",
+    "name": "file:///D:/DSH/work/wt-s11/qualification/runners/s11-cmp-probe.mjs"
+   }
+  ],
+  "toolRowsRegisteredByProbeBeforeSensitivityArm": 0,
+  "sensitivity": {
+   "ran": true,
+   "error": null,
+   "before": {
+    "toolCount": 27,
+    "toolNamesSorted": [
+     "ask_user_question",
+     "create_goal",
+     "edit",
+     "exit_plan_mode",
+     "get_goal",
+     "glob",
+     "grep",
+     "interrupt_agent",
+     "ipython",
+     "job_kill",
+     "job_list",
+     "job_output",
+     "list_agents",
+     "present",
+     "read",
+     "read_image",
+     "send_message",
+     "skill",
+     "subagent",
+     "subagent_fork",
+     "todo_write",
+     "update_goal",
+     "web_fetch",
+     "web_search",
+     "work",
+     "workflow",
+     "write"
+    ]
+   },
+   "afterRegister": {
+    "toolCount": 28,
+    "toolNamesSorted": [
+     "ask_user_question",
+     "create_goal",
+     "edit",
+     "exit_plan_mode",
+     "get_goal",
+     "glob",
+     "grep",
+     "interrupt_agent",
+     "ipython",
+     "job_kill",
+     "job_list",
+     "job_output",
+     "list_agents",
+     "present",
+     "read",
+     "read_image",
+     "s11_probe_sensitivity_sentinel",
+     "send_message",
+     "skill",
+     "subagent",
+     "subagent_fork",
+     "todo_write",
+     "update_goal",
+     "web_fetch",
+     "web_search",
+     "work",
+     "workflow",
+     "write"
+    ]
+   },
+   "deltaNames": [
+    "s11_probe_sensitivity_sentinel"
+   ],
+   "afterDispose": {
+    "toolCount": 27,
+    "toolNamesSorted": [
+     "ask_user_question",
+     "create_goal",
+     "edit",
+     "exit_plan_mode",
+     "get_goal",
+     "glob",
+     "grep",
+     "interrupt_agent",
+     "ipython",
+     "job_kill",
+     "job_list",
+     "job_output",
+     "list_agents",
+     "present",
+     "read",
+     "read_image",
+     "send_message",
+     "skill",
+     "subagent",
+     "subagent_fork",
+     "todo_write",
+     "update_goal",
+     "web_fetch",
+     "web_search",
+     "work",
+     "workflow",
+     "write"
+    ]
+   },
+   "channelDetectsAProbeAddedRow": true,
+   "returnedToOriginal": true
+  }
+ },
+ "loader": {
+  "probeRowIds": [
+   "s11-cmp-probe"
+  ],
+  "nonActiveEntries": [
+   {
+    "id": "hmr",
+    "name": "@deepseek-ai/dsh-hmr",
+    "state": 1
+   },
+   {
+    "id": "ui-deliverables",
+    "name": "@deepseek-ai/dsh-client-ui-deliverables",
+    "state": 1
+   },
+   {
+    "id": "s11-cmp-probe",
+    "name": "file:///D:/DSH/work/wt-s11/qualification/runners/s11-cmp-probe.mjs",
+    "state": 1
+   }
+  ],
+  "nonActiveEntriesAfterSettle": [
+   {
+    "id": "s11-cmp-probe",
+    "name": "file:///D:/DSH/work/wt-s11/qualification/runners/s11-cmp-probe.mjs",
+    "state": 1,
+    "classification": "NOT SETTLED"
+   }
+  ],
+  "stillNonActiveAfterSettle": []
+ }
+}

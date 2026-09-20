@@ -1,0 +1,25 @@
+{
+ "arm": "confined-noprobe",
+ "ranAt": "2026-09-20T10:54:53.533Z",
+ "profile": "daily-s11-confined",
+ "patches": [],
+ "cwd": "C:/Windows/Temp",
+ "probeInTree": false,
+ "bootEvidence": {
+  "stdout": "dsh web: http://127.0.0.1:5893/?token=sCTrcLLHmeqfMO-IHF4azFC0YUfK39Jjo1XWu4L5BNE\n",
+  "stderr": "",
+  "served": true,
+  "activationWarningLine": null,
+  "guardEntryNamedOnStderr": false,
+  "refusalTextOnStderr": false,
+  "violationIdOnStderr": false,
+  "observedConfinedModeOnStderr": false,
+  "probeCompleteOnStderr": false,
+  "port": 5893,
+  "portReleased": true,
+  "timedOut": true,
+  "exitCode": null
+ },
+ "ownershipError": null,
+ "result": null
+}

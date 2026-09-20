@@ -1,0 +1,21 @@
+# Overlay for the S11 CMP-02/CMP-04 probe.
+#
+# ONE row, and it is the PROBE ONLY. There is deliberately NO tool row here, and
+# that is load-bearing rather than tidy: CMP-04's oracle says a catalog measured
+# "through a verification overlay that INSERTS THE TOOL ROW does NOT establish
+# this case". An overlay that inserted a tool row would make every catalog number
+# in the artifact a measurement of the overlay rather than of the profile -- the
+# G-FIX-04 / G-FIX-05 / G-FIX-12 defect class this project has recorded five
+# times.
+#
+# NO `sandbox-policy` ROW EITHER, and the same reasoning applies with the
+# opposite sign: that row is CMP-02's SUBJECT. Restating it here would make the
+# probe measure its own declaration instead of the profile's.
+#
+# NO `webserver` ROW. `boot-harness.mjs` appends its own port overlay LAST and
+# restates every key the row needs, because a patch REPLACES the target row's
+# whole `config` object rather than merging into it. A second `webserver` patch
+# here would be a competing writer for one row.
+- insert:
+    - id: s11-cmp-probe
+      name: 'D:/DSH/work/wt-s11/qualification/runners/s11-cmp-probe.mjs'

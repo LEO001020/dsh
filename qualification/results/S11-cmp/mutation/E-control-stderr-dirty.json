@@ -1,0 +1,25 @@
+{
+ "arm": "healthy-noprobe",
+ "ranAt": "2026-09-20T10:54:07.500Z",
+ "profile": "daily",
+ "patches": [],
+ "cwd": "C:/Windows/Temp",
+ "probeInTree": false,
+ "bootEvidence": {
+  "stdout": "dsh web: http://127.0.0.1:13162/?token=FSuQf8R0eVkdF7ZLDWHRBYHEbNKaZzHNbekjSI-YrQE\n",
+  "stderr": "dsh: warning: 1 entry did not activate\nsomething\n",
+  "served": true,
+  "activationWarningLine": "warning: 1 entry did not activate",
+  "guardEntryNamedOnStderr": true,
+  "refusalTextOnStderr": false,
+  "violationIdOnStderr": false,
+  "observedConfinedModeOnStderr": false,
+  "probeCompleteOnStderr": false,
+  "port": 13162,
+  "portReleased": true,
+  "timedOut": true,
+  "exitCode": null
+ },
+ "ownershipError": null,
+ "result": null
+}

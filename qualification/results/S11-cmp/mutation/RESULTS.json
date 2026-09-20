@@ -1,0 +1,95 @@
+{
+ "note": "FINAL run after the verdict script gained the provenance group. Each mutation is written over the artifact its group reads, the verdict is recomputed, the real artifact restored.",
+ "mutations": {
+  "A-confined-mode": {
+   "artifacts": "PASS",
+   "cmp02": "FAIL",
+   "cmp04": "PASS",
+   "cmp13": "PASS",
+   "negativeArm": "PASS",
+   "control": "PASS",
+   "settle": "PASS",
+   "provenance": "PASS"
+  },
+  "B-catalog-plus-pwsh": {
+   "artifacts": "PASS",
+   "cmp02": "PASS",
+   "cmp04": "FAIL",
+   "cmp13": "FAIL",
+   "negativeArm": "PASS",
+   "control": "PASS",
+   "settle": "PASS",
+   "provenance": "PASS"
+  },
+  "C-blind-instrument": {
+   "artifacts": "PASS",
+   "cmp02": "PASS",
+   "cmp04": "FAIL",
+   "cmp13": "PASS",
+   "negativeArm": "PASS",
+   "control": "PASS",
+   "settle": "PASS",
+   "provenance": "PASS"
+  },
+  "D-probe-error": {
+   "artifacts": "FAIL",
+   "cmp02": "PASS",
+   "cmp04": "PASS",
+   "cmp13": "PASS",
+   "negativeArm": "PASS",
+   "control": "PASS",
+   "settle": "PASS",
+   "provenance": "PASS"
+  },
+  "E-control-stderr-dirty": {
+   "artifacts": "PASS",
+   "cmp02": "PASS",
+   "cmp04": "PASS",
+   "cmp13": "PASS",
+   "negativeArm": "PASS",
+   "control": "FAIL",
+   "settle": "PASS",
+   "provenance": "PASS"
+  },
+  "F-negative-arm-silent": {
+   "artifacts": "PASS",
+   "cmp02": "PASS",
+   "cmp04": "PASS",
+   "cmp13": "PASS",
+   "negativeArm": "FAIL",
+   "control": "FAIL",
+   "settle": "PASS",
+   "provenance": "PASS"
+  },
+  "G-confined-copy-not-confined": {
+   "artifacts": "PASS",
+   "cmp02": "PASS",
+   "cmp04": "PASS",
+   "cmp13": "PASS",
+   "negativeArm": "FAIL",
+   "control": "PASS",
+   "settle": "PASS",
+   "provenance": "PASS"
+  },
+  "H-healthy-left-failed": {
+   "artifacts": "PASS",
+   "cmp02": "PASS",
+   "cmp04": "PASS",
+   "cmp13": "PASS",
+   "negativeArm": "PASS",
+   "control": "PASS",
+   "settle": "FAIL",
+   "provenance": "PASS"
+  },
+  "RESTORED-UNMUTATED": {
+   "artifacts": "PASS",
+   "cmp02": "PASS",
+   "cmp04": "PASS",
+   "cmp13": "PASS",
+   "negativeArm": "PASS",
+   "control": "PASS",
+   "settle": "PASS",
+   "provenance": "PASS"
+  }
+ }
+}
