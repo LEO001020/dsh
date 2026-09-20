@@ -1,0 +1,5 @@
+# C6: ONE row, the PROBE ONLY. No tool row is inserted, so whatever the
+# probe reports is produced by the profile's own composition.
+- insert:
+    - id: c6-surface-probe
+      name: 'D:/DSH/work/wt-c6/qualification/results/C6-spec/c6-surface-probe.mjs'
