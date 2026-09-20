@@ -281,10 +281,49 @@ const underNodeModules = graph.filter(row => /\\node_modules\\/i.test(row.path))
 const sourceRows = graph.filter(row => row.kind === 'SOURCE')
 const mixed = graph.filter(row => row.mixedWithinSpecifier === true)
 
-// THE ORACLE'S OWN CLAUSE, stated as the oracle states it: every @deepseek-ai/*
-// specifier that is a MODULE resolution must name a `lib/` tree. `fromSource` is
-// the offender count; the offenders are named with their parent so a reader can
-// see WHICH built artifact named them.
+// ---------------------------------------------------------------------------
+// (4b) TREE BINDING — assert the graph is a graph of THIS worktree.
+//
+// WHY THIS ASSERTION EXISTS, and it is not decoration. The first revision of this
+// driver booted the MAIN checkout while reporting itself as a measurement of
+// `wt-c4`, because it installed the profile without rewriting the absolute `link:`
+// targets. The offender's recorded parent was
+// `file:///D:/DSH/work/dsh-native-daily/packages/dsh-daily-work/lib/artifacts.js`,
+// which is the whole evidence that the run was not a measurement of this tree.
+//
+// A graph measurement that does not name the tree it resolved is NOT a measurement
+// of that tree: it can report a defect the tree under test does not have (which is
+// exactly what happened here), and it could equally hide one it does have. So the
+// binding is a CHECK, and the run FAILS if the graph's own parent paths do not name
+// this worktree. `assertCleanSourcePlane` and the stale-artifact traps are the same
+// family of mistake, and this project has already retracted claims over it.
+//
+// THE TEST IS ON PARENT URLS, deliberately, not on the profile's `package.json`.
+// The package.json rewrite is a PRECONDITION; this is the OBSERVED FACT. If the two
+// disagree, the observation is what a reader should believe.
+// ---------------------------------------------------------------------------
+const wtUrl = `file:///${REPO}`.toLowerCase()
+const allParents = [...new Set(graph.flatMap(row => row.parents))]
+const parentsUnderThisTree = allParents.filter(p => p.toLowerCase().startsWith(wtUrl))
+const parentsUnderMainCheckout = allParents.filter(p => p.toLowerCase().startsWith('file:///d:/dsh/work/dsh-native-daily'))
+const parentsUnderAnyOtherWorktree = allParents.filter(p => {
+  const lower = p.toLowerCase()
+  if (lower.startsWith(wtUrl)) return false
+  // The pinned checkout's own libs are legitimate parents: every upstream package
+  // this product consumes is loaded from there. What must NOT appear is another
+  // CHECKOUT OF THIS PROJECT (`/work/<something>/packages/`).
+  return /\/work\/[^/]+\/packages\//.test(lower) && !lower.startsWith('file:///d:/dsh/src/')
+})
+
+say('')
+say(`TREE BINDING: ${String(parentsUnderThisTree.length)} distinct parent(s) under ${REPO}`)
+say(`  parents under the MAIN checkout: ${String(parentsUnderMainCheckout.length)}`)
+for (const p of parentsUnderMainCheckout) say(`    ${p}`)
+say(`  parents under any OTHER worktree: ${String(parentsUnderAnyOtherWorktree.length)}`)
+for (const p of parentsUnderAnyOtherWorktree) say(`    ${p}`)
+say(`  the project's own built entry was loaded from: ${parentsUnderThisTree.filter(p => p.includes('dsh-daily-work/lib/')).join(', ') || '(none)'}`)
+
+// The offender count the oracle turns on, and the offenders named with their parents.
 const offenders = sourceRows.map(row => ({ specifier: row.specifier, resolvedTo: row.path, parents: row.parents }))
 
 say('')
@@ -327,6 +366,15 @@ check('the built lib/ is newer than src/, so the boot is not running a stale bui
   Object.values(buildFreshness).every(r => r.libNewerThanSrc === true),
   JSON.stringify(buildFreshness))
 check('the graph was recorded and is non-empty', graphRows.length > 0, `rows=${String(graphRows.length)} graphReadError=${String(graphReadError)}`)
+check('THE GRAPH NAMES THIS WORKTREE: no parent is under the main checkout',
+  parentsUnderMainCheckout.length === 0,
+  `main-checkout parents=${JSON.stringify(parentsUnderMainCheckout)}`)
+check('THE GRAPH NAMES THIS WORKTREE: no parent is under another worktree of this project',
+  parentsUnderAnyOtherWorktree.length === 0,
+  `other-worktree parents=${JSON.stringify(parentsUnderAnyOtherWorktree)}`)
+check('THE GRAPH NAMES THIS WORKTREE: the project\'s own built lib/ was loaded from here',
+  parentsUnderThisTree.some(p => p.includes('/wt-c4/packages/dsh-daily-work/lib/')),
+  `parents under ${REPO}: ${String(parentsUnderThisTree.length)}`)
 check('no `@deepseek-ai/*` specifier resolves to a source (.ts) file',
   fromSource === 0,
   `fromBuilt=${String(fromBuilt)} fromSource=${String(fromSource)} fromOther=${String(fromOther)}; offenders=${JSON.stringify(offenders.map(o => [o.specifier, o.resolvedTo]))}`)
@@ -374,6 +422,13 @@ writeFileSync(`${RUN_DIR}/verdict.json`, `${JSON.stringify({
     offenders,
     otherRows: graph.filter(r => r.kind === 'OTHER').map(r => ({ specifier: r.specifier, path: r.path, parents: r.parents })),
     mixed: mixed.map(r => r.specifier),
+    treeBinding: {
+      repo: REPO,
+      distinctParents: allParents.length,
+      parentsUnderThisTree,
+      parentsUnderMainCheckout,
+      parentsUnderAnyOtherWorktree,
+    },
   },
   checks,
   checksPassed: passed,
