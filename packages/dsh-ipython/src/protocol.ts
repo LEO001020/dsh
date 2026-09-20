@@ -204,7 +204,20 @@ export interface LateOutput {
   /** The cell whose code wrote it -- identified by the ORIGINATING msg_id. */
   readonly cellId: string
   readonly text: string
+  /**
+   * Which stream the write arrived on.
+   *
+   * G-SEAM-78: the delivery record V5 section 10 requires names the stream, and
+   * the broker is the only layer that ever saw the frame. Re-deriving it later
+   * would be a guess, so it is carried from the frame. Optional because it is an
+   * ADDITIVE field: a frame that omits it is not a protocol violation, it is a
+   * write whose stream is not known, and `undefined` says exactly that.
+   */
+  readonly stream?: LateStreamName
 }
+
+/** The stream a late write arrived on. `unknown` is a real value, not a placeholder. */
+export type LateStreamName = 'stdout' | 'stderr' | 'unknown'
 
 /**
  * The origin recorded for a write whose cell could NOT be established.
