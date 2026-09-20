@@ -1312,14 +1312,27 @@ describe('IPY-15: the kernel transport is authenticated and frames are bounded',
     // above cannot pass on a validator that accepts anything.
     expect(malformedRefusalRejected).toBe(true)
 
-    // (5) THE LEGACY COUNT, PINNED AS THE HONEST STATE. `droppedFrames` is present
-    //     on every cell result and is structurally 0, because `note_dropped_frame`
-    //     has no caller. v2 does NOT require this count (decision D2 removed it),
-    //     and the structured refusal in (4) is what replaces it. Asserted so the
-    //     gap stays pinned rather than becoming a comment, and so that wiring a
-    //     producer fails this gate and has to be stated.
+    // (5) THE COUNT NOW HAS A PRODUCER, so this assertion was INVERTED rather than
+    //     deleted -- and the comment it replaces asked for exactly that: "wiring a
+    //     producer fails this gate and has to be stated." Stated here.
+    //
+    //     The iopub pump now calls `note_dropped_frame` when the transport bound
+    //     refuses a frame, so a late write too large to frame is a RECORDED loss
+    //     instead of only a log line. MEASURED before the fix: a 4,456,448-byte
+    //     background write after its cell settled raised inside the pump, the bare
+    //     `except Exception` swallowed it, and the model was told nothing --
+    //     droppedFrames 0, no refusal event, 4.4 MB gone.
+    //
+    //     The assertion is `> 0` rather than a fixed number: what matters is that
+    //     the counter is REACHABLE, and a brittle count would fail on any refactor
+    //     that moved the call without changing the behaviour.
+    //
+    //     `normal.stdout.droppedFrames` stays 0 and that is correct -- a normal cell
+    //     loses no frames. The two assertions are not in tension: one says the
+    //     ordinary path is clean, the other says the counter is no longer
+    //     structurally unreachable.
     expect(normal.stdout.droppedFrames).toBe(0)
-    expect(noteDroppedCallSites).toBe(0)
+    expect(noteDroppedCallSites).toBeGreaterThan(0)
     expect(rendererHasDropBranch).toBe(true)
 
     await h.shutdown()

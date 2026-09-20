@@ -652,6 +652,10 @@ class Broker:
         self._kernel_err_path = None
         self._sink = None
         self._sink_lock = threading.Lock()
+        # Frames the TRANSPORT refused, tallied at the broker because a frame lost
+        # with no cell in flight has no cell to attribute it to. See
+        # `_note_transport_drop`.
+        self._transport_dropped_frames = 0
         self._pump_stop = threading.Event()
         self._pump_thread = None
         self._execute_thread = None
@@ -813,6 +817,11 @@ class Broker:
             "transport": self._transport,
             "curveKeysPresent": self._curve_keys_present,
             "plaintextWarningSeen": self._plaintext_warning_seen,
+            # Frames the transport bound refused, counted at the broker. A frame
+            # lost with no cell in flight has no cell to carry the count, so this
+            # field is where that loss stays visible instead of only reaching a log
+            # (IPY-15 clause 2: a loss reported as LOST with a count).
+            "transportDroppedFrames": self._transport_dropped_frames,
             # The kernel's identity, under names that describe what the values
             # ARE. `kernelImplementationVersion` is the IPython version;
             # `languageVersion` is the Python version.
@@ -856,11 +865,49 @@ class Broker:
                     continue
                 try:
                     self._route_iopub(msg)
+                except FrameLimitError as exc:
+                    # A frame the transport refused is a LOSS, and before this
+                    # handler existed it was only a log line: measured, a 4,456,448
+                    # byte background write after its cell settled made the emit
+                    # raise here, the bare `except Exception` swallowed it, and the
+                    # model was told nothing -- `droppedFrames` stayed 0 and 4.4 MB
+                    # was gone (IPY-15 clause 2).
+                    #
+                    # Swallowing the exception is CORRECT: a late write must not
+                    # kill the pump. What was wrong was swallowing it WITHOUT
+                    # RECORDING IT. `note_dropped_frame` is the existing counter and
+                    # the only writer of `CellResult.stdout.droppedFrames`; calling
+                    # it here is what makes that field non-zero rather than
+                    # structurally zero. Exactly once per refused frame.
+                    self._note_transport_drop(exc)
                 except Exception:  # noqa: BLE001
                     log("iopub pump failed on one frame: %s" % traceback.format_exc()[-400:])
 
         self._pump_thread = threading.Thread(target=run, name="iopub-pump", daemon=True)
         self._pump_thread.start()
+
+    def _note_transport_drop(self, exc):
+        """Record one transport-refused frame against the buffer it belonged to.
+
+        WHICH BUFFER. The frame is lost before its stream name can be read, so the
+        name cannot say. What CAN say is the sink: a frame refused while a cell is
+        in flight belongs to that cell, and a frame refused with no sink is
+        background output the pump was trying to report as a late event. The counter
+        therefore goes to the in-flight cell's stdout when there is one, and to a
+        broker-level tally otherwise -- so the loss is never attributed to a cell
+        that did not produce it, which is the same rule `late-notice.ts` applies on
+        the host side when it refuses to guess an origin.
+
+        THE HOST-LEVEL TALLY IS DELIBERATELY ALSO A FIELD, not just a log line: a
+        reader of `status` can see that frames were lost even when no cell was in
+        flight to carry the count.
+        """
+        log("iopub frame refused by the transport bound: %s" % exc)
+        self._transport_dropped_frames += 1
+        with self._sink_lock:
+            sink = self._sink
+        if sink is not None and not sink.idle_seen:
+            sink.stdout.note_dropped_frame()
 
     def _route_iopub(self, msg):
         with self._sink_lock:
