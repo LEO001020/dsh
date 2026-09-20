@@ -59,6 +59,48 @@ import {
 } from './data-bridge.ts'
 import { DataReadLimiter, DEFAULT_DATA_READ_CONCURRENCY, mapBounded } from './data-concurrency.ts'
 import { buildProjectionManifest, omissionKind } from './projection-manifest.ts'
+import {
+  OBSERVATION_GAP_STAGES,
+  OBSERVATION_SCHEMA_VERSION,
+  GrantTable,
+  coverageVerdictOf,
+  type ObservationDescriptor,
+  type ObservationGapStage,
+} from './observations.ts'
+import { deriveMarkdown } from './web-provenance.ts'
+import {
+  AttachmentArtifactStore,
+  InMemorySessionReferenceLog,
+  captureFile,
+  type ArtifactStore,
+} from './artifacts.ts'
+
+/**
+ * A host-minted descriptor carrying exactly the named gaps.
+ *
+ * WHY A HELPER AND NOT FOUR LITERALS. The cross-stage arms need a descriptor
+ * whose ONLY variable is the gap list, so that a verdict difference can only come
+ * from the stage names. Building them inline would let a stray field differ
+ * between the arms and produce a green result for the wrong reason.
+ *
+ * The gap is HOST-AUTHORED here, which is the only way a gap may enter a
+ * descriptor (`observations.ts` `HOST_AUTHORED_PATHS` refuses a kernel-supplied
+ * one); this is a test constructing a host record, not a payload path.
+ */
+function descriptorWithGaps(...stages: readonly ObservationGapStage[]): ObservationDescriptor {
+  return {
+    schemaVersion: OBSERVATION_SCHEMA_VERSION,
+    id: 'obs-data09-cross',
+    source: { kind: 'file', locator: '/data09/cross', acquiredAt: '2026-09-20T00:00:00.000Z', executionWorld: 'local' },
+    captured: { artifact: 'artifact:data09-cross', sha256: 'd'.repeat(64), bytes: 1, mediaType: 'text/plain' },
+    acquisition: {
+      completeness: 'partial',
+      coverage: {},
+      gaps: stages.map(stage => ({ stage, reason: `data09 ${stage}`, recovery: 'none' as const })),
+    },
+    authority: { ownerScope: 'project:data09', grantRevision: 1 },
+  }
+}
 
 const tempDirs: string[] = []
 
@@ -93,6 +135,34 @@ function pythonPathForR6(): string {
 /** A real `LocalFileSystem` over a real directory. */
 function mountFs(cwd: string): LocalFileSystem {
   return new LocalFileSystem(new Context(), { cwd, diffBasisMaxBytes: 10 * 1024 * 1024 })
+}
+
+/**
+ * The artifact-store pieces a direct `captureFile` call needs.
+ *
+ * The DATA-09 native-tool-cap arm drives the PRODUCER at its own seam (that is
+ * the only seam where a reader override is accepted at all), so it needs the
+ * store, the reference log and the grant table the service would otherwise
+ * assemble. These are the same real implementations `data-plane.test.ts` uses;
+ * nothing here is a stub.
+ */
+function makePlane(label: string): {
+  store: ArtifactStore
+  log: InMemorySessionReferenceLog
+  grants: GrantTable
+  scope: string
+} {
+  const root = tempRoot(label)
+  // The store takes the MOUNTED `ctx.attachments` capability (F4's fix), which is
+  // exactly how the production composition hands it over, so this is not a
+  // hand-built shortcut.
+  const ctx = new Context()
+  new AttachmentLocal(ctx, { dshHome: join(root, 'home') })
+  const store = new AttachmentArtifactStore(ctx.attachments, join(root, 'artifacts'))
+  const grants = new GrantTable()
+  const scope = 'project:data09'
+  grants.bump(scope)
+  return { store, log: new InMemorySessionReferenceLog(), grants, scope }
 }
 
 /**
@@ -449,6 +519,24 @@ describe('R6-K4 [real] artifacts.save cross-checks two independent stores', () =
 // K3 -- web (provider-level, no live request)
 // ===========================================================================
 
+/**
+ * The stub fetch provider's id, named ONCE.
+ *
+ * WHY THIS IS A CONSTANT AND NOT A LITERAL IN TWO PLACES. The provider is
+ * registered by id and the seam is CONFIGURED by id, and the two must agree or
+ * `ctx.web.fetch` throws `WEB_PROVIDER_CONFIGURED_MISSING` -- the seam resolves
+ * the configured id against the registered map and refuses when it is absent.
+ *
+ * That failure mode was measured while writing the DATA-09 arms: the new helper
+ * configured `data09-stub` while the shared stub registers `r6-stub-fetch`, so
+ * every web arm failed with a missing-provider refusal that looks nothing like a
+ * truncation problem. This is the same shape as G-SEAM-52 (a row MOUNTED but not
+ * SELECTED), and it is worth naming here: a provider test that hard-codes the id
+ * twice can pass for a long time and then fail for a reason unrelated to what it
+ * measures.
+ */
+const STUB_FETCH_PROVIDER_ID = 'r6-stub-fetch'
+
 /** A stub fetch provider. Registered on a real `ctx.web`, so the seam is real. */
 function stubFetchProvider(result: WebFetchResult): {
   id: string
@@ -457,7 +545,7 @@ function stubFetchProvider(result: WebFetchResult): {
   calls: number
 } {
   const provider = {
-    id: 'r6-stub-fetch',
+    id: STUB_FETCH_PROVIDER_ID,
     calls: 0,
     available: () => true,
     async fetch(): Promise<WebFetchResult> {
@@ -1318,4 +1406,354 @@ describe('R6-K5 [real CPython] the dsh.data client installs and its surface is c
     // a loud startup error rather than a namespace whose every method fails later.
     expect(stdout).toContain('REFUSED:DATA_NO_CHANNEL')
   }, 120_000)
+})
+
+// ===========================================================================
+// DATA-09 -- every ACQUISITION gap is attributed to a stage
+// ===========================================================================
+//
+// ORACLE (v2, verbatim): "Produce captures that lose bytes at known stages:
+// provider cap, native tool cap, a lossy transform, and a storage refusal."
+//
+// WHAT THIS BLOCK IS FOR. The four stage NAMES exist in a closed set
+// (`observations.ts:139-148`), the mapping stage -> verdict is a total function
+// (`observations.ts:279-295`), and each producer is individually exercised
+// somewhere in this package. What no test did was drive ALL FOUR in one place
+// and check the two properties the case actually turns on:
+//
+//   1. ATTRIBUTION -- the gap is filed under the stage that CAUSED it, not under
+//      a neighbouring one. A `retention` loss filed as `native-acquisition`
+//      sends a reader to refetch something that cannot be refetched.
+//   2. RECOVERY HONESTY -- `refetch` is a claim that asking again could produce
+//      the bytes. Filing `refetch` on a loss that a re-ask cannot fix is a
+//      promise the plane cannot keep.
+//
+// CONTROL ARM. Every arm below asserts the NEGATIVE too: a run in which the cap
+// is not hit must report `complete-within-request` with NO gap. Without that, a
+// producer that emitted a gap unconditionally would pass every positive arm.
+
+/** The four stages the oracle names, in pipeline order. */
+const ORACLE_STAGES = ['provider-acquisition', 'native-acquisition', 'transform', 'retention'] as const
+
+/**
+ * A service whose context ALSO mounts the real `ctx.web` seam, with one stub
+ * fetch provider registered on it.
+ *
+ * WHY A SECOND HELPER RATHER THAN AN OPTION ON `mountService`. The plane resolves
+ * every capability from the context it was constructed on (`data-plane.ts:407`),
+ * so a web arm needs `ctx.web` on the SERVICE'S context -- registering a provider
+ * on some other context reaches a seam the plane cannot see, and the failure
+ * surfaces as the honest `DATA_NO_CAPABILITY` refusal rather than as the
+ * truncation being measured. Measured while writing this block: the first version
+ * registered on a fresh `Context` and every web arm failed with exactly that
+ * refusal.
+ *
+ * WHY THE PROVIDER IS A PARAMETER AND REGISTERED HERE. `registerFetchProvider`
+ * installs through `ctx.effect`, and the registration must therefore happen while
+ * the mounting fiber is still the active one -- the same ordering the existing K3
+ * arms use. Registering after the service is open produced
+ * `WEB_PROVIDER_CONFIGURED_MISSING` at fetch time (measured), so the provider is
+ * handed in and registered at mount rather than bolted on afterwards.
+ */
+async function mountWebService(label: string, result: WebFetchResult): Promise<{
+  service: DataPlaneService
+  plane: DataPlane
+  ctx: Context
+  root: string
+  provider: { calls: number }
+  dispose: () => Promise<void>
+}> {
+  const root = tempRoot(label)
+  const ctx = new Context()
+  await ctx.plugin(Storage)
+  await ctx.plugin(storageJsonPlugin, { root: join(root, 'store') })
+  await ctx.plugin(storageDomainPlugin, { backend: 'json' })
+  await ctx.plugin(AttachmentLocal, { dshHome: join(root, 'home') })
+  ctx.provide('dshHomePath', (...segments: string[]) => join(root, ...segments))
+  await ctx.plugin(LocalFileSystem, { cwd: root, diffBasisMaxBytes: 10 * 1024 * 1024 })
+  await ctx.plugin(WebRuntime, { fetchProvider: STUB_FETCH_PROVIDER_ID })
+  const provider = stubFetchProvider(result)
+  ctx.web.registerFetchProvider(provider as never)
+  const service = new DataPlaneService(ctx, {
+    artifactRoot: join(root, 'artifacts'),
+    ownerScope: 'project:data09',
+    executionWorld: 'local',
+  })
+  await service.open(ctx.storageDomain)
+  return {
+    service,
+    plane: service.plane(),
+    ctx,
+    root,
+    provider,
+    dispose: async () => {
+      await service.close()
+      await ctx.fiber.dispose()
+    },
+  }
+}
+
+describe('DATA-09 [real] each of the four oracle stages is reachable and attributed to ITSELF', () => {
+  // -------------------------------------------------------------------------
+  // Stage 1 of 4: PROVIDER CAP
+  // -------------------------------------------------------------------------
+  it('provider cap: a truncated fetch files provider-acquisition + refetch', async () => {
+    const { plane, provider, dispose } = await mountWebService('data09-provider', {
+      url: 'https://example.test/capped',
+      statusCode: 200,
+      body: { kind: 'text', content: 'C'.repeat(4096) },
+      truncated: true,
+    })
+    try {
+      // THE LOSS ARM. The provider says it capped the body.
+      const caller = dataCallerFromEnclosing({ sessionId: 'session-data09' })
+      const capped = await plane.webFetch(caller, { url: 'https://example.test/capped' })
+      // The stub really was reached through the real `ctx.web.fetch` seam, so the
+      // record below is about a provider that answered rather than about a
+      // configured row that was never called.
+      expect(provider.calls).toBe(1)
+      expect(capped.record.acquisition.completeness).toBe('partial')
+      const gap = capped.record.acquisition.gaps.find(entry => entry.stage === 'provider-acquisition')
+      expect(gap, 'a provider-capped body must be filed under provider-acquisition').toBeDefined()
+      // The bytes were never sent to this process, so no LOCAL object holds
+      // them: `page` would be a false promise and `none` would understate a
+      // real re-ask. `refetch` is the honest value.
+      expect(gap?.recovery).toBe('refetch')
+      expect(gap?.reason.length).toBeGreaterThan(0)
+    } finally {
+      await dispose()
+    }
+  })
+
+  it('provider cap CONTROL: an untruncated fetch is complete-within-request with NO gap', async () => {
+    const { plane, provider, dispose } = await mountWebService('data09-provider-ctl', {
+      url: 'https://example.test/whole',
+      statusCode: 200,
+      body: { kind: 'text', content: 'small' },
+      truncated: false,
+    })
+    try {
+      const caller = dataCallerFromEnclosing({ sessionId: 'session-data09' })
+      const full = await plane.webFetch(caller, { url: 'https://example.test/whole' })
+      expect(provider.calls).toBe(1)
+      // Without this arm, a producer that ALWAYS emitted a gap would pass (a).
+      expect(full.record.acquisition.completeness).toBe('complete-within-request')
+      expect(full.record.acquisition.gaps).toHaveLength(0)
+    } finally {
+      await dispose()
+    }
+  })
+
+  // -------------------------------------------------------------------------
+  // Stage 2 of 4: NATIVE TOOL CAP
+  // -------------------------------------------------------------------------
+  it('native tool cap: the producer files native-acquisition + refetch, and the PLANE cannot reach it', async () => {
+    const { plane, root, dispose } = await mountService('data09-native')
+    try {
+      writeFileSync(join(root, 'capped.bin'), Buffer.alloc(4096, 0x41))
+      const caller = dataCallerFromEnclosing({ sessionId: 'session-data09', cwd: root })
+
+      // ---------------------------------------------------------------------
+      // (a) THE PRODUCER, driven at its OWN seam. The source is 4096 bytes; the
+      // reader stops at 1024. This is the shape of a native tool clipping a value
+      // before any consumer saw it (`read`'s 50 KiB cap, `grep`'s raw-output
+      // cap): the bytes exist in the world, and the layer that was supposed to
+      // acquire them stopped early.
+      // ---------------------------------------------------------------------
+      const fs = mountFs(root)
+      const { store, log, grants, scope } = makePlane('data09-native-store')
+      const capped = await captureFile({
+        fs, path: 'capped.bin', store, log, grants, ownerScope: scope,
+        executionWorld: 'local', observationId: 'obs-data09-native', mediaType: 'application/octet-stream',
+        readChunks: async function* () { yield Buffer.alloc(1024, 0x41) },
+      })
+      const gap = capped.gaps.find(entry => entry.stage === 'native-acquisition')
+      expect(gap, 'a short acquisition must be filed under native-acquisition').toBeDefined()
+      // The file is still there and a second read CAN return the rest, so
+      // `refetch` is honest here -- and `page` would be wrong, because the
+      // missing bytes are in no object this plane holds.
+      expect(gap?.recovery).toBe('refetch')
+      expect(gap?.reason).toContain('3072')
+      expect(coverageVerdictOf(capped.descriptor)).toBe('partial-native-acquisition')
+      // The persisted object is what ARRIVED, never padded to the source size.
+      expect(capped.descriptor.captured.bytes).toBe(1024)
+
+      // ---------------------------------------------------------------------
+      // (a2) THE OPPOSITE DIRECTION: a reader that yields MORE than `stat` saw.
+      //
+      // This is NOT a loss. Nothing was withheld: either the source grew between
+      // `stat` and the read, or the reader over-read. A gap here would be a
+      // FABRICATED loss -- and because the producer's guard was `shortBy !== 0`
+      // rather than `shortBy > 0`, that is exactly what it did. Measured before
+      // the fix: a 4096-byte source with an 8192-byte reader produced
+      // `partial-native-acquisition` with `recovery: 'refetch'` and a reason
+      // reading "-4096 bytes never reached the store" -- a negative count of
+      // bytes that never went missing.
+      //
+      // The harm is the one DATA-09 exists to catch, in the other direction: a
+      // reader who sees a `native-acquisition`/`refetch` gap on a capture that
+      // lost nothing is being told to re-ask for bytes they already hold.
+      const grew = await captureFile({
+        fs, path: 'capped.bin', store, log, grants, ownerScope: scope,
+        executionWorld: 'local', observationId: 'obs-data09-grew', mediaType: 'application/octet-stream',
+        readChunks: async function* () { yield Buffer.alloc(8192, 0x41) },
+      })
+      expect(grew.gaps, 'an OVER-read is not a loss, so it must record no gap').toHaveLength(0)
+      expect(grew.descriptor.acquisition.completeness).toBe('complete-within-request')
+      expect(coverageVerdictOf(grew.descriptor)).toBe('full-for-requested-scope')
+      // The object still holds exactly the bytes that arrived.
+      expect(grew.descriptor.captured.bytes).toBe(8192)
+
+      // ---------------------------------------------------------------------
+      // (b) REACHABILITY, MEASURED. `readChunks` is the ONLY way to make the
+      // acquired count come out short of the source: the DEFAULT reader THROWS
+      // `artifact-integrity-error` when the read ends before `stat`'s size
+      // (`artifacts.ts:2490-2495`), and `requestedRange` deliberately forces
+      // `shortBy = 0` (`artifacts.ts:2334-2336`). So the stage is reachable iff a
+      // caller can inject a reader.
+      //
+      // `DataPlane.fsCapture` does NOT accept `readChunks` -- its input type is
+      // `{path, mediaType?, observationId?, requestedRange?, claim?}`
+      // (`data-plane.ts:457-465`) -- and it forwards none (`data-plane.ts:490-533`).
+      // Passed anyway, the property is IGNORED and the capture comes out FULL.
+      // That is the measurement below, and it is why this stage's only production
+      // caller is absent rather than merely untested.
+      const ignored = await plane.fsCapture(caller, {
+        path: 'capped.bin', mediaType: 'application/octet-stream', observationId: 'obs-data09-native-plane',
+        readChunks: async function* () { yield Buffer.alloc(1024, 0x41) },
+      } as never)
+      expect(ignored.gaps, 'the plane ignores a reader override, so no short-capture gap can arise through it').toHaveLength(0)
+      expect(ignored.descriptor.captured.bytes).toBe(4096)
+      expect(ignored.descriptor.acquisition.completeness).toBe('complete-within-request')
+    } finally {
+      await dispose()
+    }
+  })
+
+  it('native tool cap CONTROL: a full read of the same file is complete with NO gap', async () => {
+    const { plane, root, dispose } = await mountService('data09-native-ctl')
+    try {
+      writeFileSync(join(root, 'whole.bin'), Buffer.alloc(4096, 0x41))
+      const caller = dataCallerFromEnclosing({ sessionId: 'session-data09', cwd: root })
+      const full = await plane.fsCapture(caller, {
+        path: 'whole.bin', mediaType: 'application/octet-stream', observationId: 'obs-data09-native-ctl',
+      })
+      expect(full.gaps).toHaveLength(0)
+      expect(full.descriptor.acquisition.completeness).toBe('complete-within-request')
+      expect(coverageVerdictOf(full.descriptor)).toBe('full-for-requested-scope')
+    } finally {
+      await dispose()
+    }
+  })
+
+  // -------------------------------------------------------------------------
+  // Stage 3 of 4: A LOSSY TRANSFORM
+  // -------------------------------------------------------------------------
+  it('lossy transform: a converter that throws or produces no text files transform + none', () => {
+    // THE LOSS ARM, both shapes the producer distinguishes. The raw HTML is
+    // COMPLETE and untouched in both; what is missing is the DERIVATION.
+    const raw = { artifact: 'artifact:raw-html', content: '<html><script>payload</script></html>' }
+    const identity = { name: 'data09-converter', version: '1.0.0' }
+
+    const threw = deriveMarkdown(raw, () => { throw new Error('data09 converter exploded') }, identity)
+    expect(threw.derived, 'a failed conversion must NOT fabricate a derivation').toBeUndefined()
+    expect(threw.gap?.stage).toBe('transform')
+    // The raw object is intact and the derivation can be recomputed from THIS
+    // artifact -- but a re-ask of the WORLD cannot, so `refetch` would be wrong.
+    expect(threw.gap?.recovery).toBe('none')
+    expect(threw.gap?.reason).toContain('data09 converter exploded')
+
+    const empty = deriveMarkdown(raw, () => '   ', identity)
+    expect(empty.derived).toBeUndefined()
+    expect(empty.gap?.stage).toBe('transform')
+    expect(empty.gap?.recovery).toBe('none')
+    // The transform identity is recorded, so a reader can tell WHICH converter
+    // dropped the information rather than only that something did.
+    expect(empty.transform).toEqual(identity)
+  })
+
+  it('lossy transform CONTROL: a successful conversion yields derived bytes and NO gap', () => {
+    const raw = { artifact: 'artifact:raw-html', content: '<p>real text</p>' }
+    const ok = deriveMarkdown(raw, () => 'real text', { name: 'data09-converter', version: '1.0.0' })
+    expect(ok.gap).toBeUndefined()
+    expect(ok.derived?.text).toBe('real text')
+    // The derived digest is over the DERIVED text, so raw and derived are
+    // separately identifiable rather than one hash standing for both.
+    expect(ok.derived?.sha256).toBe(sha256('real text'))
+  })
+
+  // -------------------------------------------------------------------------
+  // Stage 4 of 4: A STORAGE REFUSAL
+  // -------------------------------------------------------------------------
+  it('storage refusal: an over-quota capture files retention + none and publishes NO artifact', async () => {
+    const root = tempRoot('data09-retention')
+    const ctx = new Context()
+    await ctx.plugin(Storage)
+    await ctx.plugin(storageJsonPlugin, { root: join(root, 'store') })
+    await ctx.plugin(storageDomainPlugin, { backend: 'json' })
+    await ctx.plugin(AttachmentLocal, { dshHome: join(root, 'home') })
+    ctx.provide('dshHomePath', (...segments: string[]) => join(root, ...segments))
+    await ctx.plugin(LocalFileSystem, { cwd: root, diffBasisMaxBytes: 10 * 1024 * 1024 })
+    // The ceiling is deliberately below the stimulus, so the refusal comes from
+    // the REAL store's own quota check rather than from a stub that throws.
+    const service = new DataPlaneService(ctx, {
+      artifactRoot: join(root, 'artifacts'), ownerScope: 'project:data09', executionWorld: 'local',
+      quotaBytes: 16 * 1024,
+    })
+    await service.open(ctx.storageDomain)
+    const plane = service.plane()
+    try {
+      writeFileSync(join(root, 'over.bin'), Buffer.alloc(64 * 1024, 0x5a))
+      const caller = dataCallerFromEnclosing({ sessionId: 'session-data09', cwd: root })
+      const refused = await plane.fsCapture(caller, {
+        path: 'over.bin', mediaType: 'application/octet-stream', observationId: 'obs-data09-retention',
+      })
+      const gap = refused.gaps.find(entry => entry.stage === 'retention')
+      expect(gap, 'a quota refusal must be filed under retention').toBeDefined()
+      // A retry against the SAME ceiling fails the same way, and the bytes are
+      // still in the source -- so `none` (not `refetch`) is the honest value: the
+      // plane is saying that asking THIS plane again will not help until the
+      // ceiling changes.
+      expect(gap?.recovery).toBe('none')
+      expect(coverageVerdictOf(refused.descriptor)).toBe('partial-storage')
+      // NO INLINE FALLBACK: the outcome is a small honest answer, never the bytes.
+      expect(refused.descriptor.captured.bytes).toBe(0)
+      expect(JSON.stringify(refused)).not.toContain('5a5a5a5a5a')
+    } finally {
+      await service.close()
+      await ctx.fiber.dispose()
+    }
+  })
+
+  // -------------------------------------------------------------------------
+  // The cross-stage properties: distinctness, totality, precedence
+  // -------------------------------------------------------------------------
+  it('the four stages are DISTINCT names with four DISTINCT verdicts, and the oracle set is the closed set', () => {
+    // The oracle names four losses. If two of them collapsed to one name, a
+    // capture could not say which layer lost the bytes, which is the whole
+    // requirement.
+    expect(new Set(ORACLE_STAGES).size).toBe(4)
+    expect([...OBSERVATION_GAP_STAGES].sort()).toEqual([...ORACLE_STAGES].sort())
+
+    // Each stage maps to its OWN verdict. Measured by CALLING the mapping, so a
+    // future edit that pointed two stages at one verdict goes red here.
+    const verdicts = ORACLE_STAGES.map(stage => coverageVerdictOf(descriptorWithGaps(stage)))
+    expect(verdicts).toEqual(['partial-provider', 'partial-native-acquisition', 'partial-transform', 'partial-storage'])
+    expect(new Set(verdicts).size).toBe(4)
+
+    // A partial record with NO gap reports `unknown`, NOT a layer: naming a layer
+    // there would be a guess, and this is the arm that stops the fallback from
+    // silently becoming `partial-storage`.
+    expect(coverageVerdictOf(descriptorWithGaps())).toBe('unknown')
+  })
+
+  it('precedence: a record losing bytes at TWO stages reports the EARLIEST, not the latest', () => {
+    // Bytes the provider never sent cannot be recovered by anything downstream,
+    // so naming the later (symptom) loss would hide the cause. Both orders are
+    // driven, so the result cannot be an artifact of insertion order.
+    expect(coverageVerdictOf(descriptorWithGaps('retention', 'provider-acquisition'))).toBe('partial-provider')
+    expect(coverageVerdictOf(descriptorWithGaps('provider-acquisition', 'retention'))).toBe('partial-provider')
+    expect(coverageVerdictOf(descriptorWithGaps('retention', 'transform'))).toBe('partial-transform')
+    expect(coverageVerdictOf(descriptorWithGaps('retention', 'native-acquisition'))).toBe('partial-native-acquisition')
+  })
 })

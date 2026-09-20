@@ -1,0 +1,91 @@
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.8 [39m[90mD:/DSH/work/wt-s7/packages/dsh-daily-work[39m
+
+ [32m✓[39m src/data-r6.test.ts[2m > [22mR6-K1 [real] fs.capture records the target identity basis and the byte accounting[2m > [22mcaptures through ctx.fs and reports acquired == persisted for a complete read[32m 41[2mms[22m[39m
+ [32m✓[39m src/data-r6.test.ts[2m > [22mR6-K1 [real] fs.capture records the target identity basis and the byte accounting[2m > [22mrefuses a directory and a missing path with DISTINCT named errors, never an empty capture[32m 7[2mms[22m[39m
+ [32m✓[39m src/data-r6.test.ts[2m > [22mR6-K1 [real] fs.capture records the target identity basis and the byte accounting[2m > [22mscopes coverage to a requested range, so a partial read is never read as a whole file[32m 26[2mms[22m[39m
+ [32m✓[39m src/data-r6.test.ts[2m > [22mR6-K1 [real] fs.capture records the target identity basis and the byte accounting[2m > [22mrefuses a capture once the enclosing cell is cancelled, rather than running with no owner[32m 5[2mms[22m[39m
+[90mstdout[2m | src/data-r6.test.ts[2m > [22m[2mR6-K7 [real] paging is O(pages) in physical IO, never O(pages x file)[2m > [22m[2mmeasures the bytes the store read for P pages and shows no repeated full scan
+[22m[39m[R6-K7] pages [33m64[39m bytes [33m4194304[39m artifactBytesRead [33m4194304[39m artifactReads [33m64[39m sourceBytesRead [33m0[39m amplification [33m1[39m quadraticWouldBe [33m64[39m
+
+ [32m✓[39m src/data-r6.test.ts[2m > [22mR6-K1 [real] fs.capture records the target identity basis and the byte accounting[2m > [22mreads a >100 KiB single line back BYTE-FOR-BYTE through bounded pages[32m 73[2mms[22m[39m
+ [32m✓[39m src/data-r6.test.ts[2m > [22mR6-K7 [real] paging is O(pages) in physical IO, never O(pages x file)[2m > [22mmeasures the bytes the store read for P pages and shows no repeated full scan[32m 105[2mms[22m[39m
+ [32m✓[39m src/data-r6.test.ts[2m > [22mR6-K7 [real] paging is O(pages) in physical IO, never O(pages x file)[2m > [22mpages an immutable artifact even after the SOURCE file is rewritten, so revisions never mix[32m 26[2mms[22m[39m
+ [32m✓[39m src/data-r6.test.ts[2m > [22mR6-K4 [real] artifacts.save cross-checks two independent stores[2m > [22mstreams a captured artifact into DSH attachment storage and back, digest-verified[32m 26[2mms[22m[39m
+ [32m✓[39m src/data-r6.test.ts[2m > [22mR6-K4 [real] artifacts.save cross-checks two independent stores[2m > [22mfails LOUD on a missing attachment object rather than returning an empty success[32m 3[2mms[22m[39m
+ [32m✓[39m src/data-r6.test.ts[2m > [22mR6-K3 [stub provider on the real ctx.web seam] provider truncation is recorded, never repaired[2m > [22mmarks a provider-capped fetch PARTIAL with a provider-acquisition gap and a refetch recovery[32m 5[2mms[22m[39m
+ [32m✓[39m src/data-r6.test.ts[2m > [22mR6-K3 [stub provider on the real ctx.web seam] provider truncation is recorded, never repaired[2m > [22mrecords a COMPLETE fetch as complete-within-request, so the partial marking is not vacuous[32m 3[2mms[22m[39m
+ [32m✓[39m src/data-r6.test.ts[2m > [22mR6-K3 [stub provider on the real ctx.web seam] provider truncation is recorded, never repaired[2m > [22ma REFETCH creates a NEW observation; the earlier partial record is never rewritten into full[32m 4[2mms[22m[39m
+ [32m✓[39m src/data-r6.test.ts[2m > [22mR6-K3 [stub provider on the real ctx.web seam] provider truncation is recorded, never repaired[2m > [22mrefuses an empty query rather than reporting an empty result set[32m 4[2mms[22m[39m
+ [32m✓[39m src/data-r6.test.ts[2m > [22mR6-K3 [stub provider on the real ctx.web seam] provider truncation is recorded, never repaired[2m > [22mrecords a search as a RANKING, and never as an exhaustive set[32m 4[2mms[22m[39m
+ [32m✓[39m src/data-r6.test.ts[2m > [22mR6-K2 [real] the history cursor holds ONE observation for the whole traversal[2m > [22mbinds the cursor to the cut identity and refuses a cursor from a superseded scan[32m 4[2mms[22m[39m
+ [32m✓[39m src/data-r6.test.ts[2m > [22mR6-K2 [real] the history cursor holds ONE observation for the whole traversal[2m > [22mrefuses an empty query rather than returning no hits[32m 3[2mms[22m[39m
+ [32m✓[39m src/data-r6.test.ts[2m > [22mR6-K6 [real] the projection manifest is a SEPARATE fact from acquisition[2m > [22mrecords a projection over a real 32 MiB artifact while the descriptor stays complete[32m 245[2mms[22m[39m
+ [32m✓[39m src/data-r6.test.ts[2m > [22mR6-K6 [real] the projection manifest is a SEPARATE fact from acquisition[2m > [22mrefuses a projection that omitted bytes with nothing saying how to recover them[32m 0[2mms[22m[39m
+ [32m✓[39m src/data-r6.test.ts[2m > [22mR6-K6 [real] the projection manifest is a SEPARATE fact from acquisition[2m > [22mrefuses a NEGATIVE or fractional count instead of recording a number never measured[32m 0[2mms[22m[39m
+ [32m✓[39m src/data-r6.test.ts[2m > [22mR6-K6 [real] the projection manifest is a SEPARATE fact from acquisition[2m > [22mmarks an EXHAUSTIVE projection omission as exact, so a floor is never read as a measurement[32m 0[2mms[22m[39m
+ [32m✓[39m src/data-r6.test.ts[2m > [22mR6-K3 [real] the read limiter is host-owned and actually bounds overlap[2m > [22mnever exceeds the configured bound and releases a slot on failure[32m 55[2mms[22m[39m
+ [32m✓[39m src/data-r6.test.ts[2m > [22mR6-K3 [real] the read limiter is host-owned and actually bounds overlap[2m > [22mreleases the slot when the body REJECTS, so one failure does not shrink the plane forever[32m 1[2mms[22m[39m
+ [32m✓[39m src/data-r6.test.ts[2m > [22mR6-K3 [real] the read limiter is host-owned and actually bounds overlap[2m > [22mrefuses a non-positive or fractional bound, because that is not a bound[32m 0[2mms[22m[39m
+ [32m✓[39m src/data-r6.test.ts[2m > [22mR6-K3 [real] the read limiter is host-owned and actually bounds overlap[2m > [22mdefaults conservatively, below every shipped parallelism default in this repository[32m 0[2mms[22m[39m
+ [32m✓[39m src/data-r6.test.ts[2m > [22mR6-K3 [real] the read limiter is host-owned and actually bounds overlap[2m > [22mmapBounded keeps INPUT ORDER regardless of completion order[32m 62[2mms[22m[39m
+ [32m✓[39m src/data-r6.test.ts[2m > [22mR6-K5 [real] the bridge router separates dsh.data from ToolRuntime dispatch[2m > [22mrecognizes the reserved prefix, which cannot collide with a tool name[32m 0[2mms[22m[39m
+ [32m✓[39m src/data-r6.test.ts[2m > [22mR6-K5 [real] the bridge router separates dsh.data from ToolRuntime dispatch[2m > [22mroutes fs.capture and returns the descriptor WITHOUT the bytes[32m 23[2mms[22m[39m
+ [32m✓[39m src/data-r6.test.ts[2m > [22mR6-K5 [real] the bridge router separates dsh.data from ToolRuntime dispatch[2m > [22mreturns a STRUCTURED refusal naming the unknown method, rather than falling through[32m 4[2mms[22m[39m
+ [32m✓[39m src/data-r6.test.ts[2m > [22mR6-K5 [real] the bridge router separates dsh.data from ToolRuntime dispatch[2m > [22mrefuses a non-object argument payload with a named code[32m 4[2mms[22m[39m
+ [32m✓[39m src/data-r6.test.ts[2m > [22mR6-K5 [real] the bridge router separates dsh.data from ToolRuntime dispatch[2m > [22mrefuses a payload that tries to assert a HOST fact, naming the forged path[32m 5[2mms[22m[39m
+ [32m✓[39m src/data-r6.test.ts[2m > [22mR6-K5 [real] the bridge router separates dsh.data from ToolRuntime dispatch[2m > [22mexposes exactly the documented method list, so the Python surface cannot silently widen[32m 1[2mms[22m[39m
+[90mstdout[2m | src/data-r6.test.ts[2m > [22m[2mR6-K7 [real] 32 MiB stress: four byte-counts, bounded model visibility, verified digest[2m > [22m[2mconsumes the whole source in Python, keeps the model-visible projection bounded, and verifies
+[22m[39m[R6-K7-32MiB] acquiredBytes [33m33554432[39m persistedBytes [33m33554432[39m pythonConsumedBytes [33m33554432[39m modelVisibleBytes [33m409[39m ratio [33m82040[39m pages [33m512[39m artifactBytesRead [33m33554432[39m artifactReads [33m512[39m quadraticWouldBe [33m17179869184[39m digestVerified [33mtrue[39m
+
+ [32m✓[39m src/data-r6.test.ts[2m > [22mR6-K7 [real] 32 MiB stress: four byte-counts, bounded model visibility, verified digest[2m > [22mconsumes the whole source in Python, keeps the model-visible projection bounded, and verifies[33m 486[2mms[22m[39m
+ [31m×[39m src/data-r6.test.ts[2m > [22mR6-K7 [real] storage faults are honest[2m > [22mreports a QUOTA refusal as a partial observation with a retention gap and NO artifact[32m 18[2mms[22m[39m
+[31m   → an over-quota capture must record where the bytes went: expected undefined to be defined[39m
+ [32m✓[39m src/data-r6.test.ts[2m > [22mR6-K7 [real] storage faults are honest[2m > [22mfails LOUD on a CORRUPT artifact rather than serving replaced bytes as content[32m 25[2mms[22m[39m
+ [32m✓[39m src/data-r6.test.ts[2m > [22mR6-K7 [real] storage faults are honest[2m > [22mfails LOUD on a MISSING artifact object rather than returning an empty success[32m 23[2mms[22m[39m
+ [32m✓[39m src/data-r6.test.ts[2m > [22mR6-K7 [real] storage faults are honest[2m > [22mreports an ORPHAN (published but unreferenced) as an orphan, never as delivered[32m 23[2mms[22m[39m
+ [32m✓[39m src/data-r6.test.ts[2m > [22mR6-K5 [real CPython] the dsh.data client installs and its surface is closed[2m > [22mimports, installs onto a stand-in dsh module, and refuses an unknown method by name[32m 116[2mms[22m[39m
+ [32m✓[39m src/data-r6.test.ts[2m > [22mR6-K5 [real CPython] the dsh.data client installs and its surface is closed[2m > [22mraises at INSTALL time when no call channel exists, rather than a namespace that always fails[32m 46[2mms[22m[39m
+ [32m✓[39m src/data-r6.test.ts[2m > [22mDATA-09 [real] each of the four oracle stages is reachable and attributed to ITSELF[2m > [22mprovider cap: a truncated fetch files provider-acquisition + refetch[32m 5[2mms[22m[39m
+ [32m✓[39m src/data-r6.test.ts[2m > [22mDATA-09 [real] each of the four oracle stages is reachable and attributed to ITSELF[2m > [22mprovider cap CONTROL: an untruncated fetch is complete-within-request with NO gap[32m 4[2mms[22m[39m
+ [32m✓[39m src/data-r6.test.ts[2m > [22mDATA-09 [real] each of the four oracle stages is reachable and attributed to ITSELF[2m > [22mnative tool cap: the producer files native-acquisition + refetch, and the PLANE cannot reach it[32m 35[2mms[22m[39m
+ [32m✓[39m src/data-r6.test.ts[2m > [22mDATA-09 [real] each of the four oracle stages is reachable and attributed to ITSELF[2m > [22mnative tool cap CONTROL: a full read of the same file is complete with NO gap[32m 20[2mms[22m[39m
+ [32m✓[39m src/data-r6.test.ts[2m > [22mDATA-09 [real] each of the four oracle stages is reachable and attributed to ITSELF[2m > [22mlossy transform: a converter that throws or produces no text files transform + none[32m 0[2mms[22m[39m
+ [32m✓[39m src/data-r6.test.ts[2m > [22mDATA-09 [real] each of the four oracle stages is reachable and attributed to ITSELF[2m > [22mlossy transform CONTROL: a successful conversion yields derived bytes and NO gap[32m 0[2mms[22m[39m
+ [31m×[39m src/data-r6.test.ts[2m > [22mDATA-09 [real] each of the four oracle stages is reachable and attributed to ITSELF[2m > [22mstorage refusal: an over-quota capture files retention + none and publishes NO artifact[32m 11[2mms[22m[39m
+[31m   → a quota refusal must be filed under retention: expected undefined to be defined[39m
+ [32m✓[39m src/data-r6.test.ts[2m > [22mDATA-09 [real] each of the four oracle stages is reachable and attributed to ITSELF[2m > [22mthe four stages are DISTINCT names with four DISTINCT verdicts, and the oracle set is the closed set[32m 0[2mms[22m[39m
+ [32m✓[39m src/data-r6.test.ts[2m > [22mDATA-09 [real] each of the four oracle stages is reachable and attributed to ITSELF[2m > [22mprecedence: a record losing bytes at TWO stages reports the EARLIEST, not the latest[32m 0[2mms[22m[39m
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 2 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m src/data-r6.test.ts[2m > [22mR6-K7 [real] storage faults are honest[2m > [22mreports a QUOTA refusal as a partial observation with a retention gap and NO artifact
+[31m[1mAssertionError[22m: an over-quota capture must record where the bytes went: expected undefined to be defined[39m
+[36m [2m❯[22m src/data-r6.test.ts:[2m1213:77[22m[39m
+    [90m1211|[39m       // `none` because a retry against the same quota fails the same …
+    [90m1212|[39m       const gap = captured.gaps.find(entry => entry.stage === 'retenti…
+    [90m1213|[39m       expect(gap, 'an over-quota capture must record where the bytes w…
+    [90m   |[39m                                                                             [31m^[39m
+    [90m1214|[39m       [34mexpect[39m(gap[33m?.[39mrecovery)[33m.[39m[34mtoBe[39m([32m'none'[39m)
+    [90m1215|[39m       expect(captured.descriptor.acquisition.completeness).toBe('parti…
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/data-r6.test.ts[2m > [22mDATA-09 [real] each of the four oracle stages is reachable and attributed to ITSELF[2m > [22mstorage refusal: an over-quota capture files retention + none and publishes NO artifact
+[31m[1mAssertionError[22m: a quota refusal must be filed under retention: expected undefined to be defined[39m
+[36m [2m❯[22m src/data-r6.test.ts:[2m1686:68[22m[39m
+    [90m1684|[39m       })
+    [90m1685|[39m       const gap = refused.gaps.find(entry => entry.stage === 'retentio…
+    [90m1686|[39m       expect(gap, 'a quota refusal must be filed under retention').toB…
+    [90m   |[39m                                                                    [31m^[39m
+    [90m1687|[39m       // A retry against the SAME ceiling fails the same way, and the …
+    [90m1688|[39m       // still in the source -- so `none` (not `refetch`) is the hones…
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m2 failed[39m[22m[2m | [22m[1m[32m45 passed[39m[22m[90m (47)[39m
+[2m   Start at [22m 19:12:04
+[2m   Duration [22m 2.29s[2m (transform 422ms, setup 0ms, import 564ms, tests 1.55s, environment 0ms)[22m
+
