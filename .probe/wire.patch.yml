@@ -1,0 +1,7 @@
+- insert:
+    - id: wire-p1-await-child-throws
+      name: 'D:/DSH/work/wt-r1/.probe/wire-p1-await-child-throws.mjs'
+    - id: wire-p2-await-child-healthy
+      name: 'D:/DSH/work/wt-r1/.probe/wire-p2-await-child-healthy.mjs'
+    - id: wire-p3-await-missing-service
+      name: 'D:/DSH/work/wt-r1/.probe/wire-p3-await-missing-service.mjs'

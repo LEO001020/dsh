@@ -1,0 +1,15 @@
+# W1 (deferred + throw from apply's own body) and W2 (row-level inject + direct
+# throw). NO never-settling arm: a single apply that never resolves stops
+# `loader.await()` from returning, which suppresses the activation audit for
+# EVERY entry — measured, and it contaminated the first attempt at this run.
+- insert:
+    - id: wire-w1-deferred-throw
+      name: 'D:/DSH/work/wt-r1/.probe/wire-w1-deferred-throw.mjs'
+    - id: wire-w1-deferred-healthy
+      name: 'D:/DSH/work/wt-r1/.probe/wire-w1-deferred-healthy.mjs'
+    - id: wire-w2-row-inject-throw
+      name: 'D:/DSH/work/wt-r1/.probe/wire-w2-row-inject-throw.mjs'
+      inject: ['sandboxPolicy']
+    - id: wire-w2-row-inject-healthy
+      name: 'D:/DSH/work/wt-r1/.probe/wire-w2-row-inject-healthy.mjs'
+      inject: ['sandboxPolicy']
