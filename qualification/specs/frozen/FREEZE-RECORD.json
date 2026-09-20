@@ -1,0 +1,211 @@
+{
+  "what": "the trusted-local-v1 freeze, verified against the bytes on disk",
+  "generated_by": "qualification/specs/frozen/verify-freeze.py",
+  "frozen_artifact": {
+    "path": "qualification/specs/frozen/acceptance-spec.trusted-local-v1.as-authored.json",
+    "sha256": "e5b6a1d2481f39c52a6012ec6b48a72e4618ff713f1927b6b0d6827a24b10ce7",
+    "pinned_as": "deployment.inputs.trusted_local_acceptance_spec_sha256",
+    "deployment_identity": "0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461",
+    "cases": 109,
+    "status_distribution": {
+      "NOT_RUN": 109
+    },
+    "evidence_entries": 0
+  },
+  "live_ledger": {
+    "path": "qualification/specs/acceptance-spec.trusted-local-v1.json",
+    "sha256": "885201ed41b0b2d1eb142f3b67058442fb8a43dec16f09af76c9817c8e2dd02e",
+    "cases": 109,
+    "status_distribution": {
+      "FAIL": 13,
+      "PASS": 95,
+      "BLOCKED_EXTERNAL": 1
+    },
+    "evidence_entries": 317,
+    "note": "The live ledger is the as-filed record and is NOT frozen. Its digest moves every time a family files evidence, which is exactly why the pinned identity input names the as-authored snapshot instead."
+  },
+  "filename_decision": {
+    "v3_suggested": "qualification/specs/frozen/acceptance-spec.trusted-local-v1.json",
+    "actually_used": "qualification/specs/frozen/acceptance-spec.trusted-local-v1.as-authored.json",
+    "reason": "The existing path and filename are read by three independent checks (helpers/doctor.py, qualification/results/T1-spec/verify-identity.py, qualification/runners/verify-spec.py) and the file's sha256 is a pinned deployment identity input. Renaming would break the pin for a name that carries no information the content lacks. Renaming is NOT performed; the tradeoff is reported for the root agent to decide.",
+    "renamed": false
+  },
+  "ledger_digest_history": [
+    {
+      "commit": "f6ac93c3a3eaeb936c444571624c67dce40bc834",
+      "committed_at": "2026-09-20T04:59:30+08:00",
+      "subject": "trusted-local-v1 spec and a new deployment identity",
+      "ledger_sha256": "e5b6a1d2481f39c52a6012ec6b48a72e4618ff713f1927b6b0d6827a24b10ce7",
+      "evidence_entries": 0
+    },
+    {
+      "commit": "7800c07ffd25b39515299d3bc02203dee8601e0b",
+      "committed_at": "2026-09-20T07:51:08+08:00",
+      "subject": "V5 DATA family: 10 PASS, 2 FAIL, measured at identity 0a0996f3",
+      "ledger_sha256": "341464bcb4613c215105c3c91974c659313d270d4efa86eee5a9cb184edf9e85",
+      "evidence_entries": 43
+    },
+    {
+      "commit": "c5ce65519855f4bd375a12c18a29d367dfa458c5",
+      "committed_at": "2026-09-20T07:56:01+08:00",
+      "subject": "V6 RECOVERY family: 8 PASS, 2 FAIL, measured at identity 0a0996f3",
+      "ledger_sha256": "c00a63453b4eb03fdc8f8e8d6035efa5bb3767c7ecd697a1d1e03a898e284604",
+      "evidence_entries": 102
+    },
+    {
+      "commit": "e5429e297e354614012f88dd8af9eb37238281a0",
+      "committed_at": "2026-09-20T08:00:15+08:00",
+      "subject": "checkpoint: 58 of 109 cases filed (51 PASS / 7 FAIL), all mechanically verified",
+      "ledger_sha256": "c55fa989434d285262dbe2e9252adfe620e444c671f44e91212f7b3f94511b80",
+      "evidence_entries": 169
+    },
+    {
+      "commit": "77f55b6170eb6ffb61956105732b1325f971ae33",
+      "committed_at": "2026-09-20T08:01:08+08:00",
+      "subject": "G-SEAM-46: two spec oracles contradict each other, and G-SEAM-39 is sharpened to FLAKY",
+      "ledger_sha256": "90a47d7399db1ef4c275c4286aa416ddbfff9fecf7009446f166c040faed2866",
+      "evidence_entries": 169
+    },
+    {
+      "commit": "b1b2e4096f59667582944bfef07401e4e8cde944",
+      "committed_at": "2026-09-20T08:02:17+08:00",
+      "subject": "COMPOSITION (CMP-01..14): 12 PASS, 2 FAIL, and the spec contradiction named",
+      "ledger_sha256": "14a0ae2f55c70379cc1ef188dd1b9eb7d63337b1e35e879b0ad57ac208ea20a0",
+      "evidence_entries": 194
+    },
+    {
+      "commit": "696c4c16d19581dcf05043157ecfb31c14fa43f3",
+      "committed_at": "2026-09-20T08:06:06+08:00",
+      "subject": "checkpoint: 76 of 109 filed -- RESEARCH and CACHE/OBSERVABILITY complete",
+      "ledger_sha256": "6d37d52f9386dcefdc9640f92ef6eab66162bfbafb2595752a232ac9675623ce",
+      "evidence_entries": 231
+    },
+    {
+      "commit": "e1315e5def1cdc0c4b6a130b287b6086d9307e29",
+      "committed_at": "2026-09-20T08:07:41+08:00",
+      "subject": "file the NATIVE BRIDGE family from existing evidence, since its agent produced nothing",
+      "ledger_sha256": "25d2f307cd715ce4b50579fd1afa0f11c5899588079e646b1e7b5a42727049d9",
+      "evidence_entries": 280
+    },
+    {
+      "commit": "ffcd2ab18eaf6e7f831b1721cd21c58b95f681e8",
+      "committed_at": "2026-09-20T08:09:05+08:00",
+      "subject": "file the FILESYSTEM family from the agent's completed evidence: ALL 109 CASES NOW FILED",
+      "ledger_sha256": "aef272fd656bdf41b3250300a60f13e64c471b879f4ecbe14857e1590d031cc5",
+      "evidence_entries": 297
+    },
+    {
+      "commit": "25ef92b00ef3b4fa4b6b2d2bc42181bc62eaee6b",
+      "committed_at": "2026-09-20T08:12:00+08:00",
+      "subject": "V7 replaces the root agent's FS filing with its own, and the notes are better",
+      "ledger_sha256": "45f7e13b470ba557bba643d594bcb4b7e07030cca6f9b15904f848be5b594be9",
+      "evidence_entries": 298
+    },
+    {
+      "commit": "c9325c659d3c0934d4f0fb9e58d73015d3c2d131",
+      "committed_at": "2026-09-20T08:44:18+08:00",
+      "subject": "V4 files the NATIVE BRIDGE family from its own probes, and corrects my BR-12",
+      "ledger_sha256": "885201ed41b0b2d1eb142f3b67058442fb8a43dec16f09af76c9817c8e2dd02e",
+      "evidence_entries": 317
+    }
+  ],
+  "checks": [
+    {
+      "label": "the frozen artifact hashes to the PINNED identity input",
+      "ok": true,
+      "detail": "pinned=e5b6a1d2481f39c52a6012ec6b48a72e4618ff713f1927b6b0d6827a24b10ce7 on_disk=e5b6a1d2481f39c52a6012ec6b48a72e4618ff713f1927b6b0d6827a24b10ce7"
+    },
+    {
+      "label": "the pinned input is carried by the live deployment identity",
+      "ok": true,
+      "detail": "deployment.identity=0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461 identity_algorithm=sha256(UTF8(json.dumps(inputs, sort_keys=True, separators=(',', ':'), ensure_ascii=True)))"
+    },
+    {
+      "label": "the frozen snapshot carries the same case ids as the live ledger",
+      "ok": true,
+      "detail": "frozen=109 live=109"
+    },
+    {
+      "label": "every case DEFINITION is identical between the frozen snapshot and the live ledger",
+      "ok": true,
+      "detail": "definition fields compared=['id', 'family', 'layer', 'mandatory', 'requirement', 'stimulus', 'oracle'] drifted=[]"
+    },
+    {
+      "label": "the original identity scheme is preserved in the frozen record",
+      "ok": true,
+      "detail": "identity_boundary='compatibility.lock.json -> deployment.identity. Every case below is bound to that identity. A PASS recorded against another identity is not a PASS for this one.'"
+    },
+    {
+      "label": "the trust-model statement is preserved verbatim",
+      "ok": true,
+      "detail": "statement_chars=629"
+    },
+    {
+      "label": "the NOT_APPLICABLE inheritance record is preserved",
+      "ok": true,
+      "detail": "entries=['SEC-01', 'SEC-03', 'SEC-08', 'DEP-04', 'VER-04']"
+    },
+    {
+      "label": "the frozen snapshot is AS-AUTHORED: every status is NOT_RUN",
+      "ok": true,
+      "detail": "statuses={'NOT_RUN': 109}"
+    },
+    {
+      "label": "the frozen snapshot carries NO evidence entries",
+      "ok": true,
+      "detail": "evidence_entries=0"
+    },
+    {
+      "label": "the LIVE ledger is AS-FILED, which is why the two files must differ",
+      "ok": true,
+      "detail": "live_statuses={'FAIL': 13, 'PASS': 95, 'BLOCKED_EXTERNAL': 1} live_evidence_entries=317"
+    },
+    {
+      "label": "CMP-04 still requires pwsh PRESENT",
+      "ok": true,
+      "detail": "CMP-04 oracle: '`toolCountAgentKey` is 28, `ipython` is present, `pwsh` is present, `work` is present, `error` is null, and `presetRoots` names the home that was actually boote'"
+    },
+    {
+      "label": "CMP-13 still requires pwsh ABSENT",
+      "ok": true,
+      "detail": "CMP-13 oracle: 'The architecture requires the model-facing shell to leave the daily preset, so `pwsh` (and any equivalent shell tool) must be ABSENT from the daily catalog whil'"
+    },
+    {
+      "label": "the two oracles still CONTRADICT, so the divergence record survives",
+      "ok": true,
+      "detail": "CMP-04 requires present and CMP-13 requires absent on the same catalog; at most one can hold, and neither was edited"
+    },
+    {
+      "label": "CMP-04 still pins the literal tool count that created the contradiction",
+      "ok": true,
+      "detail": "the pinned 28 is retained as the record of what v1 asserted"
+    },
+    {
+      "label": "the live ledger still records CMP-04 FAIL and CMP-13 PASS",
+      "ok": true,
+      "detail": "CMP-04=FAIL CMP-13=PASS"
+    },
+    {
+      "label": "the live ledger's digest MOVED across filings (the defect the split fixes)",
+      "ok": true,
+      "detail": "11 distinct ledger digests over 11 commits"
+    },
+    {
+      "label": "the FROZEN artifact's digest did NOT move",
+      "ok": true,
+      "detail": "HEAD blob == on-disk == e5b6a1d2481f39c52a6012ec6b48a72e4618ff713f1927b6b0d6827a24b10ce7"
+    },
+    {
+      "label": "the frozen snapshot is the LIVE LEDGER at its authoring commit, byte for byte",
+      "ok": true,
+      "detail": "authoring_commit=f6ac93c3a3eaeb936c444571624c67dce40bc834 ledger_then=e5b6a1d2481f39c52a6012ec6b48a72e4618ff713f1927b6b0d6827a24b10ce7 frozen=e5b6a1d2481f39c52a6012ec6b48a72e4618ff713f1927b6b0d6827a24b10ce7"
+    },
+    {
+      "label": "the authoring revision carried no filed evidence (it is the as-authored state)",
+      "ok": true,
+      "detail": "evidence_entries_at_authoring=0"
+    }
+  ],
+  "failures": [],
+  "verdict": "FREEZE_HOLDS"
+}
