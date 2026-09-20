@@ -42,7 +42,7 @@ import { execFileSync, spawn, type ChildProcess } from 'node:child_process'
 import { createHash } from 'node:crypto'
 import { cpSync, existsSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
-import { dirname, join } from 'node:path'
+import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { afterEach, describe, expect, it } from 'vitest'
 import { EFFECT_RECORD_STATUSES, EffectLedger, identify, sendDecision, type EffectIntent } from './effects.ts'
@@ -53,6 +53,31 @@ import { holdsSlot, TERMINAL_STATES } from './states.ts'
 
 /** This file's directory, resolved from the module URL rather than from cwd. */
 const HERE = dirname(fileURLToPath(import.meta.url))
+
+/**
+ * The cwd every spawned child is given, derived from THIS FILE rather than from
+ * `process.cwd()`.
+ *
+ * WHY NOT `process.cwd()`. The children below are started with
+ * `--import tsx/esm` and import `@deepseek-ai/*` by bare specifier, so they
+ * resolve both through the package's `node_modules` junction farm. Node resolves
+ * a bare specifier from the importing module's location, and `tsx` is loaded as
+ * an ESM loader BEFORE any module exists, so its resolution falls back to the
+ * process cwd. Invoked the documented way (`cd packages/dsh-daily-work && vitest
+ * run ...`) `process.cwd()` happens to BE this package, so it worked by
+ * coincidence; invoked from the repository root it is the repo root, which has
+ * an EMPTY `node_modules`, and every child dies with
+ * `ERR_MODULE_NOT_FOUND: Cannot find package 'tsx'`. Measured: four arms of this
+ * file failed on exactly that, and the sibling `dep-gates.test.ts` failed the
+ * same way while reporting only a bare 60090 ms timeout, because its child's
+ * stderr is not captured.
+ *
+ * Anchoring to `HERE` makes the child's resolution independent of the
+ * directory the suite was launched from, which is the property the assertions
+ * below actually depend on. `HERE` is `.../src`, whose parent holds the
+ * junction farm.
+ */
+const CHILD_CWD = resolve(HERE, '..')
 
 /** The `single`-layout unit file the JSON backend publishes for our domain. */
 const STORE_FILE = 'dsh_daily_work.json'
@@ -246,8 +271,9 @@ function spawnHostChild(task: ChildTask): SpawnedChild {
       task.gcPidPath ?? '-',
     ],
     // cwd matters: the child resolves `@deepseek-ai/*` and `tsx` through this
-    // package's node_modules, which is where the DSH junctions live.
-    { cwd: process.cwd(), stdio: ['ignore', 'pipe', 'pipe'], env: { ...process.env } },
+    // package's node_modules, which is where the DSH junctions live. It is
+    // derived from THIS FILE, not from the launch directory -- see `CHILD_CWD`.
+    { cwd: CHILD_CWD, stdio: ['ignore', 'pipe', 'pipe'], env: { ...process.env } },
   )
   const entry: SpawnedChild = { name: task.name, process: child, reportPath }
   spawned.push(entry)
@@ -383,8 +409,9 @@ async function forkKillChild(
     process.execPath,
     ['--import', TSX_LOADER, childPath, ...args, reportPath],
     // cwd matters: the child resolves `@deepseek-ai/*` and `tsx` through this
-    // package's node_modules, which is where the DSH junctions live.
-    { cwd: process.cwd(), stdio: ['ignore', 'pipe', 'pipe'], env: { ...process.env } },
+    // package's node_modules, which is where the DSH junctions live. It is
+    // derived from THIS FILE, not from the launch directory -- see `CHILD_CWD`.
+    { cwd: CHILD_CWD, stdio: ['ignore', 'pipe', 'pipe'], env: { ...process.env } },
   )
   spawned.push({ name: 't9-fork-kill', process: child, reportPath })
   child.stderr?.on('data', (chunk: Buffer) => { stderr += chunk.toString() })

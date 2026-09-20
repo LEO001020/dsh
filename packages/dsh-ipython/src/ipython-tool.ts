@@ -49,7 +49,7 @@
  * are generated from the same definition and cannot drift.
  */
 import type { Context } from '@deepseek-ai/cordis'
-import { defineTool, type ToolRunContext } from '@deepseek-ai/dsh-tools'
+import { defineTool, type ToolDefinition, type ToolRunContext } from '@deepseek-ai/dsh-tools'
 import { createUserMessage } from '@deepseek-ai/dsh-llm'
 import { KernelBindError, KernelBusyError, KernelOutcomeUnknownError, KernelTransportError } from './kernel.ts'
 import type { CellResult } from './protocol.ts'
@@ -265,7 +265,10 @@ function renderLateNotices(notices: readonly LateNotice[], account: LateNoticeAc
  */
 function deliverLateNotices(
   exec: Pick<ToolRunContext, 'deferContext'>,
-  service: KernelService,
+  // The narrow type, not the whole service: this function reads exactly the two late
+  // -notice members, so a caller that has only those is a valid caller. Typing it as
+  // `KernelService` forced every probe to fabricate the other 38 members.
+  service: IpythonToolService,
   agent: Parameters<KernelService['drainLateNotices']>[0],
 ): void {
   const account = service.lateNoticeAccount(agent)
@@ -311,8 +314,46 @@ function explainFailure(error: unknown): string {
   return `outcome: failed\n${error instanceof Error ? error.message : String(error)}`
 }
 
-export function apply(ctx: Context): void {
-  ctx.tools.register(
+/**
+ * The narrow seam registration actually needs, so a caller that is not a real
+ * `Context` does not have to lie about its type.
+ *
+ * WHY THIS EXISTS. `apply` touches exactly two members of its `Context`:
+ * `tools.register` (below) and `get('ipython')` (in `execute`). A probe that wants to
+ * read the tool's TEXT the way a model obtains it has to supply those two and nothing
+ * else, and until this type existed every such probe wrote `apply(toolCtx as never)`
+ * -- two casts of the same shape, which is the signal that a seam is missing rather
+ * than that two probes are sloppy. The casts suppressed the compiler's only check on
+ * the stand-in, so a probe could pass an object that `apply` would throw on and the
+ * type system would not say so.
+ *
+ * WHAT IT IS NOT. It is not a second tool registry and not a second authority: it is
+ * a structural narrowing of the SAME call, and `apply` still registers through
+ * `ctx.tools.register` with the same `ToolDefinition`. `Context` satisfies this type,
+ * so production code is unaffected and no cast is needed at either end.
+ */
+export interface IpythonToolMount {
+  readonly tools: {
+    register(definition: ToolDefinition): () => void
+  }
+  /**
+   * The four members `execute` reaches, named explicitly rather than typed as the
+   * whole `KernelService`. A `KernelService` satisfies this, so production is
+   * unaffected; a probe can satisfy it honestly instead of asserting its way past 38
+   * members it does not implement.
+   */
+  get(name: 'ipython'): IpythonToolService | undefined
+}
+
+/** Exactly what the tool's `execute` needs from the mounted service. */
+export type IpythonToolService = Pick<
+  KernelService,
+  'runCell' | 'currentEpoch' | 'drainLateNotices' | 'lateNoticeAccount'
+>
+
+/** Register the model-facing tool against the narrow seam. `apply` delegates here. */
+export function registerIpythonTool(mount: IpythonToolMount): void {
+  mount.tools.register(
     defineTool({
       name: IPYTHON_TOOL_NAME,
       description: [
@@ -362,7 +403,7 @@ export function apply(ctx: Context): void {
         render: (_args, value) => [{ type: 'text', text: value.text }],
       },
       async execute(args, exec) {
-        const service = ctx.get('ipython') as KernelService | undefined
+        const service = mount.get('ipython')
         if (service === undefined) {
           throw new Error('the ipython service is not mounted in this host profile')
         }
@@ -424,4 +465,13 @@ export function apply(ctx: Context): void {
       presentCall: () => ({ card: 'generic', title: 'ipython', kind: 'other' }),
     }),
   )
+}
+
+/**
+ * Mount the tool on a real `Context`. Delegates to {@link registerIpythonTool} so
+ * production and probes exercise ONE registration path -- a probe that registered
+ * through a separate copy would not be measuring what the product does.
+ */
+export function apply(ctx: Context): void {
+  registerIpythonTool(ctx)
 }

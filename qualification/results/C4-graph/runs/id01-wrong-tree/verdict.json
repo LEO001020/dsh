@@ -1,7 +1,7 @@
 {
   "driver": "qualification/results/C4-graph/id01-measure.mjs",
   "case": "ID-01",
-  "ranAt": "2026-09-20T15:30:54.566Z",
+  "ranAt": "2026-09-20T15:29:18.871Z",
   "tree": "D:/DSH/work/wt-c4",
   "home": "D:/DSH/home/c4",
   "launcher": "D:/DSH/src/dsh-src/apps/cli/lib/bin.js",
@@ -14,24 +14,24 @@
     {
       "package": "packages/dsh-daily-work",
       "exitCode": 0,
-      "ms": 2194,
+      "ms": 2033,
       "error": null
     },
     {
       "package": "packages/dsh-ipython",
       "exitCode": 0,
-      "ms": 1586,
+      "ms": 1372,
       "error": null
     }
   ],
   "buildFreshness": {
     "dsh-daily-work": {
-      "newestLibMtime": "2026-09-20T15:30:47.512Z",
+      "newestLibMtime": "2026-09-20T15:29:13.236Z",
       "newestSrcMtime": "2026-09-20T14:56:10.937Z",
       "libNewerThanSrc": true
     },
     "dsh-ipython": {
-      "newestLibMtime": "2026-09-20T15:30:49.111Z",
+      "newestLibMtime": "2026-09-20T15:29:14.611Z",
       "newestSrcMtime": "2026-09-20T14:56:10.956Z",
       "libNewerThanSrc": true
     }
@@ -41,21 +41,29 @@
     "error": null
   },
   "boot": {
-    "port": 7323,
+    "port": 4831,
     "timedOut": false,
     "exitCode": null,
     "portReleased": true
   },
   "graph": {
-    "lineCount": 708,
+    "lineCount": 694,
     "distinctSpecifiers": 218,
-    "fromBuilt": 217,
-    "fromSource": 0,
+    "fromBuilt": 216,
+    "fromSource": 1,
     "fromOther": 1,
-    "underPackagesLib": 209,
+    "underPackagesLib": 208,
     "underVendorLib": 7,
     "underNodeModules": 1,
-    "offenders": [],
+    "offenders": [
+      {
+        "specifier": "@deepseek-ai/dsh-attachment-local/src/store.ts",
+        "resolvedTo": "D:\\DSH\\src\\dsh-src\\packages\\attachment\\attachment-local\\src\\store.ts",
+        "parents": [
+          "file:///D:/DSH/work/dsh-native-daily/packages/dsh-daily-work/lib/artifacts.js"
+        ]
+      }
+    ],
     "otherRows": [
       {
         "specifier": "@deepseek-ai/dsh-web-frontend/package.json",
@@ -80,8 +88,8 @@
     },
     {
       "label": "the probe recorded no error",
-      "ok": true,
-      "detail": "[]"
+      "ok": false,
+      "detail": "[\"agent-presets: preset \\\"daily-standard\\\" failed to mount: 1 row(s) did not activate:\\ndaily-work-command (dsh-daily-work/command): never started (D:\\\\DSH\\\\home\\\\c4\\\\profiles\\\\daily\\\\presets\\\\daily-standard\\\\agent.cordis.yml)\\nRemoteError: agent-presets: preset \\\"daily-standard\\\" failed to mount: 1 row(s) did not activate:\\ndaily-work-command (dsh-daily-work/command): never started (D:\\\\DSH\\\\home\\\\c4\\\\profiles\\\\daily\\\\presets\\\\daily-standard\\\\agent.cordis.yml)\\n    at mountPreset (file:///D:/DSH/src/dsh-src/packages/preset/agent-presets/lib/index.js:908:9)\\n    at async file:///D:/DSH/src/dsh-src/packages/preset/agent-presets/lib/index.js:1786:6\\n    at async Proxy.mount (file:///D:/DSH/src/dsh-src/packages/preset/agent-presets/lib/index.js:1500:21)\\n    at async setup (file:///D:/DSH/src/dsh-src/packages/api/session-controller/lib/index.js:366:5)\\n    at async raceAbort (file:///D:/DSH/src/dsh-src/packages/core/agent-loop/lib/index.js:1404:10)\\n    at async file:///D:/DSH/src/dsh-src/packages/core/agent-loop/lib/index.js:1858:6\\n    at async file:///D:/DSH/src/dsh-src/packages/core/agent-loop/lib/index.js:1873:13\\n    at async file:///D:/DSH/src/dsh-src/packages/core/agent-loop/lib/index.js:816:12\\n    at async Proxy.initializeAgent (file:///D:/DSH/src/dsh-src/packages/core/agent-loop/lib/index.js:1871:11)\\n    at async Proxy.setupAndPublish (file:///D:/DSH/src/dsh-src/packages/core/agent-loop/lib/index.js:1857:11)\"]"
     },
     {
       "label": "the boot did not time out",
@@ -106,17 +114,17 @@
     {
       "label": "the built lib/ is newer than src/, so the boot is not running a stale build",
       "ok": true,
-      "detail": "{\"dsh-daily-work\":{\"newestLibMtime\":\"2026-09-20T15:30:47.512Z\",\"newestSrcMtime\":\"2026-09-20T14:56:10.937Z\",\"libNewerThanSrc\":true},\"dsh-ipython\":{\"newestLibMtime\":\"2026-09-20T15:30:49.111Z\",\"newestSrcMtime\":\"2026-09-20T14:56:10.956Z\",\"libNewerThanSrc\":true}}"
+      "detail": "{\"dsh-daily-work\":{\"newestLibMtime\":\"2026-09-20T15:29:13.236Z\",\"newestSrcMtime\":\"2026-09-20T14:56:10.937Z\",\"libNewerThanSrc\":true},\"dsh-ipython\":{\"newestLibMtime\":\"2026-09-20T15:29:14.611Z\",\"newestSrcMtime\":\"2026-09-20T14:56:10.956Z\",\"libNewerThanSrc\":true}}"
     },
     {
       "label": "the graph was recorded and is non-empty",
       "ok": true,
-      "detail": "rows=708 graphReadError=null"
+      "detail": "rows=694 graphReadError=null"
     },
     {
       "label": "no `@deepseek-ai/*` specifier resolves to a source (.ts) file",
-      "ok": true,
-      "detail": "fromBuilt=217 fromSource=0 fromOther=1; offenders=[]"
+      "ok": false,
+      "detail": "fromBuilt=216 fromSource=1 fromOther=1; offenders=[[\"@deepseek-ai/dsh-attachment-local/src/store.ts\",\"D:\\\\DSH\\\\src\\\\dsh-src\\\\packages\\\\attachment\\\\attachment-local\\\\src\\\\store.ts\"]]"
     },
     {
       "label": "the graph does not mix src and lib for one specifier",
@@ -130,16 +138,16 @@
     },
     {
       "label": "the first tool call actually succeeded (not `--help`-only)",
-      "ok": true,
-      "detail": "tool=null isError=false"
+      "ok": false,
+      "detail": "tool=null isError=null"
     },
     {
       "label": "the tool result carries the file's own text",
-      "ok": true,
-      "detail": "<path>D:\\DSH\\work\\wt-c4\\qualification\\results\\C4-graph\\runs\\id01\\first-call-input.txt</path>\n<type>file</type>\n<content>\n1: C4_FIRST_TOOL_CALL_ROUND_TRIP\n\n(End of file - total 1 lines)\n</content>"
+      "ok": false,
+      "detail": ""
     }
   ],
-  "checksPassed": 14,
+  "checksPassed": 10,
   "checksTotal": 14,
-  "verdict": "PASS"
+  "verdict": "FAIL"
 }

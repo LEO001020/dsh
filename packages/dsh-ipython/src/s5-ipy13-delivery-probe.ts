@@ -46,7 +46,7 @@ async function main(): Promise<void> {
   try {
     // Register the model-facing tool exactly as the product does, so the text is
     // obtained the way the model obtains it.
-    const { apply, IPYTHON_TOOL_NAME } = await import('./ipython-tool.ts')
+    const { registerIpythonTool, IPYTHON_TOOL_NAME } = await import('./ipython-tool.ts')
     const registered: Array<{ name: string, definition: unknown }> = []
     const toolCtx = {
       tools: {
@@ -57,7 +57,7 @@ async function main(): Promise<void> {
       },
       get: (name: string) => (name === 'ipython' ? service : undefined),
     }
-    apply(toolCtx as never)
+    registerIpythonTool(toolCtx)
     observed['toolName'] = IPYTHON_TOOL_NAME
     observed['toolRegistered'] = registered.length
 
