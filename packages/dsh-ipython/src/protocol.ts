@@ -291,6 +291,29 @@ export interface KernelStatus {
   readonly curveKeysPresent: boolean
   readonly plaintextWarningSeen: boolean
   /**
+   * Frames the transport bound REFUSED, tallied at the broker.
+   *
+   * WHY IT IS DECLARED HERE AND NOT ONLY EMITTED BY `broker.py`. The broker began
+   * publishing this field when the pump's swallowed loss was fixed, but nothing on
+   * the host side named it, so the only way to read it was to cast the status
+   * object to `Record<string, unknown>` -- measured: `'transportDroppedFrames' in
+   * status` was true while `KernelStatus` had no such member. A count a reader has
+   * to cast to find is a count most readers will never find, and the oracle's
+   * clause 2 requires the loss to be reported "with a count" rather than merely
+   * counted somewhere.
+   *
+   * WHAT IT COUNTS, EXACTLY. Refused frames that had NO cell in flight to carry
+   * the loss: a frame refused while a cell is running is charged to that cell's
+   * `CellResult.stdout.droppedFrames`, because there a cell result exists to carry
+   * it. This field is the other half -- the loss that would otherwise survive only
+   * as a log line. The two are complementary and must not be added as if they were
+   * one population: a reader summing them would count each refusal twice.
+   *
+   * Optional because a broker that has not answered `status` yet reports nothing;
+   * `0` is a real measurement ("no frame has been refused"), and absent is not.
+   */
+  readonly transportDroppedFrames?: number
+  /**
    * The kernel's identity, under the names V5 §11.2 requires.
    *
    * WHY `ipythonVersion` IS GONE RATHER THAN KEPT BESIDE THESE. It was a field
