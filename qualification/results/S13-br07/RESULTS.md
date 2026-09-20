@@ -220,22 +220,40 @@ The claim is CONFIRMED, at three levels:
    A reconciliation CAN still settle the row later, and the arm asserts that, so
    it cannot pass by the ledger being unwritable.
 
-## 6. The restart arm
+## 6. The restart arm — PASSES, but R5's remedy does NOT remove the variance
 
 `packages/dsh-ipython/src/r5-restart-epoch.test.ts`, run ALONE in a fresh process
-in this tree:
+in this tree, four times on the same commit with no source change between runs:
 
-```
-node node_modules/vitest/vitest.mjs run src/r5-restart-epoch.test.ts
--> 1 passed (1), test 5589 ms, duration 6.39 s, wall 6960 ms
-```
+| run | result | test time | suite duration | wall |
+|---|---|---|---|---|
+| 1 | PASS | 5589 ms | 6.39 s | 6960 ms |
+| 2 | **FAIL** | **63710 ms** | 64.30 s | 64749 ms |
+| 3 | PASS | 5150 ms | 5.81 s | (not recorded) |
+| 4 | PASS | 4875 ms | 5.56 s | 6029 ms |
 
-That is consistent with R5's 5.5 s in isolation. R5's variance record (5.5 s
-alone; FAILED at 63.7 s as the 20th arm with `Kernel didn't respond in 60
-seconds`) is in the file's own header. The 60 s budget belongs to
-`jupyter_client`'s `KernelManager.restart_kernel` inside `broker.py`, not to this
-package. Per instruction I did **not** attempt to fix this load artifact, and I
-did not re-measure the loaded case: the isolation run is the only number I claim.
+Run 2 failed with the same shape R5 recorded:
+`KernelTransportError: BROKER_FAILURE: RuntimeError: Kernel didn't respond in 60 seconds`.
+
+**This corrects a claim in R5's own file header.** R5 moved the arm to its own
+process "where the product property it measures is deterministic"
+(`r5-restart-epoch.test.ts:20-24`). It is not: the failure reproduces in a FRESH
+PROCESS BOOTING ONE KERNEL, which falsifies the "20th arm of a long file"
+explanation. The rate is now measured rather than unknown: **1 failure in 4
+isolated runs**, ~12x the healthy time, in G-SEAM-36's family.
+
+The CAUSE is still NOT isolated, and no replacement theory is offered — the arm
+failed in isolation, which is exactly the configuration a load hypothesis says
+should be safe, so that tension is left open rather than guessed at. Per
+instruction the arm was NOT retried until green, NOT widened, NOT deleted, its
+timeout was NOT raised, and no fix was attempted. Full record:
+`restart-arm-variance.txt`.
+
+The PRODUCT property the arm asserts (epoch advances, capability identity rotates,
+no lease survives) held in every run that reached it; run 2 failed on the restart
+TRANSPORT before asserting anything. So the property is measured, and its
+measurement is flaky at roughly 1-in-4 on this machine — which is why four runs
+are reported instead of the one green run I could have quoted.
 
 ---
 
@@ -244,7 +262,7 @@ did not re-measure the loaded case: the isolation run is the only number I claim
 | file | result |
 |---|---|
 | `r5-product-bridge.test.ts` | **30/30 passed** (was 24/24 before this slice; 6 arms added) |
-| `r5-restart-epoch.test.ts` (isolated) | 1/1 passed, 5589 ms |
+| `r5-restart-epoch.test.ts` (isolated, 4 runs) | 3 PASS / **1 FAIL** — see §6 |
 | `node helpers/typecheck.mjs` | exit 0, 2 packages, tests INCLUDED (F10 gate) |
 | `tsc -p tsconfig.json` (the build into `lib/`) | exit 0 |
 

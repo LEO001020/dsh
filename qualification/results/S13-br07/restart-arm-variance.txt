@@ -1,0 +1,81 @@
+S13 / BR-07 — RESTART ARM: FOUR ISOLATED RUNS, ONE FAIL
+=======================================================
+
+THIS FILE CORRECTS A CLAIM R5 MADE ABOUT ITS OWN FIX. It does not dispute the
+raw observation R5 recorded; it extends it, and it shows the proposed remedy does
+not remove the variance.
+
+R5's file header (`packages/dsh-ipython/src/r5-restart-epoch.test.ts:20-24`)
+states that the arm was moved to its own process
+
+    "... where the product property it measures is deterministic, and the
+     variance is recorded here and in the report rather than hidden behind a
+     green run."
+
+MEASURED ON THIS TREE (D:\DSH\work\wt-s13, the same tree, the same commit for all
+four runs, `packages/dsh-ipython/lib` built from this tree's `src/`, no source
+change between runs). Command, exactly:
+
+    cd D:/DSH/work/wt-s13/packages/dsh-ipython
+    node node_modules/vitest/vitest.mjs run src/r5-restart-epoch.test.ts
+
+| run | result | test time | suite duration | wall |
+|---|---|---|---|---|
+| 1 | PASS | 5589 ms | 6.39 s | 6960 ms |
+| 2 | **FAIL** | **63710 ms** | 64.30 s | 64749 ms |
+| 3 | PASS | 5150 ms | 5.81 s | (not recorded) |
+| 4 | PASS | 4875 ms | 5.56 s | 6029 ms |
+
+Run 2's failure, verbatim:
+
+    FAIL  src/r5-restart-epoch.test.ts > R5-J2: kernel restart allocates a new
+          epoch and invalidates the old capability > the epoch advances, the
+          capability identity rotates, and no lease survives
+    KernelTransportError: BROKER_FAILURE: RuntimeError: Kernel didn't respond in 60 seconds
+    Test Files  1 failed (1)
+         Tests  1 failed (1)
+      Duration  64.30s
+
+## What this establishes, and what it does not
+
+ESTABLISHED:
+1. The failure reproduces in a FRESH PROCESS THAT BOOTS ONE KERNEL. R5's remedy
+   (own process, one kernel) does not eliminate it, so the variance is not caused
+   by the arm being the 20th in a long file. That explanation is now falsified.
+2. The shape is identical to R5's recorded failure: the 60 s budget of
+   `jupyter_client`'s `KernelManager.restart_kernel` inside `broker.py`, and the
+   same `Kernel didn't respond in 60 seconds`.
+3. The magnitude matches: ~64 s against a ~5 s healthy time, a ~12x outlier, in
+   the same family as G-SEAM-36's 1823 ms vs 11852 ms.
+4. The frequency is now measurable rather than unknown: **1 failure in 4 isolated
+   runs**, on a machine shared by fifteen writers.
+
+NOT ESTABLISHED (and deliberately not guessed):
+- The CAUSE is NOT isolated. This file records the phenomenon and refutes one
+  explanation of it; it does not supply a replacement. G-SEAM-36's discipline
+  applies: keep the raw observation, do not close it on a theory.
+- Whether the same rate holds on an unloaded machine. This box was shared with
+  fifteen writers during these runs; a load hypothesis is consistent with the
+  observation but is NOT measured, and the arm failed in isolation, which is the
+  configuration the load hypothesis says should be safe. That tension is the
+  reason no cause is claimed.
+- Whether `KernelManager.restart_kernel`'s 60 s budget is the whole story: the
+  budget is where the failure SURFACES (the error names it), which is not the same
+  as what made the kernel slow to answer.
+
+## What was NOT done
+
+Per the assignment: the arm was NOT retried until it went green, NOT widened, NOT
+deleted, and its timeout was NOT raised. No fix was attempted; this is a load/
+environment artifact and fixing it is out of this slice. The arm is left exactly
+as R5 wrote it, and this record is what a reader gets instead of a green light
+taken at face value.
+
+## The consequence for the verdict
+
+The restart arm's PRODUCT property (epoch advances, capability identity rotates,
+no lease survives) is asserted by every PASS above, and the failing run failed on
+the RESTART TRANSPORT, not on the property: it never got far enough to assert
+anything. So the property is measured, and its measurement is FLAKY at roughly
+1-in-4 on this machine. A single green run of this arm is therefore NOT evidence
+that the property holds; four runs are reported here so a reader can see the rate.
