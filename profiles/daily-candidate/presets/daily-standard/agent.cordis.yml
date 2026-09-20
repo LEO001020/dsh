@@ -367,6 +367,23 @@
 - id: daily-work-tools
   name: dsh-daily-work/tools
 
+# The HUMAN command that authorizes a run (V3 phase R4, F1 / G-SEAM-31).
+#
+# WHY THIS ROW IS HERE AND NOT IN THE PROFILE PATCH. `ctx.commands` layers are
+# keyed by the Agent object, exactly like `ctx.tools`: a command registered from
+# the host plane publishes into the root realm, which no agent's scope selects,
+# so the human would have a work service and no way to authorize a run — the same
+# trap this file already documents for tools.
+#
+# WHAT IT ADDS. `/work start [N]`, `/work target N`, `/work stop`, `/work status`,
+# registered through DSH's HUMAN command registry. Execution does NOT send the
+# line to the model; `CommandRuntime` calls the handler directly and logs the
+# lifecycle with `source.kind === 'user'`. That log is the durable evidence the
+# run's `authorizationRef` names, which is what makes the authorization
+# auditable instead of asserted.
+- id: daily-work-command
+  name: dsh-daily-work/command
+
 # ── dsh-ipython ─────────────────────────────────────────────────────────────
 #
 # The model-facing `ipython` tool: ONE tool with ONE parameter (`code`). Kernel

@@ -1,0 +1,238 @@
+{
+  "probe": "R4-authorization",
+  "ranAt": "2026-09-20T02:12:50.305Z",
+  "profileName": "unknown",
+  "agentPreset": "daily-standard",
+  "sessionId": "session-75a0142b-e552-4caa-8846-eb2cacc55e5f",
+  "concurrentSessionId": "session-25ed7342-63ef-47dc-9296-f41549b50912",
+  "presetRoots": [
+    "D:\\DSH\\src\\dsh-src\\packages\\preset\\agent-presets\\presets\\",
+    "D:/DSH/home/r4/profiles/daily/presets/",
+    "D:\\DSH\\home\\r4\\.agent-presets"
+  ],
+  "workServicePresent": true,
+  "runCountAfterSessionCreate": 0,
+  "hostRunCountAfterSessionCreate": 5,
+  "runAfterSessionCreate": null,
+  "workCommandRegistered": true,
+  "workCommandNames": [
+    "compact",
+    "export",
+    "feedback",
+    "goal",
+    "plan",
+    "work"
+  ],
+  "workCommandDescriptor": {
+    "name": "work",
+    "description": "Authorize and control a managed work run for this session",
+    "hint": "<start [N] | target N | stop | status>"
+  },
+  "uiRouteAvailable": true,
+  "uiStatusInvoke": {
+    "commandId": "cmd-3f75c719-5",
+    "result": {
+      "kind": "success",
+      "text": "Run: run-start-session-75a0142b-e552-4caa-8846-eb2cacc55e5f\nPhase: open\nTarget: 10\nDurably admitted: 0\nLaunching: 0\nActive assignments: 0\nStopping: 0\nQuarantined (unknown): 0\nConfirmed: 0\nCapacity deficit: 10 (insufficient_ready_tasks)\nAuthorized by: human-command cmd-3f75c719-3"
+    }
+  },
+  "uiStatusUnresolved": false,
+  "uiStatusInvokeError": null,
+  "uiStartInvoke": {
+    "commandId": "cmd-3f75c719-6",
+    "result": {
+      "kind": "success",
+      "text": "A run is already active for this session; nothing was created: run-start-session-75a0142b-e552-4caa-8846-eb2cacc55e5f\nPhase: open\nTarget: 10\nDurably admitted: 0\nLaunching: 0\nActive assignments: 0\nStopping: 0\nQuarantined (unknown): 0\nConfirmed: 0\nCapacity deficit: 10 (insufficient_ready_tasks)\nAuthorized by: human-command cmd-3f75c719-3"
+    }
+  },
+  "uiStartUnresolved": false,
+  "uiStartInvokeError": null,
+  "runCountAfterUiStart": 1,
+  "runCountAfterUiStatus": 1,
+  "httpArmAvailable": true,
+  "httpArmOrigin": "http://127.0.0.1:11030",
+  "httpArmError": null,
+  "httpStatusStatus": 200,
+  "httpStatusBody": "{\"type\":\"server-response\",\"rpcId\":\"rpc-r4-status\",\"result\":{\"ok\":true,\"value\":{\"commandId\":\"cmd-3f75c719-7\",\"result\":{\"kind\":\"success\",\"text\":\"Run: run-start-session-75a0142b-e552-4caa-8846-eb2cacc55e5f\\nPhase: open\\nTarget: 10\\nDurably admitted: 0\\nLaunching: 0\\nActive assignments: 0\\nStopping: 0\\nQuarantined (unknown): 0\\nConfirmed: 0\\nCapacity deficit: 10 (insufficient_ready_tasks)\\nAuthorized by: human-command cmd-3f75c719-3\"}}}}",
+  "httpStartStatus": 200,
+  "httpStartBody": "{\"type\":\"server-response\",\"rpcId\":\"rpc-r4-start\",\"result\":{\"ok\":true,\"value\":{\"commandId\":\"cmd-3f75c719-8\",\"result\":{\"kind\":\"success\",\"text\":\"A run is already active for this session; nothing was created: run-start-session-75a0142b-e552-4caa-8846-eb2cacc55e5f\\nPhase: open\\nTarget: 10\\nDurably admitted: 0\\nLaunching: 0\\nActive assignments: 0\\nStopping: 0\\nQuarantined (unknown): 0\\nConfirmed: 0\\nCapacity deficit: 10 (insufficient_ready_tasks)\\nAuthorized by: human-command cmd-3f75c719-3\"}}}}",
+  "runCountAfterHttpStatus": 1,
+  "runCountAfterHttpStart": 1,
+  "concurrentStartTexts": [
+    "Run authorized: run-start-session-25ed7342-63ef-47dc-9296-f41549b50912",
+    "A run is already active for this session; nothing was created: run-start-session-25ed7342-63ef-47dc-9296-f41549b50912"
+  ],
+  "runCountAfterConcurrentStart": 1,
+  "concurrentClaimedCreated": 1,
+  "startResultKind": "success",
+  "startResultText": "Run authorized: run-start-session-75a0142b-e552-4caa-8846-eb2cacc55e5f\nRun: run-start-session-75a0142b-e552-4caa-8846-eb2cacc55e5f\nPhase: open\nTarget: 10\nDurably admitted: 0\nLaunching: 0\nActive assignments: 0\nStopping: 0\nQuarantined (unknown): 0\nConfirmed: 0\nCapacity deficit: 10 (insufficient_ready_tasks)\nAuthorized by: human-command cmd-3f75c719-3",
+  "startCommandId": "cmd-3f75c719-3",
+  "startError": null,
+  "runCountAfterStart": 1,
+  "hostRunCountAfterStart": 7,
+  "runAfterStart": {
+    "runId": "run-start-session-75a0142b-e552-4caa-8846-eb2cacc55e5f",
+    "rootSessionId": "session-75a0142b-e552-4caa-8846-eb2cacc55e5f",
+    "authorizationRef": "dsh-work-auth/1|kind=human-command|action=start|commandId=cmd-3f75c719-3|commandName=work|commandArgs=start 10",
+    "phase": "open",
+    "requestedTarget": 10,
+    "epoch": 1,
+    "createdAt": "2026-09-20T02:12:50.580Z"
+  },
+  "duplicateStartKind": "success",
+  "duplicateStartText": "A run is already active for this session; nothing was created: run-start-session-75a0142b-e552-4caa-8846-eb2cacc55e5f\nPhase: open\nTarget: 10\nDurably admitted: 0\nLaunching: 0\nActive assignments: 0\nStopping: 0\nQuarantined (unknown): 0\nConfirmed: 0\nCapacity deficit: 10 (insufficient_ready_tasks)\nAuthorized by: human-command cmd-3f75c719-3",
+  "runCountAfterDuplicateStart": 1,
+  "hostRunCountAfterDuplicateStart": 7,
+  "duplicateRunId": "run-start-session-75a0142b-e552-4caa-8846-eb2cacc55e5f",
+  "targetUpdateKind": "success",
+  "targetUpdateText": "Target updated.\nRun: run-start-session-75a0142b-e552-4caa-8846-eb2cacc55e5f\nTarget: 7",
+  "targetAfterUpdate": 7,
+  "stopKind": "success",
+  "stopText": "Run stopped: new admissions are refused.\nRun: run-start-session-75a0142b-e552-4caa-8846-eb2cacc55e5f\nPhase: paused\nChildren already running keep their capacity slots until they settle; a stop does not\nfree a slot, because a running child is still spending.",
+  "phaseAfterStop": "paused",
+  "gateAfterStop": {
+    "capacity": 30,
+    "liveChildren": 0,
+    "unbackedReservations": 0,
+    "unknownQuarantined": 0,
+    "occupied": 0,
+    "highWater": 0,
+    "refusals": {
+      "HOST_CAPACITY_REACHED": 0,
+      "DEPTH_CEILING_EXCEEDED": 0
+    }
+  },
+  "workToolPresent": true,
+  "toolCountAgentKey": 27,
+  "workToolIsError": false,
+  "workToolErrorText": null,
+  "workToolValue": {
+    "action": "status",
+    "runId": "run-start-session-75a0142b-e552-4caa-8846-eb2cacc55e5f",
+    "desiredTarget": 7,
+    "readyTasks": 0,
+    "durablyAdmitted": 0,
+    "launching": 0,
+    "activeAssignments": 0,
+    "waitingOwnedTool": 0,
+    "providerWaiting": 0,
+    "stopping": 0,
+    "quarantinedUnknown": 0,
+    "confirmed": 0,
+    "cancelled": 0,
+    "capacityDeficit": 7,
+    "deficitReason": "insufficient_ready_tasks"
+  },
+  "workToolResolvedRun": "run-start-session-75a0142b-e552-4caa-8846-eb2cacc55e5f",
+  "workToolRunIdMatches": true,
+  "modelCanCreateRun": false,
+  "modelCreateErrorText": "invalid arguments: \"action\" must be one of [\"status\",\"submit\",\"finish\"]",
+  "runCountBeforeModelCreateAttempt": 1,
+  "runCountAfterModelCreateAttempt": 1,
+  "workToolActions": [
+    "status",
+    "submit",
+    "finish"
+  ],
+  "settingsReloadRan": true,
+  "settingsReloadError": null,
+  "runCountBeforeSettingsReload": 1,
+  "runCountAfterSettingsReload": 1,
+  "commandRunEvents": [
+    {
+      "seq": 0,
+      "commandId": "cmd-3f75c719-3",
+      "name": "work",
+      "args": " start 10",
+      "sourceKind": "user"
+    },
+    {
+      "seq": 2,
+      "commandId": "cmd-3f75c719-4",
+      "name": "work",
+      "args": " start 10",
+      "sourceKind": "user"
+    },
+    {
+      "seq": 4,
+      "commandId": "cmd-3f75c719-5",
+      "name": "work",
+      "args": " status",
+      "sourceKind": "user"
+    },
+    {
+      "seq": 6,
+      "commandId": "cmd-3f75c719-6",
+      "name": "work",
+      "args": " start 5",
+      "sourceKind": "user"
+    },
+    {
+      "seq": 8,
+      "commandId": "cmd-3f75c719-7",
+      "name": "work",
+      "args": " status",
+      "sourceKind": "user"
+    },
+    {
+      "seq": 10,
+      "commandId": "cmd-3f75c719-8",
+      "name": "work",
+      "args": " start 5",
+      "sourceKind": "user"
+    },
+    {
+      "seq": 12,
+      "commandId": "cmd-3f75c719-9",
+      "name": "work",
+      "args": " target 7",
+      "sourceKind": "user"
+    }
+  ],
+  "commandDoneEvents": [
+    {
+      "seq": 1,
+      "commandId": "cmd-3f75c719-3",
+      "kind": "success",
+      "text": "Run authorized: run-start-session-75a0142b-e552-4caa-8846-eb2cacc55e5f\nRun: run-start-session-75a0142b-e552-4caa-8846-eb2cacc55e5f\nPhase: open\nTarget: 10\nDurably admitted: 0\nLaunching: 0\nActive assignments: 0\nStopping: 0\nQuarantined (unknown): 0\nConfirmed: 0\nCapacity deficit: 10 (insufficient_ready_tasks)\nAuthorized by: human-command cmd-3f75c719-3"
+    },
+    {
+      "seq": 3,
+      "commandId": "cmd-3f75c719-4",
+      "kind": "success",
+      "text": "A run is already active for this session; nothing was created: run-start-session-75a0142b-e552-4caa-8846-eb2cacc55e5f\nPhase: open\nTarget: 10\nDurably admitted: 0\nLaunching: 0\nActive assignments: 0\nStopping: 0\nQuarantined (unknown): 0\nConfirmed: 0\nCapacity deficit: 10 (insufficient_ready_tasks)\nAuthorized by: human-command cmd-3f75c719-3"
+    },
+    {
+      "seq": 5,
+      "commandId": "cmd-3f75c719-5",
+      "kind": "success",
+      "text": "Run: run-start-session-75a0142b-e552-4caa-8846-eb2cacc55e5f\nPhase: open\nTarget: 10\nDurably admitted: 0\nLaunching: 0\nActive assignments: 0\nStopping: 0\nQuarantined (unknown): 0\nConfirmed: 0\nCapacity deficit: 10 (insufficient_ready_tasks)\nAuthorized by: human-command cmd-3f75c719-3"
+    },
+    {
+      "seq": 7,
+      "commandId": "cmd-3f75c719-6",
+      "kind": "success",
+      "text": "A run is already active for this session; nothing was created: run-start-session-75a0142b-e552-4caa-8846-eb2cacc55e5f\nPhase: open\nTarget: 10\nDurably admitted: 0\nLaunching: 0\nActive assignments: 0\nStopping: 0\nQuarantined (unknown): 0\nConfirmed: 0\nCapacity deficit: 10 (insufficient_ready_tasks)\nAuthorized by: human-command cmd-3f75c719-3"
+    },
+    {
+      "seq": 9,
+      "commandId": "cmd-3f75c719-7",
+      "kind": "success",
+      "text": "Run: run-start-session-75a0142b-e552-4caa-8846-eb2cacc55e5f\nPhase: open\nTarget: 10\nDurably admitted: 0\nLaunching: 0\nActive assignments: 0\nStopping: 0\nQuarantined (unknown): 0\nConfirmed: 0\nCapacity deficit: 10 (insufficient_ready_tasks)\nAuthorized by: human-command cmd-3f75c719-3"
+    },
+    {
+      "seq": 11,
+      "commandId": "cmd-3f75c719-8",
+      "kind": "success",
+      "text": "A run is already active for this session; nothing was created: run-start-session-75a0142b-e552-4caa-8846-eb2cacc55e5f\nPhase: open\nTarget: 10\nDurably admitted: 0\nLaunching: 0\nActive assignments: 0\nStopping: 0\nQuarantined (unknown): 0\nConfirmed: 0\nCapacity deficit: 10 (insufficient_ready_tasks)\nAuthorized by: human-command cmd-3f75c719-3"
+    },
+    {
+      "seq": 13,
+      "commandId": "cmd-3f75c719-9",
+      "kind": "success",
+      "text": "Target updated.\nRun: run-start-session-75a0142b-e552-4caa-8846-eb2cacc55e5f\nTarget: 7"
+    }
+  ],
+  "error": null,
+  "errorPhase": null
+}

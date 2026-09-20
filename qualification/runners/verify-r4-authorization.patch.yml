@@ -1,0 +1,14 @@
+# R4 verification overlay: boot the real daily profile with the authorization probe.
+#
+# WHY THERE IS NO `webserver` ROW HERE. `boot-harness.mjs` already appends a
+# `webserver` port patch as the LAST `--patch`, and a later patch wins. Adding one
+# here would either be overridden or would override the harness's free-port bind.
+#
+# THE PROBE ADDS NO PRODUCT ROW. It measures what the profile's OWN composition
+# mounts. A probe that inserted the `/work` command row would prove the row works
+# and say nothing about whether the product carries one — the G-FIX-04/05/12
+# weaker-oracle failure. This file is therefore identical before and after the
+# fix: the row that changes is in the PRESET, and the probe only measures it.
+- insert:
+    - id: verify-r4-authorization
+      name: 'D:/DSH/work/wt-r4/qualification/runners/verify-r4-authorization.mjs'

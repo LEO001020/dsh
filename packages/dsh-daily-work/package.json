@@ -7,6 +7,10 @@
   "license": "MIT",
   "main": "lib/host-plugin.js",
   "exports": {
+    "./command": {
+      "types": "./lib/command-work.d.ts",
+      "default": "./lib/command-work.js"
+    },
     "./data-host": {
       "types": "./lib/data-plugin.d.ts",
       "default": "./lib/data-plugin.js"
@@ -61,6 +65,7 @@
   "peerDependencies": {
     "@deepseek-ai/cordis": "*",
     "@deepseek-ai/dsh-agent": "*",
+    "@deepseek-ai/dsh-commands": "*",
     "@deepseek-ai/dsh-credentials": "*",
     "@deepseek-ai/dsh-storage-domain": "*",
     "@deepseek-ai/dsh-subagent": "*",
@@ -71,6 +76,7 @@
   "devDependencies": {
     "@deepseek-ai/cordis": "*",
     "@deepseek-ai/dsh-agent": "*",
+    "@deepseek-ai/dsh-commands": "*",
     "@deepseek-ai/dsh-credentials": "*",
     "@deepseek-ai/dsh-storage-domain": "*",
     "@deepseek-ai/dsh-subagent": "*",

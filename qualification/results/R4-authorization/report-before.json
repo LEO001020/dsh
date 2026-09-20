@@ -1,0 +1,78 @@
+{
+  "probe": "R4-authorization",
+  "mode": "before",
+  "measuredUnder": {
+    "worktree": "D:/DSH/work/wt-r4",
+    "dshHome": "D:/DSH/home/r4",
+    "profile": "daily",
+    "port": 12086,
+    "portReleased": true,
+    "launcher": "D:/DSH/src/dsh-src/apps/cli/lib/bin.js",
+    "presetRoots": [
+      "D:\\DSH\\src\\dsh-src\\packages\\preset\\agent-presets\\presets\\",
+      "D:/DSH/home/r4/profiles/daily/presets/",
+      "D:\\DSH\\home\\r4\\.agent-presets"
+    ]
+  },
+  "passed": 11,
+  "failed": 0,
+  "checks": [
+    {
+      "label": "the probe produced no error",
+      "ok": true,
+      "detail": "null phase=null"
+    },
+    {
+      "label": "the daily-work service is mounted",
+      "ok": true,
+      "detail": "true"
+    },
+    {
+      "label": "a real Session was created on the deployment preset",
+      "ok": true,
+      "detail": "\"session-3e152a5e-7226-4c7f-9107-1999152ade18\""
+    },
+    {
+      "label": "the Session mounted the daily-standard preset",
+      "ok": true,
+      "detail": "\"daily-standard\""
+    },
+    {
+      "label": "SESSION CREATION ALONE CREATES NO RUN",
+      "ok": true,
+      "detail": "runCountAfterSessionCreate=0"
+    },
+    {
+      "label": "the `work` tool does not advertise a create action",
+      "ok": true,
+      "detail": "[\"status\",\"submit\",\"finish\"]"
+    },
+    {
+      "label": "a raw model call naming a create action does NOT create a run",
+      "ok": true,
+      "detail": "afterSession=0 afterModelCreate=0"
+    },
+    {
+      "label": "a real settings write does not create a run",
+      "ok": true,
+      "detail": "afterSession=0 afterSettings=0 settingsError=null"
+    },
+    {
+      "label": "G-SEAM-31 BEFORE: the `/work` command is NOT registered on the composed profile",
+      "ok": true,
+      "detail": "false"
+    },
+    {
+      "label": "G-SEAM-31 BEFORE: no run exists after every attempted user action",
+      "ok": true,
+      "detail": "0"
+    },
+    {
+      "label": "G-SEAM-31 BEFORE: the model-facing `work` tool cannot resolve a run",
+      "ok": true,
+      "detail": "isError=true error=\"this session has no active run; a run is created by user authorization\""
+    }
+  ],
+  "failures": [],
+  "verdict": "PASS"
+}

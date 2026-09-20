@@ -47,8 +47,15 @@ import {
 import { acquireHomeLock, type HeldHomeLock } from './homelock.ts'
 import {
   installDailyWorkTargetSetting,
+  MAX_TARGET_ACTIVE_CHILDREN,
+  MIN_TARGET_ACTIVE_CHILDREN,
   type TargetSettingHandle,
 } from './target-setting.ts'
+import {
+  formatAuthorizationRef,
+  parseAuthorizationRef,
+  type WorkAuthorizationEvidence,
+} from './authorization.ts'
 import { createContinuableLaunchPort } from './launch-port.ts'
 import {
   applySpend,
@@ -742,6 +749,295 @@ export class WorkService extends Service {
     })
     await this.runs().put(input.runId, record)
     return record
+  }
+
+  // -------------------------------------------------------------------------
+  // THE HUMAN-AUTHORIZATION DOMAIN API (V3 phase R4, defect F1 / G-SEAM-31)
+  //
+  // ONE domain operation per human intent, and every adapter is a thin caller.
+  // `createRun` above is the RECORD-WRITE primitive; the four methods below are
+  // the product's authorization surface. The distinction is load-bearing: a
+  // `createRun` caller that is not one of these is a caller that fabricated an
+  // authorization edge, which is exactly what G-SEAM-31 refuses to do.
+  //
+  // WHY THE RUN ID IS DERIVED RATHER THAN SUPPLIED. `/work start` retried after
+  // a crash must OBSERVE the existing run, not mint a second one (V3 I2). A
+  // caller-supplied id would let two different retries name two different runs
+  // for the same authorization; a derived id makes the run's identity a FUNCTION
+  // of the authorizing action, so a second call derives the SAME key.
+  //
+  // AND THE DERIVED ID IS ONLY HALF THE ANSWER — this was measured, not reasoned.
+  // The first version of this API checked `findRunForSession` and then called
+  // `createRun`, and its comment claimed the check could not race because the id
+  // was derived. That was FALSE: `createRun` ends in `this.runs().put(runId,
+  // record)`, and `put` is an unconditional insert-or-overwrite
+  // (`storage-domain/src/domain.ts:307-313`). Two concurrent `/work start` calls
+  // for one session BOTH reported `Run authorized`, and the second write left the
+  // record carrying the SECOND command's id. Driving the two writes directly
+  // measured the destructive half: a run holding one admitted task came back with
+  // ZERO tasks after a second create at the same key. A derived id therefore makes
+  // the collision CERTAIN rather than harmless; what makes it safe is the atomic
+  // insert below, which is why both are needed together.
+  // -------------------------------------------------------------------------
+
+  /**
+   * Serialize one authorization per root session, in process, across awaits.
+   *
+   * WHY THIS IS NEEDED, AND WHY IT IS NOT A COMMENT ABOUT THE DERIVED ID.
+   * The first version of `authorizeRun` checked `findRunForSession` and then
+   * called `createRun`, and its comment claimed the check could not race because
+   * the run id was derived from the session. That claim was FALSE and was
+   * measured false: `createRun` ends in `this.runs().put(runId, record)`, and
+   * `put` is an unconditional insert-or-overwrite
+   * (`storage-domain/src/domain.ts:307-313`). Two concurrent `/work start` calls
+   * for one session both reported `Run authorized`, and the record afterwards
+   * carried the SECOND command's id. Driving the two writes at one key directly
+   * measured the destructive half: a run holding one admitted task came back with
+   * ZERO tasks. A derived id makes the collision CERTAIN; it does not make it
+   * harmless.
+   *
+   * WHY AN IN-PROCESS CHAIN RATHER THAN A DOMAIN PRIMITIVE, stated precisely
+   * because it bounds the guarantee. The public `Domain`/`KvTable` surface has no
+   * "insert only if absent": `put` always overwrites, `update` is atomic but
+   * REJECTS on a missing key, and `Domain` exposes no `enqueue`. So there is no
+   * domain primitive that can reserve a key this call is about to create. What the
+   * domain DOES provide is one serialized write chain per domain, and this chain
+   * reproduces that discipline one level up, at the granularity that matters:
+   * one root session.
+   *
+   * WHAT IT GUARANTEES: two `authorizeRun` calls for the SAME session, in this
+   * host process, cannot interleave — the second runs its existence check only
+   * after the first has finished writing. That covers the real hazard, because
+   * `WorkService` is mounted ONCE per host (`cordis.patch.yml`: "Mounted ONCE, at
+   * host level, because the run record is a host-scoped resource") and the
+   * deployment additionally refuses a second host over one store through the
+   * kernel-held home lock (`homelock.ts`, gate D-02).
+   *
+   * WHAT IT DOES NOT GUARANTEE, so a reader does not over-read it: two SEPARATE
+   * HOST PROCESSES sharing one store would still be unserialized here. That
+   * configuration is already refused by the home lock rather than by this chain,
+   * and it is recorded as unsupported rather than silently tolerated.
+   */
+  private readonly pendingAuthorization = new Map<string, Promise<unknown>>()
+
+  /**
+   * Run `body` with no other authorization for `sessionId` interleaving.
+   *
+   * The map entry is a promise the caller AWAITS rather than a lock it acquires,
+   * so a failed predecessor cannot deadlock a successor: the chain link is
+   * settled in a `finally`, and the successor awaits it with its rejection
+   * contained.
+   */
+  private async serializeAuthorization<T>(sessionId: string, body: () => Promise<T>): Promise<T> {
+    const inFlight = this.pendingAuthorization.get(sessionId)
+    if (inFlight !== undefined) {
+      // Contained: the predecessor's failure is ITS caller's to report. A
+      // successor must still get its turn, or one failed start would wedge the
+      // session's authorization path permanently.
+      await inFlight.catch(() => undefined)
+    }
+    const task = body()
+    this.pendingAuthorization.set(sessionId, task)
+    try {
+      return await task
+    } finally {
+      if (this.pendingAuthorization.get(sessionId) === task) {
+        this.pendingAuthorization.delete(sessionId)
+      }
+    }
+  }
+
+  /**
+   * Derive the run id for one authorizing action on one root session.
+   *
+   * Deterministic in (rootSessionId, action, generation): the same human action
+   * replayed after a crash names the same run. NOT deterministic in the
+   * commandId, and that is the point — a retry is a NEW command with a NEW id,
+   * and it must still land on the run the first attempt created.
+   *
+   * THE GENERATION EXISTS SO THIS NEVER OVERWRITES A DURABLE RECORD. `runs().put`
+   * replaces whatever is at the key, so a derived id that a CLOSED run already
+   * occupies would destroy that run's audit trail on the next `/work start`. The
+   * generation counts the runs this session has already discharged, so a new
+   * authorization after a close lands on a fresh key. (Nothing writes `closed`
+   * today — `grep` for it finds no writer — so the count is currently always 0.
+   * It is written anyway because the failure it prevents is a silent loss of a
+   * record, and that is not a failure to leave to a later reader's memory.)
+   */
+  private deriveRunId(rootSessionId: string, action: string): string {
+    let generation = 0
+    for (const runId of this.listRunIds()) {
+      const record = this.getRun(runId)
+      if (record?.rootSessionId === rootSessionId && record.phase === 'closed') generation += 1
+    }
+    const base = `run-${action}-${rootSessionId}`
+    return generation === 0 ? base : `${base}-g${String(generation + 1)}`
+  }
+
+  /**
+   * The run a root session already owns, if any.
+   *
+   * Read from the service, which is the authority on which runs exist. A run in
+   * a terminal phase is NOT returned: `closed` means the user's authorization
+   * has been discharged, so a later `start` is a new authorization rather than a
+   * duplicate of an old one.
+   */
+  findRunForSession(rootSessionId: string): RunRecord | undefined {
+    this.assertOpen()
+    for (const runId of this.listRunIds()) {
+      const record = this.getRun(runId)
+      if (record === undefined) continue
+      if (record.rootSessionId !== rootSessionId) continue
+      if (record.phase === 'closed') continue
+      return record
+    }
+    return undefined
+  }
+
+  /**
+   * Authorize a run for one exact live root Agent — the ONE product entry point.
+   *
+   * Idempotent in the sense V3 I2 requires: if the root already has a run that is
+   * not `closed`, this OBSERVES it and returns it with `created: false` rather
+   * than creating a duplicate. A retry after a crash between the record write and
+   * `command/done` therefore lands on the existing run, which is the behaviour the
+   * requirement names.
+   *
+   * WHERE THE IDEMPOTENCE IS ENFORCED, stated exactly because an earlier version
+   * of this comment claimed a property the code did not have. It is enforced by
+   * the existence check BELOW, and that check is made safe by running the whole
+   * check-then-create sequence under `serializeAuthorization`, so a second
+   * concurrent call for the same session cannot enter the check until the first has
+   * written. It is NOT enforced by the derived run id: the derived id only makes
+   * two racing calls name the SAME key, which turns a silent duplicate into a
+   * certain overwrite rather than preventing either. The two are needed together —
+   * the id makes the collision detectable and the serializer makes it impossible.
+   *
+   * WHAT REMAINS TRUE WITHOUT THE SERIALIZER, so the guarantee is not overstated:
+   * a SEQUENTIAL retry (the crash case the requirement names) is already correct,
+   * because it reads the run the first attempt wrote. The serializer closes the
+   * CONCURRENT case, which is the one a check-then-act cannot close alone.
+   *
+   * AUTHORITY IS BOUND TO THE LIVE OBJECT, not to a session-id string, for the
+   * reason `createRun`'s own doc gives: a resume publishes a NEW Agent under the
+   * SAME id, and authority must follow the object (INV-L3). The caller supplies
+   * the Agent it holds; `createRun` records that object's session identity and
+   * binds the production launch port to it.
+   *
+   * @param input.root - the exact live root Agent this run belongs to.
+   * @param input.evidence - what authorized it; stored as the durable ref.
+   * @param input.targetChildren - the target N. Bounded to [1, 30] because this
+   *   is the AUTHORIZATION edge, and a target above the deployment's hard child
+   *   capacity would be a promise the gate cannot keep. `createRun`'s own
+   *   unbounded path is unchanged for callers that are not this edge.
+   * @returns the run record plus whether this call created it.
+   */
+  async authorizeRun(input: {
+    root: Agent
+    evidence: WorkAuthorizationEvidence
+    targetChildren?: number
+    restartResumeAuthorized?: boolean
+    now?: string
+  }): Promise<{ readonly record: RunRecord; readonly created: boolean }> {
+    this.assertOpen()
+    const rootSessionId = input.root.session.header.id
+
+    // Validate BEFORE taking the serializer: a malformed request must not occupy
+    // the session's authorization slot while it throws.
+    const target = input.targetChildren
+    if (target !== undefined) {
+      if (!Number.isSafeInteger(target)
+        || target < MIN_TARGET_ACTIVE_CHILDREN
+        || target > MAX_TARGET_ACTIVE_CHILDREN) {
+        throw new Error(
+          `dailyWork: an authorized target must be a whole number in `
+          + `[${MIN_TARGET_ACTIVE_CHILDREN}, ${MAX_TARGET_ACTIVE_CHILDREN}]; got ${String(target)}. `
+          + `${MAX_TARGET_ACTIVE_CHILDREN} is the deployment's hard child capacity, so a larger target `
+          + 'is a refusal rather than a bigger budget.',
+        )
+      }
+    }
+
+    // THE CHECK-AND-CREATE RUNS UNDER THE SERIALIZER, and that placement IS the
+    // fix rather than a detail of it. With the check outside, two concurrent
+    // calls both observe no run, both proceed, and the second `put` overwrites the
+    // first — measured: both reported `Run authorized`, and a run holding one
+    // admitted task came back with zero tasks.
+    return await this.serializeAuthorization(rootSessionId, async () => {
+      const existing = this.findRunForSession(rootSessionId)
+      if (existing !== undefined) return { record: existing, created: false }
+
+      const record = await this.createRun({
+        runId: this.deriveRunId(rootSessionId, input.evidence.action),
+        root: input.root,
+        authorizationRef: formatAuthorizationRef(input.evidence),
+        ...target === undefined ? {} : { targetChildren: target },
+        ...input.restartResumeAuthorized === undefined
+          ? {} : { restartResumeAuthorized: input.restartResumeAuthorized },
+        ...input.now === undefined ? {} : { now: input.now },
+      })
+      return { record, created: true }
+    })
+  }
+
+  /**
+   * Change one run's sustained target — the domain operation behind `/work target`.
+   *
+   * Delegates to `setTargetChildren`, which already owns the semantics the plan
+   * prohibits changing (no cancellation, no re-budgeting of running tasks, no
+   * touching the ceiling). This wrapper exists only so the command adapter has
+   * ONE named domain call rather than reaching into a record-level method whose
+   * contract is broader than the adapter needs.
+   */
+  async authorizeSetTarget(runId: string, target: number): Promise<RunRecord> {
+    if (!Number.isSafeInteger(target)
+      || target < MIN_TARGET_ACTIVE_CHILDREN
+      || target > MAX_TARGET_ACTIVE_CHILDREN) {
+      throw new Error(
+        `dailyWork: a target must be a whole number in `
+        + `[${MIN_TARGET_ACTIVE_CHILDREN}, ${MAX_TARGET_ACTIVE_CHILDREN}]; got ${String(target)}`,
+      )
+    }
+    return await this.setTargetChildren(runId, target)
+  }
+
+  /**
+   * The domain operation behind `/work stop`.
+   *
+   * WHAT IT DOES. Moves the run to `paused` (a user stop outranks top-up,
+   * INV-G4) and records the reason on the outbox so a reader sees WHY. It does
+   * NOT drain, and it deliberately does NOT release any child slot.
+   *
+   * WHY STOP MUST NOT FREE CAPACITY. A stop stops NEW admissions; the children
+   * already running still hold real slots in the host ledger, because they are
+   * still running and still spending. Releasing their slots here would let a
+   * subsequent run admit replacements on top of live children, which would
+   * exceed the hard capacity of 30 — the over-admission class this project
+   * records as G-SEAM-45. Slots are released by the children SETTLING (the
+   * `agent/disposed` listener in `capacity.ts`), never by a stop.
+   */
+  async authorizeStop(runId: string, reason: string, now?: string): Promise<RunRecord> {
+    return await this.pause(runId, reason, now)
+  }
+
+  /**
+   * The domain operation behind `/work status`: a pure read, no mutation.
+   *
+   * Returns the record-derived counts plus the authorization evidence, so a
+   * status surface can show WHAT authorized the run without a second call and
+   * without re-deriving the ref's meaning in a UI.
+   */
+  authorizeReadStatus(runId: string): {
+    readonly record: RunRecord
+    readonly counts: Counts
+    readonly evidence: WorkAuthorizationEvidence | undefined
+  } {
+    const record = this.requireRun(runId)
+    return {
+      record,
+      counts: this.counts(runId),
+      evidence: parseAuthorizationRef(record.authorizationRef),
+    }
   }
 
   /** Read a run. Returns the stored object; callers must treat it as immutable. */

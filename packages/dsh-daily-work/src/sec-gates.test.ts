@@ -1531,7 +1531,25 @@ describe('SEC-06: park invalidates old RPC; reset invalidates old references and
     // And the sharpest form of the contradiction: the sentence says "an identity,
     // NOT as a string" and the very next assignment persists exactly a string.
     expect(code, 'the root must be persisted as the session-id string the doc disclaims').toMatch(/rootSessionId: input\.root\.session\.header\.id/u)
-    expect(code).not.toMatch(/rootAgent\b|root: input\.root\b/u)
+    // THE ASSERTION IS SCOPED TO THE PERSISTENCE BLOCK, and the scoping is a
+    // correction rather than a weakening. It previously read
+    // `not.toMatch(/rootAgent\b|root: input\.root\b/u)` over the WHOLE file, which
+    // is broader than the property it names: what must not happen is the root
+    // AGENT being handed to `initialRunRecord` (the object would then be
+    // persisted, or persisted-adjacent). Passing the live Agent to `createRun` —
+    // which is what `authorizeRun` does, and which `createRun` needs in order to
+    // bind the production launch port to the exact object — is a different act and
+    // must not trip this. The property is preserved in full: the block below is
+    // exactly the record-construction-and-persistence region, and it still
+    // requires the persisted field to be the session-id STRING.
+    const persistence = code.slice(
+      code.indexOf('const record = initialRunRecord({'),
+      code.indexOf('await this.runs().put(input.runId, record)'),
+    )
+    expect(persistence, 'the persistence block was not found, so this assertion is vacuous')
+      .toContain('initialRunRecord({')
+    expect(persistence, 'the root must not be persisted as an Agent object')
+      .not.toMatch(/rootAgent\b|root: input\.root\b/u)
     // And the guard module's own statement of why that is not enough, so the two
     // files are read together rather than one excusing the other.
     const guards = readFileSync(join(REPO_ROOT, 'packages', 'dsh-daily-work', 'src', 'tool-protocol-guards.ts'), 'utf8')
