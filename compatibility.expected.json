@@ -1,0 +1,340 @@
+{
+  "schema_version": 1,
+  "kind": "DSH_COMPATIBILITY_REQUIREMENTS_NOT_A_BUILD_RECORD",
+  "_what_this_file_is": [
+    "The REQUIREMENTS half of V5 section 14's identity split. It answers 'what must a",
+    "deployment be for this qualification to apply to it' -- and nothing about any",
+    "particular build.",
+    "",
+    "IT CONTAINS NO DIGEST OF ANY FILE IN THIS REPOSITORY. That is the property the",
+    "split exists for, and it is checked mechanically by",
+    "qualification/runners/build-manifest.py --check-expected. Before this file, the",
+    "identity was a hash over `deployment.inputs`, and five of those inputs were",
+    "digests of files in the SAME tree that recorded them. So editing a profile, a",
+    "preset, a spec or a graph dump moved the identity, adopting the move was another",
+    "edit, and the identity has moved four times in one wave. A correct change moving",
+    "the identity is the definition of the defect: S1's `includeShippedRoot: false`",
+    "is authorized by the round-2 brief, and it moved `host_profile_digest` anyway.",
+    "",
+    "WHAT REPLACES THE BUILD-DERIVED HALF. A generated BuildManifest, stored as a",
+    "qualification/release artifact rather than a source input of the candidate it",
+    "describes:",
+    "",
+    "    RuntimeDeploymentIdentity     = H(canonical BuildManifest)",
+    "    QualificationContractIdentity = H(RuntimeDeploymentIdentity",
+    "                                      + acceptance_definition_digest",
+    "                                      + release_runner_digests)",
+    "",
+    "and result/evidence files bind to QualificationContractIdentity. See",
+    "qualification/results/P14-manifest/STEP1-SOURCE-MAP.md for the input-by-input",
+    "map of what moved where.",
+    "",
+    "WHY THIS FILE IS NOT JUST 'THE LOCK, MINUS THE DIGESTS'. `deployment.inputs` also",
+    "carried fields that are neither a requirement nor a build fact -- a redacted",
+    "argument string, a trust-model name, an authority-policy sentence. Those are",
+    "carried here where they are genuinely a REQUIREMENT on any deployment, and are",
+    "recorded as dropped where they are not. Nothing was silently deleted: every input",
+    "of the old identity is accounted for in `lineage_of_deployment_inputs`."
+  ],
+
+  "upstream": {
+    "repository": "deepseek-ai/deepseek-harness",
+    "commit": "ddefc45fbc7f8e46dd73185e68295696d1297887",
+    "release": "0.1.6-alpha.2",
+    "_why_a_commit_and_a_release": [
+      "Both, because they answer different questions and this project has been bitten",
+      "by conflating them. The COMMIT is what ID-06 checks (`git rev-parse HEAD` inside",
+      "the pinned checkout must equal it). The RELEASE is the human-readable name a",
+      "reader needs to know which upstream tag the commit belongs to. A tag can be",
+      "moved; a commit cannot, so the commit is the requirement and the release is",
+      "annotation.",
+      "",
+      "`upstream_patchset_sha256` from the old lock is NOT carried: its value was the",
+      "literal string 'none-no-upstream-patches', which is a statement that no patchset",
+      "exists rather than a digest of one. That belongs in `patchset` below as a",
+      "requirement (no patches), not as a hash field."
+    ],
+    "patchset": {
+      "patches_required": 0,
+      "statement": "This deployment applies NO patches to the pinned checkout. The checkout is read-only and its working tree must be clean; a modified checkout fails ID-06.",
+      "measured_2026_09_20": {
+        "checkout": "D:/DSH/src/dsh-src",
+        "head": "ddefc45fbc7f8e46dd73185e68295696d1297887",
+        "head_matches_requirement": true,
+        "porcelain_nonempty": true,
+        "porcelain_rows": [
+          " M packages/deliverables/workspace-changes/src/index.ts"
+        ],
+        "verdict": "DIRTY — one tracked file is modified in the pinned checkout. This is a LIVE FAILURE of the requirement above, recorded here rather than smoothed over. It was observed while generating this file and is NOT caused by this slice; it is reported to the root agent. The diff is a line-ending-only change (`git diff` reports 'CRLF will be replaced by LF' and no content hunk).",
+        "honest_scope": "Whether the dirty byte is a line-ending artifact or a real content edit was not decided here. What IS decided is that ID-06's oracle ('any tracked modification ... is NOT PASS') is currently FALSE for this checkout, whatever the cause."
+      }
+    }
+  },
+
+  "supported_toolchain": {
+    "node": {
+      "requirement": "^22.19.0 || >=24.0.0",
+      "source_of_requirement": "D:/DSH/src/dsh-src/package.json -> engines.node (the pinned upstream's own declaration), restated identically by this repository's package.json -> engines.node",
+      "_why_restated": "The launcher runs under this repository's Node, so both the upstream's range and this repository's range must hold. They are currently identical; that is a coincidence of the pin and is NOT assumed — a divergence is a real incompatibility and this file records both so a checker can compare them rather than trust one."
+    },
+    "pnpm": {
+      "requirement": "11.7.0",
+      "source_of_requirement": "D:/DSH/src/dsh-src/package.json -> packageManager ('pnpm@11.7.0'), pinned via corepack",
+      "_why_exact_and_not_a_range": "The old lock recorded `package_manager_version: 11.7.0` as a literal with no stated range, and the gates cite it exactly (A02: 'corepack pinned pnpm 11.7.0; the global 11.24.0 was not used'). A range here would be a WEAKER requirement than the one the gates were measured under, which would let a differently-resolved lockfile pass a gate that was never run against it."
+    },
+    "python": {
+      "requirement": ">=3.10",
+      "source_of_requirement": "NOT DERIVED FROM A DECLARATION — see _why_this_is_the_weakest_requirement_in_this_file",
+      "_why_this_is_the_weakest_requirement_in_this_file": [
+        "MEASURED, and recorded as a gap rather than dressed up. There is NO declared",
+        "Python version requirement anywhere in this repository or in the pinned",
+        "checkout that the kernel must satisfy. The version was chosen because it is the",
+        "oldest Python the installed jupyter stack supports and the measured interpreter",
+        "is 3.14.3, so >=3.10 cannot reject the deployment this qualification describes.",
+        "",
+        "The HONEST statement is therefore: this requirement is NOT the reason the",
+        "deployment works, and it does not certify that any Python >=3.10 works. What",
+        "certifies the deployment's Python is the ENVIRONMENT MANIFEST DIGEST in the",
+        "generated BuildManifest (V5 section 14: 'Python environment manifest digest'),",
+        "which binds the actual interpreter realpath, implementation, version and the",
+        "ipython/ipykernel/jupyter_client/pyzmq distribution versions. A deployment",
+        "whose Python is outside the measured set fails on the manifest digest, not here.",
+        "",
+        "A future slice should replace this with a requirement DERIVED from the code (a",
+        "`python_requires` in a checked-in requirements file, or a version assertion in",
+        "the broker). Until then it is a named gap, not a claim."
+      ],
+      "measured_2026_09_20": {
+        "sys_executable": "C:/Users/hzq00/AppData/Local/Programs/Python/Python314/python.exe",
+        "version": "3.14.3",
+        "implementation": "CPython",
+        "distributions": {
+          "ipython": "9.16.1",
+          "ipykernel": "7.3.0",
+          "jupyter-client": "8.10.0",
+          "pyzmq": "27.2.0"
+        },
+        "_note": "These are the versions this qualification was measured against. They are ANNOTATION here, not the requirement: the requirement on the Python stack is the manifest digest in the generated BuildManifest, which is computed by probing the interpreter rather than read from a file. Repeating them here would create a second place to keep in sync, which is the defect this whole file exists to remove."
+      }
+    }
+  },
+
+  "product_contract": {
+    "version": "trusted-local-v1",
+    "name": "Windows trusted-local, no sandbox",
+    "authority_boundary": "the OS user account",
+    "statement": "The OS user account is the execution authority boundary. No sandbox, no WSL, no Linux VM, no SSH execution world, no AppContainer, no second execution OS. Every process this deployment starts -- including the persistent IPython kernel -- runs as the invoking OS user with that user's full filesystem, network and process visibility. This deployment claims NO confinement of reads, writes, network or process visibility.",
+    "hard_child_capacity": 30,
+    "_why_the_cap_is_here": [
+      "The hard continuable-child cap is a CONTRACT constant, not a build fact: V5's",
+      "product contract fixes it at 30, and `HARD_CHILD_CAPACITY = 30`",
+      "(packages/dsh-daily-work/src/capacity.ts:89) is the code's expression of it.",
+      "The requirement belongs here; the MEASURED value (and whether the mounted",
+      "subagent row's maxActiveSubagents agrees with it) belongs in the manifest,",
+      "because those are facts about one build.",
+      "",
+      "MEASURED DIVERGENCE, recorded rather than smoothed: the mounted row reads",
+      "`maxActiveSubagents: 10`",
+      "(profiles/daily-candidate/cordis.patch.yml:37, confirmed from a live boot).",
+      "That is NOT a violation -- V3 section 1 item 7 makes 10 the user-selected target N",
+      "and 30 the HOST cap the project enforces itself in `capacity.ts`, and the profile",
+      "comment says so explicitly ('The user's chosen N'). A reader must not read '10'",
+      "as the cap being weakened: the project's own gate is what enforces 30 across",
+      "roots, because DSH's per-row `maxActiveSubagents` is per-ROOT and two roots would",
+      "otherwise get 2 x N. See capacity.ts:5-13."
+    ],
+    "target_children_range": "integer 1..30",
+    "delegation_depth": 1,
+    "model_execution_surface": "persistent real IPython (the model-facing `ipython` tool)",
+    "shell_surfaces_absent_from_model": ["pwsh", "bash"],
+    "presentation_mode_requirement": "native",
+    "_why_presentation_mode_is_a_requirement": [
+      "The product contract says `dsh.call` is the exact ToolRuntime lane for small",
+      "semantic tool calls, reached from Python. That is only true if the registry",
+      "presents tools NATIVELY: under `ptc` the model may name only `run_code`, and",
+      "under `both` it may name both. So the presentation mode decides whether the",
+      "contract's execution surface exists at all, which makes it a REQUIREMENT.",
+      "",
+      "The MEASURED mode is a manifest fact. It is currently native -- measured, not",
+      "read: the live catalog carries 27 tools with `run_code` ABSENT, which is what",
+      "`native` produces and what `ptc`/`both` cannot produce.",
+      "(packages/dsh-daily-work/src/../profiles/daily-candidate/presets/daily-standard/agent.cordis.yml",
+      "records the same conclusion from the profile side.)"
+    ],
+    "forbidden_mechanisms": [
+      "a second AgentLoop",
+      "a Planner/Executor/Reviewer state machine",
+      "standing semantic roles",
+      "a global semantic task DAG",
+      "an autonomous memory controller",
+      "a second conversation database",
+      "a second generic tool registry",
+      "a second generic workflow engine",
+      "a PythonToolRegistry",
+      "a second socket family",
+      "a second cell authority",
+      "a second model-facing child-creation path outside the WorkService run/target/budget queue"
+    ],
+    "_forbidden_mechanisms_note": "A list of things that must NOT be present. It is a requirement, and it is falsifiable from the generated manifest's resolved graph and tool catalog rather than from this file."
+  },
+
+  "acceptance_definition": {
+    "definition_version": "trusted-local-v2.definition/1",
+    "contract_id": "trusted-local-v2",
+    "path": "qualification/specs/acceptance-spec.trusted-local-v2.definition.json",
+    "case_count": 110,
+    "family_prefixes": ["ID", "CMP", "IPY", "BR", "DATA", "REC", "FS", "CAP", "VER", "OBS", "RES"],
+    "verdict_vocabulary": ["PASS", "FAIL", "BLOCKED_EXTERNAL", "NOT_RUN", "NOT_APPLICABLE", "FLAKY"],
+    "_why_the_DIGEST_IS_NOT_HERE": [
+      "The definition's sha256 is an input of QualificationContractIdentity, NOT of this",
+      "file, and it is deliberately not written down here. Writing it here would put a",
+      "digest of a file in this repository into a checked-in requirements file, which is",
+      "exactly the self-reference being removed: editing one oracle would move the",
+      "requirements file. The generator computes it and puts it in the manifest's",
+      "contract half.",
+      "",
+      "The case COUNT and the family prefixes are here because they are requirements a",
+      "reader can check without a hash: a definition carrying 109 cases would be v1.",
+      "MEASURED: 110 cases, 11 families."
+    ],
+    "v1_is_frozen_and_not_superseded_on_disk": {
+      "frozen_snapshot": "qualification/specs/frozen/acceptance-spec.trusted-local-v1.as-authored.json",
+      "sha256": "e5b6a1d2481f39c52a6012ec6b48a72e4618ff713f1927b6b0d6827a24b10ce7",
+      "live_v1_ledger": "qualification/specs/acceptance-spec.trusted-local-v1.json",
+      "status_tally_at_2026_09_20": {"PASS": 95, "FAIL": 13, "BLOCKED_EXTERNAL": 1, "total": 109},
+      "_why_a_v1_DIGEST_IS_ALLOWED_HERE_WHEN_A_v2_ONE_IS_NOT": [
+        "The frozen as-authored snapshot is a HISTORICAL PIN, not a live input. It is",
+        "never edited -- that is what 'frozen' means, and verify-freeze.py exists to check",
+        "it. A digest of a file that cannot change is a constant, so it creates no",
+        "self-reference.",
+        "",
+        "It is recorded because the old identity carried it",
+        "(`trusted_local_acceptance_spec_sha256`) and dropping it would silently discard a",
+        "pin that ID-04 and the doctor's live-ledger shape check both consume. Carrying it",
+        "here keeps that check possible while removing it from the build hash.",
+        "",
+        "The LIVE v1 ledger is deliberately NOT digested anywhere: it is the evidence",
+        "ledger, so filing a verdict changes its bytes. That conflation is the reason",
+        "qualification-identity.py exists; it is not recreated here."
+      ]
+    },
+    "no_verdict_migrates": "Zero v1 case ids may carry any status other than NOT_RUN in a v2 ledger. A PASS that arrives without its own evidence file under the current contract identity is NOT PASS."
+  },
+
+  "deployment_requirements": {
+    "launcher": {
+      "requirement": "the QUALIFIED launcher is the BUILT entry point (apps/cli/lib/bin.js), not the source entry point",
+      "why": "G-ENV-06, reproduced 3/3: the built launcher completes a tool round trip; the source launcher dies at a '.prepare' access on an undefined value BEFORE the tool executes. A run whose only success is --help is not a run.",
+      "path_is_a_machine_fact_not_a_requirement": true,
+      "_note": "The launcher's ABSOLUTE PATH is a fact about this machine and belongs in the manifest. What belongs here is that it must be the BUILT artifact, and that its sha256 must equal the manifest's artifact_sha256."
+    },
+    "profile": {
+      "requirement": "one host profile, `daily`, installed under $DSH_HOME/profiles/, composed from profiles/daily-candidate",
+      "single_mode": "exactly ONE selectable agent preset (ours) is exposed; the pinned checkout's shipped presets are NOT exposed",
+      "why_single_mode": "Round-2 brief section 1: the authorization is to stop EXPOSING the other modes from our composition. The pinned checkout is NOT edited -- its code is untouched and that is separately gated (ID-06). Removing the exposure is what this requirement means, and it is checked from the manifest's resolved graph (agent-presets row: includeShippedRoot false) and from the measured preset roster."
+    },
+    "checkout": {
+      "requirement": "the pinned checkout at D:/DSH/src/dsh-src is READ-ONLY and clean",
+      "why": "Editing it would trade one FAIL for a worse one and make the whole qualification meaningless. Its location is a machine-layout fact (a manifest field); its cleanliness is a requirement (ID-06)."
+    },
+    "isolation": {
+      "requirement": "NONE. There is no isolation domain to declare.",
+      "why": "V3 makes the OS user account the authority boundary. The old lock carried `isolation_image_or_policy_digest` with the literal value 'none-trusted-local-os-user-account-is-the-execution-authority-boundary', which is a sentence, not a digest. It is recorded as a requirement statement here rather than as a hash field that could never vary."
+    },
+    "live_provider": {
+      "requirement": "NOT required, and NOT authorized",
+      "authorization_flag": "runtime_authorization.live_provider_budget_authorized",
+      "authorization_value": false,
+      "_note": "Every run that consumes provider budget is out of scope. Cases that need one are BLOCKED_EXTERNAL, never PASS. A key being present would not authorize paid evaluation."
+    }
+  },
+
+  "lineage_of_deployment_inputs": {
+    "_why_this_table_exists": [
+      "Every input of the OLD self-referential identity, and where it went. Nothing was",
+      "deleted silently: a reader can see for each field whether it is now a requirement",
+      "here, a build fact in the generated manifest, or dropped with a reason. This is",
+      "the audit trail for the split, and it is the thing that makes 'we removed the",
+      "self-reference' falsifiable rather than asserted."
+    ],
+    "to_requirements_here": [
+      "upstream_repository -> upstream.repository",
+      "upstream_commit -> upstream.commit",
+      "upstream_patchset_sha256 -> upstream.patchset (value was a sentence, not a digest)",
+      "node_version -> supported_toolchain.node",
+      "package_manager_version -> supported_toolchain.pnpm",
+      "isolation_image_or_policy_digest -> deployment_requirements.isolation (value was a sentence, not a digest)",
+      "os_and_architecture -> supported_toolchain (as a platform requirement; the measured value is a manifest fact)",
+      "authority_policy_digest -> product_contract (value was the sentence 'user-authorizes-n-model-cannot-widen')",
+      "trust_model / trust_model_statement -> product_contract.name / .statement",
+      "trusted_local_acceptance_spec_sha256 -> acceptance_definition.v1_is_frozen_and_not_superseded_on_disk.sha256 (frozen, so a constant)",
+      "agent_preset_id -> deployment_requirements.profile (the preset ID is a requirement; its digest is a build fact)",
+      "data_schema_version -> deployment_requirements (the storage-domain schema version the deployment must speak)",
+      "request_accounting_policy_digest -> deployment_requirements (value was the sentence 'reserve-before-launch-unknown-holds')",
+      "enabled_conditional_gate_ids -> acceptance_definition (empty list means no conditional capability is enabled; that is a scope statement)"
+    ],
+    "to_generated_manifest": [
+      "artifact_sha256 -> BuildManifest.built_launcher.sha256",
+      "launcher_realpath -> BuildManifest.built_launcher.path",
+      "dependency_lock_sha256 -> BuildManifest.lockfile.digest",
+      "host_profile_digest -> BuildManifest.profile.digest",
+      "agent_preset_digest -> BuildManifest.agent_preset.digest",
+      "resolved_plugin_graph_digest -> BuildManifest.resolved_plugin_graph (and this is the field whose basis is FIXED: the old value was a pre-F3 DUMP FILE that no tool checked, and the new value is observed from a live boot with realpaths)",
+      "model_and_provider_capabilities_digest -> BuildManifest.model_and_provider_capabilities (value was 'no-live-provider-authorized'; the manifest records the measured route and that no live provider was used)",
+      "acceptance_spec_sha256 -> NOT carried. Its value pinned the OLD 112-case spec qualification/specs/acceptance-spec.json, which is not the v2 definition and is not the v1 trusted-local ledger either. It was a historical input for a superseded identity; re-pinning a retired spec in a live requirements file would make this file stale by design. Recorded as DROPPED WITH REASON, not silently."
+    ],
+    "dropped_with_reason": [
+      {
+        "input": "launcher_args_redacted",
+        "value": "--profile daily-candidate",
+        "reason": "A redacted command line, not a requirement and not a build fact. It also names the OLD profile (`daily-candidate`); the installed profile name is `daily` and the profile SOURCE directory is `profiles/daily-candidate`, so carrying this string forward would preserve a name that reads as current and is not. The launcher's arguments are a manifest fact when a run is recorded, and belong in that run's record."
+      },
+      {
+        "input": "native_binary_digests",
+        "value": "none-no-native-addon-built",
+        "reason": "A statement that no native addon exists. It is recorded here in the manifest lineage rather than as a live requirement, because 'no native addon' is a fact about a build: a future build that DID compile one must not inherit this sentence. The manifest records what the build produced, including 'none' when that is measured."
+      }
+    ]
+  },
+
+  "self_reference_audit": {
+    "_why": [
+      "The one property this file must have, stated so it can be checked rather than",
+      "believed: NO field in this file is a digest of a file in this repository, EXCEPT",
+      "the frozen v1 snapshot pin which is a constant by construction.",
+      "",
+      "This is checked by `python qualification/runners/build-manifest.py --check-expected`,",
+      "which walks this file for any string that looks like a sha256 and refuses unless it",
+      "is in the allowlist below with a reason."
+    ],
+    "allowed_digest_values": [
+      {
+        "path": "acceptance_definition.v1_is_frozen_and_not_superseded_on_disk.sha256",
+        "value": "e5b6a1d2481f39c52a6012ec6b48a72e4618ff713f1927b6b0d6827a24b10ce7",
+        "reason": "the FROZEN as-authored v1 snapshot. `qualification/specs/frozen/verify-freeze.py` exists to prove it does not change, so its digest is a constant and creates no self-reference."
+      }
+    ],
+    "consequence": "Editing any profile, preset, spec, graph dump, package source or runner in this repository does NOT move this file. That is what makes it usable as a requirement a build is checked AGAINST rather than a record of a build."
+  },
+
+  "verification": {
+    "checked_by": "qualification/runners/build-manifest.py --check-expected",
+    "checker_checks": [
+      "this file is valid JSON and carries schema_version 1",
+      "no digest appears outside self_reference_audit.allowed_digest_values",
+      "the pinned checkout's HEAD equals upstream.commit (ID-06's requirement half)",
+      "the pinned checkout's working tree is clean (ID-06's requirement half)",
+      "the running Node satisfies supported_toolchain.node",
+      "the running pnpm satisfies supported_toolchain.pnpm",
+      "the running Python satisfies supported_toolchain.python",
+      "the acceptance definition at acceptance_definition.path carries the declared case count and family prefixes",
+      "the frozen v1 snapshot hashes to the recorded sha256"
+    ],
+    "exit_codes": {
+      "0": "every requirement holds on this machine",
+      "1": "at least one requirement is violated (this is a REAL finding, not staleness)",
+      "2": "the file or the invocation is unusable"
+    },
+    "what_a_green_run_does_NOT_mean": "It means the machine and the definition satisfy the requirements. It says NOTHING about whether the deployment works: that is the manifest's measured half plus the acceptance ledger. A requirements file is not a qualification."
+  }
+}
