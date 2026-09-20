@@ -1,0 +1,104 @@
+{
+  "probe": "R8 AFTER — the DATA-09 split, measured on the changed tree",
+  "identity": {
+    "worktree": "D:/DSH/work/wt-r8",
+    "branch": "wt/r8",
+    "measuredFrom": "packages/dsh-daily-work/src (TS source, imported through tsx)",
+    "pairedWith": "BEFORE-data09.json in this directory"
+  },
+  "observationSchemaVersion": 2,
+  "closedSet": [
+    "provider-acquisition",
+    "native-acquisition",
+    "transform",
+    "retention"
+  ],
+  "closedSetSize": 4,
+  "coverageVocabulary": [
+    "provider-acquisition",
+    "native-acquisition",
+    "transform",
+    "retention"
+  ],
+  "coverageMatchesGapStages": true,
+  "producerCounts": {
+    "provider-acquisition": 1,
+    "native-acquisition": 1,
+    "transform": 2,
+    "retention": 3,
+    "transport": 0,
+    "model-projection": 0
+  },
+  "producerEvidence": {
+    "provider-acquisition": [
+      "web-provenance.ts:355"
+    ],
+    "native-acquisition": [
+      "artifacts.ts:1098"
+    ],
+    "transform": [
+      "web-provenance.ts:500",
+      "web-provenance.ts:516"
+    ],
+    "retention": [
+      "artifacts.ts:1051",
+      "artifacts.ts:1154",
+      "artifacts.ts:1176"
+    ],
+    "transport": [],
+    "model-projection": []
+  },
+  "stagesWithNoProducer": [],
+  "stagesWithProducer": [
+    "provider-acquisition",
+    "native-acquisition",
+    "transform",
+    "retention"
+  ],
+  "producerCount": 4,
+  "removedStages": {
+    "transport": {
+      "stillAGapStage": false,
+      "gapProducers": [],
+      "whereItWent": "a refusal with a stable FRAME_TOO_LARGE code and a count; a failed transport is a failed OPERATION, and an over-limit frame is rejected before any successful value exists"
+    },
+    "model-projection": {
+      "stillAGapStage": false,
+      "gapProducers": [],
+      "whereItWent": "a ProjectionManifest — a sibling of `acquisition`, not a member of its gap list"
+    }
+  },
+  "projectionManifest": {
+    "keys": [
+      "omittedBytes",
+      "projectionReason",
+      "recoverableRef",
+      "selectedBytes",
+      "sourceRef"
+    ],
+    "hasStage": false,
+    "hasRecovery": false,
+    "selectedBytes": 2048,
+    "omittedBytes": 31455232,
+    "recoverableRef": "artifact:sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "projectionReason": "the model request budget allows a bounded preview of the artifact",
+    "withheld": "partial",
+    "artifactBytes": 31457280,
+    "note": "a 30 MiB artifact projected to 2 KiB is recorded as a manifest, and is NOT an acquisition gap"
+  },
+  "unknownTotalProjection": {
+    "omittedBytes": null,
+    "withheld": "unknown",
+    "note": "an unmeasured total leaves the omitted count UNKNOWN rather than fabricating a 0 that would assert completeness"
+  },
+  "schemaVersionRefusal": {
+    "measured": {
+      "name": "ObservationError",
+      "code": "observation-schema-version-unsupported",
+      "message": "stored observation descriptor declares schema version 1, but this build reads 2. This is a CONVERSION, not a corruption: a version-1 descriptor recorded a deliberate model projection as an acquisition gap, which DATA-09 no longer expresses. Re-read it under the version it was written with, or convert it; do not reinterpret it."
+    },
+    "refusedByCode": "observation-schema-version-unsupported",
+    "isNotReportedAsMalformed": true
+  },
+  "verdict": "PASS: 4 of 4 acquisition stages have a real producer; transport and model-projection are not acquisition gaps"
+}

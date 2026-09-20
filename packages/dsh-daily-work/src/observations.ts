@@ -3,8 +3,8 @@
  *
  * WHY A DESCRIPTOR AND NOT A `truncated` BOOLEAN
  *
- * The audit's finding (ARCHITECTURE §6) is that "truncated" collapses at least
- * six different losses into one bit, and the six have different recovery rules:
+ * The audit's finding (ARCHITECTURE §6) is that "truncated" collapses several
+ * different losses into one bit, and they have different recovery rules:
  *
  *   provider acquisition  the provider only ever sent the first N bytes.
  *                         NOT recoverable locally -- a refetch is a NEW
@@ -16,14 +16,38 @@
  *                         original payload and the derived object are DIFFERENT
  *                         artifacts and must be recorded as such.
  *   retention             disk full, quota, save failure, expiry.
- *   transport             RPC/Jupyter frame loss. Becomes error/unknown, never
- *                         an empty string and never a clean EOF.
- *   model projection      the model saw 10 lines of a complete artifact.
- *                         A small projection is NOT evidence of a small source.
  *
  * So `acquisition.gaps[]` records WHICH stage lost WHAT and HOW (if at all) it
  * can be recovered. `completeness` is scoped: `complete-within-request` is a
  * claim about the REQUESTED RANGE, never about the world.
+ *
+ * WHY THE LIST IS FOUR AND NOT SIX (DATA-09 / F7)
+ *
+ * v1 added two names to that list and both were mistakes of the same shape: the
+ * field answers "did the world give us the bytes?", and neither name is a fact
+ * about the world.
+ *
+ *   model projection      the model saw 10 lines of a complete artifact. This is
+ *                         a fact about OUR selection, not an acquisition loss:
+ *                         the artifact is complete. It is now a
+ *                         {@link ProjectionManifest}, a separate type with no
+ *                         `stage` field, so it cannot be filed as a gap at all.
+ *                         Recording a deliberate projection as a loss makes an
+ *                         honest system look broken and a broken system look
+ *                         honest.
+ *
+ *   transport             RPC/Jupyter frame loss. Measured: an over-limit frame
+ *                         is REFUSED (encoder refuses; decoder refuses on the
+ *                         declared length before buffering), so no partial
+ *                         success exists to attribute. A failed transport is a
+ *                         failed OPERATION. It is reported as an error with a
+ *                         structured code, not as a gap -- and V3 §M1 forbids
+ *                         inventing a producer for a vocabulary member no
+ *                         production path can emit.
+ *
+ * The closed set is therefore exactly the stages with a REAL production
+ * producer, and the conflation is gone: acquisition loss and intentional
+ * projection are no longer one concept.
  *
  * WHY HOST AUTHORITY IS A SEPARATE FIELD
  *
@@ -47,15 +71,70 @@ import { z } from 'zod'
  * A change here is a change to what a stored descriptor MEANS, so it requires
  * an explicit conversion or a new namespace. Reading an older shape as if it
  * were current is the failure the version exists to prevent.
+ *
+ * WHY THIS IS 2 (DATA-09 / F7). The gap closed set shrank from six stages to
+ * four: `model-projection` moved to {@link ProjectionManifest} and `transport`
+ * stopped being a loss at all (a failed transport is a failed OPERATION; see
+ * the note on the acquisition coverage vocabulary below). A version-1
+ * descriptor is therefore NOT readable under this shape, and the reason is not
+ * pedantry: `{stage: 'model-projection'}` in a stored v1 record asserts that a
+ * deliberate projection was an ACQUISITION GAP -- a claim this module now
+ * refuses to express. Reading that record as if it were current would silently
+ * reinterpret "we chose to show the model 2 KiB of a complete 30 MiB artifact"
+ * as "the world gave us less than we asked for", which is the exact conflation
+ * DATA-09 exists to remove. A v1 record must be converted, not re-read.
+ *
+ * The refusal is explicit and NAMED (`observation-schema-version-unsupported`,
+ * see {@link parseObservation}) rather than left to the `z.literal` below,
+ * because a well-formed older descriptor is not a malformed one and reporting
+ * it as "malformed" would misattribute the cause.
  */
-export const OBSERVATION_SCHEMA_VERSION = 1
+export const OBSERVATION_SCHEMA_VERSION = 2
 
 /** What kind of thing was observed. */
 export type ObservationSourceKind = 'file' | 'web' | 'search' | 'history' | 'tool' | 'derived'
 
 /**
- * The six loss layers, named so a gap can be attributed without ambiguity.
- * These are stages of the ACQUISITION pipeline, not severities.
+ * The FOUR acquisition stages, named so a gap can be attributed without
+ * ambiguity.
+ *
+ * WHY FOUR AND NOT SIX (DATA-09 / F7). The v1 closed set carried two more
+ * names, and neither belonged here, because the field means one thing: *did the
+ * world, the provider or the pipeline actually give us the bytes we asked for?*
+ *
+ *   `model-projection`  A deliberate projection is NOT an acquisition loss. It
+ *                       is a fact about OUR output: the artifact is complete,
+ *                       and we chose to show the model less of it. Recording
+ *                       that choice as a loss makes an honest system look
+ *                       broken (it reports gaps where none exist) and a broken
+ *                       system look honest (a real loss sits in a list where
+ *                       deliberate choices are normal). It is now a
+ *                       {@link ProjectionManifest}, a different type that
+ *                       cannot be mistaken for a gap.
+ *
+ *   `transport`         A transport failure is a failed OPERATION, not a
+ *                       partial successful observation. Measured: an oversized
+ *                       frame is refused by the encoder and refused by the
+ *                       decoder on the DECLARED length, before any successful
+ *                       value exists. There is no partial success to attribute,
+ *                       so a `transport` gap would have to be produced by
+ *                       deliberately degrading a hard refusal into a silent
+ *                       drop. That is the one thing worse than a missing
+ *                       producer: a fabricated one. This array therefore does
+ *                       NOT contain it.
+ *
+ * The consequence is deliberate and is the point of the split: the set is
+ * exactly the stages that have a REAL production producer, and a stage with no
+ * producer is not a vocabulary member. The v1 oracle's demand that all six
+ * appear as gaps is a demand for two fabricated producers; V3 §M1 forbids
+ * inventing vocabulary a production path cannot emit.
+ *
+ * WHERE THE TWO REMOVED NAMES WENT, so nothing is silently lost:
+ *   - `model-projection` -> {@link ProjectionManifest} (recorded, not a gap).
+ *   - `transport`        -> an ERROR PATH with a structured code
+ *                           (`FRAME_TOO_LARGE`) and a refusal count, not a
+ *                           gap. See `docs/GAPS.md` and D2 for the metric,
+ *                           which is owned outside this module.
  */
 export const OBSERVATION_GAP_STAGES = [
   /** The provider itself never sent the bytes (top-k, HTTP body cap, cut download). */
@@ -66,13 +145,27 @@ export const OBSERVATION_GAP_STAGES = [
   'transform',
   /** Storage refused or expired the object (disk full, quota, save failure, GC). */
   'retention',
-  /** The transport lost messages or hit a frame limit. */
-  'transport',
-  /** The model saw less than the artifact holds. The artifact is still complete. */
-  'model-projection',
 ] as const
 
 export type ObservationGapStage = (typeof OBSERVATION_GAP_STAGES)[number]
+
+/**
+ * The acquisition coverage vocabulary: the same four stages, named as coverage.
+ *
+ * This is the type D2 calls `AcquisitionCoverage`. It is deliberately the SAME
+ * four names as {@link OBSERVATION_GAP_STAGES}, and the relationship is asserted
+ * rather than assumed: a coverage name with no gap stage would be a second
+ * vocabulary that can drift, and drift here means a consumer maps a loss to a
+ * layer the gap list can never contain.
+ *
+ * `transport` is NOT a member, for the reason recorded on the gap stages: there
+ * is no partial-success transport in this product, and D2 admits the name only
+ * "if a partial-success transport actually exists". It does not. Adding it now
+ * would be exactly the fabricated producer V3 §M1 forbids.
+ */
+export const ACQUISITION_COVERAGE_STAGES = OBSERVATION_GAP_STAGES
+
+export type AcquisitionCoverageStage = ObservationGapStage
 
 /**
  * How a gap can be closed, if at all.
@@ -121,10 +214,17 @@ export type ObservationCompleteness = (typeof OBSERVATION_COMPLETENESS)[number]
  * The four partial names correspond one-to-one with the recoverable loss layers.
  * `transport` has no name here ON PURPOSE: a lost frame means absence could not
  * be established at all, so the honest report is `unknown`, not a partial label
- * that implies the rest arrived intact. `model-projection` likewise has no name,
- * because a smaller projection is not a loss of the artifact -- it is the
- * normal, intended outcome, and it is reported separately by
- * `projectForModel`'s `projection` block rather than as a coverage verdict.
+ * that implies the rest arrived intact. It is not a gap stage either (see
+ * {@link OBSERVATION_GAP_STAGES}): this product REFUSES an over-limit frame
+ * rather than dropping it, so no partial success exists to name.
+ *
+ * `model-projection` is absent for the opposite reason, and the asymmetry is the
+ * whole of DATA-09. A projection is not an absence at all: the artifact is
+ * COMPLETE and we chose to show the model less of it. It is reported by
+ * {@link ProjectionManifest} -- a separate type carrying the source ref, the
+ * selected and omitted counts, a recoverable ref and the reason -- precisely so
+ * that "we showed the model 2 KiB of a complete 30 MiB artifact" can never be
+ * read as "the world gave us 2 KiB".
  */
 export const OBSERVATION_COVERAGE_VOCABULARY = [
   'full-for-requested-scope',
@@ -144,14 +244,17 @@ export type ObservationCoverageVerdict = (typeof OBSERVATION_COVERAGE_VOCABULARY
  * recovered by anything downstream, so a `provider-acquisition` gap outranks a
  * `retention` gap even when both are present. Reporting the latest loss would
  * name a symptom and hide the cause.
+ *
+ * The two names v1 carried here (`transport`, `model-projection`) are gone with
+ * the stages themselves. Nothing downstream loses information: a `transport`
+ * failure is an error the caller already holds, and a projection is a
+ * {@link ProjectionManifest} on the projection, not a gap to rank.
  */
 const GAP_STAGE_PRECEDENCE: readonly ObservationGapStage[] = [
   'provider-acquisition',
   'native-acquisition',
   'transform',
   'retention',
-  'transport',
-  'model-projection',
 ]
 
 /**
@@ -160,13 +263,15 @@ const GAP_STAGE_PRECEDENCE: readonly ObservationGapStage[] = [
  * The mapping is total and is the ONLY place it is written, so two consumers
  * cannot disagree about what a given `(completeness, gaps)` pair means.
  *
- * A `partial` observation whose gaps name only `transport` reports `unknown`
- * rather than a partial label: a lost frame is an absence that was never
- * established, and labelling it `partial-*` would assert that the bytes which
- * did arrive are the whole of what did.
- *
  * A `partial` observation with NO gaps also reports `unknown`: the record claims
  * a loss it cannot attribute, which is not enough to name a layer.
+ *
+ * The switch is EXHAUSTIVE over the four acquisition stages and has no default,
+ * which is the point: adding a stage to the closed set without deciding its
+ * verdict becomes a compile error rather than a silent `unknown`. v1 could not
+ * have this property -- its two dead names were cases that existed only to
+ * return `unknown` for stages no producer could emit, which is a switch written
+ * to satisfy a union instead of to answer a question.
  *
  * @param descriptor - the observation to report on.
  * @returns the one-word coverage verdict.
@@ -183,10 +288,6 @@ export function coverageVerdictOf(descriptor: ObservationDescriptor): Observatio
       case 'native-acquisition': return 'partial-native-acquisition'
       case 'transform': return 'partial-transform'
       case 'retention': return 'partial-storage'
-      // Neither layer has a name in this vocabulary; see the doc comment above.
-      case 'transport':
-      case 'model-projection':
-        return 'unknown'
     }
   }
   // `partial` with no attributable gap. Naming a layer here would be a guess.
@@ -229,6 +330,82 @@ export const observationGapSchema = z.object({  stage: z.enum(OBSERVATION_GAP_ST
   recovery: z.enum(OBSERVATION_GAP_RECOVERIES),
 })
 export type ObservationGap = z.infer<typeof observationGapSchema>
+
+/**
+ * A DELIBERATE projection of a complete artifact, recorded as a fact about our
+ * output rather than as a loss.
+ *
+ * WHAT THIS TYPE EXISTS TO PREVENT (DATA-09 / F7). v1 had one enum carrying two
+ * different epistemic claims: "the provider never sent these bytes" (a fact
+ * about the WORLD, and a loss) and "we hold all 30 MiB and showed the model
+ * 2 KiB" (a fact about OUR OWN selection, and not a loss at all). Because both
+ * lived in `acquisition.gaps[]`, an honest system that projected by design
+ * reported gaps where none existed, and a system with a real provider loss
+ * reported something a reader had learned to read as routine.
+ *
+ * So a projection is a SEPARATE TYPE with no `stage` and no `recovery`:
+ *
+ *   - There is no `stage` field, so a projection cannot be passed where a gap is
+ *     expected. The confusion is a type error, not a discipline problem.
+ *   - There is no `recovery`: nothing was lost, so nothing needs recovering. The
+ *     omitted bytes are still in the artifact, which is what `recoverableRef`
+ *     points at.
+ *
+ * WHY `recoverableRef` IS REQUIRED AND NOT OPTIONAL. A projection that names what
+ * it withheld but not where the withheld bytes ARE would be a dead end: the
+ * model would know it was shown less and have no way to ask for more. The ref is
+ * the artifact the projection was computed from, so `page`-style recovery is a
+ * real operation rather than a promise. It is required even when nothing was
+ * omitted, because "the whole artifact was shown" is itself a claim that needs
+ * an address to be checkable against.
+ *
+ * WHY THE OMITTED COUNTS ARE `undefined`-ABLE. D2 says "omittedBytes/items when
+ * knowable", and the qualifier is load-bearing. A projection computed from a
+ * stream that never counted its total genuinely does not know how many bytes it
+ * omitted, and a fabricated 0 would report a COMPLETE projection -- the single
+ * most misleading value available. `undefined` means "not established", which is
+ * the honest third state; `0` means "established: nothing was omitted".
+ */
+export const projectionManifestSchema = z.object({
+  /**
+   * The artifact this projection was computed FROM.
+   *
+   * Required, and bounded like every other address in this schema: an unbounded
+   * ref would make the manifest -- which is what the model is shown -- an
+   * unbounded payload, the same failure `MAX_LOCATOR_CHARS` prevents elsewhere.
+   */
+  sourceRef: z.string().min(1).max(MAX_LOCATOR_CHARS),
+  /**
+   * The ref a consumer may re-read to see what was omitted.
+   *
+   * Usually equal to `sourceRef`; kept separate because a projection may be
+   * computed from a DERIVED artifact (a transform output) and the recoverable
+   * object is then the parent. Naming the projection's input as the recovery
+   * target would send a reader to bytes that are already reduced.
+   */
+  recoverableRef: z.string().min(1).max(MAX_LOCATOR_CHARS),
+  /** Bytes of the source the projection carried. Established by construction. */
+  selectedBytes: z.number().int().min(0),
+  /** Items (lines, pages, records) the projection carried, when counted. */
+  selectedItems: z.number().int().min(0).optional(),
+  /**
+   * Bytes NOT carried. `undefined` when the total was never established -- never
+   * a fabricated 0, which would read as "nothing was omitted".
+   */
+  omittedBytes: z.number().int().min(0).optional(),
+  /** Items NOT carried. `undefined` for the same reason as `omittedBytes`. */
+  omittedItems: z.number().int().min(0).optional(),
+  /**
+   * Why this projection was made, in terms a reader can act on.
+   *
+   * Required and non-empty: a projection with no stated reason is
+   * indistinguishable from a loss that was quietly reclassified. This field is
+   * what keeps the two apart in the record itself rather than in a reviewer's
+   * memory. Bounded like a gap reason, because it is written to the same log.
+   */
+  projectionReason: z.string().min(1).max(MAX_GAP_REASON_CHARS),
+})
+export type ProjectionManifest = z.infer<typeof projectionManifestSchema>
 
 /** Where the observation came from. */
 export const observationSourceSchema = z.object({
@@ -316,6 +493,18 @@ export type ObservationErrorCode =
   | 'observation-scope-denied'
   | 'observation-malformed'
   | 'observation-not-deliverable'
+  /**
+   * A stored descriptor carries a schema version this build does not read.
+   *
+   * Deliberately distinct from `observation-malformed`, and the distinction is
+   * the reason the code exists: a version-1 descriptor is WELL FORMED, it just
+   * means something different (its `model-projection` gap asserted a projection
+   * was an acquisition loss). Reporting it as "malformed" would tell a caller
+   * their data is corrupt when the truth is that the shape moved and the record
+   * needs converting. A caller can retry a conversion; it cannot repair data
+   * that was never broken.
+   */
+  | 'observation-schema-version-unsupported'
 
 export class ObservationError extends Error {
   readonly code: ObservationErrorCode
@@ -505,9 +694,35 @@ export function mintObservation(facts: HostObservationFacts, claim?: KernelObser
  *
  * @param value - the stored value, already parsed from JSON.
  * @param grants - the live grant table.
- * @throws ObservationError `observation-malformed` or `observation-authority-stale`.
+ * @throws ObservationError `observation-schema-version-unsupported` for an older
+ *   shape, `observation-malformed` for a value that is not a descriptor at all,
+ *   or `observation-authority-stale` when the live grant has moved on.
  */
 export function parseObservation(value: unknown, grants: GrantTable): ObservationDescriptor {
+  // THE VERSION IS CHECKED BEFORE THE SHAPE, and the order is the point.
+  //
+  // `observationDescriptorSchema` pins `schemaVersion` with a `z.literal`, so a
+  // v1 descriptor fails it -- and would be reported as "malformed". That is the
+  // wrong diagnosis for the right refusal: the record is not corrupt, its
+  // MEANING moved (v1's `model-projection` gap asserted a deliberate projection
+  // was an acquisition loss). A caller told "malformed" would go looking for a
+  // corrupt write that never happened. Reading the version first lets the
+  // refusal name the real cause and stay actionable: convert the record.
+  //
+  // A record with NO readable version is left to the schema, which reports it as
+  // malformed -- correctly, because there is nothing to convert.
+  if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
+    const declared = (value as Record<string, unknown>).schemaVersion
+    if (typeof declared === 'number' && declared !== OBSERVATION_SCHEMA_VERSION) {
+      throw new ObservationError(
+        `stored observation descriptor declares schema version ${String(declared)}, but this build reads `
+        + `${String(OBSERVATION_SCHEMA_VERSION)}. This is a CONVERSION, not a corruption: a version-1 `
+        + 'descriptor recorded a deliberate model projection as an acquisition gap, which DATA-09 no longer '
+        + 'expresses. Re-read it under the version it was written with, or convert it; do not reinterpret it.',
+        'observation-schema-version-unsupported',
+      )
+    }
+  }
   const parsed = observationDescriptorSchema.safeParse(value)
   if (!parsed.success) {
     throw new ObservationError('stored observation descriptor is malformed', 'observation-malformed', { cause: parsed.error })
@@ -558,4 +773,83 @@ export function coverageForRequest(input: {
   }
   if (input.snapshotWatermark !== undefined) coverage.snapshotWatermark = input.snapshotWatermark
   return coverage
+}
+
+/**
+ * Record a DELIBERATE projection as a manifest.
+ *
+ * This is the function that replaces "append a `model-projection` gap". It is
+ * the only supported way to record that a model was shown less than the artifact
+ * holds, and it produces a {@link ProjectionManifest} rather than an
+ * {@link ObservationGap} -- so the two facts cannot be conflated by a caller
+ * passing the wrong argument to the wrong function.
+ *
+ * THE OMITTED COUNTS ARE COMPUTED, NOT ACCEPTED, whenever both operands are
+ * known. A caller cannot pass `omittedBytes` directly, because a caller that
+ * computed it wrong (or that reported 0 for a projection it knew was partial)
+ * would write a false completeness claim into the record. Passing
+ * `sourceBytes` and letting this function subtract makes the arithmetic the
+ * module's, so "selected + omitted = source" holds by construction rather than
+ * by the caller's care.
+ *
+ * WHY `sourceBytes` IS OPTIONAL AND `selectedBytes` IS NOT. A projection always
+ * knows what it carried -- that is the payload it is holding. It does not always
+ * know the total: a projection over a stream that was never measured cannot
+ * report how much it omitted. When the total is unknown the omitted fields stay
+ * `undefined`, which is the honest third state; a fabricated `0` would assert a
+ * complete projection, the most misleading value available.
+ *
+ * @param input - the projection's measured facts.
+ * @returns the validated manifest.
+ * @throws ObservationError `observation-malformed` when the facts are not a manifest.
+ */
+export function recordProjection(input: {
+  /** The artifact projected from. Required: a projection with no source is unverifiable. */
+  sourceRef: string
+  /** Where the omitted bytes live. Defaults to `sourceRef`; see the schema note. */
+  recoverableRef?: string
+  /** Bytes of the source the projection carried. Known by construction. */
+  selectedBytes: number
+  /** Items carried, when counted. */
+  selectedItems?: number
+  /** Total source bytes, when established. Omitted counts are derived from it. */
+  sourceBytes?: number
+  /** Total source items, when counted. */
+  sourceItems?: number
+  /** Why the projection was made. Required and non-empty. */
+  projectionReason: string
+}): ProjectionManifest {
+  const omittedBytes = input.sourceBytes === undefined
+    ? undefined
+    : Math.max(0, input.sourceBytes - input.selectedBytes)
+  const omittedItems = input.sourceItems === undefined || input.selectedItems === undefined
+    ? undefined
+    : Math.max(0, input.sourceItems - input.selectedItems)
+  return projectionManifestSchema.parse({
+    sourceRef: input.sourceRef,
+    recoverableRef: input.recoverableRef ?? input.sourceRef,
+    selectedBytes: input.selectedBytes,
+    ...input.selectedItems === undefined ? {} : { selectedItems: input.selectedItems },
+    ...omittedBytes === undefined ? {} : { omittedBytes },
+    ...omittedItems === undefined ? {} : { omittedItems },
+    projectionReason: input.projectionReason,
+  })
+}
+
+/**
+ * Whether a manifest describes a projection that withheld anything.
+ *
+ * THREE STATES, not two, and the third is why this returns a string rather than
+ * a boolean. `false` would collapse "nothing was omitted" and "we never
+ * established how much was omitted" into one answer, which is the same
+ * fabrication `recordProjection` refuses when it leaves the counts undefined.
+ *
+ * @param manifest - the projection manifest.
+ * @returns `complete` when nothing was withheld, `partial` when bytes or items
+ *   were, and `unknown` when the totals were never established.
+ */
+export function projectionWithheld(manifest: ProjectionManifest): 'complete' | 'partial' | 'unknown' {
+  if (manifest.omittedBytes === undefined && manifest.omittedItems === undefined) return 'unknown'
+  if ((manifest.omittedBytes ?? 0) > 0 || (manifest.omittedItems ?? 0) > 0) return 'partial'
+  return 'complete'
 }

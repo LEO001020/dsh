@@ -64,7 +64,7 @@ import { buildWindow, READ_MAX_BYTES, READ_MAX_LINE_LENGTH } from '@deepseek-ai/
 import { applyReadTool } from '@deepseek-ai/dsh-tool-fs/src/read.ts'
 import { spawn, execFile } from 'node:child_process'
 import { createHash } from 'node:crypto'
-import { chmodSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs'
+import { chmodSync, existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from 'node:fs'
 import { createServer } from 'node:net'
 import { tmpdir } from 'node:os'
 import { dirname, join, resolve as resolvePath } from 'node:path'
@@ -102,11 +102,16 @@ import {
 import { DataPlaneService } from './data-service.ts'
 import {
   GrantTable,
+  ACQUISITION_COVERAGE_STAGES,
   OBSERVATION_COVERAGE_VOCABULARY,
+  OBSERVATION_GAP_STAGES,
+  OBSERVATION_SCHEMA_VERSION,
   ObservationError,
   coverageVerdictOf,
   isDeliverableAsComplete,
   parseObservation,
+  projectionWithheld,
+  recordProjection,
   refuseForgedClaims,
   type ObservationDescriptor,
 } from './observations.ts'
@@ -1211,9 +1216,12 @@ describe('DAT-04 [mock provider] a repeated or backwards cursor raises paginatio
     }
   }
 
-  const descriptor = {
+  // Annotated rather than inferred: `OBSERVATION_SCHEMA_VERSION` widens to
+  // `number` in a mutable object literal, and the descriptor's version is a
+  // literal type on purpose -- an older descriptor must not typecheck.
+  const descriptor: ObservationDescriptor = {
     id: 'obs-mock',
-    schemaVersion: 1 as const,
+    schemaVersion: OBSERVATION_SCHEMA_VERSION,
     source: { kind: 'tool' as const, acquiredAt: '2026-09-20T00:00:00.000Z', executionWorld: 'mock' },
     captured: { artifact: `artifact:sha256:${'a'.repeat(64)}`, sha256: 'a'.repeat(64), bytes: 1_000_000, mediaType: 'text/plain' },
     acquisition: { completeness: 'complete-within-request' as const, coverage: null, gaps: [] },
@@ -2578,11 +2586,11 @@ describe('coverage vocabulary: six names, derived in one place', () => {
   /** A descriptor with the given completeness and gaps, for the mapping table. */
   function descriptorWith(
     completeness: 'complete-within-request' | 'partial' | 'unknown',
-    gaps: Array<{ stage: 'provider-acquisition' | 'native-acquisition' | 'transform' | 'retention' | 'transport' | 'model-projection'; reason: string; recovery: 'page' | 'refetch' | 'none' | 'unknown' }>,
+    gaps: Array<{ stage: 'provider-acquisition' | 'native-acquisition' | 'transform' | 'retention'; reason: string; recovery: 'page' | 'refetch' | 'none' | 'unknown' }>,
   ): ObservationDescriptor {
     return {
       id: 'obs-vocab',
-      schemaVersion: 1,
+      schemaVersion: OBSERVATION_SCHEMA_VERSION,
       source: { kind: 'file', locator: 'x', acquiredAt: '2026-01-01T00:00:00.000Z', executionWorld: 'local' },
       captured: { artifact: `artifact:sha256:${'a'.repeat(64)}`, sha256: 'a'.repeat(64), bytes: 1, mediaType: 'text/plain' },
       acquisition: { completeness, coverage: null, gaps },
@@ -2635,27 +2643,333 @@ describe('coverage vocabulary: six names, derived in one place', () => {
     expect(verdict).toBe('partial-provider')
   })
 
-  it('reports a lost transport as unknown, because absence was never established', () => {
-    // A lost frame is not a `partial-*` layer: labelling it partial would assert
-    // that the bytes which arrived are the whole of what did.
-    expect(coverageVerdictOf(descriptorWith('partial', [
-      { stage: 'transport', reason: 'frame lost', recovery: 'unknown' },
-    ]))).toBe('unknown')
-    // A `partial` claim with no attributable gap is also `unknown`: the record
-    // says a loss happened and cannot say where, which is not enough to name one.
+  it('reports a `partial` claim with no attributable gap as unknown, not as a layer', () => {
+    // The record says a loss happened and cannot say where, which is not enough
+    // to name a layer. Naming one here would be a guess.
     expect(coverageVerdictOf(descriptorWith('partial', []))).toBe('unknown')
     expect(coverageVerdictOf(descriptorWith('unknown', []))).toBe('unknown')
   })
+})
 
-  it('reports a small model projection as full-for-scope, not as a partial acquisition', () => {
-    // The distinction the whole plane turns on: a small projection is NOT
-    // evidence of a small source. A complete 4 MiB artifact whose model-visible
-    // projection is 400 bytes is `full-for-requested-scope`.
-    const descriptor = descriptorWith('complete-within-request', [
-      { stage: 'model-projection', reason: 'the model saw 10 of 2000 lines', recovery: 'page' },
+// ---------------------------------------------------------------------------
+// DATA-09 / F7 — acquisition loss and intentional projection are two concepts
+// ---------------------------------------------------------------------------
+//
+// THE DEFECT, in the audit's own phrasing: "provider 少给了数据" and
+// "我已经完整拿到 30 MB，但只给 LLM 看 2 KB" cannot be one enum. v1 put both in
+// `acquisition.gaps[]`, so a deliberate projection was recorded as a loss.
+//
+// The two tests below are the two halves of the fix, and they are written to
+// FAIL against v1's shape rather than merely pass against the new one:
+//   1. the closed set is exactly the stages a production path can emit, and it
+//      is FOUR -- not six, and not four-plus-two-fabricated-producers;
+//   2. a projection is recorded as a ProjectionManifest and is NOT a gap, with
+//      the type boundary asserted rather than described.
+
+describe('DATA-09 [real] the acquisition taxonomy has exactly the stages that have a producer', () => {
+  /**
+   * Every `.ts` file in production source, tests excluded.
+   *
+   * A test file is not a producer: a `stage: 'transport'` in a fixture proves the
+   * vocabulary accepts the name, not that the product can emit it. That
+   * distinction is the whole measurement v1's FAIL turned on.
+   */
+  function productionSources(): Array<{ file: string; text: string }> {
+    const src = join(HERE)
+    return readdirSync(src)
+      .filter(name => name.endsWith('.ts') && !name.endsWith('.test.ts'))
+      .map(name => ({ file: name, text: readFileSync(join(src, name), 'utf8') }))
+  }
+
+  /**
+   * Remove comments, keeping line numbers so a hit still points at real source.
+   *
+   * WHY THIS IS NOT OPTIONAL. A comment that NAMES a stage -- this module's own
+   * doc comments say "v1 filed `{stage: 'model-projection'}` as a loss" -- would
+   * otherwise be counted as a producer, and the detector would report a producer
+   * for a stage no code path can emit. That is the exact false positive this test
+   * exists to catch, so the measurement must not be able to produce it. Measured
+   * before this was added: the naive version reported THREE producers for
+   * `model-projection`, all of them prose in block comments.
+   *
+   * Block comments are tracked across lines rather than matched per line, because
+   * a per-line regex cannot see that it is inside one. String literals are left
+   * alone: a `stage: 'x'` inside a string is still an assignment to look at, and
+   * stripping strings would hide real code.
+   */
+  function stripComments(text: string): string {
+    const lines = text.split('\n')
+    let inBlock = false
+    return lines.map(line => {
+      let out = ''
+      let index = 0
+      while (index < line.length) {
+        if (inBlock) {
+          const close = line.indexOf('*/', index)
+          if (close === -1) return out
+          inBlock = false
+          index = close + 2
+          continue
+        }
+        const open = line.indexOf('/*', index)
+        const lineComment = line.indexOf('//', index)
+        if (lineComment !== -1 && (open === -1 || lineComment < open)) {
+          return out + line.slice(index, lineComment)
+        }
+        if (open === -1) return out + line.slice(index)
+        out += line.slice(index, open)
+        inBlock = true
+        index = open + 2
+      }
+      return out
+    }).join('\n')
+  }
+
+  /** Every `stage: '<name>'` ASSIGNMENT in a file, with line numbers, comments excluded. */
+  function stageAssignments(text: string, stage: string): number[] {
+    return stripComments(text).split('\n')
+      .map((line, index) => ({ line, number: index + 1 }))
+      .filter(({ line }) => new RegExp(`stage:\\s*'${stage}'`, 'u').test(line))
+      .map(({ number }) => number)
+  }
+
+  it('the closed set is FOUR stages, and `transport`/`model-projection` are not among them', () => {
+    // Not "six minus two". The set is exactly the acquisition stages: a name in
+    // here is a promise that some production path can emit it, and V3 §M1
+    // forbids promising vocabulary no path can produce.
+    expect([...OBSERVATION_GAP_STAGES]).toEqual([
+      'provider-acquisition',
+      'native-acquisition',
+      'transform',
+      'retention',
     ])
+    // The two v1 names, asserted ABSENT by name so a re-addition is a visible
+    // failure rather than a quiet widening of the set.
+    expect([...OBSERVATION_GAP_STAGES]).not.toContain('transport')
+    expect([...OBSERVATION_GAP_STAGES]).not.toContain('model-projection')
+  })
+
+  it('ALL FOUR acquisition stages have a real production producer, and none is fabricated', () => {
+    // The positive half. A stage in the closed set with no producer would be a
+    // vocabulary member no path can emit -- the v1 FAIL, relocated rather than
+    // fixed. This asserts 4 of 4, which is the honest count: the two removed
+    // names are gone because no producer exists, NOT because two new producers
+    // were invented to reach six.
+    const sources = productionSources()
+    const producers = new Map<string, string[]>()
+    for (const stage of OBSERVATION_GAP_STAGES) producers.set(stage, [])
+    for (const { file, text } of sources) {
+      // An ASSIGNMENT to the stage field. A closed-set entry, a type union
+      // member, a switch case and a zod enum are all DECLARATIONS, and a
+      // declaration is not a producer. Comments are excluded by the helper; see
+      // its note for why that exclusion is load-bearing.
+      for (const stage of OBSERVATION_GAP_STAGES) {
+        for (const line of stageAssignments(text, stage)) {
+          producers.get(stage)!.push(`${file}:${String(line)}`)
+        }
+      }
+    }
+    const unproduced = [...OBSERVATION_GAP_STAGES].filter(stage => producers.get(stage)!.length === 0)
+    expect(unproduced, 'a stage in the closed set with no producer is vocabulary the product cannot emit').toEqual([])
+    // Stated as an explicit count so a future "fix" that re-adds two names and
+    // two fake producers cannot pass by satisfying the emptiness check alone.
+    expect(producers.size).toBe(4)
+
+    // AND THE NEGATIVE HALF: the two removed names are not quietly produced as
+    // GAPS anywhere. If `model-projection` were still assigned as a gap stage,
+    // the conflation would survive in the code while the closed set denied it --
+    // the type would reject it at the schema, but a producer would remain and the
+    // removal would be cosmetic. This asserts the producers are gone too, so the
+    // split is a change to what the product EMITS and not only to what it allows.
+    for (const stage of ['transport', 'model-projection']) {
+      const assignments = sources.flatMap(({ file, text }) =>
+        stageAssignments(text, stage).map(line => `${file}:${String(line)}`))
+      expect(assignments, `\`${stage}\` must have NO gap producer: ${assignments.join(', ')}`).toEqual([])
+    }
+  })
+
+  it('the coverage vocabulary is the SAME four names, so the two cannot drift', () => {
+    // A coverage name with no gap stage would be a second vocabulary, and drift
+    // between them means a consumer maps a loss to a layer the gap list can
+    // never contain.
+    expect([...ACQUISITION_COVERAGE_STAGES]).toEqual([...OBSERVATION_GAP_STAGES])
+  })
+
+  it('`transport` is an ERROR, not a gap: an over-limit frame is refused, never silently dropped', () => {
+    // The measured behaviour D2 records: the encoder refuses and the decoder
+    // refuses on the DECLARED length, so no successful value ever exists and
+    // there is no partial success to attribute. The honest contract is a refusal
+    // that names the limit -- NOT a fabricated `transport` gap produced by
+    // degrading a hard failure into a silent drop.
+    //
+    // This test pins the refusal's SHAPE in the ipython bridge, which is where
+    // the frame limit lives. It is a read of another slice's file rather than an
+    // assertion about this module, and it is here because the taxonomy decision
+    // rests on it: if a partial-success transport ever appears, this test fails
+    // and the `transport` stage becomes legitimate.
+    const bridge = readFileSync(join(HERE, '..', '..', 'dsh-ipython', 'src', 'bridge.ts'), 'utf8')
+    expect(bridge, 'the frame limit must be a refusal with a stable code').toContain('FRAME_TOO_LARGE')
+    expect(bridge, 'the refusal must not be a counter increment on a drop path').not.toMatch(/droppedFrames\s*\+=/u)
+  })
+})
+
+describe('DATA-09 [real] a projection is a ProjectionManifest, and NOT an acquisition gap', () => {
+  it('records a deliberate projection as a manifest with the omitted bytes derived', () => {
+    // The audit's example, in numbers: 30 MiB acquired in full, 2 KiB shown to
+    // the model. Under v1 this was a `model-projection` gap -- a LOSS. It is not
+    // a loss: nothing was lost, and the artifact is complete.
+    const manifest = recordProjection({
+      sourceRef: `artifact:sha256:${'a'.repeat(64)}`,
+      selectedBytes: 2048,
+      sourceBytes: 30 * 1024 * 1024,
+      projectionReason: 'the model request budget allows a bounded preview of the artifact',
+    })
+    expect(manifest.selectedBytes).toBe(2048)
+    // DERIVED, not accepted: the caller never passes `omittedBytes`, so it
+    // cannot report a false 0 for a projection it knows is partial.
+    expect(manifest.omittedBytes).toBe(30 * 1024 * 1024 - 2048)
+    expect(manifest.recoverableRef).toBe(manifest.sourceRef)
+    expect(projectionWithheld(manifest)).toBe('partial')
+  })
+
+  it('leaves the omitted count UNKNOWN rather than fabricating a zero', () => {
+    // "we never established the total" and "nothing was omitted" are different
+    // facts. A fabricated 0 would assert a COMPLETE projection, which is the most
+    // misleading value available for a projection that withheld 29.99 MiB.
+    const manifest = recordProjection({
+      sourceRef: `artifact:sha256:${'a'.repeat(64)}`,
+      selectedBytes: 2048,
+      projectionReason: 'the source was streamed and its total size was never established',
+    })
+    expect(manifest.omittedBytes).toBeUndefined()
+    expect(projectionWithheld(manifest)).toBe('unknown')
+    expect(projectionWithheld(manifest)).not.toBe('complete')
+  })
+
+  it('reports a projection that withheld nothing as `complete`, distinctly from `unknown`', () => {
+    const manifest = recordProjection({
+      sourceRef: `artifact:sha256:${'a'.repeat(64)}`,
+      selectedBytes: 4096,
+      sourceBytes: 4096,
+      projectionReason: 'the whole artifact fit the model request budget',
+    })
+    expect(manifest.omittedBytes).toBe(0)
+    expect(projectionWithheld(manifest)).toBe('complete')
+  })
+
+  it('has NO `stage` and NO `recovery`, so a projection cannot be filed as a gap', () => {
+    // THE TYPE BOUNDARY, asserted at runtime because that is where a caller
+    // crossing languages or reading JSON would hit it. A manifest carrying a
+    // `stage` would be structurally usable as a gap, which is exactly the
+    // conflation DATA-09 removes.
+    const manifest = recordProjection({
+      sourceRef: `artifact:sha256:${'a'.repeat(64)}`,
+      selectedBytes: 100,
+      sourceBytes: 1000,
+      projectionReason: 'bounded preview',
+    })
+    expect(Object.hasOwn(manifest, 'stage')).toBe(false)
+    expect(Object.hasOwn(manifest, 'recovery')).toBe(false)
+    // And the gap schema does not accept the projection's fields: the two are
+    // not interchangeable in either direction.
+    expect(Object.keys(manifest).sort()).toEqual([
+      'omittedBytes', 'projectionReason', 'recoverableRef', 'selectedBytes', 'sourceRef',
+    ])
+  })
+
+  it('a descriptor whose ONLY event is a projection stays COMPLETE, with an empty gap list', () => {
+    // The consequence that matters for an honest system: projecting deliberately
+    // does not make a descriptor look broken. `gaps` is empty because nothing was
+    // lost, and `completeness` is untouched because the acquisition was complete.
+    const descriptor: ObservationDescriptor = {
+      id: 'obs-projected',
+      schemaVersion: OBSERVATION_SCHEMA_VERSION,
+      source: { kind: 'file', locator: 'big.txt', acquiredAt: '2026-01-01T00:00:00.000Z', executionWorld: 'local' },
+      captured: { artifact: `artifact:sha256:${'a'.repeat(64)}`, sha256: 'a'.repeat(64), bytes: 30 * 1024 * 1024, mediaType: 'text/plain' },
+      acquisition: { completeness: 'complete-within-request', coverage: null, gaps: [] },
+      authority: { ownerScope: 'project:vocab', grantRevision: 1 },
+    }
     expect(coverageVerdictOf(descriptor)).toBe('full-for-requested-scope')
     expect(isDeliverableAsComplete(descriptor)).toBe(true)
+    // A 30 MiB artifact whose model-visible projection is 2 KiB is still a
+    // complete acquisition. A small projection is NOT evidence of a small source.
+    const manifest = recordProjection({
+      sourceRef: descriptor.captured.artifact,
+      selectedBytes: 2048,
+      sourceBytes: descriptor.captured.bytes,
+      projectionReason: 'bounded preview',
+    })
+    expect(projectionWithheld(manifest)).toBe('partial')
+    expect(descriptor.acquisition.gaps).toEqual([])
+  })
+})
+
+describe('DATA-09 [real] the schema version refuses a v1 descriptor instead of reinterpreting it', () => {
+  it('refuses a version-1 descriptor with a NAMED conversion error, not "malformed"', () => {
+    // The version exists precisely so an older shape is not read as current. A v1
+    // descriptor's `model-projection` gap asserted that a deliberate projection
+    // was an acquisition loss -- a claim this build no longer expresses, so
+    // re-reading it would silently convert "we chose to show 2 KiB" into "the
+    // world gave us 2 KiB".
+    const grants = new GrantTable()
+    grants.bump('project:vocab')
+    const v1 = {
+      id: 'obs-v1',
+      schemaVersion: 1,
+      source: { kind: 'file', locator: 'x', acquiredAt: '2026-01-01T00:00:00.000Z', executionWorld: 'local' },
+      captured: { artifact: `artifact:sha256:${'a'.repeat(64)}`, sha256: 'a'.repeat(64), bytes: 1, mediaType: 'text/plain' },
+      acquisition: {
+        completeness: 'complete-within-request',
+        coverage: null,
+        gaps: [{ stage: 'model-projection', reason: 'the model saw 10 of 2000 lines', recovery: 'page' }],
+      },
+      authority: { ownerScope: 'project:vocab', grantRevision: 1 },
+    }
+    // The CODE is the contract: a caller can branch on it and attempt a
+    // conversion. Reporting `observation-malformed` would send it looking for a
+    // corrupt write that never happened.
+    expect(() => parseObservation(v1, grants)).toThrow(ObservationError)
+    try {
+      parseObservation(v1, grants)
+      throw new Error('unreachable: a v1 descriptor must be refused')
+    } catch (error: unknown) {
+      expect(error).toBeInstanceOf(ObservationError)
+      expect((error as ObservationError).code).toBe('observation-schema-version-unsupported')
+      // The message names the version it found AND the one it reads, so the fix
+      // is actionable without re-reading this source.
+      expect((error as ObservationError).message).toContain('schema version 1')
+      expect((error as ObservationError).message).toContain(String(OBSERVATION_SCHEMA_VERSION))
+    }
+  })
+
+  it('still reports a genuinely malformed descriptor as malformed, so the codes do not collapse', () => {
+    // The distinction has to hold in BOTH directions, or "unsupported version"
+    // becomes a catch-all that hides real corruption. A record with the current
+    // version and a broken body is malformed, not a conversion.
+    const grants = new GrantTable()
+    grants.bump('project:vocab')
+    expect(() => parseObservation({
+      id: 'obs-bad',
+      schemaVersion: OBSERVATION_SCHEMA_VERSION,
+      source: { kind: 'file', acquiredAt: '2026-01-01T00:00:00.000Z', executionWorld: 'local' },
+      captured: { artifact: 'not-a-hash', sha256: 'nope', bytes: -1, mediaType: 'text/plain' },
+      acquisition: { completeness: 'complete-within-request', coverage: null, gaps: [] },
+      authority: { ownerScope: 'project:vocab', grantRevision: 1 },
+    }, grants)).toThrow(/malformed/u)
+  })
+
+  it('reads a current-version descriptor normally, so the version check is not a blanket refusal', () => {
+    const grants = new GrantTable()
+    grants.bump('project:vocab')
+    const current = {
+      id: 'obs-current',
+      schemaVersion: OBSERVATION_SCHEMA_VERSION,
+      source: { kind: 'file', locator: 'x', acquiredAt: '2026-01-01T00:00:00.000Z', executionWorld: 'local' },
+      captured: { artifact: `artifact:sha256:${'a'.repeat(64)}`, sha256: 'a'.repeat(64), bytes: 1, mediaType: 'text/plain' },
+      acquisition: { completeness: 'complete-within-request', coverage: null, gaps: [] },
+      authority: { ownerScope: 'project:vocab', grantRevision: 1 },
+    }
+    expect(parseObservation(current, grants).id).toBe('obs-current')
   })
 })
 
@@ -2667,7 +2981,7 @@ describe('DATA-04 [real] the projection is bounded by the SCHEMA, not only by tr
     // projection that is unbounded in one field is not bounded.
     const huge = {
       id: 'x'.repeat(200_000),
-      schemaVersion: 1,
+      schemaVersion: OBSERVATION_SCHEMA_VERSION,
       source: { kind: 'file', locator: 'x', acquiredAt: '2026-01-01T00:00:00.000Z', executionWorld: 'local' },
       captured: { artifact: `artifact:sha256:${'a'.repeat(64)}`, sha256: 'a'.repeat(64), bytes: 1, mediaType: 'text/plain' },
       acquisition: { completeness: 'complete-within-request', coverage: null, gaps: [] },
@@ -2685,7 +2999,7 @@ describe('DATA-04 [real] the projection is bounded by the SCHEMA, not only by tr
     grants.bump('project:vocab')
     const base = {
       id: 'obs-ok',
-      schemaVersion: 1,
+      schemaVersion: OBSERVATION_SCHEMA_VERSION,
       source: { kind: 'file', locator: 'ok', acquiredAt: '2026-01-01T00:00:00.000Z', executionWorld: 'local' },
       captured: { artifact: `artifact:sha256:${'a'.repeat(64)}`, sha256: 'a'.repeat(64), bytes: 1, mediaType: 'text/plain' },
       acquisition: { completeness: 'complete-within-request', coverage: null, gaps: [] },
@@ -2771,7 +3085,11 @@ describe('cursor identity: a cursor binds its artifact and grants no authority',
       artifactSha256: capture.descriptor.captured.sha256,
       representation: 'bytes',
       position: 200,
-      schemaVersion: 1,
+      // A cursor binds the DESCRIPTOR's schema version (artifacts.ts:691 mints
+      // the authority from `descriptor.schemaVersion`), so a hard-coded 1 here
+      // would be rejected for the version rather than for the missing signature
+      // -- and the test would pass for the wrong reason.
+      schemaVersion: capture.descriptor.schemaVersion,
       ownerScope: scope,
       watermark: capture.descriptor.source.acquiredAt,
     }), 'utf8').toString('base64url')}.not-a-real-signature`
