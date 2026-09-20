@@ -26,12 +26,23 @@ import type { Agent } from '@deepseek-ai/dsh-agent'
 import { defineDomain, domainTable, type Domain } from '@deepseek-ai/dsh-storage-domain'
 import { randomUUID } from 'node:crypto'
 import { z } from 'zod'
-import { admissionReason, countRun, mayAdmit, type Counts, type TaskLiveness } from './counting.ts'
+import {
+  admissionReason,
+  countRun,
+  heldSlots,
+  mayAdmit,
+  targetRefusalReason,
+  type Counts,
+  type DeficitReason,
+  type TaskLiveness,
+} from './counting.ts'
 import {
   ChildAdmissionGate,
+  ChildCapacityError,
   mountChildAdmissionGuard,
   type CapacitySnapshot,
   type ChildRefusal,
+  type ChildSlot,
 } from './capacity.ts'
 import { acquireHomeLock, type HeldHomeLock } from './homelock.ts'
 import {
@@ -105,6 +116,163 @@ export interface LaunchOutcome {
   readonly accepted: boolean
   /** Present when the launch was refused or failed before admission. */
   readonly reason?: string
+}
+
+/**
+ * What one atomic admission reservation did.
+ *
+ * A refusal is a VALUE, not an exception, because a refusal is the expected
+ * answer under contention: the caller asked whether a slot was available and the
+ * answer is no. Throwing would make the common case look like a fault, and it
+ * would put the decision outside the caller's control flow. INSIDE the storage
+ * transform a throw is the right primitive (it makes the domain skip the write);
+ * this type is how that throw reaches the caller as an ordinary answer.
+ */
+export interface AdmissionReservation {
+  /** Whether the reservation committed. */
+  readonly reserved: boolean
+  /** Why not, when it did not. `'none'` when it did. */
+  readonly reason: DeficitReason
+  /** The task after the commit. Undefined when refused. */
+  readonly task?: TaskRecord
+  /**
+   * The message a refusal carries, so `admit` can re-throw the EXACT wording its
+   * callers already assert on without re-deriving the decision. Present only on a
+   * refusal.
+   */
+  readonly refusalMessage?: string
+  /**
+   * The run's reservation generation AFTER this attempt, whether it committed or
+   * not. A caller can use it to prove its own write landed, and to notice that a
+   * competing admission advanced it.
+   */
+  readonly generation: number
+  /**
+   * The occupancy the transform COMPUTED inside the update, before this
+   * admission. This is the number the decision was made against.
+   *
+   * It is reported separately from {@link heldReservations} because the two
+   * answer different questions and the difference is the evidence: a caller
+   * storming this method can read the sequence of values each attempt observed,
+   * and a serialized implementation shows a DISTINCT value per winner (0, 1, 2)
+   * where the racing version showed the same value for every attempt. That
+   * sequence is the direct measurement that the transform saw its predecessors'
+   * commits, which is what the atomicity claim rests on.
+   */
+  readonly observedOccupancy: number
+  /**
+   * The run's occupancy AFTER this attempt: `observedOccupancy + 1` when the
+   * reservation committed, and `observedOccupancy` when it was refused. This is
+   * the authoritative figure a reader should compare against the target, and it
+   * is the same derivation `counts().heldReservations` reports.
+   */
+  readonly heldReservations: number
+  readonly target: number
+}
+
+/**
+ * A refusal raised INSIDE a storage transform, so the domain skips the write.
+ *
+ * The distinction this type carries is part of the fix: a refusal must abort the
+ * `update` (so nothing is written) AND be distinguishable from a real storage
+ * fault when it reaches the caller. A plain `Error` cannot do the second job
+ * without string matching, and string matching is how a refusal and a fault get
+ * confused in a report.
+ */
+class AdmissionRefused extends Error {
+  readonly reason: DeficitReason
+  readonly generation: number
+  readonly held: number
+  readonly target: number
+
+  constructor(message: string, reason: DeficitReason, generation: number, held: number, target: number) {
+    super(message)
+    this.name = 'AdmissionRefused'
+    this.reason = reason
+    this.generation = generation
+    this.held = held
+    this.target = target
+  }
+}
+
+/** One caller's queued work, with its own signal and its own answer. */
+interface DrainWorkItem {
+  readonly requests: readonly LaunchRequest[]
+  readonly signal: AbortSignal
+  readonly resolve: (outcomes: LaunchOutcome[]) => void
+  readonly reject: (error: unknown) => void
+}
+
+/**
+ * The per-run drain leader's generation state (V3 §H3's dirty loop).
+ *
+ * `requestedGeneration` advances on every arrival; `handledGeneration` advances
+ * after each completed pass. The leader runs while they differ, which is what
+ * makes "one drain loop body per run at a time" true: an arrival during a pass
+ * cannot start a sibling, it can only ask for another pass.
+ */
+interface DrainLeaderState {
+  requestedGeneration: number
+  handledGeneration: number
+  runner: Promise<void> | undefined
+  readonly pending: DrainWorkItem[]
+}
+
+/**
+ * The reason a drain outcome carries for a refused reservation.
+ *
+ * The reservation already decided and stated its reason; this only translates it
+ * into the vocabulary `LaunchOutcome.reason` has always used, so callers that
+ * assert on `'budget_blocked'` / `'budget_overage_halt'` / `'none'` keep working.
+ *
+ * EACH REASON IS MAPPED EXPLICITLY. A `default:` branch would let a future
+ * `DeficitReason` silently inherit a translation chosen for a different one,
+ * which is the drift this whole change is about — so the switch is exhaustive and
+ * TypeScript enforces it.
+ */
+function refusalReasonForOutcome(
+  record: RunRecord,
+  counts: Counts,
+  reservation: AdmissionReservation,
+  outstandingCost: number,
+): string {
+  switch (reservation.reason) {
+    // A HEALTHY FULL WAVE. Held is exactly the target, so there is no deficit to
+    // explain and the refusal is simply "the target is reached". This reading is
+    // load-bearing and is asserted by `concurrency.test.ts` ("does not admit an
+    // eleventh child while ten hold their slots"): `'none'` here means the run is
+    // full, NOT that nothing was decided.
+    case 'none':
+      return 'none'
+    // A VIOLATION, and its own reading. The old code could not express this: an
+    // overshoot and a healthy full wave both read `'none'`, which is exactly the
+    // invisibility CAP-10 recorded.
+    case 'target_exceeded':
+      return reservation.refusalMessage ?? 'target_exceeded'
+    case 'budget_blocked':
+    case 'budget_overage_halt':
+      return reservation.reason
+    // The host cap. `runDrain` pre-checks the gate and reports
+    // `'host_capacity_reached'` itself, so this branch is reached when the cap was
+    // crossed between that check and the reservation — the case the pre-check
+    // cannot see. It reports the same vocabulary word either way, which is the
+    // point: a caller must not have to know which of the two layers noticed.
+    case 'host_capacity_reached':
+      return 'host_capacity_reached'
+    // The run is closed. `counts.deficitReason` can carry the more specific
+    // 'budget_blocked' / 'budget_overage_halt' readings for a closed run, and
+    // callers assert on those, so prefer it when it says something more specific.
+    case 'run_not_open':
+      return counts.deficitReason === 'none' ? 'run_not_open' : counts.deficitReason
+    // The request-specific refusals: already admitted, a tombstone, a stale
+    // revision. The MESSAGE is the informative part here — the record's own
+    // wording is what `durability-records.test.ts` matches on ("already admitted
+    // as prepared") — so it is carried out rather than flattened to one word.
+    case 'slots_held_by_unconfirmed':
+      return reservation.refusalMessage ?? admissionReason(record, counts, outstandingCost)
+    case 'insufficient_ready_tasks':
+      return 'insufficient_ready_tasks'
+  }
 }
 
 /**
@@ -224,14 +392,14 @@ export class WorkService extends Service {
   private readonly liveness = new Map<string, Map<string, TaskLiveness>>()
   private readonly readyTaskCount = new Map<string, number>()
   /**
-   * One coalesced drain request per run.
+   * One drain LEADER per run, with its generation counters (V3 §H3).
    *
-   * Not one per event: a completion storm must not produce a storm of
-   * concurrent drains, each of which would re-read the same state and try to
-   * launch the same replacement. A drain that is already scheduled absorbs
-   * later requests.
+   * Replaces the old `pendingDrain: Map<string, Promise<LaunchOutcome[]>>`, whose
+   * coalescing was a one-shot `await` that let every waiter start its own pass.
+   * See `drain` for the mechanism and for why correctness no longer depends on
+   * this map at all.
    */
-  private readonly pendingDrain = new Map<string, Promise<LaunchOutcome[]>>()
+  private readonly drainLeaders = new Map<string, DrainLeaderState>()
   /** This process's deployment-boundary lock token, when a guard is configured. */
   /**
    * The held kernel lock, or undefined when no guard is configured.
@@ -779,7 +947,97 @@ export class WorkService extends Service {
     allowedCapabilities: readonly string[]
     now?: string
   }): Promise<TaskRecord> {
+    const reservation = await this.tryReserveAdmission(input)
+    if (!reservation.reserved) {
+      // The refusals that `admit`'s callers already assert on are re-stated here
+      // with the wording they use. The DECISION was made inside the update; only
+      // the reporting happens out here.
+      throw new Error(reservation.refusalMessage)
+    }
+    if (reservation.task === undefined) {
+      throw new Error(`dailyWork: admission of "${input.taskId}" did not persist`)
+    }
+    return reservation.task
+  }
+
+  /**
+   * THE AUTHORITATIVE TARGET ADMISSION. Reserve one target slot and one credit
+   * reservation, or refuse, in ONE storage-domain update.
+   *
+   * WHY THIS METHOD EXISTS — the defect it closes (CAP-10 / G-SEAM-45).
+   *
+   * `drain` used to decide admission from a record it had read BEFORE the write,
+   * and then write. That is check-then-act: K concurrent drains all read the same
+   * `capacityDeficit`, all conclude there is room, and all admit. Measured with
+   * zero real children: target 3, two slots free, three concurrent drains ->
+   * three admitted, FOUR tasks holding slots, and `capacityDeficit` reading 0, so
+   * the overshoot was invisible to the very reader that exists to report it.
+   *
+   * The budget check did not have this hole, and the contrast is the whole
+   * finding: the budget check lives INSIDE the single record `update`, so the
+   * domain's write chain serializes it and CAP-09 passes; the target check lived
+   * OUTSIDE it, so it is not, and CAP-10 fails. The fix is therefore not a better
+   * coalescer. It is to move the target check to where the budget check already
+   * is — inside one `update` — so both are protected by the same mechanism.
+   *
+   * WHY THE DECISION MUST BE INSIDE THE TRANSFORM, NOT BEFORE IT. The domain's
+   * contract is exact (`storage-domain/src/domain.ts:83-89`): "Atomic
+   * read-modify-write on the domain's write chain: `fn` sees the value current at
+   * its queue slot, so concurrent updates never interleave." A transform that
+   * computes occupancy from the `current` it is handed is therefore serialized
+   * against every other write to this run, including a competing admission's.
+   * Reading `getRun()` outside and passing the answer in would reintroduce
+   * exactly the race being fixed, because that read is not on the chain.
+   *
+   * Steps, in the order V3 §H1 requires them, all inside one transform:
+   *   1. validate run identity, revision and active state
+   *   2. validate the task is ready and not already reserved/admitted
+   *   3. compute target occupancy from the authoritative stored states
+   *   4. refuse if occupancy >= target
+   *   5. verify outstanding reservations + spent + this request fit policy
+   *   6. reserve one target slot   (the task record itself, in `prepared`)
+   *   7. reserve the credit        (`budget.reserved += reservedCost`)
+   *   8. transition the task to reserved/starting  (`prepared`)
+   *   9. record a durable launch intention (the `admit-<taskId>` outbox entry)
+   *  10. commit
+   *
+   * The physical launch happens only AFTER this returns `reserved: true`; see
+   * `runDrain`, which launches on the committed path alone.
+   *
+   * A REFUSAL WRITES NOTHING. The transform throws the internal refusal before
+   * returning, so the domain performs no `put` at all: a refused attempt consumes
+   * no slot, no credit and no generation. That is stronger than writing an
+   * unchanged record, and it is what makes a refusal storm free.
+   *
+   * NOT THROWING FOR A FULL TARGET IS THE POINT. "The target is full" is the
+   * expected answer under contention, not a fault. It is returned as a value so
+   * the caller's control flow stays its own.
+   *
+   * @returns whether the reservation committed, plus the authoritative occupancy
+   *   it was decided against. Throws only for a malformed request or a storage
+   *   failure.
+   */
+  async tryReserveAdmission(input: {
+    runId: string
+    taskId: string
+    childId: string
+    assignmentDigest: string
+    reservedCost: number
+    allowedCapabilities: readonly string[]
+    /**
+     * The reservation generation the caller believes is current, when it has one.
+     * A mismatch is refused rather than written: a decision made against a
+     * generation this run has moved past must not commit on stale reasoning.
+     */
+    expectedRunRevision?: number
+    now?: string
+  }): Promise<AdmissionReservation> {
     this.assertOpen()
+    if (!Number.isFinite(input.reservedCost) || input.reservedCost < 0) {
+      throw new Error(
+        `dailyWork: reservedCost ${String(input.reservedCost)} must be a non-negative finite number`,
+      )
+    }
     const now = input.now ?? new Date().toISOString()
     // The host-wide slot is taken BEFORE the record write and released if the
     // write refuses. WHY BEFORE: the plan's rule is "pre-publication同步
@@ -792,75 +1050,231 @@ export class WorkService extends Service {
     // `occupied = reserved + starting + active_assignment + stopping +
     // unknown_quarantined`. A reservation with no child yet therefore still
     // blocks the 31st admission.
-    const slot = this.gate.reserveTask(input.taskId, 'reserved', input.childId)
-    const updated = await this.runs().update(input.runId, record => {
-      if (record.phase !== 'open') {
-        throw new Error(`dailyWork: run "${input.runId}" is ${record.phase}; refusing admission`)
+    //
+    // ---- THE HOST CAP IS REPORTED AS A TYPED REFUSAL, NOT THROWN ------------
+    //
+    // `reserveTask` calls `ChildAdmissionGate.assertRoom`, which THROWS
+    // `ChildCapacityError('HOST_CAPACITY_REACHED')` when the ledger is at the cap
+    // (`capacity.ts:434`, `:502-505`). Left unwrapped, that throw would escape a
+    // method whose return type says it answers with a refusal — so a caller
+    // written against `AdmissionReservation` would get an exception instead of
+    // `{ reserved: false, reason: 'host_capacity_reached' }`.
+    //
+    // This is NOT a defect this change introduced: the original `admit` had the
+    // same shape (`reserveTask` at `:795`, the releasing `.catch` on the
+    // `update(...)` promise at `:851-857`), so an at-cap admission threw there
+    // too. What this change does is stop WIDENING it: `tryReserveAdmission` is a
+    // new public seam whose type promises a typed answer, so the cap is caught
+    // here and reported in the same vocabulary `runDrain` already uses for it.
+    // The throw is not lost — it is named, counted by the gate, and surfaced as
+    // the `reason` a caller can act on.
+    //
+    // No slot was taken on this path (`assertRoom` throws BEFORE `tasks.set`), so
+    // there is nothing to release; the early return makes that explicit rather
+    // than relying on the reader to check `assertRoom`'s internals.
+    let slot: ChildSlot
+    try {
+      slot = this.gate.reserveTask(input.taskId, 'reserved', input.childId)
+    } catch (error) {
+      if (error instanceof ChildCapacityError && error.code === 'HOST_CAPACITY_REACHED') {
+        // The run's own record is read for the report only. The occupancy the
+        // caller sees is the RECORD's, and the reason is the HOST cap, which is
+        // what actually refused.
+        const record = this.getRun(input.runId)
+        return {
+          reserved: false,
+          reason: 'host_capacity_reached',
+          refusalMessage: error.message,
+          generation: record?.reservationGeneration ?? 0,
+          observedOccupancy: record === undefined ? 0 : heldSlots(record),
+          heldReservations: record === undefined ? 0 : heldSlots(record),
+          target: record?.requestedTarget ?? 0,
+        }
       }
-      if (isHalted(record.budget)) {
-        throw new Error(
-          `dailyWork: run "${input.runId}" is halted on a recorded budget overage (${record.budget.halt?.reason}); `
-          + 'refusing admission until a human resolves it',
-        )
-      }
-      const budget = record.budget
-      const committed = childCommitted(budget)
-      const limit = childCeiling(budget)
-      if (committed + input.reservedCost > limit) {
-        throw new Error(
-          `dailyWork: run "${input.runId}" has no budget headroom (committed ${committed}, child ceiling ${limit}, `
-          + `root reserve ${budget.rootReserve ?? 0} of ceiling ${budget.ceiling})`,
-        )
-      }
-      const existing = record.tasks[input.taskId]
-      if (existing !== undefined && holdsSlot(existing.state)) {
-        throw new Error(`dailyWork: task "${input.taskId}" is already admitted as ${existing.state}`)
-      }
-      if (record.terminalTombstones.includes(input.taskId)) {
-        throw new Error(`dailyWork: task "${input.taskId}" is a closed tombstone and cannot be reopened`)
-      }
-      const task: TaskRecord = {
-        taskId: input.taskId,
-        assignmentDigest: input.assignmentDigest,
-        childId: input.childId,
-        attempt: (existing?.attempt ?? 0) + 1,
-        state: 'prepared',
-        allowedCapabilities: [...input.allowedCapabilities],
-        inputRefs: [],
-        outputRefs: [],
-        reservedCost: input.reservedCost,
-        createdAt: existing?.createdAt ?? now,
-        updatedAt: now,
-      }
-      return {
-        ...record,
-        tasks: { ...record.tasks, [input.taskId]: task },
-        budget: { ...budget, reserved: budget.reserved + input.reservedCost },
-        outbox: {
-          ...record.outbox,
-          [`admit-${input.taskId}`]: {
-            id: `admit-${input.taskId}`,
-            destination: 'root',
-            payloadDigest: input.assignmentDigest,
-            stage: 'pending' as const,
-            createdAt: now,
-          },
-        },
-        updatedAt: now,
-      }
-    }).catch((error: unknown) => {
-      // The record write refused, so no task exists: give the slot back rather
-      // than leaking capacity for a child that was never admitted. This is the
-      // "失败清理后 release" half of the plan's rule.
-      slot.release()
       throw error
-    })
-    const task = updated.tasks[input.taskId]
-    if (task === undefined) {
+    }
+    // Set by the transform on its COMMIT path only, so the outcome the caller
+    // receives is the one the transform actually decided rather than a value
+    // re-derived outside the update (which would be a second opinion).
+    let committed: { task: TaskRecord; held: number; target: number; generation: number } | undefined
+    let updated: RunRecord
+    try {
+      updated = await this.runs().update(input.runId, record => {
+        // ---- 1. run identity, revision and active state ----------------------
+        const generation = record.reservationGeneration ?? 0
+        const target = record.requestedTarget
+        const held = heldSlots(record)
+        if (record.phase !== 'open') {
+          throw new AdmissionRefused(
+            `dailyWork: run "${input.runId}" is ${record.phase}; refusing admission`,
+            'run_not_open',
+            generation,
+            held,
+            target,
+          )
+        }
+        if (input.expectedRunRevision !== undefined && input.expectedRunRevision !== generation) {
+          throw new AdmissionRefused(
+            `dailyWork: run "${input.runId}" is at reservation generation ${generation} but the caller decided `
+            + `from ${input.expectedRunRevision}; refusing to commit an admission on a stale revision`,
+            'slots_held_by_unconfirmed',
+            generation,
+            held,
+            target,
+          )
+        }
+        if (isHalted(record.budget)) {
+          throw new AdmissionRefused(
+            `dailyWork: run "${input.runId}" is halted on a recorded budget overage (${record.budget.halt?.reason}); `
+            + 'refusing admission until a human resolves it',
+            'budget_overage_halt',
+            generation,
+            held,
+            target,
+          )
+        }
+
+        // ---- 2. the task is ready and not already reserved/admitted ----------
+        const existing = record.tasks[input.taskId]
+        if (existing !== undefined && holdsSlot(existing.state)) {
+          throw new AdmissionRefused(
+            `dailyWork: task "${input.taskId}" is already admitted as ${existing.state}`,
+            'slots_held_by_unconfirmed',
+            generation,
+            held,
+            target,
+          )
+        }
+        if (record.terminalTombstones.includes(input.taskId)) {
+          throw new AdmissionRefused(
+            `dailyWork: task "${input.taskId}" is a closed tombstone and cannot be reopened`,
+            'slots_held_by_unconfirmed',
+            generation,
+            held,
+            target,
+          )
+        }
+
+        // ---- 3. AUTHORITATIVE occupancy, from the stored states --------------
+        //
+        // `held` was computed above by `heldSlots(record)`, the SAME function
+        // `countRun` uses, over the same `holdsSlot` predicate the state machine
+        // uses. Not `capacityDeficit` (which clamps at zero and therefore cannot
+        // express an overshoot), and not a side counter (which can lag the
+        // authoritative states). This is the single derivation.
+
+        // ---- 4. the credit must fit policy -----------------------------------
+        //
+        // CHECKED BEFORE THE TARGET, and the order is load-bearing rather than
+        // arbitrary. It is the order the previous implementation had (`admit`
+        // checked phase, halt, budget; `mayAdmit` checked budget before slots) and
+        // the tests pin it: `capacity.test.ts` "the ROOT keeps its own inference
+        // budget" asserts a greedy request of 9501 at a FULL target is refused
+        // with `/no budget headroom/`, because the informative reason is that the
+        // credit does not fit, not that the run happens to be full. Reporting the
+        // target there would hide the budget fact behind a slot fact that is
+        // equally true and less useful.
+        const budget = record.budget
+        const alreadyCommitted = childCommitted(budget)
+        const limit = childCeiling(budget)
+        if (alreadyCommitted + input.reservedCost > limit) {
+          throw new AdmissionRefused(
+            `dailyWork: run "${input.runId}" has no budget headroom (committed ${alreadyCommitted}, child ceiling ${limit}, `
+            + `root reserve ${budget.rootReserve ?? 0} of ceiling ${budget.ceiling})`,
+            'budget_blocked',
+            generation,
+            held,
+            target,
+          )
+        }
+
+        // ---- 5. refuse if occupancy >= target --------------------------------
+        //
+        // THE FIX, in one comparison. It is inside the transform, so it runs at
+        // this update's queue slot and K concurrent callers cannot all pass it:
+        // each sees the record as the previous one committed it.
+        if (held >= target) {
+          throw new AdmissionRefused(
+            `dailyWork: run "${input.runId}" already holds ${held} of its target ${target} slots; `
+            + 'refusing admission rather than exceeding the target',
+            // A run exactly at target is a healthy full wave and keeps the
+            // `'none'` reading its callers already assert. A run ABOVE target is a
+            // violation and says so, which is the number the old code could not
+            // express.
+            held > target ? 'target_exceeded' : 'none',
+            generation,
+            held,
+            target,
+          )
+        }
+
+        // ---- 6/7/8/9. reserve the slot, the credit, the state, the outbox ----
+        const task: TaskRecord = {
+          taskId: input.taskId,
+          assignmentDigest: input.assignmentDigest,
+          childId: input.childId,
+          attempt: (existing?.attempt ?? 0) + 1,
+          state: 'prepared',
+          allowedCapabilities: [...input.allowedCapabilities],
+          inputRefs: [],
+          outputRefs: [],
+          reservedCost: input.reservedCost,
+          createdAt: existing?.createdAt ?? now,
+          updatedAt: now,
+        }
+        committed = { task, held, target, generation }
+        // ---- 10. commit (the domain writes this value) -----------------------
+        return {
+          ...record,
+          reservationGeneration: generation + 1,
+          tasks: { ...record.tasks, [input.taskId]: task },
+          budget: { ...budget, reserved: budget.reserved + input.reservedCost },
+          outbox: {
+            ...record.outbox,
+            [`admit-${input.taskId}`]: {
+              id: `admit-${input.taskId}`,
+              destination: 'root',
+              payloadDigest: input.assignmentDigest,
+              stage: 'pending' as const,
+              createdAt: now,
+            },
+          },
+          updatedAt: now,
+        }
+      })
+    } catch (error) {
+      // The host-wide slot goes back on EVERY non-committing path: a refusal (the
+      // expected answer under contention) and a genuine storage failure alike.
+      // Leaving it held would leak capacity one refused attempt at a time, which
+      // is the "失败清理后 release" half of the plan's rule.
+      slot.release()
+      if (error instanceof AdmissionRefused) {
+        return {
+          reserved: false,
+          reason: error.reason,
+          refusalMessage: error.message,
+          generation: error.generation,
+          observedOccupancy: error.held,
+          heldReservations: error.held,
+          target: error.target,
+        }
+      }
+      throw error
+    }
+    const record = committed
+    if (record === undefined || updated.tasks[input.taskId] === undefined) {
       slot.release()
       throw new Error(`dailyWork: admission of "${input.taskId}" did not persist`)
     }
-    return task
+    return {
+      reserved: true,
+      reason: 'none',
+      task: updated.tasks[input.taskId],
+      generation: updated.reservationGeneration ?? 0,
+      observedOccupancy: record.held,
+      heldReservations: record.held + 1,
+      target: record.target,
+    }
   }
 
   /**
@@ -1224,7 +1638,7 @@ export class WorkService extends Service {
   }
 
   /**
-   * Run one coalesced drain for a run.
+   * Run one coalesced drain for a run, through a single per-run leader.
    *
    * This is the rolling top-up. It is deliberately a plain async function with
    * no timer: it is triggered by events (a child settling) and by the root
@@ -1236,73 +1650,226 @@ export class WorkService extends Service {
    *   3. atomically reserve
    *   4. launch OUTSIDE the lock
    *   5. save the admission result
-   * After each await, re-check that this drain is still the current one for the
-   * run and that the service is not disposed.
+   *
+   * ---- LAYER 1, AND WHAT IT IS NOT ------------------------------------------
+   *
+   * The previous implementation coalesced like this (`host.ts`, before this
+   * change):
+   *
+   *     const inFlight = this.pendingDrain.get(runId)
+   *     if (inFlight !== undefined) await inFlight          // <-- awaits the OTHER drain
+   *     const task = this.runDrain(runId, requests, signal) // <-- no re-check
+   *     this.pendingDrain.set(runId, task)
+   *
+   * The comment on that `await` said "Absorb rather than stacking a second
+   * concurrent drain that would race on the same slots", and the code did the
+   * opposite: after awaiting, it started its OWN `runDrain` unconditionally. K
+   * concurrent callers awaited the SAME in-flight drain, and when it settled they
+   * all resumed in ONE microtask batch and each started its own pass. The `await`
+   * was not the protection; it was the mechanism that synchronized them.
+   *
+   * The fix here is a generation/dirty loop: one leader per run runs passes while
+   * `requestedGeneration > handledGeneration`, and an arrival during a pass only
+   * advances `requestedGeneration` and joins the leader. There is no path by
+   * which a second `runDrain` starts for the same run.
+   *
+   * ---- CORRECTNESS DOES NOT DEPEND ON THIS LAYER ----------------------------
+   *
+   * Stated plainly because it is the audit's point (V3 §H3): even if this
+   * in-memory coalescer regresses — or is bypassed entirely by a caller that
+   * invokes `runDrain` directly, or by a second host sharing the store — the
+   * target cannot be over-admitted, because the decision now lives in
+   * `tryReserveAdmission`'s single storage-domain update and is serialized by the
+   * domain's write chain (`storage-domain/src/domain.ts:83-89`). This layer is an
+   * EFFICIENCY: it stops K callers from each doing a read, a refused write and a
+   * rollback when one pass would do.
+   *
+   * The two layers are therefore independent, and the test that proves the
+   * invariant (`f5-admission.test.ts`, "WITH THE COALESCER DEFEATED") deliberately
+   * drives the reservation path around this leader to show the invariant holds
+   * without it.
    */
   async drain(runId: string, requests: readonly LaunchRequest[], signal: AbortSignal): Promise<LaunchOutcome[]> {
-    const inFlight = this.pendingDrain.get(runId)
-    if (inFlight !== undefined) {
-      // Coalesce: a drain is already running for this run. Absorb rather than
-      // stacking a second concurrent drain that would race on the same slots.
-      await inFlight
+    if (requests.length === 0) return []
+    const existing = this.drainLeaders.get(runId)
+    const state: DrainLeaderState = existing ?? {
+      requestedGeneration: 0,
+      handledGeneration: 0,
+      runner: undefined,
+      pending: [],
     }
-    const task = this.runDrain(runId, requests, signal)
-    this.pendingDrain.set(runId, task)
+    if (existing === undefined) this.drainLeaders.set(runId, state)
+    // The arrival: advance the requested generation and queue this caller's work.
+    // `resolve` is per-caller, so each caller receives the outcomes for its OWN
+    // requests even though one leader pass serves them all.
+    state.requestedGeneration += 1
+    const promise = new Promise<LaunchOutcome[]>((resolve, reject) => {
+      state.pending.push({ requests, signal, resolve, reject })
+    })
+    if (state.runner === undefined) {
+      state.runner = this.runDrainLeader(runId, state)
+    }
+    return await promise
+  }
+
+  /**
+   * The single per-run drain leader.
+   *
+   * Runs one pass per requested generation. A pass takes a SNAPSHOT of the
+   * pending work at its start, so requests that arrive while it runs are served
+   * by the NEXT pass rather than by a concurrent sibling — which is exactly the
+   * property the old coalescer claimed and did not have.
+   */
+  private async runDrainLeader(runId: string, state: DrainLeaderState): Promise<void> {
     try {
-      return await task
+      while (state.requestedGeneration > state.handledGeneration) {
+        const pass = state.requestedGeneration
+        const batch = state.pending.splice(0, state.pending.length)
+        // An empty batch with a pending generation means every queued caller was
+        // already served; advancing the generation is what terminates the loop.
+        if (batch.length > 0) {
+          const outcomes = await this.runDrainPass(runId, batch)
+          for (const entry of batch) {
+            const mine = outcomes.get(entry) ?? []
+            entry.resolve(mine)
+          }
+        }
+        state.handledGeneration = pass
+      }
+    } catch (error) {
+      // The pass threw before it could resolve its callers. Reject them all
+      // rather than leaving a caller awaiting a promise that never settles, and
+      // leave the map clean so the next arrival elects a fresh leader.
+      for (const entry of state.pending.splice(0, state.pending.length)) entry.reject(error)
+      state.handledGeneration = state.requestedGeneration
+      throw error
     } finally {
-      if (this.pendingDrain.get(runId) === task) this.pendingDrain.delete(runId)
+      state.runner = undefined
+      // Defensive re-election: if work arrived in the window between the loop's
+      // final test and this `finally`, the leader that would serve it must exist.
+      // The loop's own condition already covers the common case; this covers a
+      // future edit that introduces an await in that window.
+      if (state.requestedGeneration > state.handledGeneration && state.pending.length > 0) {
+        state.runner = this.runDrainLeader(runId, state)
+      } else if (state.pending.length === 0 && state.requestedGeneration === state.handledGeneration) {
+        // Nothing queued and nothing requested: drop the state so a long-lived
+        // host does not accumulate one entry per run it has ever drained.
+        this.drainLeaders.delete(runId)
+      }
     }
   }
 
-  private async runDrain(
+  /**
+   * One drain pass over a snapshot of queued work.
+   *
+   * The admission decision is NOT made here. It is made inside
+   * `tryReserveAdmission`'s storage-domain update, so the pre-checks below are
+   * reporting aids and host-wide short-circuits, never the authority. The
+   * authority is the reservation, and a request that passes these pre-checks and
+   * loses the race at the reservation is refused honestly with the reservation's
+   * own reason.
+   */
+  private async runDrainPass(
     runId: string,
-    requests: readonly LaunchRequest[],
-    signal: AbortSignal,
-  ): Promise<LaunchOutcome[]> {
-    const outcomes: LaunchOutcome[] = []
-    for (const request of requests) {
-      if (this.disposed) break
-      if (signal.aborted) break
+    batch: readonly DrainWorkItem[],
+  ): Promise<Map<DrainWorkItem, LaunchOutcome[]>> {
+    const outcomes = new Map<DrainWorkItem, LaunchOutcome[]>()
+    for (const entry of batch) outcomes.set(entry, [])
 
-      const record = this.requireRun(runId)
-      const counts = countRun(record, this.liveness.get(runId) ?? new Map(), this.readyTaskCount.get(runId) ?? 0)
-      if (!mayAdmit(record, counts, request.reservedCost)) {
-        outcomes.push({
-          taskId: request.taskId,
-          childId: request.childId,
-          accepted: false,
-          // The reason must be the one the GATE used, which needs this
-          // request's cost. `counts.deficitReason` cannot see it and would
-          // report a slot problem for a budget refusal.
-          reason: admissionReason(record, counts, request.reservedCost),
-        })
-        continue
-      }
-      // The HOST-WIDE gate, which the per-run deficit cannot see.
-      //
-      // WHY A SECOND CHECK IS NOT REDUNDANT. `counts.capacityDeficit` is
-      // `requestedTarget - held` for THIS run. It says nothing about the other
-      // roots sharing the host, and nothing about children materialized outside
-      // this run's record (a workflow's `startChild`, a direct delegation). So a
-      // run with a free target slot can still be the request that would push the
-      // HOST past 30. `admit` re-checks synchronously and throws, which is the
-      // authoritative refusal; this check exists so the outcome reports the
-      // host-capacity reason instead of surfacing as a generic admission error.
-      if (this.gate.occupied >= this.gate.limit) {
-        outcomes.push({
-          taskId: request.taskId,
-          childId: request.childId,
-          accepted: false,
-          reason: 'host_capacity_reached',
-        })
-        continue
-      }
+    for (const entry of batch) {
+      const mine = outcomes.get(entry)!
+      for (const request of entry.requests) {
+        // A caller whose signal is already aborted, or a disposed service, gets NO
+        // OUTCOME rather than a refusal, and that is the contract the previous
+        // implementation had: `host.test.ts` ("does not launch when the caller
+        // signal is already aborted") asserts `outcomes` has length 0 and the port
+        // was never called. The distinction is honest: a REFUSAL means the gate
+        // evaluated the request and said no, whereas an aborted caller never asked,
+        // so reporting `accepted: false` here would invent a decision the gate did
+        // not make.
+        //
+        // It also never releases a slot: an aborted drain simply does not admit.
+        if (this.disposed || entry.signal.aborted) break
 
-      // Step 3: atomic reserve. If this throws (budget, tombstone, duplicate),
-      // nothing was launched and we record the refusal honestly.
-      try {
-        await this.admit({
+        const record = this.requireRun(runId)
+        const counts = countRun(record, this.liveness.get(runId) ?? new Map(), this.readyTaskCount.get(runId) ?? 0)
+
+        // ---- A READ-ONLY PRE-CHECK THAT MAY ONLY EVER REFUSE -----------------
+        //
+        // WHY THIS EXISTS, given that the reservation below is the authority.
+        // `tryReserveAdmission` provisionally takes a HOST-WIDE slot before it
+        // writes the record, and releases it if the write refuses. That take is
+        // correct (the plan requires the slot to be held before publication), but
+        // it is VISIBLE: the gate's `highWater` records the peak occupancy, and a
+        // refused attempt would push it to `target + 1`. MEASURED as a regression
+        // when this pre-check was first omitted: `capacity.test.ts` "ONE
+        // completion refills while TWO siblings are still ACTIVE" saw
+        // `highWater 4` against `N 3`, because the N+1th refused attempt had
+        // momentarily occupied the ledger. The old implementation never showed
+        // this, and the reason is worth stating: it pre-checked `mayAdmit` in
+        // `runDrain` and therefore never called `admit` at all for an over-target
+        // request, so the provisional take never happened.
+        //
+        // So this restores that avoidance WITHOUT restoring the race. The
+        // asymmetry is the whole design and must not be inverted:
+        //
+        //   - this check may REFUSE. A refusal based on a stale read can only
+        //     UNDER-admit, and a missed top-up is recoverable; an over-admission is
+        //     not.
+        //   - this check may NEVER ADMIT. It is not the gate. The admission
+        //     decision is `tryReserveAdmission`'s, inside one storage-domain
+        //     update, and it is the only path that commits anything.
+        //
+        // A future edit that made this check authoritative — by admitting on its
+        // answer without reserving — would reopen F5 exactly. The comment is here
+        // because the asymmetry is not visible from the code alone.
+        if (!mayAdmit(record, counts, request.reservedCost)) {
+          mine.push({
+            taskId: request.taskId,
+            childId: request.childId,
+            accepted: false,
+            // The reason must be the one the GATE used, which needs this request's
+            // cost. `counts.deficitReason` cannot see it and would report a slot
+            // problem for a budget refusal.
+            reason: admissionReason(record, counts, request.reservedCost),
+          })
+          continue
+        }
+
+        // ---- THE HOST-WIDE GATE, which the per-run arithmetic cannot see -----
+        //
+        // Checked BEFORE the reservation so the outcome reports
+        // `host_capacity_reached` rather than surfacing as a generic admission
+        // error. WHY THIS IS NOT THE AUTHORITY: it reads `this.gate`, which is
+        // this PROCESS's ledger. A second host sharing the store has its own, so
+        // this check is a reporting improvement over the authoritative refusal
+        // inside the reservation, not a substitute for it. `tryReserveAdmission`
+        // takes the host slot itself and refuses on the record's own states.
+        if (this.gate.occupied >= this.gate.limit) {
+          mine.push({
+            taskId: request.taskId,
+            childId: request.childId,
+            accepted: false,
+            reason: 'host_capacity_reached',
+          })
+          continue
+        }
+
+        // ---- THE AUTHORITATIVE RESERVATION ----------------------------------
+        //
+        // This is the decision. It is one storage-domain update: occupancy,
+        // target, budget, task state, credit and the launch intention all move
+        // together, serialized by the domain's write chain, so no concurrent
+        // caller can observe the pre-write record and admit past the target.
+        //
+        // `expectedRunRevision` is deliberately NOT passed here. This pass is a
+        // top-up attempt, not a compare-and-swap on a revision it decided from:
+        // passing the generation it read above would refuse every request in a
+        // storm after the first committed, which would under-admit. The
+        // generation guard exists for a caller that HAS decided from a specific
+        // revision (see `tryReserveAdmission`'s parameter) and is exercised by
+        // the fault tests; the drain relies on the reservation itself.
+        const reservation = await this.tryReserveAdmission({
           runId,
           taskId: request.taskId,
           childId: request.childId,
@@ -1310,67 +1877,84 @@ export class WorkService extends Service {
           reservedCost: request.reservedCost,
           allowedCapabilities: ['reader'],
         })
-      } catch (error) {
-        outcomes.push({
-          taskId: request.taskId,
-          childId: request.childId,
-          accepted: false,
-          reason: error instanceof Error ? error.message : String(error),
-        })
-        continue
+        if (!reservation.reserved) {
+          // The refusal came from the atomic update, so its reason is the gate's
+          // own answer and cannot have drifted from the decision. `admit`'s
+          // callers assert on the same wording, which is why the message is
+          // carried out rather than re-derived here.
+          mine.push({
+            taskId: request.taskId,
+            childId: request.childId,
+            accepted: false,
+            reason: refusalReasonForOutcome(record, counts, reservation, request.reservedCost),
+          })
+          continue
+        }
+
+        // ---- THE DURABLE RESERVATION IS COMMITTED. ONLY NOW MAY WE LAUNCH ----
+        //
+        // Everything below is post-reservation. A crash anywhere after this
+        // point leaves a `prepared`/`launching` task holding its slot and its
+        // credit, which reconciliation resolves — never a silent release.
+        await this.transition({ runId, taskId: request.taskId, to: 'launching' })
+
+        // Step 4: launch outside the record lock. The port is the only thing that
+        // knows how to start a child; this service never touches ctx.subagents.
+        const port = this.launchPort
+        if (port === undefined) {
+          // No port installed: this is a configuration error, not a task failure.
+          // Leave the task in `unknown` so a reconciliation must resolve it, rather
+          // than pretending the task failed cleanly.
+          await this.transition({
+            runId,
+            taskId: request.taskId,
+            to: 'unknown',
+            uncertainty: 'no launch port installed',
+            releaseReservation: false,
+          })
+          mine.push({
+            taskId: request.taskId,
+            childId: request.childId,
+            accepted: false,
+            reason: 'no launch port installed',
+          })
+          continue
+        }
+
+        try {
+          await port.launch(request, entry.signal)
+        } catch (error) {
+          // The launch failed. We cannot tell whether the child was created, so
+          // this is `unknown`, not a clean failure: retrying blindly here is how a
+          // system double-launches (INV-D4).
+          //
+          // THE RESERVATION IS RECONCILED EXACTLY ONCE, and not here: the task
+          // moves to `unknown` with `releaseReservation: false`, so the slot and
+          // the credit stay held until a reconciliation decides from evidence.
+          // Releasing on the failure itself would free a slot for a child that
+          // may exist, which is the over-admission this change exists to stop,
+          // one layer down.
+          await this.transition({
+            runId,
+            taskId: request.taskId,
+            to: 'unknown',
+            uncertainty: `launch failed: ${error instanceof Error ? error.message : String(error)}`,
+            releaseReservation: false,
+          })
+          mine.push({
+            taskId: request.taskId,
+            childId: request.childId,
+            accepted: false,
+            reason: 'launch_failed_unknown',
+          })
+          continue
+        }
+
+        // Step 5: the child's inbox accepted the prompt. This is ADMISSION, not
+        // execution: we still do not know that the model is producing tokens.
+        await this.transition({ runId, taskId: request.taskId, to: 'accepted' })
+        mine.push({ taskId: request.taskId, childId: request.childId, accepted: true })
       }
-
-      await this.transition({ runId, taskId: request.taskId, to: 'launching' })
-
-      // Step 4: launch outside the record lock. The port is the only thing that
-      // knows how to start a child; this service never touches ctx.subagents.
-      const port = this.launchPort
-      if (port === undefined) {
-        // No port installed: this is a configuration error, not a task failure.
-        // Leave the task in `unknown` so a reconciliation must resolve it, rather
-        // than pretending the task failed cleanly.
-        await this.transition({
-          runId,
-          taskId: request.taskId,
-          to: 'unknown',
-          uncertainty: 'no launch port installed',
-          releaseReservation: false,
-        })
-        outcomes.push({
-          taskId: request.taskId,
-          childId: request.childId,
-          accepted: false,
-          reason: 'no launch port installed',
-        })
-        continue
-      }
-
-      try {
-        await port.launch(request, signal)
-      } catch (error) {
-        // The launch failed. We cannot tell whether the child was created, so
-        // this is `unknown`, not a clean failure: retrying blindly here is how a
-        // system double-launches (INV-D4).
-        await this.transition({
-          runId,
-          taskId: request.taskId,
-          to: 'unknown',
-          uncertainty: `launch failed: ${error instanceof Error ? error.message : String(error)}`,
-          releaseReservation: false,
-        })
-        outcomes.push({
-          taskId: request.taskId,
-          childId: request.childId,
-          accepted: false,
-          reason: 'launch_failed_unknown',
-        })
-        continue
-      }
-
-      // Step 5: the child's inbox accepted the prompt. This is ADMISSION, not
-      // execution: we still do not know that the model is producing tokens.
-      await this.transition({ runId, taskId: request.taskId, to: 'accepted' })
-      outcomes.push({ taskId: request.taskId, childId: request.childId, accepted: true })
     }
     return outcomes
   }

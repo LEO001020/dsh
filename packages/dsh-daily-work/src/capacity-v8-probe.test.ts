@@ -303,38 +303,40 @@ describe('V8/CAP-09: the last cost credit is reserved atomically under contentio
 })
 
 describe('V8/CAP-10: a completion storm must not overshoot the target', () => {
-  // `it.fails` is the project's convention for an encoded open defect: the
-  // assertion below MUST fail for this case to be green, so a fix turns it RED
-  // and the marker cannot be left behind silently. The property asserted is the
-  // CORRECT one (CAP-10's oracle); the code does not currently satisfy it.
-  it.fails('MEASURES THE KNOWN DEFECT: three concurrent drains against TWO free slots', async () => {
-    // THIS CASE ASSERTS THE CORRECT PROPERTY AND IS EXPECTED TO FAIL. It is an
-    // `it.fails` case for the same reason `capacity.test.ts` has one: the
-    // property below is the one CAP-10's oracle states ("no overshoot past the
-    // target"), and the measured product does not satisfy it. If someone fixes
-    // `WorkService.drain`'s coalescing, this case turns RED and the marker
-    // cannot be left behind silently.
+  // FIXED, and the marker was turned RED first. This case was an `it.fails` when
+  // it was written, because the property below is the one CAP-10's oracle states
+  // ("no overshoot past the target") and the product did not satisfy it. The fix
+  // (`host.ts`: `tryReserveAdmission`) made it fail the `it.fails` contract —
+  // "Expect test to fail" — which is the project's own signal that a marker
+  // cannot be left behind silently. It is now a plain assertion of the correct
+  // property, and the BEFORE numbers are archived under
+  // `qualification/results/R3-f5-admission/`.
+  it('three concurrent drains against TWO free slots admit exactly two', async () => {
+    // THE PROPERTY. Two freed slots admit exactly two, never three, and held
+    // reservations never exceed the target.
     //
     // WHY IT IS HERE AS WELL AS IN capacity.test.ts. That file's version drives
     // the same defect through THREE REAL CHILDREN. This one reproduces the
-    // arithmetic with a scripted launch port and ZERO children, so the defect is
-    // measurable without spending the machine on agents, and so a reader can see
-    // that the fault is in the service's own coalescing rather than in anything
-    // the provider or the subagent runtime does.
+    // arithmetic with a scripted launch port and ZERO children, so the property
+    // is measurable without spending the machine on agents, and so a reader can
+    // see that the behaviour is the service's own rather than anything the
+    // provider or the subagent runtime does.
     //
-    // THE MECHANISM, from `host.ts:1242-1256`:
+    // THE DEFECT THIS MEASURED, and where the fix now lives. `drain` used to be:
     //     const inFlight = this.pendingDrain.get(runId)
     //     if (inFlight !== undefined) await inFlight
     //     const task = this.runDrain(runId, requests, signal)   // <-- no re-check
-    // K concurrent callers await the SAME in-flight drain; when it settles they
-    // all resume in one microtask batch and each starts its OWN `runDrain`
-    // without re-reading `pendingDrain`. The target/deficit check lives INSIDE
-    // `runDrain` (`mayAdmit`) and is computed from a record none of them has
-    // written yet, so all K observe the same deficit and all K admit.
+    // K concurrent callers awaited the SAME in-flight drain; when it settled they
+    // all resumed in one microtask batch and each started its OWN `runDrain`. The
+    // target check was OUTSIDE the record update and read a record none of them
+    // had written yet, so all K observed the same deficit and all K admitted.
     //
-    // CONTRAST WITH CAP-09, measured in this same file: the BUDGET check is
-    // inside the single record `update`, so it does NOT over-admit. The two
-    // checks are in different places and only one of them is atomic.
+    // The fix is NOT in the coalescer. It is that the target check now lives
+    // INSIDE one storage-domain `update` (`tryReserveAdmission`), where the
+    // domain's per-domain write chain serializes it against every other write to
+    // this run. That is the same place the BUDGET check already was, which is why
+    // CAP-09 never had this hole. See `f5-admission.test.ts` for the arm that
+    // proves the invariant holds even with the coalescer defeated.
     const r = await probeRig('storm')
     const service = new WorkService(r.ctx, {
       targetChildren: 3,
@@ -351,7 +353,7 @@ describe('V8/CAP-10: a completion storm must not overshoot the target', () => {
     await service.createRun({ runId, root: r.root, authorizationRef: 'auth', targetChildren: 3 })
     service.setReadyTasks(runId, 20)
     // ZERO real children: the port is the seam the real port plugs into, and the
-    // defect is in the service's arithmetic, above the port.
+    // behaviour under test is the service's arithmetic, above the port.
     service.setLaunchPort({ async launch(request): Promise<{ childId: string }> { return { childId: request.childId } } })
 
     const signal = new AbortController().signal
@@ -367,6 +369,7 @@ describe('V8/CAP-10: a completion storm must not overshoot the target', () => {
       await service.transition({ runId, taskId: `task-${String(n)}`, to: 'confirmed', spentCost: 0 })
     }
     expect(service.counts(runId).capacityDeficit, 'exactly two slots are free').toBe(2)
+    expect(service.counts(runId).heldReservations, 'one task still holds its slot').toBe(1)
 
     // THREE concurrent refills against TWO free slots. The correct answer is 2.
     const [a, b, c] = await Promise.all([
@@ -383,10 +386,18 @@ describe('V8/CAP-10: a completion storm must not overshoot the target', () => {
       + `acceptedIds=${JSON.stringify(admitted.map(o => o.childId))} `
       + `deficitAfter=${String(service.counts(runId).capacityDeficit)}`)
 
-    // THE PROPERTY THE ORACLE STATES. Expected to fail until `drain` re-checks
-    // `pendingDrain` after its await.
+    // THE PROPERTY THE ORACLE STATES.
     expect(admitted, 'two freed slots admit exactly two, never three').toHaveLength(2)
     expect(held, 'held tasks never exceed the target').toBeLessThanOrEqual(3)
+    // The authoritative occupancy AGREES with the target check that refused the
+    // third, rather than reporting a healthy full wave.
+    const counts = service.counts(runId)
+    expect(counts.heldReservations, 'authoritative occupancy is exactly the target').toBe(3)
+    expect(counts.targetOvershoot, 'and nothing was over-admitted').toBe(0)
+    expect(counts.capacityDeficit, 'the target is full, not short').toBe(0)
+    // The refused request is reported with a reason, and the refusal consumed no
+    // slot and no credit: three reservations of 1 are outstanding for three tasks.
+    expect(record.budget.reserved, 'the ledger holds exactly the three live reservations').toBe(3)
   }, 60_000)
 })
 

@@ -56,16 +56,47 @@ export interface Counts {
   /** Cancelled and confirmed. */
   readonly cancelled: number
   /**
+   * The AUTHORITATIVE occupancy: how many slots this run currently holds.
+   *
+   * This is the same number the atomic reservation gate compares against the
+   * target, read from the same stored states. It is reported separately from
+   * `capacityDeficit` because a deficit CLAMPS at zero, and the clamp is what
+   * made an overshoot invisible: with four tasks holding slots against a target
+   * of three, `capacityDeficit` reads 0, exactly as it does for a healthy full
+   * wave. `heldReservations` reads 4.
+   */
+  readonly heldReservations: number
+  /**
    * How far below target we are, with the reason. Never silently reduced:
    * a deficit is a reported fact, not a new target.
    */
   readonly capacityDeficit: number
+  /**
+   * How far ABOVE target we are. Zero in a correct run.
+   *
+   * WHY THIS EXISTS. `capacityDeficit` is `max(0, target - held)`, so an
+   * overshoot and a healthy full wave are the SAME reading. The defect this
+   * field closes (CAP-10) over-admitted by one and reported `deficit 0`; the
+   * deployment had a dedicated deficit reader, and that reader reported health
+   * while the target was exceeded. A reader that cannot distinguish "full" from
+   * "over-full" cannot report an over-admission, so the over-admission is
+   * silent. This is the number that makes it loud, and it is derived from the
+   * authoritative reservations rather than from any side counter.
+   */
+  readonly targetOvershoot: number
   readonly deficitReason: DeficitReason
 }
 
 export type DeficitReason =
   /** At or above target. */
   | 'none'
+  /**
+   * MORE slots are held than the target allows. This is not a deficit at all; it
+   * is a violation of the target, and it is reported as its own reason because
+   * `capacityDeficit` cannot express it (it clamps at zero, so an overshoot reads
+   * identically to a healthy full wave).
+   */
+  | 'target_exceeded'
   /** Fewer ready tasks than target. Not a failure; the root has not asked for more. */
   | 'insufficient_ready_tasks'
   /** Slots are held by work whose release is not yet confirmed. */
@@ -74,8 +105,39 @@ export type DeficitReason =
   | 'budget_blocked'
   /** Actual spend exceeded its reservation; a human must resolve it. */
   | 'budget_overage_halt'
+  /**
+   * The HOST-WIDE hard cap of 30 refused it, independently of this run's target.
+   *
+   * Its own reason because the two limits are different facts about different
+   * scopes: a run at its target is a satisfied target, whereas a run under its
+   * target that the host cap refuses has an HONEST, PERMANENT deficit. Folding
+   * the second into the first would report a satisfied target while the run is
+   * short of it.
+   */
+  | 'host_capacity_reached'
   /** The run is paused or closing. */
   | 'run_not_open'
+
+/**
+ * How many slots a run holds RIGHT NOW, from its own stored task states.
+ *
+ * This is the ONE authoritative occupancy, and the reason it is a named
+ * function rather than a line inside `countRun` is the CAP-10 defect: the
+ * admission gate and the deficit reader must not be able to compute occupancy
+ * two different ways. `countRun` uses it, and `WorkService.tryReserveAdmission`
+ * uses it INSIDE the record update, so the number the gate decides against and
+ * the number a reader sees are the same derivation over the same states.
+ *
+ * `holdsSlot` is the state machine's own predicate (INV-C1), so this cannot
+ * become a second opinion about what "occupies" means.
+ */
+export function heldSlots(record: RunRecord): number {
+  let held = 0
+  for (const task of Object.values(record.tasks)) {
+    if (holdsSlot(task.state)) held += 1
+  }
+  return held
+}
 
 /**
  * Count a run.
@@ -98,13 +160,11 @@ export function countRun(
   let quarantinedUnknown = 0
   let confirmed = 0
   let cancelled = 0
-  let held = 0
+
+  // ONE derivation of occupancy, shared with the admission gate. See `heldSlots`.
+  const held = heldSlots(record)
 
   for (const task of Object.values(record.tasks)) {
-    // One rule, one source of truth (INV-C1): a slot is held exactly when the
-    // state says so. Any other way of computing the occupancy would be a second
-    // opinion that could silently disagree with the state machine.
-    if (holdsSlot(task.state)) held += 1
     if (task.state !== 'cancelled' && task.state !== 'confirmed') durablyAdmitted += 1
 
     const live = liveness.get(task.taskId)
@@ -141,6 +201,7 @@ export function countRun(
   }
 
   const deficit = Math.max(0, record.requestedTarget - held)
+  const overshoot = Math.max(0, held - record.requestedTarget)
 
   return {
     desiredTarget: record.requestedTarget,
@@ -154,7 +215,9 @@ export function countRun(
     quarantinedUnknown,
     confirmed,
     cancelled,
+    heldReservations: held,
     capacityDeficit: deficit,
+    targetOvershoot: overshoot,
     deficitReason: explainDeficit(record, deficit, readyTasks, 0),
   }
 }
@@ -180,12 +243,36 @@ export function admissionReason(record: RunRecord, counts: Counts, outstandingCo
   return explainDeficit(record, counts.capacityDeficit, counts.readyTasks, outstandingCost)
 }
 
+/**
+ * The reason a TARGET refusal carries, for a caller that refused on occupancy.
+ *
+ * Separate from `admissionReason` because the two answer different questions and
+ * conflating them is the CAP-10 invisibility. `admissionReason` explains why a
+ * DEFICIT could not be filled; this explains why the run is ALREADY FULL OR
+ * OVER. The old code answered the second question with the first, and because
+ * `capacityDeficit` clamps at zero, "the target is full" and "the target has been
+ * EXCEEDED" produced the same string (`'none'`). That is how an over-admission
+ * reported health.
+ *
+ * A run at exactly the target is a healthy full wave, and that keeps the
+ * `'none'` reading the existing tests assert for the ordinary full case. A run
+ * ABOVE the target is a violation and says so.
+ */
+export function targetRefusalReason(record: RunRecord): DeficitReason {
+  if (heldSlots(record) > record.requestedTarget) return 'target_exceeded'
+  return 'none'
+}
+
 function explainDeficit(
   record: RunRecord,
   deficit: number,
   readyTasks: number,
   outstandingCost: number,
 ): DeficitReason {
+  // Checked BEFORE the deficit: an overshoot is a violation of the target, and
+  // `deficit === 0` is exactly what an overshoot reads as. Reporting `'none'`
+  // here would be the silent reading this case exists to eliminate.
+  if (heldSlots(record) > record.requestedTarget) return 'target_exceeded'
   if (deficit === 0) return 'none'
   if (record.phase !== 'open') return 'run_not_open'
   // A recorded overage outranks the plain budget reading: both stop admission,
