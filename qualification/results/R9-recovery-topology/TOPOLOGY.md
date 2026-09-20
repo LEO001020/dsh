@@ -10,6 +10,28 @@
 | `packages/dsh-daily-work/src/record.ts` | `e481105052dfbc0c9d1d341ded03dc6941d06e087f0d15a5e818876c0ce62867` |
 | `packages/dsh-daily-work/src/host.ts` | `c3b1bb7e00d67b44b47626fd9fb8d283a7a387557d809ac531c39904312f8dbd` |
 
+> **LINE-NUMBER PROVENANCE — which tree do the `file:line` citations point at?**
+> Every line number in this document refers to the **POST-CHANGE tree** (this
+> branch's working tree after the deletion), *not* to `a4b0838`. The digests above
+> are of the **PRE-CHANGE** files, recorded before any edit. **The two are not
+> interchangeable**, and the offset is not uniform across files:
+>
+> | Site | at `a4b0838` | in this tree | delta |
+> |---|---|---|---|
+> | `host.ts` — `admit` slot refusal | `:817` | **`:824`** | +7 |
+> | `host.ts` — `unknown` (no port) | `:1335` | **`:1342`** | +7 |
+> | `host.ts` — `unknown` (launch failed) | `:1357` | **`:1364`** | +7 |
+> | `host.ts` — `accepted` | `:1372` | **`:1379`** | +7 |
+> | `recovery.ts` — the `to:` union annotation | `:207` | **gone** (deleted) | — |
+>
+> `host.ts` shifts by exactly +7 because this slice added 13 and removed 6 comment
+> lines before `admit`. Root independently cited `host.ts:816-817` and
+> `recovery.ts:207`; **both were correct for `a4b0838` and neither resolves in this
+> tree** — root was measuring the base, I was measuring the change. This table is
+> here so a third reader does not have to rediscover which is which. When checking a
+> claim below, **use the post-change numbers**; to check the pre-change ones, read
+> `git show a4b0838:<path>`.
+
 **DECISION: DELETE.** Stale-generation settlement **cannot occur** in this topology,
 because no settlement path exists at all. The epoch guard protects a path that is
 not merely unreachable but **absent**, so fencing it would mean inventing the
@@ -402,6 +424,27 @@ a task OUT of `unknown`").
 | "the product never performs a terminal-state write" | Overclaimed: it writes `unknown` on the drain path (`host.ts:1342`, `:1364`). Say *terminal* state, and say what `unknown`'s fate is. |
 | "the product cannot leave `accepted`" | A launch failure moves it to `unknown`, which is a different (and worse) fact. |
 | "`reconcileRun` resolves `unknown`" | It has no production caller; its decisions are computed and never applied. |
+
+#### The instrument rule this slice produced (for whoever writes the next enumeration oracle)
+
+Stated generally, because it is the transferable lesson and it cost two rounds here:
+
+> **An oracle that enumerates its own inputs by hand can hide the input that
+> matters, and the hiding is invisible because the test passes. Derive the
+> enumeration from the same source of truth the product uses, and pin both
+> directions with a control.**
+
+Both failure directions were produced by the same pattern in this slice:
+
+| Direction | How | Example here |
+|---|---|---|
+| **Omission** | a hand-picked alternation in the pattern | `(?:settling|confirmed|cancelled|executing|cancel_requested)` omitted `unknown`, the one state the product writes |
+| **Invention** | matching a declaration instead of a call | `to: 'settling' \| 'confirmed' \| 'cancelled'` is a type annotation, reported as a write |
+
+The fix for both: derive the state set from the product's own constant
+(`TERMINAL_STATES`), and require the syntactic terminator of a real call site
+(`[,}]`) — with a positive and a negative control asserted in the test so a future
+edit to the pattern cannot silently break either direction.
 
 ---
 

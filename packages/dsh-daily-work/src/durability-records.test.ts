@@ -1703,14 +1703,25 @@ describe('D10: the run record is authoritative across generations, and no stale 
     // The deciding topology fact, re-derived: no production file targets a
     // TERMINAL state, and `transition` is the only state writer.
     //
-    // CORRECTED. This check previously used the hand-picked list
+    // CORRECTED TWICE, and both corrections matter.
+    //
+    // (1) This check previously used the hand-picked list
     // `settling|confirmed|cancelled|executing|cancel_requested`, which OMITTED
     // `unknown` — the one non-terminal state the product actually writes
     // (host.ts:1342, host.ts:1364). The list is now derived from the project's own
-    // `TERMINAL_STATES`, and the `unknown` write is asserted separately rather than
-    // filtered out, so the check cannot certify a sentence the source contradicts.
+    // `TERMINAL_STATES`.
+    //
+    // (2) The terminator `[,}]` after the literal is load-bearing. Without it the
+    // pattern also matches a UNION TYPE ANNOTATION
+    // (`readonly to: 'settling' | 'confirmed' | 'cancelled'` — a field
+    // declaration, not a call site) and would report a state as written that no
+    // code writes. Root caught that false positive by hand; the pattern now
+    // refuses it mechanically.
     const targeted = (text: string): string[] =>
-      [...text.matchAll(/to:\s*'([a-z_]+)'/gu)].map(match => match[1] ?? '')
+      [...text.matchAll(/to:\s*'([a-z_]+)'\s*[,}]/gu)].map(match => match[1] ?? '')
+    // Positive and negative controls, so neither direction can fail silently.
+    expect(targeted("await this.transition({ runId, taskId, to: 'launching' })"), 'control: a call site matches').toEqual(['launching'])
+    expect(targeted("readonly to: 'settling' | 'confirmed' | 'cancelled'"), 'control: an annotation does NOT match').toEqual([])
     const terminalWriters = production.filter(file =>
       targeted(readFileSync(join(src, file), 'utf8'))
         .some(state => (TERMINAL_STATES as readonly string[]).includes(state)))

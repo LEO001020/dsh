@@ -47,6 +47,42 @@ does not.
 **Unchanged by the correction:** the DELETE decision, every other assertion, and
 every row below. No test was weakened; the two regexes were made stricter.
 
+### 0.1 A THIRD defect in the same instrument (found while verifying root's citations)
+
+Root's verification of FACT 2 cited `recovery.ts:207` as a `settling` hit and
+correctly identified it as a **type annotation**, not a call site. Checking that
+citation exposed a second failure direction in my own pattern:
+
+```
+/to:\s*'([a-z_]+)'/          # LOOSE — matches annotations too
+```
+
+On the BASE tree this pattern reports `recovery.ts` as writing **`settling`** —
+because `readonly to: 'settling' | 'confirmed' | 'cancelled'` is a union member of
+the deleted `WorkerSettlement` interface, not a transition call. So the first
+pattern could both **omit** a state (`unknown`, by hand-picked list) and **invent**
+one (`settling`, by matching a declaration). Root caught the second by hand; a
+mechanism should have caught it.
+
+**Fix — the terminator is load-bearing:**
+
+```
+/to:\s*'([a-z_]+)'\s*[,}]/  # HARDENED — a call site ends with , or }
+```
+
+Both directions are now pinned by explicit controls in the test, so neither can
+fail silently again:
+
+| Control | Input | Required result |
+|---|---|---|
+| positive | `await this.transition({ runId, taskId, to: 'launching' })` | `['launching']` |
+| negative | `readonly to: 'settling' | 'confirmed' | 'cancelled'` | `[]` |
+
+The general rule this slice produced, now stated in `TOPOLOGY.md`: **an oracle that
+enumerates its own inputs by hand can hide the input that matters, and the hiding is
+invisible because the test passes — derive the enumeration from the same source of
+truth the product uses, and pin both directions with a control.**
+
 ---
 
 ## 1. `durability-advanced.test.ts` — the T9-A section (rewritten)

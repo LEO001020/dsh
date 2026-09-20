@@ -1095,8 +1095,26 @@ describe('T9-A: the run epoch is DELETED, and v2 does not claim the guarantee', 
       'confirmed',
       'cancelled',
     ])
+    // HARDENED: the terminator `[,}]` after the literal is load-bearing. Without
+    // it the pattern also matches a UNION TYPE ANNOTATION
+    // (`readonly to: 'settling' | 'confirmed' | 'cancelled'`, which is a field
+    // declaration, not a call site) and would report a state as written that no
+    // code writes. Root caught exactly that false positive by hand in the base
+    // tree; the pattern now refuses it mechanically. Both failure directions are
+    // therefore closed: a state can neither be omitted by a hand-picked list, nor
+    // invented by matching a declaration.
     const targeted = (text: string): string[] =>
-      [...text.matchAll(/to:\s*'([a-z_]+)'/gu)].map(match => match[1] ?? '')
+      [...text.matchAll(/to:\s*'([a-z_]+)'\s*[,}]/gu)].map(match => match[1] ?? '')
+    // Positive control: the pattern must still find a real call site, or the
+    // "no writer" results below would be an empty negative from a broken matcher.
+    expect(
+      targeted("await this.transition({ runId, taskId, to: 'launching' })"),
+      'control: a real call site must match',
+    ).toEqual(['launching'])
+    expect(
+      targeted("readonly to: 'settling' | 'confirmed' | 'cancelled'"),
+      'control: a type annotation must NOT match',
+    ).toEqual([])
     const terminalWriters: string[] = []
     const unknownWriters: string[] = []
     for (const file of production) {

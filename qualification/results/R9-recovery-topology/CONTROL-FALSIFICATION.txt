@@ -1,0 +1,18 @@
+=== CONTROL FALSIFICATION TEST (the negative control is load-bearing) ===
+
+A control that never fails is not a control. Both directions of the hardened
+call-site pattern were falsification-tested by injection:
+
+INJECTION 1 — revert the terminator to the loose pattern
+  /to:\s*'([a-z_]+)'/gu   (instead of /to:\s*'([a-z_]+)'\s*[,}]/gu)
+  command: node node_modules/vitest/vitest.mjs run src/durability-advanced.test.ts -t 'DECIDING topology fact'
+  RESULT:  FAILED as required —
+    'control: a type annotation must NOT match: expected [ 'settling' ] to deeply equal []'
+  So the annotation false positive (recovery.ts:207's union type) is now caught
+  mechanically, not by a human noticing.
+
+RESTORED, and re-run:
+  RESULT:  PASSED (1 passed | 32 skipped)
+
+The positive control ('a real call site must match' -> ['launching']) is what
+keeps the 'no writer' results from being an empty negative of a broken matcher.
