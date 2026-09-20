@@ -257,15 +257,29 @@ export interface WorkStatusView {
    * report. Named rather than silently omitted, so the card can show the gap
    * instead of a blank that reads as zero.
    *
-   * MEASURED, and this is the honest part of the slice: `command-work.ts`
-   * `renderStatus` emits Phase, Target, Durably admitted, Launching, Active
-   * assignments, Stopping, Quarantined (unknown), Confirmed and Capacity deficit
-   * — and NOTHING else. So `ready`, the two `waiting` counts and the global
-   * hard-cap occupancy have no value to display through the command plane.
-   * `Counts` DOES carry `readyTasks`, `waitingOwnedTool` and `providerWaiting`
-   * (`counting.ts:39,47,49`), and `CapacitySnapshot` carries the hard cap, but
-   * `/work status` does not surface them. Extending `renderStatus` is a one-line
-   * change in P5's file, not mine, so it is REPORTED here rather than made.
+   * MEASURED against `command-work.ts` `renderStatus` (`:180-193`), which emits
+   * exactly: Run, Phase, Target, Durably admitted, Launching, Active assignments,
+   * Stopping, Quarantined (unknown), Confirmed, Capacity deficit (reason) and
+   * optionally Authorized by. Everything below is a field `Counts` carries
+   * (`counting.ts`) that no line renders:
+   *
+   *   - `readyTasks` (:39) -- V5 names "ready"; the durable READY queue is writer
+   *     P5's concurrent work this round, and P5 may name the concept differently,
+   *     so this module does NOT invent a field name.
+   *   - `waitingOwnedTool` (:47) and `providerWaiting` (:49) -- the two "waiting"
+   *     counts, which `counting.ts`'s own header keeps separate on purpose.
+   *   - `heldReservations` (:68) -- the AUTHORITATIVE occupancy, and the one this
+   *     list most wants. It is the field that makes an over-admission visible,
+   *     because `capacityDeficit` clamps at zero and reads identically for a full
+   *     wave and an overshoot. V5 asks for "admitted/reserved"; `Durably admitted`
+   *     IS rendered, but this stricter number is not.
+   *   - `targetOvershoot` (:83) -- the other half of the same CAP-10 story.
+   *   - the global hard cap -- V5 asks for "global hard-cap occupancy". It lives on
+   *     `CapacitySnapshot` (`capacity.ts:159`), a different service call, and no
+   *     command surfaces it.
+   *
+   * Extending `renderStatus` is a small change in P5's file, not mine, so it is
+   * REPORTED rather than made.
    */
   readonly unreported: readonly string[]
   /** The raw host text, so a card can show exactly what the host said. */
@@ -283,6 +297,8 @@ export const STATUS_FIELDS_NOT_REPORTED: readonly string[] = [
   'ready',
   'waiting (owned tool)',
   'waiting (provider)',
+  'held reservations (authoritative occupancy)',
+  'target overshoot',
   'global hard-cap occupancy',
 ]
 
