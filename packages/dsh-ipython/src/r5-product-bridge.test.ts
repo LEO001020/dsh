@@ -97,10 +97,27 @@ beforeEach(async () => {
   })
   ctx.on('tools/result', exec => { results.push(`${exec.name}:${String(exec.callId)}`) })
 
-  // The REAL kernel service, mounted as the profile's bundle row mounts it. The
-  // ledger is durable by default; this test asks for the in-memory one so the
-  // suite needs no storage facility, which is a configuration difference and not
-  // a wiring difference.
+  // The REAL kernel service, mounted as the profile's bundle row mounts it.
+  //
+  // `durableLedger: false` IS AN EXPLICIT OPT-OUT, and this comment replaces one
+  // that said "the ledger is durable by default; this test asks for the
+  // in-memory one so the suite needs no storage facility". That was true and it
+  // was also the reason this file LOOKED like it covered durability while
+  // covering none of it: the shared context below mounts only `SystemPrompt` +
+  // `ToolRuntime` + `Subprocess`, so there is no facility to be durable over.
+  // Since V5 §11.1 an unset `durableLedger` means REQUIRED, so leaving it out
+  // would refuse every kernel in this file rather than quietly using memory.
+  //
+  // WHAT THIS FILE DOES AND DOES NOT COVER, stated so a reader does not have to
+  // infer it. It covers the ASSEMBLED CODE PATH through the real `ipython` tool
+  // and a real kernel, which is why it is the file that catches a broken wiring.
+  // It does NOT cover ledger durability: its one durable arm (the crash-reopen
+  // arm below) builds its OWN context and its OWN ledger through
+  // `openBridgeLedger`, so it measures the LEDGER MODULE rather than the
+  // SERVICE's choice of ledger. The service's choice -- including the rule that
+  // a second Session in one process must not silently get memory -- is gated by
+  // `p10-ledger-durable.test.ts`, whose control arm mounts storage and asserts
+  // `ledgerIsDurable() === true` with no opt-out at all.
   service = new KernelService(ctx, {
     pythonExecutable: PYTHON,
     brokerScript: BROKER,

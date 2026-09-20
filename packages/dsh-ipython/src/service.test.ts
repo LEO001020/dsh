@@ -64,6 +64,15 @@ function makeService(overrides: { executionWorld?: string, environmentDigest?: s
     pythonExecutable: PYTHON,
     brokerScript: BROKER,
     root,
+    // A GENUINE DEVELOPMENT HOST, so the non-durable ledger is opted into
+    // EXPLICITLY (V5 §11.1). This file's subject is the registry and kernel
+    // identity -- which kernel a Session resolves to, whether a changed
+    // execution world is refused -- and it mounts no storage domain. Since the
+    // durable ledger became REQUIRED, an unset `durableLedger` here would refuse
+    // every kernel, which would test nothing about the registry. The durable
+    // path has its own gate (`p10-ledger-durable.test.ts`), including the
+    // control arm that proves the durable default still works.
+    durableLedger: false,
     ...overrides,
   })
   return service

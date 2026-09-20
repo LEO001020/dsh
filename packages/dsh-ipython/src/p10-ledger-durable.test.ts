@@ -210,6 +210,12 @@ describe('LEDGER-DURABLE: the control arm, without which the refusals prove noth
     // service re-opens the domain per Session instead of holding one handle,
     // session 2 silently gets memory while session 1 is durable -- a partial
     // degradation that a single-session test cannot see.
+    //
+    // THIS ARM WAS MEASURED RED BEFORE THE FIX. With the facility mounted, the
+    // first Session reported durable and the second reported NOT durable, because
+    // the second `openBridgeLedger` threw `already-open` and the swallowed error
+    // fell through to `MemoryBridgeLedger`. The measurement is archived at
+    // `qualification/results/P10-ledger/BEFORE-test-run.txt`.
     await mountStorage(ctx, join(root, 'store'))
     service = new KernelService(ctx, {
       pythonExecutable: PYTHON,
@@ -225,4 +231,44 @@ describe('LEDGER-DURABLE: the control arm, without which the refusals prove noth
     expect(service.ledgerIsDurable(first)).toBe(true)
     expect(service.ledgerIsDurable(second)).toBe(true)
   }, 240_000)
+})
+
+// ---------------------------------------------------------------------------
+// LEDGER-DURABLE 4 — the status surface V5 §11.1 names.
+// ---------------------------------------------------------------------------
+
+describe('LEDGER-DURABLE: the status surface reports the ledger it actually obtained', () => {
+  it('reports bridgeLedgerDurable: true for a durable kernel', async () => {
+    await mountStorage(ctx, join(root, 'store'))
+    service = new KernelService(ctx, {
+      pythonExecutable: PYTHON,
+      brokerScript: BROKER,
+      root: join(root, 'kernels'),
+    })
+    const agent = agentFor('ledger-status-durable')
+    await service.runCell(agent, 'print("status")')
+
+    // READ FROM THE SERVICE'S OWN STATUS, which is the surface a doctor/status
+    // reader resolves -- not from `ledgerIsDurable`, so the merge itself is what
+    // is under test rather than the field behind it.
+    const status = await service.status(agent)
+    expect(status?.bridgeLedgerDurable).toBe(true)
+  }, 180_000)
+
+  it('reports bridgeLedgerDurable: false for the explicit development configuration', async () => {
+    // THE CONTRAST ARM. Without it, a field hardcoded to `true` would pass the
+    // arm above. This is the only configuration allowed an in-memory ledger, and
+    // it must SAY SO rather than merely behave that way.
+    service = new KernelService(ctx, {
+      pythonExecutable: PYTHON,
+      brokerScript: BROKER,
+      root: join(root, 'kernels'),
+      durableLedger: false,
+    })
+    const agent = agentFor('ledger-status-memory')
+    await service.runCell(agent, 'print("status")')
+
+    const status = await service.status(agent)
+    expect(status?.bridgeLedgerDurable).toBe(false)
+  }, 180_000)
 })

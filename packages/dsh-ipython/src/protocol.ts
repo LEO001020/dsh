@@ -312,6 +312,25 @@ export interface KernelStatus {
    * exists to make visible.
    */
   readonly attributionBootstrapLoaded?: boolean
+  /**
+   * Whether this Session's bridge ledger is DURABLE (storage-domain) rather than
+   * in-memory.
+   *
+   * V5 §11.1 requires the status/doctor surface to show this as
+   * `bridgeLedgerDurable: true` for a final-daily deployment. It is reported here
+   * rather than on the broker's own status because the LEDGER IS NOT THE BROKER'S
+   * TO KNOW ABOUT: the broker owns the kernel process, while the ledger is a
+   * storage-domain record the host holds. `KernelService.status` therefore merges
+   * its own answer into the broker's report.
+   *
+   * WHY IT IS WORTH A FIELD AT ALL, given that a kernel now REFUSES to publish
+   * without a durable ledger when one was requested. A reader must be able to
+   * tell a deployment that genuinely records dispositions from one that opted
+   * into memory with `durableLedger: false`; `false` here is that deployment
+   * saying so out loud, which is the difference between an honest development
+   * host and the silent degradation this field exists to end.
+   */
+  readonly bridgeLedgerDurable?: boolean
 }
 
 export interface BrokerError {

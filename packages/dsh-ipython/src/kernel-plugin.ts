@@ -1028,7 +1028,15 @@ export class KernelService extends Service {
   async status(agent: Agent): Promise<KernelStatus | undefined> {
     const entry = this.entries.get(agent.session.header.id)
     if (entry === undefined) return undefined
-    return await entry.host.status()
+    const reported = await entry.host.status()
+    // THE LEDGER'S DURABILITY IS MERGED HERE, and the merge is why this method is
+    // not a straight pass-through (V5 §11.1: "Status/doctor must show
+    // `bridgeLedgerDurable: true`"). The broker reports on the kernel PROCESS; the
+    // ledger is a storage-domain record the SERVICE holds, so the broker cannot
+    // answer this and the host must not infer it. Reporting it from the entry
+    // rather than from the configuration is deliberate: the configuration states
+    // what was ASKED FOR, and this field must state what was OBTAINED.
+    return { ...reported, bridgeLedgerDurable: entry.ledgerDurable }
   }
 
   /**

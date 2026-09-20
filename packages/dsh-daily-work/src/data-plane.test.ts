@@ -456,6 +456,12 @@ async function mountIpythonTool(root: string): Promise<{ ctx: Context; dispose: 
       pythonExecutable: string
       brokerScript: string
       root: string
+      // The cross-package import is typed structurally by hand, so every field
+      // this call passes must appear here. `durableLedger` is declared because
+      // V5 §11.1 made an UNSET value mean REQUIRED: this harness mounts no
+      // storage domain, so it must opt out explicitly or every kernel in this
+      // file refuses to publish.
+      durableLedger?: boolean
     }) => { close: () => Promise<void> }
   }
   const ipyTool = await import(pathToFileURL(join(pkg, 'src', 'ipython-tool.ts')).href) as {
@@ -470,6 +476,12 @@ async function mountIpythonTool(root: string): Promise<{ ctx: Context; dispose: 
     pythonExecutable: pythonPath(),
     brokerScript: join(pkg, 'src', 'broker.py'),
     root,
+    // This harness mounts no storage domain -- its subject is the DATA PLANE over
+    // a real kernel, not the bridge ledger -- so the non-durable ledger is opted
+    // into EXPLICITLY. Since V5 §11.1 an unset `durableLedger` means REQUIRED and
+    // would refuse every kernel in this file. The durable path is gated by
+    // `packages/dsh-ipython/src/p10-ledger-durable.test.ts`.
+    durableLedger: false,
   })
   ipyTool.apply(ctx)
   return {

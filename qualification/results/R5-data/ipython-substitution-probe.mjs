@@ -76,6 +76,9 @@ try {
     pythonExecutable: PYTHON,
     brokerScript: `${IPY}/src/broker.py`,
     root: kernelRoot,
+    // No storage domain is mounted on this probe's context, so the non-durable
+    // ledger is opted into explicitly (V5 §11.1: unset now means REQUIRED).
+    durableLedger: false,
   })
   ipyTool.apply(ctx)
   const agent = { session: { header: { id: 'r5-sub-session', cwd: root } } }

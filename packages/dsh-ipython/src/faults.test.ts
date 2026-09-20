@@ -359,6 +359,12 @@ describe('IPY-07: restart replaces the kernel and preserves its working director
       pythonExecutable: PYTHON,
       brokerScript: BROKER,
       root,
+      // This context mounts no storage domain (this file is fault arms over the
+      // kernel and its transport), so the non-durable ledger is opted into
+      // EXPLICITLY: since V5 §11.1 an unset `durableLedger` means REQUIRED and
+      // would refuse every kernel here. Gated separately by
+      // `p10-ledger-durable.test.ts`.
+      durableLedger: false,
     })
     const agent = {
       session: { header: { id: 'restart', cwd: project } },

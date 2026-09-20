@@ -73,6 +73,17 @@ let root: string
 let service: KernelService | undefined
 let bridge: BridgeServer | undefined
 
+// EVERY `KernelService` IN THIS FILE PASSES `durableLedger: false`, deliberately
+// and per site rather than by omission. The durable bridge ledger became REQUIRED
+// for any configuration that does not refuse it explicitly (V5 §11.1), and this
+// context mounts only `SystemPrompt` + `ToolRuntime` + `Subprocess` -- no storage
+// domain, because this file's subject is the BRIDGE SEAM (dispatch, authorization,
+// refusal, truncation, attribution) and not the ledger. Without the explicit
+// opt-out each of these kernels would refuse to publish, and the file would be
+// measuring the ledger gate instead of the seam. The durable path is gated
+// separately by `p10-ledger-durable.test.ts`, which includes the control arm
+// proving the durable default still works.
+
 beforeEach(async () => {
   ctx = new Context()
   await ctx.plugin(SystemPrompt, { personaPrefix: '' })
@@ -217,6 +228,7 @@ describe('T7-01 the model Python path reaches ctx.tools.execute (MEASURED)', () 
       pythonExecutable: PYTHON,
       brokerScript: BROKER,
       root: join(root, 'kernels'),
+      durableLedger: false,
     })
 
     // ---- run a REAL cell whose dsh.call must reach the registry -----------
@@ -287,6 +299,7 @@ describe('T7-01 the model Python path reaches ctx.tools.execute (MEASURED)', () 
       pythonExecutable: PYTHON,
       brokerScript: BROKER,
       root: join(root, 'kernels-none'),
+      durableLedger: false,
     })
 
     const result = await service.runCell(agent, [
@@ -349,6 +362,7 @@ describe('T7-02 ctx.terminalController is NOT on the model Python path (MEASURED
       pythonExecutable: PYTHON,
       brokerScript: BROKER,
       root: join(root, 'kernels-tc'),
+      durableLedger: false,
     })
     const lease = b.mintLease({
       sessionId: 'session-tc',
@@ -420,6 +434,7 @@ describe('T7-03 exactly one model loop (MEASURED)', () => {
       pythonExecutable: PYTHON,
       brokerScript: BROKER,
       root: join(root, 'kernels-loop'),
+      durableLedger: false,
     })
     const lease = b.mintLease({
       sessionId: 'session-loop',
@@ -511,7 +526,7 @@ describe('T7-04 the native-call contract (MEASURED)', () => {
     bridge = b
     await b.start()
     const agent = agentFor('session-err', root)
-    service = new KernelService(ctx, { pythonExecutable: PYTHON, brokerScript: BROKER, root: join(root, 'kernels-err') })
+    service = new KernelService(ctx, { pythonExecutable: PYTHON, brokerScript: BROKER, root: join(root, 'kernels-err'), durableLedger: false })
     const lease = b.mintLease({
       sessionId: 'session-err',
       cellId: 'cell-err-1',
@@ -554,7 +569,7 @@ describe('T7-04 the native-call contract (MEASURED)', () => {
     bridge = b
     await b.start()
     const agent = agentFor('session-unknown', root)
-    service = new KernelService(ctx, { pythonExecutable: PYTHON, brokerScript: BROKER, root: join(root, 'kernels-unknown') })
+    service = new KernelService(ctx, { pythonExecutable: PYTHON, brokerScript: BROKER, root: join(root, 'kernels-unknown'), durableLedger: false })
     const lease = b.mintLease({
       sessionId: 'session-unknown',
       cellId: 'cell-unknown-1',
@@ -607,7 +622,7 @@ describe('T7-04 the native-call contract (MEASURED)', () => {
     bridge = b
     await b.start()
     const agent = agentFor('session-deny', root)
-    service = new KernelService(ctx, { pythonExecutable: PYTHON, brokerScript: BROKER, root: join(root, 'kernels-deny') })
+    service = new KernelService(ctx, { pythonExecutable: PYTHON, brokerScript: BROKER, root: join(root, 'kernels-deny'), durableLedger: false })
     const lease = b.mintLease({
       sessionId: 'session-deny',
       cellId: 'cell-deny-1',
@@ -683,7 +698,7 @@ describe('T7-04 the native-call contract (MEASURED)', () => {
     bridge = b
     await b.start()
     const agent = agentFor('session-deny2', root)
-    service = new KernelService(ctx, { pythonExecutable: PYTHON, brokerScript: BROKER, root: join(root, 'kernels-deny2') })
+    service = new KernelService(ctx, { pythonExecutable: PYTHON, brokerScript: BROKER, root: join(root, 'kernels-deny2'), durableLedger: false })
     const lease = b.mintLease({
       sessionId: 'session-deny2',
       cellId: 'cell-deny2-1',
@@ -744,7 +759,7 @@ describe('T7-04 the native-call contract (MEASURED)', () => {
     bridge = b
     await b.start()
     const agent = agentFor('session-slow', root)
-    service = new KernelService(ctx, { pythonExecutable: PYTHON, brokerScript: BROKER, root: join(root, 'kernels-slow') })
+    service = new KernelService(ctx, { pythonExecutable: PYTHON, brokerScript: BROKER, root: join(root, 'kernels-slow'), durableLedger: false })
     const lease = b.mintLease({
       sessionId: 'session-slow',
       cellId: 'cell-slow-1',
@@ -816,7 +831,7 @@ describe('T7-04 the native-call contract (MEASURED)', () => {
     bridge = b
     await b.start()
     const agent = agentFor('session-big', root)
-    service = new KernelService(ctx, { pythonExecutable: PYTHON, brokerScript: BROKER, root: join(root, 'kernels-big') })
+    service = new KernelService(ctx, { pythonExecutable: PYTHON, brokerScript: BROKER, root: join(root, 'kernels-big'), durableLedger: false })
     const lease = b.mintLease({
       sessionId: 'session-big',
       cellId: 'cell-big-1',
@@ -1259,7 +1274,7 @@ describe('T7-08 the forbidden seam is ABSENT from this package (MEASURED)', () =
     bridge = b
     await b.start()
     const agent = agentFor('session-tc2', root)
-    service = new KernelService(ctx, { pythonExecutable: PYTHON, brokerScript: BROKER, root: join(root, 'kernels-tc2') })
+    service = new KernelService(ctx, { pythonExecutable: PYTHON, brokerScript: BROKER, root: join(root, 'kernels-tc2'), durableLedger: false })
 
     // The lease and preamble are minted as the host path would mint them, so the
     // cell really does hold the capability -- otherwise `dsh` would be absent for
