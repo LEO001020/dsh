@@ -1,0 +1,337 @@
+{
+ "work_dir": "C:\\Users\\hzq00\\AppData\\Local\\Temp\\s5-ipy13-gate-qw8ev07u",
+ "g1_cell_own_writes": {
+  "msg_id": "df742d7b-c6b5aabf6966590cd726c1c1_28496_2",
+  "frames": [
+   {
+    "parent": "df742d7b-c6b5aabf6966590cd726c1c1_28496_2",
+    "own": true,
+    "msg_type": "status"
+   },
+   {
+    "parent": "df742d7b-c6b5aabf6966590cd726c1c1_28496_2",
+    "own": true,
+    "msg_type": "execute_input"
+   },
+   {
+    "parent": "df742d7b-c6b5aabf6966590cd726c1c1_28496_2",
+    "own": true,
+    "msg_type": "stream",
+    "text": "G1-CELL-PRINT\n"
+   },
+   {
+    "parent": "df742d7b-c6b5aabf6966590cd726c1c1_28496_2",
+    "own": true,
+    "msg_type": "stream",
+    "text": "G1-CELL-ERR\n"
+   },
+   {
+    "parent": "df742d7b-c6b5aabf6966590cd726c1c1_28496_2",
+    "own": true,
+    "msg_type": "status"
+   }
+  ]
+ },
+ "g1_trace": [
+  {
+   "stream": "stdout",
+   "text": "G1-CELL-PRINT",
+   "ipykernel_contextvar_set": true,
+   "ipykernel_parent": "df742d7b-c6b5aabf6966590cd726c1c1_28496_2",
+   "parent_header_property": "df742d7b-c6b5aabf6966590cd726c1c1_28496_2",
+   "dsh_cell": "CELL-G1",
+   "thread": "MainThread"
+  },
+  {
+   "stream": "stderr",
+   "text": "G1-CELL-ERR",
+   "ipykernel_contextvar_set": true,
+   "ipykernel_parent": "df742d7b-c6b5aabf6966590cd726c1c1_28496_2",
+   "parent_header_property": "df742d7b-c6b5aabf6966590cd726c1c1_28496_2",
+   "dsh_cell": "CELL-G1",
+   "thread": "MainThread"
+  }
+ ],
+ "g2_join": {
+  "msg_id": "df742d7b-c6b5aabf6966590cd726c1c1_28496_5",
+  "frames": [
+   {
+    "parent": "df742d7b-c6b5aabf6966590cd726c1c1_28496_5",
+    "own": true,
+    "msg_type": "status"
+   },
+   {
+    "parent": "df742d7b-c6b5aabf6966590cd726c1c1_28496_5",
+    "own": true,
+    "msg_type": "execute_input"
+   },
+   {
+    "parent": "df742d7b-c6b5aabf6966590cd726c1c1_28496_5",
+    "own": true,
+    "msg_type": "stream",
+    "text": "G2-WORKER-OUTPUT\nG2-cell-settled\n"
+   },
+   {
+    "parent": "df742d7b-c6b5aabf6966590cd726c1c1_28496_5",
+    "own": true,
+    "msg_type": "status"
+   }
+  ]
+ },
+ "g2_trace": [
+  {
+   "stream": "stdout",
+   "text": "G2-WORKER-OUTPUT",
+   "ipykernel_contextvar_set": false,
+   "ipykernel_parent": null,
+   "parent_header_property": "df742d7b-c6b5aabf6966590cd726c1c1_28496_5",
+   "dsh_cell": null,
+   "thread": "Thread-3 (worker)"
+  },
+  {
+   "stream": "stdout",
+   "text": "G2-cell-settled",
+   "ipykernel_contextvar_set": true,
+   "ipykernel_parent": "df742d7b-c6b5aabf6966590cd726c1c1_28496_5",
+   "parent_header_property": "df742d7b-c6b5aabf6966590cd726c1c1_28496_5",
+   "dsh_cell": "CELL-G2",
+   "thread": "MainThread"
+  }
+ ],
+ "g3_cellA": {
+  "msg_id": "df742d7b-c6b5aabf6966590cd726c1c1_28496_8",
+  "frames": [
+   {
+    "parent": "df742d7b-c6b5aabf6966590cd726c1c1_28496_8",
+    "own": true,
+    "msg_type": "status"
+   },
+   {
+    "parent": "df742d7b-c6b5aabf6966590cd726c1c1_28496_8",
+    "own": true,
+    "msg_type": "execute_input"
+   },
+   {
+    "parent": "df742d7b-c6b5aabf6966590cd726c1c1_28496_8",
+    "own": true,
+    "msg_type": "stream",
+    "text": "G3-cellA-settled\n"
+   },
+   {
+    "parent": "df742d7b-c6b5aabf6966590cd726c1c1_28496_8",
+    "own": true,
+    "msg_type": "status"
+   }
+  ]
+ },
+ "g3_cellB": {
+  "msg_id": "df742d7b-c6b5aabf6966590cd726c1c1_28496_9",
+  "frames": [
+   {
+    "parent": "df742d7b-c6b5aabf6966590cd726c1c1_28496_9",
+    "own": true,
+    "msg_type": "status"
+   },
+   {
+    "parent": "df742d7b-c6b5aabf6966590cd726c1c1_28496_9",
+    "own": true,
+    "msg_type": "execute_input"
+   },
+   {
+    "parent": "df742d7b-c6b5aabf6966590cd726c1c1_28496_9",
+    "own": true,
+    "msg_type": "stream",
+    "text": "g3-tick 0\n"
+   },
+   {
+    "parent": "df742d7b-c6b5aabf6966590cd726c1c1_28496_9",
+    "own": true,
+    "msg_type": "stream",
+    "text": "g3-tick 1\n"
+   },
+   {
+    "parent": "df742d7b-c6b5aabf6966590cd726c1c1_28496_9",
+    "own": true,
+    "msg_type": "stream",
+    "text": "g3-tick 2\n"
+   },
+   {
+    "parent": "df742d7b-c6b5aabf6966590cd726c1c1_28496_9",
+    "own": true,
+    "msg_type": "stream",
+    "text": "G3-STRADDLER-WRITE\n"
+   },
+   {
+    "parent": "df742d7b-c6b5aabf6966590cd726c1c1_28496_9",
+    "own": true,
+    "msg_type": "stream",
+    "text": "g3-tick 3\n"
+   },
+   {
+    "parent": "df742d7b-c6b5aabf6966590cd726c1c1_28496_9",
+    "own": true,
+    "msg_type": "stream",
+    "text": "G3-cellB-settled\n"
+   },
+   {
+    "parent": "df742d7b-c6b5aabf6966590cd726c1c1_28496_9",
+    "own": true,
+    "msg_type": "status"
+   }
+  ]
+ },
+ "g3_trace": [
+  {
+   "stream": "stdout",
+   "text": "G3-cellA-settled",
+   "ipykernel_contextvar_set": true,
+   "ipykernel_parent": "df742d7b-c6b5aabf6966590cd726c1c1_28496_8",
+   "parent_header_property": "df742d7b-c6b5aabf6966590cd726c1c1_28496_8",
+   "dsh_cell": "CELL-A",
+   "thread": "MainThread"
+  },
+  {
+   "stream": "stdout",
+   "text": "g3-tick",
+   "ipykernel_contextvar_set": true,
+   "ipykernel_parent": "df742d7b-c6b5aabf6966590cd726c1c1_28496_9",
+   "parent_header_property": "df742d7b-c6b5aabf6966590cd726c1c1_28496_9",
+   "dsh_cell": "CELL-B",
+   "thread": "MainThread"
+  },
+  {
+   "stream": "stdout",
+   "text": "0",
+   "ipykernel_contextvar_set": true,
+   "ipykernel_parent": "df742d7b-c6b5aabf6966590cd726c1c1_28496_9",
+   "parent_header_property": "df742d7b-c6b5aabf6966590cd726c1c1_28496_9",
+   "dsh_cell": "CELL-B",
+   "thread": "MainThread"
+  },
+  {
+   "stream": "stdout",
+   "text": "g3-tick",
+   "ipykernel_contextvar_set": true,
+   "ipykernel_parent": "df742d7b-c6b5aabf6966590cd726c1c1_28496_9",
+   "parent_header_property": "df742d7b-c6b5aabf6966590cd726c1c1_28496_9",
+   "dsh_cell": "CELL-B",
+   "thread": "MainThread"
+  },
+  {
+   "stream": "stdout",
+   "text": "1",
+   "ipykernel_contextvar_set": true,
+   "ipykernel_parent": "df742d7b-c6b5aabf6966590cd726c1c1_28496_9",
+   "parent_header_property": "df742d7b-c6b5aabf6966590cd726c1c1_28496_9",
+   "dsh_cell": "CELL-B",
+   "thread": "MainThread"
+  },
+  {
+   "stream": "stdout",
+   "text": "g3-tick",
+   "ipykernel_contextvar_set": true,
+   "ipykernel_parent": "df742d7b-c6b5aabf6966590cd726c1c1_28496_9",
+   "parent_header_property": "df742d7b-c6b5aabf6966590cd726c1c1_28496_9",
+   "dsh_cell": "CELL-B",
+   "thread": "MainThread"
+  },
+  {
+   "stream": "stdout",
+   "text": "2",
+   "ipykernel_contextvar_set": true,
+   "ipykernel_parent": "df742d7b-c6b5aabf6966590cd726c1c1_28496_9",
+   "parent_header_property": "df742d7b-c6b5aabf6966590cd726c1c1_28496_9",
+   "dsh_cell": "CELL-B",
+   "thread": "MainThread"
+  },
+  {
+   "stream": "stdout",
+   "text": "G3-STRADDLER-WRITE",
+   "ipykernel_contextvar_set": false,
+   "ipykernel_parent": null,
+   "parent_header_property": "df742d7b-c6b5aabf6966590cd726c1c1_28496_9",
+   "dsh_cell": null,
+   "thread": "Thread-4 (straddler)"
+  },
+  {
+   "stream": "stdout",
+   "text": "g3-tick",
+   "ipykernel_contextvar_set": true,
+   "ipykernel_parent": "df742d7b-c6b5aabf6966590cd726c1c1_28496_9",
+   "parent_header_property": "df742d7b-c6b5aabf6966590cd726c1c1_28496_9",
+   "dsh_cell": "CELL-B",
+   "thread": "MainThread"
+  },
+  {
+   "stream": "stdout",
+   "text": "3",
+   "ipykernel_contextvar_set": true,
+   "ipykernel_parent": "df742d7b-c6b5aabf6966590cd726c1c1_28496_9",
+   "parent_header_property": "df742d7b-c6b5aabf6966590cd726c1c1_28496_9",
+   "dsh_cell": "CELL-B",
+   "thread": "MainThread"
+  },
+  {
+   "stream": "stdout",
+   "text": "G3-cellB-settled",
+   "ipykernel_contextvar_set": true,
+   "ipykernel_parent": "df742d7b-c6b5aabf6966590cd726c1c1_28496_9",
+   "parent_header_property": "df742d7b-c6b5aabf6966590cd726c1c1_28496_9",
+   "dsh_cell": "CELL-B",
+   "thread": "MainThread"
+  }
+ ],
+ "g4_raw": {
+  "msg_id": "df742d7b-c6b5aabf6966590cd726c1c1_28496_12",
+  "frames": [
+   {
+    "parent": "df742d7b-c6b5aabf6966590cd726c1c1_28496_12",
+    "own": true,
+    "msg_type": "status"
+   },
+   {
+    "parent": "df742d7b-c6b5aabf6966590cd726c1c1_28496_12",
+    "own": true,
+    "msg_type": "execute_input"
+   },
+   {
+    "parent": "df742d7b-c6b5aabf6966590cd726c1c1_28496_12",
+    "own": true,
+    "msg_type": "stream",
+    "text": "G4-RAW-THREAD-WRITE\n"
+   },
+   {
+    "parent": "df742d7b-c6b5aabf6966590cd726c1c1_28496_12",
+    "own": true,
+    "msg_type": "stream",
+    "text": "G4-cell-settled\n"
+   },
+   {
+    "parent": "df742d7b-c6b5aabf6966590cd726c1c1_28496_12",
+    "own": true,
+    "msg_type": "status"
+   }
+  ]
+ },
+ "g4_trace": [
+  {
+   "stream": "stdout",
+   "text": "G4-RAW-THREAD-WRITE",
+   "ipykernel_contextvar_set": false,
+   "ipykernel_parent": null,
+   "parent_header_property": "df742d7b-c6b5aabf6966590cd726c1c1_28496_12",
+   "dsh_cell": null,
+   "thread": "Dummy-5"
+  },
+  {
+   "stream": "stdout",
+   "text": "G4-cell-settled",
+   "ipykernel_contextvar_set": true,
+   "ipykernel_parent": "df742d7b-c6b5aabf6966590cd726c1c1_28496_12",
+   "parent_header_property": "df742d7b-c6b5aabf6966590cd726c1c1_28496_12",
+   "dsh_cell": "CELL-G4",
+   "thread": "MainThread"
+  }
+ ],
+ "kernel_alive": true
+}
