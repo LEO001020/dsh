@@ -530,9 +530,61 @@ export class KernelService extends Service {
       // The ledger is opened here too, and it is the LAST thing before the insert
       // for the same reason as the bridge: a Session whose kernel is published
       // must have somewhere to record what its cells did.
-      const opened = this.config.durableLedger === false
-        ? undefined
-        : await openBridgeLedger(storageFacilityOf(this.ctx)).catch(() => undefined)
+      //
+      // DURABILITY IS REQUIRED UNLESS IT WAS EXPLICITLY REFUSED (V5 §11.1). The
+      // previous version of these lines was
+      //
+      //     const opened = this.config.durableLedger === false
+      //       ? undefined
+      //       : await openBridgeLedger(...).catch(() => undefined)
+      //     ledger: opened?.ledger ?? new MemoryBridgeLedger(),
+      //
+      // and it was wrong in a way no test could see. The `.catch` swallowed every
+      // failure and the `??` substituted memory, so a deployment that REQUESTED
+      // durability silently ran on an in-memory ledger whose records die with the
+      // process -- destroying exactly the evidence (`STARTED` with no `SETTLED`)
+      // that decides whether an unknown external effect may be retried. The
+      // project's standing constraint is that such an effect is NEVER auto-retried,
+      // and the ledger is what distinguishes "never happened" from "may have
+      // happened"; losing it silently removes the ground that constraint stands on.
+      //
+      // MEASURED, and it is why this is not merely defensive: the failure was
+      // ROUTINE, not hypothetical. `openBridgeLedger` is called once per new
+      // Session and the storage domain refuses a name that is already open, so the
+      // SECOND kernel published in any process fell into the fallback. Two Sessions
+      // in one host is ordinary product use. The one signal that would have made it
+      // visible, `ledgerDurable` below, was computed honestly and read by nothing in
+      // production -- see `ledgerIsDurable`.
+      //
+      // `durableLedger: false` remains the EXPLICIT unit/development arm V5 permits
+      // and is the only configuration that gets an in-memory ledger. Everything
+      // else must open one, and a failure is a capability activation failure: the
+      // catch arm below disposes the bridge and the process range and publishes no
+      // READY.
+      let opened: { ledger: BridgeLedger, durable: boolean } | undefined
+      if (this.config.durableLedger === false) {
+        opened = undefined
+      } else {
+        const facility = storageFacilityOf(this.ctx)
+        if (facility === undefined) {
+          // The facility is ABSENT. A failure of the DEPLOYMENT rather than of the
+          // medium: the base bundle mounts the storage row before this service, so
+          // no facility means the composition lost it.
+          throw new KernelTransportError(
+            'the durable bridge ledger was requested but this deployment has no storage facility mounted, '
+            + 'so this kernel is refused. Mount the storage domain (the base bundle does), or set '
+            + '`durableLedger: false` to accept a non-durable ledger explicitly in a development host.',
+          )
+        }
+        opened = await openBridgeLedger(facility).catch((error: unknown) => {
+          throw new KernelTransportError(
+            'the durable bridge ledger was requested but could not be opened, so this kernel is refused: '
+            + 'a kernel whose cells cannot record what they did cannot establish whether an external effect '
+            + 'may have happened, and the retry rule depends on that record. Cause: '
+            + `${error instanceof Error ? error.message : String(error)}`,
+          )
+        })
+      }
       const entry: Entry = {
         host,
         identity,
