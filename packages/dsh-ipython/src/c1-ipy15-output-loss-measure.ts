@@ -230,6 +230,128 @@ async function main(): Promise<void> {
     }
   }
 
+  // -------------------------------------------------------------------------
+  // ARM 4 -- the PRODUCTION-reachable over-limit reply, at the DEFAULT cap.
+  //
+  // Arms 2 and 3 raised the cap, which is a configuration no session uses. The
+  // question this arm answers is whether an over-limit reply frame is reachable
+  // with the cap the product actually ships (256 KiB). It is: `_absorb_display`
+  // bounds EACH display payload at 64 KiB but nothing bounds the NUMBER of
+  // display entries, so a cell that displays in a loop accumulates a reply far
+  // larger than the frame bound while every individual stream stays under the cap.
+  // -------------------------------------------------------------------------
+  {
+    const host = new KernelHost({
+      subprocess: ctx.subprocess,
+      identity: { sessionId: 'c1-arm4', executionWorld: 'local', environmentDigest: 'c1' },
+      brokerScript: BROKER,
+      pythonExecutable: PYTHON,
+      workingDirectory: root,
+      cellTimeoutMs: 60_000,
+      // NO outputCapBytes: the product default, exactly as a Session gets it.
+    })
+    try {
+      await host.start()
+      const perDisplay = 64 * 1024
+      const displays = 200
+      record('arm4_defaultCapUsed', true)
+      record('arm4_displays', displays)
+      record('arm4_bytesPerDisplay', perDisplay)
+      const code = [
+        'from IPython.display import display',
+        `for i in range(${String(displays)}):`,
+        `    display({"i": i, "blob": "D" * ${String(perDisplay)}})`,
+        'print("arm4-printed")',
+      ].join('\n')
+      const outcome = await host.execute(code)
+        .then(result => ({ kind: 'result' as const, result }))
+        .catch((error: unknown) => ({ kind: 'error' as const, error }))
+      record('arm4_kind', outcome.kind)
+      if (outcome.kind === 'result') {
+        record('arm4_outcome', outcome.result.outcome)
+        record('arm4_stdout_text_len', outcome.result.stdout.text.length)
+        record('arm4_stdout_totalBytes', outcome.result.stdout.totalBytes)
+        record('arm4_stdout_truncated', outcome.result.stdout.truncated)
+        record('arm4_stdout_droppedFrames', outcome.result.stdout.droppedFrames)
+        record('arm4_display_entries', outcome.result.display.length)
+      } else {
+        record('arm4_errorName', outcome.error instanceof Error ? outcome.error.name : String(outcome.error))
+        record('arm4_errorMessage', outcome.error instanceof Error ? outcome.error.message.slice(0, 300) : String(outcome.error))
+        record('arm4_transportCode', outcome.error instanceof KernelTransportError ? outcome.error.code ?? null : null)
+      }
+      record('arm4_host_transportRefusals', host.transportRefusals.length)
+      record('arm4_brokerDiagnostics_hasLimit', host.brokerDiagnostics.includes('exceeds the limit'))
+    } catch (error) {
+      record('arm4_outerError', error instanceof Error ? `${error.name}: ${error.message}` : String(error))
+    } finally {
+      await host.shutdown().catch(() => undefined)
+    }
+  }
+
+  // -------------------------------------------------------------------------
+  // ARM 5 -- a LATE frame whose text exceeds the FRAME bound.
+  //
+  // The only other place the broker itself frames a cell's output is the
+  // `late_output` event. `_route_iopub` builds it with the frame's text VERBATIM
+  // and `write_frame` encodes it, so a background write larger than the bound
+  // makes `encode_frame` raise INSIDE the pump -- where the pump's own
+  // `except Exception` swallows it and logs one line.
+  //
+  // This arm is the one that decides whether the loss can be counted while a
+  // cell result still reaches the caller, which is the shape clause 2 needs.
+  // -------------------------------------------------------------------------
+  {
+    const host = new KernelHost({
+      subprocess: ctx.subprocess,
+      identity: { sessionId: 'c1-arm5', executionWorld: 'local', environmentDigest: 'c1' },
+      brokerScript: BROKER,
+      pythonExecutable: PYTHON,
+      workingDirectory: root,
+      cellTimeoutMs: 60_000,
+      // NO outputCapBytes: the product default. The CAP bounds the live cell's
+      // own buffer; it does NOT bound a late frame, which has no sink.
+    })
+    try {
+      await host.start()
+      // Start a thread that outlives its cell, then writes one over-limit
+      // message AFTER the cell has settled -- the definition of late output.
+      const huge = MAX_FRAME_BYTES + 256 * 1024
+      const started = await host.execute([
+        'import sys, threading, time',
+        'def background():',
+        '    time.sleep(1.0)',
+        `    sys.stdout.write("E" * ${String(huge)})`,
+        '    sys.stdout.flush()',
+        '    print("arm5-background-done")',
+        'threading.Thread(target=background, daemon=True).start()',
+        'print("arm5-thread-started")',
+      ].join('\n'))
+      record('arm5_settling_outcome', started.outcome)
+      record('arm5_settling_stdout_totalBytes', started.stdout.totalBytes)
+      // Give the background write time to be produced and pumped.
+      await new Promise(resolve_ => setTimeout(resolve_, 4_000))
+      // A second cell: it settles normally, and is the caller's chance to be told
+      // about the background write. It is also where a `late_output` event would
+      // have been routed had it been deliverable.
+      const after = await host.execute('print("arm5-after")')
+      record('arm5_after_outcome', after.outcome)
+      record('arm5_after_stdout_droppedFrames', after.stdout.droppedFrames)
+      record('arm5_after_stdout_truncated', after.stdout.truncated)
+      record('arm5_after_stdout_totalBytes', after.stdout.totalBytes)
+      record('arm5_host_transportRefusals', host.transportRefusals.length)
+      record(
+        'arm5_brokerDiagnostics_pumpFrameFailed',
+        host.brokerDiagnostics.includes('iopub pump failed on one frame'),
+      )
+      record('arm5_brokerDiagnostics_hasLimit', host.brokerDiagnostics.includes('exceeds the limit'))
+      record('arm5_bytesWritten', huge)
+    } catch (error) {
+      record('arm5_outerError', error instanceof Error ? `${error.name}: ${error.message}` : String(error))
+    } finally {
+      await host.shutdown().catch(() => undefined)
+    }
+  }
+
   mkdirSync(join(EVIDENCE, TAG), { recursive: true })
   writeFileSync(join(EVIDENCE, TAG, 'output-loss.json'), `${JSON.stringify(observed, null, 2)}\n`)
   console.log(`[C1-IPY15] wrote ${join(EVIDENCE, TAG, 'output-loss.json')}`)
