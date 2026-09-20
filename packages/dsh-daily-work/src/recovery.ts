@@ -198,14 +198,27 @@ export async function relaunchPrepared(input: {
  *
  * THE MEASUREMENT. A stale-generation settlement requires a settlement PRODUCER
  * — something that receives a child's completion and offers it to this package.
- * No such producer exists:
+ * No such producer exists, and the precise reason is worth stating carefully
+ * because an earlier draft of this comment overstated it:
  *
  *   - `WorkService.transition` (host.ts:884) is the only method that can write a
- *     task's terminal state, its reservation release and its tombstone, and no
- *     production call site targets `settling`, `confirmed`, `cancelled`,
- *     `executing` or `cancel_requested`. The only call sites that do are this
- *     file's deleted guard and `durability-runner.ts`, a hand-run CLI in no
- *     production import graph.
+ *     task's state, its reservation release and its tombstone. **No production
+ *     call site targets a TERMINAL state** — `settling`, `confirmed`,
+ *     `cancelled` or `cancel_requested`. The only non-test site that names any of
+ *     them is `durability-runner.ts`, the hand-run CLI in no production import
+ *     graph. `TERMINAL_STATES` is `confirmed | cancelled` (states.ts:67-70).
+ *   - The product DOES write one non-terminal uncertainty state: `unknown`, at
+ *     host.ts:1342 (no launch port) and host.ts:1364 (launch failed), both on the
+ *     drain path reachable from the model-facing `work` tool (tools.ts:162). Both
+ *     pass `releaseReservation: false`, so the slot stays held.
+ *   - **Nothing can move a task OUT of `unknown`.** The only production writer of
+ *     any `unknown`-exit state is host.ts:1379's `accepted`, and it is unreachable
+ *     for an `unknown` task: `admit` refuses a task that still holds its slot
+ *     (host.ts:823-825, `task "..." is already admitted as unknown`), `unknown`
+ *     holds a slot (states.ts:63), and `relaunchPrepared` refuses anything that is
+ *     not `prepared` (recovery.ts:103-116). Measured, not inferred: a task driven
+ *     to `unknown` by a failing launch stays `unknown` through a re-drain and
+ *     through `relaunchPrepared`.
  *   - the launch port resolves at the ADMISSION edge and is never called back on
  *     completion (launch-port.ts:9-20, quoting the pinned DSH contract).
  *   - no completion listener, inbox callback, outbox consumer, IPC channel,
@@ -215,6 +228,11 @@ export async function relaunchPrepared(input: {
  *   - nothing ever bumped the epoch: `initialRunRecord` wrote the literal 1 and
  *     no other code wrote or read it. A real SIGKILL plus a real re-adoption left
  *     it at 1, so even a wired guard would have compared 1 to 1 forever.
+ *
+ * The conclusion does not depend on the terminal write alone: a settlement is the
+ * act of LEAVING an in-flight state, and the state the product actually leaves a
+ * task in — `unknown`, reservation held — has no exit on any production path.
+ * So the guard's input cannot be constructed in any generation, stale or current.
  *
  * So the guard was not merely unreachable — the input it refuses cannot be
  * constructed. Wiring it would have meant INVENTING a cross-process settlement

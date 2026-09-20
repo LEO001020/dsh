@@ -48,6 +48,8 @@ import { afterEach, describe, expect, it } from 'vitest'
 import { EFFECT_RECORD_STATUSES, EffectLedger, identify, sendDecision, type EffectIntent } from './effects.ts'
 import { WorkService } from './host.ts'
 import { reconcileTask } from './reconcile.ts'
+import { relaunchPrepared } from './recovery.ts'
+import { holdsSlot, TERMINAL_STATES } from './states.ts'
 
 /** This file's directory, resolved from the module URL rather than from cwd. */
 const HERE = dirname(fileURLToPath(import.meta.url))
@@ -1072,30 +1074,124 @@ describe('T9-A: the run epoch is DELETED, and v2 does not claim the guarantee', 
     ])
   })
 
-  it('the DECIDING topology fact: no production call site can write a terminal task state', () => {
+  it('the DECIDING topology fact: no production call site targets a TERMINAL state', () => {
     // This is the measurement the deletion rests on, re-derived from the tree so
     // it cannot rot into a citation. `transition` is the only method that moves a
-    // task's state; if no production caller targets a terminal state, then no
-    // settlement — stale or current — can be delivered at all.
+    // task's state, so the question is which states any production caller targets.
+    //
+    // CORRECTED AFTER A FALSIFIED FIRST DRAFT. The first version of this test
+    // hand-picked the state list `settling|confirmed|cancelled|executing|
+    // cancel_requested` — which OMITTED `unknown`, the one non-terminal state the
+    // product actually writes (host.ts:1342, host.ts:1364). The test therefore
+    // certified a claim ("no production call site targets a terminal state") whose
+    // supporting sentence ("the product never reaches a terminal state, and the
+    // only sites that ever did are deleted or unreachable") was false as written.
+    // A hand-picked list can hide the very state that matters; deriving from the
+    // exported `TERMINAL_STATES` constant is what makes this checkable.
     const src = join(import.meta.dirname)
     const production = readdirSync(src).filter(name => name.endsWith('.ts') && !name.endsWith('.test.ts'))
-    const terminalTargets = /to:\s*'(?:settling|confirmed|cancelled|executing|cancel_requested)'/u
-    const callers: string[] = []
+    // Derived, not hand-picked: the project's own definition of terminal.
+    expect([...TERMINAL_STATES], 'terminal means confirmed|cancelled (states.ts:67-70)').toEqual([
+      'confirmed',
+      'cancelled',
+    ])
+    const targeted = (text: string): string[] =>
+      [...text.matchAll(/to:\s*'([a-z_]+)'/gu)].map(match => match[1] ?? '')
+    const terminalWriters: string[] = []
+    const unknownWriters: string[] = []
     for (const file of production) {
-      const text = readFileSync(join(src, file), 'utf8')
-      if (terminalTargets.test(text)) callers.push(file)
+      const states = targeted(readFileSync(join(src, file), 'utf8'))
+      if (states.some(state => (TERMINAL_STATES as readonly string[]).includes(state))) terminalWriters.push(file)
+      if (states.includes('unknown')) unknownWriters.push(file)
     }
-    // The only production file that ever named a terminal target was
-    // `recovery.ts`, whose settlement half is now deleted. `durability-runner.ts`
-    // is the hand-run CLI and is in no production import graph; it targets
-    // `executing`, so it is named explicitly rather than filtered away silently.
-    expect(callers.sort(), 'no product path may target a terminal task state').toEqual(['durability-runner.ts'])
-    // And the CLI is itself unreachable, which is what makes the row above safe to
-    // exclude. Asserted separately so the two facts cannot be conflated.
+    // FACT 1, and it is the load-bearing one: no production file targets a terminal
+    // state. The hand-run CLI is the only non-test file that names a terminal-ish
+    // target at all (it writes `executing`, which is NOT terminal) — so the list
+    // below is empty, and the CLI's reachability is asserted separately.
+    expect(terminalWriters, 'no production file may target a terminal state').toEqual([])
+    // FACT 2, stated rather than filtered away: the product DOES write the
+    // non-terminal uncertainty state `unknown`, on the drain path.
+    expect(unknownWriters.sort(), 'the product writes `unknown` on the drain path').toEqual([
+      'host.ts',
+      'recovery.ts',
+    ])
+    const host = readFileSync(join(src, 'host.ts'), 'utf8')
+    expect(host, 'host.ts:1342 — no launch port installed').toMatch(/to: 'unknown',\s*\n\s*uncertainty: 'no launch port installed'/u)
+    expect(host, 'host.ts:1364 — launch failed').toMatch(/to: 'unknown',\s*\n\s*uncertainty: `launch failed/u)
+    // Both keep the reservation, which is what makes the state worth leaving.
+    const unknownWrites = [...host.matchAll(/to: 'unknown',[\s\S]{0,220}?releaseReservation: false/gu)]
+    expect(unknownWrites, 'both `unknown` writes hold the reservation').toHaveLength(2)
+    // And the CLI that writes `executing` is itself unreachable, which is what
+    // makes excluding it honest rather than convenient.
     const importersOfRunner = production.filter(name =>
       name !== 'durability-runner.ts'
       && /from\s+'\.\/durability-runner\.ts'/u.test(readFileSync(join(src, name), 'utf8')))
     expect(importersOfRunner, 'the hand-run CLI has no importer').toEqual([])
+  })
+
+  it('and nothing can move a task OUT of `unknown`, which is the state the product leaves it in', async () => {
+    // THE SHARPER HALF, and the one that survives the correction above. The
+    // product writes `unknown` and never resolves it: a settlement is the act of
+    // LEAVING an in-flight state, and for the state the product actually leaves a
+    // task in there is no exit on any production path.
+    //
+    // The exits the state machine permits from `unknown` are
+    // `accepted | executing | settling | confirmed | cancelled | cancel_requested`
+    // (states.ts:93). Every one of them except `accepted` has NO production writer
+    // at all, and `accepted` is unreachable for an `unknown` task because `admit`
+    // refuses a task that still holds its slot (host.ts:823-825) — and `unknown`
+    // holds one (states.ts:63). Measured here through the REAL drain, the same
+    // path the model-facing `work` tool uses (tools.ts:162).
+    const root = makeTempDir('r9-unknown-exit')
+    const { ctx, service } = await openService(root)
+    try {
+      const runId = 'run-unknown-exit'
+      await service.createRun({
+        runId,
+        root: { session: { header: { id: 'root-unknown-exit' } } } as never,
+        authorizationRef: 'auth',
+      })
+      // A port that FAILS, so the drain takes the launch-failure arm (host.ts:1361).
+      service.setLaunchPort({
+        async launch(): Promise<{ childId: string }> {
+          throw new Error('provider exploded')
+        },
+      })
+      const request = { taskId: 't1', childId: 'c1', prompt: 'p', reservedCost: 5 }
+      const first = await service.drain(runId, [request], new AbortController().signal)
+      expect(first[0]?.reason).toBe('launch_failed_unknown')
+      const afterFailure = service.getRun(runId)
+      // The state the product leaves: `unknown`, reservation held, uncertainty named.
+      expect(afterFailure?.tasks['t1']?.state).toBe('unknown')
+      expect(afterFailure?.budget.reserved, 'the reservation stays held').toBe(5)
+      expect(afterFailure?.tasks['t1']?.uncertainty).toMatch(/launch failed/u)
+      expect(holdsSlot(afterFailure!.tasks['t1']!.state), '`unknown` holds a slot').toBe(true)
+
+      // EXIT ATTEMPT 1 — re-drain the same task. Refused by `admit`, because the
+      // task holds its slot.
+      const second = await service.drain(runId, [request], new AbortController().signal)
+      expect(second[0]?.accepted).toBe(false)
+      expect(second[0]?.reason, 'admit refuses a slot-holding task').toMatch(/already admitted as unknown/u)
+      expect(service.getRun(runId)?.tasks['t1']?.state, 'still unknown after a re-drain').toBe('unknown')
+
+      // EXIT ATTEMPT 2 — `relaunchPrepared`, the kept recovery function. It refuses
+      // anything that is not `prepared`, so it cannot resolve `unknown` either.
+      const relaunch = await relaunchPrepared({
+        service,
+        port: { async launch(request) { return { childId: request.childId } } },
+        runId,
+        taskId: 't1',
+        assignmentDigest: 'p',
+        signal: new AbortController().signal,
+      })
+      expect(relaunch.launched).toBe(false)
+      expect(relaunch.reason, 'relaunchPrepared only accepts `prepared`').toMatch(/is unknown; only a task proven never to have launched/u)
+      expect(service.getRun(runId)?.tasks['t1']?.state, 'still unknown after relaunchPrepared').toBe('unknown')
+      expect(service.getRun(runId)?.budget.reserved, 'and the reservation is still held').toBe(5)
+    } finally {
+      await service.close()
+      await ctx.fiber.dispose()
+    }
   })
 
   it('`host.ts` no longer claims a per-await epoch re-check it does not perform', () => {

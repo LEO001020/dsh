@@ -12,6 +12,43 @@ Run commands and outcomes are in `TEST-RESULTS.txt`.
 
 ---
 
+## 0. POST-FALSIFICATION REVISION (read first)
+
+Root falsified a sentence this ledger's first version relied on. Two test regexes —
+in `durability-advanced.test.ts` and `durability-records.test.ts` — checked
+"no production call site targets a terminal state" using a **hand-picked state list
+that omitted `unknown`**:
+
+```
+/to:\s*'(?:settling|confirmed|cancelled|executing|cancel_requested)'/u
+```
+
+That omission is why the claim survived review: the instrument was built to confirm
+the sentence it was supposed to test. `host.ts:1342` and `host.ts:1364` do write
+`unknown` on the drain path. **This is `G-FIX-04`'s defect class — an oracle weaker
+than its scenario — produced by me, in the test I wrote to prevent exactly this.**
+
+**What changed:**
+
+| Item | Before | After |
+|---|---|---|
+| The terminal set | hand-picked literal list | **derived from `TERMINAL_STATES`** (`states.ts:67-70`), so a state cannot be silently omitted again |
+| The `unknown` write | invisible (excluded by the regex) | **asserted explicitly**: the `unknown`-writing file set must equal `['host.ts','recovery.ts']`, with both `host.ts` sites matched including their `releaseReservation: false` |
+| The deciding fact | "no production call site targets a terminal state" | **plus** the stronger behavioural fact: nothing can move a task *out of* `unknown` |
+
+**New test added:** "and nothing can move a task OUT of `unknown`, which is the
+state the product leaves it in" — drives the real drain with a failing port,
+confirms the task lands in `unknown` with its reservation held, then measures that
+**both** available exits fail: a re-drain (refused by `admit`, `host.ts:823-825`) and
+`relaunchPrepared` (refuses anything not `prepared`). This test would have caught the
+original overclaim, because it asserts what the product *does* do rather than what it
+does not.
+
+**Unchanged by the correction:** the DELETE decision, every other assertion, and
+every row below. No test was weakened; the two regexes were made stricter.
+
+---
+
 ## 1. `durability-advanced.test.ts` — the T9-A section (rewritten)
 
 **Before:** seven tests in `describe('T9-A: the epoch guard (G-SEAM-21) —

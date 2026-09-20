@@ -15,6 +15,31 @@ because no settlement path exists at all. The epoch guard protects a path that i
 not merely unreachable but **absent**, so fencing it would mean inventing the
 settlement producer — the one thing V3 §N and audit F8 forbid.
 
+> **FALSIFICATION RECORD — read this before trusting any sentence in this file.**
+> The first version of this document rested the decision on *"no production call
+> site targets a terminal state; the only call sites that ever did are `recovery.ts`
+> and the unreachable CLI."* **Root falsified that**: `host.ts:1342` and `host.ts:1364`
+> write the state `unknown` on the drain path, reachable from the model-facing `work`
+> tool via `tools.ts:162`. The supporting prose overclaimed from "no *terminal*
+> write" to "the product never reaches a terminal state, so a settlement has no
+> producer".
+>
+> **The defect was in the instrument, not only the prose.** The test I built to check
+> the claim used a hand-picked state list
+> (`settling|confirmed|cancelled|executing|cancel_requested`) that **omitted
+> `unknown`** — so the oracle was constructed to confirm the claim it was meant to
+> test. That is this project's own recorded defect class (`G-FIX-04`: an oracle
+> weaker than its scenario passes while the product is broken).
+>
+> **Corrected in this revision:** §1.5 (rewritten with FACT 1 and FACT 2), §1.8
+> reason 3, §2, §3.1 (new lift-ready sentence), the source comments in `recovery.ts`,
+> `record.ts` and `sec-gates.test.ts`, and the two test regexes — which now derive
+> the terminal set from `TERMINAL_STATES` instead of hand-picking it, and assert the
+> `unknown` write explicitly rather than filtering it out. The decision itself is
+> unchanged, and the corrected fact is **stronger**: the product writes an in-flight
+> state it has no path to leave (§1.5 FACT 2, measured through the real drain).
+> Raw observation preserved, explanation retracted — per the brief's §9 rule.
+
 ---
 
 ## 1. The caller graph, edge by edge
@@ -77,39 +102,87 @@ result route, and no outbound notification consumer:
   hand-run CLI `durability-runner.ts:29`, itself in no production import graph
   (`qualification/results/V6-recovery/import-graph-v6.txt:85-88`).
 
-### 1.5 What exact method mutates WorkService terminal state
+### 1.5 What exact method mutates WorkService state, and which states it writes
 
-**`WorkService.transition`** (`packages/dsh-daily-work/src/host.ts:884-941`).
+**`WorkService.transition`** (`packages/dsh-daily-work/src/host.ts:891-948`).
 
-It is the only writer of `TaskRecord.state` (`host.ts:919`), and it owns the three
+It is the only writer of `TaskRecord.state` (`host.ts:926`), and it owns the three
 facts that make a settlement authoritative: the state, the reservation release
-(`host.ts:900-915`) and the tombstone (`host.ts:924-927`). All three move inside one
-`this.runs().update(...)` (`host.ts:895-936`) — so the atomicity the fencing
+(`host.ts:907-922`) and the tombstone (`host.ts:931-934`). All three move inside one
+`this.runs().update(...)` (`host.ts:902-943`) — so the atomicity the fencing
 requirement asks for **already exists**; what is missing is a caller.
 
-**Every non-test call site of `transition`, with its target state:**
+> **CORRECTION (this section was falsified and is rewritten).** An earlier revision
+> said *"no production call site targets a terminal state; the product never
+> performs a terminal-state write at all"* and supported it with a hand-picked
+> state list that **omitted `unknown`**. Root falsified that: `host.ts:1342` and
+> `host.ts:1364` DO write `unknown` on a production path. The corrected facts are
+> the two below, and the deletion rests on the second, which is *stronger* than the
+> sentence it replaces.
 
-| Site | Target | Reachable from the product? |
-|---|---|---|
-| `host.ts:1323` | `launching` | yes (`runDrain`) |
-| `host.ts:1335` | `unknown` (no launch port) | yes (`runDrain`) |
-| `host.ts:1357` | `unknown` (launch failed) | yes (`runDrain`) |
-| `host.ts:1372` | `accepted` | yes (`runDrain`) |
-| `recovery.ts:148` | `launching` | no — module has no non-test importer |
-| `recovery.ts:173` | `unknown` | no — same |
-| `recovery.ts:187` | `accepted` | no — same |
-| `recovery.ts:297` | `settling \| confirmed \| cancelled` | no — same |
-| `durability-runner.ts:84,86,87,89,90,91` | `launching`, `accepted`, `executing` | no — hand-run CLI, zero importers |
+**FACT 1 — no production call site targets a TERMINAL state.** Terminal is defined
+by the project as `confirmed | cancelled` (`states.ts:67-70`). Every non-test call
+site of `transition`, with its target:
 
-**The decisive row:** across the entire non-test source of the package, there is
-**no call site that targets `settling`, `confirmed`, `cancelled`, `executing` or
-`cancel_requested` on a production path.** The only ones are inside `recovery.ts`
-(unreachable) and `durability-runner.ts` (unreachable CLI). Verified by exhaustive
-grep of `to: '<state>'` over `src/*.ts` excluding `*.test.ts`.
+| Site | Target | Terminal? | Reachable from the product? |
+|---|---|---|---|
+| `host.ts:1330` | `launching` | no | yes (`runDrain`) |
+| `host.ts:1342` | **`unknown`** (no launch port installed) | no | **yes (`runDrain`)** |
+| `host.ts:1364` | **`unknown`** (launch failed) | no | **yes (`runDrain`)** |
+| `host.ts:1379` | `accepted` | no | yes (`runDrain`) |
+| `recovery.ts:145` | `launching` | no | no — module has no non-test importer |
+| `recovery.ts:170` | `unknown` | no | no — same |
+| `recovery.ts:184` | `accepted` | no | no — same |
+| `durability-runner.ts:84,86,87,89,90,91` | `launching`, `accepted`, `executing` | no | no — hand-run CLI, zero importers |
 
-So the product **does not perform a terminal-state write at all**. A task admitted
-by `work submit` reaches `accepted` and stays there; the reservation is never
-released by any product path.
+**No row targets `settling`, `confirmed`, `cancelled` or `cancel_requested`.** The
+only non-test file that names any of them at all is `durability-runner.ts`
+(`executing`, which is not terminal), and it is unreachable. Verified by exhaustive
+`to: '<state>'` grep over `src/*.ts` excluding `*.test.ts`, and by a test that
+derives the terminal set from `TERMINAL_STATES` rather than hand-picking it.
+
+**FACT 2 — the state the product DOES leave a task in has no exit.** The drain's
+two failure arms write `unknown` with `releaseReservation: false`, so the task
+holds its slot (`states.ts:63`; `unknown` is in `SLOT_HOLDING_STATES`). The state
+machine permits six exits from `unknown` — `accepted | executing | settling |
+confirmed | cancelled | cancel_requested` (`states.ts:93`) — and:
+
+- `executing`, `settling`, `confirmed`, `cancelled`, `cancel_requested` have **no
+  production writer at all** (FACT 1);
+- `accepted` has exactly one production writer, `host.ts:1379`, and it is
+  **unreachable for an `unknown` task**: `admit` refuses a task that still holds
+  its slot — `dailyWork: task "..." is already admitted as unknown`
+  (`host.ts:823-825`) — and `relaunchPrepared` refuses anything that is not
+  `prepared` (`recovery.ts:103-116`).
+
+**Measured, not inferred** (test "and nothing can move a task OUT of `unknown`"): a
+task driven to `unknown` by a failing launch stays `unknown` with its reservation
+held through (a) a re-drain of the same task and (b) a `relaunchPrepared` attempt.
+
+**Why this is the decisive fact.** A settlement is the act of **leaving** an
+in-flight state. The product writes one in-flight state it cannot leave, and no
+production path performs a terminal write in any generation. So a settlement —
+stale or current — has no producer to deliver it.
+
+### 1.5.1 The `unknown` state's fate: recorded limitation, and reported defect
+
+This is **adjacent to this slice and not this slice's to fix**, but it must not be
+lost, so it is stated both ways:
+
+- **As a limitation of v2:** the product can enter `unknown` and has no path out of
+  it. The slot and its reservation are held indefinitely, `capacityDeficit` accounts
+  for it (`counting.ts:127-128` buckets it as `quarantinedUnknown`), and the
+  mechanism *named* for resolving it — `reconcile.ts`'s `reconcileRun` — has no
+  production caller either (only `durability-runner.ts:216`, the unreachable CLI;
+  its decisions are computed and reported, never applied).
+- **As a defect worth a GAPS row:** *"the product can enter a state it has no path
+  to leave"* — a task left `unknown` holds a child slot forever with no production
+  resolution, so N is permanently reduced by each failed launch. The state machine
+  documents `unknown` as a resting state *"until a reconciliation resolves it"*
+  (`states.ts:37-39`), and no reachable reconciliation exists. **Root should file
+  this**; I did not fix it, because inventing a caller is exactly what this slice
+  forbids, and choosing the real resolution path is a separate design decision.
+
 
 ### 1.6 Which process owns each step
 
@@ -148,24 +221,35 @@ phase/record mutators reachable from the product, and none of them writes `epoch
 **No.** Three independent reasons, each sufficient:
 
 1. **There is no settlement entry point.** The only function that could receive one
-   is `applyWorkerSettlement` (`recovery.ts:254`). Repo-wide grep over `*.ts`,
-   `*.js`, `*.mjs`, `*.json` (excluding `node_modules`, `lib/`) finds callers **only**
-   in `durability-records.test.ts:1640,1715,1733` and `durability-advanced.test.ts:1214`
-   — test files. `recovery.ts` has no non-test importer
+   was `applyWorkerSettlement` (deleted; it was `recovery.ts:254`). Repo-wide grep
+   over `*.ts`, `*.js`, `*.mjs`, `*.json` (excluding `node_modules`, `lib/`) found
+   callers **only** in test files. `recovery.ts` has no non-test importer
    (`import-graph-v6.txt:89-92`; re-derived in-tree by
-   `durability-advanced.test.ts:991`).
+   `durability-advanced.test.ts`).
 2. **No actor produces a settlement.** A settlement would have to come from the
    child or from a host-side completion listener. The child has no channel into this
-   package (1.6), and no completion listener exists (1.4). The `epoch` field is
-   written in exactly one place — `initialRunRecord`, to the literal `1`
-   (`record.ts:493`) — so even a wired guard would compare `1 !== 1` forever.
-3. **The product never reaches a terminal state.** The write that a settlement would
-   perform (1.5) has no production call site.
+   package (1.6), and no completion listener exists (1.4). The `epoch` field was
+   written in exactly one place — `initialRunRecord`, to the literal `1` — so even a
+   wired guard would have compared `1 !== 1` forever.
+3. **The product never performs the write a settlement would perform.** A settlement
+   is the act of *leaving* an in-flight state. No production call site targets a
+   terminal state, and the one in-flight state the product does write — `unknown`,
+   with the reservation held — has **no production exit at all** (1.5, FACT 2,
+   measured through the real drain). So there is no state for a settlement to
+   resolve, in any generation, stale or current.
 
 A stale settlement is therefore **not physically possible**: it requires a
 settlement producer that does not exist. Implementing fencing would mean
 **manufacturing that producer**, which is precisely what the audit forbids
 ("Do not create a cross-process worker solely to make REC-09/REC-10 pass").
+
+> **Note on how this argument was corrected.** Reasons 1 and 2 were unchanged. An
+> earlier revision's reason 3 said *"the product never reaches a terminal state"* —
+> true as written about terminal states, but it was supported by a hand-picked state
+> list that omitted `unknown`, and the surrounding prose overclaimed it into "the
+> product never performs a terminal-state write". Root falsified that reading, and
+> the corrected reason 3 is stronger: it names the state the product *does* write and
+> shows that state has no exit.
 
 ---
 
@@ -237,18 +321,58 @@ edits v1, `qualification/gates.json` or `compatibility.lock.json`.
 
 ### 3.1 Wording for R0 — how v2 expresses "deliberately not claimed"
 
-R0 can lift this directly:
+R0's oracle requires ARM B to **name the topology fact that makes stale settlement
+physically impossible**, and states that `NOT_CLAIMED` carries the same burden of
+proof as a claim. So the fact is stated first, in one grep-checkable sentence, then
+the case text.
 
-> **`REC-09` / `REC-10` — deliberately NOT CLAIMED (v1: FAIL, preserved).**
-> v2 does not claim that a stale-generation settlement is refused, because the
-> production topology has no settlement path at all: `WorkService.transition` is
-> the only method that can write a task's terminal state, reservation release and
-> tombstone, and no production call site targets a terminal state; the launch port
-> resolves at the admission edge and is never called back on completion. A
-> stale-generation settlement therefore requires a producer that does not exist.
-> The epoch guard that would have refused one, its refusal ledger, and the run
-> record's `epoch` field were **deleted** rather than wired, because wiring them
-> would have meant inventing a cross-process settlement producer.
+#### The topology fact, as one lift-ready sentence
+
+> **No production call site targets a terminal task state (`settling`, `confirmed`,
+> `cancelled`, `cancel_requested`), and the one in-flight state the product does
+> write — `unknown`, at `host.ts:1342` (no launch port installed) and `host.ts:1364`
+> (launch failed), both with `releaseReservation: false` — has no production exit:
+> every exit the state machine permits from `unknown` (`states.ts:93`) either has no
+> production writer at all, or is `accepted`, whose only production writer
+> (`host.ts:1379`) is unreachable for such a task because `admit` refuses a task that
+> still holds its slot (`host.ts:823-825`). Since a settlement is the act of leaving
+> an in-flight state, no settlement can be delivered in any generation, stale or
+> current — so no epoch or fencing token has anything to guard.**
+
+Checkable by a reader with grep, in four commands:
+
+```sh
+grep -rn "to: '" packages/dsh-daily-work/src/*.ts | grep -v "\.test\."   # targets written, by file
+grep -n "TERMINAL_STATES" -A 4 packages/dsh-daily-work/src/states.ts      # confirmed|cancelled
+grep -n "already admitted as" packages/dsh-daily-work/src/host.ts         # admit refuses slot-holders
+grep -n "unknown" packages/dsh-daily-work/src/states.ts                   # unknown is slot-holding (63), exits at 93
+```
+
+Measured behaviour, not just reading: a task driven to `unknown` by a failing launch
+stays `unknown` with its reservation held through both a re-drain and a
+`relaunchPrepared` attempt (`durability-advanced.test.ts`, test "and nothing can move
+a task OUT of `unknown`").
+
+#### The case text R0 can lift
+
+> **`REC-09` / `REC-10` — NOT_CLAIMED (v1: FAIL, preserved).**
+> v2 does not claim that a stale-generation settlement is refused.
+>
+> **The topology fact that makes it physically impossible:** no production call site
+> targets a terminal task state (`settling`, `confirmed`, `cancelled`,
+> `cancel_requested`), and the one in-flight state the product does write — `unknown`,
+> at `host.ts:1342` and `host.ts:1364`, both holding the reservation — has no
+> production exit: every permitted exit from `unknown` either has no production
+> writer, or is `accepted`, unreachable for such a task because `admit` refuses a
+> task that still holds its slot (`host.ts:823-825`). A settlement is the act of
+> leaving an in-flight state, so no settlement can be delivered from any generation,
+> stale or current, and an epoch guard would have nothing to compare.
+>
+> **The guard is DELETED, as this arm requires:** `applyWorkerSettlement`, the
+> `WorkerSettlement` type, the `RefusalLedger` and the `dsh_daily_work_refusals`
+> domain are removed from `recovery.ts`, and the run record's `epoch` field is
+> removed from `record.ts` (schema and initialiser). No unreachable guard is left in
+> the tree.
 >
 > **What IS claimed instead:** authority for the `work` tool is bound to the exact
 > live Agent object, enforced by `tool-protocol-guards.ts` comparing the live
@@ -257,14 +381,20 @@ R0 can lift this directly:
 > case is NOT covered and v2 does not claim it.**
 >
 > **Evidence:** `qualification/results/R9-recovery-topology/TOPOLOGY.md` (caller
-> graph with file:line citations), `product-probe.txt` (the record and domain
-> shapes measured at the product tier), `readcompat-probe.txt` (legacy-store read
-> compatibility), `BEFORE-durability-advanced-T9A.txt` (the pre-change
+> graph with file:line citations and the corrected §1.5), `product-probe.txt` (record
+> and domain shapes measured at the product tier), `readcompat-probe.txt`
+> (legacy-store read compatibility), `BEFORE-durability-advanced-T9A.txt` (pre-change
 > reproduction).
 
-Two shapes R0 should NOT use, because both would be false: "the epoch guard is
-unreachable" (the guard no longer exists) and "a stale settlement is refused"
-(the guarantee is not claimed).
+#### Phrasings R0 must NOT use, and why each is false
+
+| Do not write | Why it is false |
+|---|---|
+| "the epoch guard is unreachable" | The guard no longer exists; it was deleted. |
+| "a stale settlement is refused" | Not claimed — nothing refuses it because nothing can deliver it. |
+| "the product never performs a terminal-state write" | Overclaimed: it writes `unknown` on the drain path (`host.ts:1342`, `:1364`). Say *terminal* state, and say what `unknown`'s fate is. |
+| "the product cannot leave `accepted`" | A launch failure moves it to `unknown`, which is a different (and worse) fact. |
+| "`reconcileRun` resolves `unknown`" | It has no production caller; its decisions are computed and never applied. |
 
 ---
 

@@ -1401,10 +1401,14 @@ describe('SEC-06: park invalidates old RPC; reset invalidates old references and
     // `docs/GAPS.md` G-SEAM-21 recorded that it was UNREACHABLE from production.
     // The topology measurement taken for F8 / REC-09 / REC-10 then showed something
     // sharper than unreachability: the guard's INPUT cannot be constructed. A
-    // stale-generation settlement needs a settlement producer, and the product has
-    // none — `WorkService.transition` is the only method that can write a task's
-    // terminal state, reservation release and tombstone, and no production call
-    // site targets a terminal state at all; the launch port resolves at the
+    // settlement is the act of LEAVING an in-flight state, and the product has no
+    // path that does it — `WorkService.transition` is the only method that can
+    // write a task's state, reservation release and tombstone, and no production
+    // call site targets a TERMINAL state. The product does write the non-terminal
+    // uncertainty state `unknown` (host.ts:1342, host.ts:1364), and nothing can
+    // move a task out of it: the only production writer of an `unknown`-exit state
+    // is host.ts:1379's `accepted`, unreachable for such a task because `admit`
+    // refuses a slot-holding one (host.ts:823-825). The launch port resolves at the
     // ADMISSION edge and is never called back on completion; and nothing ever
     // bumped the epoch, so even a wired guard would have compared 1 to 1 forever.
     // Graph: `qualification/results/R9-recovery-topology/TOPOLOGY.md`.

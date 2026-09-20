@@ -419,14 +419,20 @@ export const runRecordSchema = z.object({
    * would carry could not be produced by any code in this package.
    *
    * The topology measurement (qualification/results/R9-recovery-topology/) showed
-   * the guard was not merely unreachable but guarding a path that does not exist:
-   * `WorkService.transition` is the only method that can write a task's terminal
+   * the guard was not merely unreachable but guarding a path that does not exist.
+   * Precisely: `WorkService.transition` is the only method that can write a task's
    * state, its reservation release and its tombstone, and **no production call
-   * site targets a terminal state at all**. The launch port resolves at the
-   * ADMISSION edge and is never called back on completion, and the package has no
-   * completion listener, no settlement entry point, no IPC channel and no second
-   * process. A stale settlement therefore requires a producer that does not exist,
-   * and wiring the guard would have meant inventing one.
+   * site targets a TERMINAL state** (`settling`, `confirmed`, `cancelled`,
+   * `cancel_requested`). The product does write the NON-terminal uncertainty state
+   * `unknown` (host.ts:1342, host.ts:1364, both `releaseReservation: false`), and
+   * **nothing can move a task out of it**: the only production writer of an
+   * `unknown`-exit state is host.ts:1379's `accepted`, which is unreachable for
+   * such a task because `admit` refuses a slot-holding one (host.ts:823-825).
+   * A settlement is the act of LEAVING an in-flight state, and that write has no
+   * production call site in any generation, stale or current. The launch port
+   * resolves at the ADMISSION edge and is never called back on completion, and the
+   * package has no completion listener, no settlement entry point, no IPC channel
+   * and no second process.
    *
    * WHAT IS ENFORCED INSTEAD, for the case that is real: a live Agent's identity,
    * by `tool-protocol-guards.ts` comparing the registry entry by OBJECT

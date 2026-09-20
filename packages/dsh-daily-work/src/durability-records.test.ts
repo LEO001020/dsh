@@ -55,7 +55,7 @@ import { WorkService, WORK_DOMAIN_NAME, workDomainSpec, type LaunchPort, type La
 import { createContinuableLaunchPort } from './launch-port.ts'
 import { recoveryPhase, reconcileRun, reconcileTask, type ChildEvidence } from './reconcile.ts'
 import { relaunchPrepared } from './recovery.ts'
-import { holdsSlot } from './states.ts'
+import { holdsSlot, TERMINAL_STATES } from './states.ts'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
 
@@ -1700,11 +1700,29 @@ describe('D10: the run record is authoritative across generations, and no stale 
     }
     expect(offenders, 'the settlement machinery must be gone from every production source file').toEqual([])
 
-    // The deciding topology fact, re-derived: only the unreachable CLI names a
-    // terminal target, and `transition` is the only state writer.
-    const terminalTargets = /to:\s*'(?:settling|confirmed|cancelled|executing|cancel_requested)'/u
-    const callers = production.filter(file => terminalTargets.test(readFileSync(join(src, file), 'utf8')))
-    expect(callers.sort(), 'no product path may target a terminal task state').toEqual(['durability-runner.ts'])
+    // The deciding topology fact, re-derived: no production file targets a
+    // TERMINAL state, and `transition` is the only state writer.
+    //
+    // CORRECTED. This check previously used the hand-picked list
+    // `settling|confirmed|cancelled|executing|cancel_requested`, which OMITTED
+    // `unknown` — the one non-terminal state the product actually writes
+    // (host.ts:1342, host.ts:1364). The list is now derived from the project's own
+    // `TERMINAL_STATES`, and the `unknown` write is asserted separately rather than
+    // filtered out, so the check cannot certify a sentence the source contradicts.
+    const targeted = (text: string): string[] =>
+      [...text.matchAll(/to:\s*'([a-z_]+)'/gu)].map(match => match[1] ?? '')
+    const terminalWriters = production.filter(file =>
+      targeted(readFileSync(join(src, file), 'utf8'))
+        .some(state => (TERMINAL_STATES as readonly string[]).includes(state)))
+    expect(terminalWriters, 'no production file may target a terminal state').toEqual([])
+    // Stated rather than filtered away: the product writes `unknown` on the drain
+    // path, with the reservation held, and never resolves it.
+    const unknownWriters = production.filter(file =>
+      targeted(readFileSync(join(src, file), 'utf8')).includes('unknown'))
+    expect(unknownWriters.sort(), 'the product writes `unknown` on the drain path').toEqual([
+      'host.ts',
+      'recovery.ts',
+    ])
     const importersOfRunner = production.filter(file =>
       file !== 'durability-runner.ts'
       && /from\s+'\.\/durability-runner\.ts'/u.test(readFileSync(join(src, file), 'utf8')))
