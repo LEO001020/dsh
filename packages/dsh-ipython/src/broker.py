@@ -218,7 +218,14 @@ _original_thread_start = threading.Thread.start
 
 
 def _thread_start(self, *args, **kwargs):
+    # The cell this thread descends from: the cell itself when started from cell
+    # code, or the origin already carried by a thread that a cell started. The
+    # second case matters -- a thread spawned BY a cell-started thread has a
+    # knowable origin, and without this it would be reported undecidable when it
+    # can be attributed exactly (measured: traps probe T11).
     origin = _cell_parent.get(None)
+    if origin is None:
+        origin = _thread_origin.get(None)
     if origin is not None:
         inner = self.run
 

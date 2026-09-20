@@ -1,5 +1,5 @@
 {
- "work_dir": "C:\\Users\\hzq00\\AppData\\Local\\Temp\\s5-ipy13-traps-01khfm90",
+ "work_dir": "C:\\Users\\hzq00\\AppData\\Local\\Temp\\s5-ipy13-traps-g3pu40wb",
  "marker_exists": true,
  "t1_await": {
   "own": "T1-AWAIT-OK\n",
@@ -45,7 +45,7 @@
   "cellB_own": "T8-cellB-joined\n",
   "cellB_foreign": [
    {
-    "parent": "5bd6e8a1-e1cd1ec73fa7abcfb67c5c3e_25856_9",
+    "parent": "c42cd221-4e342f4af16e587acb1f13ca_49632_8",
     "type": "stream",
     "text": "T8-LATE-FROM-CELL-A\n"
    }
@@ -61,18 +61,13 @@
   "cellB_foreign": []
  },
  "t11_grandchild": {
-  "own": "T11-cell-settled\n",
-  "foreign": [
-   {
-    "parent": "dsh:background",
-    "type": "stream",
-    "text": "T11-GRANDCHILD-WRITE\n"
-   }
-  ]
+  "own": "T11-GRANDCHILD-WRITE\nT11-cell-settled\n",
+  "foreign": []
  },
  "t12_large": {
   "own_len": 5026,
   "foreign": []
  },
- "kernel_alive": true
+ "kernel_alive": true,
+ "_note": "Re-run AFTER grandchild origin propagation was added: T11 is now attributed to its originating cell instead of the sentinel. T8/T10 unchanged."
 }

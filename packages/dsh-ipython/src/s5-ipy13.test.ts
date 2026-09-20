@@ -156,6 +156,33 @@ describe('IPY-13: late output is classified separately and never rides another c
     expect(joined.stdout.text).toContain('IPY13-JOINED-WORKER')
     expect(joined.stdout.text).toContain('joined-cell-settled')
 
+    // ---- ARM E: A DESCENDANT THREAD'S ORIGIN IS STILL THE CELL'S -----------
+    // A thread started BY a cell-started thread descends from the cell just as
+    // surely as a direct child does, and its origin is knowable. Without the
+    // grandchild case in the bootstrap it would be reported undecidable when it
+    // can be attributed exactly. This arm was added after the traps probe
+    // (`qualification/results/S5-ipy13/s5-ipy13-traps-probe.json` T11) measured
+    // that gap.
+    const grandchild = await h.execute([
+      'import threading, time',
+      'def inner():',
+      '    time.sleep(0.3)',
+      '    print("IPY13-GRANDCHILD-WRITE")',
+      'def outer():',
+      '    t = threading.Thread(target=inner)',
+      '    t.start()',
+      '    t.join()',
+      't = threading.Thread(target=outer)',
+      't.start()',
+      't.join()',
+      'print("grandchild-cell-settled")',
+    ].join('\n'))
+    expect(grandchild.outcome).toBe('ok')
+    // Joined by its own cell, so it is that cell's output -- and it must NOT be
+    // sentinel-stamped just because it is one level deeper.
+    expect(grandchild.stdout.text).toContain('IPY13-GRANDCHILD-WRITE')
+    expect(grandchild.stdout.text).toContain('grandchild-cell-settled')
+
     // ---- ARM B: ORDINARY IN-CELL OUTPUT STILL WORKS (control) --------------
     const plain = await h.execute('print("IPY13-PLAIN-CONTROL")')
     expect(plain.outcome).toBe('ok')
