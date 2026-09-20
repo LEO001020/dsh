@@ -1,0 +1,5 @@
+port=6795 released=true timedOut=false
+checks=43/46
+FAIL: [CMP-07] subagent.maxActiveSubagents is 10 (the intended value) -- observed: 30
+FAIL: [CMP-07] agent-presets.includeShippedRoot did not revert -- observed: false
+FAIL: [CMP-08] the shipped standard preset does NOT mount ipython or work -- observed: ipython=undefined work=undefined

@@ -1,0 +1,5 @@
+port=6336 released=true timedOut=false
+toolCountAgentKey=24 pwsh=false ipython=true work=true
+warningLines=0 checks=15/17
+FAIL: CMP-04 toolCountAgentKey is 28 -- observed: 24
+FAIL: CMP-04 pwsh is present -- observed: ["ask_user_question","create_goal","edit","exit_plan_mode","get_goal","glob","grep","interrupt_agent","ipython","job_kill","job_list","job_output","list_agents","present","read","read_image","send_message","skill","todo_write","update_goal","web_fetch","web_search","work","write"]

@@ -1,0 +1,259 @@
+{
+  "ok": false,
+  "checksPassed": 39,
+  "checksTotal": 47,
+  "failedChecks": [
+    "FS-06: the store root is RELATIVE, and the record names what it resolves against",
+    "FS-06: a workspace file with the artifact's own name does NOT change the store object",
+    "FS-06: the relative store path and the session-relative path are DIFFERENT files (recorded as a finding)",
+    "FS-06: the store object is REACHABLE by an absolute path (the read succeeds)",
+    "FS-06: the store object is IMMUTABLE in fact -- the write is refused by the OS (EACCES), not by DSH policy",
+    "FS-06: the store object was NOT modified by the refused write",
+    "FS-06: FINDING -- the read path does NOT detect tampering (no error, tampered bytes returned)",
+    "FS-06: the EXPLICIT verify() DOES detect tampering"
+  ],
+  "checks": {
+    "the tool face is not zero (FACT F did not occur)": true,
+    "no entry failed to activate": true,
+    "the ipython tool is on the real surface": true,
+    "FS-01: a write OUTSIDE the workspace succeeds under the deployed mode": true,
+    "FS-01: the file really exists outside the workspace": true,
+    "FS-01: the deployment records that the mounted backend does NOT confine (fsSandboxMode undefined)": true,
+    "FS-01: the escalation fields are ABSENT from the write/edit schemas (no fence to escalate past)": true,
+    "FS-01: the deployment states in its own words that no write confinement is claimed": true,
+    "FS-01: the spec itself lists filesystem write confinement as NOT claimed": true,
+    "FS-02: a read OUTSIDE the workspace through the NATIVE tool succeeds": true,
+    "FS-02: the same read through a PYTHON cell succeeds": true,
+    "FS-02: both routes reach the SAME BYTES (digest compared)": true,
+    "FS-03: the native `read` tool resolves the path to the canary": true,
+    "FS-03: the native `grep` tool resolves the path to the canary": true,
+    "FS-03: a SPAWNED process resolves the path to the same digest": true,
+    "FS-03: a PYTHON cell resolves the path to the same digest": true,
+    "FS-03: all four routes reached the same file in one world": true,
+    "FS-04: the symlink vector was attempted and its outcome recorded": true,
+    "FS-04: the hardlink vector was attempted and its outcome recorded": true,
+    "FS-04: the cross-boundary rename vector was attempted and its outcome recorded": true,
+    "FS-04: the rename did NOT corrupt content (digest before == digest after)": true,
+    "FS-04: the native tool read the moved file at its NEW path and saw the real content": true,
+    "FS-04: the symlink vector actually reached the mutation (its refusal, if any, is NOT FS_NOT_OBSERVED)": true,
+    "FS-04: the hardlink vector actually reached the mutation (its refusal, if any, is NOT FS_NOT_OBSERVED)": true,
+    "FS-05: read with offset/limit returns EXACTLY the requested window": true,
+    "FS-05: an exact unique replacement applies once": true,
+    "FS-05: the exact edit produced the expected content": true,
+    "FS-05: an AMBIGUOUS replacement is REFUSED, not guessed": true,
+    "FS-05: the refused ambiguous edit changed nothing": true,
+    "FS-05: an absent literal is refused with its own code": true,
+    "FS-05: the refused absent-literal edit changed nothing": true,
+    "FS-06: the artifact store is present and reports its own root": true,
+    "FS-06: the store root RESOLVES OUTSIDE the session workspace": true,
+    "FS-06: the store root is RELATIVE, and the record names what it resolves against": false,
+    "FS-06: a published object's address IS its content digest": true,
+    "FS-06: a workspace file with the artifact's own name does NOT change the store object": false,
+    "FS-06: the store reports its own verdict on the object after the same-name write": true,
+    "FS-06: the relative store path and the session-relative path are DIFFERENT files (recorded as a finding)": false,
+    "FS-06: the store object is REACHABLE by an absolute path (the read succeeds)": false,
+    "FS-06: the store object is IMMUTABLE in fact -- the write is refused by the OS (EACCES), not by DSH policy": false,
+    "FS-06: the store object was NOT modified by the refused write": false,
+    "FS-06: the store still returns the original bytes after the refused write": true,
+    "FS-06: the read-only bit is NOT a boundary -- the same user can clear it (recorded, not hidden)": true,
+    "FS-06: FINDING -- the read path does NOT detect tampering (no error, tampered bytes returned)": false,
+    "FS-06: the EXPLICIT verify() DOES detect tampering": false,
+    "FS-06: FINDING -- stat() cannot detect it either (it reports the ORIGINAL digest beside the tampered byte count)": true,
+    "FS-06: the probe restored the object it tampered (the store is left as found)": true
+  },
+  "composition": {
+    "installed": "e12edffbbf69d531454f83a242863b7586e65f222f7c2f8c4151bf4918b43114",
+    "repo": "e12edffbbf69d531454f83a242863b7586e65f222f7c2f8c4151bf4918b43114",
+    "isCurrent": true
+  },
+  "build": {
+    "dsh-daily-work": {
+      "fileCount": 41,
+      "digest": "cc8c24ca99fc2033f3f3b40b56a717f13f7530f476f3b615a86033c01f5fe6b3",
+      "libNewerThanSrc": true,
+      "stale": []
+    },
+    "dsh-ipython": {
+      "fileCount": 26,
+      "digest": "d55a74729d0bde1ce959bd5ccf55d26773ce145a942c608e00b8c65d27514051",
+      "libNewerThanSrc": true,
+      "stale": []
+    }
+  },
+  "install": {
+    "exitCode": 0,
+    "replacedExisting": true
+  },
+  "fs01": {
+    "outsideWriteSucceeded": true,
+    "disclosed": {
+      "fsSandboxMode": null,
+      "fsProvider": "LocalFileSystem",
+      "sandboxPolicyDefaultMode": "danger-full-access",
+      "modeSource": "unobservable",
+      "shellSandboxMode": null,
+      "shellProvider": "PwshLocalExecutor",
+      "shellMounted": true,
+      "ptcSandboxMode": "danger-full-access",
+      "ptcMounted": true
+    },
+    "disclosureContradiction": {
+      "fsClaimsNoConfinement": true,
+      "policyDefaultStillConfines": false,
+      "policyDefault": "danger-full-access"
+    },
+    "contractOk": true,
+    "contractViolations": []
+  },
+  "fs02": {
+    "nativeReadSucceeded": true,
+    "pythonReadOk": true,
+    "bothRoutesReachedSameBytes": true,
+    "outsideReadDigest": "dbe5b6653550debf47ccdb6762e97aaa3db164753d6fdc42a673b00b531c21a2"
+  },
+  "fs03": {
+    "readToolSawCanary": true,
+    "grepToolSawCanary": true,
+    "shellSawSameDigest": true,
+    "pythonSawSameDigest": true,
+    "allFourReachedSameFile": true,
+    "expectedDigest": "71154cc230443be8bcfaa52fb933901ff06396ea936d948a578b8c10ab0671cb",
+    "executionWorld": "local",
+    "shellProvider": "PwshLocalExecutor"
+  },
+  "fs04": {
+    "symlink": {
+      "created": true,
+      "refused": false,
+      "writeEscapedWorkspace": true,
+      "verdict": "NOT REFUSED -- FINDING: a symlink in the workspace escapes it; the write followed the link and mutated the target outside"
+    },
+    "hardlink": {
+      "created": true,
+      "refused": false,
+      "writeEscapedWorkspace": false,
+      "verdict": "NOT REFUSED -- FINDING: a hardlink shares the inode, so a write inside the workspace mutates the outside file"
+    },
+    "rename": {
+      "refused": false,
+      "contentIntact": true,
+      "nativeReadSawMovedContent": true,
+      "verdict": "NOT REFUSED -- FINDING: raw Python renames across the workspace boundary; content is INTACT (digest equal), so this is disclosure, not corruption"
+    }
+  },
+  "fs05": {
+    "windowIsExact": true,
+    "windowLineNumbersPresent": [
+      "100:",
+      "101:",
+      "102:",
+      "103:",
+      "104:"
+    ],
+    "exactEditContent": "alpha BETA gamma\n",
+    "ambiguousRefused": true,
+    "ambiguousCode": "FS_AMBIGUOUS_EDIT",
+    "missingCode": "FS_EDIT_NOT_FOUND"
+  },
+  "fs06": {
+    "storeRoot": "D:\\DSH\\home\\c8\\data-artifacts",
+    "storeRootIsRelative": false,
+    "storeRootResolved": "D:\\DSH\\home\\c8\\data-artifacts",
+    "storeRootResolvedAgainst": "D:\\DSH\\src\\dsh-src",
+    "storeRootIsInsideWorkspace": false,
+    "artifact": "artifact:sha256:07d894c4eb826e7b334398df3bdab18545111646cc121b6bed98d566b1e5fc53",
+    "artifactDigestMatchesContent": true,
+    "sameNameWorkspaceFile": "D:/DSH/work/wt-c8/qualification/results/C8-post-integration/v7-fs-fixtures/workspace/07d894c4eb826e7b334398df3bdab18545111646cc121b6bed98d566b1e5fc53",
+    "storeBytesUnchanged": true,
+    "objectOnDiskUnchanged": false,
+    "objectOnDisk": "D:\\DSH\\home\\c8\\data-artifacts\\objects\\07\\07d894c4eb826e7b334398df3bdab18545111646cc121b6bed98d566b1e5fc53",
+    "relativeWriteTargetAsSeenByTool": "D:/DSH/work/wt-c8/qualification/results/C8-post-integration/v7-fs-fixtures/workspace/data-artifacts/objects/07/07d894c4eb826e7b334398df3bdab18545111646cc121b6bed98d566b1e5fc53",
+    "sameRelativeNameTwoFiles": true,
+    "storeObjectUntouchedByRelativeWrite": false,
+    "directObjectWriteSucceeded": true,
+    "objectReadFirstIsError": true,
+    "objectModeOnDisk": {
+      "octal": "666",
+      "writableByOwner": true
+    },
+    "refusalCameFromTheOS": false,
+    "sameUserCanClearTheBit": {
+      "label": "clear read-only bit and write",
+      "ok": true,
+      "value": {
+        "theBitCouldBeCleared": true,
+        "theObjectCouldBeOverwritten": true,
+        "readPathThrewAnError": false,
+        "whatTheReadPathReturned": "V7-FS06 store-owned artifact payload -- this must survive a work",
+        "readPathReturnedTamperedBytes": false,
+        "readPathDetectedTheTampering": false,
+        "theExplicitVerifyDetectedTheTampering": false,
+        "whatStatReportedWhileTampered": {
+          "bytes": 76,
+          "sha256": "07d894c4eb826e7b334398df3bdab18545111646cc121b6bed98d566b1e5fc53"
+        },
+        "statDigestMatchesItsOwnBytes": false,
+        "restored": true
+      }
+    },
+    "objectWasTampered": true,
+    "storeReadAfterTamper": {
+      "label": "store.openRange",
+      "ok": true,
+      "value": "V7-FS06 store-owned artifact payload -- this must survive a work"
+    },
+    "reconcile": {
+      "label": "store.reconcile",
+      "ok": true,
+      "value": {
+        "orphans": [
+          "artifact:sha256:07d894c4eb826e7b334398df3bdab18545111646cc121b6bed98d566b1e5fc53"
+        ],
+        "integrityErrors": []
+      }
+    }
+  },
+  "toolFace": {
+    "count": 24,
+    "names": [
+      "ask_user_question",
+      "create_goal",
+      "edit",
+      "exit_plan_mode",
+      "get_goal",
+      "glob",
+      "grep",
+      "interrupt_agent",
+      "ipython",
+      "job_kill",
+      "job_list",
+      "job_output",
+      "list_agents",
+      "present",
+      "read",
+      "read_image",
+      "send_message",
+      "skill",
+      "todo_write",
+      "update_goal",
+      "web_fetch",
+      "web_search",
+      "work",
+      "write"
+    ],
+    "ipythonPresent": true,
+    "pwshPresent": false
+  },
+  "escalationFieldsAdvertised": {
+    "write": [],
+    "edit": []
+  },
+  "boot": {
+    "port": 4374,
+    "timedOut": false,
+    "exitCode": null,
+    "portReleased": true
+  },
+  "activationWarningLines": [],
+  "probeError": null
+}

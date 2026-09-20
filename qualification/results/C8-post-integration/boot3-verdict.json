@@ -1,0 +1,388 @@
+{
+  "probe": "V2-composition boot3 (shared t3-shell probe, own home/out path)",
+  "ranAt": "2026-09-20T15:22:06.842Z",
+  "cwd": "D:/DSH/src/dsh-src",
+  "dshHome": "D:/DSH/home/c8",
+  "port": 6771,
+  "portReleased": true,
+  "timedOut": false,
+  "exitCode": null,
+  "activationWarningLines": [],
+  "activationCountMatch": null,
+  "inputDigests": {
+    "installedProfilePatch": "e12edffbbf69d531454f83a242863b7586e65f222f7c2f8c4151bf4918b43114",
+    "repoProfilePatch": "e12edffbbf69d531454f83a242863b7586e65f222f7c2f8c4151bf4918b43114",
+    "installedPreset": "db31885e4688f443c701077fc2e388b05565c3021f747a634e3fe0581a2d2eb0",
+    "repoPreset": "db31885e4688f443c701077fc2e388b05565c3021f747a634e3fe0581a2d2eb0",
+    "overlay": "4392326a88a81c284e03876f6b8f839f8afc9ac67d79188f77044154455877d2",
+    "probe": "a113f257c7127ddd026eae5e19d18b403bd6c40b637285220a156f8f7c96650e"
+  },
+  "fatal": null,
+  "measurement": {
+    "probe": "verify-t3-shell",
+    "dshHome": "D:/DSH/home/c8",
+    "bootCwd": "D:\\DSH\\src\\dsh-src",
+    "presetRoots": [
+      {
+        "path": "D:/DSH/home/c8/profiles/daily/presets/",
+        "trust": "system"
+      },
+      {
+        "path": "D:\\DSH\\home\\c8\\.agent-presets",
+        "trust": "user"
+      }
+    ],
+    "presetDefaultId": "daily-standard",
+    "error": null,
+    "appReadyServicePresent": true,
+    "postAuditRan": true,
+    "presetIds": [
+      "daily-standard"
+    ],
+    "loaderPresent": true,
+    "entryCount": 178,
+    "inactiveEntriesIncludingProbe": [
+      {
+        "id": "hmr",
+        "name": "@deepseek-ai/dsh-hmr",
+        "disabled": false,
+        "fiberState": 1,
+        "missing": []
+      },
+      {
+        "id": "verify-t3-shell",
+        "name": "file:///D:/DSH/work/dsh-native-daily/qualification/runners/verify-t3-shell.mjs",
+        "disabled": false,
+        "fiberState": 1,
+        "missing": []
+      }
+    ],
+    "inactiveEntries": [
+      {
+        "id": "hmr",
+        "name": "@deepseek-ai/dsh-hmr",
+        "disabled": false,
+        "fiberState": 1,
+        "missing": []
+      }
+    ],
+    "activationWarningCount": 1,
+    "activationWarningsZero": false,
+    "probeRowObservedState": 1,
+    "activeRowCount": 145,
+    "disabledRowCount": 31,
+    "buildIdentity": {
+      "repo": "D:/DSH/work/dsh-native-daily",
+      "libDigests": {
+        "packages/dsh-ipython/lib/ipython-tool.js": "34807582fd6d2481d21277155fd8db870fbfc8d805ccdae9499973229b7cc14f",
+        "packages/dsh-ipython/lib/kernel.js": "ddc1e45283fd4f7a857787796561ea1e445df4075c587c86f60aa583ed65079b",
+        "packages/dsh-ipython/lib/kernel-plugin.js": "f513d921a858153581403ed5b1f86f14d8f70717af842f51c7bb6ddcbbe376d3",
+        "packages/dsh-ipython/lib/host-plugin.js": "4ffe32bf3534c7501c74593ea6b2aa925b29b09694dcbca614c6a073c547b8e5",
+        "packages/dsh-daily-work/lib/tools.js": "d024715f9bda05ff91290a3224d44bc661f399b8faf3863af235e4d8ad9073fb",
+        "packages/dsh-daily-work/lib/host-plugin.js": "fb553116e31cde9e8230fe7d1fc97bf00b9c783b201579c9e0758da262b8f888"
+      },
+      "srcLibPairs": [
+        {
+          "src": "packages/dsh-ipython/src/ipython-tool.ts",
+          "lib": "packages/dsh-ipython/lib/ipython-tool.js",
+          "srcMtimeMs": 1789839216469.517,
+          "libMtimeMs": 1789866348271.14,
+          "libNewerThanSrc": true
+        },
+        {
+          "src": "packages/dsh-ipython/src/kernel.ts",
+          "lib": "packages/dsh-ipython/lib/kernel.js",
+          "srcMtimeMs": 1789850623573.4575,
+          "libMtimeMs": 1789866348258.219,
+          "libNewerThanSrc": true
+        },
+        {
+          "src": "packages/dsh-ipython/src/kernel-plugin.ts",
+          "lib": "packages/dsh-ipython/lib/kernel-plugin.js",
+          "srcMtimeMs": 1789866320084.7085,
+          "libMtimeMs": 1789866348265.1206,
+          "libNewerThanSrc": true
+        },
+        {
+          "src": "packages/dsh-ipython/src/host-plugin.ts",
+          "lib": "packages/dsh-ipython/lib/host-plugin.js",
+          "srcMtimeMs": 1789840492997.6157,
+          "libMtimeMs": 1789866348268.1555,
+          "libNewerThanSrc": true
+        },
+        {
+          "src": "packages/dsh-daily-work/src/tools.ts",
+          "lib": "packages/dsh-daily-work/lib/tools.js",
+          "srcMtimeMs": 1789789066522.0881,
+          "libMtimeMs": 1789862588892.4924,
+          "libNewerThanSrc": true
+        },
+        {
+          "src": "packages/dsh-daily-work/src/host-plugin.ts",
+          "lib": "packages/dsh-daily-work/lib/host-plugin.js",
+          "srcMtimeMs": 1789839561673.9294,
+          "libMtimeMs": 1789862588829.1821,
+          "libNewerThanSrc": true
+        }
+      ]
+    },
+    "rows": {
+      "pwsh-sandbox": {
+        "present": true,
+        "disabled": true,
+        "fiberState": null,
+        "name": "@deepseek-ai/dsh-pwsh-sandbox",
+        "missing": []
+      },
+      "pwsh-local": {
+        "present": true,
+        "disabled": false,
+        "fiberState": 2,
+        "name": "@deepseek-ai/dsh-pwsh-local",
+        "missing": []
+      },
+      "permission": {
+        "present": true,
+        "disabled": true,
+        "fiberState": null,
+        "name": "@deepseek-ai/dsh-permission-presets",
+        "missing": []
+      },
+      "ui-permission": {
+        "present": true,
+        "disabled": true,
+        "fiberState": null,
+        "name": "@deepseek-ai/dsh-client-ui-permission-presets",
+        "missing": []
+      },
+      "approval": {
+        "present": true,
+        "disabled": false,
+        "fiberState": 2,
+        "name": "@deepseek-ai/dsh-user-approval",
+        "missing": []
+      },
+      "sandbox": {
+        "present": true,
+        "disabled": false,
+        "fiberState": 2,
+        "name": "@deepseek-ai/dsh-sandbox-local",
+        "missing": []
+      },
+      "sandbox-policy": {
+        "present": true,
+        "disabled": false,
+        "fiberState": 2,
+        "name": "@deepseek-ai/dsh-sandbox-policy",
+        "missing": []
+      }
+    },
+    "modelShellRow": {
+      "present": true,
+      "disabled": true,
+      "fiberState": null,
+      "name": "@deepseek-ai/dsh-tool-pwsh",
+      "missing": []
+    },
+    "modelShellRowIsPending": false,
+    "modelShellRowDisabledByPreset": true,
+    "pwshAbsenceIsIntentional": true,
+    "permissionPresetsServicePresent": false,
+    "permissionPresetsRowPresent": true,
+    "permissionPresetsAbsent": true,
+    "sessionProjectionsServicePresent": true,
+    "shellPresent": true,
+    "shellWasTraceProxy": true,
+    "shellClassName": "PwshLocalExecutor",
+    "shellPrototypeChain": [
+      "PwshLocalExecutor",
+      "ShellExecutor",
+      "Service"
+    ],
+    "shellSandboxMode": null,
+    "shellSandboxModeIsUndefined": true,
+    "shellIsSandboxSubclass": false,
+    "approvalServicePresent": true,
+    "approvalPolicy": "never",
+    "approvalPolicyIsNever": true,
+    "sessionControllerPresent": true,
+    "sessionCreated": true,
+    "sessionId": "session-d47607c4-4a37-4d41-a30f-eac7fa6366c1",
+    "agentPresent": true,
+    "toolCount": 24,
+    "tools": [
+      "ask_user_question",
+      "create_goal",
+      "edit",
+      "exit_plan_mode",
+      "get_goal",
+      "glob",
+      "grep",
+      "interrupt_agent",
+      "ipython",
+      "job_kill",
+      "job_list",
+      "job_output",
+      "list_agents",
+      "present",
+      "read",
+      "read_image",
+      "send_message",
+      "skill",
+      "todo_write",
+      "update_goal",
+      "web_fetch",
+      "web_search",
+      "work",
+      "write"
+    ],
+    "ipythonToolPresent": true,
+    "pwshToolPresent": false,
+    "nativeFsToolsPresent": [
+      "read",
+      "write",
+      "edit"
+    ],
+    "nativeFsToolsAllPresent": true,
+    "ipythonReplacesPwsh": true,
+    "pwshParameters": [],
+    "pwshEscalationFields": [],
+    "pwshEscalationFieldsAbsent": true,
+    "preAuditAssertions": {
+      "permissionPresetsAbsent": true,
+      "shellSandboxModeUndefined": true,
+      "ipythonPresent": true,
+      "nativeFsToolsPresent": true,
+      "toolCountNonZero": true,
+      "midApplyActivationWarningsZero": false,
+      "pwshAbsenceIsIntentional": true,
+      "modelShellRowNotPending": true,
+      "ipythonReplacesPwsh": true
+    },
+    "postAuditEntryCount": 178,
+    "postAuditInactiveEntries": [],
+    "postAuditActivationWarningCount": 0,
+    "postAuditActivationWarningsZero": true,
+    "postAuditProbeRowState": 2,
+    "postAuditActiveRowCount": 147,
+    "verdict": {
+      "activationWarningsZero": true,
+      "postAuditCheckpointReached": true,
+      "midApplyActivationWarningsZero": false,
+      "permissionPresetsAbsent": true,
+      "shellSandboxModeUndefined": true,
+      "ipythonPresent": true,
+      "nativeFsToolsPresent": true,
+      "toolCountNonZero": true,
+      "pwshAbsenceIsIntentional": true,
+      "modelShellRowNotPending": true,
+      "ipythonReplacesPwsh": true,
+      "noProbeError": true
+    },
+    "allAssertionsPass": false
+  },
+  "checks": [
+    {
+      "caseId": "CMP-01",
+      "label": "the boot output carries NO \"N entries did not activate\" line",
+      "ok": true,
+      "detail": "no such line"
+    },
+    {
+      "caseId": "CMP-01",
+      "label": "no \"waiting for service(s)\" line appears anywhere in the boot output",
+      "ok": true,
+      "detail": "[]"
+    },
+    {
+      "caseId": "CMP-01",
+      "label": "the live loader audit reports ZERO inactive entries (mid-apply)",
+      "ok": false,
+      "detail": "[{\"id\":\"hmr\",\"name\":\"@deepseek-ai/dsh-hmr\",\"disabled\":false,\"fiberState\":1,\"missing\":[]}]"
+    },
+    {
+      "caseId": "CMP-01",
+      "label": "the POST-AUDIT loader snapshot reports ZERO inactive entries",
+      "ok": true,
+      "detail": "[]"
+    },
+    {
+      "caseId": "CMP-01",
+      "label": "the post-audit snapshot RAN (the product audit had completed)",
+      "ok": true,
+      "detail": "true"
+    },
+    {
+      "caseId": "CMP-01",
+      "label": "the loader audit actually RAN (the entry table is non-empty)",
+      "ok": true,
+      "detail": "entryCount=178 postAudit=178"
+    },
+    {
+      "caseId": "CMP-01",
+      "label": "the probe's own activation-warning count is 0",
+      "ok": false,
+      "detail": "1"
+    },
+    {
+      "caseId": "CMP-01",
+      "label": "every assertion inside the shared probe passed",
+      "ok": false,
+      "detail": "false"
+    },
+    {
+      "caseId": "CMP-01",
+      "label": "the probe reported no error",
+      "ok": true,
+      "detail": "null"
+    },
+    {
+      "caseId": "CMP-06",
+      "label": "the live approval service reports policy=never",
+      "ok": true,
+      "detail": "never"
+    },
+    {
+      "caseId": "CMP-06",
+      "label": "the live shell reports sandboxMode undefined (the unconfined executor)",
+      "ok": true,
+      "detail": "true"
+    },
+    {
+      "caseId": "CMP-06",
+      "label": "the permission-presets service is absent",
+      "ok": true,
+      "detail": "false"
+    },
+    {
+      "caseId": "CMP-06",
+      "label": "the permissionPresets SERVICE is unreachable",
+      "ok": true,
+      "detail": "true"
+    },
+    {
+      "caseId": "CMP-06",
+      "label": "the permission row is present-but-disabled (not deleted, and not active)",
+      "ok": true,
+      "detail": "row=true service=false"
+    },
+    {
+      "caseId": "CMP-13",
+      "label": "the shared probe independently measures pwsh ABSENT",
+      "ok": true,
+      "detail": "false"
+    },
+    {
+      "caseId": "CMP-13",
+      "label": "the shared probe independently measures ipython PRESENT",
+      "ok": true,
+      "detail": "true"
+    }
+  ],
+  "failures": [
+    "[CMP-01] the live loader audit reports ZERO inactive entries (mid-apply) -- observed: [{\"id\":\"hmr\",\"name\":\"@deepseek-ai/dsh-hmr\",\"disabled\":false,\"fiberState\":1,\"missing\":[]}]",
+    "[CMP-01] the probe's own activation-warning count is 0 -- observed: 1",
+    "[CMP-01] every assertion inside the shared probe passed -- observed: false"
+  ],
+  "ok": false
+}

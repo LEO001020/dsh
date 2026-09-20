@@ -100,11 +100,26 @@ const REPO = __joinOf(__dirnameOf(fileURLToPath(import.meta.url)), '..', '..').r
 
 const OUT = process.env.DSH_PROBE_OUT ?? `${REPO}/qualification/results/V7-fs/boot.json`
 
+/**
+ * The FIXTURE ROOT. Defaults to the V7 result directory, so a run that sets
+ * nothing behaves exactly as before.
+ *
+ * WHY IT IS OVERRIDABLE, and it is not a convenience. This probe DESTROYS and
+ * rebuilds its fixture tree on every run (`rmSync(WORKSPACE, {recursive:true})`
+ * at the top of `apply`). A later measurement at a NEW identity therefore cannot
+ * be taken without either (a) overwriting the filed V7 evidence, or (b) writing
+ * its fixtures somewhere else. (a) is the `G-SEAM-66` corruption class this
+ * project forbids -- filed evidence is not a scratch space -- so the fixture root
+ * is a parameter. `qualification/runners/v7-fs-driver.mjs` sets it through
+ * `V7_FIXTURE_ROOT` when it is run for a different identity.
+ */
+const FIXTURE_ROOT = (process.env.V7_FIXTURE_ROOT ?? `${REPO}/qualification/results/V7-fs`).replace(/\\/g, '/')
+
 /** The session workspace: what a confined deployment would treat as the root. */
-const WORKSPACE = `${REPO}/qualification/results/V7-fs/workspace`
+const WORKSPACE = `${FIXTURE_ROOT}/workspace`
 /** Genuinely OUTSIDE that workspace, and outside the platform temp areas a
  * `workspace-write` fence also allows (`packages/sandbox/sandbox/src/roots.ts`). */
-const OUTSIDE = `${REPO}/qualification/results/V7-fs/outside-workspace`
+const OUTSIDE = `${FIXTURE_ROOT}/outside-workspace`
 
 /** The interpreter the IPython surface runs, verified present before use. */
 const PYTHON = 'C:/Users/hzq00/AppData/Local/Programs/Python/Python314/python.exe'

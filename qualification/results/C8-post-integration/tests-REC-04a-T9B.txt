@@ -1,0 +1,42 @@
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.8 [39m[90mD:/DSH/work/wt-c8/packages/dsh-daily-work[39m
+
+ [2m[90m↓[39m[22m src/durability-advanced.test.ts[2m > [22mD02: a second host over one live store[2m > [22mmeasures what upstream actually does: no refusal, and silent loss of the loser's writes
+ [2m[90m↓[39m[22m src/durability-advanced.test.ts[2m > [22mD02: a second host over one live store[2m > [22mrefuses the second host once the deployment-boundary guard is configured
+ [2m[90m↓[39m[22m src/durability-advanced.test.ts[2m > [22mD02: a second host over one live store[2m > [22mreleases the claim on a clean close, so the next generation is not locked out
+ [2m[90m↓[39m[22m src/durability-advanced.test.ts[2m > [22mD02: a second host over one live store[2m > [22mdoes not refuse a store because its advisory note is unreadable
+ [2m[90m↓[39m[22m src/durability-advanced.test.ts[2m > [22mD12: a record version this build does not accept[2m > [22mrejects a v2-shaped run record at open instead of reading it as current
+ [2m[90m↓[39m[22m src/durability-advanced.test.ts[2m > [22mD12: a record version this build does not accept[2m > [22mrejects a malformed record rather than dropping it
+ [2m[90m↓[39m[22m src/durability-advanced.test.ts[2m > [22mD12: a record version this build does not accept[2m > [22mrejects a foreign unit version and a non-JSON medium, each with its own code
+ [2m[90m↓[39m[22m src/durability-advanced.test.ts[2m > [22mD12: a record version this build does not accept[2m > [22mopens the same directory normally once the record matches the current schema
+ [2m[90m↓[39m[22m src/durability-advanced.test.ts[2m > [22mD14: OS processes that outlive a hard kill[2m > [22mmeasures that a detached grandchild survives, and that recovery does not read that as cleanup
+ [2m[90m↓[39m[22m src/durability-advanced.test.ts[2m > [22mD14: OS processes that outlive a hard kill[2m > [22mdoes not treat a missing pid as proof that a process is gone
+ [2m[90m↓[39m[22m src/durability-advanced.test.ts[2m > [22mT9-A: the run epoch is DELETED, and v2 does not claim the guarantee[2m > [22mthe deleted settlement machinery has no surviving reference anywhere in the source
+ [2m[90m↓[39m[22m src/durability-advanced.test.ts[2m > [22mT9-A: the run epoch is DELETED, and v2 does not claim the guarantee[2m > [22mthe run record no longer carries an epoch, and nothing writes or reads one
+ [2m[90m↓[39m[22m src/durability-advanced.test.ts[2m > [22mT9-A: the run epoch is DELETED, and v2 does not claim the guarantee[2m > [22mis unreachable from every PACKAGE ENTRY POINT, not merely from a direct import
+ [2m[90m↓[39m[22m src/durability-advanced.test.ts[2m > [22mT9-A: the run epoch is DELETED, and v2 does not claim the guarantee[2m > [22mthe consequence: only TESTS reach these modules, so the product never reconciles at all
+ [2m[90m↓[39m[22m src/durability-advanced.test.ts[2m > [22mT9-A: the run epoch is DELETED, and v2 does not claim the guarantee[2m > [22mthe DECIDING topology fact: no production call site targets a TERMINAL state
+ [2m[90m↓[39m[22m src/durability-advanced.test.ts[2m > [22mT9-A: the run epoch is DELETED, and v2 does not claim the guarantee[2m > [22mand nothing can move a task OUT of `unknown`, which is the state the product leaves it in
+ [2m[90m↓[39m[22m src/durability-advanced.test.ts[2m > [22mT9-A: the run epoch is DELETED, and v2 does not claim the guarantee[2m > [22m`host.ts` no longer claims a per-await epoch re-check it does not perform
+ [2m[90m↓[39m[22m src/durability-advanced.test.ts[2m > [22mT9-A: the run epoch is DELETED, and v2 does not claim the guarantee[2m > [22mthe v1 FAIL is preserved: REC-09 and REC-10 still read FAIL in the frozen spec
+ [32m✓[39m src/durability-advanced.test.ts[2m > [22mT9-B: the effect ledger across a real state rewind[2m > [22mthe rehearsal's fixture defect is real: `kind` instead of `status` stores a record with no status[32m 21[2mms[22m[39m
+ [32m✓[39m src/durability-advanced.test.ts[2m > [22mT9-B: the effect ledger across a real state rewind[2m > [22mwith the CORRECTED fixture the ledger opens and reconciles from the remote, never re-sending[32m 12[2mms[22m[39m
+ [32m✓[39m src/durability-advanced.test.ts[2m > [22mT9-B: the effect ledger across a real state rewind[2m > [22mwhen the effect store IS inside the rewound tree, the local knowledge is SILENTLY GONE[32m 16[2mms[22m[39m
+ [32m✓[39m src/durability-advanced.test.ts[2m > [22mT9-B: the effect ledger across a real state rewind[2m > [22ma lost reply that MAY have committed is reconciled by QUERY, and the transport is never invoked twice[32m 13[2mms[22m[39m
+ [32m✓[39m src/durability-advanced.test.ts[2m > [22mT9-B: the effect ledger across a real state rewind[2m > [22mthe send decision table licenses a send from exactly two states, and BOTH are proofs about our own write order[32m 1[2mms[22m[39m
+ [32m✓[39m src/durability-advanced.test.ts[2m > [22mT9-B: the effect ledger across a real state rewind[2m > [22man adapter that can be neither keyed nor queried is NOT RUN AT ALL, rather than run and left unknown[32m 7[2mms[22m[39m
+ [32m✓[39m src/durability-advanced.test.ts[2m > [22mT9-B: the effect ledger across a real state rewind[2m > [22mthe PRODUCT path does not replay either: a launch that may have succeeded is quarantined, and a second drain refuses[32m 21[2mms[22m[39m
+ [32m✓[39m src/durability-advanced.test.ts[2m > [22mT9-B: the effect ledger across a real state rewind[2m > [22ma FAILED ATTEMPT does not imply the effect did not happen — the two statuses are recorded separately[32m 17[2mms[22m[39m
+ [32m✓[39m src/durability-advanced.test.ts[2m > [22mT9-B: the effect ledger across a real state rewind[2m > [22mno `safe_to_retry` predicate exists, and the nearest predicate refuses rather than permits[32m 98[2mms[22m[39m
+ [2m[90m↓[39m[22m src/durability-advanced.test.ts[2m > [22mT9-C: FILESYSTEM gates FS-01..FS-06[2m > [22mFS-01: a native write is published atomically, and a refused write leaves the original intact
+ [2m[90m↓[39m[22m src/durability-advanced.test.ts[2m > [22mT9-C: FILESYSTEM gates FS-01..FS-06[2m > [22mFS-02: a stale version is REJECTED with a typed code, and a fresh one is accepted
+ [2m[90m↓[39m[22m src/durability-advanced.test.ts[2m > [22mT9-C: FILESYSTEM gates FS-01..FS-06[2m > [22mFS-03: concurrent same-target mutations are SERIALIZED — exactly one wins, the rest see the new version
+ [2m[90m↓[39m[22m src/durability-advanced.test.ts[2m > [22mT9-C: FILESYSTEM gates FS-01..FS-06[2m > [22mFS-04: exact edit semantics are preserved — literal match, ambiguity refused, missing text reported
+ [2m[90m↓[39m[22m src/durability-advanced.test.ts[2m > [22mT9-C: FILESYSTEM gates FS-01..FS-06[2m > [22mFS-05: line endings are preserved through an edit, so a CRLF file stays CRLF
+ [2m[90m↓[39m[22m src/durability-advanced.test.ts[2m > [22mT9-C: FILESYSTEM gates FS-01..FS-06[2m > [22mFS-06: a RAW PYTHON mutation is visible to the verifier from the world, not from a DSH receipt
+
+[2m Test Files [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[32m9 passed[39m[22m[2m | [22m[33m24 skipped[39m[90m (33)[39m
+[2m   Start at [22m 23:15:53
+[2m   Duration [22m 926ms[2m (transform 411ms, setup 0ms, import 565ms, tests 207ms, environment 0ms)[22m
+

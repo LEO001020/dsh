@@ -1,0 +1,469 @@
+{
+  "probe": "verify-v7-fs",
+  "dshHome": "D:/DSH/home/c8",
+  "bootCwd": "D:\\DSH\\src\\dsh-src",
+  "installedProfilePatch": {
+    "path": "D:/DSH/home/c8/profiles/daily/cordis.patch.yml",
+    "sha256": "e12edffbbf69d531454f83a242863b7586e65f222f7c2f8c4151bf4918b43114"
+  },
+  "presetRoots": [
+    {
+      "path": "D:/DSH/home/c8/profiles/daily/presets/",
+      "trust": "system"
+    },
+    {
+      "path": "D:\\DSH\\home\\c8\\.agent-presets",
+      "trust": "user"
+    }
+  ],
+  "error": null,
+  "presetDefaultId": "daily-standard",
+  "session": {
+    "created": true,
+    "sessionId": "session-218018d2-45a6-405d-9867-cbd8954d49f4",
+    "cwd": "D:/DSH/work/wt-c8/qualification/results/C8-post-integration/v7-fs-fixtures/workspace",
+    "agentPresent": true,
+    "sessionObjectAvailable": true
+  },
+  "fs01": {
+    "outsideWrite": {
+      "isError": false,
+      "code": null,
+      "message": "<path>D:\\DSH\\work\\wt-c8\\qualification\\results\\C8-post-integration\\v7-fs-fixtures\\outside-workspace\\escape.txt</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+    },
+    "outsideWriteSucceeded": true,
+    "outsideFileExists": true,
+    "outsideFileContent": "written outside the session workspace by the write tool\n",
+    "contractPresent": true,
+    "contractReport": {
+      "ok": true,
+      "violations": [],
+      "checks": [
+        {
+          "id": "sandboxPolicy.defaultMode",
+          "ok": true,
+          "observed": "'danger-full-access'"
+        },
+        {
+          "id": "sandboxPolicy.defaultMode.provenance",
+          "ok": true,
+          "observed": "unobservable (the service carries the value, not its provenance)",
+          "detail": "HONEST GAP. Config's schema default is 'read-only' and defaultMode is a plain SandboxMode, so 'never configured' and 'explicitly configured as read-only' are the SAME observation. This guard therefore checks the VALUE only; it cannot certify that the value was declared. Closing this needs an upstream provenance marker."
+        },
+        {
+          "id": "fs.provider",
+          "ok": true,
+          "observed": "LocalFileSystem (sandboxMode: undefined (does not confine))"
+        },
+        {
+          "id": "shell.provider",
+          "ok": true,
+          "observed": "PwshLocalExecutor (sandboxMode: undefined (does not confine))"
+        },
+        {
+          "id": "ptcRuntime.sandboxMode",
+          "ok": true,
+          "observed": "mounted, sandboxMode: 'danger-full-access'"
+        },
+        {
+          "id": "ipython.present",
+          "ok": true,
+          "observed": "ctx.ipython is mounted"
+        },
+        {
+          "id": "ssh.absent",
+          "ok": true,
+          "observed": "ssh: absent; sshSubprocess: absent"
+        },
+        {
+          "id": "wsl.absent",
+          "ok": true,
+          "observed": "no wsl service is mounted"
+        },
+        {
+          "id": "surface.escalation-parameters",
+          "ok": true,
+          "observed": "none of 24 visible tools advertise sandbox_permissions/justification"
+        },
+        {
+          "id": "surface.pwsh-absent",
+          "ok": true,
+          "observed": "pwsh is absent"
+        },
+        {
+          "id": "surface.ipython-present",
+          "ok": true,
+          "observed": "ipython present, parameters: [code]"
+        },
+        {
+          "id": "surface.ptc-transport-absent",
+          "ok": true,
+          "observed": "run_code is absent"
+        },
+        {
+          "id": "session.override",
+          "ok": true,
+          "observed": "session session-218018d2-45a6-405d-9867-cbd8954d49f4: overrideOf = undefined (does not confine), resolve() = 'danger-full-access'"
+        }
+      ]
+    },
+    "contractSurface": {
+      "toolNames": "see contractReport"
+    },
+    "disclosed": {
+      "fsSandboxMode": null,
+      "fsProvider": "LocalFileSystem",
+      "sandboxPolicyDefaultMode": "danger-full-access",
+      "modeSource": "unobservable",
+      "shellSandboxMode": null,
+      "shellProvider": "PwshLocalExecutor",
+      "shellMounted": true,
+      "ptcSandboxMode": "danger-full-access",
+      "ptcMounted": true
+    },
+    "disclosureContradiction": {
+      "fsClaimsNoConfinement": true,
+      "policyDefaultStillConfines": false,
+      "policyDefault": "danger-full-access"
+    },
+    "lockTrustModel": "trusted-local",
+    "lockTrustModelStatement": "The OS user account is the execution authority boundary. No sandbox, no WSL, no Linux VM, no SSH execution world. Every process this deployment starts -- including the persistent IPython kernel -- runs as the invoking OS user with that user's full filesystem, network and process visibility. This deployment claims NO confinement of reads, writes, network or process visibility, and no case in qualification/specs/acceptance-spec.trusted-local-v1.json may be read as establishing one.",
+    "specExplicitlyNotClaimed": [
+      "host-secret read isolation (any process can read any file the OS user can read)",
+      "network / egress isolation (there is no OS or gateway boundary)",
+      "filesystem write confinement (danger-full-access means no write restriction either)",
+      "process visibility confinement",
+      "a second execution world, and therefore any cross-world path consistency or role transition",
+      "verification-environment privilege separation from the host"
+    ]
+  },
+  "fs02": {
+    "outsideReadPath": "D:/DSH/work/wt-c8/qualification/results/C8-post-integration/v7-fs-fixtures/outside-workspace/pre-existing-outside.txt",
+    "outsideReadDigest": "dbe5b6653550debf47ccdb6762e97aaa3db164753d6fdc42a673b00b531c21a2",
+    "nativeRead": {
+      "isError": false,
+      "code": null,
+      "message": "<path>D:\\DSH\\work\\wt-c8\\qualification\\results\\C8-post-integration\\v7-fs-fixtures\\outside-workspace\\pre-existing-outside.txt</path>\n<type>file</type>\n<content>\n1: pre-existing content outside the workspace\n\n(End of file - total 1 lines)\n</content>"
+    },
+    "nativeReadSucceeded": true,
+    "pythonRead": {
+      "ok": true,
+      "stdout": "dbe5b6653550debf47ccdb6762e97aaa3db164753d6fdc42a673b00b531c21a2\r\npre-existing content outside the workspace\r\n",
+      "stderr": "",
+      "exitCode": 0
+    },
+    "pythonReadDigest": "dbe5b6653550debf47ccdb6762e97aaa3db164753d6fdc42a673b00b531c21a2",
+    "bothRoutesReachedSameBytes": true,
+    "readDisclosure": {
+      "fsSandboxMode": null,
+      "fsProvider": "LocalFileSystem",
+      "sandboxPolicyDefaultMode": "danger-full-access",
+      "modeSource": "unobservable",
+      "shellSandboxMode": null,
+      "shellProvider": "PwshLocalExecutor",
+      "shellMounted": true,
+      "ptcSandboxMode": "danger-full-access",
+      "ptcMounted": true
+    }
+  },
+  "fs03": {
+    "path": "D:/DSH/work/wt-c8/qualification/results/C8-post-integration/v7-fs-fixtures/workspace/one-path.txt",
+    "expectedDigest": "71154cc230443be8bcfaa52fb933901ff06396ea936d948a578b8c10ab0671cb",
+    "expectedBytes": 43,
+    "readTool": {
+      "isError": false,
+      "code": null,
+      "message": "<path>D:\\DSH\\work\\wt-c8\\qualification\\results\\C8-post-integration\\v7-fs-fixtures\\workspace\\one-path.txt</path>\n<type>file</type>\n<content>\n1: V7-FS03-CANARY one path string four routes\n\n(End of file - total 1 lines)\n</content>"
+    },
+    "readToolSawCanary": true,
+    "grepTool": {
+      "isError": false,
+      "code": null,
+      "message": "Found 1 match\n\none-path.txt\nLine 1: V7-FS03-CANARY one path string four routes"
+    },
+    "grepToolSawCanary": true,
+    "shell": {
+      "mounted": true,
+      "provider": "PwshLocalExecutor",
+      "sandboxMode": null
+    },
+    "shellResult": {
+      "exitCode": 0,
+      "stdout": "71154cc230443be8bcfaa52fb933901ff06396ea936d948a578b8c10ab0671cb",
+      "stdoutTruncated": false,
+      "stderr": "",
+      "sandbox": null
+    },
+    "shellSawSameDigest": true,
+    "python": {
+      "ok": true,
+      "stdout": "71154cc230443be8bcfaa52fb933901ff06396ea936d948a578b8c10ab0671cb\r\nD:\\DSH\\work\\wt-c8\\qualification\\results\\C8-post-integration\\v7-fs-fixtures\\workspace\\one-path.txt\r\n",
+      "stderr": "",
+      "exitCode": 0
+    },
+    "pythonDigest": "71154cc230443be8bcfaa52fb933901ff06396ea936d948a578b8c10ab0671cb",
+    "pythonResolvedPath": "D:\\DSH\\work\\wt-c8\\qualification\\results\\C8-post-integration\\v7-fs-fixtures\\workspace\\one-path.txt",
+    "pythonSawSameDigest": true,
+    "executionWorld": "local",
+    "worldsSeen": {
+      "readTool": "dsh fs service over the OS filesystem",
+      "grepTool": "ripgrep child over the OS filesystem",
+      "shell": "PwshLocalExecutor",
+      "python": "python.exe child over the OS filesystem"
+    },
+    "allFourReachedSameFile": true
+  },
+  "fs04": {
+    "symlink": {
+      "target": "D:/DSH/work/wt-c8/qualification/results/C8-post-integration/v7-fs-fixtures/outside-workspace/symlink-target.txt",
+      "link": "D:/DSH/work/wt-c8/qualification/results/C8-post-integration/v7-fs-fixtures/workspace/escape-link.txt",
+      "created": true,
+      "createdVia": "node:fs symlinkSync (a real OS symlink)",
+      "readFirst": {
+        "isError": false,
+        "code": null,
+        "message": "<path>D:\\DSH\\work\\wt-c8\\qualification\\results\\C8-post-integration\\v7-fs-fixtures\\workspace\\escape-link.txt</path>\n<type>file</type>\n<content>\n1: original content of the outside symlink target\n\n(End of file - total 1 lines)\n</content>"
+      },
+      "writeThroughLink": {
+        "isError": false,
+        "code": null,
+        "message": "<path>D:\\DSH\\work\\wt-c8\\qualification\\results\\C8-post-integration\\v7-fs-fixtures\\workspace\\escape-link.txt</path>\n<type>file</type>\n<content>\nUpdated file\n</content>"
+      },
+      "targetAfterWrite": "V7-FS04 written THROUGH the symlink\n",
+      "linkStillASymlink": true,
+      "writeEscapedWorkspace": true,
+      "refused": false,
+      "verdict": "NOT REFUSED -- FINDING: a symlink in the workspace escapes it; the write followed the link and mutated the target outside"
+    },
+    "hardlink": {
+      "source": "D:/DSH/work/wt-c8/qualification/results/C8-post-integration/v7-fs-fixtures/outside-workspace/hardlink-source.txt",
+      "link": "D:/DSH/work/wt-c8/qualification/results/C8-post-integration/v7-fs-fixtures/workspace/hardlink.txt",
+      "created": true,
+      "readFirst": {
+        "isError": false,
+        "code": null,
+        "message": "<path>D:\\DSH\\work\\wt-c8\\qualification\\results\\C8-post-integration\\v7-fs-fixtures\\workspace\\hardlink.txt</path>\n<type>file</type>\n<content>\n1: original content of the outside hardlink source\n\n(End of file - total 1 lines)\n</content>"
+      },
+      "writeThroughLink": {
+        "isError": false,
+        "code": null,
+        "message": "<path>D:\\DSH\\work\\wt-c8\\qualification\\results\\C8-post-integration\\v7-fs-fixtures\\workspace\\hardlink.txt</path>\n<type>file</type>\n<content>\nUpdated file\n</content>"
+      },
+      "sourceAfterWrite": "original content of the outside hardlink source\n",
+      "writeEscapedWorkspace": false,
+      "refused": false,
+      "verdict": "NOT REFUSED -- FINDING: a hardlink shares the inode, so a write inside the workspace mutates the outside file"
+    },
+    "rename": {
+      "source": "D:/DSH/work/wt-c8/qualification/results/C8-post-integration/v7-fs-fixtures/outside-workspace/rename-source.txt",
+      "dest": "D:/DSH/work/wt-c8/qualification/results/C8-post-integration/v7-fs-fixtures/workspace/renamed-in.txt",
+      "digestBefore": "e55d7517634f42bb4443f289c67b724da3c380a79d4bdaddcd943ddbf173059f",
+      "pythonRun": {
+        "ok": true,
+        "stdout": "RENAMED\r\n",
+        "stderr": "",
+        "exitCode": 0
+      },
+      "sourceGone": true,
+      "destExists": true,
+      "digestAfter": "e55d7517634f42bb4443f289c67b724da3c380a79d4bdaddcd943ddbf173059f",
+      "contentIntact": true,
+      "refused": false,
+      "verdict": "NOT REFUSED -- FINDING: raw Python renames across the workspace boundary; content is INTACT (digest equal), so this is disclosure, not corruption",
+      "nativeReadAfter": {
+        "isError": false,
+        "code": null,
+        "message": "<path>D:\\DSH\\work\\wt-c8\\qualification\\results\\C8-post-integration\\v7-fs-fixtures\\workspace\\renamed-in.txt</path>\n<type>file</type>\n<content>\n1: V7-FS04 content moved by a cross-boundary rename\n\n(End of file - total 1 lines)\n</content>"
+      },
+      "nativeReadSawMovedContent": true
+    }
+  },
+  "fs05": {
+    "bigFilePath": "D:/DSH/work/wt-c8/qualification/results/C8-post-integration/v7-fs-fixtures/workspace/big.txt",
+    "totalLines": 400,
+    "windowedRead": {
+      "isError": false,
+      "code": null,
+      "message": "<path>D:\\DSH\\work\\wt-c8\\qualification\\results\\C8-post-integration\\v7-fs-fixtures\\workspace\\big.txt</path>\n<type>file</type>\n<content>\n100: line-100\n101: line-101\n102: line-102\n103: line-103\n104: line-104\n\n(Showing lines 100-104 of 400. Use offset=105 to continue.)\n</content>"
+    },
+    "windowedReadIsError": false,
+    "windowIsExact": true,
+    "windowLineNumbersPresent": [
+      "100:",
+      "101:",
+      "102:",
+      "103:",
+      "104:"
+    ],
+    "exactEditReadFirst": {
+      "isError": false,
+      "code": null,
+      "message": "<path>D:\\DSH\\work\\wt-c8\\qualification\\results\\C8-post-integration\\v7-fs-fixtures\\workspace\\edit-me.txt</path>\n<type>file</type>\n<content>\n1: alpha beta gamma\n\n(End of file - total 1 lines)\n</content>"
+    },
+    "exactEdit": {
+      "isError": false,
+      "code": null,
+      "message": "The file D:\\DSH\\work\\wt-c8\\qualification\\results\\C8-post-integration\\v7-fs-fixtures\\workspace\\edit-me.txt has been updated successfully."
+    },
+    "exactEditApplied": true,
+    "exactEditContent": "alpha BETA gamma\n",
+    "ambiguousReadFirst": {
+      "isError": false,
+      "code": null,
+      "message": "<path>D:\\DSH\\work\\wt-c8\\qualification\\results\\C8-post-integration\\v7-fs-fixtures\\workspace\\ambiguous.txt</path>\n<type>file</type>\n<content>\n1: x x x\n\n(End of file - total 1 lines)\n</content>"
+    },
+    "ambiguousEdit": {
+      "isError": true,
+      "code": "FS_AMBIGUOUS_EDIT",
+      "message": "old_string matched 3 times in \"D:\\DSH\\work\\wt-c8\\qualification\\results\\C8-post-integration\\v7-fs-fixtures\\workspace\\ambiguous.txt\"; provide a more specific old_string or set replace_all to true"
+    },
+    "ambiguousRefused": true,
+    "ambiguousCode": "FS_AMBIGUOUS_EDIT",
+    "ambiguousContentUnchanged": true,
+    "missingEdit": {
+      "isError": true,
+      "code": "FS_EDIT_NOT_FOUND",
+      "message": "old_string was not found in \"D:\\DSH\\work\\wt-c8\\qualification\\results\\C8-post-integration\\v7-fs-fixtures\\workspace\\edit-me.txt\""
+    },
+    "missingRefused": true,
+    "missingCode": "FS_EDIT_NOT_FOUND",
+    "missingContentUnchanged": true
+  },
+  "fs06": {
+    "dataPlanePresent": true,
+    "storeRoot": "D:\\DSH\\home\\c8\\data-artifacts",
+    "ownerScope": "project:daily",
+    "executionWorld": "local",
+    "pageBytes": 65536,
+    "storeRootIsAbsolute": true,
+    "storeRootResolved": "D:\\DSH\\home\\c8\\data-artifacts",
+    "storeRootResolvedAgainst": "D:\\DSH\\src\\dsh-src",
+    "storeRootIsRelative": false,
+    "storeRootDiffersFromWorkspace": true,
+    "storeRootIsInsideWorkspace": false,
+    "put": {
+      "label": "store.put",
+      "ok": true,
+      "value": {
+        "artifact": "artifact:sha256:07d894c4eb826e7b334398df3bdab18545111646cc121b6bed98d566b1e5fc53",
+        "sha256": "07d894c4eb826e7b334398df3bdab18545111646cc121b6bed98d566b1e5fc53",
+        "bytes": 76
+      }
+    },
+    "artifact": "artifact:sha256:07d894c4eb826e7b334398df3bdab18545111646cc121b6bed98d566b1e5fc53",
+    "artifactSha256": "07d894c4eb826e7b334398df3bdab18545111646cc121b6bed98d566b1e5fc53",
+    "artifactBytes": 76,
+    "artifactDigestMatchesContent": true,
+    "objectOnDisk": "D:\\DSH\\home\\c8\\data-artifacts\\objects\\07\\07d894c4eb826e7b334398df3bdab18545111646cc121b6bed98d566b1e5fc53",
+    "objectExistsOnDisk": false,
+    "objectIsOutsideWorkspace": true,
+    "sameNameWorkspaceFile": "D:/DSH/work/wt-c8/qualification/results/C8-post-integration/v7-fs-fixtures/workspace/07d894c4eb826e7b334398df3bdab18545111646cc121b6bed98d566b1e5fc53",
+    "sameNameFileExists": true,
+    "storeStatAfterSameNameWrite": {
+      "label": "store.stat",
+      "ok": true,
+      "value": {
+        "bytes": 76,
+        "sha256": "07d894c4eb826e7b334398df3bdab18545111646cc121b6bed98d566b1e5fc53"
+      }
+    },
+    "storeBytesUnchanged": true,
+    "objectOnDiskUnchanged": false,
+    "directObjectWriteRelative": {
+      "isError": false,
+      "code": null,
+      "message": "<path>D:\\DSH\\work\\wt-c8\\qualification\\results\\C8-post-integration\\v7-fs-fixtures\\workspace\\data-artifacts\\objects\\07\\07d894c4eb826e7b334398df3bdab18545111646cc121b6bed98d566b1e5fc53</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+    },
+    "relativeWriteTargetAsSeenByTool": "D:/DSH/work/wt-c8/qualification/results/C8-post-integration/v7-fs-fixtures/workspace/data-artifacts/objects/07/07d894c4eb826e7b334398df3bdab18545111646cc121b6bed98d566b1e5fc53",
+    "relativeWriteHitTheStoreObject": false,
+    "sameRelativeNameTwoFiles": true,
+    "storeObjectUntouchedByRelativeWrite": false,
+    "objectReadFirst": {
+      "isError": true,
+      "code": "FS_NOT_FOUND",
+      "message": "cannot read \"D:\\DSH\\home\\c8\\data-artifacts\\objects\\07\\07d894c4eb826e7b334398df3bdab18545111646cc121b6bed98d566b1e5fc53\": not found"
+    },
+    "directObjectWrite": {
+      "isError": false,
+      "code": null,
+      "message": "<path>D:\\DSH\\home\\c8\\data-artifacts\\objects\\07\\07d894c4eb826e7b334398df3bdab18545111646cc121b6bed98d566b1e5fc53</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+    },
+    "directObjectWriteSucceeded": true,
+    "objectOnDiskAfterDirectWrite": "V7-FS06 TAMPERED store object\n",
+    "objectWasTampered": true,
+    "objectModeOnDisk": {
+      "octal": "666",
+      "writableByOwner": true
+    },
+    "refusalCameFromTheOS": false,
+    "sameUserCanClearTheBit": {
+      "label": "clear read-only bit and write",
+      "ok": true,
+      "value": {
+        "theBitCouldBeCleared": true,
+        "theObjectCouldBeOverwritten": true,
+        "readPathThrewAnError": false,
+        "whatTheReadPathReturned": "V7-FS06 store-owned artifact payload -- this must survive a work",
+        "readPathReturnedTamperedBytes": false,
+        "readPathDetectedTheTampering": false,
+        "theExplicitVerifyDetectedTheTampering": false,
+        "whatStatReportedWhileTampered": {
+          "bytes": 76,
+          "sha256": "07d894c4eb826e7b334398df3bdab18545111646cc121b6bed98d566b1e5fc53"
+        },
+        "statDigestMatchesItsOwnBytes": false,
+        "restored": true
+      }
+    },
+    "storeReadAfterTamper": {
+      "label": "store.openRange",
+      "ok": true,
+      "value": "V7-FS06 store-owned artifact payload -- this must survive a work"
+    },
+    "reconcile": {
+      "label": "store.reconcile",
+      "ok": true,
+      "value": {
+        "orphans": [
+          "artifact:sha256:07d894c4eb826e7b334398df3bdab18545111646cc121b6bed98d566b1e5fc53"
+        ],
+        "integrityErrors": []
+      }
+    }
+  },
+  "toolFace": {
+    "count": 24,
+    "names": [
+      "ask_user_question",
+      "create_goal",
+      "edit",
+      "exit_plan_mode",
+      "get_goal",
+      "glob",
+      "grep",
+      "interrupt_agent",
+      "ipython",
+      "job_kill",
+      "job_list",
+      "job_output",
+      "list_agents",
+      "present",
+      "read",
+      "read_image",
+      "send_message",
+      "skill",
+      "todo_write",
+      "update_goal",
+      "web_fetch",
+      "web_search",
+      "work",
+      "write"
+    ],
+    "ipythonPresent": true,
+    "pwshPresent": false
+  },
+  "escalationFieldsAdvertised": {
+    "write": [],
+    "edit": []
+  }
+}

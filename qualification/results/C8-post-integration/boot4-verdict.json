@@ -1,0 +1,993 @@
+{
+  "probe": "V2-composition boot4",
+  "ranAt": "2026-09-20T15:22:14.416Z",
+  "cwd": "D:/DSH/src/dsh-src",
+  "dshHome": "D:/DSH/home/c8",
+  "port": 6795,
+  "portReleased": true,
+  "timedOut": false,
+  "exitCode": null,
+  "inputDigests": {
+    "installedProfilePatch": "e12edffbbf69d531454f83a242863b7586e65f222f7c2f8c4151bf4918b43114",
+    "repoProfilePatch": "e12edffbbf69d531454f83a242863b7586e65f222f7c2f8c4151bf4918b43114",
+    "installedPreset": "db31885e4688f443c701077fc2e388b05565c3021f747a634e3fe0581a2d2eb0",
+    "repoPreset": "db31885e4688f443c701077fc2e388b05565c3021f747a634e3fe0581a2d2eb0",
+    "workBundlePatch": "4cb2095194c20280c1b27204c464af7dd7a8ce55e599bc403698a228b6f10355",
+    "ipythonBundlePatch": "f169f231bd1af3f569264dde980d94e4f95f3cde922e2a6459f330dfd740a9a7",
+    "workLibHost": "628594433894e3f61083a78568a6b55b23d2b19904d8dcbb48bc597776a81aa5",
+    "ipythonLibTool": "c734c57efc6aaab1051f78bf58a1ad7f6fc4cc1429495bf4526e715c509bde5e",
+    "overlay": "361ba732cccf1a7f2f1e8e6391e0dea32d36fa2cbc71f48b9866a7ae54a14f60"
+  },
+  "fatal": null,
+  "measurement": {
+    "probe": "V2-cmp-composition",
+    "ranAt": "2026-09-20T15:22:12.593Z",
+    "presetRoots": [
+      {
+        "path": "D:/DSH/home/c8/profiles/daily/presets/",
+        "trust": "system"
+      },
+      {
+        "path": "D:\\DSH\\home\\c8\\.agent-presets",
+        "trust": "user"
+      }
+    ],
+    "presetDefaultId": "daily-standard",
+    "error": null,
+    "sandbox": {
+      "policyServicePresent": true,
+      "sandboxServicePresent": true,
+      "policyRowInLoader": true,
+      "policyRowFiberState": 2,
+      "policyRowConfigAsComposed": {
+        "mode": "danger-full-access",
+        "workspaceRoot": {
+          "__jsExpr": "process.cwd()"
+        }
+      },
+      "defaultMode": "danger-full-access",
+      "workspaceRoot": "D:\\DSH\\src\\dsh-src",
+      "resolvedWorkspaceRoot": "D:\\DSH\\src\\dsh-src",
+      "resolveWithNoSession": {
+        "mode": "danger-full-access",
+        "workspaceRoot": "D:\\DSH\\src\\dsh-src"
+      },
+      "perSession": [
+        {
+          "sessionId": "session-b3da57ee-969b-4e46-ae80-d180c48c6a50",
+          "override": null,
+          "resolved": "danger-full-access",
+          "resolvedWorkspaceRoot": "D:/DSH/work/dsh-native-daily"
+        }
+      ],
+      "ptcRuntimePresent": true,
+      "ptcSandboxMode": "danger-full-access",
+      "fsSandboxMode": null,
+      "shellSandboxMode": null
+    },
+    "approval": {
+      "servicePresent": true,
+      "configuredPolicy": "never",
+      "sessionOverride": null,
+      "effectivePolicyForSession": "never",
+      "permissionPresetsServicePresent": false,
+      "permissionRowDisabled": true,
+      "uiPermissionRowDisabled": true,
+      "policyToolGuesses": [
+        {
+          "tool": "permission",
+          "result": {
+            "threw": false,
+            "isError": true,
+            "code": "UNKNOWN_TOOL",
+            "message": "unknown tool \"permission\""
+          }
+        },
+        {
+          "tool": "permission_preset",
+          "result": {
+            "threw": false,
+            "isError": true,
+            "code": "UNKNOWN_TOOL",
+            "message": "unknown tool \"permission_preset\""
+          }
+        },
+        {
+          "tool": "approval",
+          "result": {
+            "threw": false,
+            "isError": true,
+            "code": "UNKNOWN_TOOL",
+            "message": "unknown tool \"approval\""
+          }
+        },
+        {
+          "tool": "set_approval_policy",
+          "result": {
+            "threw": false,
+            "isError": true,
+            "code": "UNKNOWN_TOOL",
+            "message": "unknown tool \"set_approval_policy\""
+          }
+        },
+        {
+          "tool": "set_permission_mode",
+          "result": {
+            "threw": false,
+            "isError": true,
+            "code": "UNKNOWN_TOOL",
+            "message": "unknown tool \"set_permission_mode\""
+          }
+        },
+        {
+          "tool": "sandbox",
+          "result": {
+            "threw": false,
+            "isError": true,
+            "code": "UNKNOWN_TOOL",
+            "message": "unknown tool \"sandbox\""
+          }
+        },
+        {
+          "tool": "escalate",
+          "result": {
+            "threw": false,
+            "isError": true,
+            "code": "UNKNOWN_TOOL",
+            "message": "unknown tool \"escalate\""
+          }
+        }
+      ],
+      "modelCatalogHasPolicyTool": false,
+      "hostApiSetPolicyAttempt": "no throw",
+      "policyAfterHostApiAttempt": "ask"
+    },
+    "patchedRows": [
+      {
+        "id": "sandbox-policy",
+        "name": "@deepseek-ai/dsh-sandbox-policy",
+        "disabled": false,
+        "fiberState": 2,
+        "configKeys": [
+          "mode",
+          "workspaceRoot"
+        ],
+        "config": {
+          "mode": "danger-full-access",
+          "workspaceRoot": {
+            "__jsExpr": "process.cwd()"
+          }
+        }
+      },
+      {
+        "id": "approval",
+        "name": "@deepseek-ai/dsh-user-approval",
+        "disabled": false,
+        "fiberState": 2,
+        "configKeys": [
+          "policy"
+        ],
+        "config": {
+          "policy": "never"
+        }
+      },
+      {
+        "id": "subagent",
+        "name": "@deepseek-ai/dsh-subagent",
+        "disabled": false,
+        "fiberState": 2,
+        "configKeys": [
+          "maxActiveSubagents",
+          "maxDepth"
+        ],
+        "config": {
+          "maxActiveSubagents": 30,
+          "maxDepth": 1
+        }
+      },
+      {
+        "id": "agent-presets",
+        "name": "@deepseek-ai/dsh-agent-presets",
+        "disabled": false,
+        "fiberState": 2,
+        "configKeys": [
+          "default",
+          "roots",
+          "includeShippedRoot",
+          "includeUserRoot"
+        ],
+        "config": {
+          "default": "daily-standard",
+          "roots": [
+            {
+              "path": {
+                "__jsExpr": "new URL('presets/', ctx.baseUrl).pathname.replace(/^\\/([A-Za-z]:)/, '$1')"
+              },
+              "trust": "system"
+            }
+          ],
+          "includeShippedRoot": false,
+          "includeUserRoot": true
+        }
+      }
+    ],
+    "presets": [
+      {
+        "label": "daily-standard",
+        "requestedPreset": null,
+        "sessionId": "session-b3da57ee-969b-4e46-ae80-d180c48c6a50",
+        "agentPreset": "daily-standard",
+        "agentPresent": true,
+        "toolCount": 24,
+        "tools": [
+          "ask_user_question",
+          "create_goal",
+          "edit",
+          "exit_plan_mode",
+          "get_goal",
+          "glob",
+          "grep",
+          "interrupt_agent",
+          "ipython",
+          "job_kill",
+          "job_list",
+          "job_output",
+          "list_agents",
+          "present",
+          "read",
+          "read_image",
+          "send_message",
+          "skill",
+          "todo_write",
+          "update_goal",
+          "web_fetch",
+          "web_search",
+          "work",
+          "write"
+        ],
+        "pwshPresent": false,
+        "ipythonPresent": true,
+        "workPresent": true
+      },
+      {
+        "label": "standard",
+        "requestedPreset": "standard",
+        "error": "RemoteError: agent-presets: preset \"standard\" not found (available: daily-standard)"
+      },
+      {
+        "label": "daily-standard-2",
+        "requestedPreset": null,
+        "sessionId": "session-8f2eef07-9d8c-41af-ad75-3c4c28ce63ca",
+        "agentPreset": "daily-standard",
+        "agentPresent": true,
+        "toolCount": 24,
+        "tools": [
+          "ask_user_question",
+          "create_goal",
+          "edit",
+          "exit_plan_mode",
+          "get_goal",
+          "glob",
+          "grep",
+          "interrupt_agent",
+          "ipython",
+          "job_kill",
+          "job_list",
+          "job_output",
+          "list_agents",
+          "present",
+          "read",
+          "read_image",
+          "send_message",
+          "skill",
+          "todo_write",
+          "update_goal",
+          "web_fetch",
+          "web_search",
+          "work",
+          "write"
+        ],
+        "pwshPresent": false,
+        "ipythonPresent": true,
+        "workPresent": true
+      }
+    ],
+    "roots": {
+      "created": [
+        {
+          "runId": "cmp-run-A",
+          "ok": true
+        },
+        {
+          "runId": "cmp-run-B",
+          "ok": true
+        }
+      ],
+      "interleaved": {
+        "steps": [
+          {
+            "label": "A.admit",
+            "ok": true,
+            "value": {
+              "taskId": "task-A1",
+              "assignmentDigest": "digest-A1",
+              "childId": "child-A1",
+              "attempt": 1,
+              "state": "prepared",
+              "allowedCapabilities": [],
+              "inputRefs": [],
+              "outputRefs": [],
+              "reservedCost": 1,
+              "createdAt": "2026-09-20T15:22:12.787Z",
+              "updatedAt": "2026-09-20T15:22:12.787Z"
+            }
+          },
+          {
+            "label": "B.admit",
+            "ok": true,
+            "value": {
+              "taskId": "task-B1",
+              "assignmentDigest": "digest-B1",
+              "childId": "child-B1",
+              "attempt": 1,
+              "state": "prepared",
+              "allowedCapabilities": [],
+              "inputRefs": [],
+              "outputRefs": [],
+              "reservedCost": 2,
+              "createdAt": "2026-09-20T15:22:12.791Z",
+              "updatedAt": "2026-09-20T15:22:12.791Z"
+            }
+          },
+          {
+            "label": "A.cancel task-A1",
+            "ok": true,
+            "value": {
+              "taskId": "task-A1",
+              "assignmentDigest": "digest-A1",
+              "childId": "child-A1",
+              "attempt": 1,
+              "state": "cancel_requested",
+              "allowedCapabilities": [],
+              "inputRefs": [],
+              "outputRefs": [],
+              "reservedCost": 1,
+              "createdAt": "2026-09-20T15:22:12.787Z",
+              "updatedAt": "2026-09-20T15:22:12.796Z"
+            }
+          },
+          {
+            "label": "A.confirm cancel task-A1",
+            "ok": true,
+            "value": {
+              "taskId": "task-A1",
+              "assignmentDigest": "digest-A1",
+              "childId": "child-A1",
+              "attempt": 1,
+              "state": "cancelled",
+              "allowedCapabilities": [],
+              "inputRefs": [],
+              "outputRefs": [],
+              "reservedCost": 1,
+              "createdAt": "2026-09-20T15:22:12.787Z",
+              "updatedAt": "2026-09-20T15:22:12.799Z"
+            }
+          },
+          {
+            "label": "B.admit a second task",
+            "ok": true,
+            "value": {
+              "taskId": "task-B2",
+              "assignmentDigest": "digest-B2",
+              "childId": "child-B2",
+              "attempt": 1,
+              "state": "prepared",
+              "allowedCapabilities": [],
+              "inputRefs": [],
+              "outputRefs": [],
+              "reservedCost": 3,
+              "createdAt": "2026-09-20T15:22:12.804Z",
+              "updatedAt": "2026-09-20T15:22:12.804Z"
+            }
+          }
+        ],
+        "A": {
+          "rootSessionId": "session-b3da57ee-969b-4e46-ae80-d180c48c6a50",
+          "taskIds": [
+            "task-A1"
+          ],
+          "tombstones": [
+            "task-A1"
+          ],
+          "reserved": 0
+        },
+        "B": {
+          "rootSessionId": "session-8f2eef07-9d8c-41af-ad75-3c4c28ce63ca",
+          "taskIds": [
+            "task-B1",
+            "task-B2"
+          ],
+          "tombstones": [],
+          "reserved": 5
+        },
+        "distinctRoots": true,
+        "noTaskIdCrosses": true,
+        "noTombstoneCrosses": true,
+        "reservedA": 0,
+        "reservedB": 5
+      },
+      "perSessionToolResolution": {
+        "statusA": {
+          "label": "A",
+          "sessionId": "session-b3da57ee-969b-4e46-ae80-d180c48c6a50",
+          "call": {
+            "threw": false,
+            "isError": false,
+            "code": null,
+            "message": "{\n  \"action\": \"status\",\n  \"runId\": \"cmp-run-A\",\n  \"desiredTarget\": 10,\n  \"readyTasks\": 0,\n  \"durablyAdmitted\": 0,\n  \"launching\": 0,\n  \"activeAssignments\": 0,\n  \"waitingOwnedTool\": 0,\n  \"providerWaiting\": 0,\n  \"stopping\": 0,\n  \"quarantinedUnknown\": 0,\n  \"confirmed\": 0,\n  \"cancelled\": 1,\n  \"capacityDeficit\": 10,\n  \"deficitReason\": \"insufficient_ready_tasks\"\n}"
+          }
+        },
+        "statusB": {
+          "label": "B",
+          "sessionId": "session-8f2eef07-9d8c-41af-ad75-3c4c28ce63ca",
+          "call": {
+            "threw": false,
+            "isError": false,
+            "code": null,
+            "message": "{\n  \"action\": \"status\",\n  \"runId\": \"cmp-run-B\",\n  \"desiredTarget\": 10,\n  \"readyTasks\": 0,\n  \"durablyAdmitted\": 2,\n  \"launching\": 0,\n  \"activeAssignments\": 0,\n  \"waitingOwnedTool\": 0,\n  \"providerWaiting\": 0,\n  \"stopping\": 0,\n  \"quarantinedUnknown\": 0,\n  \"confirmed\": 0,\n  \"cancelled\": 0,\n  \"capacityDeficit\": 8,\n  \"deficitReason\": \"insufficient_ready_tasks\"\n}"
+          }
+        },
+        "runIdA": "cmp-run-A",
+        "runIdB": "cmp-run-B",
+        "resolvesItsOwnRun": true,
+        "noCrossResolution": true
+      }
+    },
+    "registration": {
+      "loaderEntryCount": 178,
+      "rowIdCounts": {
+        "daily-work-host": 1,
+        "daily-history": 1,
+        "daily-data-plane": 1,
+        "daily-writers": 1,
+        "daily-programmatic-scope": 1,
+        "daily-no-sandbox-contract": 1,
+        "daily-web-search": 1,
+        "daily-work-tool-protocol-guards": 1,
+        "ipython-kernel-host": 1,
+        "sandbox-policy": 1,
+        "sandbox": 1,
+        "approval": 1,
+        "permission": 1,
+        "ui-permission": 1,
+        "fs-sandbox": 1,
+        "fs-local": 1,
+        "pwsh-sandbox": 1,
+        "pwsh-local": 1,
+        "agent-presets": 1,
+        "subagent": 1
+      },
+      "duplicateRegistrationWarnings": [],
+      "toolRowOwners": {
+        "pwshSandboxRowDisabled": true,
+        "tool-pwsh": {
+          "name": "@deepseek-ai/dsh-tool-pwsh",
+          "disabled": true,
+          "fiberState": null
+        },
+        "tool-fs": {
+          "name": "@deepseek-ai/dsh-tool-fs",
+          "disabled": true,
+          "fiberState": null
+        },
+        "fsSandboxRowDisabled": true,
+        "fsLocalRowFiberState": 2,
+        "pwshLocalRowFiberState": 2
+      },
+      "presetCompositions": [
+        {
+          "id": "daily-standard",
+          "isDefault": true,
+          "broken": null,
+          "rowIds": [
+            "persona",
+            "agent-instructions",
+            "tool-bash",
+            "tool-pwsh",
+            "tool-fs",
+            "tool-fs-search",
+            "tool-jobs",
+            "skill-filesystem",
+            "tool-skill",
+            "command-goal",
+            "tool-goal",
+            "plan-mode",
+            "compaction-basic",
+            "command-compact",
+            "tool-result-pruner",
+            "tool-subagent-control",
+            "tool-subagent-list-agents",
+            "tool-subagent",
+            "tool-subagent-fork",
+            "tool-subagent-codex",
+            "tool-subagent-claude-code",
+            "workflow-ptc",
+            "tool-workflow",
+            "tool-ralph",
+            "tool-ask-user",
+            "tool-todo",
+            "tool-web",
+            "present",
+            "tool-plugin-manager",
+            "daily-work-tools",
+            "daily-work-command",
+            "ipython-tool"
+          ],
+          "rowNamesById": {
+            "persona": "@deepseek-ai/dsh-persona",
+            "agent-instructions": "@deepseek-ai/dsh-agent-instructions",
+            "tool-bash": "@deepseek-ai/dsh-tool-bash",
+            "tool-pwsh": "@deepseek-ai/dsh-tool-pwsh",
+            "tool-fs": "@deepseek-ai/dsh-tool-fs",
+            "tool-fs-search": "@deepseek-ai/dsh-tool-fs-search",
+            "tool-jobs": "@deepseek-ai/dsh-tool-jobs",
+            "skill-filesystem": "@deepseek-ai/dsh-skill-filesystem",
+            "tool-skill": "@deepseek-ai/dsh-tool-skill",
+            "command-goal": "@deepseek-ai/dsh-command-goal",
+            "tool-goal": "@deepseek-ai/dsh-tool-goal",
+            "plan-mode": "@deepseek-ai/dsh-plan-mode",
+            "compaction-basic": "@deepseek-ai/dsh-compaction-basic",
+            "command-compact": "@deepseek-ai/dsh-command-compact",
+            "tool-result-pruner": "@deepseek-ai/dsh-compaction-tool-result-pruner",
+            "tool-subagent-control": "@deepseek-ai/dsh-tool-subagent-control",
+            "tool-subagent-list-agents": "@deepseek-ai/dsh-tool-subagent-control/list-agents",
+            "tool-subagent": "@deepseek-ai/dsh-tool-subagent",
+            "tool-subagent-fork": "@deepseek-ai/dsh-tool-subagent",
+            "tool-subagent-codex": "@deepseek-ai/dsh-tool-subagent",
+            "tool-subagent-claude-code": "@deepseek-ai/dsh-tool-subagent",
+            "workflow-ptc": "@deepseek-ai/dsh-workflow-ptc",
+            "tool-workflow": "@deepseek-ai/dsh-tool-workflow",
+            "tool-ralph": "@deepseek-ai/dsh-tool-ralph",
+            "tool-ask-user": "@deepseek-ai/dsh-tool-ask-user",
+            "tool-todo": "@deepseek-ai/dsh-tool-todo",
+            "tool-web": "@deepseek-ai/dsh-tool-web",
+            "present": "@deepseek-ai/dsh-tool-present",
+            "tool-plugin-manager": "@deepseek-ai/dsh-plugin-manager/tools",
+            "daily-work-tools": "dsh-daily-work/tools",
+            "daily-work-command": "dsh-daily-work/command",
+            "ipython-tool": "dsh-ipython/tool"
+          },
+          "rowsEnabled": [
+            {
+              "id": "persona",
+              "enabled": true
+            },
+            {
+              "id": "agent-instructions",
+              "enabled": true
+            },
+            {
+              "id": "tool-bash",
+              "enabled": false
+            },
+            {
+              "id": "tool-pwsh",
+              "enabled": false
+            },
+            {
+              "id": "tool-fs",
+              "enabled": true
+            },
+            {
+              "id": "tool-fs-search",
+              "enabled": true
+            },
+            {
+              "id": "tool-jobs",
+              "enabled": true
+            },
+            {
+              "id": "skill-filesystem",
+              "enabled": true
+            },
+            {
+              "id": "tool-skill",
+              "enabled": true
+            },
+            {
+              "id": "command-goal",
+              "enabled": true
+            },
+            {
+              "id": "tool-goal",
+              "enabled": true
+            },
+            {
+              "id": "plan-mode",
+              "enabled": true
+            },
+            {
+              "id": "compaction-basic",
+              "enabled": true
+            },
+            {
+              "id": "command-compact",
+              "enabled": true
+            },
+            {
+              "id": "tool-result-pruner",
+              "enabled": true
+            },
+            {
+              "id": "tool-subagent-control",
+              "enabled": true
+            },
+            {
+              "id": "tool-subagent-list-agents",
+              "enabled": true
+            },
+            {
+              "id": "tool-subagent",
+              "enabled": false
+            },
+            {
+              "id": "tool-subagent-fork",
+              "enabled": false
+            },
+            {
+              "id": "tool-subagent-codex",
+              "enabled": false
+            },
+            {
+              "id": "tool-subagent-claude-code",
+              "enabled": false
+            },
+            {
+              "id": "workflow-ptc",
+              "enabled": false
+            },
+            {
+              "id": "tool-workflow",
+              "enabled": false
+            },
+            {
+              "id": "tool-ralph",
+              "enabled": false
+            },
+            {
+              "id": "tool-ask-user",
+              "enabled": true
+            },
+            {
+              "id": "tool-todo",
+              "enabled": true
+            },
+            {
+              "id": "tool-web",
+              "enabled": true
+            },
+            {
+              "id": "present",
+              "enabled": true
+            },
+            {
+              "id": "tool-plugin-manager",
+              "enabled": false
+            },
+            {
+              "id": "daily-work-tools",
+              "enabled": true
+            },
+            {
+              "id": "daily-work-command",
+              "enabled": true
+            },
+            {
+              "id": "ipython-tool",
+              "enabled": true
+            }
+          ],
+          "rowCount": 32
+        }
+      ]
+    },
+    "loaderInactive": [],
+    "presetsPair": {
+      "comparedPair": "DIFFERENT COMPOSITION FILES (daily-standard vs shipped standard)",
+      "rosterIds": [
+        "daily-standard"
+      ],
+      "sameCompositionFile": false
+    },
+    "isolation": {
+      "workServiceInstancesShared": null,
+      "note": "agent.ctx identity: `true` would mean the two presets published into the SAME realm",
+      "dailyCtxPresent": true,
+      "contrastCtxPresent": false
+    }
+  },
+  "checks": [
+    {
+      "caseId": "CMP-01",
+      "label": "the boot log has no activation warning",
+      "ok": true,
+      "detail": "no matching line"
+    },
+    {
+      "caseId": "CMP-*",
+      "label": "the probe reported no error",
+      "ok": true,
+      "detail": "null"
+    },
+    {
+      "caseId": "CMP-02",
+      "label": "a row with id sandbox-policy is present in the loader",
+      "ok": true,
+      "detail": "true"
+    },
+    {
+      "caseId": "CMP-02",
+      "label": "the sandbox-policy row is ACTIVE (fiber state 2)",
+      "ok": true,
+      "detail": "2"
+    },
+    {
+      "caseId": "CMP-02",
+      "label": "the composed mode is danger-full-access",
+      "ok": true,
+      "detail": "danger-full-access"
+    },
+    {
+      "caseId": "CMP-02",
+      "label": "workspaceRoot resolves to an ABSOLUTE path",
+      "ok": true,
+      "detail": "D:\\DSH\\src\\dsh-src"
+    },
+    {
+      "caseId": "CMP-02",
+      "label": "the sandbox provider row is mounted",
+      "ok": true,
+      "detail": "true"
+    },
+    {
+      "caseId": "CMP-03",
+      "label": "defaultMode is separately observable",
+      "ok": true,
+      "detail": "danger-full-access"
+    },
+    {
+      "caseId": "CMP-03",
+      "label": "a session override is separately observable",
+      "ok": true,
+      "detail": "[{\"sessionId\":\"session-b3da57ee-969b-4e46-ae80-d180c48c6a50\",\"override\":null,\"resolved\":\"danger-full-access\",\"resolvedWorkspaceRoot\":\"D:/DSH/work/dsh-native-daily\"}]"
+    },
+    {
+      "caseId": "CMP-03",
+      "label": "resolve({}) mode is separately observable",
+      "ok": true,
+      "detail": "{\"mode\":\"danger-full-access\",\"workspaceRoot\":\"D:\\\\DSH\\\\src\\\\dsh-src\"}"
+    },
+    {
+      "caseId": "CMP-03",
+      "label": "the composed row config carries the mode key explicitly (not a fallback)",
+      "ok": true,
+      "detail": "{\"mode\":\"danger-full-access\",\"workspaceRoot\":{\"__jsExpr\":\"process.cwd()\"}}"
+    },
+    {
+      "caseId": "CMP-06",
+      "label": "the configured approval policy is never",
+      "ok": true,
+      "detail": "never"
+    },
+    {
+      "caseId": "CMP-06",
+      "label": "the effective policy for a real session is never",
+      "ok": true,
+      "detail": "never"
+    },
+    {
+      "caseId": "CMP-06",
+      "label": "no session-level override exists",
+      "ok": true,
+      "detail": "null"
+    },
+    {
+      "caseId": "CMP-06",
+      "label": "no policy-changing tool is in the model catalog",
+      "ok": true,
+      "detail": "false"
+    },
+    {
+      "caseId": "CMP-06",
+      "label": "every model-originated policy-tool attempt failed",
+      "ok": true,
+      "detail": "[{\"tool\":\"permission\",\"result\":{\"threw\":false,\"isError\":true,\"code\":\"UNKNOWN_TOOL\",\"message\":\"unknown tool \\\"permission\\\"\"}},{\"tool\":\"permission_preset\",\"result\":{\"threw\":false,\"isError\":true,\"code\":\"UNKNOWN_TOOL\",\"message\":\"unknown tool \\\"permission_preset\\\"\"}},{\"tool\":\"approval\",\"result\":{\"threw\":false,\"isError\":true,\"code\":\"UNKNOWN_TOOL\",\"message\":\"unknown tool \\\"approval\\\"\"}},{\"tool\":\"set_approval_policy\",\"result\":{\"threw\":false,\"isError\":true,\"code\":\"UNKNOWN_TOOL\",\"message\":\"unknown tool \\\"set_approval_policy\\\"\"}},{\"tool\":\"set_permission_mode\",\"result\":{\"threw\":false,\"isError\":true,\"code\":\"UNKNOWN_TOOL\",\"message\":\"unknown tool \\\"set_permission_mode\\\"\"}},{\"tool\":\"sandbox\",\"result\":{\"threw\":false,\"isError\":true,\"code\":\"UNKNOWN_TOOL\",\"message\":\"unknown tool \\\"sandbox\\\"\"}},{\"tool\":\"escalate\",\"result\":{\"threw\":false,\"isError\":true,\"code\":\"UNKNOWN_TOOL\",\"message\":\"unknown tool \\\"escalate\\\"\"}}]"
+    },
+    {
+      "caseId": "CMP-06",
+      "label": "the host-code route to setPolicy EXISTS (the value is not immutable)",
+      "ok": true,
+      "detail": "no throw"
+    },
+    {
+      "caseId": "CMP-06",
+      "label": "the host-code route actually changed the policy (proving it is live)",
+      "ok": true,
+      "detail": "ask"
+    },
+    {
+      "caseId": "CMP-06",
+      "label": "the effective policy BEFORE any attempt was never",
+      "ok": true,
+      "detail": "never"
+    },
+    {
+      "caseId": "CMP-06",
+      "label": "no permission-preset row is mounted (the user-facing route is gone)",
+      "ok": true,
+      "detail": "{\"service\":false,\"row\":true,\"ui\":true}"
+    },
+    {
+      "caseId": "CMP-07",
+      "label": "the subagent row is resolved",
+      "ok": true,
+      "detail": "[\"sandbox-policy\",\"approval\",\"subagent\",\"agent-presets\"]"
+    },
+    {
+      "caseId": "CMP-07",
+      "label": "subagent.maxActiveSubagents is 10 (the intended value)",
+      "ok": false,
+      "detail": "30"
+    },
+    {
+      "caseId": "CMP-07",
+      "label": "subagent.maxDepth is 1 (the sibling key did NOT revert)",
+      "ok": true,
+      "detail": "1"
+    },
+    {
+      "caseId": "CMP-07",
+      "label": "the subagent row carries BOTH keys, not one",
+      "ok": true,
+      "detail": "[\"maxActiveSubagents\",\"maxDepth\"]"
+    },
+    {
+      "caseId": "CMP-07",
+      "label": "agent-presets carries all four intended keys",
+      "ok": true,
+      "detail": "[\"default\",\"roots\",\"includeShippedRoot\",\"includeUserRoot\"]"
+    },
+    {
+      "caseId": "CMP-07",
+      "label": "agent-presets.includeShippedRoot did not revert",
+      "ok": false,
+      "detail": "false"
+    },
+    {
+      "caseId": "CMP-07",
+      "label": "agent-presets.includeUserRoot did not revert",
+      "ok": true,
+      "detail": "true"
+    },
+    {
+      "caseId": "CMP-08",
+      "label": "two presets were mounted in one process",
+      "ok": true,
+      "detail": "[\"daily-standard\",\"standard\",\"daily-standard-2\"]"
+    },
+    {
+      "caseId": "CMP-08",
+      "label": "daily-standard mounts ipython and work",
+      "ok": true,
+      "detail": "ipython=true work=true"
+    },
+    {
+      "caseId": "CMP-08",
+      "label": "the shipped standard preset does NOT mount ipython or work",
+      "ok": false,
+      "detail": "ipython=undefined work=undefined"
+    },
+    {
+      "caseId": "CMP-08",
+      "label": "the two catalogs differ (they are not one shared catalog)",
+      "ok": true,
+      "detail": "24 vs undefined"
+    },
+    {
+      "caseId": "CMP-08",
+      "label": "each agent resolved its OWN run through the real work tool",
+      "ok": true,
+      "detail": "{\"A\":\"cmp-run-A\",\"B\":\"cmp-run-B\"}"
+    },
+    {
+      "caseId": "CMP-08",
+      "label": "no module-scope state crosses the two sessions (the runs are not the same)",
+      "ok": true,
+      "detail": "{\"A\":\"cmp-run-A\",\"B\":\"cmp-run-B\"}"
+    },
+    {
+      "caseId": "CMP-09",
+      "label": "two runs were created on one standing scope",
+      "ok": true,
+      "detail": "[{\"runId\":\"cmp-run-A\",\"ok\":true},{\"runId\":\"cmp-run-B\",\"ok\":true}]"
+    },
+    {
+      "caseId": "CMP-09",
+      "label": "the two runs have distinct root sessions",
+      "ok": true,
+      "detail": "true"
+    },
+    {
+      "caseId": "CMP-09",
+      "label": "no task id crosses between the runs",
+      "ok": true,
+      "detail": "{\"A\":[\"task-A1\"],\"B\":[\"task-B1\",\"task-B2\"]}"
+    },
+    {
+      "caseId": "CMP-09",
+      "label": "no tombstone crosses between the runs",
+      "ok": true,
+      "detail": "{\"A\":[\"task-A1\"],\"B\":[]}"
+    },
+    {
+      "caseId": "CMP-09",
+      "label": "the reservations are separate (A released its cancelled task, B did not)",
+      "ok": true,
+      "detail": "A=0 B=5"
+    },
+    {
+      "caseId": "CMP-10",
+      "label": "no host row id is registered more than once",
+      "ok": true,
+      "detail": "[]"
+    },
+    {
+      "caseId": "CMP-10",
+      "label": "the work host row is registered exactly once",
+      "ok": true,
+      "detail": "1"
+    },
+    {
+      "caseId": "CMP-10",
+      "label": "the ipython kernel host row is registered exactly once",
+      "ok": true,
+      "detail": "1"
+    },
+    {
+      "caseId": "CMP-10",
+      "label": "no duplicate-registration warning on stderr",
+      "ok": true,
+      "detail": "no matching line"
+    },
+    {
+      "caseId": "CMP-10",
+      "label": "the agent-scoped tool rows live in the PRESET, not the host plane",
+      "ok": true,
+      "detail": "[{\"id\":\"daily-standard\",\"isDefault\":true,\"broken\":null,\"rowIds\":[\"persona\",\"agent-instructions\",\"tool-bash\",\"tool-pwsh\",\"tool-fs\",\"tool-fs-search\",\"tool-jobs\",\"skill-filesystem\",\"tool-skill\",\"command-goal\",\"tool-goal\",\"plan-mode\",\"compaction-basic\",\"command-compact\",\"tool-result-pruner\",\"tool-subagent-control\",\"tool-subagent-list-agents\",\"tool-subagent\",\"tool-subagent-fork\",\"tool-subagent-codex\",\"tool-subagent-claude-code\",\"workflow-ptc\",\"tool-workflow\",\"tool-ralph\",\"tool-ask-user\",\"tool-todo\",\"tool-web\",\"present\",\"tool-plugin-manager\",\"daily-work-tools\",\"daily-work-command\",\"ipython-tool\"],\"rowNamesById\":{\"persona\":\"@deepseek-ai/dsh-persona\",\"agent-instructions\":\"@deepseek-ai/dsh-agent-instructions\",\"tool-bash\":\"@deepseek-ai/dsh-tool-bash\",\"tool-pwsh\":\"@deepseek-ai/dsh-tool-pwsh\",\"tool-fs\":\"@deepseek-ai/dsh-tool-fs\",\"tool-fs-search\":\"@deepseek-ai/dsh-tool-fs-search\",\"tool-jobs\":\"@deepseek-ai/dsh-tool-jobs\",\"skill-filesystem\":\"@deepseek-ai/dsh-skill-filesystem\",\"tool-skill\":\"@deepseek-ai/dsh-tool-skill\",\"command-goal\":\"@deepseek-ai/dsh-command-goal\",\"tool-goal\":\"@deepseek-ai/dsh-tool-goal\",\"plan-mode\":\"@deepseek-ai/dsh-plan-mode\",\"compaction-basic\":\"@deepseek-ai/dsh-compaction-basic\",\"command-compact\":\"@deepseek-ai/dsh-command-compact\",\"tool-result-pruner\":\"@deepseek-ai/dsh-compaction-tool-result-pruner\",\"tool-subagent-control\":\"@deepseek-ai/dsh-tool-subagent-control\",\"tool-subagent-list-agents\":\"@deepseek-ai/dsh-tool-subagent-control/list-agents\",\"tool-subagent\":\"@deepseek-ai/dsh-tool-subagent\",\"tool-subagent-fork\":\"@deepseek-ai/dsh-tool-subagent\",\"tool-subagent-codex\":\"@deepseek-ai/dsh-tool-subagent\",\"tool-subagent-claude-code\":\"@deepseek-ai/dsh-tool-subagent\",\"workflow-ptc\":\"@deepseek-ai/dsh-workflow-ptc\",\"tool-workflow\":\"@deepseek-ai/dsh-tool-workflow\",\"tool-ralph\":\"@deepseek-ai/dsh-tool-ralph\",\"tool-ask-user\":\"@deepseek-ai/dsh-tool-ask-user\",\"tool-todo\":\"@deepseek-ai/dsh-tool-todo\",\"tool-web\":\"@deepseek-ai/dsh-tool-web\",\"present\":\"@deepseek-ai/dsh-tool-present\",\"tool-plugin-manager\":\"@deepseek-ai/dsh-plugin-manager/tools\",\"daily-work-tools\":\"dsh-daily-work/tools\",\"daily-work-command\":\"dsh-daily-work/command\",\"ipython-tool\":\"dsh-ipython/tool\"},\"rowsEnabled\":[{\"id\":\"persona\",\"enabled\":true},{\"id\":\"agent-instructions\",\"enabled\":true},{\"id\":\"tool-bash\",\"enabled\":false},{\"id\":\"tool-pwsh\",\"enabled\":false},{\"id\":\"tool-fs\",\"enabled\":true},{\"id\":\"tool-fs-search\",\"enabled\":true},{\"id\":\"tool-jobs\",\"enabled\":true},{\"id\":\"skill-filesystem\",\"enabled\":true},{\"id\":\"tool-skill\",\"enabled\":true},{\"id\":\"command-goal\",\"enabled\":true},{\"id\":\"tool-goal\",\"enabled\":true},{\"id\":\"plan-mode\",\"enabled\":true},{\"id\":\"compaction-basic\",\"enabled\":true},{\"id\":\"command-compact\",\"enabled\":true},{\"id\":\"tool-result-pruner\",\"enabled\":true},{\"id\":\"tool-subagent-control\",\"enabled\":true},{\"id\":\"tool-subagent-list-agents\",\"enabled\":true},{\"id\":\"tool-subagent\",\"enabled\":false},{\"id\":\"tool-subagent-fork\",\"enabled\":false},{\"id\":\"tool-subagent-codex\",\"enabled\":false},{\"id\":\"tool-subagent-claude-code\",\"enabled\":false},{\"id\":\"workflow-ptc\",\"enabled\":false},{\"id\":\"tool-workflow\",\"enabled\":false},{\"id\":\"tool-ralph\",\"enabled\":false},{\"id\":\"tool-ask-user\",\"enabled\":true},{\"id\":\"tool-todo\",\"enabled\":true},{\"id\":\"tool-web\",\"enabled\":true},{\"id\":\"present\",\"enabled\":true},{\"id\":\"tool-plugin-manager\",\"enabled\":false},{\"id\":\"daily-work-tools\",\"enabled\":true},{\"id\":\"daily-work-command\",\"enabled\":true},{\"id\":\"ipython-tool\",\"enabled\":true}],\"rowCount\":32}]"
+    },
+    {
+      "caseId": "CMP-10",
+      "label": "the daily preset carries no HOST row (bundle and preset own different halves)",
+      "ok": true,
+      "detail": "[\"persona\",\"agent-instructions\",\"tool-bash\",\"tool-pwsh\",\"tool-fs\",\"tool-fs-search\",\"tool-jobs\",\"skill-filesystem\",\"tool-skill\",\"command-goal\",\"tool-goal\",\"plan-mode\",\"compaction-basic\",\"command-compact\",\"tool-result-pruner\",\"tool-subagent-control\",\"tool-subagent-list-agents\",\"tool-subagent\",\"tool-subagent-fork\",\"tool-subagent-codex\",\"tool-subagent-claude-code\",\"workflow-ptc\",\"tool-workflow\",\"tool-ralph\",\"tool-ask-user\",\"tool-todo\",\"tool-web\",\"present\",\"tool-plugin-manager\",\"daily-work-tools\",\"daily-work-command\",\"ipython-tool\"]"
+    },
+    {
+      "caseId": "CMP-10",
+      "label": "the work host row is in the HOST plane, registered exactly once",
+      "ok": true,
+      "detail": "1"
+    },
+    {
+      "caseId": "CMP-*",
+      "label": "the port was released after the kill",
+      "ok": true,
+      "detail": "true"
+    }
+  ],
+  "failures": [
+    "[CMP-07] subagent.maxActiveSubagents is 10 (the intended value) -- observed: 30",
+    "[CMP-07] agent-presets.includeShippedRoot did not revert -- observed: false",
+    "[CMP-08] the shipped standard preset does NOT mount ipython or work -- observed: ipython=undefined work=undefined"
+  ],
+  "ok": false
+}

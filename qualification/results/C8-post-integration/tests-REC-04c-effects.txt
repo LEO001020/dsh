@@ -1,0 +1,57 @@
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.8 [39m[90mD:/DSH/work/wt-c8/packages/dsh-daily-work[39m
+
+ [32m✓[39m src/effects.test.ts[2m > [22moperation identity[2m > [22mis stable across a changed transport callId[32m 9[2mms[22m[39m
+ [32m✓[39m src/effects.test.ts[2m > [22moperation identity[2m > [22mis stable across parameter key order, so a rebuilt retry is the same operation[32m 3[2mms[22m[39m
+ [32m✓[39m src/effects.test.ts[2m > [22moperation identity[2m > [22mkeeps the operationId when the payload changes, so the change is a conflict and not a new operation[32m 3[2mms[22m[39m
+ [32m✓[39m src/effects.test.ts[2m > [22moperation identity[2m > [22mrefuses to identify an operation with no logical key[32m 3[2mms[22m[39m
+ [32m✓[39m src/effects.test.ts[2m > [22moperation identity[2m > [22mrefuses to canonicalize values whose digest would be ambiguous[32m 3[2mms[22m[39m
+ [32m✓[39m src/effects.test.ts[2m > [22moperation identity[2m > [22mdigests the canonical form, not the source text[32m 2[2mms[22m[39m
+ [32m✓[39m src/effects.test.ts[2m > [22mthe send decision table[2m > [22mlicenses a send from exactly two states, and both are proofs about our own write ordering[32m 3[2mms[22m[39m
+ [32m✓[39m src/effects.test.ts[2m > [22mthe send decision table[2m > [22mnever licenses a send from a state that could already have reached the remote[32m 4[2mms[22m[39m
+ [32m✓[39m src/effects.test.ts[2m > [22mE07: operation idempotency[2m > [22mperforms the effect ONCE when the same logical operation is retried with a new callId[32m 11[2mms[22m[39m
+ [32m✓[39m src/effects.test.ts[2m > [22mE07: operation idempotency[2m > [22msurvives a restart: a fresh ledger over the same medium reconciles instead of resending[32m 14[2mms[22m[39m
+ [32m✓[39m src/effects.test.ts[2m > [22mE07: operation idempotency[2m > [22mrecords a lost reply as unknown, and resolves it by QUERY rather than by a second send[32m 13[2mms[22m[39m
+ [32m✓[39m src/effects.test.ts[2m > [22mE07: operation idempotency[2m > [22mleaves the outcome unknown when the adapter cannot be queried, and still does not resend[32m 9[2mms[22m[39m
+ [32m✓[39m src/effects.test.ts[2m > [22mE07: operation idempotency[2m > [22mdoes not run an adapter with neither an idempotency key nor a queryable result[32m 4[2mms[22m[39m
+ [32m✓[39m src/effects.test.ts[2m > [22mE07: operation idempotency[2m > [22msends after a crash that provably preceded the transport call[32m 9[2mms[22m[39m
+ [32m✓[39m src/effects.test.ts[2m > [22mE07: operation idempotency[2m > [22mreconcile never reaches the transport, whatever the recorded state[32m 33[2mms[22m[39m
+ [32m✓[39m src/effects.test.ts[2m > [22mE08: operation parameter conflict[2m > [22mrefuses the changed action and does not send it[32m 12[2mms[22m[39m
+ [32m✓[39m src/effects.test.ts[2m > [22mE08: operation parameter conflict[2m > [22mdoes not let the original acknowledgement authorize the new action[32m 13[2mms[22m[39m
+ [32m✓[39m src/effects.test.ts[2m > [22mE08: operation parameter conflict[2m > [22mleaves the recorded authorization fields untouched and audits the refusal[32m 11[2mms[22m[39m
+ [32m✓[39m src/effects.test.ts[2m > [22mE08: operation parameter conflict[2m > [22mstill reconciles the ORIGINAL parameters after a conflict[32m 11[2mms[22m[39m
+ [32m✓[39m src/effects.test.ts[2m > [22mE08: operation parameter conflict[2m > [22mrefuses to overwrite a recorded intent through recordIntent[32m 5[2mms[22m[39m
+ [32m✓[39m src/effects.test.ts[2m > [22mE09: opaque shell classification[2m > [22mclassifies only a closed allowlist of plain commands as read_only[32m 4[2mms[22m[39m
+ [32m✓[39m src/effects.test.ts[2m > [22mE09: opaque shell classification[2m > [22mreturns unknown, never read_only, for anything it cannot classify[32m 3[2mms[22m[39m
+ [32m✓[39m src/effects.test.ts[2m > [22mE09: opaque shell classification[2m > [22mtreats any shell metacharacter as making the text a program rather than a command[32m 3[2mms[22m[39m
+ [32m✓[39m src/effects.test.ts[2m > [22mE09: opaque shell classification[2m > [22mrefuses a reading command whose flag writes[32m 3[2mms[22m[39m
+ [32m✓[39m src/effects.test.ts[2m > [22mE09: opaque shell classification[2m > [22mreports mutating for commands that write in their normal use[32m 3[2mms[22m[39m
+ [32m✓[39m src/effects.test.ts[2m > [22mE09: opaque shell classification[2m > [22mrefuses a path-qualified executable, because the name then proves nothing[32m 3[2mms[22m[39m
+ [32m✓[39m src/effects.test.ts[2m > [22mE09: opaque shell classification[2m > [22mexposes its own limits as part of the interface[32m 2[2mms[22m[39m
+ [32m✓[39m src/effects.test.ts[2m > [22mE09: opaque shell classification[2m > [22madversarial: the same text that is classified read_only really does write[2m > [22mrequires a real shell, because a regex failure is not the same evidence as an observed write[32m 4[2mms[22m[39m
+ [32m✓[39m src/effects.test.ts[2m > [22mE09: opaque shell classification[2m > [22madversarial: the same text that is classified read_only really does write[2m > [22ma shell function bound to a read-only name writes, while the text still classifies as read_only[32m 43[2mms[22m[39m
+ [32m✓[39m src/effects.test.ts[2m > [22mE09: opaque shell classification[2m > [22madversarial: the same text that is classified read_only really does write[2m > [22ma PATH-shadowed executable writes, while the text still classifies as read_only[32m 63[2mms[22m[39m
+ [32m✓[39m src/effects.test.ts[2m > [22mE09: opaque shell classification[2m > [22madversarial: the same text that is classified read_only really does write[2m > [22ma redirect hidden in a variable writes, while the inner text classifies as read_only[32m 59[2mms[22m[39m
+ [32m✓[39m src/effects.test.ts[2m > [22mE09: opaque shell classification[2m > [22madversarial: the same text that is classified read_only really does write[2m > [22man exported function writes in a child shell, while the text still classifies as read_only[32m 52[2mms[22m[39m
+ [32m✓[39m src/effects.test.ts[2m > [22mE09: opaque shell classification[2m > [22madversarial: the same text that is classified read_only really does write[2m > [22mdemonstrates all four defeats in one sandbox, so the gate has a single checkable list[32m 188[2mms[22m[39m
+ [32m✓[39m src/effects.test.ts[2m > [22mE10: partial PTC-style program commit[2m > [22mdoes not replay the program; it reconciles the committed effect and quarantines the rest[32m 17[2mms[22m[39m
+ [32m✓[39m src/effects.test.ts[2m > [22mE10: partial PTC-style program commit[2m > [22mresumes by reconciling each step individually, with no transport invocation at all[32m 17[2mms[22m[39m
+ [32m✓[39m src/effects.test.ts[2m > [22mE10: partial PTC-style program commit[2m > [22mreconciles a lost reply inside the program instead of re-running the program[32m 18[2mms[22m[39m
+ [32m✓[39m src/effects.test.ts[2m > [22mE10: partial PTC-style program commit[2m > [22mleaves a program step unknown when the adapter cannot be queried[32m 16[2mms[22m[39m
+ [32m✓[39m src/effects.test.ts[2m > [22mE10: partial PTC-style program commit[2m > [22mreports a fully completed program as completed, so a real failure is distinguishable[32m 15[2mms[22m[39m
+ [32m✓[39m src/effects.test.ts[2m > [22mE11: cancellation does not roll back[2m > [22mreports "may have happened" and reconciles by query when the effect was sent and the remote cannot confirm[32m 9[2mms[22m[39m
+ [32m✓[39m src/effects.test.ts[2m > [22mE11: cancellation does not roll back[2m > [22mreports the committed outcome when the query confirms it, rather than the cancellation the user asked for[32m 12[2mms[22m[39m
+ [32m✓[39m src/effects.test.ts[2m > [22mE11: cancellation does not roll back[2m > [22mreports an already-confirmed effect as committed, and says cancelling does not undo it[32m 10[2mms[22m[39m
+ [32m✓[39m src/effects.test.ts[2m > [22mE11: cancellation does not roll back[2m > [22mreports not_started when the remote positively says nothing happened, and still not as an undo[32m 10[2mms[22m[39m
+ [32m✓[39m src/effects.test.ts[2m > [22mE11: cancellation does not roll back[2m > [22mdoes not treat a cancellation of an unrecorded operation as proof it never happened[32m 4[2mms[22m[39m
+ [32m✓[39m src/effects.test.ts[2m > [22mE11: cancellation does not roll back[2m > [22mrefuses to cancel an operation whose parameters differ from the recorded ones[32m 19[2mms[22m[39m
+ [32m✓[39m src/effects.test.ts[2m > [22mE11: cancellation does not roll back[2m > [22mnever reports a cancellation as an undo, in any branch[32m 23[2mms[22m[39m
+ [32m✓[39m src/effects.test.ts[2m > [22mthe ledger record[2m > [22mkeeps the intent durable before the transport is invoked[32m 8[2mms[22m[39m
+ [32m✓[39m src/effects.test.ts[2m > [22mthe ledger record[2m > [22mrecords every transport call id it saw, as an audit trail and not as identity[32m 15[2mms[22m[39m
+ [32m✓[39m src/effects.test.ts[2m > [22mthe ledger record[2m > [22mis a separate storage domain from the run record[32m 3[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[32m48 passed[39m[22m[90m (48)[39m
+[2m   Start at [22m 23:15:56
+[2m   Duration [22m 1.20s[2m (transform 127ms, setup 0ms, import 234ms, tests 801ms, environment 0ms)[22m
+

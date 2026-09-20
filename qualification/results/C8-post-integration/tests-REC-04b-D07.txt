@@ -1,0 +1,34 @@
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.8 [39m[90mD:/DSH/work/wt-c8/packages/dsh-daily-work[39m
+
+ [2m[90m↓[39m[22m src/durability-records.test.ts[2m > [22mD01: admission is one record transform, never a cross-key transaction[2m > [22mD01 (simulated barrier): credit, task state and outbox are written by ONE update
+ [2m[90m↓[39m[22m src/durability-records.test.ts[2m > [22mD01: admission is one record transform, never a cross-key transaction[2m > [22mD01 (simulated barrier): a refused admission leaves NO trace of either half
+ [2m[90m↓[39m[22m src/durability-records.test.ts[2m > [22mD01: admission is one record transform, never a cross-key transaction[2m > [22mD01: the record schema has no second key, so no cross-key transaction can be claimed
+ [2m[90m↓[39m[22m src/durability-records.test.ts[2m > [22mD03: a durable task+childId whose launch never happened[2m > [22mD03 (REAL KILL): a reservation that provably never launched returns to prepared, once
+ [2m[90m↓[39m[22m src/durability-records.test.ts[2m > [22mD03: a durable task+childId whose launch never happened[2m > [22mD03: a task whose outcome is unknown is NEVER relaunched, even under its reserved id
+ [2m[90m↓[39m[22m src/durability-records.test.ts[2m > [22mD03: a durable task+childId whose launch never happened[2m > [22mD03: a relaunch with a CHANGED assignment is refused rather than launched as the original
+ [2m[90m↓[39m[22m src/durability-records.test.ts[2m > [22mD03: a durable task+childId whose launch never happened[2m > [22mD03: the record keeps the reserved childId, which is what makes this recoverable at all
+ [2m[90m↓[39m[22m src/durability-records.test.ts[2m > [22mD04: the child was admitted but the parent never saved the result[2m > [22mD04 (REAL KILL + real registry): DUPLICATE_CHILD is produced by the real seam and is rethrown unchanged
+ [2m[90m↓[39m[22m src/durability-records.test.ts[2m > [22mD04: the child was admitted but the parent never saved the result[2m > [22mD04: the port refuses to record a provider-allocated id that differs from the reserved one
+ [2m[90m↓[39m[22m src/durability-records.test.ts[2m > [22mD05: pending inbox messages at the moment of the kill[2m > [22mD05 (REAL KILL): the NATIVE inbox projection restores the pending message, and nothing is injected twice
+ [2m[90m↓[39m[22m src/durability-records.test.ts[2m > [22mD05: pending inbox messages at the moment of the kill[2m > [22mD05: the native splice vocabulary is the ONLY inbox mechanism this package uses
+ [2m[90m↓[39m[22m src/durability-records.test.ts[2m > [22mD06: the claim was written and the request never went out[2m > [22mD06 (REAL KILL): a claimed-but-undispatched step is not treated as done
+ [2m[90m↓[39m[22m src/durability-records.test.ts[2m > [22mD06: the claim was written and the request never went out[2m > [22mD06: when the claim cannot be distinguished from a dispatch, the answer is unknown
+ [32m✓[39m src/durability-records.test.ts[2m > [22mD07: the provider received the request and the answer never came[2m > [22mD07 (REAL KILL): usage and effect stay unknown and are never assumed free or unexecuted[33m 461[2mms[22m[39m
+ [32m✓[39m src/durability-records.test.ts[2m > [22mD07: the provider received the request and the answer never came[2m > [22mD07: an unprobed task is quarantined rather than assumed free[32m 1[2mms[22m[39m
+ [2m[90m↓[39m[22m src/durability-records.test.ts[2m > [22mD08: the child persisted its artifact and the parent was never told[2m > [22mD08 (REAL KILL): recovery finds the result in the child Session instead of repeating the task
+ [2m[90m↓[39m[22m src/durability-records.test.ts[2m > [22mD09: an incomplete trailing record[2m > [22mD09 (REAL FILE DAMAGE): the upstream repair contract is used and the torn bytes are not erased by us
+ [2m[90m↓[39m[22m src/durability-records.test.ts[2m > [22mD09: an incomplete trailing record[2m > [22mD09: a malformed record is rejected loudly rather than silently treated as current
+ [2m[90m↓[39m[22m src/durability-records.test.ts[2m > [22mD10: the run record is authoritative across generations, and no stale settlement is claimed[2m > [22ma second generation over the same store reads exactly what the first committed
+ [2m[90m↓[39m[22m src/durability-records.test.ts[2m > [22mD10: the run record is authoritative across generations, and no stale settlement is claimed[2m > [22mno settlement entry point exists, so there is no stale-write path to guard
+ [2m[90m↓[39m[22m src/durability-records.test.ts[2m > [22mD10: the run record is authoritative across generations, and no stale settlement is claimed[2m > [22mreconciliation still refuses to release a slot on a mismatched child identity
+ [2m[90m↓[39m[22m src/durability-records.test.ts[2m > [22mD11: a consumer opens the domain twice, and unload then reload[2m > [22mD11 (simulated barrier): one shared host handle, a correct close, and no hanging already-open
+ [2m[90m↓[39m[22m src/durability-records.test.ts[2m > [22mD11: a consumer opens the domain twice, and unload then reload[2m > [22mD11: the host plugin owns the handle through its effect, so unload releases it
+ [2m[90m↓[39m[22m src/durability-records.test.ts[2m > [22mD13: restart with the run already paused or its authorization expired[2m > [22mD13 (REAL KILL): recovery comes back EXPLICITLY PAUSED and consumes nothing
+ [2m[90m↓[39m[22m src/durability-records.test.ts[2m > [22mD13: restart with the run already paused or its authorization expired[2m > [22mD13: an expired authorization comes back paused too, and a live one does not
+
+[2m Test Files [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[32m2 passed[39m[22m[2m | [22m[33m23 skipped[39m[90m (25)[39m
+[2m   Start at [22m 23:15:55
+[2m   Duration [22m 1.41s[2m (transform 594ms, setup 0ms, import 796ms, tests 463ms, environment 0ms)[22m
+

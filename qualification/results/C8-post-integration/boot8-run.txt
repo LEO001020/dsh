@@ -1,0 +1,3 @@
+port=4862 released=true timedOut=false
+sameCompositionFile=true presets=["daily-standard:daily-standard:24","twin:daily-standard-twin:24","daily-standard-2:daily-standard:24"]
+checks=10/10

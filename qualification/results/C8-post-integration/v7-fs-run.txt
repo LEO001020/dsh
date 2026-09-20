@@ -1,0 +1,121 @@
+=== V7: FILESYSTEM family (spec FS-01..FS-06), verified through a real profile boot ===
+
+home:      D:/DSH/home/c8
+profile:   daily
+overlay:   D:/DSH/work/wt-c8/qualification/runners/v7-fs.patch.yml
+probe_out: D:/DSH/work/wt-c8/qualification/results/C8-post-integration/boot.json
+
+build dsh-daily-work: 41 lib files, sha256=cc8c24ca99fc2033f3f3b40b56a717f13f7530f476f3b615a86033c01f5fe6b3
+  libNewerThanSrc: true
+build dsh-ipython: 26 lib files, sha256=d55a74729d0bde1ce959bd5ccf55d26773ce145a942c608e00b8c65d27514051
+  libNewerThanSrc: true
+
+profile installed: D:/DSH/work/wt-c8/profiles/daily-candidate -> D:/DSH/home/c8/profiles/daily (replaced an existing copy: true)
+plugin install: exit=0
+
+composition_installed_sha256: e12edffbbf69d531454f83a242863b7586e65f222f7c2f8c4151bf4918b43114
+composition_repo_sha256:      e12edffbbf69d531454f83a242863b7586e65f222f7c2f8c4151bf4918b43114
+composition_is_current: true
+stale_lock: no lock present
+
+boot_cwd: D:/DSH/src/dsh-src (deliberately foreign to the profile directory)
+port: 4374 (bound by the harness, not assumed)
+timed_out: false
+exit_code: null
+port_released_after_kill: true
+
+result_names_this_home: true (presetRoots: D:/DSH/home/c8/profiles/daily/presets/, D:\DSH\home\c8\.agent-presets)
+
+activation_warning_lines: []
+probe_error: none
+
+--- checks ---
+ok   the tool face is not zero (FACT F did not occur)
+ok   no entry failed to activate
+ok   the ipython tool is on the real surface
+ok   FS-01: a write OUTSIDE the workspace succeeds under the deployed mode
+ok   FS-01: the file really exists outside the workspace
+ok   FS-01: the deployment records that the mounted backend does NOT confine (fsSandboxMode undefined)
+ok   FS-01: the escalation fields are ABSENT from the write/edit schemas (no fence to escalate past)
+ok   FS-01: the deployment states in its own words that no write confinement is claimed
+ok   FS-01: the spec itself lists filesystem write confinement as NOT claimed
+ok   FS-02: a read OUTSIDE the workspace through the NATIVE tool succeeds
+ok   FS-02: the same read through a PYTHON cell succeeds
+ok   FS-02: both routes reach the SAME BYTES (digest compared)
+ok   FS-03: the native `read` tool resolves the path to the canary
+ok   FS-03: the native `grep` tool resolves the path to the canary
+ok   FS-03: a SPAWNED process resolves the path to the same digest
+ok   FS-03: a PYTHON cell resolves the path to the same digest
+ok   FS-03: all four routes reached the same file in one world
+ok   FS-04: the symlink vector was attempted and its outcome recorded
+ok   FS-04: the hardlink vector was attempted and its outcome recorded
+ok   FS-04: the cross-boundary rename vector was attempted and its outcome recorded
+ok   FS-04: the rename did NOT corrupt content (digest before == digest after)
+ok   FS-04: the native tool read the moved file at its NEW path and saw the real content
+ok   FS-04: the symlink vector actually reached the mutation (its refusal, if any, is NOT FS_NOT_OBSERVED)
+ok   FS-04: the hardlink vector actually reached the mutation (its refusal, if any, is NOT FS_NOT_OBSERVED)
+ok   FS-05: read with offset/limit returns EXACTLY the requested window
+ok   FS-05: an exact unique replacement applies once
+ok   FS-05: the exact edit produced the expected content
+ok   FS-05: an AMBIGUOUS replacement is REFUSED, not guessed
+ok   FS-05: the refused ambiguous edit changed nothing
+ok   FS-05: an absent literal is refused with its own code
+ok   FS-05: the refused absent-literal edit changed nothing
+ok   FS-06: the artifact store is present and reports its own root
+ok   FS-06: the store root RESOLVES OUTSIDE the session workspace
+FAIL FS-06: the store root is RELATIVE, and the record names what it resolves against
+ok   FS-06: a published object's address IS its content digest
+FAIL FS-06: a workspace file with the artifact's own name does NOT change the store object
+ok   FS-06: the store reports its own verdict on the object after the same-name write
+FAIL FS-06: the relative store path and the session-relative path are DIFFERENT files (recorded as a finding)
+FAIL FS-06: the store object is REACHABLE by an absolute path (the read succeeds)
+FAIL FS-06: the store object is IMMUTABLE in fact -- the write is refused by the OS (EACCES), not by DSH policy
+FAIL FS-06: the store object was NOT modified by the refused write
+ok   FS-06: the store still returns the original bytes after the refused write
+ok   FS-06: the read-only bit is NOT a boundary -- the same user can clear it (recorded, not hidden)
+FAIL FS-06: FINDING -- the read path does NOT detect tampering (no error, tampered bytes returned)
+FAIL FS-06: the EXPLICIT verify() DOES detect tampering
+ok   FS-06: FINDING -- stat() cannot detect it either (it reports the ORIGINAL digest beside the tampered byte count)
+ok   FS-06: the probe restored the object it tampered (the store is left as found)
+
+checks_passed: 39/47
+
+--- FS-04 vectors, recorded per vector (a non-refusal is a FINDING, not a green) ---
+  symlink   refused=false verdict=NOT REFUSED -- FINDING: a symlink in the workspace escapes it; the write followed the link and mutated the target outside
+  hardlink  refused=false verdict=NOT REFUSED -- FINDING: a hardlink shares the inode, so a write inside the workspace mutates the outside file
+  rename    refused=false verdict=NOT REFUSED -- FINDING: raw Python renames across the workspace boundary; content is INTACT (digest equal), so this is disclosure, not corruption
+
+--- FS-01 disclosure, both halves ---
+  write outside the workspace succeeded: true
+  fsSandboxMode (undefined = the backend does not confine): null
+  sandboxPolicy.defaultMode: danger-full-access
+  modeSource: unobservable
+  CONTRADICTION CHECK: fsClaimsNoConfinement=true policyDefaultStillConfines=false
+
+--- FS-06 artifact store ---
+  storeRoot (as configured): D:\DSH\home\c8\data-artifacts
+  storeRootIsRelative: false -- resolved against D:\DSH\src\dsh-src
+  storeRootResolved: D:\DSH\home\c8\data-artifacts
+  ownerScope: project:daily executionWorld: local
+  artifact: artifact:sha256:07d894c4eb826e7b334398df3bdab18545111646cc121b6bed98d566b1e5fc53
+  THE DIVERGENCE -- one relative name, two files:
+    sameRelativeNameTwoFiles: true
+    the tool resolved the relative path to: D:/DSH/work/wt-c8/qualification/results/C8-post-integration/v7-fs-fixtures/workspace/data-artifacts/objects/07/07d894c4eb826e7b334398df3bdab18545111646cc121b6bed98d566b1e5fc53
+    the store's object is at:               D:\DSH\home\c8\data-artifacts\objects\07\07d894c4eb826e7b334398df3bdab18545111646cc121b6bed98d566b1e5fc53
+    store object untouched by the relative write: false
+  the ABSOLUTE store object path through the tool: read=false writeRefused=false
+  object mode on disk: {"octal":"666","writableByOwner":true}
+  the refusal came from the OS (EACCES), not from DSH policy: false
+  COUNTER-CHECK, the bit is a guard and NOT a boundary:
+    the same OS user could clear the bit and overwrite the object: true
+    FINDING -- the READ path (openRange) threw no error and returned TAMPERED bytes: false (threw: false)
+    what the read path returned while tampered: "V7-FS06 store-owned artifact payload -- this must survive a work"
+    the EXPLICIT verify() DID detect it: false
+    FINDING -- stat() reported the ORIGINAL digest beside the tampered byte count: {"bytes":76,"sha256":"07d894c4eb826e7b334398df3bdab18545111646cc121b6bed98d566b1e5fc53"}
+    stat()'s digest matched its own bytes: false
+    the probe restored the object afterwards: true
+  the store's own read after the refused write: {"label":"store.openRange","ok":true,"value":"V7-FS06 store-owned artifact payload -- this must survive a work"}
+  the store's own reconcile: {"label":"store.reconcile","ok":true,"value":{"orphans":["artifact:sha256:07d894c4eb826e7b334398df3bdab18545111646cc121b6bed98d566b1e5fc53"],"integrityErrors":[]}}
+
+
+wrote D:/DSH/work/wt-c8/qualification/results/C8-post-integration/VERDICT.json and D:/DSH/work/wt-c8/qualification/results/C8-post-integration/transcript.txt

@@ -1,0 +1,8 @@
+# V2 boot 4 -- composition probe (CMP-02/03/06/07/08/09/10)
+# cwd: D:/DSH/src/dsh-src   DSH_HOME: D:/DSH/home/c8   port: 6795   portReleased: true
+# timedOut: false   exitCode: null
+
+--- stdout ---
+dsh web: http://127.0.0.1:6795/?token=OrfgLellWnqpwxxHuO2JX1Ik1J9VFQjh6kPRTXuYdPY
+
+--- stderr ---

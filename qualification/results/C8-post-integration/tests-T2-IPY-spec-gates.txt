@@ -1,0 +1,61 @@
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.8 [39m[90mD:/DSH/work/wt-c8/packages/dsh-ipython[39m
+
+[90mstdout[2m | src/v3-spec-gates.test.ts[2m > [22m[2mIPY-01: a real IPython shell, not a CPython imitation[2m > [22m[2mget_ipython() and a magic both work IN ONE CELL through the service
+[22m[39m[V3-MEASURED] IPY-01 {"outcome":"ok","shellModule":"ipykernel.zmqshell","shellClass":"ZMQInteractiveShell","isZmqShell":"True","magicOutputContainsMarker":true,"kernelImplementation":"ipython","kernelImplementationVersion":"9.16.1","languageName":"python","languageVersion":"3.14.3","protocolVersion":"5.3"}
+
+ [32m✓[39m src/v3-spec-gates.test.ts[2m > [22mIPY-01: a real IPython shell, not a CPython imitation[2m > [22mget_ipython() and a magic both work IN ONE CELL through the service[33m 2883[2mms[22m[39m
+[90mstdout[2m | src/v3-spec-gates.test.ts[2m > [22m[2mIPY-02: the namespace persists across cells[2m > [22m[2mcell 2 uses a DataFrame, a function and an import it does NOT define
+[22m[39m[V3-MEASURED] IPY-02 {"cellOneSourceDefines":["import json as persisted_json","import pandas as pd","persisted_frame = pd.DataFrame(...)","def persisted_fn"],"cellTwoSourceContainsDefinitions":false,"cellTwoStdout":"CELL2_OK 12 200 {\"a\": 1}","sameEpoch":true,"epoch":1}
+
+ [32m✓[39m src/v3-spec-gates.test.ts[2m > [22mIPY-02: the namespace persists across cells[2m > [22mcell 2 uses a DataFrame, a function and an import it does NOT define[33m 3403[2mms[22m[39m
+[90mstdout[2m | src/v3-spec-gates.test.ts[2m > [22m[2mIPY-03: top-level await works with no wrapper[2m > [22m[2man asyncio task and a native tool call both settle at top level, unwrapped
+[22m[39m[V3-MEASURED] IPY-03 {"outcome":"ok","asyncioValue":42,"nativeValue":{"marker":"NATIVE-SETTLED","tag":"from-the-cell"},"sourceHasAsyncDef":false,"sourceHasWrapper":false,"cellId":"v3-cell-1","projectRoot":"C:\\Users\\hzq00\\AppData\\Local\\Temp\\dsh-ipython-v3-6C1lf9"}
+
+ [32m✓[39m src/v3-spec-gates.test.ts[2m > [22mIPY-03: top-level await works with no wrapper[2m > [22man asyncio task and a native tool call both settle at top level, unwrapped[33m 3466[2mms[22m[39m
+[90mstdout[2m | src/v3-spec-gates.test.ts[2m > [22m[2mIPY-04: an exception leaves partial state and does not claim rollback[2m > [22m[2mthe assignment survives, the traceback is present, and the MODEL TEXT claims no rollback
+[22m[39m[V3-MEASURED] IPY-04 {"outcome":"error","ename":"ValueError","tracebackHasFailingLine":true,"survivorReadBack":"ipy04_survivor is still assigned","modelTextOutcome":"error","modelTextMentionsRollback":false}
+
+ [32m✓[39m src/v3-spec-gates.test.ts[2m > [22mIPY-04: an exception leaves partial state and does not claim rollback[2m > [22mthe assignment survives, the traceback is present, and the MODEL TEXT claims no rollback[33m 3707[2mms[22m[39m
+[90mstdout[2m | src/v3-spec-gates.test.ts[2m > [22m[2mIPY-05: stdin is disabled and fails fast[2m > [22m[2minput() and getpass() each fail promptly and do NOT hold the execution slot
+[22m[39m[V3-MEASURED] IPY-05 {"probes":[{"label":"input","outcome":"error","ename":"StdinNotImplementedError","elapsedMs":504,"busyAfter":false},{"label":"getpass","outcome":"error","ename":"StdinNotImplementedError","elapsedMs":34,"busyAfter":false}],"cellTimeoutMs":30000,"note":"each cell settled well inside the budget, and the host was not busy afterwards"}
+
+ [32m✓[39m src/v3-spec-gates.test.ts[2m > [22mIPY-05: stdin is disabled and fails fast[2m > [22minput() and getpass() each fail promptly and do NOT hold the execution slot[33m 3133[2mms[22m[39m
+[90mstdout[2m | src/v3-spec-gates.test.ts[2m > [22m[2mIPY-06: only the matching reply and idle settle a cell[2m > [22m[2mforeign frames are ignored AND COUNTED, and a restart mid-sequence is a new epoch
+[22m[39m[V3-MEASURED] IPY-06 {"outcome":"ok","baselineForeignFramesControlArm":0,"foreignFramesReportedWithInjection":0,"injectedCorrelatedRequests":3,"injectedRequestsWereCorrelatedNotForeign":true,"cellEpoch":1,"lastLinePresent":true}
+
+ [31m×[39m src/v3-spec-gates.test.ts[2m > [22mIPY-06: only the matching reply and idle settle a cell[2m > [22mforeign frames are ignored AND COUNTED, and a restart mid-sequence is a new epoch[33m 66541[2mms[22m[39m
+[31m   → BROKER_FAILURE: RuntimeError: Kernel didn't respond in 60 seconds[39m
+ [2m[90m↓[39m[22m src/v3-spec-gates.test.ts[2m > [22mIPY-11: the kernel cwd is the project root[2m > [22ma real project root is reported verbatim and a relative path resolves inside it
+ [2m[90m↓[39m[22m src/v3-spec-gates.test.ts[2m > [22mIPY-12: output is bounded and the loss is stated[2m > [22mthe model text says TRUNCATED, names the true total and the spill path, and the cap is recorded
+ [2m[90m↓[39m[22m src/v3-spec-gates.test.ts[2m > [22mIPY-13: late output is classified separately and never rides another cell[2m > [22mCLAUSE 1 PASSES: a post-return write is late/unattributed and never rides a later cell
+ [2m[90m↓[39m[22m src/v3-spec-gates.test.ts[2m > [22mIPY-13: late output is classified separately and never rides another cell[2m > [22mCLAUSE 2: a write DURING a later cell is undecidable, not attributed
+ [2m[90m↓[39m[22m src/v3-spec-gates.test.ts[2m > [22mIPY-14: kernel death is visible and nothing is replayed[2m > [22mthe model text reports a NEW epoch, the LOST state, no replay, and the Session survives
+ [2m[90m↓[39m[22m src/v3-spec-gates.test.ts[2m > [22mIPY-15: the kernel transport is authenticated and frames are bounded[2m > [22mthe transport is curve-encrypted, and an over-limit frame is LOST with a count
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 1 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m src/v3-spec-gates.test.ts[2m > [22mIPY-06: only the matching reply and idle settle a cell[2m > [22mforeign frames are ignored AND COUNTED, and a restart mid-sequence is a new epoch
+[31m[1mKernelTransportError[22m: BROKER_FAILURE: RuntimeError: Kernel didn't respond in 60 seconds[39m
+[36m [2m❯[22m KernelHost.onMessage src/kernel.ts:[2m442:22[22m[39m
+    [90m440|[39m       // `FRAME_TOO_LARGE` is a bounded refusal a caller can act on; a…
+    [90m441|[39m       [90m// had to match prose to find it would break on any rewording.[39m
+    [90m442|[39m       pending[33m.[39m[34mreject[39m([35mnew[39m [33mKernelTransportError[39m(
+    [90m   |[39m                      [31m^[39m
+    [90m443|[39m         [32m`[39m[36m${[39mmessage[33m.[39merror[33m.[39mcode[36m}[39m[32m: [39m[36m${[39mmessage[33m.[39merror[33m.[39mmessage[36m}[39m[32m`[39m[33m,[39m
+    [90m444|[39m         message[33m.[39merror[33m.[39mcode[33m,[39m
+[90m [2m❯[22m FrameDecoder.onFrame src/kernel.ts:[2m320:23[22m[39m
+[90m [2m❯[22m FrameDecoder.drain src/protocol.ts:[2m137:12[22m[39m
+[90m [2m❯[22m FrameDecoder.push src/protocol.ts:[2m105:12[22m[39m
+[90m [2m❯[22m Socket.<anonymous> src/kernel.ts:[2m323:65[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[22m[39m
+[31m[1mSerialized Error:[22m[39m [90m{ code: 'BROKER_FAILURE' }[39m
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m1 failed[39m[22m[2m | [22m[1m[32m5 passed[39m[22m[2m | [22m[33m6 skipped[39m[90m (12)[39m
+[2m   Start at [22m 23:22:28
+[2m   Duration [22m 83.70s[2m (transform 326ms, setup 0ms, import 422ms, tests 83.14s, environment 0ms)[22m
+

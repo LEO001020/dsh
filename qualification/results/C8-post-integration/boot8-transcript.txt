@@ -1,0 +1,11 @@
+# V2 boot 8 -- CMP-08 literal stimulus: two presets from ONE composition file
+# cwd: D:/DSH/src/dsh-src   DSH_HOME: D:/DSH/home/c8   port: 4862   portReleased: true
+# timedOut: false   exitCode: null
+# source preset: D:/DSH/home/c8/profiles/daily/presets/daily-standard/agent.cordis.yml  sha256 db31885e4688f443c701077fc2e388b05565c3021f747a634e3fe0581a2d2eb0
+# twin   preset: D:/DSH/home/c8/profiles/daily/presets/daily-standard-twin/agent.cordis.yml  sha256 db31885e4688f443c701077fc2e388b05565c3021f747a634e3fe0581a2d2eb0
+# SAME COMPOSITION FILE: true
+
+--- stdout ---
+dsh web: http://127.0.0.1:4862/?token=gVeZt3T1_pJbxNQcy-FgCJ15sVgipEK_KhYUtKVu0Vw
+
+--- stderr ---

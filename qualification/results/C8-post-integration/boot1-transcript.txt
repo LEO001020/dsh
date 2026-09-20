@@ -1,0 +1,9 @@
+# V2 boot 1 -- deliverable surface, foreign cwd
+# command: node D:/DSH/work/wt-c8/apps/cli/lib/bin.js --profile daily --patch D:/DSH/work/wt-c8/qualification/runners/verify-deliverable-surface.patch.yml --patch <freeport>.yml --no-open
+# cwd: C:/   DSH_HOME: D:/DSH/home/c8   port: 6336   portReleased: true
+# timedOut: false   exitCode: null
+
+--- stdout ---
+dsh web: http://127.0.0.1:6336/?token=2Nm1J_gyaHG117IteEuDLOzgKZqSgunK28lZXU1bdME
+
+--- stderr ---
