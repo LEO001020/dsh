@@ -68,6 +68,22 @@ import { canTransition, type AdmissionState } from './states.ts'
 
 export interface CompletionObserverOptions {
   readonly service: WorkService
+  /**
+   * Where a failed wake is reported.
+   *
+   * Injected rather than reached for, because the listener is fire-and-forget and
+   * the reporter is the SERVICE's own bounded log: a module that imported the
+   * service's internals to write to them would be a second writer of a log whose
+   * bounds it does not own.
+   */
+  readonly onFailure?: (failure: CompletionFailureReport) => void
+}
+
+/** What a failed completion wake looked like, for a bounded diagnostic log. */
+export interface CompletionFailureReport {
+  readonly childId: string
+  readonly stopReason: string
+  readonly message: string
 }
 
 /**
@@ -81,16 +97,16 @@ export interface CompletionObserverOptions {
  * @returns nothing; ownership is the caller's fiber.
  */
 export function mountWorkCompletionObserver(ctx: Context, options: CompletionObserverOptions): void {
-  const { service } = options
+  const { service, onFailure } = options
   ctx.on('subagent/end', (info: SubagentRunEndInfo) => {
     // Deliberately fire-and-forget: the event is a synchronous emit and a
     // listener that awaited would block the registry's own lifecycle for as long
     // as a launch takes. The rejection is swallowed WITH A REASON: a wake that
     // fails must not become an unhandled rejection (which terminates the process
     // under Node's default policy), and it must not be silently lost either, so
-    // the failure is reported through the service's own refusal log.
+    // the failure is reported through the injected sink.
     void handleCompletion(service, info).catch(error => {
-      service.recordCompletionFailure({
+      onFailure?.({
         childId: String(info.id),
         stopReason: String(info.stopReason),
         message: error instanceof Error ? error.message : String(error),

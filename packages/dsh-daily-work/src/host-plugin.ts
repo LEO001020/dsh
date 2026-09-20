@@ -52,6 +52,25 @@ export async function apply(ctx: Context, config: Config): Promise<void> {
   // reports no writer rather than failing to boot.
   service.installTargetSetting(ctx)
   await service.open()
+  // THE PRODUCTION LISTENER FOR `subagent/end` (V5 §7.4), and the first one this
+  // package has ever had. Before this line the grep for a production
+  // `subagent/end` listener returned nothing, which is the measured reason
+  // "rolling N" could not roll: nothing observed a child settling, so a freed
+  // slot was refilled only when the root asked again.
+  //
+  // `installCompletionObserver` mounts it from the SERVICE's own context, not
+  // this plugin's, for the same reason `installTargetSetting` does: the listener
+  // must be owned by the fiber that owns the service, so it cannot outlive it
+  // and wake a disposed run.
+  service.installCompletionObserver()
+  // §7.5's boot sweep. Run AFTER the observer is mounted, so a completion that
+  // arrives during the sweep is not lost. The sweep never launches anything
+  // (there is no root Agent in hand at this point); it enumerates the non-closed
+  // runs, reports which held tasks have live children, and wakes the runs that
+  // hold READY assignments. A wake with no launch port is a no-op that leaves
+  // the table intact, so this cannot consume the ready work into `unknown`
+  // tasks before a root is authorized.
+  await service.sweepOpenRuns()
 }
 
 export { WorkService } from './host.ts'
