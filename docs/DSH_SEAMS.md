@@ -188,6 +188,30 @@ export interface KvTable<K extends string, V> {
 > at its queue slot, so concurrent updates never interleave.
 > `@param fn` - **Synchronous pure transform** from current to next record.
 
+**The serialization is per-DOMAIN, not per-key, and that is the load-bearing
+detail for any admission or reservation design.** `domain.ts:3` says "per-domain
+write chain"; `:125-126` is `enqueue<T>(job)` — "Queue one job on the domain's
+single write chain"; the private implementation is `:263`. So every `update()` on
+one domain is ordered against every OTHER update on that same domain, including
+updates to different keys. A read-modify-write therefore cannot race with a
+sibling read-modify-write anywhere in the domain, which is why a
+`tryReserveAdmission`-style operation can be correct with no lock of its own: it
+reads occupancy from the `current` it is handed and cannot observe a stale value.
+
+Two consequences follow from the same fact:
+
+- **`fn` must stay synchronous and pure.** Because the chain is per-domain, a
+  slow or awaiting `fn` would stall every other write to the domain, and the
+  interface does not prevent returning a promise — it would be stored as a record
+  value verbatim (`:332-346`). Any async input (a budget lookup, a clock read)
+  must be resolved BEFORE the update and passed in.
+- **A counter read outside the update is not authoritative.** A generation or
+  occupancy value is only meaningful if it is read and written inside the same
+  `fn`; reading it outside and acting on it reintroduces the check-then-act race
+  the atomic update exists to remove. That is the shape of `G-SEAM-45`: the
+  budget check sat inside the record update and did not race, while the target
+  check sat outside it and over-admitted.
+
 Enforced structurally at `domain.ts:332-346` (`const next = fn(this.records.get(key) as V)`).
 A returned `Promise<V>` would be stored as a record value verbatim — the type is
 the only enforcement. **This is INV-D2.**
