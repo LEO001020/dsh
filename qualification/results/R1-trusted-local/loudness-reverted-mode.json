@@ -1,0 +1,13 @@
+{
+ "label": "reverted-mode",
+ "patches": [
+  "D:/DSH/work/wt-r1/.probe/revert-sandbox-mode.patch.yml"
+ ],
+ "exitCode": null,
+ "timedOut": true,
+ "port": 4749,
+ "portReleased": true,
+ "elapsedMs": 25715,
+ "stderr": "",
+ "stdout": "dsh web: http://127.0.0.1:4749/?token=RaVgdNPmYNG0ettBpNhp3njejymbQgyg3O4H06EQ1wk\n"
+}

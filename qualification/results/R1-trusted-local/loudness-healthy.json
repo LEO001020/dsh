@@ -1,0 +1,11 @@
+{
+ "label": "healthy",
+ "patches": [],
+ "exitCode": null,
+ "timedOut": true,
+ "port": 3834,
+ "portReleased": true,
+ "elapsedMs": 25626,
+ "stderr": "",
+ "stdout": "dsh web: http://127.0.0.1:3834/?token=o3-gnQgIHX2_bBQ6jB258d9eUNAcH4zx-fTe31zEdAQ\n"
+}

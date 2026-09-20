@@ -1,0 +1,14 @@
+# Overlay for the trusted-local composition probe.
+#
+# ONE row, and it is the PROBE ONLY. There is deliberately NO `sandbox-policy`,
+# `sandbox`, `approval`, `permission`, `ui-permission`, `fs-*` or `pwsh-*` row
+# here, and that is load-bearing rather than an omission: every one of those is
+# the SUBJECT of the measurement. Restating any of them in the probe overlay
+# would make the probe measure its own row instead of the profile's composition
+# -- the weaker-oracle mistake this project already recorded as G-FIX-12.
+#
+# The probe imports nothing from a repository path: it is plain ESM loaded by the
+# Loader, and every value it reports comes from `ctx`.
+- insert:
+    - id: verify-trusted-local-composition
+      name: 'D:/DSH/work/wt-r1/.probe/verify-trusted-local-composition.mjs'

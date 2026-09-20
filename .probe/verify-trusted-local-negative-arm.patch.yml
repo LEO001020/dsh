@@ -1,0 +1,6 @@
+# Overlay for the negative-arm probe. ONE row, and it is the probe only: the
+# subject is the profile's OWN composition, so inserting any product row here
+# would make the probe measure its own overlay (the G-FIX-12 defect class).
+- insert:
+    - id: verify-trusted-local-negative-arm
+      name: 'D:/DSH/work/wt-r1/.probe/verify-trusted-local-negative-arm.mjs'

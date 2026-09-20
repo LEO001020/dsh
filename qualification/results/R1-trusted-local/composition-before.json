@@ -1,0 +1,136 @@
+{
+ "probe": "verify-trusted-local-composition",
+ "ranAt": "2026-09-20T01:25:18.037Z",
+ "presetRoots": [
+  {
+   "path": "D:\\DSH\\src\\dsh-src\\packages\\preset\\agent-presets\\presets\\",
+   "trust": "system"
+  },
+  {
+   "path": "D:/DSH/home/r1/profiles/daily/presets/",
+   "trust": "system"
+  },
+  {
+   "path": "D:\\DSH\\home\\r1\\.agent-presets",
+   "trust": "user"
+  }
+ ],
+ "presetDefaultId": "daily-standard",
+ "error": null,
+ "declared": {
+  "rowPresent": true,
+  "rowFiberState": 2,
+  "rowDisabled": false,
+  "configAsComposed": {
+   "mode": {
+    "__jsExpr": "process.env.DSH_PERMISSION_MODE ?? 'workspace-write'"
+   },
+   "workspaceRoot": {
+    "__jsExpr": "process.cwd()"
+   }
+  },
+  "configKeys": [
+   "mode",
+   "workspaceRoot"
+  ]
+ },
+ "effective": {
+  "policyServicePresent": true,
+  "defaultMode": "workspace-write",
+  "workspaceRoot": "C:\\Windows\\Temp",
+  "resolveNoSession": {
+   "mode": "workspace-write",
+   "workspaceRoot": "C:\\Windows\\Temp"
+  },
+  "perSession": [
+   {
+    "label": "daily-standard",
+    "sessionId": "session-ce2f33e7-9925-47d0-92c9-d3d45605277b",
+    "agentPreset": "daily-standard",
+    "agentPresent": true,
+    "override": null,
+    "resolved": "workspace-write"
+   }
+  ]
+ },
+ "narration": {
+  "systemPromptServicePresent": true,
+  "assembleRan": true,
+  "assembleError": null,
+  "sandboxPolicyContextPresent": true,
+  "sandboxPolicyContextText": "Current DSH file policy: workspace-write. Any available operation enforced by the DSH file sandbox may modify files under the session workspace: \"D:/DSH/work/wt-r1\". Some platform temporary areas may also be writable.",
+  "contextNames": [
+   "sandbox:policy",
+   "approval:policy"
+  ],
+  "saysWorkspaceWrite": true,
+  "saysDangerFullAccess": false
+ },
+ "ptc": {
+  "runtimePresent": true,
+  "runtimeName": "NodePtcRuntime",
+  "sandboxMode": "workspace-write",
+  "confineDecision": "WOULD CONFINDE (mode is 'workspace-write', and ptc-runtime-node:224 confines unless mode === 'danger-full-access')",
+  "runCodeOnSurface": false,
+  "note": "Recomputed from the resolved policy, not read from a log. The runtime is not invoked here: running it would spawn a Node child and this probe is a read."
+ },
+ "composition": {
+  "fsProvider": "LocalFileSystem",
+  "fsSandboxMode": null,
+  "shellProvider": "PwshLocalExecutor",
+  "shellSandboxMode": null,
+  "shellMounted": true,
+  "ipythonMounted": true,
+  "permissionRowDisabled": true,
+  "uiPermissionRowDisabled": true,
+  "permissionPresetsServicePresent": false,
+  "approvalRowPresent": true,
+  "approvalRowConfig": {
+   "policy": "never"
+  },
+  "approvalServicePresent": true,
+  "approvalConfiguredPolicy": "never",
+  "escalationTools": [],
+  "toolNames": [
+   "ask_user_question",
+   "create_goal",
+   "edit",
+   "exit_plan_mode",
+   "get_goal",
+   "glob",
+   "grep",
+   "interrupt_agent",
+   "ipython",
+   "job_kill",
+   "job_list",
+   "job_output",
+   "list_agents",
+   "present",
+   "read",
+   "read_image",
+   "send_message",
+   "skill",
+   "subagent",
+   "subagent_fork",
+   "todo_write",
+   "update_goal",
+   "web_fetch",
+   "web_search",
+   "work",
+   "workflow",
+   "write"
+  ],
+  "pwshPresent": false,
+  "ipythonPresent": true
+ },
+ "contract": {
+  "servicePresent": true,
+  "ok": false,
+  "checkCount": 8,
+  "violations": [
+   "sandboxPolicy.defaultMode",
+   "ptcRuntime.sandboxMode"
+  ],
+  "migrationRequired": []
+ }
+}

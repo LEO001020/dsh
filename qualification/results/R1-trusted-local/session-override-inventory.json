@@ -1,0 +1,3517 @@
+{
+ "scannedAt": "2026-09-20T01:30:50.251Z",
+ "root": "D:/DSH/home",
+ "totalSessionLogs": 171,
+ "logsWithSandboxModeEvent": 76,
+ "byLastOverride": {
+  "workspace-write": 76
+ },
+ "byHome": {
+  "canary": 2,
+  "canary11": 11,
+  "canary12": 1,
+  "canary13": 2,
+  "canary2": 5,
+  "canary3": 5,
+  "canary5": 17,
+  "canary7": 1,
+  "canary8": 4,
+  "m914": 7,
+  "r9-final": 1,
+  "r9-fresh2": 1,
+  "r9-scratch": 1,
+  "t-root": 4,
+  "t16-docs": 2,
+  "t2-fs": 1,
+  "t4-preset": 11
+ },
+ "classifications": [
+  {
+   "home": "canary",
+   "sessionId": "session-1d870c86-7863-4f12-9b0b-cf05cd5c9b35",
+   "cwd": "D:\\DSH\\src\\dsh-src",
+   "agentPreset": null,
+   "lastOverride": "workspace-write",
+   "modeEvents": [
+    {
+     "mode": "workspace-write",
+     "source": null,
+     "seq": 1
+    }
+   ],
+   "disposition": "MIGRATE OR REFUSE: override 'workspace-write' resolves confined under a trusted-local default"
+  },
+  {
+   "home": "canary",
+   "sessionId": "session-9ba2b285-a065-444d-aa05-ae1d6a9fb7fe",
+   "cwd": "D:\\DSH\\work\\t1",
+   "agentPreset": null,
+   "lastOverride": "workspace-write",
+   "modeEvents": [
+    {
+     "mode": "workspace-write",
+     "source": null,
+     "seq": 1
+    }
+   ],
+   "disposition": "MIGRATE OR REFUSE: override 'workspace-write' resolves confined under a trusted-local default"
+  },
+  {
+   "home": "canary11",
+   "sessionId": "session-0dca0d7f-e72a-43b4-8f5f-96328a373c4a",
+   "cwd": "D:\\DSH\\src\\dsh-src",
+   "agentPreset": null,
+   "lastOverride": "workspace-write",
+   "modeEvents": [
+    {
+     "mode": "workspace-write",
+     "source": null,
+     "seq": 1
+    }
+   ],
+   "disposition": "MIGRATE OR REFUSE: override 'workspace-write' resolves confined under a trusted-local default"
+  },
+  {
+   "home": "canary11",
+   "sessionId": "session-1147f611-909d-48f8-9ace-ac70d22a4662",
+   "cwd": "D:\\DSH\\src\\dsh-src",
+   "agentPreset": null,
+   "lastOverride": "workspace-write",
+   "modeEvents": [
+    {
+     "mode": "workspace-write",
+     "source": null,
+     "seq": 1
+    }
+   ],
+   "disposition": "MIGRATE OR REFUSE: override 'workspace-write' resolves confined under a trusted-local default"
+  },
+  {
+   "home": "canary11",
+   "sessionId": "session-15452e14-48ba-4c02-aed1-749ddcde3488",
+   "cwd": "D:\\DSH\\src\\dsh-src",
+   "agentPreset": null,
+   "lastOverride": "workspace-write",
+   "modeEvents": [
+    {
+     "mode": "workspace-write",
+     "source": null,
+     "seq": 1
+    }
+   ],
+   "disposition": "MIGRATE OR REFUSE: override 'workspace-write' resolves confined under a trusted-local default"
+  },
+  {
+   "home": "canary11",
+   "sessionId": "session-21a27c7a-3c7a-4bf6-9cb9-28862cfefab5",
+   "cwd": "D:\\DSH\\src\\dsh-src",
+   "agentPreset": null,
+   "lastOverride": "workspace-write",
+   "modeEvents": [
+    {
+     "mode": "workspace-write",
+     "source": null,
+     "seq": 1
+    }
+   ],
+   "disposition": "MIGRATE OR REFUSE: override 'workspace-write' resolves confined under a trusted-local default"
+  },
+  {
+   "home": "canary11",
+   "sessionId": "session-50e780ca-2aa6-4a46-8810-7a04ded5c65f",
+   "cwd": "D:\\DSH\\src\\dsh-src",
+   "agentPreset": null,
+   "lastOverride": "workspace-write",
+   "modeEvents": [
+    {
+     "mode": "workspace-write",
+     "source": null,
+     "seq": 1
+    }
+   ],
+   "disposition": "MIGRATE OR REFUSE: override 'workspace-write' resolves confined under a trusted-local default"
+  },
+  {
+   "home": "canary11",
+   "sessionId": "session-a03d0810-245a-41b0-b057-3d718ba97ed0",
+   "cwd": "D:\\DSH\\work\\dsh-native-daily",
+   "agentPreset": null,
+   "lastOverride": "workspace-write",
+   "modeEvents": [
+    {
+     "mode": "workspace-write",
+     "source": null,
+     "seq": 1
+    }
+   ],
+   "disposition": "MIGRATE OR REFUSE: override 'workspace-write' resolves confined under a trusted-local default"
+  },
+  {
+   "home": "canary11",
+   "sessionId": "session-0dca0d7f-e72a-43b4-8f5f-96328a373c4a",
+   "cwd": "D:\\DSH\\src\\dsh-src",
+   "agentPreset": null,
+   "lastOverride": "workspace-write",
+   "modeEvents": [
+    {
+     "mode": "workspace-write",
+     "source": null,
+     "seq": 1
+    }
+   ],
+   "disposition": "MIGRATE OR REFUSE: override 'workspace-write' resolves confined under a trusted-local default"
+  },
+  {
+   "home": "canary11",
+   "sessionId": "session-1147f611-909d-48f8-9ace-ac70d22a4662",
+   "cwd": "D:\\DSH\\src\\dsh-src",
+   "agentPreset": null,
+   "lastOverride": "workspace-write",
+   "modeEvents": [
+    {
+     "mode": "workspace-write",
+     "source": null,
+     "seq": 1
+    }
+   ],
+   "disposition": "MIGRATE OR REFUSE: override 'workspace-write' resolves confined under a trusted-local default"
+  },
+  {
+   "home": "canary11",
+   "sessionId": "session-15452e14-48ba-4c02-aed1-749ddcde3488",
+   "cwd": "D:\\DSH\\src\\dsh-src",
+   "agentPreset": null,
+   "lastOverride": "workspace-write",
+   "modeEvents": [
+    {
+     "mode": "workspace-write",
+     "source": null,
+     "seq": 1
+    }
+   ],
+   "disposition": "MIGRATE OR REFUSE: override 'workspace-write' resolves confined under a trusted-local default"
+  },
+  {
+   "home": "canary11",
+   "sessionId": "session-21a27c7a-3c7a-4bf6-9cb9-28862cfefab5",
+   "cwd": "D:\\DSH\\src\\dsh-src",
+   "agentPreset": null,
+   "lastOverride": "workspace-write",
+   "modeEvents": [
+    {
+     "mode": "workspace-write",
+     "source": null,
+     "seq": 1
+    }
+   ],
+   "disposition": "MIGRATE OR REFUSE: override 'workspace-write' resolves confined under a trusted-local default"
+  },
+  {
+   "home": "canary11",
+   "sessionId": "session-50e780ca-2aa6-4a46-8810-7a04ded5c65f",
+   "cwd": "D:\\DSH\\src\\dsh-src",
+   "agentPreset": null,
+   "lastOverride": "workspace-write",
+   "modeEvents": [
+    {
+     "mode": "workspace-write",
+     "source": null,
+     "seq": 1
+    }
+   ],
+   "disposition": "MIGRATE OR REFUSE: override 'workspace-write' resolves confined under a trusted-local default"
+  },
+  {
+   "home": "canary12",
+   "sessionId": "session-e34a2e75-338c-48db-abac-4cf4a975ecd2",
+   "cwd": "D:/DSH/work/dsh-native-daily",
+   "agentPreset": "daily-standard",
+   "lastOverride": "workspace-write",
+   "modeEvents": [
+    {
+     "mode": "workspace-write",
+     "source": null,
+     "seq": 1
+    }
+   ],
+   "disposition": "MIGRATE OR REFUSE: override 'workspace-write' resolves confined under a trusted-local default"
+  },
+  {
+   "home": "canary13",
+   "sessionId": "session-d6515d2d-e8dd-4134-ae44-286ee22a17b8",
+   "cwd": "D:/DSH/work/dsh-native-daily",
+   "agentPreset": "daily-standard",
+   "lastOverride": "workspace-write",
+   "modeEvents": [
+    {
+     "mode": "workspace-write",
+     "source": null,
+     "seq": 1
+    }
+   ],
+   "disposition": "MIGRATE OR REFUSE: override 'workspace-write' resolves confined under a trusted-local default"
+  },
+  {
+   "home": "canary13",
+   "sessionId": "session-ef0e00fb-5f41-4509-9091-c8ce3f7824b8",
+   "cwd": "D:/DSH/work/dsh-native-daily",
+   "agentPreset": "daily-standard",
+   "lastOverride": "workspace-write",
+   "modeEvents": [
+    {
+     "mode": "workspace-write",
+     "source": null,
+     "seq": 1
+    }
+   ],
+   "disposition": "MIGRATE OR REFUSE: override 'workspace-write' resolves confined under a trusted-local default"
+  },
+  {
+   "home": "canary2",
+   "sessionId": "session-0dca0d7f-e72a-43b4-8f5f-96328a373c4a",
+   "cwd": "D:\\DSH\\src\\dsh-src",
+   "agentPreset": null,
+   "lastOverride": "workspace-write",
+   "modeEvents": [
+    {
+     "mode": "workspace-write",
+     "source": null,
+     "seq": 1
+    }
+   ],
+   "disposition": "MIGRATE OR REFUSE: override 'workspace-write' resolves confined under a trusted-local default"
+  },
+  {
+   "home": "canary2",
+   "sessionId": "session-1147f611-909d-48f8-9ace-ac70d22a4662",
+   "cwd": "D:\\DSH\\src\\dsh-src",
+   "agentPreset": null,
+   "lastOverride": "workspace-write",
+   "modeEvents": [
+    {
+     "mode": "workspace-write",
+     "source": null,
+     "seq": 1
+    }
+   ],
+   "disposition": "MIGRATE OR REFUSE: override 'workspace-write' resolves confined under a trusted-local default"
+  },
+  {
+   "home": "canary2",
+   "sessionId": "session-15452e14-48ba-4c02-aed1-749ddcde3488",
+   "cwd": "D:\\DSH\\src\\dsh-src",
+   "agentPreset": null,
+   "lastOverride": "workspace-write",
+   "modeEvents": [
+    {
+     "mode": "workspace-write",
+     "source": null,
+     "seq": 1
+    }
+   ],
+   "disposition": "MIGRATE OR REFUSE: override 'workspace-write' resolves confined under a trusted-local default"
+  },
+  {
+   "home": "canary2",
+   "sessionId": "session-21a27c7a-3c7a-4bf6-9cb9-28862cfefab5",
+   "cwd": "D:\\DSH\\src\\dsh-src",
+   "agentPreset": null,
+   "lastOverride": "workspace-write",
+   "modeEvents": [
+    {
+     "mode": "workspace-write",
+     "source": null,
+     "seq": 1
+    }
+   ],
+   "disposition": "MIGRATE OR REFUSE: override 'workspace-write' resolves confined under a trusted-local default"
+  },
+  {
+   "home": "canary2",
+   "sessionId": "session-50e780ca-2aa6-4a46-8810-7a04ded5c65f",
+   "cwd": "D:\\DSH\\src\\dsh-src",
+   "agentPreset": null,
+   "lastOverride": "workspace-write",
+   "modeEvents": [
+    {
+     "mode": "workspace-write",
+     "source": null,
+     "seq": 1
+    }
+   ],
+   "disposition": "MIGRATE OR REFUSE: override 'workspace-write' resolves confined under a trusted-local default"
+  },
+  {
+   "home": "canary3",
+   "sessionId": "session-1577fd5e-7abc-4ea4-88d1-4b129e140d12",
+   "cwd": "D:\\DSH\\src\\dsh-src",
+   "agentPreset": "standard",
+   "lastOverride": "workspace-write",
+   "modeEvents": [
+    {
+     "mode": "workspace-write",
+     "source": null,
+     "seq": 1
+    }
+   ],
+   "disposition": "MIGRATE OR REFUSE: override 'workspace-write' resolves confined under a trusted-local default"
+  },
+  {
+   "home": "canary3",
+   "sessionId": "session-54159ad1-8b79-4b08-8fb7-a5aff2694bf4",
+   "cwd": "D:\\DSH\\src\\dsh-src",
+   "agentPreset": "standard",
+   "lastOverride": "workspace-write",
+   "modeEvents": [
+    {
+     "mode": "workspace-write",
+     "source": null,
+     "seq": 1
+    }
+   ],
+   "disposition": "MIGRATE OR REFUSE: override 'workspace-write' resolves confined under a trusted-local default"
+  },
+  {
+   "home": "canary3",
+   "sessionId": "session-b3e75c8a-2d3d-43d0-9090-3733bfb827b8",
+   "cwd": "D:\\DSH\\src\\dsh-src",
+   "agentPreset": "standard",
+   "lastOverride": "workspace-write",
+   "modeEvents": [
+    {
+     "mode": "workspace-write",
+     "source": null,
+     "seq": 1
+    }
+   ],
+   "disposition": "MIGRATE OR REFUSE: override 'workspace-write' resolves confined under a trusted-local default"
+  },
+  {
+   "home": "canary3",
+   "sessionId": "session-e80b715f-fd31-41a5-ad95-5f291db5faa7",
+   "cwd": "D:\\DSH\\src\\dsh-src",
+   "agentPreset": "standard",
+   "lastOverride": "workspace-write",
+   "modeEvents": [
+    {
+     "mode": "workspace-write",
+     "source": null,
+     "seq": 1
+    }
+   ],
+   "disposition": "MIGRATE OR REFUSE: override 'workspace-write' resolves confined under a trusted-local default"
+  },
+  {
+   "home": "canary3",
+   "sessionId": "session-f906a2d6-f960-4dda-a183-0119a5aaa1ac",
+   "cwd": "D:\\DSH\\src\\dsh-src",
+   "agentPreset": "standard",
+   "lastOverride": "workspace-write",
+   "modeEvents": [
+    {
+     "mode": "workspace-write",
+     "source": null,
+     "seq": 1
+    }
+   ],
+   "disposition": "MIGRATE OR REFUSE: override 'workspace-write' resolves confined under a trusted-local default"
+  },
+  {
+   "home": "canary5",
+   "sessionId": "session-14689aa1-ef80-4c38-bfbd-21fbfaaee790",
+   "cwd": "D:\\DSH\\src\\dsh-src",
+   "agentPreset": "daily-standard",
+   "lastOverride": "workspace-write",
+   "modeEvents": [
+    {
+     "mode": "workspace-write",
+     "source": null,
+     "seq": 1
+    }
+   ],
+   "disposition": "MIGRATE OR REFUSE: override 'workspace-write' resolves confined under a trusted-local default"
+  },
+  {
+   "home": "canary5",
+   "sessionId": "session-2e72c703-663d-4980-a0ce-ffd5d58a90b9",
+   "cwd": "D:\\DSH\\src\\dsh-src",
+   "agentPreset": "daily-standard",
+   "lastOverride": "workspace-write",
+   "modeEvents": [
+    {
+     "mode": "workspace-write",
+     "source": null,
+     "seq": 1
+    }
+   ],
+   "disposition": "MIGRATE OR REFUSE: override 'workspace-write' resolves confined under a trusted-local default"
+  },
+  {
+   "home": "canary5",
+   "sessionId": "session-32533016-1e74-4f3e-be75-e2d8f9d3ede7",
+   "cwd": "D:\\DSH\\src\\dsh-src",
+   "agentPreset": "daily-standard",
+   "lastOverride": "workspace-write",
+   "modeEvents": [
+    {
+     "mode": "workspace-write",
+     "source": null,
+     "seq": 1
+    }
+   ],
+   "disposition": "MIGRATE OR REFUSE: override 'workspace-write' resolves confined under a trusted-local default"
+  },
+  {
+   "home": "canary5",
+   "sessionId": "session-377dccdf-fcdf-4dfb-94f1-62b716e43b60",
+   "cwd": "D:\\DSH\\src\\dsh-src",
+   "agentPreset": "daily-standard",
+   "lastOverride": "workspace-write",
+   "modeEvents": [
+    {
+     "mode": "workspace-write",
+     "source": null,
+     "seq": 1
+    }
+   ],
+   "disposition": "MIGRATE OR REFUSE: override 'workspace-write' resolves confined under a trusted-local default"
+  },
+  {
+   "home": "canary5",
+   "sessionId": "session-3c09c4e5-8683-4520-9083-0d236c9f05ed",
+   "cwd": "D:\\DSH\\src\\dsh-src",
+   "agentPreset": "daily-standard",
+   "lastOverride": "workspace-write",
+   "modeEvents": [
+    {
+     "mode": "workspace-write",
+     "source": null,
+     "seq": 1
+    }
+   ],
+   "disposition": "MIGRATE OR REFUSE: override 'workspace-write' resolves confined under a trusted-local default"
+  },
+  {
+   "home": "canary5",
+   "sessionId": "session-64161179-2be2-4857-8997-edb81df55116",
+   "cwd": "D:\\DSH\\src\\dsh-src",
+   "agentPreset": "daily-standard",
+   "lastOverride": "workspace-write",
+   "modeEvents": [
+    {
+     "mode": "workspace-write",
+     "source": null,
+     "seq": 1
+    }
+   ],
+   "disposition": "MIGRATE OR REFUSE: override 'workspace-write' resolves confined under a trusted-local default"
+  },
+  {
+   "home": "canary5",
+   "sessionId": "session-73311a24-b8ed-4e74-a8e6-1a54649cc1e0",
+   "cwd": "D:\\DSH\\src\\dsh-src",
+   "agentPreset": "daily-standard",
+   "lastOverride": "workspace-write",
+   "modeEvents": [
+    {
+     "mode": "workspace-write",
+     "source": null,
+     "seq": 1
+    }
+   ],
+   "disposition": "MIGRATE OR REFUSE: override 'workspace-write' resolves confined under a trusted-local default"
+  },
+  {
+   "home": "canary5",
+   "sessionId": "session-7a461deb-8a01-4a3a-8686-97664095fb26",
+   "cwd": "D:\\DSH\\src\\dsh-src",
+   "agentPreset": "daily-standard",
+   "lastOverride": "workspace-write",
+   "modeEvents": [
+    {
+     "mode": "workspace-write",
+     "source": null,
+     "seq": 1
+    }
+   ],
+   "disposition": "MIGRATE OR REFUSE: override 'workspace-write' resolves confined under a trusted-local default"
+  },
+  {
+   "home": "canary5",
+   "sessionId": "session-8b15a142-c0d0-4b0e-96fc-5e0d577ccbdc",
+   "cwd": "D:\\DSH\\src\\dsh-src",
+   "agentPreset": "daily-standard",
+   "lastOverride": "workspace-write",
+   "modeEvents": [
+    {
+     "mode": "workspace-write",
+     "source": null,
+     "seq": 1
+    }
+   ],
+   "disposition": "MIGRATE OR REFUSE: override 'workspace-write' resolves confined under a trusted-local default"
+  },
+  {
+   "home": "canary5",
+   "sessionId": "session-99a62b5a-c58a-4c60-b8b3-88b0435a6903",
+   "cwd": "D:\\DSH\\src\\dsh-src",
+   "agentPreset": "daily-standard",
+   "lastOverride": "workspace-write",
+   "modeEvents": [
+    {
+     "mode": "workspace-write",
+     "source": null,
+     "seq": 1
+    }
+   ],
+   "disposition": "MIGRATE OR REFUSE: override 'workspace-write' resolves confined under a trusted-local default"
+  },
+  {
+   "home": "canary5",
+   "sessionId": "session-b586f5d6-5f86-4bf8-a10d-539d36216402",
+   "cwd": "D:\\DSH\\src\\dsh-src",
+   "agentPreset": "daily-standard",
+   "lastOverride": "workspace-write",
+   "modeEvents": [
+    {
+     "mode": "workspace-write",
+     "source": null,
+     "seq": 1
+    }
+   ],
+   "disposition": "MIGRATE OR REFUSE: override 'workspace-write' resolves confined under a trusted-local default"
+  },
+  {
+   "home": "canary5",
+   "sessionId": "session-bf05d8b9-90ec-4cea-a994-d19dd46ac03b",
+   "cwd": "D:\\DSH\\src\\dsh-src",
+   "agentPreset": "daily-standard",
+   "lastOverride": "workspace-write",
+   "modeEvents": [
+    {
+     "mode": "workspace-write",
+     "source": null,
+     "seq": 1
+    }
+   ],
+   "disposition": "MIGRATE OR REFUSE: override 'workspace-write' resolves confined under a trusted-local default"
+  },
+  {
+   "home": "canary5",
+   "sessionId": "session-c26babc3-3688-4e34-8f50-c61bfd82dc7e",
+   "cwd": "D:\\DSH\\src\\dsh-src",
+   "agentPreset": "daily-standard",
+   "lastOverride": "workspace-write",
+   "modeEvents": [
+    {
+     "mode": "workspace-write",
+     "source": null,
+     "seq": 1
+    }
+   ],
+   "disposition": "MIGRATE OR REFUSE: override 'workspace-write' resolves confined under a trusted-local default"
+  },
+  {
+   "home": "canary5",
+   "sessionId": "session-d3c10b51-6a09-446f-a93b-836f4de860a7",
+   "cwd": "D:\\DSH\\src\\dsh-src",
+   "agentPreset": "daily-standard",
+   "lastOverride": "workspace-write",
+   "modeEvents": [
+    {
+     "mode": "workspace-write",
+     "source": null,
+     "seq": 1
+    }
+   ],
+   "disposition": "MIGRATE OR REFUSE: override 'workspace-write' resolves confined under a trusted-local default"
+  },
+  {
+   "home": "canary5",
+   "sessionId": "session-d4558d52-6e41-4c27-8654-fd988aeb7430",
+   "cwd": "D:\\DSH\\src\\dsh-src",
+   "agentPreset": "daily-standard",
+   "lastOverride": "workspace-write",
+   "modeEvents": [
+    {
+     "mode": "workspace-write",
+     "source": null,
+     "seq": 1
+    }
+   ],
+   "disposition": "MIGRATE OR REFUSE: override 'workspace-write' resolves confined under a trusted-local default"
+  },
+  {
+   "home": "canary5",
+   "sessionId": "session-d7b66227-6a93-4bc8-abce-4d200d527c85",
+   "cwd": "D:\\DSH\\src\\dsh-src",
+   "agentPreset": "daily-standard",
+   "lastOverride": "workspace-write",
+   "modeEvents": [
+    {
+     "mode": "workspace-write",
+     "source": null,
+     "seq": 1
+    }
+   ],
+   "disposition": "MIGRATE OR REFUSE: override 'workspace-write' resolves confined under a trusted-local default"
+  },
+  {
+   "home": "canary5",
+   "sessionId": "session-f9cc03f1-cf43-47a6-a58c-aef2db6b5296",
+   "cwd": "D:\\DSH\\src\\dsh-src",
+   "agentPreset": "daily-standard",
+   "lastOverride": "workspace-write",
+   "modeEvents": [
+    {
+     "mode": "workspace-write",
+     "source": null,
+     "seq": 1
+    }
+   ],
+   "disposition": "MIGRATE OR REFUSE: override 'workspace-write' resolves confined under a trusted-local default"
+  },
+  {
+   "home": "canary7",
+   "sessionId": "session-c5ca639a-1b15-49cd-98c9-f56abd2d3d46",
+   "cwd": "D:/DSH/work/dsh-native-daily",
+   "agentPreset": "daily-standard",
+   "lastOverride": "workspace-write",
+   "modeEvents": [
+    {
+     "mode": "workspace-write",
+     "source": null,
+     "seq": 1
+    }
+   ],
+   "disposition": "MIGRATE OR REFUSE: override 'workspace-write' resolves confined under a trusted-local default"
+  },
+  {
+   "home": "canary8",
+   "sessionId": "session-00558387-536f-4569-951e-7b700de2ee38",
+   "cwd": "D:/DSH/work/dsh-native-daily",
+   "agentPreset": "daily-standard",
+   "lastOverride": "workspace-write",
+   "modeEvents": [
+    {
+     "mode": "workspace-write",
+     "source": null,
+     "seq": 1
+    }
+   ],
+   "disposition": "MIGRATE OR REFUSE: override 'workspace-write' resolves confined under a trusted-local default"
+  },
+  {
+   "home": "canary8",
+   "sessionId": "session-5a39ca9c-2974-4ddc-8c46-86448e53654a",
+   "cwd": "D:/DSH/work/dsh-native-daily",
+   "agentPreset": "daily-standard",
+   "lastOverride": "workspace-write",
+   "modeEvents": [
+    {
+     "mode": "workspace-write",
+     "source": null,
+     "seq": 1
+    }
+   ],
+   "disposition": "MIGRATE OR REFUSE: override 'workspace-write' resolves confined under a trusted-local default"
+  },
+  {
+   "home": "canary8",
+   "sessionId": "session-69c00440-0e20-470f-8255-2f7c7b9b9556",
+   "cwd": "D:/DSH/work/dsh-native-daily",
+   "agentPreset": "daily-standard",
+   "lastOverride": "workspace-write",
+   "modeEvents": [
+    {
+     "mode": "workspace-write",
+     "source": null,
+     "seq": 1
+    }
+   ],
+   "disposition": "MIGRATE OR REFUSE: override 'workspace-write' resolves confined under a trusted-local default"
+  },
+  {
+   "home": "canary8",
+   "sessionId": "session-8a74acc1-a240-4ab8-9929-b4c5cab1a720",
+   "cwd": "D:/DSH/work/dsh-native-daily",
+   "agentPreset": "daily-standard",
+   "lastOverride": "workspace-write",
+   "modeEvents": [
+    {
+     "mode": "workspace-write",
+     "source": null,
+     "seq": 1
+    }
+   ],
+   "disposition": "MIGRATE OR REFUSE: override 'workspace-write' resolves confined under a trusted-local default"
+  },
+  {
+   "home": "m914",
+   "sessionId": "session-8ad7387c-0fb8-4af9-9322-627198c0171b",
+   "cwd": "D:\\DSH\\src\\dsh-src",
+   "agentPreset": null,
+   "lastOverride": "workspace-write",
+   "modeEvents": [
+    {
+     "mode": "workspace-write",
+     "source": null,
+     "seq": 1
+    }
+   ],
+   "disposition": "MIGRATE OR REFUSE: override 'workspace-write' resolves confined under a trusted-local default"
+  },
+  {
+   "home": "m914",
+   "sessionId": "session-aa375a16-41af-4cf6-a185-dcac5000f25f",
+   "cwd": "D:\\DSH\\src\\dsh-src",
+   "agentPreset": null,
+   "lastOverride": "workspace-write",
+   "modeEvents": [
+    {
+     "mode": "workspace-write",
+     "source": null,
+     "seq": 1
+    }
+   ],
+   "disposition": "MIGRATE OR REFUSE: override 'workspace-write' resolves confined under a trusted-local default"
+  },
+  {
+   "home": "m914",
+   "sessionId": "session-382fec5a-8475-4f74-8065-d00f3d9d0498",
+   "cwd": "D:/DSH/work/dsh-native-daily",
+   "agentPreset": "standard",
+   "lastOverride": "workspace-write",
+   "modeEvents": [
+    {
+     "mode": "workspace-write",
+     "source": null,
+     "seq": 1
+    }
+   ],
+   "disposition": "MIGRATE OR REFUSE: override 'workspace-write' resolves confined under a trusted-local default"
+  },
+  {
+   "home": "m914",
+   "sessionId": "session-65472cff-55c6-465d-b12f-4222f3abd1fe",
+   "cwd": "D:/DSH/work/dsh-native-daily",
+   "agentPreset": "standard",
+   "lastOverride": "workspace-write",
+   "modeEvents": [
+    {
+     "mode": "workspace-write",
+     "source": null,
+     "seq": 1
+    }
+   ],
+   "disposition": "MIGRATE OR REFUSE: override 'workspace-write' resolves confined under a trusted-local default"
+  },
+  {
+   "home": "m914",
+   "sessionId": "session-e1f4d5cd-86e1-4cde-adc6-a6ba6f0c9e47",
+   "cwd": "D:/DSH/work/dsh-native-daily",
+   "agentPreset": "standard",
+   "lastOverride": "workspace-write",
+   "modeEvents": [
+    {
+     "mode": "workspace-write",
+     "source": null,
+     "seq": 1
+    }
+   ],
+   "disposition": "MIGRATE OR REFUSE: override 'workspace-write' resolves confined under a trusted-local default"
+  },
+  {
+   "home": "m914",
+   "sessionId": "session-e33a29ad-0090-4ce9-82b8-7c7ff52f1c99",
+   "cwd": "D:/DSH/work/dsh-native-daily",
+   "agentPreset": "standard",
+   "lastOverride": "workspace-write",
+   "modeEvents": [
+    {
+     "mode": "workspace-write",
+     "source": null,
+     "seq": 1
+    }
+   ],
+   "disposition": "MIGRATE OR REFUSE: override 'workspace-write' resolves confined under a trusted-local default"
+  },
+  {
+   "home": "m914",
+   "sessionId": "session-ee45dd69-75b0-438e-a706-66ec8dd7e27e",
+   "cwd": "D:/DSH/work/dsh-native-daily",
+   "agentPreset": "standard",
+   "lastOverride": "workspace-write",
+   "modeEvents": [
+    {
+     "mode": "workspace-write",
+     "source": null,
+     "seq": 1
+    }
+   ],
+   "disposition": "MIGRATE OR REFUSE: override 'workspace-write' resolves confined under a trusted-local default"
+  },
+  {
+   "home": "r9-final",
+   "sessionId": "session-83addad2-c153-478c-983a-7a54c461f116",
+   "cwd": "D:/DSH/work/dsh-native-daily",
+   "agentPreset": "daily-standard",
+   "lastOverride": "workspace-write",
+   "modeEvents": [
+    {
+     "mode": "workspace-write",
+     "source": null,
+     "seq": 1
+    }
+   ],
+   "disposition": "MIGRATE OR REFUSE: override 'workspace-write' resolves confined under a trusted-local default"
+  },
+  {
+   "home": "r9-fresh2",
+   "sessionId": "session-5794ed67-9c14-4a43-8d49-6364ed4d7b3b",
+   "cwd": "D:/DSH/work/dsh-native-daily",
+   "agentPreset": "daily-standard",
+   "lastOverride": "workspace-write",
+   "modeEvents": [
+    {
+     "mode": "workspace-write",
+     "source": null,
+     "seq": 1
+    }
+   ],
+   "disposition": "MIGRATE OR REFUSE: override 'workspace-write' resolves confined under a trusted-local default"
+  },
+  {
+   "home": "r9-scratch",
+   "sessionId": "session-cfcbda9a-eda2-4931-9112-e530f190f8ab",
+   "cwd": "D:/DSH/work/dsh-native-daily",
+   "agentPreset": "daily-standard",
+   "lastOverride": "workspace-write",
+   "modeEvents": [
+    {
+     "mode": "workspace-write",
+     "source": null,
+     "seq": 1
+    }
+   ],
+   "disposition": "MIGRATE OR REFUSE: override 'workspace-write' resolves confined under a trusted-local default"
+  },
+  {
+   "home": "t-root",
+   "sessionId": "session-0f7c06d8-1349-45c7-ac60-11bf13ac7b32",
+   "cwd": "D:/DSH/work/dsh-native-daily",
+   "agentPreset": "daily-standard",
+   "lastOverride": "workspace-write",
+   "modeEvents": [
+    {
+     "mode": "workspace-write",
+     "source": null,
+     "seq": 1
+    }
+   ],
+   "disposition": "MIGRATE OR REFUSE: override 'workspace-write' resolves confined under a trusted-local default"
+  },
+  {
+   "home": "t-root",
+   "sessionId": "session-4ca164f4-a6a8-4bf6-9838-09505915e467",
+   "cwd": "D:/DSH/work/dsh-native-daily",
+   "agentPreset": "daily-standard",
+   "lastOverride": "workspace-write",
+   "modeEvents": [
+    {
+     "mode": "workspace-write",
+     "source": null,
+     "seq": 1
+    }
+   ],
+   "disposition": "MIGRATE OR REFUSE: override 'workspace-write' resolves confined under a trusted-local default"
+  },
+  {
+   "home": "t-root",
+   "sessionId": "session-bf39848b-32ef-43be-8ada-8e1dea6c8592",
+   "cwd": "D:/DSH/work/dsh-native-daily",
+   "agentPreset": "daily-standard",
+   "lastOverride": "workspace-write",
+   "modeEvents": [
+    {
+     "mode": "workspace-write",
+     "source": null,
+     "seq": 1
+    }
+   ],
+   "disposition": "MIGRATE OR REFUSE: override 'workspace-write' resolves confined under a trusted-local default"
+  },
+  {
+   "home": "t-root",
+   "sessionId": "session-ce5f9590-6063-49aa-9869-edfca5d14043",
+   "cwd": "D:/DSH/work/dsh-native-daily",
+   "agentPreset": "daily-standard",
+   "lastOverride": "workspace-write",
+   "modeEvents": [
+    {
+     "mode": "workspace-write",
+     "source": null,
+     "seq": 1
+    }
+   ],
+   "disposition": "MIGRATE OR REFUSE: override 'workspace-write' resolves confined under a trusted-local default"
+  },
+  {
+   "home": "t16-docs",
+   "sessionId": "session-2b267709-f3d8-4c2a-a5d8-9faa0599b82e",
+   "cwd": "D:/DSH/work/dsh-native-daily",
+   "agentPreset": "daily-standard",
+   "lastOverride": "workspace-write",
+   "modeEvents": [
+    {
+     "mode": "workspace-write",
+     "source": null,
+     "seq": 1
+    }
+   ],
+   "disposition": "MIGRATE OR REFUSE: override 'workspace-write' resolves confined under a trusted-local default"
+  },
+  {
+   "home": "t16-docs",
+   "sessionId": "session-ee0b1ae1-f830-49aa-8ab1-36abc0ac5db8",
+   "cwd": "D:/DSH/work/dsh-native-daily",
+   "agentPreset": "daily-standard",
+   "lastOverride": "workspace-write",
+   "modeEvents": [
+    {
+     "mode": "workspace-write",
+     "source": null,
+     "seq": 1
+    }
+   ],
+   "disposition": "MIGRATE OR REFUSE: override 'workspace-write' resolves confined under a trusted-local default"
+  },
+  {
+   "home": "t2-fs",
+   "sessionId": "session-29cabb08-d611-4f64-af2e-ea6e8099e9b4",
+   "cwd": "D:/DSH/work/dsh-native-daily/qualification/results/T2-fs/workspace",
+   "agentPreset": "daily-standard",
+   "lastOverride": "workspace-write",
+   "modeEvents": [
+    {
+     "mode": "workspace-write",
+     "source": null,
+     "seq": 1
+    }
+   ],
+   "disposition": "MIGRATE OR REFUSE: override 'workspace-write' resolves confined under a trusted-local default"
+  },
+  {
+   "home": "t4-preset",
+   "sessionId": "session-1da9be6c-fe3d-4832-ac29-f4d3a44e12c5",
+   "cwd": "D:/DSH/work/dsh-native-daily",
+   "agentPreset": "daily-standard",
+   "lastOverride": "workspace-write",
+   "modeEvents": [
+    {
+     "mode": "workspace-write",
+     "source": null,
+     "seq": 1
+    }
+   ],
+   "disposition": "MIGRATE OR REFUSE: override 'workspace-write' resolves confined under a trusted-local default"
+  },
+  {
+   "home": "t4-preset",
+   "sessionId": "session-3cdfd74e-b943-4ea3-8bf7-aa1d08ad5a3e",
+   "cwd": "D:/DSH/work/dsh-native-daily",
+   "agentPreset": "daily-standard",
+   "lastOverride": "workspace-write",
+   "modeEvents": [
+    {
+     "mode": "workspace-write",
+     "source": null,
+     "seq": 1
+    }
+   ],
+   "disposition": "MIGRATE OR REFUSE: override 'workspace-write' resolves confined under a trusted-local default"
+  },
+  {
+   "home": "t4-preset",
+   "sessionId": "session-417b1be6-c5f1-4343-9515-a79f95fb3516",
+   "cwd": "D:/DSH/work/dsh-native-daily",
+   "agentPreset": "daily-standard",
+   "lastOverride": "workspace-write",
+   "modeEvents": [
+    {
+     "mode": "workspace-write",
+     "source": null,
+     "seq": 1
+    }
+   ],
+   "disposition": "MIGRATE OR REFUSE: override 'workspace-write' resolves confined under a trusted-local default"
+  },
+  {
+   "home": "t4-preset",
+   "sessionId": "session-45643bf4-2380-43f1-9e8e-efb2ff203777",
+   "cwd": "D:/DSH/work/dsh-native-daily",
+   "agentPreset": "daily-standard",
+   "lastOverride": "workspace-write",
+   "modeEvents": [
+    {
+     "mode": "workspace-write",
+     "source": null,
+     "seq": 1
+    }
+   ],
+   "disposition": "MIGRATE OR REFUSE: override 'workspace-write' resolves confined under a trusted-local default"
+  },
+  {
+   "home": "t4-preset",
+   "sessionId": "session-542be960-3772-4be6-a2bd-881a1d701800",
+   "cwd": "D:/DSH/work/dsh-native-daily",
+   "agentPreset": "daily-standard",
+   "lastOverride": "workspace-write",
+   "modeEvents": [
+    {
+     "mode": "workspace-write",
+     "source": null,
+     "seq": 1
+    }
+   ],
+   "disposition": "MIGRATE OR REFUSE: override 'workspace-write' resolves confined under a trusted-local default"
+  },
+  {
+   "home": "t4-preset",
+   "sessionId": "session-71b019d4-6731-4e03-b4ca-9692436b1d06",
+   "cwd": "D:/DSH/work/dsh-native-daily",
+   "agentPreset": "daily-standard",
+   "lastOverride": "workspace-write",
+   "modeEvents": [
+    {
+     "mode": "workspace-write",
+     "source": null,
+     "seq": 1
+    }
+   ],
+   "disposition": "MIGRATE OR REFUSE: override 'workspace-write' resolves confined under a trusted-local default"
+  },
+  {
+   "home": "t4-preset",
+   "sessionId": "session-75f128f1-2015-4a78-ad47-5e805681cde0",
+   "cwd": "D:/DSH/work/dsh-native-daily",
+   "agentPreset": "daily-standard",
+   "lastOverride": "workspace-write",
+   "modeEvents": [
+    {
+     "mode": "workspace-write",
+     "source": null,
+     "seq": 1
+    }
+   ],
+   "disposition": "MIGRATE OR REFUSE: override 'workspace-write' resolves confined under a trusted-local default"
+  },
+  {
+   "home": "t4-preset",
+   "sessionId": "session-97dad8cf-8300-443b-a436-b7488ee4eda7",
+   "cwd": "D:/DSH/work/dsh-native-daily",
+   "agentPreset": "daily-standard",
+   "lastOverride": "workspace-write",
+   "modeEvents": [
+    {
+     "mode": "workspace-write",
+     "source": null,
+     "seq": 1
+    }
+   ],
+   "disposition": "MIGRATE OR REFUSE: override 'workspace-write' resolves confined under a trusted-local default"
+  },
+  {
+   "home": "t4-preset",
+   "sessionId": "session-a53c7164-61f2-48bf-a5e5-f54928dedd4a",
+   "cwd": "D:/DSH/work/dsh-native-daily",
+   "agentPreset": "daily-standard",
+   "lastOverride": "workspace-write",
+   "modeEvents": [
+    {
+     "mode": "workspace-write",
+     "source": null,
+     "seq": 1
+    }
+   ],
+   "disposition": "MIGRATE OR REFUSE: override 'workspace-write' resolves confined under a trusted-local default"
+  },
+  {
+   "home": "t4-preset",
+   "sessionId": "session-dbed1ff1-4bbb-4234-9191-d9fa581de9d6",
+   "cwd": "D:/DSH/work/dsh-native-daily",
+   "agentPreset": "daily-standard",
+   "lastOverride": "workspace-write",
+   "modeEvents": [
+    {
+     "mode": "workspace-write",
+     "source": null,
+     "seq": 1
+    }
+   ],
+   "disposition": "MIGRATE OR REFUSE: override 'workspace-write' resolves confined under a trusted-local default"
+  },
+  {
+   "home": "t4-preset",
+   "sessionId": "session-e52c4b12-2440-428b-95c0-dc273440269b",
+   "cwd": "D:/DSH/work/dsh-native-daily",
+   "agentPreset": "daily-standard",
+   "lastOverride": "workspace-write",
+   "modeEvents": [
+    {
+     "mode": "workspace-write",
+     "source": null,
+     "seq": 1
+    }
+   ],
+   "disposition": "MIGRATE OR REFUSE: override 'workspace-write' resolves confined under a trusted-local default"
+  }
+ ],
+ "crossCheck": {
+  "projectionFiles": 184,
+  "projectionNonEmptyValues": 86,
+  "projectionValueHistogram": {
+   "workspace-write": 86
+  }
+ },
+ "parseFailures": [],
+ "sessions": [
+  {
+   "home": "canary",
+   "path": "D:/DSH/home/canary/sessions/--D-DSH-src-dsh-src--/session-1d870c86-7863-4f12-9b0b-cf05cd5c9b35/session.v3.jsonl.zstd",
+   "sessionId": "session-1d870c86-7863-4f12-9b0b-cf05cd5c9b35",
+   "cwd": "D:\\DSH\\src\\dsh-src",
+   "agentPreset": null,
+   "frames": 6,
+   "eventCount": 21,
+   "modeEvents": [
+    {
+     "mode": "workspace-write",
+     "source": null,
+     "seq": 1
+    }
+   ],
+   "lastOverride": "workspace-write"
+  },
+  {
+   "home": "canary",
+   "path": "D:/DSH/home/canary/sessions/--D-DSH-work-t1--/session-9ba2b285-a065-444d-aa05-ae1d6a9fb7fe/session.v3.jsonl.zstd",
+   "sessionId": "session-9ba2b285-a065-444d-aa05-ae1d6a9fb7fe",
+   "cwd": "D:\\DSH\\work\\t1",
+   "agentPreset": null,
+   "frames": 9,
+   "eventCount": 24,
+   "modeEvents": [
+    {
+     "mode": "workspace-write",
+     "source": null,
+     "seq": 1
+    }
+   ],
+   "lastOverride": "workspace-write"
+  },
+  {
+   "home": "canary11",
+   "path": "D:/DSH/home/canary11/sessions/--D-DSH-src-dsh-src--/session-0dca0d7f-e72a-43b4-8f5f-96328a373c4a/session.v3.jsonl.zstd",
+   "sessionId": "session-0dca0d7f-e72a-43b4-8f5f-96328a373c4a",
+   "cwd": "D:\\DSH\\src\\dsh-src",
+   "agentPreset": null,
+   "frames": 6,
+   "eventCount": 20,
+   "modeEvents": [
+    {
+     "mode": "workspace-write",
+     "source": null,
+     "seq": 1
+    }
+   ],
+   "lastOverride": "workspace-write"
+  },
+  {
+   "home": "canary11",
+   "path": "D:/DSH/home/canary11/sessions/--D-DSH-src-dsh-src--/session-1147f611-909d-48f8-9ace-ac70d22a4662/session.v3.jsonl.zstd",
+   "sessionId": "session-1147f611-909d-48f8-9ace-ac70d22a4662",
+   "cwd": "D:\\DSH\\src\\dsh-src",
+   "agentPreset": null,
+   "frames": 6,
+   "eventCount": 20,
+   "modeEvents": [
+    {
+     "mode": "workspace-write",
+     "source": null,
+     "seq": 1
+    }
+   ],
+   "lastOverride": "workspace-write"
+  },
+  {
+   "home": "canary11",
+   "path": "D:/DSH/home/canary11/sessions/--D-DSH-src-dsh-src--/session-15452e14-48ba-4c02-aed1-749ddcde3488/session.v3.jsonl.zstd",
+   "sessionId": "session-15452e14-48ba-4c02-aed1-749ddcde3488",
+   "cwd": "D:\\DSH\\src\\dsh-src",
+   "agentPreset": null,
+   "frames": 6,
+   "eventCount": 21,
+   "modeEvents": [
+    {
+     "mode": "workspace-write",
+     "source": null,
+     "seq": 1
+    }
+   ],
+   "lastOverride": "workspace-write"
+  },
+  {
+   "home": "canary11",
+   "path": "D:/DSH/home/canary11/sessions/--D-DSH-src-dsh-src--/session-21a27c7a-3c7a-4bf6-9cb9-28862cfefab5/session.v3.jsonl.zstd",
+   "sessionId": "session-21a27c7a-3c7a-4bf6-9cb9-28862cfefab5",
+   "cwd": "D:\\DSH\\src\\dsh-src",
+   "agentPreset": null,
+   "frames": 9,
+   "eventCount": 26,
+   "modeEvents": [
+    {
+     "mode": "workspace-write",
+     "source": null,
+     "seq": 1
+    }
+   ],
+   "lastOverride": "workspace-write"
+  },
+  {
+   "home": "canary11",
+   "path": "D:/DSH/home/canary11/sessions/--D-DSH-src-dsh-src--/session-50e780ca-2aa6-4a46-8810-7a04ded5c65f/session.v3.jsonl.zstd",
+   "sessionId": "session-50e780ca-2aa6-4a46-8810-7a04ded5c65f",
+   "cwd": "D:\\DSH\\src\\dsh-src",
+   "agentPreset": null,
+   "frames": 6,
+   "eventCount": 21,
+   "modeEvents": [
+    {
+     "mode": "workspace-write",
+     "source": null,
+     "seq": 1
+    }
+   ],
+   "lastOverride": "workspace-write"
+  },
+  {
+   "home": "canary11",
+   "path": "D:/DSH/home/canary11/sessions/--D-DSH-work-dsh-native-daily--/session-a03d0810-245a-41b0-b057-3d718ba97ed0/session.v3.jsonl.zstd",
+   "sessionId": "session-a03d0810-245a-41b0-b057-3d718ba97ed0",
+   "cwd": "D:\\DSH\\work\\dsh-native-daily",
+   "agentPreset": null,
+   "frames": 9,
+   "eventCount": 23,
+   "modeEvents": [
+    {
+     "mode": "workspace-write",
+     "source": null,
+     "seq": 1
+    }
+   ],
+   "lastOverride": "workspace-write"
+  },
+  {
+   "home": "canary11",
+   "path": "D:/DSH/home/canary11/snapshots/pre-upgrade/sessions/--D-DSH-src-dsh-src--/session-0dca0d7f-e72a-43b4-8f5f-96328a373c4a/session.v3.jsonl.zstd",
+   "sessionId": "session-0dca0d7f-e72a-43b4-8f5f-96328a373c4a",
+   "cwd": "D:\\DSH\\src\\dsh-src",
+   "agentPreset": null,
+   "frames": 6,
+   "eventCount": 20,
+   "modeEvents": [
+    {
+     "mode": "workspace-write",
+     "source": null,
+     "seq": 1
+    }
+   ],
+   "lastOverride": "workspace-write"
+  },
+  {
+   "home": "canary11",
+   "path": "D:/DSH/home/canary11/snapshots/pre-upgrade/sessions/--D-DSH-src-dsh-src--/session-1147f611-909d-48f8-9ace-ac70d22a4662/session.v3.jsonl.zstd",
+   "sessionId": "session-1147f611-909d-48f8-9ace-ac70d22a4662",
+   "cwd": "D:\\DSH\\src\\dsh-src",
+   "agentPreset": null,
+   "frames": 6,
+   "eventCount": 20,
+   "modeEvents": [
+    {
+     "mode": "workspace-write",
+     "source": null,
+     "seq": 1
+    }
+   ],
+   "lastOverride": "workspace-write"
+  },
+  {
+   "home": "canary11",
+   "path": "D:/DSH/home/canary11/snapshots/pre-upgrade/sessions/--D-DSH-src-dsh-src--/session-15452e14-48ba-4c02-aed1-749ddcde3488/session.v3.jsonl.zstd",
+   "sessionId": "session-15452e14-48ba-4c02-aed1-749ddcde3488",
+   "cwd": "D:\\DSH\\src\\dsh-src",
+   "agentPreset": null,
+   "frames": 6,
+   "eventCount": 21,
+   "modeEvents": [
+    {
+     "mode": "workspace-write",
+     "source": null,
+     "seq": 1
+    }
+   ],
+   "lastOverride": "workspace-write"
+  },
+  {
+   "home": "canary11",
+   "path": "D:/DSH/home/canary11/snapshots/pre-upgrade/sessions/--D-DSH-src-dsh-src--/session-21a27c7a-3c7a-4bf6-9cb9-28862cfefab5/session.v3.jsonl.zstd",
+   "sessionId": "session-21a27c7a-3c7a-4bf6-9cb9-28862cfefab5",
+   "cwd": "D:\\DSH\\src\\dsh-src",
+   "agentPreset": null,
+   "frames": 9,
+   "eventCount": 26,
+   "modeEvents": [
+    {
+     "mode": "workspace-write",
+     "source": null,
+     "seq": 1
+    }
+   ],
+   "lastOverride": "workspace-write"
+  },
+  {
+   "home": "canary11",
+   "path": "D:/DSH/home/canary11/snapshots/pre-upgrade/sessions/--D-DSH-src-dsh-src--/session-50e780ca-2aa6-4a46-8810-7a04ded5c65f/session.v3.jsonl.zstd",
+   "sessionId": "session-50e780ca-2aa6-4a46-8810-7a04ded5c65f",
+   "cwd": "D:\\DSH\\src\\dsh-src",
+   "agentPreset": null,
+   "frames": 6,
+   "eventCount": 21,
+   "modeEvents": [
+    {
+     "mode": "workspace-write",
+     "source": null,
+     "seq": 1
+    }
+   ],
+   "lastOverride": "workspace-write"
+  },
+  {
+   "home": "canary12",
+   "path": "D:/DSH/home/canary12/sessions/--D-DSH-work-dsh-native-daily--/session-e34a2e75-338c-48db-abac-4cf4a975ecd2/session.v3.jsonl.zstd",
+   "sessionId": "session-e34a2e75-338c-48db-abac-4cf4a975ecd2",
+   "cwd": "D:/DSH/work/dsh-native-daily",
+   "agentPreset": "daily-standard",
+   "frames": 10,
+   "eventCount": 26,
+   "modeEvents": [
+    {
+     "mode": "workspace-write",
+     "source": null,
+     "seq": 1
+    }
+   ],
+   "lastOverride": "workspace-write"
+  },
+  {
+   "home": "canary13",
+   "path": "D:/DSH/home/canary13/sessions/--D-DSH-work-dsh-native-daily--/session-d6515d2d-e8dd-4134-ae44-286ee22a17b8/session.v3.jsonl.zstd",
+   "sessionId": "session-d6515d2d-e8dd-4134-ae44-286ee22a17b8",
+   "cwd": "D:/DSH/work/dsh-native-daily",
+   "agentPreset": "daily-standard",
+   "frames": 2,
+   "eventCount": 4,
+   "modeEvents": [
+    {
+     "mode": "workspace-write",
+     "source": null,
+     "seq": 1
+    }
+   ],
+   "lastOverride": "workspace-write"
+  },
+  {
+   "home": "canary13",
+   "path": "D:/DSH/home/canary13/sessions/--D-DSH-work-dsh-native-daily--/session-ef0e00fb-5f41-4509-9091-c8ce3f7824b8/session.v3.jsonl.zstd",
+   "sessionId": "session-ef0e00fb-5f41-4509-9091-c8ce3f7824b8",
+   "cwd": "D:/DSH/work/dsh-native-daily",
+   "agentPreset": "daily-standard",
+   "frames": 2,
+   "eventCount": 4,
+   "modeEvents": [
+    {
+     "mode": "workspace-write",
+     "source": null,
+     "seq": 1
+    }
+   ],
+   "lastOverride": "workspace-write"
+  },
+  {
+   "home": "canary2",
+   "path": "D:/DSH/home/canary2/sessions/--D-DSH-src-dsh-src--/session-0dca0d7f-e72a-43b4-8f5f-96328a373c4a/session.v3.jsonl.zstd",
+   "sessionId": "session-0dca0d7f-e72a-43b4-8f5f-96328a373c4a",
+   "cwd": "D:\\DSH\\src\\dsh-src",
+   "agentPreset": null,
+   "frames": 6,
+   "eventCount": 20,
+   "modeEvents": [
+    {
+     "mode": "workspace-write",
+     "source": null,
+     "seq": 1
+    }
+   ],
+   "lastOverride": "workspace-write"
+  },
+  {
+   "home": "canary2",
+   "path": "D:/DSH/home/canary2/sessions/--D-DSH-src-dsh-src--/session-1147f611-909d-48f8-9ace-ac70d22a4662/session.v3.jsonl.zstd",
+   "sessionId": "session-1147f611-909d-48f8-9ace-ac70d22a4662",
+   "cwd": "D:\\DSH\\src\\dsh-src",
+   "agentPreset": null,
+   "frames": 6,
+   "eventCount": 20,
+   "modeEvents": [
+    {
+     "mode": "workspace-write",
+     "source": null,
+     "seq": 1
+    }
+   ],
+   "lastOverride": "workspace-write"
+  },
+  {
+   "home": "canary2",
+   "path": "D:/DSH/home/canary2/sessions/--D-DSH-src-dsh-src--/session-15452e14-48ba-4c02-aed1-749ddcde3488/session.v3.jsonl.zstd",
+   "sessionId": "session-15452e14-48ba-4c02-aed1-749ddcde3488",
+   "cwd": "D:\\DSH\\src\\dsh-src",
+   "agentPreset": null,
+   "frames": 6,
+   "eventCount": 21,
+   "modeEvents": [
+    {
+     "mode": "workspace-write",
+     "source": null,
+     "seq": 1
+    }
+   ],
+   "lastOverride": "workspace-write"
+  },
+  {
+   "home": "canary2",
+   "path": "D:/DSH/home/canary2/sessions/--D-DSH-src-dsh-src--/session-21a27c7a-3c7a-4bf6-9cb9-28862cfefab5/session.v3.jsonl.zstd",
+   "sessionId": "session-21a27c7a-3c7a-4bf6-9cb9-28862cfefab5",
+   "cwd": "D:\\DSH\\src\\dsh-src",
+   "agentPreset": null,
+   "frames": 9,
+   "eventCount": 26,
+   "modeEvents": [
+    {
+     "mode": "workspace-write",
+     "source": null,
+     "seq": 1
+    }
+   ],
+   "lastOverride": "workspace-write"
+  },
+  {
+   "home": "canary2",
+   "path": "D:/DSH/home/canary2/sessions/--D-DSH-src-dsh-src--/session-50e780ca-2aa6-4a46-8810-7a04ded5c65f/session.v3.jsonl.zstd",
+   "sessionId": "session-50e780ca-2aa6-4a46-8810-7a04ded5c65f",
+   "cwd": "D:\\DSH\\src\\dsh-src",
+   "agentPreset": null,
+   "frames": 6,
+   "eventCount": 21,
+   "modeEvents": [
+    {
+     "mode": "workspace-write",
+     "source": null,
+     "seq": 1
+    }
+   ],
+   "lastOverride": "workspace-write"
+  },
+  {
+   "home": "canary3",
+   "path": "D:/DSH/home/canary3/sessions/--D-DSH-src-dsh-src--/session-1577fd5e-7abc-4ea4-88d1-4b129e140d12/session.v3.jsonl.zstd",
+   "sessionId": "session-1577fd5e-7abc-4ea4-88d1-4b129e140d12",
+   "cwd": "D:\\DSH\\src\\dsh-src",
+   "agentPreset": "standard",
+   "frames": 2,
+   "eventCount": 4,
+   "modeEvents": [
+    {
+     "mode": "workspace-write",
+     "source": null,
+     "seq": 1
+    }
+   ],
+   "lastOverride": "workspace-write"
+  },
+  {
+   "home": "canary3",
+   "path": "D:/DSH/home/canary3/sessions/--D-DSH-src-dsh-src--/session-54159ad1-8b79-4b08-8fb7-a5aff2694bf4/session.v3.jsonl.zstd",
+   "sessionId": "session-54159ad1-8b79-4b08-8fb7-a5aff2694bf4",
+   "cwd": "D:\\DSH\\src\\dsh-src",
+   "agentPreset": "standard",
+   "frames": 2,
+   "eventCount": 4,
+   "modeEvents": [
+    {
+     "mode": "workspace-write",
+     "source": null,
+     "seq": 1
+    }
+   ],
+   "lastOverride": "workspace-write"
+  },
+  {
+   "home": "canary3",
+   "path": "D:/DSH/home/canary3/sessions/--D-DSH-src-dsh-src--/session-b3e75c8a-2d3d-43d0-9090-3733bfb827b8/session.v3.jsonl.zstd",
+   "sessionId": "session-b3e75c8a-2d3d-43d0-9090-3733bfb827b8",
+   "cwd": "D:\\DSH\\src\\dsh-src",
+   "agentPreset": "standard",
+   "frames": 2,
+   "eventCount": 4,
+   "modeEvents": [
+    {
+     "mode": "workspace-write",
+     "source": null,
+     "seq": 1
+    }
+   ],
+   "lastOverride": "workspace-write"
+  },
+  {
+   "home": "canary3",
+   "path": "D:/DSH/home/canary3/sessions/--D-DSH-src-dsh-src--/session-e80b715f-fd31-41a5-ad95-5f291db5faa7/session.v3.jsonl.zstd",
+   "sessionId": "session-e80b715f-fd31-41a5-ad95-5f291db5faa7",
+   "cwd": "D:\\DSH\\src\\dsh-src",
+   "agentPreset": "standard",
+   "frames": 2,
+   "eventCount": 4,
+   "modeEvents": [
+    {
+     "mode": "workspace-write",
+     "source": null,
+     "seq": 1
+    }
+   ],
+   "lastOverride": "workspace-write"
+  },
+  {
+   "home": "canary3",
+   "path": "D:/DSH/home/canary3/sessions/--D-DSH-src-dsh-src--/session-f906a2d6-f960-4dda-a183-0119a5aaa1ac/session.v3.jsonl.zstd",
+   "sessionId": "session-f906a2d6-f960-4dda-a183-0119a5aaa1ac",
+   "cwd": "D:\\DSH\\src\\dsh-src",
+   "agentPreset": "standard",
+   "frames": 2,
+   "eventCount": 4,
+   "modeEvents": [
+    {
+     "mode": "workspace-write",
+     "source": null,
+     "seq": 1
+    }
+   ],
+   "lastOverride": "workspace-write"
+  },
+  {
+   "home": "canary5",
+   "path": "D:/DSH/home/canary5/sessions/--D-DSH-src-dsh-src--/session-14689aa1-ef80-4c38-bfbd-21fbfaaee790/session.v3.jsonl.zstd",
+   "sessionId": "session-14689aa1-ef80-4c38-bfbd-21fbfaaee790",
+   "cwd": "D:\\DSH\\src\\dsh-src",
+   "agentPreset": "daily-standard",
+   "frames": 2,
+   "eventCount": 4,
+   "modeEvents": [
+    {
+     "mode": "workspace-write",
+     "source": null,
+     "seq": 1
+    }
+   ],
+   "lastOverride": "workspace-write"
+  },
+  {
+   "home": "canary5",
+   "path": "D:/DSH/home/canary5/sessions/--D-DSH-src-dsh-src--/session-2e72c703-663d-4980-a0ce-ffd5d58a90b9/session.v3.jsonl.zstd",
+   "sessionId": "session-2e72c703-663d-4980-a0ce-ffd5d58a90b9",
+   "cwd": "D:\\DSH\\src\\dsh-src",
+   "agentPreset": "daily-standard",
+   "frames": 2,
+   "eventCount": 4,
+   "modeEvents": [
+    {
+     "mode": "workspace-write",
+     "source": null,
+     "seq": 1
+    }
+   ],
+   "lastOverride": "workspace-write"
+  },
+  {
+   "home": "canary5",
+   "path": "D:/DSH/home/canary5/sessions/--D-DSH-src-dsh-src--/session-32533016-1e74-4f3e-be75-e2d8f9d3ede7/session.v3.jsonl.zstd",
+   "sessionId": "session-32533016-1e74-4f3e-be75-e2d8f9d3ede7",
+   "cwd": "D:\\DSH\\src\\dsh-src",
+   "agentPreset": "daily-standard",
+   "frames": 2,
+   "eventCount": 4,
+   "modeEvents": [
+    {
+     "mode": "workspace-write",
+     "source": null,
+     "seq": 1
+    }
+   ],
+   "lastOverride": "workspace-write"
+  },
+  {
+   "home": "canary5",
+   "path": "D:/DSH/home/canary5/sessions/--D-DSH-src-dsh-src--/session-377dccdf-fcdf-4dfb-94f1-62b716e43b60/session.v3.jsonl.zstd",
+   "sessionId": "session-377dccdf-fcdf-4dfb-94f1-62b716e43b60",
+   "cwd": "D:\\DSH\\src\\dsh-src",
+   "agentPreset": "daily-standard",
+   "frames": 2,
+   "eventCount": 4,
+   "modeEvents": [
+    {
+     "mode": "workspace-write",
+     "source": null,
+     "seq": 1
+    }
+   ],
+   "lastOverride": "workspace-write"
+  },
+  {
+   "home": "canary5",
+   "path": "D:/DSH/home/canary5/sessions/--D-DSH-src-dsh-src--/session-3c09c4e5-8683-4520-9083-0d236c9f05ed/session.v3.jsonl.zstd",
+   "sessionId": "session-3c09c4e5-8683-4520-9083-0d236c9f05ed",
+   "cwd": "D:\\DSH\\src\\dsh-src",
+   "agentPreset": "daily-standard",
+   "frames": 2,
+   "eventCount": 4,
+   "modeEvents": [
+    {
+     "mode": "workspace-write",
+     "source": null,
+     "seq": 1
+    }
+   ],
+   "lastOverride": "workspace-write"
+  },
+  {
+   "home": "canary5",
+   "path": "D:/DSH/home/canary5/sessions/--D-DSH-src-dsh-src--/session-64161179-2be2-4857-8997-edb81df55116/session.v3.jsonl.zstd",
+   "sessionId": "session-64161179-2be2-4857-8997-edb81df55116",
+   "cwd": "D:\\DSH\\src\\dsh-src",
+   "agentPreset": "daily-standard",
+   "frames": 2,
+   "eventCount": 4,
+   "modeEvents": [
+    {
+     "mode": "workspace-write",
+     "source": null,
+     "seq": 1
+    }
+   ],
+   "lastOverride": "workspace-write"
+  },
+  {
+   "home": "canary5",
+   "path": "D:/DSH/home/canary5/sessions/--D-DSH-src-dsh-src--/session-73311a24-b8ed-4e74-a8e6-1a54649cc1e0/session.v3.jsonl.zstd",
+   "sessionId": "session-73311a24-b8ed-4e74-a8e6-1a54649cc1e0",
+   "cwd": "D:\\DSH\\src\\dsh-src",
+   "agentPreset": "daily-standard",
+   "frames": 2,
+   "eventCount": 4,
+   "modeEvents": [
+    {
+     "mode": "workspace-write",
+     "source": null,
+     "seq": 1
+    }
+   ],
+   "lastOverride": "workspace-write"
+  },
+  {
+   "home": "canary5",
+   "path": "D:/DSH/home/canary5/sessions/--D-DSH-src-dsh-src--/session-7a461deb-8a01-4a3a-8686-97664095fb26/session.v3.jsonl.zstd",
+   "sessionId": "session-7a461deb-8a01-4a3a-8686-97664095fb26",
+   "cwd": "D:\\DSH\\src\\dsh-src",
+   "agentPreset": "daily-standard",
+   "frames": 2,
+   "eventCount": 4,
+   "modeEvents": [
+    {
+     "mode": "workspace-write",
+     "source": null,
+     "seq": 1
+    }
+   ],
+   "lastOverride": "workspace-write"
+  },
+  {
+   "home": "canary5",
+   "path": "D:/DSH/home/canary5/sessions/--D-DSH-src-dsh-src--/session-8b15a142-c0d0-4b0e-96fc-5e0d577ccbdc/session.v3.jsonl.zstd",
+   "sessionId": "session-8b15a142-c0d0-4b0e-96fc-5e0d577ccbdc",
+   "cwd": "D:\\DSH\\src\\dsh-src",
+   "agentPreset": "daily-standard",
+   "frames": 2,
+   "eventCount": 4,
+   "modeEvents": [
+    {
+     "mode": "workspace-write",
+     "source": null,
+     "seq": 1
+    }
+   ],
+   "lastOverride": "workspace-write"
+  },
+  {
+   "home": "canary5",
+   "path": "D:/DSH/home/canary5/sessions/--D-DSH-src-dsh-src--/session-99a62b5a-c58a-4c60-b8b3-88b0435a6903/session.v3.jsonl.zstd",
+   "sessionId": "session-99a62b5a-c58a-4c60-b8b3-88b0435a6903",
+   "cwd": "D:\\DSH\\src\\dsh-src",
+   "agentPreset": "daily-standard",
+   "frames": 2,
+   "eventCount": 4,
+   "modeEvents": [
+    {
+     "mode": "workspace-write",
+     "source": null,
+     "seq": 1
+    }
+   ],
+   "lastOverride": "workspace-write"
+  },
+  {
+   "home": "canary5",
+   "path": "D:/DSH/home/canary5/sessions/--D-DSH-src-dsh-src--/session-b586f5d6-5f86-4bf8-a10d-539d36216402/session.v3.jsonl.zstd",
+   "sessionId": "session-b586f5d6-5f86-4bf8-a10d-539d36216402",
+   "cwd": "D:\\DSH\\src\\dsh-src",
+   "agentPreset": "daily-standard",
+   "frames": 2,
+   "eventCount": 4,
+   "modeEvents": [
+    {
+     "mode": "workspace-write",
+     "source": null,
+     "seq": 1
+    }
+   ],
+   "lastOverride": "workspace-write"
+  },
+  {
+   "home": "canary5",
+   "path": "D:/DSH/home/canary5/sessions/--D-DSH-src-dsh-src--/session-bf05d8b9-90ec-4cea-a994-d19dd46ac03b/session.v3.jsonl.zstd",
+   "sessionId": "session-bf05d8b9-90ec-4cea-a994-d19dd46ac03b",
+   "cwd": "D:\\DSH\\src\\dsh-src",
+   "agentPreset": "daily-standard",
+   "frames": 2,
+   "eventCount": 4,
+   "modeEvents": [
+    {
+     "mode": "workspace-write",
+     "source": null,
+     "seq": 1
+    }
+   ],
+   "lastOverride": "workspace-write"
+  },
+  {
+   "home": "canary5",
+   "path": "D:/DSH/home/canary5/sessions/--D-DSH-src-dsh-src--/session-c26babc3-3688-4e34-8f50-c61bfd82dc7e/session.v3.jsonl.zstd",
+   "sessionId": "session-c26babc3-3688-4e34-8f50-c61bfd82dc7e",
+   "cwd": "D:\\DSH\\src\\dsh-src",
+   "agentPreset": "daily-standard",
+   "frames": 2,
+   "eventCount": 4,
+   "modeEvents": [
+    {
+     "mode": "workspace-write",
+     "source": null,
+     "seq": 1
+    }
+   ],
+   "lastOverride": "workspace-write"
+  },
+  {
+   "home": "canary5",
+   "path": "D:/DSH/home/canary5/sessions/--D-DSH-src-dsh-src--/session-d3c10b51-6a09-446f-a93b-836f4de860a7/session.v3.jsonl.zstd",
+   "sessionId": "session-d3c10b51-6a09-446f-a93b-836f4de860a7",
+   "cwd": "D:\\DSH\\src\\dsh-src",
+   "agentPreset": "daily-standard",
+   "frames": 2,
+   "eventCount": 4,
+   "modeEvents": [
+    {
+     "mode": "workspace-write",
+     "source": null,
+     "seq": 1
+    }
+   ],
+   "lastOverride": "workspace-write"
+  },
+  {
+   "home": "canary5",
+   "path": "D:/DSH/home/canary5/sessions/--D-DSH-src-dsh-src--/session-d4558d52-6e41-4c27-8654-fd988aeb7430/session.v3.jsonl.zstd",
+   "sessionId": "session-d4558d52-6e41-4c27-8654-fd988aeb7430",
+   "cwd": "D:\\DSH\\src\\dsh-src",
+   "agentPreset": "daily-standard",
+   "frames": 2,
+   "eventCount": 4,
+   "modeEvents": [
+    {
+     "mode": "workspace-write",
+     "source": null,
+     "seq": 1
+    }
+   ],
+   "lastOverride": "workspace-write"
+  },
+  {
+   "home": "canary5",
+   "path": "D:/DSH/home/canary5/sessions/--D-DSH-src-dsh-src--/session-d7b66227-6a93-4bc8-abce-4d200d527c85/session.v3.jsonl.zstd",
+   "sessionId": "session-d7b66227-6a93-4bc8-abce-4d200d527c85",
+   "cwd": "D:\\DSH\\src\\dsh-src",
+   "agentPreset": "daily-standard",
+   "frames": 2,
+   "eventCount": 4,
+   "modeEvents": [
+    {
+     "mode": "workspace-write",
+     "source": null,
+     "seq": 1
+    }
+   ],
+   "lastOverride": "workspace-write"
+  },
+  {
+   "home": "canary5",
+   "path": "D:/DSH/home/canary5/sessions/--D-DSH-src-dsh-src--/session-f9cc03f1-cf43-47a6-a58c-aef2db6b5296/session.v3.jsonl.zstd",
+   "sessionId": "session-f9cc03f1-cf43-47a6-a58c-aef2db6b5296",
+   "cwd": "D:\\DSH\\src\\dsh-src",
+   "agentPreset": "daily-standard",
+   "frames": 2,
+   "eventCount": 4,
+   "modeEvents": [
+    {
+     "mode": "workspace-write",
+     "source": null,
+     "seq": 1
+    }
+   ],
+   "lastOverride": "workspace-write"
+  },
+  {
+   "home": "canary7",
+   "path": "D:/DSH/home/canary7/sessions/--D-DSH-work-dsh-native-daily--/session-c5ca639a-1b15-49cd-98c9-f56abd2d3d46/session.v3.jsonl.zstd",
+   "sessionId": "session-c5ca639a-1b15-49cd-98c9-f56abd2d3d46",
+   "cwd": "D:/DSH/work/dsh-native-daily",
+   "agentPreset": "daily-standard",
+   "frames": 2,
+   "eventCount": 4,
+   "modeEvents": [
+    {
+     "mode": "workspace-write",
+     "source": null,
+     "seq": 1
+    }
+   ],
+   "lastOverride": "workspace-write"
+  },
+  {
+   "home": "canary8",
+   "path": "D:/DSH/home/canary8/sessions/--D-DSH-work-dsh-native-daily--/session-00558387-536f-4569-951e-7b700de2ee38/session.v3.jsonl.zstd",
+   "sessionId": "session-00558387-536f-4569-951e-7b700de2ee38",
+   "cwd": "D:/DSH/work/dsh-native-daily",
+   "agentPreset": "daily-standard",
+   "frames": 2,
+   "eventCount": 4,
+   "modeEvents": [
+    {
+     "mode": "workspace-write",
+     "source": null,
+     "seq": 1
+    }
+   ],
+   "lastOverride": "workspace-write"
+  },
+  {
+   "home": "canary8",
+   "path": "D:/DSH/home/canary8/sessions/--D-DSH-work-dsh-native-daily--/session-5a39ca9c-2974-4ddc-8c46-86448e53654a/session.v3.jsonl.zstd",
+   "sessionId": "session-5a39ca9c-2974-4ddc-8c46-86448e53654a",
+   "cwd": "D:/DSH/work/dsh-native-daily",
+   "agentPreset": "daily-standard",
+   "frames": 2,
+   "eventCount": 4,
+   "modeEvents": [
+    {
+     "mode": "workspace-write",
+     "source": null,
+     "seq": 1
+    }
+   ],
+   "lastOverride": "workspace-write"
+  },
+  {
+   "home": "canary8",
+   "path": "D:/DSH/home/canary8/sessions/--D-DSH-work-dsh-native-daily--/session-69c00440-0e20-470f-8255-2f7c7b9b9556/session.v3.jsonl.zstd",
+   "sessionId": "session-69c00440-0e20-470f-8255-2f7c7b9b9556",
+   "cwd": "D:/DSH/work/dsh-native-daily",
+   "agentPreset": "daily-standard",
+   "frames": 2,
+   "eventCount": 4,
+   "modeEvents": [
+    {
+     "mode": "workspace-write",
+     "source": null,
+     "seq": 1
+    }
+   ],
+   "lastOverride": "workspace-write"
+  },
+  {
+   "home": "canary8",
+   "path": "D:/DSH/home/canary8/sessions/--D-DSH-work-dsh-native-daily--/session-8a74acc1-a240-4ab8-9929-b4c5cab1a720/session.v3.jsonl.zstd",
+   "sessionId": "session-8a74acc1-a240-4ab8-9929-b4c5cab1a720",
+   "cwd": "D:/DSH/work/dsh-native-daily",
+   "agentPreset": "daily-standard",
+   "frames": 2,
+   "eventCount": 4,
+   "modeEvents": [
+    {
+     "mode": "workspace-write",
+     "source": null,
+     "seq": 1
+    }
+   ],
+   "lastOverride": "workspace-write"
+  },
+  {
+   "home": "m914",
+   "path": "D:/DSH/home/m914/sessions/--D-DSH-src-dsh-src--/session-8ad7387c-0fb8-4af9-9322-627198c0171b/session.v3.jsonl.zstd",
+   "sessionId": "session-8ad7387c-0fb8-4af9-9322-627198c0171b",
+   "cwd": "D:\\DSH\\src\\dsh-src",
+   "agentPreset": null,
+   "frames": 6,
+   "eventCount": 20,
+   "modeEvents": [
+    {
+     "mode": "workspace-write",
+     "source": null,
+     "seq": 1
+    }
+   ],
+   "lastOverride": "workspace-write"
+  },
+  {
+   "home": "m914",
+   "path": "D:/DSH/home/m914/sessions/--D-DSH-src-dsh-src--/session-aa375a16-41af-4cf6-a185-dcac5000f25f/session.v3.jsonl.zstd",
+   "sessionId": "session-aa375a16-41af-4cf6-a185-dcac5000f25f",
+   "cwd": "D:\\DSH\\src\\dsh-src",
+   "agentPreset": null,
+   "frames": 6,
+   "eventCount": 20,
+   "modeEvents": [
+    {
+     "mode": "workspace-write",
+     "source": null,
+     "seq": 1
+    }
+   ],
+   "lastOverride": "workspace-write"
+  },
+  {
+   "home": "m914",
+   "path": "D:/DSH/home/m914/sessions/--D-DSH-work-dsh-native-daily--/session-382fec5a-8475-4f74-8065-d00f3d9d0498/session.v3.jsonl.zstd",
+   "sessionId": "session-382fec5a-8475-4f74-8065-d00f3d9d0498",
+   "cwd": "D:/DSH/work/dsh-native-daily",
+   "agentPreset": "standard",
+   "frames": 2,
+   "eventCount": 4,
+   "modeEvents": [
+    {
+     "mode": "workspace-write",
+     "source": null,
+     "seq": 1
+    }
+   ],
+   "lastOverride": "workspace-write"
+  },
+  {
+   "home": "m914",
+   "path": "D:/DSH/home/m914/sessions/--D-DSH-work-dsh-native-daily--/session-65472cff-55c6-465d-b12f-4222f3abd1fe/session.v3.jsonl.zstd",
+   "sessionId": "session-65472cff-55c6-465d-b12f-4222f3abd1fe",
+   "cwd": "D:/DSH/work/dsh-native-daily",
+   "agentPreset": "standard",
+   "frames": 2,
+   "eventCount": 4,
+   "modeEvents": [
+    {
+     "mode": "workspace-write",
+     "source": null,
+     "seq": 1
+    }
+   ],
+   "lastOverride": "workspace-write"
+  },
+  {
+   "home": "m914",
+   "path": "D:/DSH/home/m914/sessions/--D-DSH-work-dsh-native-daily--/session-e1f4d5cd-86e1-4cde-adc6-a6ba6f0c9e47/session.v3.jsonl.zstd",
+   "sessionId": "session-e1f4d5cd-86e1-4cde-adc6-a6ba6f0c9e47",
+   "cwd": "D:/DSH/work/dsh-native-daily",
+   "agentPreset": "standard",
+   "frames": 2,
+   "eventCount": 4,
+   "modeEvents": [
+    {
+     "mode": "workspace-write",
+     "source": null,
+     "seq": 1
+    }
+   ],
+   "lastOverride": "workspace-write"
+  },
+  {
+   "home": "m914",
+   "path": "D:/DSH/home/m914/sessions/--D-DSH-work-dsh-native-daily--/session-e33a29ad-0090-4ce9-82b8-7c7ff52f1c99/session.v3.jsonl.zstd",
+   "sessionId": "session-e33a29ad-0090-4ce9-82b8-7c7ff52f1c99",
+   "cwd": "D:/DSH/work/dsh-native-daily",
+   "agentPreset": "standard",
+   "frames": 2,
+   "eventCount": 4,
+   "modeEvents": [
+    {
+     "mode": "workspace-write",
+     "source": null,
+     "seq": 1
+    }
+   ],
+   "lastOverride": "workspace-write"
+  },
+  {
+   "home": "m914",
+   "path": "D:/DSH/home/m914/sessions/--D-DSH-work-dsh-native-daily--/session-ee45dd69-75b0-438e-a706-66ec8dd7e27e/session.v3.jsonl.zstd",
+   "sessionId": "session-ee45dd69-75b0-438e-a706-66ec8dd7e27e",
+   "cwd": "D:/DSH/work/dsh-native-daily",
+   "agentPreset": "standard",
+   "frames": 2,
+   "eventCount": 4,
+   "modeEvents": [
+    {
+     "mode": "workspace-write",
+     "source": null,
+     "seq": 1
+    }
+   ],
+   "lastOverride": "workspace-write"
+  },
+  {
+   "home": "r1",
+   "path": "D:/DSH/home/r1/sessions/--D-DSH-work-wt-r1--/session-ce2f33e7-9925-47d0-92c9-d3d45605277b/session.v3.jsonl.zstd",
+   "sessionId": "session-ce2f33e7-9925-47d0-92c9-d3d45605277b",
+   "cwd": "D:/DSH/work/wt-r1",
+   "agentPreset": "daily-standard",
+   "frames": 1,
+   "eventCount": 1,
+   "modeEvents": [],
+   "lastOverride": null
+  },
+  {
+   "home": "r4",
+   "path": "D:/DSH/home/r4/sessions/--D-DSH-work-wt-r4--/session-3e152a5e-7226-4c7f-9107-1999152ade18/session.v3.jsonl.zstd",
+   "sessionId": "session-3e152a5e-7226-4c7f-9107-1999152ade18",
+   "cwd": "D:/DSH/work/wt-r4",
+   "agentPreset": "daily-standard",
+   "frames": 1,
+   "eventCount": 1,
+   "modeEvents": [],
+   "lastOverride": null
+  },
+  {
+   "home": "r4",
+   "path": "D:/DSH/home/r4/sessions/--D-DSH-work-wt-r4--/session-7c7ca7fe-3db5-47c5-a31b-865fe2594cee/session.v3.jsonl.zstd",
+   "sessionId": "session-7c7ca7fe-3db5-47c5-a31b-865fe2594cee",
+   "cwd": "D:/DSH/work/wt-r4",
+   "agentPreset": "daily-standard",
+   "frames": 1,
+   "eventCount": 1,
+   "modeEvents": [],
+   "lastOverride": null
+  },
+  {
+   "home": "r9-final",
+   "path": "D:/DSH/home/r9-final/sessions/--D-DSH-work-dsh-native-daily--/session-83addad2-c153-478c-983a-7a54c461f116/session.v3.jsonl.zstd",
+   "sessionId": "session-83addad2-c153-478c-983a-7a54c461f116",
+   "cwd": "D:/DSH/work/dsh-native-daily",
+   "agentPreset": "daily-standard",
+   "frames": 2,
+   "eventCount": 4,
+   "modeEvents": [
+    {
+     "mode": "workspace-write",
+     "source": null,
+     "seq": 1
+    }
+   ],
+   "lastOverride": "workspace-write"
+  },
+  {
+   "home": "r9-fresh2",
+   "path": "D:/DSH/home/r9-fresh2/sessions/--D-DSH-work-dsh-native-daily--/session-5794ed67-9c14-4a43-8d49-6364ed4d7b3b/session.v3.jsonl.zstd",
+   "sessionId": "session-5794ed67-9c14-4a43-8d49-6364ed4d7b3b",
+   "cwd": "D:/DSH/work/dsh-native-daily",
+   "agentPreset": "daily-standard",
+   "frames": 2,
+   "eventCount": 4,
+   "modeEvents": [
+    {
+     "mode": "workspace-write",
+     "source": null,
+     "seq": 1
+    }
+   ],
+   "lastOverride": "workspace-write"
+  },
+  {
+   "home": "r9-scratch",
+   "path": "D:/DSH/home/r9-scratch/sessions/--D-DSH-work-dsh-native-daily--/session-cfcbda9a-eda2-4931-9112-e530f190f8ab/session.v3.jsonl.zstd",
+   "sessionId": "session-cfcbda9a-eda2-4931-9112-e530f190f8ab",
+   "cwd": "D:/DSH/work/dsh-native-daily",
+   "agentPreset": "daily-standard",
+   "frames": 2,
+   "eventCount": 4,
+   "modeEvents": [
+    {
+     "mode": "workspace-write",
+     "source": null,
+     "seq": 1
+    }
+   ],
+   "lastOverride": "workspace-write"
+  },
+  {
+   "home": "root-docform",
+   "path": "D:/DSH/home/root-docform/sessions/--D-DSH-work-dsh-native-daily--/session-5cce70a9-509c-4dab-a73c-e457c41e4068/session.v3.jsonl.zstd",
+   "sessionId": "session-5cce70a9-509c-4dab-a73c-e457c41e4068",
+   "cwd": "D:/DSH/work/dsh-native-daily",
+   "agentPreset": "daily-standard",
+   "frames": 1,
+   "eventCount": 1,
+   "modeEvents": [],
+   "lastOverride": null
+  },
+  {
+   "home": "root-m12-fresh",
+   "path": "D:/DSH/home/root-m12-fresh/sessions/--D-DSH-work-dsh-native-daily--/session-0acc0aba-3d6e-4ab7-b3d7-bb3b30bba4b0/session.v3.jsonl.zstd",
+   "sessionId": "session-0acc0aba-3d6e-4ab7-b3d7-bb3b30bba4b0",
+   "cwd": "D:/DSH/work/dsh-native-daily",
+   "agentPreset": "daily-standard",
+   "frames": 1,
+   "eventCount": 1,
+   "modeEvents": [],
+   "lastOverride": null
+  },
+  {
+   "home": "root-m12-fresh",
+   "path": "D:/DSH/home/root-m12-fresh/sessions/--D-DSH-work-dsh-native-daily--/session-1ceba545-e4cd-415e-b7f1-f5f914466b04/session.v3.jsonl.zstd",
+   "sessionId": "session-1ceba545-e4cd-415e-b7f1-f5f914466b04",
+   "cwd": "D:/DSH/work/dsh-native-daily",
+   "agentPreset": "daily-standard",
+   "frames": 1,
+   "eventCount": 1,
+   "modeEvents": [],
+   "lastOverride": null
+  },
+  {
+   "home": "root-m12-fresh",
+   "path": "D:/DSH/home/root-m12-fresh/sessions/--D-DSH-work-dsh-native-daily--/session-40c155b3-04cf-4b78-aa94-37071b2992d7/session.v3.jsonl.zstd",
+   "sessionId": "session-40c155b3-04cf-4b78-aa94-37071b2992d7",
+   "cwd": "D:/DSH/work/dsh-native-daily",
+   "agentPreset": "daily-standard",
+   "frames": 1,
+   "eventCount": 1,
+   "modeEvents": [],
+   "lastOverride": null
+  },
+  {
+   "home": "root-m12-fresh",
+   "path": "D:/DSH/home/root-m12-fresh/sessions/--D-DSH-work-dsh-native-daily--/session-ce481c01-cc6b-4374-944a-0f398601960a/session.v3.jsonl.zstd",
+   "sessionId": "session-ce481c01-cc6b-4374-944a-0f398601960a",
+   "cwd": "D:/DSH/work/dsh-native-daily",
+   "agentPreset": "daily-standard",
+   "frames": 1,
+   "eventCount": 1,
+   "modeEvents": [],
+   "lastOverride": null
+  },
+  {
+   "home": "root-m12-fresh",
+   "path": "D:/DSH/home/root-m12-fresh/sessions/--D-DSH-work-dsh-native-daily--/session-e0f009c8-9415-4fc1-abcd-3fff46ee13c4/session.v3.jsonl.zstd",
+   "sessionId": "session-e0f009c8-9415-4fc1-abcd-3fff46ee13c4",
+   "cwd": "D:/DSH/work/dsh-native-daily",
+   "agentPreset": "daily-standard",
+   "frames": 1,
+   "eventCount": 1,
+   "modeEvents": [],
+   "lastOverride": null
+  },
+  {
+   "home": "root-m12-fresh",
+   "path": "D:/DSH/home/root-m12-fresh/sessions/--D-DSH-work-dsh-native-daily--/session-ed835c03-812b-4a0f-b044-1915f87ae72b/session.v3.jsonl.zstd",
+   "sessionId": "session-ed835c03-812b-4a0f-b044-1915f87ae72b",
+   "cwd": "D:/DSH/work/dsh-native-daily",
+   "agentPreset": "daily-standard",
+   "frames": 1,
+   "eventCount": 1,
+   "modeEvents": [],
+   "lastOverride": null
+  },
+  {
+   "home": "root-m12-fresh",
+   "path": "D:/DSH/home/root-m12-fresh/sessions/--D-DSH-work-dsh-native-daily--/session-f64731f0-869b-4b50-ba51-7f487f23acf0/session.v3.jsonl.zstd",
+   "sessionId": "session-f64731f0-869b-4b50-ba51-7f487f23acf0",
+   "cwd": "D:/DSH/work/dsh-native-daily",
+   "agentPreset": "daily-standard",
+   "frames": 1,
+   "eventCount": 1,
+   "modeEvents": [],
+   "lastOverride": null
+  },
+  {
+   "home": "t-root",
+   "path": "D:/DSH/home/t-root/sessions/--D-DSH-work-dsh-native-daily--/session-0f7c06d8-1349-45c7-ac60-11bf13ac7b32/session.v3.jsonl.zstd",
+   "sessionId": "session-0f7c06d8-1349-45c7-ac60-11bf13ac7b32",
+   "cwd": "D:/DSH/work/dsh-native-daily",
+   "agentPreset": "daily-standard",
+   "frames": 2,
+   "eventCount": 4,
+   "modeEvents": [
+    {
+     "mode": "workspace-write",
+     "source": null,
+     "seq": 1
+    }
+   ],
+   "lastOverride": "workspace-write"
+  },
+  {
+   "home": "t-root",
+   "path": "D:/DSH/home/t-root/sessions/--D-DSH-work-dsh-native-daily--/session-4ca164f4-a6a8-4bf6-9838-09505915e467/session.v3.jsonl.zstd",
+   "sessionId": "session-4ca164f4-a6a8-4bf6-9838-09505915e467",
+   "cwd": "D:/DSH/work/dsh-native-daily",
+   "agentPreset": "daily-standard",
+   "frames": 2,
+   "eventCount": 4,
+   "modeEvents": [
+    {
+     "mode": "workspace-write",
+     "source": null,
+     "seq": 1
+    }
+   ],
+   "lastOverride": "workspace-write"
+  },
+  {
+   "home": "t-root",
+   "path": "D:/DSH/home/t-root/sessions/--D-DSH-work-dsh-native-daily--/session-bf39848b-32ef-43be-8ada-8e1dea6c8592/session.v3.jsonl.zstd",
+   "sessionId": "session-bf39848b-32ef-43be-8ada-8e1dea6c8592",
+   "cwd": "D:/DSH/work/dsh-native-daily",
+   "agentPreset": "daily-standard",
+   "frames": 2,
+   "eventCount": 4,
+   "modeEvents": [
+    {
+     "mode": "workspace-write",
+     "source": null,
+     "seq": 1
+    }
+   ],
+   "lastOverride": "workspace-write"
+  },
+  {
+   "home": "t-root",
+   "path": "D:/DSH/home/t-root/sessions/--D-DSH-work-dsh-native-daily--/session-ce5f9590-6063-49aa-9869-edfca5d14043/session.v3.jsonl.zstd",
+   "sessionId": "session-ce5f9590-6063-49aa-9869-edfca5d14043",
+   "cwd": "D:/DSH/work/dsh-native-daily",
+   "agentPreset": "daily-standard",
+   "frames": 2,
+   "eventCount": 4,
+   "modeEvents": [
+    {
+     "mode": "workspace-write",
+     "source": null,
+     "seq": 1
+    }
+   ],
+   "lastOverride": "workspace-write"
+  },
+  {
+   "home": "t-verify",
+   "path": "D:/DSH/home/t-verify/sessions/--D-DSH-work-dsh-native-daily--/session-c639a009-d152-4a70-9305-20222f9d843d/session.v3.jsonl.zstd",
+   "sessionId": "session-c639a009-d152-4a70-9305-20222f9d843d",
+   "cwd": "D:/DSH/work/dsh-native-daily",
+   "agentPreset": "daily-standard",
+   "frames": 1,
+   "eventCount": 1,
+   "modeEvents": [],
+   "lastOverride": null
+  },
+  {
+   "home": "t-verify",
+   "path": "D:/DSH/home/t-verify/sessions/--D-DSH-work-dsh-native-daily--/session-d6432773-4ebe-42fb-8ff3-2198458425de/session.v3.jsonl.zstd",
+   "sessionId": "session-d6432773-4ebe-42fb-8ff3-2198458425de",
+   "cwd": "D:/DSH/work/dsh-native-daily",
+   "agentPreset": "daily-standard",
+   "frames": 1,
+   "eventCount": 1,
+   "modeEvents": [],
+   "lastOverride": null
+  },
+  {
+   "home": "t-verify",
+   "path": "D:/DSH/home/t-verify/sessions/--D-DSH-work-dsh-native-daily--/session-e7edbe37-f590-4b66-bc04-32ff2bc63571/session.v3.jsonl.zstd",
+   "sessionId": "session-e7edbe37-f590-4b66-bc04-32ff2bc63571",
+   "cwd": "D:/DSH/work/dsh-native-daily",
+   "agentPreset": "daily-standard",
+   "frames": 1,
+   "eventCount": 1,
+   "modeEvents": [],
+   "lastOverride": null
+  },
+  {
+   "home": "t-verify",
+   "path": "D:/DSH/home/t-verify/sessions/--D-DSH-work-dsh-native-daily--/session-ec0720d9-6f04-48b8-9fe8-286673b3b9c5/session.v3.jsonl.zstd",
+   "sessionId": "session-ec0720d9-6f04-48b8-9fe8-286673b3b9c5",
+   "cwd": "D:/DSH/work/dsh-native-daily",
+   "agentPreset": "daily-standard",
+   "frames": 1,
+   "eventCount": 1,
+   "modeEvents": [],
+   "lastOverride": null
+  },
+  {
+   "home": "t-verify",
+   "path": "D:/DSH/home/t-verify/sessions/--D-DSH-work-dsh-native-daily--/session-f8051ed0-f8f9-4bee-a259-473175fcba5c/session.v3.jsonl.zstd",
+   "sessionId": "session-f8051ed0-f8f9-4bee-a259-473175fcba5c",
+   "cwd": "D:/DSH/work/dsh-native-daily",
+   "agentPreset": "daily-standard",
+   "frames": 1,
+   "eventCount": 1,
+   "modeEvents": [],
+   "lastOverride": null
+  },
+  {
+   "home": "t10-capacity",
+   "path": "D:/DSH/home/t10-capacity/sessions/--D-DSH-work-dsh-native-daily--/04d28f0e-ca05-4626-8b1f-9918e5f1129f/session.v3.jsonl.zstd",
+   "sessionId": "04d28f0e-ca05-4626-8b1f-9918e5f1129f",
+   "cwd": "D:/DSH/work/dsh-native-daily",
+   "agentPreset": "daily-standard",
+   "frames": 3,
+   "eventCount": 6,
+   "modeEvents": [],
+   "lastOverride": null
+  },
+  {
+   "home": "t10-capacity",
+   "path": "D:/DSH/home/t10-capacity/sessions/--D-DSH-work-dsh-native-daily--/30f9397d-112c-498a-ba9f-393d65804feb/session.v3.jsonl.zstd",
+   "sessionId": "30f9397d-112c-498a-ba9f-393d65804feb",
+   "cwd": "D:/DSH/work/dsh-native-daily",
+   "agentPreset": "daily-standard",
+   "frames": 6,
+   "eventCount": 17,
+   "modeEvents": [],
+   "lastOverride": null
+  },
+  {
+   "home": "t10-capacity",
+   "path": "D:/DSH/home/t10-capacity/sessions/--D-DSH-work-dsh-native-daily--/3174bd93-7ad5-42e6-a21a-1ce75901ca63/session.v3.jsonl.zstd",
+   "sessionId": "3174bd93-7ad5-42e6-a21a-1ce75901ca63",
+   "cwd": "D:/DSH/work/dsh-native-daily",
+   "agentPreset": "daily-standard",
+   "frames": 2,
+   "eventCount": 3,
+   "modeEvents": [],
+   "lastOverride": null
+  },
+  {
+   "home": "t10-capacity",
+   "path": "D:/DSH/home/t10-capacity/sessions/--D-DSH-work-dsh-native-daily--/3324481c-5701-4da8-8390-90f149837e9a/session.v3.jsonl.zstd",
+   "sessionId": "3324481c-5701-4da8-8390-90f149837e9a",
+   "cwd": "D:/DSH/work/dsh-native-daily",
+   "agentPreset": "daily-standard",
+   "frames": 6,
+   "eventCount": 17,
+   "modeEvents": [],
+   "lastOverride": null
+  },
+  {
+   "home": "t10-capacity",
+   "path": "D:/DSH/home/t10-capacity/sessions/--D-DSH-work-dsh-native-daily--/47785ccf-abcd-4375-bf3d-e2ce9422a0b6/session.v3.jsonl.zstd",
+   "sessionId": "47785ccf-abcd-4375-bf3d-e2ce9422a0b6",
+   "cwd": "D:/DSH/work/dsh-native-daily",
+   "agentPreset": "daily-standard",
+   "frames": 2,
+   "eventCount": 3,
+   "modeEvents": [],
+   "lastOverride": null
+  },
+  {
+   "home": "t10-capacity",
+   "path": "D:/DSH/home/t10-capacity/sessions/--D-DSH-work-dsh-native-daily--/4f304ed4-907b-424b-a9a7-29af43523100/session.v3.jsonl.zstd",
+   "sessionId": "4f304ed4-907b-424b-a9a7-29af43523100",
+   "cwd": "D:/DSH/work/dsh-native-daily",
+   "agentPreset": "daily-standard",
+   "frames": 6,
+   "eventCount": 17,
+   "modeEvents": [],
+   "lastOverride": null
+  },
+  {
+   "home": "t10-capacity",
+   "path": "D:/DSH/home/t10-capacity/sessions/--D-DSH-work-dsh-native-daily--/5ee9d0ea-40e8-4fd2-ac11-68b19b930885/session.v3.jsonl.zstd",
+   "sessionId": "5ee9d0ea-40e8-4fd2-ac11-68b19b930885",
+   "cwd": "D:/DSH/work/dsh-native-daily",
+   "agentPreset": "daily-standard",
+   "frames": 6,
+   "eventCount": 17,
+   "modeEvents": [],
+   "lastOverride": null
+  },
+  {
+   "home": "t10-capacity",
+   "path": "D:/DSH/home/t10-capacity/sessions/--D-DSH-work-dsh-native-daily--/67875e1b-f65c-4731-aff8-202d0d1926c6/session.v3.jsonl.zstd",
+   "sessionId": "67875e1b-f65c-4731-aff8-202d0d1926c6",
+   "cwd": "D:/DSH/work/dsh-native-daily",
+   "agentPreset": "daily-standard",
+   "frames": 2,
+   "eventCount": 3,
+   "modeEvents": [],
+   "lastOverride": null
+  },
+  {
+   "home": "t10-capacity",
+   "path": "D:/DSH/home/t10-capacity/sessions/--D-DSH-work-dsh-native-daily--/7e330ece-e03b-4bd3-9583-de9c44030e35/session.v3.jsonl.zstd",
+   "sessionId": "7e330ece-e03b-4bd3-9583-de9c44030e35",
+   "cwd": "D:/DSH/work/dsh-native-daily",
+   "agentPreset": "daily-standard",
+   "frames": 2,
+   "eventCount": 3,
+   "modeEvents": [],
+   "lastOverride": null
+  },
+  {
+   "home": "t10-capacity",
+   "path": "D:/DSH/home/t10-capacity/sessions/--D-DSH-work-dsh-native-daily--/82d30ba3-1d5b-441d-af33-8f9b04813071/session.v3.jsonl.zstd",
+   "sessionId": "82d30ba3-1d5b-441d-af33-8f9b04813071",
+   "cwd": "D:/DSH/work/dsh-native-daily",
+   "agentPreset": "daily-standard",
+   "frames": 6,
+   "eventCount": 17,
+   "modeEvents": [],
+   "lastOverride": null
+  },
+  {
+   "home": "t10-capacity",
+   "path": "D:/DSH/home/t10-capacity/sessions/--D-DSH-work-dsh-native-daily--/895c9c71-6e5d-43d5-8334-2bb15db7438b/session.v3.jsonl.zstd",
+   "sessionId": "895c9c71-6e5d-43d5-8334-2bb15db7438b",
+   "cwd": "D:/DSH/work/dsh-native-daily",
+   "agentPreset": "daily-standard",
+   "frames": 6,
+   "eventCount": 17,
+   "modeEvents": [],
+   "lastOverride": null
+  },
+  {
+   "home": "t10-capacity",
+   "path": "D:/DSH/home/t10-capacity/sessions/--D-DSH-work-dsh-native-daily--/89c27bc3-9e42-44ba-a9f8-4b0fce504c67/session.v3.jsonl.zstd",
+   "sessionId": "89c27bc3-9e42-44ba-a9f8-4b0fce504c67",
+   "cwd": "D:/DSH/work/dsh-native-daily",
+   "agentPreset": "daily-standard",
+   "frames": 3,
+   "eventCount": 6,
+   "modeEvents": [],
+   "lastOverride": null
+  },
+  {
+   "home": "t10-capacity",
+   "path": "D:/DSH/home/t10-capacity/sessions/--D-DSH-work-dsh-native-daily--/e1854222-f825-40f9-9177-42e0d417841f/session.v3.jsonl.zstd",
+   "sessionId": "e1854222-f825-40f9-9177-42e0d417841f",
+   "cwd": "D:/DSH/work/dsh-native-daily",
+   "agentPreset": "daily-standard",
+   "frames": 3,
+   "eventCount": 6,
+   "modeEvents": [],
+   "lastOverride": null
+  },
+  {
+   "home": "t10-capacity",
+   "path": "D:/DSH/home/t10-capacity/sessions/--D-DSH-work-dsh-native-daily--/e9e2931f-090d-4d1d-984f-6e2c89cca036/session.v3.jsonl.zstd",
+   "sessionId": "e9e2931f-090d-4d1d-984f-6e2c89cca036",
+   "cwd": "D:/DSH/work/dsh-native-daily",
+   "agentPreset": "daily-standard",
+   "frames": 6,
+   "eventCount": 17,
+   "modeEvents": [],
+   "lastOverride": null
+  },
+  {
+   "home": "t10-capacity",
+   "path": "D:/DSH/home/t10-capacity/sessions/--D-DSH-work-dsh-native-daily--/fac7bc6c-934f-482b-9b72-f1df27f2867b/session.v3.jsonl.zstd",
+   "sessionId": "fac7bc6c-934f-482b-9b72-f1df27f2867b",
+   "cwd": "D:/DSH/work/dsh-native-daily",
+   "agentPreset": "daily-standard",
+   "frames": 2,
+   "eventCount": 3,
+   "modeEvents": [],
+   "lastOverride": null
+  },
+  {
+   "home": "t10-capacity",
+   "path": "D:/DSH/home/t10-capacity/sessions/--D-DSH-work-dsh-native-daily--/session-2a2ccb9c-f220-4129-a91f-07f44bd1885a/session.v3.jsonl.zstd",
+   "sessionId": "session-2a2ccb9c-f220-4129-a91f-07f44bd1885a",
+   "cwd": "D:/DSH/work/dsh-native-daily",
+   "agentPreset": "daily-standard",
+   "frames": 4,
+   "eventCount": 15,
+   "modeEvents": [],
+   "lastOverride": null
+  },
+  {
+   "home": "t10-capacity",
+   "path": "D:/DSH/home/t10-capacity/sessions/--D-DSH-work-dsh-native-daily--/session-520e6cd7-03b8-46bf-8c48-fae968ed1b57/session.v3.jsonl.zstd",
+   "sessionId": "session-520e6cd7-03b8-46bf-8c48-fae968ed1b57",
+   "cwd": "D:/DSH/work/dsh-native-daily",
+   "agentPreset": "daily-standard",
+   "frames": 4,
+   "eventCount": 15,
+   "modeEvents": [],
+   "lastOverride": null
+  },
+  {
+   "home": "t10-capacity",
+   "path": "D:/DSH/home/t10-capacity/sessions/--D-DSH-work-dsh-native-daily--/session-5a33d104-2d01-403e-bb80-de4c9016a243/session.v3.jsonl.zstd",
+   "sessionId": "session-5a33d104-2d01-403e-bb80-de4c9016a243",
+   "cwd": "D:/DSH/work/dsh-native-daily",
+   "agentPreset": "daily-standard",
+   "frames": 4,
+   "eventCount": 16,
+   "modeEvents": [],
+   "lastOverride": null
+  },
+  {
+   "home": "t10-capacity",
+   "path": "D:/DSH/home/t10-capacity/sessions/--D-DSH-work-dsh-native-daily--/session-7a4a7b51-eb1f-4a0f-aee3-a23d905bcd68/session.v3.jsonl.zstd",
+   "sessionId": "session-7a4a7b51-eb1f-4a0f-aee3-a23d905bcd68",
+   "cwd": "D:/DSH/work/dsh-native-daily",
+   "agentPreset": "daily-standard",
+   "frames": 4,
+   "eventCount": 15,
+   "modeEvents": [],
+   "lastOverride": null
+  },
+  {
+   "home": "t10-capacity",
+   "path": "D:/DSH/home/t10-capacity/sessions/--D-DSH-work-dsh-native-daily--/session-cf449d69-070d-4a83-9b9e-fb59d0843727/session.v3.jsonl.zstd",
+   "sessionId": "session-cf449d69-070d-4a83-9b9e-fb59d0843727",
+   "cwd": "D:/DSH/work/dsh-native-daily",
+   "agentPreset": "daily-standard",
+   "frames": 4,
+   "eventCount": 16,
+   "modeEvents": [],
+   "lastOverride": null
+  },
+  {
+   "home": "t10-capacity",
+   "path": "D:/DSH/home/t10-capacity/sessions/--D-DSH-work-dsh-native-daily--/session-e9805479-b76e-4547-bfe8-ee6be90c134b/session.v3.jsonl.zstd",
+   "sessionId": "session-e9805479-b76e-4547-bfe8-ee6be90c134b",
+   "cwd": "D:/DSH/work/dsh-native-daily",
+   "agentPreset": "daily-standard",
+   "frames": 4,
+   "eventCount": 15,
+   "modeEvents": [],
+   "lastOverride": null
+  },
+  {
+   "home": "t10-capacity",
+   "path": "D:/DSH/home/t10-capacity/sessions/--D-DSH-work-dsh-native-daily--/session-f97f2cfe-ecb9-493b-b25d-cf143246db23/session.v3.jsonl.zstd",
+   "sessionId": "session-f97f2cfe-ecb9-493b-b25d-cf143246db23",
+   "cwd": "D:/DSH/work/dsh-native-daily",
+   "agentPreset": "daily-standard",
+   "frames": 4,
+   "eventCount": 16,
+   "modeEvents": [],
+   "lastOverride": null
+  },
+  {
+   "home": "t16-docs",
+   "path": "D:/DSH/home/t16-docs/sessions/--D-DSH-work-dsh-native-daily--/session-2b267709-f3d8-4c2a-a5d8-9faa0599b82e/session.v3.jsonl.zstd",
+   "sessionId": "session-2b267709-f3d8-4c2a-a5d8-9faa0599b82e",
+   "cwd": "D:/DSH/work/dsh-native-daily",
+   "agentPreset": "daily-standard",
+   "frames": 2,
+   "eventCount": 4,
+   "modeEvents": [
+    {
+     "mode": "workspace-write",
+     "source": null,
+     "seq": 1
+    }
+   ],
+   "lastOverride": "workspace-write"
+  },
+  {
+   "home": "t16-docs",
+   "path": "D:/DSH/home/t16-docs/sessions/--D-DSH-work-dsh-native-daily--/session-ee0b1ae1-f830-49aa-8ab1-36abc0ac5db8/session.v3.jsonl.zstd",
+   "sessionId": "session-ee0b1ae1-f830-49aa-8ab1-36abc0ac5db8",
+   "cwd": "D:/DSH/work/dsh-native-daily",
+   "agentPreset": "daily-standard",
+   "frames": 2,
+   "eventCount": 4,
+   "modeEvents": [
+    {
+     "mode": "workspace-write",
+     "source": null,
+     "seq": 1
+    }
+   ],
+   "lastOverride": "workspace-write"
+  },
+  {
+   "home": "t2-fs",
+   "path": "D:/DSH/home/t2-fs/sessions/--D-DSH-work-dsh-native-daily-qualification-results-T2-fs-workspace--/session-1ef81692-a083-4c41-a06f-6b203ea21cab/session.v3.jsonl.zstd",
+   "sessionId": "session-1ef81692-a083-4c41-a06f-6b203ea21cab",
+   "cwd": "D:/DSH/work/dsh-native-daily/qualification/results/T2-fs/workspace",
+   "agentPreset": "daily-standard",
+   "frames": 2,
+   "eventCount": 2,
+   "modeEvents": [],
+   "lastOverride": null
+  },
+  {
+   "home": "t2-fs",
+   "path": "D:/DSH/home/t2-fs/sessions/--D-DSH-work-dsh-native-daily-qualification-results-T2-fs-workspace--/session-29cabb08-d611-4f64-af2e-ea6e8099e9b4/session.v3.jsonl.zstd",
+   "sessionId": "session-29cabb08-d611-4f64-af2e-ea6e8099e9b4",
+   "cwd": "D:/DSH/work/dsh-native-daily/qualification/results/T2-fs/workspace",
+   "agentPreset": "daily-standard",
+   "frames": 3,
+   "eventCount": 5,
+   "modeEvents": [
+    {
+     "mode": "workspace-write",
+     "source": null,
+     "seq": 1
+    }
+   ],
+   "lastOverride": "workspace-write"
+  },
+  {
+   "home": "t2-fs",
+   "path": "D:/DSH/home/t2-fs/sessions/--D-DSH-work-dsh-native-daily-qualification-results-T2-fs-workspace--/session-9509a764-b73c-4ad3-acd1-d6ba2dfb8237/session.v3.jsonl.zstd",
+   "sessionId": "session-9509a764-b73c-4ad3-acd1-d6ba2dfb8237",
+   "cwd": "D:/DSH/work/dsh-native-daily/qualification/results/T2-fs/workspace",
+   "agentPreset": "daily-standard",
+   "frames": 2,
+   "eventCount": 2,
+   "modeEvents": [],
+   "lastOverride": null
+  },
+  {
+   "home": "t2-fs",
+   "path": "D:/DSH/home/t2-fs/sessions/--D-DSH-work-dsh-native-daily-qualification-results-T2-fs-workspace--/session-b72ef8a7-aad7-419b-be14-2917a658c7f9/session.v3.jsonl.zstd",
+   "sessionId": "session-b72ef8a7-aad7-419b-be14-2917a658c7f9",
+   "cwd": "D:/DSH/work/dsh-native-daily/qualification/results/T2-fs/workspace",
+   "agentPreset": "daily-standard",
+   "frames": 2,
+   "eventCount": 2,
+   "modeEvents": [],
+   "lastOverride": null
+  },
+  {
+   "home": "t2-fs",
+   "path": "D:/DSH/home/t2-fs/sessions/--D-DSH-work-dsh-native-daily-qualification-results-T2-fs-workspace--/session-ee0deedc-7092-4418-a82c-640845e489b6/session.v3.jsonl.zstd",
+   "sessionId": "session-ee0deedc-7092-4418-a82c-640845e489b6",
+   "cwd": "D:/DSH/work/dsh-native-daily/qualification/results/T2-fs/workspace",
+   "agentPreset": "daily-standard",
+   "frames": 2,
+   "eventCount": 2,
+   "modeEvents": [],
+   "lastOverride": null
+  },
+  {
+   "home": "t3-shell",
+   "path": "D:/DSH/home/t3-shell/sessions/--D-DSH-work-dsh-native-daily-qualification-results-T3-shell-workspace--/session-22c07929-0149-4fca-82cb-c9f97aa83a34/session.v3.jsonl.zstd",
+   "sessionId": "session-22c07929-0149-4fca-82cb-c9f97aa83a34",
+   "cwd": "D:/DSH/work/dsh-native-daily/qualification/results/T3-shell/workspace",
+   "agentPreset": "daily-standard",
+   "frames": 1,
+   "eventCount": 1,
+   "modeEvents": [],
+   "lastOverride": null
+  },
+  {
+   "home": "t3-shell",
+   "path": "D:/DSH/home/t3-shell/sessions/--D-DSH-work-dsh-native-daily-qualification-results-T3-shell-workspace--/session-2e9cc29e-1bff-49f4-bbdd-be20c8ba1aa1/session.v3.jsonl.zstd",
+   "sessionId": "session-2e9cc29e-1bff-49f4-bbdd-be20c8ba1aa1",
+   "cwd": "D:/DSH/work/dsh-native-daily/qualification/results/T3-shell/workspace",
+   "agentPreset": "daily-standard",
+   "frames": 1,
+   "eventCount": 1,
+   "modeEvents": [],
+   "lastOverride": null
+  },
+  {
+   "home": "t3-shell",
+   "path": "D:/DSH/home/t3-shell/sessions/--D-DSH-work-dsh-native-daily-qualification-results-T3-shell-workspace--/session-5468eb91-f4df-4671-9961-72151f131c99/session.v3.jsonl.zstd",
+   "sessionId": "session-5468eb91-f4df-4671-9961-72151f131c99",
+   "cwd": "D:/DSH/work/dsh-native-daily/qualification/results/T3-shell/workspace",
+   "agentPreset": "daily-standard",
+   "frames": 1,
+   "eventCount": 1,
+   "modeEvents": [],
+   "lastOverride": null
+  },
+  {
+   "home": "t3-shell",
+   "path": "D:/DSH/home/t3-shell/sessions/--D-DSH-work-dsh-native-daily-qualification-results-T3-shell-workspace--/session-be9efe1c-a9f1-4062-9271-1bef14a3c483/session.v3.jsonl.zstd",
+   "sessionId": "session-be9efe1c-a9f1-4062-9271-1bef14a3c483",
+   "cwd": "D:/DSH/work/dsh-native-daily/qualification/results/T3-shell/workspace",
+   "agentPreset": "daily-standard",
+   "frames": 1,
+   "eventCount": 1,
+   "modeEvents": [],
+   "lastOverride": null
+  },
+  {
+   "home": "t4-preset",
+   "path": "D:/DSH/home/t4-preset/sessions/--D-DSH-work-dsh-native-daily--/session-1da9be6c-fe3d-4832-ac29-f4d3a44e12c5/session.v3.jsonl.zstd",
+   "sessionId": "session-1da9be6c-fe3d-4832-ac29-f4d3a44e12c5",
+   "cwd": "D:/DSH/work/dsh-native-daily",
+   "agentPreset": "daily-standard",
+   "frames": 2,
+   "eventCount": 4,
+   "modeEvents": [
+    {
+     "mode": "workspace-write",
+     "source": null,
+     "seq": 1
+    }
+   ],
+   "lastOverride": "workspace-write"
+  },
+  {
+   "home": "t4-preset",
+   "path": "D:/DSH/home/t4-preset/sessions/--D-DSH-work-dsh-native-daily--/session-3cdfd74e-b943-4ea3-8bf7-aa1d08ad5a3e/session.v3.jsonl.zstd",
+   "sessionId": "session-3cdfd74e-b943-4ea3-8bf7-aa1d08ad5a3e",
+   "cwd": "D:/DSH/work/dsh-native-daily",
+   "agentPreset": "daily-standard",
+   "frames": 2,
+   "eventCount": 4,
+   "modeEvents": [
+    {
+     "mode": "workspace-write",
+     "source": null,
+     "seq": 1
+    }
+   ],
+   "lastOverride": "workspace-write"
+  },
+  {
+   "home": "t4-preset",
+   "path": "D:/DSH/home/t4-preset/sessions/--D-DSH-work-dsh-native-daily--/session-417b1be6-c5f1-4343-9515-a79f95fb3516/session.v3.jsonl.zstd",
+   "sessionId": "session-417b1be6-c5f1-4343-9515-a79f95fb3516",
+   "cwd": "D:/DSH/work/dsh-native-daily",
+   "agentPreset": "daily-standard",
+   "frames": 2,
+   "eventCount": 4,
+   "modeEvents": [
+    {
+     "mode": "workspace-write",
+     "source": null,
+     "seq": 1
+    }
+   ],
+   "lastOverride": "workspace-write"
+  },
+  {
+   "home": "t4-preset",
+   "path": "D:/DSH/home/t4-preset/sessions/--D-DSH-work-dsh-native-daily--/session-45643bf4-2380-43f1-9e8e-efb2ff203777/session.v3.jsonl.zstd",
+   "sessionId": "session-45643bf4-2380-43f1-9e8e-efb2ff203777",
+   "cwd": "D:/DSH/work/dsh-native-daily",
+   "agentPreset": "daily-standard",
+   "frames": 2,
+   "eventCount": 4,
+   "modeEvents": [
+    {
+     "mode": "workspace-write",
+     "source": null,
+     "seq": 1
+    }
+   ],
+   "lastOverride": "workspace-write"
+  },
+  {
+   "home": "t4-preset",
+   "path": "D:/DSH/home/t4-preset/sessions/--D-DSH-work-dsh-native-daily--/session-542be960-3772-4be6-a2bd-881a1d701800/session.v3.jsonl.zstd",
+   "sessionId": "session-542be960-3772-4be6-a2bd-881a1d701800",
+   "cwd": "D:/DSH/work/dsh-native-daily",
+   "agentPreset": "daily-standard",
+   "frames": 2,
+   "eventCount": 4,
+   "modeEvents": [
+    {
+     "mode": "workspace-write",
+     "source": null,
+     "seq": 1
+    }
+   ],
+   "lastOverride": "workspace-write"
+  },
+  {
+   "home": "t4-preset",
+   "path": "D:/DSH/home/t4-preset/sessions/--D-DSH-work-dsh-native-daily--/session-71b019d4-6731-4e03-b4ca-9692436b1d06/session.v3.jsonl.zstd",
+   "sessionId": "session-71b019d4-6731-4e03-b4ca-9692436b1d06",
+   "cwd": "D:/DSH/work/dsh-native-daily",
+   "agentPreset": "daily-standard",
+   "frames": 2,
+   "eventCount": 4,
+   "modeEvents": [
+    {
+     "mode": "workspace-write",
+     "source": null,
+     "seq": 1
+    }
+   ],
+   "lastOverride": "workspace-write"
+  },
+  {
+   "home": "t4-preset",
+   "path": "D:/DSH/home/t4-preset/sessions/--D-DSH-work-dsh-native-daily--/session-75f128f1-2015-4a78-ad47-5e805681cde0/session.v3.jsonl.zstd",
+   "sessionId": "session-75f128f1-2015-4a78-ad47-5e805681cde0",
+   "cwd": "D:/DSH/work/dsh-native-daily",
+   "agentPreset": "daily-standard",
+   "frames": 2,
+   "eventCount": 4,
+   "modeEvents": [
+    {
+     "mode": "workspace-write",
+     "source": null,
+     "seq": 1
+    }
+   ],
+   "lastOverride": "workspace-write"
+  },
+  {
+   "home": "t4-preset",
+   "path": "D:/DSH/home/t4-preset/sessions/--D-DSH-work-dsh-native-daily--/session-97dad8cf-8300-443b-a436-b7488ee4eda7/session.v3.jsonl.zstd",
+   "sessionId": "session-97dad8cf-8300-443b-a436-b7488ee4eda7",
+   "cwd": "D:/DSH/work/dsh-native-daily",
+   "agentPreset": "daily-standard",
+   "frames": 2,
+   "eventCount": 4,
+   "modeEvents": [
+    {
+     "mode": "workspace-write",
+     "source": null,
+     "seq": 1
+    }
+   ],
+   "lastOverride": "workspace-write"
+  },
+  {
+   "home": "t4-preset",
+   "path": "D:/DSH/home/t4-preset/sessions/--D-DSH-work-dsh-native-daily--/session-a53c7164-61f2-48bf-a5e5-f54928dedd4a/session.v3.jsonl.zstd",
+   "sessionId": "session-a53c7164-61f2-48bf-a5e5-f54928dedd4a",
+   "cwd": "D:/DSH/work/dsh-native-daily",
+   "agentPreset": "daily-standard",
+   "frames": 2,
+   "eventCount": 4,
+   "modeEvents": [
+    {
+     "mode": "workspace-write",
+     "source": null,
+     "seq": 1
+    }
+   ],
+   "lastOverride": "workspace-write"
+  },
+  {
+   "home": "t4-preset",
+   "path": "D:/DSH/home/t4-preset/sessions/--D-DSH-work-dsh-native-daily--/session-dbed1ff1-4bbb-4234-9191-d9fa581de9d6/session.v3.jsonl.zstd",
+   "sessionId": "session-dbed1ff1-4bbb-4234-9191-d9fa581de9d6",
+   "cwd": "D:/DSH/work/dsh-native-daily",
+   "agentPreset": "daily-standard",
+   "frames": 2,
+   "eventCount": 4,
+   "modeEvents": [
+    {
+     "mode": "workspace-write",
+     "source": null,
+     "seq": 1
+    }
+   ],
+   "lastOverride": "workspace-write"
+  },
+  {
+   "home": "t4-preset",
+   "path": "D:/DSH/home/t4-preset/sessions/--D-DSH-work-dsh-native-daily--/session-e52c4b12-2440-428b-95c0-dc273440269b/session.v3.jsonl.zstd",
+   "sessionId": "session-e52c4b12-2440-428b-95c0-dc273440269b",
+   "cwd": "D:/DSH/work/dsh-native-daily",
+   "agentPreset": "daily-standard",
+   "frames": 2,
+   "eventCount": 4,
+   "modeEvents": [
+    {
+     "mode": "workspace-write",
+     "source": null,
+     "seq": 1
+    }
+   ],
+   "lastOverride": "workspace-write"
+  },
+  {
+   "home": "v10-research-obs",
+   "path": "D:/DSH/home/v10-research-obs/sessions/--D-DSH-work-dsh-native-daily--/session-30714cbf-a038-4512-9b0f-f1712cf0062a/session.v3.jsonl.zstd",
+   "sessionId": "session-30714cbf-a038-4512-9b0f-f1712cf0062a",
+   "cwd": "D:/DSH/work/dsh-native-daily",
+   "agentPreset": "daily-standard",
+   "frames": 1,
+   "eventCount": 1,
+   "modeEvents": [],
+   "lastOverride": null
+  },
+  {
+   "home": "v10-research-obs",
+   "path": "D:/DSH/home/v10-research-obs/sessions/--D-DSH-work-dsh-native-daily--/session-50368262-26e1-46c5-b715-98fb862169ec/session.v3.jsonl.zstd",
+   "sessionId": "session-50368262-26e1-46c5-b715-98fb862169ec",
+   "cwd": "D:/DSH/work/dsh-native-daily",
+   "agentPreset": "daily-standard",
+   "frames": 1,
+   "eventCount": 1,
+   "modeEvents": [],
+   "lastOverride": null
+  },
+  {
+   "home": "v10-research-obs",
+   "path": "D:/DSH/home/v10-research-obs/sessions/--D-DSH-work-dsh-native-daily--/session-62055dac-07e5-4dca-9692-bbd774668de4/session.v3.jsonl.zstd",
+   "sessionId": "session-62055dac-07e5-4dca-9692-bbd774668de4",
+   "cwd": "D:/DSH/work/dsh-native-daily",
+   "agentPreset": "daily-standard",
+   "frames": 1,
+   "eventCount": 1,
+   "modeEvents": [],
+   "lastOverride": null
+  },
+  {
+   "home": "v10-research-obs",
+   "path": "D:/DSH/home/v10-research-obs/sessions/--D-DSH-work-dsh-native-daily--/session-6dfba79f-7b78-4409-ae3d-5d8e689c6460/session.v3.jsonl.zstd",
+   "sessionId": "session-6dfba79f-7b78-4409-ae3d-5d8e689c6460",
+   "cwd": "D:/DSH/work/dsh-native-daily",
+   "agentPreset": "daily-standard",
+   "frames": 1,
+   "eventCount": 1,
+   "modeEvents": [],
+   "lastOverride": null
+  },
+  {
+   "home": "v10-research-obs",
+   "path": "D:/DSH/home/v10-research-obs/sessions/--D-DSH-work-dsh-native-daily--/session-ab21ebd5-6e44-4e9e-a75e-47baaa479d5b/session.v3.jsonl.zstd",
+   "sessionId": "session-ab21ebd5-6e44-4e9e-a75e-47baaa479d5b",
+   "cwd": "D:/DSH/work/dsh-native-daily",
+   "agentPreset": "daily-standard",
+   "frames": 1,
+   "eventCount": 1,
+   "modeEvents": [],
+   "lastOverride": null
+  },
+  {
+   "home": "v10-research-obs",
+   "path": "D:/DSH/home/v10-research-obs/sessions/--D-DSH-work-dsh-native-daily--/session-b10aa708-022c-4605-9a8d-1e9bfec76da2/session.v3.jsonl.zstd",
+   "sessionId": "session-b10aa708-022c-4605-9a8d-1e9bfec76da2",
+   "cwd": "D:/DSH/work/dsh-native-daily",
+   "agentPreset": "daily-standard",
+   "frames": 1,
+   "eventCount": 1,
+   "modeEvents": [],
+   "lastOverride": null
+  },
+  {
+   "home": "v10-research-obs",
+   "path": "D:/DSH/home/v10-research-obs/sessions/--D-DSH-work-dsh-native-daily--/session-bbd4619a-859d-411e-b8ff-ad19d91baa38/session.v3.jsonl.zstd",
+   "sessionId": "session-bbd4619a-859d-411e-b8ff-ad19d91baa38",
+   "cwd": "D:/DSH/work/dsh-native-daily",
+   "agentPreset": "daily-standard",
+   "frames": 1,
+   "eventCount": 1,
+   "modeEvents": [],
+   "lastOverride": null
+  },
+  {
+   "home": "v10-research-obs",
+   "path": "D:/DSH/home/v10-research-obs/sessions/--D-DSH-work-dsh-native-daily--/session-cae5743d-3c2a-44e2-9c71-19be000434b9/session.v3.jsonl.zstd",
+   "sessionId": "session-cae5743d-3c2a-44e2-9c71-19be000434b9",
+   "cwd": "D:/DSH/work/dsh-native-daily",
+   "agentPreset": "daily-standard",
+   "frames": 1,
+   "eventCount": 1,
+   "modeEvents": [],
+   "lastOverride": null
+  },
+  {
+   "home": "v10-research-obs",
+   "path": "D:/DSH/home/v10-research-obs/sessions/--D-DSH-work-dsh-native-daily--/session-fac50ebc-cc47-43a3-9e3e-da55daa30e12/session.v3.jsonl.zstd",
+   "sessionId": "session-fac50ebc-cc47-43a3-9e3e-da55daa30e12",
+   "cwd": "D:/DSH/work/dsh-native-daily",
+   "agentPreset": "daily-standard",
+   "frames": 1,
+   "eventCount": 1,
+   "modeEvents": [],
+   "lastOverride": null
+  },
+  {
+   "home": "v10-research-obs",
+   "path": "D:/DSH/home/v10-research-obs/sessions/--D-DSH-work-dsh-native-daily--/v10-obs-target/session.v3.jsonl.zstd",
+   "sessionId": "v10-obs-target",
+   "cwd": "D:/DSH/work/dsh-native-daily",
+   "agentPreset": null,
+   "frames": 2,
+   "eventCount": 4,
+   "modeEvents": [],
+   "lastOverride": null
+  },
+  {
+   "home": "v10-research-obs",
+   "path": "D:/DSH/home/v10-research-obs/sessions/--D-DSH-work-dsh-native-daily--/v10-obs-target-1789862432493/session.v3.jsonl.zstd",
+   "sessionId": "v10-obs-target-1789862432493",
+   "cwd": "D:/DSH/work/dsh-native-daily",
+   "agentPreset": null,
+   "frames": 8,
+   "eventCount": 10,
+   "modeEvents": [],
+   "lastOverride": null
+  },
+  {
+   "home": "v10-research-obs",
+   "path": "D:/DSH/home/v10-research-obs/sessions/--D-DSH-work-dsh-native-daily--/v10-obs-target-1789862447758/session.v3.jsonl.zstd",
+   "sessionId": "v10-obs-target-1789862447758",
+   "cwd": "D:/DSH/work/dsh-native-daily",
+   "agentPreset": null,
+   "frames": 8,
+   "eventCount": 10,
+   "modeEvents": [],
+   "lastOverride": null
+  },
+  {
+   "home": "v2-cmp",
+   "path": "D:/DSH/home/v2-cmp/sessions/--D-DSH-work-dsh-native-daily--/session-0a97ce23-5453-47bd-aaf8-04c2def2df28/session.v3.jsonl.zstd",
+   "sessionId": "session-0a97ce23-5453-47bd-aaf8-04c2def2df28",
+   "cwd": "D:/DSH/work/dsh-native-daily",
+   "agentPreset": "daily-standard",
+   "frames": 1,
+   "eventCount": 1,
+   "modeEvents": [],
+   "lastOverride": null
+  },
+  {
+   "home": "v2-cmp",
+   "path": "D:/DSH/home/v2-cmp/sessions/--D-DSH-work-dsh-native-daily--/session-0c68494e-5da4-4890-921a-4578edf8da1c/session.v3.jsonl.zstd",
+   "sessionId": "session-0c68494e-5da4-4890-921a-4578edf8da1c",
+   "cwd": "D:/DSH/work/dsh-native-daily",
+   "agentPreset": "daily-standard",
+   "frames": 1,
+   "eventCount": 1,
+   "modeEvents": [],
+   "lastOverride": null
+  },
+  {
+   "home": "v2-cmp",
+   "path": "D:/DSH/home/v2-cmp/sessions/--D-DSH-work-dsh-native-daily--/session-1d8d2055-4289-4d60-9d61-1b90c4156148/session.v3.jsonl.zstd",
+   "sessionId": "session-1d8d2055-4289-4d60-9d61-1b90c4156148",
+   "cwd": "D:/DSH/work/dsh-native-daily",
+   "agentPreset": "daily-standard",
+   "frames": 1,
+   "eventCount": 1,
+   "modeEvents": [],
+   "lastOverride": null
+  },
+  {
+   "home": "v2-cmp",
+   "path": "D:/DSH/home/v2-cmp/sessions/--D-DSH-work-dsh-native-daily--/session-2dd00785-82e1-4091-81f5-914d5fe9f07c/session.v3.jsonl.zstd",
+   "sessionId": "session-2dd00785-82e1-4091-81f5-914d5fe9f07c",
+   "cwd": "D:/DSH/work/dsh-native-daily",
+   "agentPreset": "daily-standard",
+   "frames": 1,
+   "eventCount": 1,
+   "modeEvents": [],
+   "lastOverride": null
+  },
+  {
+   "home": "v2-cmp",
+   "path": "D:/DSH/home/v2-cmp/sessions/--D-DSH-work-dsh-native-daily--/session-3d494c36-3255-42e1-b71f-ce69124cb144/session.v3.jsonl.zstd",
+   "sessionId": "session-3d494c36-3255-42e1-b71f-ce69124cb144",
+   "cwd": "D:/DSH/work/dsh-native-daily",
+   "agentPreset": "standard",
+   "frames": 1,
+   "eventCount": 1,
+   "modeEvents": [],
+   "lastOverride": null
+  },
+  {
+   "home": "v2-cmp",
+   "path": "D:/DSH/home/v2-cmp/sessions/--D-DSH-work-dsh-native-daily--/session-3e6a0a6b-184b-471b-b703-9a45933fba78/session.v3.jsonl.zstd",
+   "sessionId": "session-3e6a0a6b-184b-471b-b703-9a45933fba78",
+   "cwd": "D:/DSH/work/dsh-native-daily",
+   "agentPreset": "standard",
+   "frames": 1,
+   "eventCount": 1,
+   "modeEvents": [],
+   "lastOverride": null
+  },
+  {
+   "home": "v2-cmp",
+   "path": "D:/DSH/home/v2-cmp/sessions/--D-DSH-work-dsh-native-daily--/session-4656685c-243a-437b-abbb-dfa767d5cd90/session.v3.jsonl.zstd",
+   "sessionId": "session-4656685c-243a-437b-abbb-dfa767d5cd90",
+   "cwd": "D:/DSH/work/dsh-native-daily",
+   "agentPreset": "daily-standard",
+   "frames": 2,
+   "eventCount": 3,
+   "modeEvents": [],
+   "lastOverride": null
+  },
+  {
+   "home": "v2-cmp",
+   "path": "D:/DSH/home/v2-cmp/sessions/--D-DSH-work-dsh-native-daily--/session-469dd1cb-b8ee-4183-9ceb-38bae75b8be0/session.v3.jsonl.zstd",
+   "sessionId": "session-469dd1cb-b8ee-4183-9ceb-38bae75b8be0",
+   "cwd": "D:/DSH/work/dsh-native-daily",
+   "agentPreset": "standard",
+   "frames": 1,
+   "eventCount": 1,
+   "modeEvents": [],
+   "lastOverride": null
+  },
+  {
+   "home": "v2-cmp",
+   "path": "D:/DSH/home/v2-cmp/sessions/--D-DSH-work-dsh-native-daily--/session-84f0cf5d-3627-4aa2-8d76-06775ebc4f75/session.v3.jsonl.zstd",
+   "sessionId": "session-84f0cf5d-3627-4aa2-8d76-06775ebc4f75",
+   "cwd": "D:/DSH/work/dsh-native-daily",
+   "agentPreset": "standard",
+   "frames": 1,
+   "eventCount": 1,
+   "modeEvents": [],
+   "lastOverride": null
+  },
+  {
+   "home": "v2-cmp",
+   "path": "D:/DSH/home/v2-cmp/sessions/--D-DSH-work-dsh-native-daily--/session-9d431138-0170-4d41-be4d-423d6f7bb1be/session.v3.jsonl.zstd",
+   "sessionId": "session-9d431138-0170-4d41-be4d-423d6f7bb1be",
+   "cwd": "D:/DSH/work/dsh-native-daily",
+   "agentPreset": "daily-standard",
+   "frames": 1,
+   "eventCount": 1,
+   "modeEvents": [],
+   "lastOverride": null
+  },
+  {
+   "home": "v2-cmp",
+   "path": "D:/DSH/home/v2-cmp/sessions/--D-DSH-work-dsh-native-daily--/session-9ff1585a-cee3-49f0-879c-18d123f83864/session.v3.jsonl.zstd",
+   "sessionId": "session-9ff1585a-cee3-49f0-879c-18d123f83864",
+   "cwd": "D:/DSH/work/dsh-native-daily",
+   "agentPreset": "standard",
+   "frames": 1,
+   "eventCount": 1,
+   "modeEvents": [],
+   "lastOverride": null
+  },
+  {
+   "home": "v2-cmp",
+   "path": "D:/DSH/home/v2-cmp/sessions/--D-DSH-work-dsh-native-daily--/session-a7f8df47-e3a3-4bef-9943-9066a8ee5fc0/session.v3.jsonl.zstd",
+   "sessionId": "session-a7f8df47-e3a3-4bef-9943-9066a8ee5fc0",
+   "cwd": "D:/DSH/work/dsh-native-daily",
+   "agentPreset": "standard",
+   "frames": 1,
+   "eventCount": 1,
+   "modeEvents": [],
+   "lastOverride": null
+  },
+  {
+   "home": "v2-cmp",
+   "path": "D:/DSH/home/v2-cmp/sessions/--D-DSH-work-dsh-native-daily--/session-b9a0815b-fc97-49e1-b0dc-4618189cb52b/session.v3.jsonl.zstd",
+   "sessionId": "session-b9a0815b-fc97-49e1-b0dc-4618189cb52b",
+   "cwd": "D:/DSH/work/dsh-native-daily",
+   "agentPreset": "daily-standard",
+   "frames": 2,
+   "eventCount": 3,
+   "modeEvents": [],
+   "lastOverride": null
+  },
+  {
+   "home": "v2-cmp",
+   "path": "D:/DSH/home/v2-cmp/sessions/--D-DSH-work-dsh-native-daily--/session-bbd7dc4d-69cc-44f2-b5c2-ea353e295070/session.v3.jsonl.zstd",
+   "sessionId": "session-bbd7dc4d-69cc-44f2-b5c2-ea353e295070",
+   "cwd": "D:/DSH/work/dsh-native-daily",
+   "agentPreset": "daily-standard",
+   "frames": 2,
+   "eventCount": 3,
+   "modeEvents": [],
+   "lastOverride": null
+  },
+  {
+   "home": "v2-cmp",
+   "path": "D:/DSH/home/v2-cmp/sessions/--D-DSH-work-dsh-native-daily--/session-bfdd6082-6688-4b7a-a884-9efe6dc147d6/session.v3.jsonl.zstd",
+   "sessionId": "session-bfdd6082-6688-4b7a-a884-9efe6dc147d6",
+   "cwd": "D:/DSH/work/dsh-native-daily",
+   "agentPreset": "daily-standard",
+   "frames": 2,
+   "eventCount": 3,
+   "modeEvents": [],
+   "lastOverride": null
+  },
+  {
+   "home": "v2-cmp",
+   "path": "D:/DSH/home/v2-cmp/sessions/--D-DSH-work-dsh-native-daily--/session-c79374b8-0ec9-4a0a-83fd-0d7ddda10158/session.v3.jsonl.zstd",
+   "sessionId": "session-c79374b8-0ec9-4a0a-83fd-0d7ddda10158",
+   "cwd": "D:/DSH/work/dsh-native-daily",
+   "agentPreset": "daily-standard",
+   "frames": 2,
+   "eventCount": 3,
+   "modeEvents": [],
+   "lastOverride": null
+  },
+  {
+   "home": "v2-cmp",
+   "path": "D:/DSH/home/v2-cmp/sessions/--D-DSH-work-dsh-native-daily--/session-c7c48d63-1dbb-476d-8dd9-4ff76ded371d/session.v3.jsonl.zstd",
+   "sessionId": "session-c7c48d63-1dbb-476d-8dd9-4ff76ded371d",
+   "cwd": "D:/DSH/work/dsh-native-daily",
+   "agentPreset": "daily-standard",
+   "frames": 1,
+   "eventCount": 1,
+   "modeEvents": [],
+   "lastOverride": null
+  },
+  {
+   "home": "v2-cmp",
+   "path": "D:/DSH/home/v2-cmp/sessions/--D-DSH-work-dsh-native-daily--/session-cd79cdd9-c047-472f-aeee-f2c017ce6cef/session.v3.jsonl.zstd",
+   "sessionId": "session-cd79cdd9-c047-472f-aeee-f2c017ce6cef",
+   "cwd": "D:/DSH/work/dsh-native-daily",
+   "agentPreset": "daily-standard",
+   "frames": 1,
+   "eventCount": 1,
+   "modeEvents": [],
+   "lastOverride": null
+  },
+  {
+   "home": "v2-cmp",
+   "path": "D:/DSH/home/v2-cmp/sessions/--D-DSH-work-dsh-native-daily--/session-dffb3f50-e5ed-43d0-bc3e-cf526decf382/session.v3.jsonl.zstd",
+   "sessionId": "session-dffb3f50-e5ed-43d0-bc3e-cf526decf382",
+   "cwd": "D:/DSH/work/dsh-native-daily",
+   "agentPreset": "daily-standard",
+   "frames": 2,
+   "eventCount": 3,
+   "modeEvents": [],
+   "lastOverride": null
+  },
+  {
+   "home": "v2-cmp",
+   "path": "D:/DSH/home/v2-cmp/sessions/--D-DSH-work-dsh-native-daily-qualification-results-T2-fs-workspace--/session-b18d91cc-bef6-45ef-ae1b-95364e7be9a8/session.v3.jsonl.zstd",
+   "sessionId": "session-b18d91cc-bef6-45ef-ae1b-95364e7be9a8",
+   "cwd": "D:/DSH/work/dsh-native-daily/qualification/results/T2-fs/workspace",
+   "agentPreset": "daily-standard",
+   "frames": 2,
+   "eventCount": 2,
+   "modeEvents": [],
+   "lastOverride": null
+  },
+  {
+   "home": "v2-cmp",
+   "path": "D:/DSH/home/v2-cmp/sessions/--D-DSH-work-dsh-native-daily-qualification-results-T2-fs-workspace--/session-eed2cbe6-e7b1-44ea-9c57-4b1226d4419b/session.v3.jsonl.zstd",
+   "sessionId": "session-eed2cbe6-e7b1-44ea-9c57-4b1226d4419b",
+   "cwd": "D:/DSH/work/dsh-native-daily/qualification/results/T2-fs/workspace",
+   "agentPreset": "daily-standard",
+   "frames": 2,
+   "eventCount": 2,
+   "modeEvents": [],
+   "lastOverride": null
+  },
+  {
+   "home": "v2-cmp",
+   "path": "D:/DSH/home/v2-cmp/sessions/--D-DSH-work-dsh-native-daily-qualification-results-T3-shell-workspace--/session-a3555370-bad7-4119-b8e0-29374944e029/session.v3.jsonl.zstd",
+   "sessionId": "session-a3555370-bad7-4119-b8e0-29374944e029",
+   "cwd": "D:/DSH/work/dsh-native-daily/qualification/results/T3-shell/workspace",
+   "agentPreset": "daily-standard",
+   "frames": 1,
+   "eventCount": 1,
+   "modeEvents": [],
+   "lastOverride": null
+  },
+  {
+   "home": "v2-cmp",
+   "path": "D:/DSH/home/v2-cmp/sessions/--D-DSH-work-dsh-native-daily-qualification-results-T3-shell-workspace--/session-c5b5c276-2874-4bea-a042-b2aa73e07335/session.v3.jsonl.zstd",
+   "sessionId": "session-c5b5c276-2874-4bea-a042-b2aa73e07335",
+   "cwd": "D:/DSH/work/dsh-native-daily/qualification/results/T3-shell/workspace",
+   "agentPreset": "daily-standard",
+   "frames": 1,
+   "eventCount": 1,
+   "modeEvents": [],
+   "lastOverride": null
+  },
+  {
+   "home": "v2-cmp",
+   "path": "D:/DSH/home/v2-cmp/sessions/--D-DSH-work-dsh-native-daily-qualification-results-T3-shell-workspace--/session-ec9cb4eb-a1ab-4e97-a08e-a55b41464ed8/session.v3.jsonl.zstd",
+   "sessionId": "session-ec9cb4eb-a1ab-4e97-a08e-a55b41464ed8",
+   "cwd": "D:/DSH/work/dsh-native-daily/qualification/results/T3-shell/workspace",
+   "agentPreset": "daily-standard",
+   "frames": 1,
+   "eventCount": 1,
+   "modeEvents": [],
+   "lastOverride": null
+  },
+  {
+   "home": "v2-cmp-canary",
+   "path": "D:/DSH/home/v2-cmp-canary/sessions/--D-DSH-work-dsh-native-daily--/session-53fc749c-de50-4ed8-bf74-85122ca0e3f2/session.v3.jsonl.zstd",
+   "sessionId": "session-53fc749c-de50-4ed8-bf74-85122ca0e3f2",
+   "cwd": "D:/DSH/work/dsh-native-daily",
+   "agentPreset": "standard",
+   "frames": 1,
+   "eventCount": 1,
+   "modeEvents": [],
+   "lastOverride": null
+  },
+  {
+   "home": "v2-cmp-control",
+   "path": "D:/DSH/home/v2-cmp-control/sessions/--D-DSH-work-dsh-native-daily--/session-001a8d49-a972-4db7-9f46-a2cca2d62740/session.v3.jsonl.zstd",
+   "sessionId": "session-001a8d49-a972-4db7-9f46-a2cca2d62740",
+   "cwd": "D:/DSH/work/dsh-native-daily",
+   "agentPreset": "daily-standard",
+   "frames": 1,
+   "eventCount": 1,
+   "modeEvents": [],
+   "lastOverride": null
+  },
+  {
+   "home": "v2-cmp-control",
+   "path": "D:/DSH/home/v2-cmp-control/sessions/--D-DSH-work-dsh-native-daily--/session-38fc07a8-70be-4e64-98da-37289c9f7c62/session.v3.jsonl.zstd",
+   "sessionId": "session-38fc07a8-70be-4e64-98da-37289c9f7c62",
+   "cwd": "D:/DSH/work/dsh-native-daily",
+   "agentPreset": "daily-standard",
+   "frames": 2,
+   "eventCount": 3,
+   "modeEvents": [],
+   "lastOverride": null
+  },
+  {
+   "home": "v2-cmp-control",
+   "path": "D:/DSH/home/v2-cmp-control/sessions/--D-DSH-work-dsh-native-daily--/session-51635eb4-5988-443e-9979-2cf340623b80/session.v3.jsonl.zstd",
+   "sessionId": "session-51635eb4-5988-443e-9979-2cf340623b80",
+   "cwd": "D:/DSH/work/dsh-native-daily",
+   "agentPreset": "daily-standard",
+   "frames": 1,
+   "eventCount": 1,
+   "modeEvents": [],
+   "lastOverride": null
+  },
+  {
+   "home": "v2-cmp-control",
+   "path": "D:/DSH/home/v2-cmp-control/sessions/--D-DSH-work-dsh-native-daily--/session-cecdf046-7580-4958-bff0-d7b118987e3f/session.v3.jsonl.zstd",
+   "sessionId": "session-cecdf046-7580-4958-bff0-d7b118987e3f",
+   "cwd": "D:/DSH/work/dsh-native-daily",
+   "agentPreset": "daily-standard-twin",
+   "frames": 1,
+   "eventCount": 1,
+   "modeEvents": [],
+   "lastOverride": null
+  },
+  {
+   "home": "v3-ipython",
+   "path": "D:/DSH/home/v3-ipython/sessions/--D-DSH-work-dsh-native-daily--/session-d8ccffca-c337-4f8d-8b65-7a1f2124f47b/session.v3.jsonl.zstd",
+   "sessionId": "session-d8ccffca-c337-4f8d-8b65-7a1f2124f47b",
+   "cwd": "D:/DSH/work/dsh-native-daily",
+   "agentPreset": "daily-standard",
+   "frames": 1,
+   "eventCount": 1,
+   "modeEvents": [],
+   "lastOverride": null
+  },
+  {
+   "home": "v3-ipython",
+   "path": "D:/DSH/home/v3-ipython/sessions/--D-DSH-work-dsh-native-daily--/session-d9b6932e-2998-4063-8948-161352c5ed49/session.v3.jsonl.zstd",
+   "sessionId": "session-d9b6932e-2998-4063-8948-161352c5ed49",
+   "cwd": "D:/DSH/work/dsh-native-daily",
+   "agentPreset": "daily-standard",
+   "frames": 1,
+   "eventCount": 1,
+   "modeEvents": [],
+   "lastOverride": null
+  },
+  {
+   "home": "v7-fs",
+   "path": "D:/DSH/home/v7-fs/sessions/--D-DSH-work-dsh-native-daily-qualification-results-V7-fs-workspace--/session-4306a599-db0c-46fb-ac6c-94ec1edc6b36/session.v3.jsonl.zstd",
+   "sessionId": "session-4306a599-db0c-46fb-ac6c-94ec1edc6b36",
+   "cwd": "D:/DSH/work/dsh-native-daily/qualification/results/V7-fs/workspace",
+   "agentPreset": "daily-standard",
+   "frames": 2,
+   "eventCount": 2,
+   "modeEvents": [],
+   "lastOverride": null
+  },
+  {
+   "home": "v7-fs",
+   "path": "D:/DSH/home/v7-fs/sessions/--D-DSH-work-dsh-native-daily-qualification-results-V7-fs-workspace--/session-611d0e13-4a19-44a9-b0fc-7e85c4260a57/session.v3.jsonl.zstd",
+   "sessionId": "session-611d0e13-4a19-44a9-b0fc-7e85c4260a57",
+   "cwd": "D:/DSH/work/dsh-native-daily/qualification/results/V7-fs/workspace",
+   "agentPreset": "daily-standard",
+   "frames": 2,
+   "eventCount": 2,
+   "modeEvents": [],
+   "lastOverride": null
+  },
+  {
+   "home": "v7-fs",
+   "path": "D:/DSH/home/v7-fs/sessions/--D-DSH-work-dsh-native-daily-qualification-results-V7-fs-workspace--/session-72f3da1a-e923-463d-9ff6-90f577da3e72/session.v3.jsonl.zstd",
+   "sessionId": "session-72f3da1a-e923-463d-9ff6-90f577da3e72",
+   "cwd": "D:/DSH/work/dsh-native-daily/qualification/results/V7-fs/workspace",
+   "agentPreset": "daily-standard",
+   "frames": 2,
+   "eventCount": 2,
+   "modeEvents": [],
+   "lastOverride": null
+  },
+  {
+   "home": "v7-fs",
+   "path": "D:/DSH/home/v7-fs/sessions/--D-DSH-work-dsh-native-daily-qualification-results-V7-fs-workspace--/session-8cca23f9-8857-49fb-a6d3-d96d802be405/session.v3.jsonl.zstd",
+   "sessionId": "session-8cca23f9-8857-49fb-a6d3-d96d802be405",
+   "cwd": "D:/DSH/work/dsh-native-daily/qualification/results/V7-fs/workspace",
+   "agentPreset": "daily-standard",
+   "frames": 2,
+   "eventCount": 2,
+   "modeEvents": [],
+   "lastOverride": null
+  },
+  {
+   "home": "v7-fs",
+   "path": "D:/DSH/home/v7-fs/sessions/--D-DSH-work-dsh-native-daily-qualification-results-V7-fs-workspace--/session-c9dbc9f4-2c8d-4094-97b1-8d98d9fc2a08/session.v3.jsonl.zstd",
+   "sessionId": "session-c9dbc9f4-2c8d-4094-97b1-8d98d9fc2a08",
+   "cwd": "D:/DSH/work/dsh-native-daily/qualification/results/V7-fs/workspace",
+   "agentPreset": "daily-standard",
+   "frames": 2,
+   "eventCount": 2,
+   "modeEvents": [],
+   "lastOverride": null
+  },
+  {
+   "home": "v7-fs",
+   "path": "D:/DSH/home/v7-fs/sessions/--D-DSH-work-dsh-native-daily-qualification-results-V7-fs-workspace--/session-f484e27b-61ea-4983-817f-cb6473b783cc/session.v3.jsonl.zstd",
+   "sessionId": "session-f484e27b-61ea-4983-817f-cb6473b783cc",
+   "cwd": "D:/DSH/work/dsh-native-daily/qualification/results/V7-fs/workspace",
+   "agentPreset": "daily-standard",
+   "frames": 2,
+   "eventCount": 2,
+   "modeEvents": [],
+   "lastOverride": null
+  }
+ ]
+}
