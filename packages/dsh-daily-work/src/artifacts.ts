@@ -2699,8 +2699,8 @@ export async function captureFile(request: CaptureFileRequest): Promise<CaptureO
 
   // THE ACQUIRED/PERSISTED CHECK. `info.size` is what the source was when the
   // capture began; `published.bytes` is what the store actually persisted. When
-  // they disagree on a whole-file capture, the object is SHORTER than the file
-  // that was named, and the difference is bytes that were never acquired.
+  // they disagree, the object is SHORTER than what the REQUEST implied, and the
+  // difference is bytes that were never acquired.
   //
   // Before this check the outcome was `complete-within-request` with no gap:
   // measured, a 1000-byte file whose reader stopped at 400 bytes produced a
@@ -2708,14 +2708,11 @@ export async function captureFile(request: CaptureFileRequest): Promise<CaptureO
   // acquired-vs-persisted collapse the whole data plane exists to prevent -- the
   // two numbers were both present in the code and only one of them was believed.
   //
-  // A range request legitimately captures fewer bytes than the file holds, so the
-  // check applies only when the caller did not narrow the scope.
-  //
   // THE GUARD IS `> 0`, NOT `!== 0`, AND THE DIRECTION IS THE WHOLE POINT. The
   // claim being made here is "bytes that were never acquired". When MORE bytes
-  // arrive than `stat` saw, nothing was withheld: either the source GREW between
-  // the stat and the read, or the reader over-read. A `!== 0` guard filed that as
-  // a loss anyway, with a NEGATIVE count in the reason.
+  // arrive than the request implied, nothing was withheld: either the source GREW
+  // between the stat and the read, or the reader over-read. A `!== 0` guard filed
+  // that as a loss anyway, with a NEGATIVE count in the reason.
   //
   // MEASURED before this fix (DATA-09, `data-r6.test.ts`): a 4096-byte source with
   // an 8192-byte reader produced `partial-native-acquisition`, `recovery:
@@ -2725,18 +2722,63 @@ export async function captureFile(request: CaptureFileRequest): Promise<CaptureO
   // verdict on a capture that lost nothing is exactly the fabricated-loss failure
   // DATA-09 exists to prevent -- reached through the sign of the difference rather
   // than through a wrong stage name.
-  const shortBy = sourceBytesAtStart !== undefined && request.requestedRange === undefined
-    ? sourceBytesAtStart - published.bytes
-    : 0
+  //
+  // WHY THE EXPECTATION IS DERIVED FROM THE REQUEST AND NOT ONLY FROM `stat`
+  // (DATA-09, the unrecorded-loss clause). The guard used to force `shortBy = 0`
+  // for EVERY range request, on the reasoning that "a range request legitimately
+  // captures fewer bytes than the file holds". That reasoning is true only while
+  // the range lies INSIDE the source. It is false for a range that extends PAST
+  // EOF, and the difference is not academic: `observations.ts` defines `partial`
+  // as "bytes inside the requested range are known to be absent", and a caller who
+  // asks for 1000 bytes of a 400-byte file has named a range in which 600 bytes are
+  // absent. MEASURED through the product path (`DataPlane.fsCapture`) before this
+  // fix, on a 400-byte file: `{offset: 0, length: 1000}` and
+  // `{offset: 1000, length: 512}` both reported `complete-within-request` with an
+  // EMPTY gap list, while 600 and 512 requested bytes respectively were absent --
+  // and `isDeliverableAsComplete` returned true for both. That is DATA-09's rule
+  // inverted: a real loss, inside a range the caller named, not recorded as a gap.
+  //
+  // So the expectation is the number of bytes the REQUEST implied:
+  //   whole file         every byte the source had at capture start.
+  //   range with length  the length the caller NAMED, even when the source is
+  //                      shorter, because a byte inside a named range that the
+  //                      source does not have is still absent from the request.
+  //   open-ended range   the bytes from the offset to the end of the source; an
+  //                      offset at or past EOF therefore implies zero bytes and
+  //                      correctly records no loss.
+  // A control arm keeps this from becoming a fabricated-loss producer: a range
+  // wholly inside the file implies exactly the bytes that arrive, so it records
+  // `complete-within-request` and NO gap (pinned in `data-r6.test.ts`).
+  const requestedRange = request.requestedRange
+  const expectedBytes = requestedRange === undefined
+    ? sourceBytesAtStart
+    : requestedRange.length ?? (sourceBytesAtStart === undefined
+      ? undefined
+      : Math.max(0, sourceBytesAtStart - requestedRange.offset))
+  const shortBy = expectedBytes === undefined ? 0 : expectedBytes - published.bytes
   if (shortBy > 0) {
+    // WHETHER A RE-ASK COULD HELP, decided rather than assumed. When the request
+    // named bytes the source does not have, those bytes are past EOF: re-reading
+    // the same path returns the same short file, so `refetch` would be a promise
+    // the plane cannot keep and `none` is the honest value. A shortfall with no
+    // such overhang is a reader that stopped early, and a second read CAN return
+    // the rest -- which is the `refetch` the whole-file arm has always reported.
+    const requestExceedsSource = requestedRange !== undefined && sourceBytesAtStart !== undefined
+      && requestedRange.offset + (requestedRange.length ?? 0) > sourceBytesAtStart
     gaps.push({
       stage: 'native-acquisition',
-      reason: `the source was ${String(sourceBytesAtStart)} bytes at capture start but only ${String(published.bytes)} were acquired `
-        + `(${String(shortBy)} bytes never reached the store); the captured object is the bytes that DID arrive, not the file that was named`,
-      // A re-read of the same path may return the whole file, so the gap is
-      // pageable in principle -- but the missing bytes are NOT in this object, so
-      // recovery is a NEW capture, never a page of this one.
-      recovery: 'refetch',
+      reason: requestedRange === undefined
+        ? `the source was ${String(sourceBytesAtStart)} bytes at capture start but only ${String(published.bytes)} were acquired `
+          + `(${String(shortBy)} bytes never reached the store); the captured object is the bytes that DID arrive, not the file that was named`
+        : `the request named ${String(expectedBytes)} bytes at offset ${String(requestedRange.offset)}`
+          + `${requestedRange.length === undefined ? ' to the end of the source' : ''} but only ${String(published.bytes)} were acquired `
+          + `(${String(shortBy)} bytes inside the requested range are absent`
+          + `${requestExceedsSource ? ', because the requested range extends past the end of the source' : ''})`,
+      // A re-read of the same path may return the whole file, so a reader-shortfall
+      // gap is refetchable in principle -- but the missing bytes are NOT in this
+      // object, so recovery is a NEW capture, never a page of this one. A range
+      // that overhangs the source is the case a re-ask cannot fix at all.
+      recovery: requestExceedsSource ? 'none' : 'refetch',
     })
   }
 
