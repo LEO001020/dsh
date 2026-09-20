@@ -2331,10 +2331,25 @@ export async function captureFile(request: CaptureFileRequest): Promise<CaptureO
   //
   // A range request legitimately captures fewer bytes than the file holds, so the
   // check applies only when the caller did not narrow the scope.
+  //
+  // THE GUARD IS `> 0`, NOT `!== 0`, AND THE DIRECTION IS THE WHOLE POINT. The
+  // claim being made here is "bytes that were never acquired". When MORE bytes
+  // arrive than `stat` saw, nothing was withheld: either the source GREW between
+  // the stat and the read, or the reader over-read. A `!== 0` guard filed that as
+  // a loss anyway, with a NEGATIVE count in the reason.
+  //
+  // MEASURED before this fix (DATA-09, `data-r6.test.ts`): a 4096-byte source with
+  // an 8192-byte reader produced `partial-native-acquisition`, `recovery:
+  // 'refetch'`, and the reason "the source was 4096 bytes at capture start but
+  // only 8192 were acquired (-4096 bytes never reached the store)". A reader who
+  // believes that record re-asks for bytes they already hold, and a `partial`
+  // verdict on a capture that lost nothing is exactly the fabricated-loss failure
+  // DATA-09 exists to prevent -- reached through the sign of the difference rather
+  // than through a wrong stage name.
   const shortBy = sourceBytesAtStart !== undefined && request.requestedRange === undefined
     ? sourceBytesAtStart - published.bytes
     : 0
-  if (shortBy !== 0) {
+  if (shortBy > 0) {
     gaps.push({
       stage: 'native-acquisition',
       reason: `the source was ${String(sourceBytesAtStart)} bytes at capture start but only ${String(published.bytes)} were acquired `
@@ -2361,7 +2376,10 @@ export async function captureFile(request: CaptureFileRequest): Promise<CaptureO
       mediaType: request.mediaType ?? 'application/octet-stream',
     },
     acquisition: {
-      completeness: shortBy === 0 ? 'complete-within-request' : 'partial',
+      // `<= 0`, matching the gap guard above: only a POSITIVE shortfall is a
+      // partial capture. A negative one is an over-read, and calling that
+      // `partial` would contradict the (empty) gap list in the same record.
+      completeness: shortBy <= 0 ? 'complete-within-request' : 'partial',
       coverage: coverageForRequest({
         receivedBytes: published.bytes,
         ...request.requestedRange !== undefined ? { requestedRange: request.requestedRange } : {},

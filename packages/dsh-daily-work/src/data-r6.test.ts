@@ -1579,6 +1579,32 @@ describe('DATA-09 [real] each of the four oracle stages is reachable and attribu
       expect(capped.descriptor.captured.bytes).toBe(1024)
 
       // ---------------------------------------------------------------------
+      // (a2) THE OPPOSITE DIRECTION: a reader that yields MORE than `stat` saw.
+      //
+      // This is NOT a loss. Nothing was withheld: either the source grew between
+      // `stat` and the read, or the reader over-read. A gap here would be a
+      // FABRICATED loss -- and because the producer's guard was `shortBy !== 0`
+      // rather than `shortBy > 0`, that is exactly what it did. Measured before
+      // the fix: a 4096-byte source with an 8192-byte reader produced
+      // `partial-native-acquisition` with `recovery: 'refetch'` and a reason
+      // reading "-4096 bytes never reached the store" -- a negative count of
+      // bytes that never went missing.
+      //
+      // The harm is the one DATA-09 exists to catch, in the other direction: a
+      // reader who sees a `native-acquisition`/`refetch` gap on a capture that
+      // lost nothing is being told to re-ask for bytes they already hold.
+      const grew = await captureFile({
+        fs, path: 'capped.bin', store, log, grants, ownerScope: scope,
+        executionWorld: 'local', observationId: 'obs-data09-grew', mediaType: 'application/octet-stream',
+        readChunks: async function* () { yield Buffer.alloc(8192, 0x41) },
+      })
+      expect(grew.gaps, 'an OVER-read is not a loss, so it must record no gap').toHaveLength(0)
+      expect(grew.descriptor.acquisition.completeness).toBe('complete-within-request')
+      expect(coverageVerdictOf(grew.descriptor)).toBe('full-for-requested-scope')
+      // The object still holds exactly the bytes that arrived.
+      expect(grew.descriptor.captured.bytes).toBe(8192)
+
+      // ---------------------------------------------------------------------
       // (b) REACHABILITY, MEASURED. `readChunks` is the ONLY way to make the
       // acquired count come out short of the source: the DEFAULT reader THROWS
       // `artifact-integrity-error` when the read ends before `stat`'s size

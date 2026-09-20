@@ -1,0 +1,18 @@
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.8 [39m[90mD:/DSH/work/wt-s7/packages/dsh-daily-work[39m
+
+[90mstdout[2m | src/zz-probe.test.ts[2m > [22m[2mprobe: a source that GREW during capture (shortBy negative)[2m > [22m[2mmeasures what the producer reports when MORE bytes arrive than stat saw
+[22m[39m[PROBE-GROW] captured.bytes [33m8192[39m
+[PROBE-GROW] completeness partial
+[PROBE-GROW] verdict partial-native-acquisition
+[PROBE-GROW] gap.stage native-acquisition
+[PROBE-GROW] gap.recovery refetch
+[PROBE-GROW] gap.reason the source was 4096 bytes at capture start but only 8192 were acquired (-4096 bytes never reached the store); the captured object is the bytes that DID arrive, not the file that was named
+
+ [32m✓[39m src/zz-probe.test.ts[2m > [22mprobe: a source that GREW during capture (shortBy negative)[2m > [22mmeasures what the producer reports when MORE bytes arrive than stat saw[32m 29[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m   Start at [22m 19:15:32
+[2m   Duration [22m 532ms[2m (transform 205ms, setup 0ms, import 316ms, tests 30ms, environment 0ms)[22m
+
