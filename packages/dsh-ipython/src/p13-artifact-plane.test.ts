@@ -155,6 +155,10 @@ async function mount(
     pythonExecutable: PYTHON,
     brokerScript: BROKER,
     root: join(root, `kernels-${name}`),
+    // A DEVELOPMENT HOST by declaration: this file mounts no storage domain, and
+    // since V5 11.1 made the durable ledger REQUIRED, an unset durableLedger
+    // would refuse the kernel before the plane under test is reached.
+    durableLedger: false,
   })
   services.push(service)
   const agent = agentFor(`session-${name}`, root)
@@ -405,6 +409,7 @@ describe('P13 — the large-result plane is the project artifact plane, not a pa
       pythonExecutable: PYTHON,
       brokerScript: BROKER,
       root: join(root, 'kernels-ledger'),
+      durableLedger: false,
     })
     services.push(service)
     const agent = agentFor('session-ledger', root)
@@ -525,6 +530,9 @@ describe('P13 — the large-result plane is the project artifact plane, not a pa
       // THE CONFIG FIELD UNDER TEST. It is passed through KernelServiceConfig,
       // not looked up inside the plugin, so the composition owns the choice.
       artifactRetention: plane.port,
+      // A DEVELOPMENT HOST: this rig mounts no storage domain, so the REQUIRED
+      // durable ledger (V5 11.1) would refuse the kernel before the plane is bound.
+      durableLedger: false,
     })
     services.push(service)
     const agent = agentFor('session-prod', root)
