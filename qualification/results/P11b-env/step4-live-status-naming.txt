@@ -1,0 +1,1 @@
+[22m[39m[V3-MEASURED] IPY-01 {"outcome":"ok","shellModule":"ipykernel.zmqshell","shellClass":"ZMQInteractiveShell","isZmqShell":"True","magicOutputContainsMarker":true,"kernelImplementation":"ipython","kernelImplementationVersion":"9.16.1","languageName":"python","languageVersion":"3.14.3","protocolVersion":"5.3"}
