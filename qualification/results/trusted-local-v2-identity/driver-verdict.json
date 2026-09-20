@@ -1,0 +1,1877 @@
+{
+  "driver": "run-v2-identity",
+  "ranAt": "2026-09-20T01:37:45.926Z",
+  "launcher": "D:/DSH/src/dsh-src/apps/cli/lib/bin.js",
+  "launcherSha256": "69c49c871735dc7ee81ec51f266bbec129f075fd5066e046374f4b13ab02a705",
+  "probeSource": "D:/DSH/work/wt-r0/qualification/runners/v2-identity-probe.mjs",
+  "probeSourceSha256": "536951bdd6243dc5ed66ac51c2262e1f257cff0429839f9230cf70d7fc2b9b4e",
+  "overlay": "D:/DSH/work/wt-r0/qualification/runners/v2-identity.patch.yml",
+  "overlaySha256": "eb30a511f1832b3f5ea9774514d404dd9c52e76d65d854f40e161c745378fc18",
+  "dshHome": "D:/DSH/home/r0",
+  "port": 4370,
+  "portReleased": true,
+  "timedOut": false,
+  "exitCode": null,
+  "probeReadError": null,
+  "probe": {
+    "probe": "v2-identity",
+    "schemaVersion": 1,
+    "ranAt": "2026-09-20T01:37:43.709Z",
+    "presetRoots": [
+      {
+        "path": "D:\\DSH\\src\\dsh-src\\packages\\preset\\agent-presets\\presets\\",
+        "trust": "system"
+      },
+      {
+        "path": "D:/DSH/home/r0/profiles/daily/presets/",
+        "trust": "system"
+      },
+      {
+        "path": "D:\\DSH\\home\\r0\\.agent-presets",
+        "trust": "user"
+      }
+    ],
+    "presetDefaultId": "daily-standard",
+    "dshHome": "D:/DSH/home/r0",
+    "nodeVersion": "v24.18.0",
+    "execPath": "C:\\Program Files\\nodejs\\node.exe",
+    "cwd": "C:\\",
+    "error": null,
+    "settle": {
+      "method": "poll loader.entries() for non-ACTIVE non-disabled entries, excluding this probe row",
+      "excludedOwnRowId": "v2-identity-probe",
+      "timeoutMs": 30000,
+      "settled": true,
+      "waitedMs": 112,
+      "entryCount": 178,
+      "stillMoving": [],
+      "note": "loader.await() is NOT used: it waits on this probe's own fiber inertia and would deadlock."
+    },
+    "hostGraph": {
+      "rowCount": 177,
+      "activeRowCount": 146,
+      "rows": [
+        {
+          "key": "agent",
+          "moduleName": "@deepseek-ai/dsh-agent",
+          "fiberState": 2,
+          "active": true
+        },
+        {
+          "key": "agent-default-model",
+          "moduleName": "@deepseek-ai/dsh-agent-default-model",
+          "fiberState": 2,
+          "active": true
+        },
+        {
+          "key": "agent-instructions",
+          "moduleName": "@deepseek-ai/dsh-agent-instructions",
+          "fiberState": null,
+          "active": false
+        },
+        {
+          "key": "agent-loop",
+          "moduleName": "@deepseek-ai/dsh-agent-loop",
+          "fiberState": 2,
+          "active": true
+        },
+        {
+          "key": "agent-presets",
+          "moduleName": "@deepseek-ai/dsh-agent-presets",
+          "fiberState": 2,
+          "active": true
+        },
+        {
+          "key": "api-remotes",
+          "moduleName": "@deepseek-ai/dsh-api-remotes",
+          "fiberState": 2,
+          "active": true
+        },
+        {
+          "key": "approval",
+          "moduleName": "@deepseek-ai/dsh-user-approval",
+          "fiberState": 2,
+          "active": true
+        },
+        {
+          "key": "attachment-local",
+          "moduleName": "@deepseek-ai/dsh-attachment-local",
+          "fiberState": 2,
+          "active": true
+        },
+        {
+          "key": "auto-id:@deepseek-ai/dsh-client-ui-directory-picker-native#1",
+          "moduleName": "@deepseek-ai/dsh-client-ui-directory-picker-native",
+          "fiberState": 2,
+          "active": true
+        },
+        {
+          "key": "auto-id:@deepseek-ai/dsh-host-directory-picker-native#1",
+          "moduleName": "@deepseek-ai/dsh-host-directory-picker-native",
+          "fiberState": 2,
+          "active": true
+        },
+        {
+          "key": "bash-sandbox",
+          "moduleName": "@deepseek-ai/dsh-bash-sandbox",
+          "fiberState": null,
+          "active": false
+        },
+        {
+          "key": "client-hmr",
+          "moduleName": "@deepseek-ai/dsh-client-hmr",
+          "fiberState": 2,
+          "active": true
+        },
+        {
+          "key": "command-compact",
+          "moduleName": "@deepseek-ai/dsh-command-compact",
+          "fiberState": null,
+          "active": false
+        },
+        {
+          "key": "command-feedback",
+          "moduleName": "@deepseek-ai/dsh-command-feedback",
+          "fiberState": 2,
+          "active": true
+        },
+        {
+          "key": "command-goal",
+          "moduleName": "@deepseek-ai/dsh-command-goal",
+          "fiberState": null,
+          "active": false
+        },
+        {
+          "key": "commands",
+          "moduleName": "@deepseek-ai/dsh-commands",
+          "fiberState": 2,
+          "active": true
+        },
+        {
+          "key": "compaction-basic",
+          "moduleName": "@deepseek-ai/dsh-compaction-basic",
+          "fiberState": null,
+          "active": false
+        },
+        {
+          "key": "connection",
+          "moduleName": "@deepseek-ai/dsh-client-connection",
+          "fiberState": 2,
+          "active": true
+        },
+        {
+          "key": "cordis-client-runner",
+          "moduleName": "@deepseek-ai/dsh-cordis-client-runner",
+          "fiberState": 2,
+          "active": true
+        },
+        {
+          "key": "cordis-host-runner",
+          "moduleName": "@deepseek-ai/dsh-cordis-host-runner",
+          "fiberState": 2,
+          "active": true
+        },
+        {
+          "key": "credentials",
+          "moduleName": "@deepseek-ai/dsh-credentials-local",
+          "fiberState": 2,
+          "active": true
+        },
+        {
+          "key": "daily-data-plane",
+          "moduleName": "dsh-daily-work/data-host",
+          "fiberState": 2,
+          "active": true
+        },
+        {
+          "key": "daily-history",
+          "moduleName": "dsh-daily-work/history",
+          "fiberState": 2,
+          "active": true
+        },
+        {
+          "key": "daily-no-sandbox-contract",
+          "moduleName": "dsh-daily-work/no-sandbox-contract",
+          "fiberState": 2,
+          "active": true
+        },
+        {
+          "key": "daily-programmatic-scope",
+          "moduleName": "dsh-daily-work/programmatic-scope",
+          "fiberState": 2,
+          "active": true
+        },
+        {
+          "key": "daily-web-search",
+          "moduleName": "dsh-daily-work/web-search",
+          "fiberState": 2,
+          "active": true
+        },
+        {
+          "key": "daily-work-host",
+          "moduleName": "dsh-daily-work/host",
+          "fiberState": 2,
+          "active": true
+        },
+        {
+          "key": "daily-work-tool-protocol-guards",
+          "moduleName": "dsh-daily-work/tool-protocol-guards",
+          "fiberState": 2,
+          "active": true
+        },
+        {
+          "key": "daily-writers",
+          "moduleName": "dsh-daily-work/writers",
+          "fiberState": 2,
+          "active": true
+        },
+        {
+          "key": "deepseek-llm-api-extensions",
+          "moduleName": "@deepseek-ai/dsh-deepseek-llm-api-extensions",
+          "fiberState": 2,
+          "active": true
+        },
+        {
+          "key": "directory-picker",
+          "moduleName": "@deepseek-ai/dsh-host-directory-picker-auto",
+          "fiberState": 2,
+          "active": true
+        },
+        {
+          "key": "file-reference-local",
+          "moduleName": "@deepseek-ai/dsh-file-reference-local",
+          "fiberState": 2,
+          "active": true
+        },
+        {
+          "key": "file-upload",
+          "moduleName": "@deepseek-ai/dsh-client-file-upload",
+          "fiberState": 2,
+          "active": true
+        },
+        {
+          "key": "fs-local",
+          "moduleName": "@deepseek-ai/dsh-fs-local",
+          "fiberState": 2,
+          "active": true
+        },
+        {
+          "key": "fs-observation-policy",
+          "moduleName": "@deepseek-ai/dsh-fs-observation-policy",
+          "fiberState": 2,
+          "active": true
+        },
+        {
+          "key": "fs-sandbox",
+          "moduleName": "@deepseek-ai/dsh-fs-sandbox",
+          "fiberState": null,
+          "active": false
+        },
+        {
+          "key": "goal",
+          "moduleName": "@deepseek-ai/dsh-goal",
+          "fiberState": 2,
+          "active": true
+        },
+        {
+          "key": "goal-round-driver",
+          "moduleName": "@deepseek-ai/dsh-goal-round-driver",
+          "fiberState": 2,
+          "active": true
+        },
+        {
+          "key": "hmr",
+          "moduleName": "@deepseek-ai/dsh-hmr",
+          "fiberState": 2,
+          "active": true
+        },
+        {
+          "key": "image-offload",
+          "moduleName": "@deepseek-ai/dsh-compaction-image-offload",
+          "fiberState": 2,
+          "active": true
+        },
+        {
+          "key": "include",
+          "moduleName": "cordis:include",
+          "fiberState": 2,
+          "active": true
+        },
+        {
+          "key": "ipython-kernel-host",
+          "moduleName": "dsh-ipython/host",
+          "fiberState": 2,
+          "active": true
+        },
+        {
+          "key": "jobs",
+          "moduleName": "@deepseek-ai/dsh-jobs-local",
+          "fiberState": 2,
+          "active": true
+        },
+        {
+          "key": "llm",
+          "moduleName": "@deepseek-ai/dsh-llm",
+          "fiberState": 2,
+          "active": true
+        },
+        {
+          "key": "llm-deepseek",
+          "moduleName": "@deepseek-ai/dsh-llm-deepseek",
+          "fiberState": 2,
+          "active": true
+        },
+        {
+          "key": "llm-pi-ai",
+          "moduleName": "@deepseek-ai/dsh-llm-pi-ai",
+          "fiberState": 2,
+          "active": true
+        },
+        {
+          "key": "llm-retry",
+          "moduleName": "@deepseek-ai/dsh-llm-retry",
+          "fiberState": 2,
+          "active": true
+        },
+        {
+          "key": "locale",
+          "moduleName": "@deepseek-ai/dsh-client-locale",
+          "fiberState": 2,
+          "active": true
+        },
+        {
+          "key": "mcp-resources",
+          "moduleName": "@deepseek-ai/dsh-mcp-resources",
+          "fiberState": 2,
+          "active": true
+        },
+        {
+          "key": "message-feedback",
+          "moduleName": "@deepseek-ai/dsh-message-feedback",
+          "fiberState": 2,
+          "active": true
+        },
+        {
+          "key": "modules",
+          "moduleName": "@deepseek-ai/dsh-client-modules",
+          "fiberState": 2,
+          "active": true
+        },
+        {
+          "key": "office-to-pdf",
+          "moduleName": "@deepseek-ai/dsh-office-to-pdf",
+          "fiberState": 2,
+          "active": true
+        },
+        {
+          "key": "open-in-app",
+          "moduleName": "@deepseek-ai/dsh-host-open-in-app",
+          "fiberState": 2,
+          "active": true
+        },
+        {
+          "key": "permission",
+          "moduleName": "@deepseek-ai/dsh-permission-presets",
+          "fiberState": null,
+          "active": false
+        },
+        {
+          "key": "plan-mode",
+          "moduleName": "@deepseek-ai/dsh-plan-mode",
+          "fiberState": null,
+          "active": false
+        },
+        {
+          "key": "plugin-inventory",
+          "moduleName": "@deepseek-ai/dsh-host-plugin-inventory",
+          "fiberState": 2,
+          "active": true
+        },
+        {
+          "key": "plugin-manager",
+          "moduleName": "@deepseek-ai/dsh-plugin-manager",
+          "fiberState": 2,
+          "active": true
+        },
+        {
+          "key": "plugin-package-inventory-deepseek",
+          "moduleName": "@deepseek-ai/dsh-plugin-package-inventory-deepseek",
+          "fiberState": 2,
+          "active": true
+        },
+        {
+          "key": "ptc-runtime",
+          "moduleName": "@deepseek-ai/dsh-ptc-runtime-node",
+          "fiberState": 2,
+          "active": true
+        },
+        {
+          "key": "pwsh-local",
+          "moduleName": "@deepseek-ai/dsh-pwsh-local",
+          "fiberState": 2,
+          "active": true
+        },
+        {
+          "key": "pwsh-sandbox",
+          "moduleName": "@deepseek-ai/dsh-pwsh-sandbox",
+          "fiberState": null,
+          "active": false
+        },
+        {
+          "key": "repeat-tool-reminder",
+          "moduleName": "@deepseek-ai/dsh-repeat-tool-reminder",
+          "fiberState": 2,
+          "active": true
+        },
+        {
+          "key": "resources",
+          "moduleName": "@deepseek-ai/dsh-client-resources",
+          "fiberState": 2,
+          "active": true
+        },
+        {
+          "key": "sandbox",
+          "moduleName": "@deepseek-ai/dsh-sandbox-local",
+          "fiberState": 2,
+          "active": true
+        },
+        {
+          "key": "sandbox-policy",
+          "moduleName": "@deepseek-ai/dsh-sandbox-policy",
+          "fiberState": 2,
+          "active": true
+        },
+        {
+          "key": "session",
+          "moduleName": "@deepseek-ai/dsh-session",
+          "fiberState": 2,
+          "active": true
+        },
+        {
+          "key": "session-checkpoint-policy",
+          "moduleName": "@deepseek-ai/dsh-session-checkpoint-policy",
+          "fiberState": 2,
+          "active": true
+        },
+        {
+          "key": "session-controller",
+          "moduleName": "@deepseek-ai/dsh-api-session-controller",
+          "fiberState": 2,
+          "active": true
+        },
+        {
+          "key": "session-log-deepseek",
+          "moduleName": "@deepseek-ai/dsh-session-log-deepseek",
+          "fiberState": 2,
+          "active": true
+        },
+        {
+          "key": "session-log-download",
+          "moduleName": "@deepseek-ai/dsh-session-log-export",
+          "fiberState": 2,
+          "active": true
+        },
+        {
+          "key": "session-persistence-jsonl",
+          "moduleName": "@deepseek-ai/dsh-session-persistence-jsonl",
+          "fiberState": 2,
+          "active": true
+        },
+        {
+          "key": "session-projection",
+          "moduleName": "@deepseek-ai/dsh-session-projection",
+          "fiberState": 2,
+          "active": true
+        },
+        {
+          "key": "session-projection-cache",
+          "moduleName": "@deepseek-ai/dsh-session-projection-cache",
+          "fiberState": 2,
+          "active": true
+        },
+        {
+          "key": "session-query-sqlite",
+          "moduleName": "@deepseek-ai/dsh-session-query-sqlite",
+          "fiberState": 2,
+          "active": true
+        },
+        {
+          "key": "session-reference",
+          "moduleName": "@deepseek-ai/dsh-session-reference",
+          "fiberState": 2,
+          "active": true
+        },
+        {
+          "key": "session-stats",
+          "moduleName": "@deepseek-ai/dsh-session-stats",
+          "fiberState": 2,
+          "active": true
+        },
+        {
+          "key": "session-telemetry-otel",
+          "moduleName": "@deepseek-ai/dsh-session-telemetry-otel",
+          "fiberState": 2,
+          "active": true
+        },
+        {
+          "key": "session-title",
+          "moduleName": "@deepseek-ai/dsh-session-title",
+          "fiberState": 2,
+          "active": true
+        },
+        {
+          "key": "session-title-llm",
+          "moduleName": "@deepseek-ai/dsh-session-title-first-prompt-llm",
+          "fiberState": 2,
+          "active": true
+        },
+        {
+          "key": "session-turn-outline",
+          "moduleName": "@deepseek-ai/dsh-session-turn-outline",
+          "fiberState": 2,
+          "active": true
+        },
+        {
+          "key": "settings",
+          "moduleName": "@deepseek-ai/dsh-settings-file",
+          "fiberState": 2,
+          "active": true
+        },
+        {
+          "key": "settings-controller",
+          "moduleName": "@deepseek-ai/dsh-api-settings-controller",
+          "fiberState": 2,
+          "active": true
+        },
+        {
+          "key": "shell-env",
+          "moduleName": "@deepseek-ai/dsh-shell-env",
+          "fiberState": 2,
+          "active": true
+        },
+        {
+          "key": "skill",
+          "moduleName": "@deepseek-ai/dsh-skill",
+          "fiberState": 2,
+          "active": true
+        },
+        {
+          "key": "skill-badge",
+          "moduleName": "@deepseek-ai/dsh-skill-badge",
+          "fiberState": null,
+          "active": false
+        },
+        {
+          "key": "skill-filesystem",
+          "moduleName": "@deepseek-ai/dsh-skill-filesystem",
+          "fiberState": null,
+          "active": false
+        },
+        {
+          "key": "spill-local",
+          "moduleName": "@deepseek-ai/dsh-spill-local",
+          "fiberState": 2,
+          "active": true
+        },
+        {
+          "key": "spill-policy",
+          "moduleName": "@deepseek-ai/dsh-spill-policy",
+          "fiberState": 2,
+          "active": true
+        },
+        {
+          "key": "storage",
+          "moduleName": "@deepseek-ai/dsh-storage",
+          "fiberState": 2,
+          "active": true
+        },
+        {
+          "key": "storage-domain",
+          "moduleName": "@deepseek-ai/dsh-storage-domain",
+          "fiberState": 2,
+          "active": true
+        },
+        {
+          "key": "storage-json",
+          "moduleName": "@deepseek-ai/dsh-storage-json",
+          "fiberState": 2,
+          "active": true
+        },
+        {
+          "key": "subagent",
+          "moduleName": "@deepseek-ai/dsh-subagent",
+          "fiberState": 2,
+          "active": true
+        },
+        {
+          "key": "subagent-fork-in-process",
+          "moduleName": "@deepseek-ai/dsh-subagent-fork-in-process",
+          "fiberState": 2,
+          "active": true
+        },
+        {
+          "key": "subagent-model-selection-settings",
+          "moduleName": "@deepseek-ai/dsh-tool-subagent/model-selection-settings",
+          "fiberState": 2,
+          "active": true
+        },
+        {
+          "key": "subagent-spawn-in-process",
+          "moduleName": "@deepseek-ai/dsh-subagent-spawn-in-process",
+          "fiberState": 2,
+          "active": true
+        },
+        {
+          "key": "subprocess",
+          "moduleName": "@deepseek-ai/dsh-subprocess-local",
+          "fiberState": 2,
+          "active": true
+        },
+        {
+          "key": "system-prompt",
+          "moduleName": "@deepseek-ai/dsh-system-prompt",
+          "fiberState": 2,
+          "active": true
+        },
+        {
+          "key": "terminal-controller",
+          "moduleName": "@deepseek-ai/dsh-api-terminal-controller",
+          "fiberState": 2,
+          "active": true
+        },
+        {
+          "key": "timeout-policy",
+          "moduleName": "@deepseek-ai/dsh-tool-call-timeout-policy",
+          "fiberState": 2,
+          "active": true
+        },
+        {
+          "key": "timer",
+          "moduleName": "@deepseek-ai/cordis-plugin-timer",
+          "fiberState": 2,
+          "active": true
+        },
+        {
+          "key": "token-meter",
+          "moduleName": "@deepseek-ai/dsh-token-meter",
+          "fiberState": 2,
+          "active": true
+        },
+        {
+          "key": "tool-bash",
+          "moduleName": "@deepseek-ai/dsh-tool-bash",
+          "fiberState": null,
+          "active": false
+        },
+        {
+          "key": "tool-fs",
+          "moduleName": "@deepseek-ai/dsh-tool-fs",
+          "fiberState": null,
+          "active": false
+        },
+        {
+          "key": "tool-fs-search",
+          "moduleName": "@deepseek-ai/dsh-tool-fs-search",
+          "fiberState": null,
+          "active": false
+        },
+        {
+          "key": "tool-goal",
+          "moduleName": "@deepseek-ai/dsh-tool-goal",
+          "fiberState": null,
+          "active": false
+        },
+        {
+          "key": "tool-jobs",
+          "moduleName": "@deepseek-ai/dsh-tool-jobs",
+          "fiberState": null,
+          "active": false
+        },
+        {
+          "key": "tool-plugin-manager",
+          "moduleName": "@deepseek-ai/dsh-plugin-manager/tools",
+          "fiberState": null,
+          "active": false
+        },
+        {
+          "key": "tool-pwsh",
+          "moduleName": "@deepseek-ai/dsh-tool-pwsh",
+          "fiberState": null,
+          "active": false
+        },
+        {
+          "key": "tool-ralph",
+          "moduleName": "@deepseek-ai/dsh-tool-ralph",
+          "fiberState": null,
+          "active": false
+        },
+        {
+          "key": "tool-result-pruner",
+          "moduleName": "@deepseek-ai/dsh-compaction-tool-result-pruner",
+          "fiberState": null,
+          "active": false
+        },
+        {
+          "key": "tool-skill",
+          "moduleName": "@deepseek-ai/dsh-tool-skill",
+          "fiberState": null,
+          "active": false
+        },
+        {
+          "key": "tool-subagent",
+          "moduleName": "@deepseek-ai/dsh-tool-subagent",
+          "fiberState": null,
+          "active": false
+        },
+        {
+          "key": "tool-subagent-control",
+          "moduleName": "@deepseek-ai/dsh-tool-subagent-control",
+          "fiberState": null,
+          "active": false
+        },
+        {
+          "key": "tool-subagent-fork",
+          "moduleName": "@deepseek-ai/dsh-tool-subagent",
+          "fiberState": null,
+          "active": false
+        },
+        {
+          "key": "tool-subagent-list-agents",
+          "moduleName": "@deepseek-ai/dsh-tool-subagent-control/list-agents",
+          "fiberState": null,
+          "active": false
+        },
+        {
+          "key": "tool-todo",
+          "moduleName": "@deepseek-ai/dsh-tool-todo",
+          "fiberState": null,
+          "active": false
+        },
+        {
+          "key": "tool-web",
+          "moduleName": "@deepseek-ai/dsh-tool-web",
+          "fiberState": null,
+          "active": false
+        },
+        {
+          "key": "tool-workflow",
+          "moduleName": "@deepseek-ai/dsh-tool-workflow",
+          "fiberState": null,
+          "active": false
+        },
+        {
+          "key": "tools",
+          "moduleName": "@deepseek-ai/dsh-tools",
+          "fiberState": 2,
+          "active": true
+        },
+        {
+          "key": "typert",
+          "moduleName": "@deepseek-ai/dsh-typert-registry",
+          "fiberState": 2,
+          "active": true
+        },
+        {
+          "key": "typert-gateway",
+          "moduleName": "@deepseek-ai/dsh-api-gateway",
+          "fiberState": 2,
+          "active": true
+        },
+        {
+          "key": "typert-loader",
+          "moduleName": "@deepseek-ai/dsh-typert-loader",
+          "fiberState": 2,
+          "active": true
+        },
+        {
+          "key": "ui-agent-preset",
+          "moduleName": "@deepseek-ai/dsh-client-ui-agent-preset",
+          "fiberState": 2,
+          "active": true
+        },
+        {
+          "key": "ui-approval",
+          "moduleName": "@deepseek-ai/dsh-client-ui-approval",
+          "fiberState": 2,
+          "active": true
+        },
+        {
+          "key": "ui-attachment",
+          "moduleName": "@deepseek-ai/dsh-client-ui-attachment",
+          "fiberState": 2,
+          "active": true
+        },
+        {
+          "key": "ui-brand-official",
+          "moduleName": "@deepseek-ai/dsh-client-ui-brand-official",
+          "fiberState": 2,
+          "active": true
+        },
+        {
+          "key": "ui-chat",
+          "moduleName": "@deepseek-ai/dsh-client-ui-chat",
+          "fiberState": 2,
+          "active": true
+        },
+        {
+          "key": "ui-commands",
+          "moduleName": "@deepseek-ai/dsh-client-ui-commands",
+          "fiberState": 2,
+          "active": true
+        },
+        {
+          "key": "ui-conversation",
+          "moduleName": "@deepseek-ai/dsh-client-ui-conversation",
+          "fiberState": 2,
+          "active": true
+        },
+        {
+          "key": "ui-cordis",
+          "moduleName": "@deepseek-ai/dsh-client-ui-cordis",
+          "fiberState": 2,
+          "active": true
+        },
+        {
+          "key": "ui-deliverables",
+          "moduleName": "@deepseek-ai/dsh-client-ui-deliverables",
+          "fiberState": 2,
+          "active": true
+        },
+        {
+          "key": "ui-goal",
+          "moduleName": "@deepseek-ai/dsh-client-ui-goal",
+          "fiberState": 2,
+          "active": true
+        },
+        {
+          "key": "ui-input-trigger",
+          "moduleName": "@deepseek-ai/dsh-client-ui-input-trigger",
+          "fiberState": 2,
+          "active": true
+        },
+        {
+          "key": "ui-jobs",
+          "moduleName": "@deepseek-ai/dsh-client-ui-jobs",
+          "fiberState": 2,
+          "active": true
+        },
+        {
+          "key": "ui-layout",
+          "moduleName": "@deepseek-ai/dsh-client-ui-layout",
+          "fiberState": 2,
+          "active": true
+        },
+        {
+          "key": "ui-message-feedback",
+          "moduleName": "@deepseek-ai/dsh-client-ui-message-feedback",
+          "fiberState": 2,
+          "active": true
+        },
+        {
+          "key": "ui-model-selection",
+          "moduleName": "@deepseek-ai/dsh-client-ui-model-selection",
+          "fiberState": 2,
+          "active": true
+        },
+        {
+          "key": "ui-open-in-app",
+          "moduleName": "@deepseek-ai/dsh-client-ui-open-in-app",
+          "fiberState": 2,
+          "active": true
+        },
+        {
+          "key": "ui-permission",
+          "moduleName": "@deepseek-ai/dsh-client-ui-permission-presets",
+          "fiberState": null,
+          "active": false
+        },
+        {
+          "key": "ui-plan",
+          "moduleName": "@deepseek-ai/dsh-client-ui-plan",
+          "fiberState": 2,
+          "active": true
+        },
+        {
+          "key": "ui-plugin-manager",
+          "moduleName": "@deepseek-ai/dsh-client-ui-plugin-manager",
+          "fiberState": 2,
+          "active": true
+        },
+        {
+          "key": "ui-reference",
+          "moduleName": "@deepseek-ai/dsh-client-ui-reference",
+          "fiberState": 2,
+          "active": true
+        },
+        {
+          "key": "ui-renderer",
+          "moduleName": "@deepseek-ai/dsh-client-ui-renderer",
+          "fiberState": 2,
+          "active": true
+        },
+        {
+          "key": "ui-schedule",
+          "moduleName": "@deepseek-ai/dsh-client-ui-schedule",
+          "fiberState": null,
+          "active": false
+        },
+        {
+          "key": "ui-session",
+          "moduleName": "@deepseek-ai/dsh-client-ui-session",
+          "fiberState": 2,
+          "active": true
+        },
+        {
+          "key": "ui-settings",
+          "moduleName": "@deepseek-ai/dsh-client-ui-settings",
+          "fiberState": 2,
+          "active": true
+        },
+        {
+          "key": "ui-settings-general",
+          "moduleName": "@deepseek-ai/dsh-client-ui-settings-general",
+          "fiberState": 2,
+          "active": true
+        },
+        {
+          "key": "ui-settings-models",
+          "moduleName": "@deepseek-ai/dsh-client-ui-settings-models",
+          "fiberState": 2,
+          "active": true
+        },
+        {
+          "key": "ui-settings-plugin-inventory",
+          "moduleName": "@deepseek-ai/dsh-client-ui-settings-plugin-inventory",
+          "fiberState": 2,
+          "active": true
+        },
+        {
+          "key": "ui-settings-plugins",
+          "moduleName": "@deepseek-ai/dsh-client-ui-settings-plugins",
+          "fiberState": 2,
+          "active": true
+        },
+        {
+          "key": "ui-settings-unarchive-sessions",
+          "moduleName": "@deepseek-ai/dsh-client-ui-settings-unarchive-sessions",
+          "fiberState": 2,
+          "active": true
+        },
+        {
+          "key": "ui-sidebar",
+          "moduleName": "@deepseek-ai/dsh-client-ui-sidebar",
+          "fiberState": 2,
+          "active": true
+        },
+        {
+          "key": "ui-sidebar-browser",
+          "moduleName": "@deepseek-ai/dsh-client-ui-sidebar-browser",
+          "fiberState": 2,
+          "active": true
+        },
+        {
+          "key": "ui-sidebar-documentpreview",
+          "moduleName": "@deepseek-ai/dsh-client-ui-sidebar-documentpreview",
+          "fiberState": 2,
+          "active": true
+        },
+        {
+          "key": "ui-sidebar-files",
+          "moduleName": "@deepseek-ai/dsh-client-ui-sidebar-files",
+          "fiberState": 2,
+          "active": true
+        },
+        {
+          "key": "ui-sidebar-right",
+          "moduleName": "@deepseek-ai/dsh-client-ui-sidebar-right",
+          "fiberState": 2,
+          "active": true
+        },
+        {
+          "key": "ui-sidebar-terminal",
+          "moduleName": "@deepseek-ai/dsh-client-ui-sidebar-terminal",
+          "fiberState": 2,
+          "active": true
+        },
+        {
+          "key": "ui-skill",
+          "moduleName": "@deepseek-ai/dsh-client-ui-skill",
+          "fiberState": 2,
+          "active": true
+        },
+        {
+          "key": "ui-subagent",
+          "moduleName": "@deepseek-ai/dsh-client-ui-subagent",
+          "fiberState": 2,
+          "active": true
+        },
+        {
+          "key": "ui-theme",
+          "moduleName": "@deepseek-ai/dsh-client-ui-theme",
+          "fiberState": 2,
+          "active": true
+        },
+        {
+          "key": "ui-tool",
+          "moduleName": "@deepseek-ai/dsh-client-ui-tool",
+          "fiberState": 2,
+          "active": true
+        },
+        {
+          "key": "ui-trajectory",
+          "moduleName": "@deepseek-ai/dsh-client-ui-trajectory",
+          "fiberState": 2,
+          "active": true
+        },
+        {
+          "key": "ui-user-questions",
+          "moduleName": "@deepseek-ai/dsh-client-ui-user-questions",
+          "fiberState": 2,
+          "active": true
+        },
+        {
+          "key": "ui-workflow-run",
+          "moduleName": "@deepseek-ai/dsh-client-ui-workflow-run",
+          "fiberState": 2,
+          "active": true
+        },
+        {
+          "key": "ui-workspace",
+          "moduleName": "@deepseek-ai/dsh-client-ui-workspace",
+          "fiberState": 2,
+          "active": true
+        },
+        {
+          "key": "user-questions",
+          "moduleName": "@deepseek-ai/dsh-user-questions",
+          "fiberState": 2,
+          "active": true
+        },
+        {
+          "key": "web",
+          "moduleName": "@deepseek-ai/dsh-web",
+          "fiberState": 2,
+          "active": true
+        },
+        {
+          "key": "web-fetch-http",
+          "moduleName": "@deepseek-ai/dsh-web-fetch-http",
+          "fiberState": 2,
+          "active": true
+        },
+        {
+          "key": "web-runtime",
+          "moduleName": "@deepseek-ai/dsh-web-app",
+          "fiberState": 2,
+          "active": true
+        },
+        {
+          "key": "web-search-deepseek",
+          "moduleName": "@deepseek-ai/dsh-web-search-deepseek",
+          "fiberState": 2,
+          "active": true
+        },
+        {
+          "key": "web-startup",
+          "moduleName": "@deepseek-ai/dsh-web-app/startup",
+          "fiberState": 2,
+          "active": true
+        },
+        {
+          "key": "webserver",
+          "moduleName": "@deepseek-ai/dsh-host-webserver",
+          "fiberState": 2,
+          "active": true
+        },
+        {
+          "key": "workflow-ptc",
+          "moduleName": "@deepseek-ai/dsh-workflow-ptc",
+          "fiberState": null,
+          "active": false
+        },
+        {
+          "key": "workspace",
+          "moduleName": "@deepseek-ai/dsh-workspace",
+          "fiberState": 2,
+          "active": true
+        },
+        {
+          "key": "workspace-changes",
+          "moduleName": "@deepseek-ai/dsh-workspace-changes",
+          "fiberState": 2,
+          "active": true
+        },
+        {
+          "key": "workspace-controller",
+          "moduleName": "@deepseek-ai/dsh-api-workspace-controller",
+          "fiberState": 2,
+          "active": true
+        },
+        {
+          "key": "workspace-files",
+          "moduleName": "@deepseek-ai/dsh-api-workspace-files",
+          "fiberState": 2,
+          "active": true
+        }
+      ],
+      "digest": "f6fb688b2bcc0a4a0dc64f9a40ee09d1cb4e205cb07ca3e8b75167dbfb0f586a",
+      "sortedRowIdsDigest": "e0a1a763d900e6cada43685e59df116e6f3327b94c5454008423db2b848f97b2",
+      "measuredAfterSettle": true,
+      "autoGeneratedIdRows": {
+        "count": 2,
+        "modules": [
+          "@deepseek-ai/dsh-client-ui-directory-picker-native",
+          "@deepseek-ai/dsh-host-directory-picker-native"
+        ],
+        "why": "vendor/loader/src/config/tree.ts:54 assigns `options.id = Math.random().toString(16).slice(2, 10)` to any row that declares no id, so these ids differ on every boot. They are keyed by MODULE in the digest, and the raw ids are recorded here rather than discarded, so the substitution is visible. The rows are NOT dropped: their presence and activation are real facts this digest must cover.",
+        "rawIdsObservedThisBoot": [
+          "311f1a12",
+          "bca939e6"
+        ]
+      }
+    },
+    "agentCatalog": {
+      "sessionCreated": true,
+      "sessionId": "session-2d6daac4-b011-484c-8577-65999117beea",
+      "toolCount": 27,
+      "namesInHeaderOrder": [
+        "work",
+        "read",
+        "write",
+        "edit",
+        "glob",
+        "grep",
+        "job_output",
+        "job_list",
+        "job_kill",
+        "skill",
+        "ask_user_question",
+        "web_search",
+        "web_fetch",
+        "present",
+        "ipython",
+        "read_image",
+        "send_message",
+        "interrupt_agent",
+        "list_agents",
+        "todo_write",
+        "workflow",
+        "get_goal",
+        "create_goal",
+        "update_goal",
+        "exit_plan_mode",
+        "subagent_fork",
+        "subagent"
+      ],
+      "namesSorted": [
+        "ask_user_question",
+        "create_goal",
+        "edit",
+        "exit_plan_mode",
+        "get_goal",
+        "glob",
+        "grep",
+        "interrupt_agent",
+        "ipython",
+        "job_kill",
+        "job_list",
+        "job_output",
+        "list_agents",
+        "present",
+        "read",
+        "read_image",
+        "send_message",
+        "skill",
+        "subagent",
+        "subagent_fork",
+        "todo_write",
+        "update_goal",
+        "web_fetch",
+        "web_search",
+        "work",
+        "workflow",
+        "write"
+      ],
+      "schemaDigest": "8f8b54fadf5ce2d1f1882c05d5c20d6cc2b8c2c2bd85bb9a654b1b106081978f",
+      "orderDigest": "02a593f1cc11d534b16038cc7655c2a2866ab816aa7eeab8da8d39d65dd7b003",
+      "parametersByName": {
+        "work": {
+          "properties": {
+            "action": {
+              "description": "Which work action to perform.",
+              "enum": [
+                "status",
+                "submit",
+                "finish"
+              ],
+              "type": "string"
+            },
+            "childId": {
+              "description": "Pre-reserved child id. Optional; the host reserves one when omitted.",
+              "type": "string"
+            },
+            "goal": {
+              "description": "Short statement of what the task must achieve. Required for submit.",
+              "type": "string"
+            },
+            "taskId": {
+              "description": "Stable id for the task. Required for submit; required for status of one task.",
+              "type": "string"
+            }
+          },
+          "required": [
+            "action"
+          ],
+          "type": "object"
+        },
+        "read": {
+          "properties": {
+            "file_path": {
+              "description": "Path to read, resolved by the filesystem backend.",
+              "type": "string"
+            },
+            "limit": {
+              "description": "Maximum number of lines to return. Defaults to 2000.",
+              "type": "number"
+            },
+            "offset": {
+              "description": "1-based first line to return. Defaults to 1.",
+              "type": "number"
+            }
+          },
+          "required": [
+            "file_path"
+          ],
+          "type": "object"
+        },
+        "write": {
+          "properties": {
+            "content": {
+              "description": "Full UTF-8 text content to write.",
+              "type": "string"
+            },
+            "file_path": {
+              "description": "Path to write, resolved by the filesystem backend.",
+              "type": "string"
+            }
+          },
+          "required": [
+            "file_path",
+            "content"
+          ],
+          "type": "object"
+        },
+        "edit": {
+          "properties": {
+            "file_path": {
+              "description": "Path to edit, resolved by the filesystem backend.",
+              "type": "string"
+            },
+            "new_string": {
+              "description": "Literal replacement text. Use an empty string to delete the match.",
+              "type": "string"
+            },
+            "old_string": {
+              "description": "Literal text to replace. Must match exactly.",
+              "type": "string"
+            },
+            "replace_all": {
+              "description": "Replace all matches. Defaults to false; when false, old_string must appear exactly once.",
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "file_path",
+            "old_string",
+            "new_string"
+          ],
+          "type": "object"
+        },
+        "glob": {
+          "properties": {
+            "path": {
+              "description": "Directory to search in. Defaults to the session workspace; a relative path resolves against it.",
+              "type": "string"
+            },
+            "pattern": {
+              "description": "Glob pattern to match file paths against (e.g. \"**/*.ts\", \"src/**/*.test.js\"). A pattern with no \"/\" matches the basename at any depth, so \"*\" and \"*.ts\" both search the whole tree; include a separator to anchor the depth.",
+              "type": "string"
+            }
+          },
+          "required": [
+            "pattern"
+          ],
+          "type": "object"
+        },
+        "grep": {
+          "properties": {
+            "include": {
+              "description": "One glob filter for which files to search (e.g. \"*.ts\", \"*.{js,jsx}\"). Not a list; negation is not supported.",
+              "type": "string"
+            },
+            "path": {
+              "description": "File or directory to search. Defaults to the session workspace; a relative path resolves against it.",
+              "type": "string"
+            },
+            "pattern": {
+              "description": "Regular expression to search for (ripgrep syntax).",
+              "type": "string"
+            }
+          },
+          "required": [
+            "pattern"
+          ],
+          "type": "object"
+        },
+        "job_output": {
+          "properties": {
+            "job_id": {
+              "description": "Job id returned by the tool that started the background work.",
+              "type": "string"
+            },
+            "timeout_ms": {
+              "description": "Max wait in milliseconds (only meaningful with wait: true). Defaults to the configured wait timeout; capped by the configured maximum.",
+              "type": "number"
+            },
+            "wait": {
+              "description": "Block until the job reaches a terminal status or the timeout expires. A timed-out wait returns [status: running] and leaves the job alive.",
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "job_id"
+          ],
+          "type": "object"
+        },
+        "job_list": {
+          "properties": {},
+          "type": "object"
+        },
+        "job_kill": {
+          "properties": {
+            "job_id": {
+              "description": "Job id returned by the tool that started the background work.",
+              "type": "string"
+            },
+            "reason": {
+              "description": "Optional short reason, recorded in the log and forwarded to the job.",
+              "type": "string"
+            }
+          },
+          "required": [
+            "job_id"
+          ],
+          "type": "object"
+        },
+        "skill": {
+          "properties": {
+            "name": {
+              "description": "The exact skill name from the available skills list.",
+              "type": "string"
+            }
+          },
+          "required": [
+            "name"
+          ],
+          "type": "object"
+        },
+        "ask_user_question": {
+          "properties": {
+            "questions": {
+              "description": "Questions to ask the user before continuing.",
+              "items": {
+                "additionalProperties": true,
+                "properties": {
+                  "header": {
+                    "description": "Optional short heading for the question, such as \"Confirm\" or \"Choose Mode\".",
+                    "type": "string"
+                  },
+                  "id": {
+                    "description": "Stable id for this question; echoed in the answer.",
+                    "type": "string"
+                  },
+                  "multi_select": {
+                    "description": "Whether the user may select more than one option. Defaults to false.",
+                    "type": "boolean"
+                  },
+                  "options": {
+                    "description": "Optional choices to show the user. If you recommend one, put it first and append \"(Recommended)\" to that label.",
+                    "items": {
+                      "additionalProperties": true,
+                      "properties": {
+                        "description": {
+                          "description": "One sentence explaining the tradeoff or impact.",
+                          "type": "string"
+                        },
+                        "label": {
+                          "description": "Short user-facing option label.",
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "label"
+                      ],
+                      "type": "object"
+                    },
+                    "type": "array"
+                  },
+                  "question": {
+                    "description": "The specific question to ask the user.",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "id",
+                  "question"
+                ],
+                "type": "object"
+              },
+              "type": "array"
+            }
+          },
+          "required": [
+            "questions"
+          ],
+          "type": "object"
+        },
+        "web_search": {
+          "properties": {
+            "queries": {
+              "description": "Required search queries; accepts 1–4 items and merges their results.",
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            }
+          },
+          "required": [
+            "queries"
+          ],
+          "type": "object"
+        },
+        "web_fetch": {
+          "properties": {
+            "url": {
+              "description": "The HTTP(S) URL to fetch.",
+              "type": "string"
+            }
+          },
+          "required": [
+            "url"
+          ],
+          "type": "object"
+        },
+        "present": {
+          "properties": {
+            "files": {
+              "items": {
+                "additionalProperties": false,
+                "properties": {
+                  "description": {
+                    "description": "Brief description for the user.",
+                    "type": "string"
+                  },
+                  "path": {
+                    "description": "Path of an existing regular file. Relative paths use the Session working directory.",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "path"
+                ],
+                "type": "object"
+              },
+              "type": "array"
+            }
+          },
+          "required": [
+            "files"
+          ],
+          "type": "object"
+        },
+        "ipython": {
+          "properties": {
+            "code": {
+              "description": "Python source to run as one IPython cell.",
+              "type": "string"
+            }
+          },
+          "required": [
+            "code"
+          ],
+          "type": "object"
+        },
+        "read_image": {
+          "properties": {
+            "file_path": {
+              "description": "Path to the image file, resolved by the filesystem backend.",
+              "type": "string"
+            }
+          },
+          "required": [
+            "file_path"
+          ],
+          "type": "object"
+        },
+        "send_message": {
+          "properties": {
+            "agent_id": {
+              "description": "The agent id of your direct continuable child, or your direct parent when you are a resident continuable child.",
+              "type": "string"
+            },
+            "message": {
+              "description": "The message to deliver to the agent.",
+              "type": "string"
+            }
+          },
+          "required": [
+            "agent_id",
+            "message"
+          ],
+          "type": "object"
+        },
+        "interrupt_agent": {
+          "properties": {
+            "agent_id": {
+              "description": "The agent id of the running agent to interrupt.",
+              "type": "string"
+            }
+          },
+          "required": [
+            "agent_id"
+          ],
+          "type": "object"
+        },
+        "list_agents": {
+          "properties": {
+            "scope": {
+              "description": "children (default) lists direct children only; descendants walks the complete tree below you.",
+              "enum": [
+                "children",
+                "descendants"
+              ],
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "todo_write": {
+          "properties": {
+            "todos": {
+              "description": "The COMPLETE task list, replacing any previous list.",
+              "items": {
+                "additionalProperties": false,
+                "properties": {
+                  "content": {
+                    "description": "What the task is — a short imperative line.",
+                    "type": "string"
+                  },
+                  "status": {
+                    "description": "pending (not started) | in_progress (now) | completed (done).",
+                    "enum": [
+                      "pending",
+                      "in_progress",
+                      "completed"
+                    ],
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "content",
+                  "status"
+                ],
+                "type": "object"
+              },
+              "type": "array"
+            }
+          },
+          "required": [
+            "todos"
+          ],
+          "type": "object"
+        },
+        "workflow": {
+          "properties": {
+            "args": {
+              "additionalProperties": true,
+              "description": "Optional JSON input exposed to the script as the `args` global (wrap a bare list as a field, e.g. {\"files\": [...]}).",
+              "type": "object"
+            },
+            "meta": {
+              "additionalProperties": true,
+              "description": "The workflow identity block (plain JSON — never code).",
+              "properties": {
+                "description": {
+                  "description": "One-line description of what the workflow does.",
+                  "type": "string"
+                },
+                "name": {
+                  "description": "Short kebab-case workflow name.",
+                  "type": "string"
+                },
+                "phases": {
+                  "description": "Optional phase declarations matched by phase() calls.",
+                  "items": {
+                    "additionalProperties": true,
+                    "properties": {
+                      "detail": {
+                        "description": "Optional one-line description of the phase.",
+                        "type": "string"
+                      },
+                      "model": {
+                        "description": "Optional model override this phase is expected to use.",
+                        "type": "string"
+                      },
+                      "provider": {
+                        "description": "Optional provider override this phase is expected to use.",
+                        "type": "string"
+                      },
+                      "title": {
+                        "description": "The phase title phase() calls match by exact string.",
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "title"
+                    ],
+                    "type": "object"
+                  },
+                  "type": "array"
+                },
+                "whenToUse": {
+                  "description": "Optional guidance on when this workflow applies.",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "name",
+                "description"
+              ],
+              "type": "object"
+            },
+            "script": {
+              "description": "The plain-JS workflow script body (top-level await allowed; NO `export const meta` statement; end with `return <json-value>`).",
+              "type": "string"
+            }
+          },
+          "required": [
+            "script",
+            "meta"
+          ],
+          "type": "object"
+        },
+        "get_goal": {
+          "properties": {},
+          "type": "object"
+        },
+        "create_goal": {
+          "properties": {
+            "max_goal_rounds": {
+              "description": "Optional positive safe-integer limit on automatic continuation rounds.",
+              "type": "number"
+            },
+            "objective": {
+              "description": "The concrete completion objective inferred from the direct human request.",
+              "type": "string"
+            }
+          },
+          "required": [
+            "objective"
+          ],
+          "type": "object"
+        },
+        "update_goal": {
+          "properties": {
+            "action": {
+              "description": "edit | pause | resume | complete | blocked",
+              "enum": [
+                "edit",
+                "pause",
+                "resume",
+                "complete",
+                "blocked"
+              ],
+              "type": "string"
+            },
+            "blocked_reason": {
+              "description": "Concrete blocking condition; required only with action blocked.",
+              "type": "string"
+            },
+            "goal_id": {
+              "description": "Exact id returned by get_goal.",
+              "type": "string"
+            },
+            "max_goal_rounds": {
+              "description": "Replacement cap; valid only with action edit.",
+              "type": "number"
+            },
+            "objective": {
+              "description": "Replacement objective; valid only with action edit.",
+              "type": "string"
+            },
+            "revision": {
+              "description": "Exact positive revision returned by get_goal.",
+              "type": "number"
+            }
+          },
+          "required": [
+            "goal_id",
+            "revision",
+            "action"
+          ],
+          "type": "object"
+        },
+        "exit_plan_mode": {
+          "properties": {
+            "plan": {
+              "description": "The complete plan, as markdown, starting with a # heading that names it.",
+              "type": "string"
+            }
+          },
+          "required": [
+            "plan"
+          ],
+          "type": "object"
+        },
+        "subagent_fork": {
+          "properties": {
+            "description": {
+              "description": "A short (3-5 word) description of the delegated task, for display.",
+              "type": "string"
+            },
+            "prompt": {
+              "description": "The task for the subagent. It already sees this conversation's completed turns, so build on them freely and state only what is new.",
+              "type": "string"
+            },
+            "run_in_background": {
+              "description": "Whether to run in the background and return a durable subagent id immediately. Defaults to true. Set false to wait for the result when your next action depends on it.",
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "description",
+            "prompt"
+          ],
+          "type": "object"
+        },
+        "subagent": {
+          "properties": {
+            "description": {
+              "description": "A short (3-5 word) description of the delegated task, for display.",
+              "type": "string"
+            },
+            "prompt": {
+              "description": "The complete, self-contained task for the subagent. It does not share this conversation's context, so include everything it needs.",
+              "type": "string"
+            },
+            "run_in_background": {
+              "description": "Whether to run in the background and return a durable subagent id immediately. Defaults to true. Set false to wait for the result when your next action depends on it.",
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "description",
+            "prompt"
+          ],
+          "type": "object"
+        }
+      },
+      "error": null,
+      "sessionCwd": "D:/DSH/work/wt-r0"
+    }
+  },
+  "checks": [
+    {
+      "label": "the boot did not time out",
+      "ok": true,
+      "detail": "timedOut=false"
+    },
+    {
+      "label": "the port was released",
+      "ok": true,
+      "detail": "portReleased=true"
+    },
+    {
+      "label": "the probe wrote its result",
+      "ok": true,
+      "detail": "D:/DSH/work/wt-r0/qualification/results/trusted-local-v2-identity/probe.json"
+    },
+    {
+      "label": "the probe source is THIS worktree's file",
+      "ok": true,
+      "detail": "D:/DSH/work/wt-r0/qualification/runners/v2-identity-probe.mjs"
+    },
+    {
+      "label": "the overlay names THIS worktree's probe",
+      "ok": true,
+      "detail": "D:/DSH/work/wt-r0/qualification/runners/v2-identity.patch.yml"
+    },
+    {
+      "label": "the probe result parses",
+      "ok": true,
+      "detail": "parsed"
+    },
+    {
+      "label": "the result describes the home this driver booted",
+      "ok": true,
+      "detail": "expected=D:/DSH/home/r0 roots=D:\\DSH\\src\\dsh-src\\packages\\preset\\agent-presets\\presets\\|D:/DSH/home/r0/profiles/daily/presets/|D:\\DSH\\home\\r0\\.agent-presets"
+    },
+    {
+      "label": "the probe inserted no tool row (it reports itself absent from the catalog)",
+      "ok": true,
+      "detail": "[\"work\",\"read\",\"write\",\"edit\",\"glob\",\"grep\",\"job_output\",\"job_list\",\"job_kill\",\"skill\",\"ask_user_question\",\"web_search\",\"web_fetch\",\"present\",\"ipython\",\"read_image\",\"send_message\",\"interrupt_agent\",\"list_agents\",\"todo_write\",\"workflow\",\"get_goal\",\"create_goal\",\"update_goal\",\"exit_plan_mode\",\"subagent_fork\",\"subagent\"]"
+    },
+    {
+      "label": "the probe reported no internal error",
+      "ok": true,
+      "detail": "null"
+    },
+    {
+      "label": "a real Session was created, so an empty catalog would mean something",
+      "ok": true,
+      "detail": "sessionCreated=true id=\"session-2d6daac4-b011-484c-8577-65999117beea\" error=null"
+    },
+    {
+      "label": "the session used an explicit cwd rather than the foreign boot cwd",
+      "ok": true,
+      "detail": "sessionCwd=\"D:/DSH/work/wt-r0\""
+    },
+    {
+      "label": "the resolved host graph is non-empty",
+      "ok": true,
+      "detail": "rows=177 active=146"
+    },
+    {
+      "label": "the host graph was read AFTER the loader tree settled",
+      "ok": true,
+      "detail": "settled=true waitedMs=112 stillMoving=[]"
+    },
+    {
+      "label": "the digest was taken on the settled tree",
+      "ok": true,
+      "detail": "measuredAfterSettle=true"
+    },
+    {
+      "label": "the per-Agent catalog is non-empty",
+      "ok": true,
+      "detail": "tools=27"
+    },
+    {
+      "label": "the catalog carries an order digest",
+      "ok": true,
+      "detail": "\"02a593f1cc11d534b16038cc7655c2a2866ab816aa7eeab8da8d39d65dd7b003\""
+    },
+    {
+      "label": "the catalog carries a schema digest",
+      "ok": true,
+      "detail": "\"8f8b54fadf5ce2d1f1882c05d5c20d6cc2b8c2c2bd85bb9a654b1b106081978f\""
+    },
+    {
+      "label": "ipython is present in the measured catalog",
+      "ok": true,
+      "detail": "[\"ask_user_question\",\"create_goal\",\"edit\",\"exit_plan_mode\",\"get_goal\",\"glob\",\"grep\",\"interrupt_agent\",\"ipython\",\"job_kill\",\"job_list\",\"job_output\",\"list_agents\",\"present\",\"read\",\"read_image\",\"send_message\",\"skill\",\"subagent\",\"subagent_fork\",\"todo_write\",\"update_goal\",\"web_fetch\",\"web_search\",\"work\",\"workflow\",\"write\"]"
+    }
+  ],
+  "failures": [],
+  "verdict": "MEASURED"
+}

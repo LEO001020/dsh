@@ -1,0 +1,12 @@
+# V2 IDENTITY overlay: the probe ONLY.
+#
+# ONE row, and it is the PROBE. There is deliberately NO tool row here, because a
+# probe that inserted a tool row would make its own catalog a measurement of the
+# OVERLAY rather than of the product -- the G-FIX-04 / G-FIX-05 / G-FIX-12 defect
+# class this project has recorded repeatedly.
+#
+# The path is THIS worktree's, not the main checkout's: a writer measuring its own
+# tree must load its own probe, or the result describes someone else's files.
+- insert:
+    - id: v2-identity-probe
+      name: 'D:/DSH/work/wt-r0/qualification/runners/v2-identity-probe.mjs'

@@ -1,0 +1,42 @@
+command: node D:/DSH/src/dsh-src/apps/cli/lib/bin.js --profile daily --patch D:/DSH/work/wt-r0/qualification/runners/v2-identity.patch.yml --patch D:/DSH/work/wt-r0/qualification/results/trusted-local-v2-identity/port.patch.yml --no-open
+cwd:     C:/
+DSH_HOME: D:/DSH/home/r0
+port:    4370 (bound then released, not guessed)
+
+exitCode:      null
+timedOut:      false
+portReleased:  true
+probe written: true
+
+--- stdout ---
+dsh web: http://127.0.0.1:4370/?token=XupgzqiTN2-rGKuoA0twUalLffd7GmI0WDtUmSKlXeI
+
+--- checks ---
+ok   the boot did not time out
+ok   the port was released
+ok   the probe wrote its result
+ok   the probe source is THIS worktree's file
+ok   the overlay names THIS worktree's probe
+ok   the probe result parses
+ok   the result describes the home this driver booted
+ok   the probe inserted no tool row (it reports itself absent from the catalog)
+ok   the probe reported no internal error
+ok   a real Session was created, so an empty catalog would mean something
+ok   the session used an explicit cwd rather than the foreign boot cwd
+ok   the resolved host graph is non-empty
+ok   the host graph was read AFTER the loader tree settled
+ok   the digest was taken on the settled tree
+ok   the per-Agent catalog is non-empty
+ok   the catalog carries an order digest
+ok   the catalog carries a schema digest
+ok   ipython is present in the measured catalog
+
+checks_passed: 18/18
+verdict: MEASURED
+
+hostGraph digest        f6fb688b2bcc0a4a0dc64f9a40ee09d1cb4e205cb07ca3e8b75167dbfb0f586a
+  rows=177 active=146
+agentCatalog schemaDigest 8f8b54fadf5ce2d1f1882c05d5c20d6cc2b8c2c2bd85bb9a654b1b106081978f
+agentCatalog orderDigest  02a593f1cc11d534b16038cc7655c2a2866ab816aa7eeab8da8d39d65dd7b003
+toolCount               27
+names (header order)    ["work","read","write","edit","glob","grep","job_output","job_list","job_kill","skill","ask_user_question","web_search","web_fetch","present","ipython","read_image","send_message","interrupt_agent","list_agents","todo_write","workflow","get_goal","create_goal","update_goal","exit_plan_mode","subagent_fork","subagent"]
