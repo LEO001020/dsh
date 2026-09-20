@@ -726,6 +726,32 @@ declare module '@deepseek-ai/cordis' {
 }
 
 /**
+ * Attach a hidden control request's generation notice to the user's cell result.
+ *
+ * WHY THIS EXISTS. A generation change is reported by the broker ON THE REQUEST
+ * THAT OBSERVED IT (`broker.py:1080`, `:1105`), because that is the request whose
+ * answer would otherwise be a lie about which kernel it came from. Since V5 §9
+ * the host sends TWO requests per cell -- a hidden bind and then the user's own --
+ * so when the kernel died between cells it is the BIND that observes the new
+ * epoch, and the user's cell that follows runs cleanly against the replacement.
+ *
+ * Returning the user's result alone would therefore DROP the notice and tell the
+ * model nothing about the lost namespace, which is precisely the defect IPY-14
+ * exists to catch. It is MEASURED, not hypothesised: without this helper that arm
+ * failed with `expected undefined to be defined` at
+ * `v3-spec-gates.test.ts:1064`.
+ *
+ * THE USER'S RESULT WINS WHERE BOTH CARRY ONE. A control request cannot itself
+ * be the interesting generation event when the user's cell also reports one, and
+ * the user's cell is the request the model actually asked about. The control
+ * notice is used only when the user's cell has none.
+ */
+function carryGeneration(control: CellResult, user: CellResult): CellResult {
+  if (user.generation !== undefined || control.generation === undefined) return user
+  return { ...user, generation: control.generation }
+}
+
+/**
  * Owns one kernel per Session.
  *
  * The Session is the authorization subject (architecture section 10: "host以
@@ -1377,13 +1403,14 @@ export class KernelService extends Service {
       // than merely not re-bound. The revoke is a hidden control request, so it
       // does not enter the input history and cannot itself become the source the
       // kernel records for the user's cell.
-      await entry.host.execute(entry.bridge.server.revoke(), {
+      const revoke = await entry.host.execute(entry.bridge.server.revoke(), {
         identity: entry.identity,
         silent: true,
       })
       const result = await entry.host.execute(code, { identity: entry.identity })
-      if (result.generation !== undefined) entry.pendingGenerationNotice = result.generation.reason
-      return result
+      const carried = carryGeneration(revoke, result)
+      if (carried.generation !== undefined) entry.pendingGenerationNotice = carried.generation.reason
+      return carried
     }
 
     const lease = this.mintCellLease(entry, authority, signal)
@@ -1413,7 +1440,16 @@ export class KernelService extends Service {
       }
       // PHASE 2 -- THE USER'S EXACT BYTES, as their own request. `storeHistory`
       // is explicitly true so the recorded source is this cell's own source.
-      result = await entry.host.execute(code, { identity: entry.identity, storeHistory: true })
+      const user = await entry.host.execute(code, { identity: entry.identity, storeHistory: true })
+      // THE HIDDEN PHASE MUST NOT SWALLOW A GENERATION NOTICE. The broker reports
+      // a generation change ON THE REQUEST THAT OBSERVED IT, and the control
+      // request is a request like any other -- so when the kernel died between
+      // cells it is the BIND that learns the epoch moved, and the user's cell that
+      // follows runs cleanly in the replacement kernel. Reporting only the user's
+      // cell would tell the model nothing about the lost namespace.
+      // MEASURED: without this, IPY-14 failed with `expected undefined to be
+      // defined` -- the notice was consumed by the bind and dropped.
+      result = carryGeneration(bind, user)
     } finally {
       // THE CELL SETTLED. Close the lease before returning, so by the time any
       // caller sees this cell's result, every exact call it authorised has
@@ -1445,7 +1481,7 @@ export class KernelService extends Service {
    *
    * Everything authority-bearing is read from `authority`, which the caller built
    * from the LIVE `ipython` ToolRunContext. Python never supplies any of it: it
-   * receives an opaque lease id in the preamble and nothing else.
+   * receives an opaque lease id in the bind request and nothing else.
    *
    * THE CONTROLLER IS MINTED HERE, NOT BY THE LEASE. The signal a close must abort
    * is the one the registry call already holds, and that signal has to exist
