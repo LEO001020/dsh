@@ -1,0 +1,17 @@
+
+ RUN  v4.1.8 D:/DSH/work/wt-s9/packages/dsh-daily-work
+
+stdout | src/s9-scratch-overwrite.test.ts > S9 scratch 9: the R4 1->0, reproduced around the serializer > TWO createRun calls at the SAME key: the second overwrites the first
+S9/9 OVERWRITE: tasksBefore=1 tasksAfter=0 ref="dsh-work-auth/1|kind=human-command|action=start|commandId=cmd-B|commandName=work|commandArgs=start 4"
+
+stdout | src/s9-scratch-overwrite.test.ts > S9 scratch 9: the R4 1->0, reproduced around the serializer > the PRODUCT path (authorizeRun) at the same key does NOT overwrite
+S9/9 PRODUCT: created=false tasksBefore=1 tasksAfter=1 ref="dsh-work-auth/1|kind=human-command|action=start|commandId=cmd-A|commandName=work|commandArgs=start 4"
+
+ ✓ src/s9-scratch-overwrite.test.ts > S9 scratch 9: the R4 1->0, reproduced around the serializer > TWO createRun calls at the SAME key: the second overwrites the first 39ms
+ ✓ src/s9-scratch-overwrite.test.ts > S9 scratch 9: the R4 1->0, reproduced around the serializer > the PRODUCT path (authorizeRun) at the same key does NOT overwrite 21ms
+
+ Test Files  1 passed (1)
+      Tests  2 passed (2)
+   Start at  19:15:39
+   Duration  1.15s (transform 680ms, setup 0ms, import 911ms, tests 61ms, environment 0ms)
+

@@ -1,0 +1,18 @@
+
+ RUN  v4.1.8 D:/DSH/work/wt-s9/packages/dsh-daily-work
+
+ ✓ src/concurrency.test.ts > mandatory concurrency: N=10 rolling top-up on the production loop > admits exactly ten children through the real startContinuable seam 615ms
+ ✓ src/concurrency.test.ts > mandatory concurrency: N=10 rolling top-up on the production loop > does not admit an eleventh child while ten hold their slots 289ms
+ ✓ src/concurrency.test.ts > mandatory concurrency: N=10 rolling top-up on the production loop > tops up one completion immediately without waiting for the wave 692ms
+ ✓ src/concurrency.test.ts > mandatory concurrency: N=10 rolling top-up on the production loop > reports a deficit and invents no work when only three tasks are ready 236ms
+ ✓ src/concurrency.test.ts > mandatory concurrency: N=10 rolling top-up on the production loop > refuses admission past the real capacity even when the record would allow it 343ms
+ ✓ src/concurrency.test.ts > mandatory concurrency: N=10 rolling top-up on the production loop > keeps the root separate from the ten children 388ms
+ ✓ src/concurrency.test.ts > mandatory concurrency: N=10 rolling top-up on the production loop > refuses to launch grandchildren because maxDepth is 1 82ms
+ ✓ src/concurrency.test.ts > mandatory concurrency: N=10 rolling top-up on the production loop > coalesces concurrent drains so a completion storm cannot double-admit 99ms
+ ✓ src/concurrency.test.ts > mandatory concurrency: N=10 rolling top-up on the production loop > stops admitting once the user pauses, with free slots remaining 118ms
+
+ Test Files  1 passed (1)
+      Tests  9 passed (9)
+   Start at  19:44:56
+   Duration  4.28s (transform 904ms, setup 0ms, import 1.18s, tests 2.86s, environment 0ms)
+

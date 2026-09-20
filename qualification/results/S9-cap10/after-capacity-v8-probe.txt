@@ -1,0 +1,25 @@
+
+ RUN  v4.1.8 D:/DSH/work/wt-s9/packages/dsh-daily-work
+
+stdout | src/capacity-v8-probe.test.ts > V8/CAP-09: the last cost credit is reserved atomically under contention > three concurrent launches against ONE free credit admit exactly one
+V8/CAP-09 measured: accepted=1 refused=2 reserved=100 childCeiling=100 reasons=["budget_blocked","budget_blocked"]
+
+ ✓ src/capacity-v8-probe.test.ts > V8/CAP-02: the COLD RESUME path draws on the same host quota > a resumed child is classified as a child and TAKES a host slot 88ms
+ ✓ src/capacity-v8-probe.test.ts > V8/CAP-09: the last cost credit is reserved atomically under contention > three concurrent launches against ONE free credit admit exactly one 99ms
+stdout | src/capacity-v8-probe.test.ts > V8/CAP-10: a completion storm must not overshoot the target > three concurrent drains against TWO free slots admit exactly two
+V8/CAP-10 measured: freedSlots=2 concurrentRequests=3 admitted=2 heldAgainstTarget3=3 acceptedIds=["child-70","child-71"] deficitAfter=0
+
+stdout | src/capacity-v8-probe.test.ts > V8/CAP-13: the depth ceiling and the host cap name themselves separately > a depth refusal and a capacity refusal are DISTINGUISHABLE, and the family pool is a third thing
+V8/CAP-13 depth refusal: errorName=ChildCapacityError wrappedByRuntime=false causeName=undefined causeCode=none message="dailyWork: refusing child \"v8-grandchild\" at delegation depth 2; the deployment ceiling is 1. A caller-supplied maxDepth cannot raise this: the depth is read from the child's own durable header."
+
+ ✓ src/capacity-v8-probe.test.ts > V8/CAP-10: a completion storm must not overshoot the target > three concurrent drains against TWO free slots admit exactly two 124ms
+stdout | src/capacity-v8-probe.test.ts > V8/CAP-13: the depth ceiling and the host cap name themselves separately > a depth refusal and a capacity refusal are DISTINGUISHABLE, and the family pool is a third thing
+V8/CAP-13 measured: poolRefusal="subagent limit reached (active child limit: 4); wait for an existing child to finish or complete this work with the current agents" hostRefusals={"HOST_CAPACITY_REACHED":0,"DEPTH_CEILING_EXCEEDED":1} hostOccupied=4 poolLimit=4 hostLimit=30
+
+ ✓ src/capacity-v8-probe.test.ts > V8/CAP-13: the depth ceiling and the host cap name themselves separately > a depth refusal and a capacity refusal are DISTINGUISHABLE, and the family pool is a third thing 137ms
+
+ Test Files  1 passed (1)
+      Tests  4 passed (4)
+   Start at  19:44:49
+   Duration  1.70s (transform 782ms, setup 0ms, import 1.02s, tests 449ms, environment 0ms)
+

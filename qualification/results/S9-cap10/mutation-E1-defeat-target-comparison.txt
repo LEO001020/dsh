@@ -1,0 +1,386 @@
+
+ RUN  v4.1.8 D:/DSH/work/wt-s9/packages/dsh-daily-work
+
+ × src/f5-admission.test.ts > F5/H4-1: a storm of concurrent drains cannot hold more than the target > target=3, twelve concurrent single-request drains, held reservations never exceed 3 35ms
+   → exactly the target was admitted, not one more: expected [] to have a length of 3 but got +0
+ × src/f5-admission.test.ts > F5/H4-1: a storm of concurrent drains cannot hold more than the target > every refusal reports a reason, and a refusal leaves no task behind 20ms
+   → four of six were refused: expected [ { taskId: 'task-200', …(3) }, …(5) ] to have a length of 4 but got 6
+ × src/f5-admission.test.ts > F5/H4-2: the deficit reading agrees with the authoritative occupancy > reports full, short and over as three DISTINCT readings 15ms
+   → two held: expected +0 to be 2 // Object.is equality
+ × src/f5-admission.test.ts > F5/H4-3: simultaneous completions refill to exactly the target > four completions at once admit exactly four replacements, and the storm does not exceed 15ms
+   → expected [] to have a length of 4 but got +0
+ × src/f5-admission.test.ts > F5/H4-4: a crash after the reservation but before the start keeps the slot > the reservation survives a process restart and still holds its slot 19ms
+   → the first reservation committed: expected false to be true // Object.is equality
+ × src/f5-admission.test.ts > F5/H4-5: a launch failure reconciles its reservation exactly once > a failed launch leaves the task UNKNOWN with its slot and credit HELD 21ms
+   → expected [] to have a length of 1 but got +0
+ × src/f5-admission.test.ts > F5/H4-5: a launch failure reconciles its reservation exactly once > a missing launch port quarantines the task instead of pretending it failed 23ms
+   → quarantined rather than cleanly failed: expected undefined to be 'unknown' // Object.is equality
+ × src/f5-admission.test.ts > F5/H4-6: a duplicate launch notification cannot double-admit > the same taskId submitted concurrently admits once, and its credit is reserved once 19ms
+   → exactly ONE of the six duplicates is admitted: expected [] to have a length of 1 but got +0
+ × src/f5-admission.test.ts > F5/H4-7: a stopping child keeps its slot until quiescence > a requested cancel holds the slot and blocks the refill 19ms
+   → expected +0 to be 2 // Object.is equality
+ × src/f5-admission.test.ts > F5/H4-8: an unknown child retains its occupancy > a quarantined task holds its slot against a full target and blocks admission 29ms
+   → dailyWork: task "task-0" is not in run "run-f5-unknown"
+ × src/f5-admission.test.ts > F5/H4-9: budget and target contend inside the SAME update > with one free credit and three free slots, exactly ONE admission wins 22ms
+   → the 99-credit seed is admitted: expected false to be true // Object.is equality
+ × src/f5-admission.test.ts > F5/H4-10: a restart reconstructs the reservations and the outbox > a clean close and reopen preserves every reservation, credit and intention 20ms
+   → the first is accepted: expected undefined to be 'accepted' // Object.is equality
+ × src/f5-admission.test.ts > F5/H4-11: the reservation is the only admission path in the service > every public admission entry point routes through tryReserveAdmission 22ms
+   → expected +0 to be 2 // Object.is equality
+ × src/f5-admission.test.ts > F5/H4-11: the reservation is the only admission path in the service > a batch that fits admits exactly its share and no more 24ms
+   → three of five admitted: expected [] to have a length of 3 but got +0
+ ✓ src/f5-admission.test.ts > F5/H4-12: the hard cap of 30 rejects the 31st child independently of the target > the deployment cap refuses the 31st even when the run target would allow it 28ms
+ ✓ src/f5-admission.test.ts > F5/H4-12: the hard cap of 30 rejects the 31st child independently of the target > the RESERVATION API reports the cap as a TYPED refusal, not as a thrown error 26ms
+ × src/f5-admission.test.ts > F5/layers: the invariant holds WITHOUT the coalescer > THE COALESCER IS RE-TRIGGERABLE: a later arrival still causes a new pass 25ms
+   → the first pass admits two: expected [] to have a length of 2 but got +0
+ × src/f5-admission.test.ts > F5/layers: the invariant holds WITHOUT the coalescer > a pass that THROWS rejects every caller rather than hanging them 22ms
+   → one task is admitted: expected +0 to be 1 // Object.is equality
+ × src/f5-admission.test.ts > F5/layers: the invariant holds WITHOUT the coalescer > WITH THE COALESCER DEFEATED: concurrent reservations still never exceed the target 20ms
+   → exactly the target committed, with no coalescer involved: expected [] to have a length of 3 but got +0
+ × src/f5-admission.test.ts > F5/layers: the invariant holds WITHOUT the coalescer > WITH THE COALESCER DEFEATED: the generation refuses a caller that decided from a stale revision 15ms
+   → the caller at the current generation commits: expected false to be true // Object.is equality
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 18 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/f5-admission.test.ts > F5/H4-1: a storm of concurrent drains cannot hold more than the target > target=3, twelve concurrent single-request drains, held reservations never exceed 3
+AssertionError: exactly the target was admitted, not one more: expected [] to have a length of 3 but got +0
+
+- Expected
++ Received
+
+- 3
++ 0
+
+ ❯ src/f5-admission.test.ts:230:71
+    228|     // target of 3 for the 3-request shape; with twelve requests it wo…
+    229|     // far worse.
+    230|     expect(admitted, 'exactly the target was admitted, not one more').…
+       |                                                                       ^
+    231|     expect(held(r.service, runId), 'held reservations are exactly the …
+    232|     expect(held(r.service, runId)).toBeLessThanOrEqual(3)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/18]⎯
+
+ FAIL  src/f5-admission.test.ts > F5/H4-1: a storm of concurrent drains cannot hold more than the target > every refusal reports a reason, and a refusal leaves no task behind
+AssertionError: four of six were refused: expected [ { taskId: 'task-200', …(3) }, …(5) ] to have a length of 4 but got 6
+
+- Expected
++ Received
+
+- 4
++ 6
+
+ ❯ src/f5-admission.test.ts:261:49
+    259|     )
+    260|     const refused = outcomes.flat().filter(outcome => !outcome.accepte…
+    261|     expect(refused, 'four of six were refused').toHaveLength(4)
+       |                                                 ^
+    262|     for (const outcome of refused) {
+    263|       expect(outcome.reason, 'every refusal carries a reason').toBeDef…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/18]⎯
+
+ FAIL  src/f5-admission.test.ts > F5/H4-2: the deficit reading agrees with the authoritative occupancy > reports full, short and over as three DISTINCT readings
+AssertionError: two held: expected +0 to be 2 // Object.is equality
+
+- Expected
++ Received
+
+- 2
++ 0
+
+ ❯ src/f5-admission.test.ts:303:49
+    301|     await r.service.drain(runId, [request(0), request(1)], signal)
+    302|     let counts = r.service.counts(runId)
+    303|     expect(counts.heldReservations, 'two held').toBe(2)
+       |                                                 ^
+    304|     expect(counts.capacityDeficit, 'short by one').toBe(1)
+    305|     expect(counts.targetOvershoot, 'not over').toBe(0)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/18]⎯
+
+ FAIL  src/f5-admission.test.ts > F5/H4-3: simultaneous completions refill to exactly the target > four completions at once admit exactly four replacements, and the storm does not exceed
+AssertionError: expected [] to have a length of 4 but got +0
+
+- Expected
++ Received
+
+- 4
++ 0
+
+ ❯ src/f5-admission.test.ts:353:55
+    351|
+    352|     const first = await r.service.drain(runId, [request(0), request(1)…
+    353|     expect(first.filter(outcome => outcome.accepted)).toHaveLength(4)
+       |                                                       ^
+    354|     expect(held(r.service, runId)).toBe(4)
+    355|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/18]⎯
+
+ FAIL  src/f5-admission.test.ts > F5/H4-4: a crash after the reservation but before the start keeps the slot > the reservation survives a process restart and still holds its slot
+AssertionError: the first reservation committed: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ src/f5-admission.test.ts:439:59
+    437|       runId, taskId: 'task-c2', childId: 'child-c2', assignmentDigest:…
+    438|     })
+    439|     expect(a.reserved, 'the first reservation committed').toBe(true)
+       |                                                           ^
+    440|     expect(b.reserved, 'the second reservation committed').toBe(true)
+    441|     expect(a.task?.state, 'and the task is reserved, not started').toB…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/18]⎯
+
+ FAIL  src/f5-admission.test.ts > F5/H4-5: a launch failure reconciles its reservation exactly once > a failed launch leaves the task UNKNOWN with its slot and credit HELD
+AssertionError: expected [] to have a length of 1 but got +0
+
+- Expected
++ Received
+
+- 1
++ 0
+
+ ❯ src/f5-admission.test.ts:519:52
+    517|     // One good admission, then a failing one.
+    518|     const ok = await r.service.drain(runId, [request(0)], signal)
+    519|     expect(ok.filter(outcome => outcome.accepted)).toHaveLength(1)
+       |                                                    ^
+    520|
+    521|     scripted.failWith = new Error('provider refused to materialize the…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/18]⎯
+
+ FAIL  src/f5-admission.test.ts > F5/H4-5: a launch failure reconciles its reservation exactly once > a missing launch port quarantines the task instead of pretending it failed
+AssertionError: quarantined rather than cleanly failed: expected undefined to be 'unknown' // Object.is equality
+
+- Expected:
+"unknown"
+
++ Received:
+undefined
+
+ ❯ src/f5-admission.test.ts:563:85
+    561|     expect(outcomes[0]?.accepted).toBe(false)
+    562|     const record = r.service.getRun(runId)!
+    563|     expect(record.tasks['task-0']?.state, 'quarantined rather than cle…
+       |                                                                                     ^
+    564|     expect(record.budget.reserved, 'the credit is retained').toBe(1)
+    565|     expect(held(r.service, runId), 'and the slot is retained').toBe(1)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/18]⎯
+
+ FAIL  src/f5-admission.test.ts > F5/H4-6: a duplicate launch notification cannot double-admit > the same taskId submitted concurrently admits once, and its credit is reserved once
+AssertionError: exactly ONE of the six duplicates is admitted: expected [] to have a length of 1 but got +0
+
+- Expected
++ Received
+
+- 1
++ 0
+
+ ❯ src/f5-admission.test.ts:592:71
+    590|     )
+    591|     const admitted = outcomes.flat().filter(outcome => outcome.accepte…
+    592|     expect(admitted, 'exactly ONE of the six duplicates is admitted').…
+       |                                                                       ^
+    593|
+    594|     const record = r.service.getRun(runId)!
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/18]⎯
+
+ FAIL  src/f5-admission.test.ts > F5/H4-7: a stopping child keeps its slot until quiescence > a requested cancel holds the slot and blocks the refill
+AssertionError: expected +0 to be 2 // Object.is equality
+
+- Expected
++ Received
+
+- 2
++ 0
+
+ ❯ src/f5-admission.test.ts:631:36
+    629|
+    630|     await r.service.drain(runId, [request(0), request(1)], signal)
+    631|     expect(held(r.service, runId)).toBe(2)
+       |                                    ^
+    632|
+    633|     // Ask one to stop. The slot is NOT freed.
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/18]⎯
+
+ FAIL  src/f5-admission.test.ts > F5/H4-8: an unknown child retains its occupancy > a quarantined task holds its slot against a full target and blocks admission
+Error: dailyWork: task "task-0" is not in run "run-f5-unknown"
+ ❯ src/host.ts:1614:37
+    1612|     const updated = await this.runs().update(input.runId, record => {
+    1613|       const task = record.tasks[input.taskId]
+    1614|       if (task === undefined) throw new Error(`dailyWork: task "${inpu…
+       |                                     ^
+    1615|       assertTransition(task.state, input.to, input.taskId)
+    1616|
+ ❯ ../../../../src/dsh-src/packages/storage/storage-domain/lib/index.js:281:17
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/18]⎯
+
+ FAIL  src/f5-admission.test.ts > F5/H4-9: budget and target contend inside the SAME update > with one free credit and three free slots, exactly ONE admission wins
+AssertionError: the 99-credit seed is admitted: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ src/f5-admission.test.ts:719:65
+    717|
+    718|     const seed = await r.service.drain(runId, [request(0, 99)], signal)
+    719|     expect(seed[0]?.accepted, 'the 99-credit seed is admitted').toBe(t…
+       |                                                                 ^
+    720|     expect(r.service.budget(runId).childCeiling, 'the child ceiling is…
+    721|     expect(r.service.getRun(runId)!.budget.reserved, 'one credit remai…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/18]⎯
+
+ FAIL  src/f5-admission.test.ts > F5/H4-10: a restart reconstructs the reservations and the outbox > a clean close and reopen preserves every reservation, credit and intention
+AssertionError: the first is accepted: expected undefined to be 'accepted' // Object.is equality
+
+- Expected:
+"accepted"
+
++ Received:
+undefined
+
+ ❯ src/f5-admission.test.ts:804:68
+    802|     // never started — the same D03 shape arm 4 covers, here across an…
+    803|     const before = first.getRun(runId)!
+    804|     expect(before.tasks['task-0']?.state, 'the first is accepted').toB…
+       |                                                                    ^
+    805|     expect(before.tasks['task-1']?.state, 'the second is accepted too'…
+    806|     expect(before.budget.reserved, 'two credits before the restart').t…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/18]⎯
+
+ FAIL  src/f5-admission.test.ts > F5/H4-11: the reservation is the only admission path in the service > every public admission entry point routes through tryReserveAdmission
+AssertionError: expected +0 to be 2 // Object.is equality
+
+- Expected
++ Received
+
+- 2
++ 0
+
+ ❯ src/f5-admission.test.ts:862:36
+    860|     // Fill the target through the ordinary path.
+    861|     await r.service.drain(runId, [request(0), request(1)], signal)
+    862|     expect(held(r.service, runId)).toBe(2)
+       |                                    ^
+    863|
+    864|     // SURFACE 1: `admit` (the direct API).
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/18]⎯
+
+ FAIL  src/f5-admission.test.ts > F5/H4-11: the reservation is the only admission path in the service > a batch that fits admits exactly its share and no more
+AssertionError: three of five admitted: expected [] to have a length of 3 but got +0
+
+- Expected
++ Received
+
+- 3
++ 0
+
+ ❯ src/f5-admission.test.ts:905:84
+    903|
+    904|     const outcomes = await r.service.drain(runId, [request(0), request…
+    905|     expect(outcomes.filter(outcome => outcome.accepted), 'three of fiv…
+       |                                                                                    ^
+    906|     expect(held(r.service, runId)).toBe(3)
+    907|     expect(r.service.counts(runId).capacityDeficit, 'two slots remain'…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[14/18]⎯
+
+ FAIL  src/f5-admission.test.ts > F5/layers: the invariant holds WITHOUT the coalescer > THE COALESCER IS RE-TRIGGERABLE: a later arrival still causes a new pass
+AssertionError: the first pass admits two: expected [] to have a length of 2 but got +0
+
+- Expected
++ Received
+
+- 2
++ 0
+
+ ❯ src/f5-admission.test.ts:1045:84
+    1043|     // PASS 1: fill two of four.
+    1044|     const first = await r.service.drain(runId, [request(0), request(1)…
+    1045|     expect(first.filter(outcome => outcome.accepted), 'the first pass …
+       |                                                                                    ^
+    1046|     expect(held(r.service, runId)).toBe(2)
+    1047|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[15/18]⎯
+
+ FAIL  src/f5-admission.test.ts > F5/layers: the invariant holds WITHOUT the coalescer > a pass that THROWS rejects every caller rather than hanging them
+AssertionError: one task is admitted: expected +0 to be 1 // Object.is equality
+
+- Expected
++ Received
+
+- 1
++ 0
+
+ ❯ src/f5-admission.test.ts:1108:60
+    1106|     // `transition` in the pass throws `task ... is not in run ...`.
+    1107|     await r.service.drain(runId, [request(0)], signal)
+    1108|     expect(held(r.service, runId), 'one task is admitted').toBe(1)
+       |                                                            ^
+    1109|
+    1110|     // Close the domain: every subsequent `update` rejects, which is a…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[16/18]⎯
+
+ FAIL  src/f5-admission.test.ts > F5/layers: the invariant holds WITHOUT the coalescer > WITH THE COALESCER DEFEATED: concurrent reservations still never exceed the target
+AssertionError: exactly the target committed, with no coalescer involved: expected [] to have a length of 3 but got +0
+
+- Expected
++ Received
+
+- 3
++ 0
+
+ ❯ src/f5-admission.test.ts:1153:83
+    1151|     )
+    1152|     const committed = attempts.filter(attempt => attempt.reserved)
+    1153|     expect(committed, 'exactly the target committed, with no coalescer…
+       |                                                                                   ^
+    1154|     expect(held(r.service, runId), 'held reservations are exactly the …
+    1155|     expect(r.service.getRun(runId)!.reservationGeneration, 'exactly th…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[17/18]⎯
+
+ FAIL  src/f5-admission.test.ts > F5/layers: the invariant holds WITHOUT the coalescer > WITH THE COALESCER DEFEATED: the generation refuses a caller that decided from a stale revision
+AssertionError: the caller at the current generation commits: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ src/f5-admission.test.ts:1198:76
+    1196|       reservedCost: 1, allowedCapabilities: [], expectedRunRevision: 0,
+    1197|     })
+    1198|     expect(first.reserved, 'the caller at the current generation commi…
+       |                                                                            ^
+    1199|
+    1200|     // A SECOND caller that ALSO decided from generation 0 is refused:…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[18/18]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  18 failed | 2 passed (20)
+   Start at  19:20:24
+   Duration  1.70s (transform 810ms, setup 0ms, import 1.04s, tests 441ms, environment 0ms)
+

@@ -1,0 +1,25 @@
+
+ RUN  v4.1.8 D:/DSH/work/wt-s9/packages/dsh-daily-work
+
+stdout | src/s9-scratch-cause.test.ts > S9 scratch 4: isolate the cause of the miss > A: drains concurrent with releases -> refused (the miss)
+S9/4A via drain(): admitted=0 held=6 deficit=4
+
+ ✓ src/s9-scratch-cause.test.ts > S9 scratch 4: isolate the cause of the miss > A: drains concurrent with releases -> refused (the miss) 143ms
+stdout | src/s9-scratch-cause.test.ts > S9 scratch 4: isolate the cause of the miss > B: the SAME storm, but requests driven around the pre-check (direct reservation)
+S9/4B via tryReserveAdmission(): reserved=0 of 4; reasons=["none","none","none","none"] held=6 deficit=4
+
+ ✓ src/s9-scratch-cause.test.ts > S9 scratch 4: isolate the cause of the miss > B: the SAME storm, but requests driven around the pre-check (direct reservation) 135ms
+stdout | src/s9-scratch-cause.test.ts > S9 scratch 4: isolate the cause of the miss > C: control — releases committed FIRST, then drains: the refill lands
+S9/4C control: deficitBeforeDrain=4 admitted=4 of 5 held=10 overshoot=0
+
+ ✓ src/s9-scratch-cause.test.ts > S9 scratch 4: isolate the cause of the miss > C: control — releases committed FIRST, then drains: the refill lands 137ms
+stdout | src/s9-scratch-cause.test.ts > S9 scratch 4: isolate the cause of the miss > D: a LATER drain after the storm recovers the freed slots (is the miss recoverable?)
+S9/4D storm: admitted=0 deficitAfterStorm=4 ; LATER drain admitted=1 reason=[null] held=7 deficit=3
+
+ ✓ src/s9-scratch-cause.test.ts > S9 scratch 4: isolate the cause of the miss > D: a LATER drain after the storm recovers the freed slots (is the miss recoverable?) 127ms
+
+ Test Files  1 passed (1)
+      Tests  4 passed (4)
+   Start at  19:15:23
+   Duration  1.90s (transform 816ms, setup 0ms, import 1.08s, tests 543ms, environment 0ms)
+
