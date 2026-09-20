@@ -481,18 +481,35 @@ def staleness_report(model: dict[str, Any]) -> dict[str, Any]:
             continue
         filed_id = filed["qualification_contract"]["qualification_contract_identity"]
         filed_rt = filed["runtime_deployment_identity"]
+        # WHY the result is stale matters, and the two causes call for different actions.
+        #   * the RUNTIME identity moved -> the deployment changed, so the measurements
+        #     themselves no longer describe this tree: RE-MEASURE.
+        #   * only the CONTRACT identity moved -> the deployment is unchanged and the
+        #     contract moved (an oracle, a dependency, or a runner): RE-QUALIFY the
+        #     contract, and the existing measurements may still apply under E3.
+        # Reporting one word "stale" for both would push a reader toward re-measuring
+        # when only the definition changed.
+        runtime_moved = filed_rt != model["runtime_deployment_identity"]
+        contract_moved = filed_id != current
+        if not contract_moved:
+            why = "current"
+        elif runtime_moved:
+            why = ("STALE, RUNTIME MOVED: the deployment changed since this result was filed, so "
+                   "the measurements no longer describe this tree. RE-MEASURE. "
+                   "(`implementation_commit` is a runtime input, so any commit moves this; a "
+                   "result filed at a writer's tip is expected to be stale at a later revision.)")
+        else:
+            why = ("STALE, CONTRACT MOVED ONLY: the deployment is unchanged and the contract "
+                   "moved -- an oracle, a dependency, or a runner digest. RE-QUALIFY the "
+                   "contract; the existing measurements may still apply under E3 reuse.")
         rows.append({
             "directory": name,
             "filed_contract_identity": filed_id,
             "filed_runtime_identity": filed_rt,
-            "is_current": filed_id == current,
-            "contract_matches": filed_id == current,
-            "runtime_matches": filed_rt == model["runtime_deployment_identity"],
-            "why": ("current" if filed_id == current else
-                    "STALE: this result was filed at a different revision or definition. It "
-                    "remains a true statement about the identity it names, and it is NOT a "
-                    "result for the current tree. Re-derive with `--init-results` after the "
-                    "final integration commit."),
+            "is_current": contract_moved is False,
+            "runtime_moved": runtime_moved,
+            "contract_moved": contract_moved,
+            "why": why,
         })
     return {
         "current_contract_identity": current,
@@ -657,12 +674,15 @@ def main() -> int:
         if not row.get("is_current"):
             print(f"           filed  ={str(row.get('filed_contract_identity'))[:16]}")
             print(f"           current={stale['current_contract_identity'][:16]}")
+            print(f"           runtime_moved={row.get('runtime_moved')} "
+                  f"contract_moved={row.get('contract_moved')}")
+            print(f"           {row.get('why')}")
     print("  NOTE: implementation_commit is a runtime identity input, so the commit that")
     print("        carries a result moves the identity that result names. A result filed")
     print("        before the final integration commit is stale BY CONSTRUCTION; re-derive")
     print("        with `file-result.py --init-results` after integration.")
     if problems:
-        print("STRUCTURAL PROBLEM -- an identity input set contains a status/verdict/evidence field:")
+        print("STRUCTURAL PROBLEM:")
         for problem in problems:
             print(f"  - {problem}")
         return 1
