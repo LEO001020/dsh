@@ -67,6 +67,47 @@ reason that makes it distinct:
 - **storage refusal → `none`.** A retry against the same ceiling fails the same
   way. Correct.
 
+### 2.1 A FABRICATED gap found and fixed: an OVER-read filed as a loss
+
+Attribution was correct in the four arms above, but probing the SAME producer in
+the opposite direction found a real defect in the guard.
+
+`artifacts.ts` computed `shortBy = sourceBytesAtStart - published.bytes` and
+branched on `shortBy !== 0`, with `completeness: shortBy === 0 ? ... : 'partial'`.
+When MORE bytes arrive than `stat` saw, `shortBy` is NEGATIVE — nothing was
+withheld, so there is no loss — and the `!== 0` guard filed one anyway.
+
+Measured, before the fix (`FINDING-negative-shortby-false-loss-gap.txt`): a
+4096-byte source with an 8192-byte reader produced
+
+```
+completeness  partial
+verdict       partial-native-acquisition
+gap.stage     native-acquisition
+gap.recovery  refetch
+gap.reason    the source was 4096 bytes at capture start but only 8192 were acquired
+              (-4096 bytes never reached the store); the captured object is the bytes
+              that DID arrive, not the file that was named
+```
+
+A negative count of bytes that never went missing. This is DATA-09's own failure
+mode reached through the SIGN of the difference rather than through a wrong stage
+name: a reader who believes that record re-asks for bytes they already hold, and
+a `partial` verdict is asserted over a capture that lost nothing.
+
+**Fix** (`artifacts.ts`, committed `644bc3f`): the guard is now `shortBy > 0` and
+completeness `shortBy <= 0 ? 'complete-within-request' : 'partial'`, so only a
+POSITIVE shortfall is a partial capture. The new test arm was watched FAIL FIRST
+(`FINDING-negative-shortby-RED-FIRST.txt`: `AssertionError: an OVER-read is not a
+loss, so it must record no gap: expected [ { …(3) } ] to have a length of +0 but
+got 1`), then the fix applied and the arm went green.
+
+This is a real product bug in a production path (`captureFile`), but note its
+reachability is the SAME as the `native-acquisition` stage's: it needs a caller
+that can inject a reader, which the plane cannot (§4.4a). So the fix is correct
+and the defect was real, and it was not reachable from the assembled product
+either — the same honest caveat applies to it.
+
 `coverageVerdictOf` (`observations.ts:279-295`) maps each stage to its own
 verdict, and the mapping is an exhaustive switch with NO `default`, so adding a
 stage without deciding its verdict is a compile error rather than a silent
