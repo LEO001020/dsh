@@ -49,6 +49,15 @@ import { Context } from '@deepseek-ai/cordis'
 import Subprocess from '@deepseek-ai/dsh-subprocess-local'
 import SystemPrompt from '@deepseek-ai/dsh-system-prompt'
 import ToolRuntime, { defineTool, type ToolExecutionResult } from '@deepseek-ai/dsh-tools'
+// The DURABLE ledger path. Mounted the way the profile's base bundle mounts it
+// (`storage` hub -> `storage-json` backend -> `storage-domain` facility), so the
+// crash-window-reopen arm below exercises the real storage domain rather than a
+// stand-in: this is the same three-row stack `packages/bundle/base/cordis.patch.yml`
+// mounts, and `openBridgeLedger` consumes the facility row exactly as the product
+// does.
+import Storage from '@deepseek-ai/dsh-storage'
+import * as storageJsonPlugin from '@deepseek-ai/dsh-storage-json'
+import * as storageDomainPlugin from '@deepseek-ai/dsh-storage-domain'
 import type { Agent } from '@deepseek-ai/dsh-agent'
 import { mkdtemp, rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
@@ -58,7 +67,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import * as ipythonTool from './ipython-tool.ts'
 import { KernelService } from './kernel-plugin.ts'
 import { BridgeServer } from './bridge.ts'
-import { MemoryBridgeLedger } from './bridge-ledger.ts'
+import { MemoryBridgeLedger, openBridgeLedger, storageFacilityOf } from './bridge-ledger.ts'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
 const BROKER = resolve(HERE, 'broker.py')
@@ -1386,4 +1395,106 @@ describe('R5-J5 continued: request-id idempotency and the crash window', () => {
     // reportable rather than silent.
     expect(typeof LedgerClass.prototype.unknownOutcomes).toBe('function')
   }, 60_000)
+
+  it('a DURABLE crash window survives a restart and is still not re-sent', async () => {
+    // THE STRONGEST FORM OF THE NO-REPLAY CLAIM, and the one the interface-shape
+    // arm above cannot make. That arm asserts no replay PRIMITIVE exists; this one
+    // puts a real row through the real storage domain, reopens the domain over the
+    // SAME directory as a second "process" would, and shows that (a) the unknown
+    // row is still readable and (b) reopening it dispatches NOTHING.
+    //
+    // WHY REOPENING IS THE RIGHT STIMULUS. A crash is not a code path that can be
+    // invoked; the observable half of "the process died" is that the NEXT process
+    // opens the durable ledger and finds the row. If a host were going to
+    // auto-replay an unknown effect, that is the moment it would happen. So the
+    // second open is the moment to measure.
+    const dir = await mkdtemp(join(tmpdir(), 'dsh-ipython-crash-reopen-'))
+    let executed = 0
+    const openLedger = async () => {
+      const c = new Context()
+      await c.plugin(Storage)
+      await c.plugin(storageJsonPlugin as never, { root: join(dir, 'store') } as never)
+      await c.plugin(storageDomainPlugin as never, { backend: 'json' } as never)
+      const opened = await openBridgeLedger(storageFacilityOf(c))
+      expect(opened?.durable).toBe(true)
+      return { ctx: c, ledger: opened?.ledger }
+    }
+
+    // ---- process 1: a call is dispatched and its outcome is never learned ----
+    // THE CRASH IS MODELLED BY ABANDONMENT, NOT BY KILLING THE PROCESS, and the
+    // first version of this arm got that wrong in a way worth recording: it gave
+    // the handler a promise that never resolves and then called `bridge.close()`,
+    // which DRAINS -- so the test hung for its full 120 s budget. That is not a
+    // product defect; it is the lease doing exactly what it promises ("a close
+    // waits for everything it authorised"). A real crash does not wait, so the
+    // faithful model is to leave the call PENDING and never close the lease.
+    //
+    // The handler is gated instead of endless, so the fixture can be unwound at
+    // the end of the test without lying about the state observed in between.
+    let releaseHandler: () => void = () => {}
+    const gate = new Promise<void>(resolveGate => { releaseHandler = resolveGate })
+    const first = await openLedger()
+    const bridge = new BridgeServer({ artifactDirectory: join(dir, 'artifacts') })
+    await bridge.start()
+    const lease = bridge.mintLease({
+      sessionId: 'r5-crash-reopen', cellId: 'cell-1', epoch: 1,
+      outerCallId: 'outer-reopen', rootCallId: 'outer-reopen',
+      ledger: first.ledger as never,
+      handler: async () => { executed += 1; await gate; return { ok: true, value: { ran: true } } },
+    })
+    const pending = lease.invoke({ requestId: 'req-crash', tool: 'r5_mutating', arguments: { amount: 100 }, cellId: 'cell-1', epoch: 1, leaseId: lease.id })
+    for (let i = 0; i < 200 && executed === 0; i += 1) await new Promise(r => setTimeout(r, 10))
+    expect(executed).toBe(1)
+    // The STARTED row is durable BEFORE the dispatch, which is the ordering the
+    // crash window depends on. Read it back from the domain, not from memory.
+    expect(first.ledger?.get('outer-reopen:ipython:1')?.startedAt).toBeTruthy()
+    expect(first.ledger?.get('outer-reopen:ipython:1')?.settledAt).toBeUndefined()
+    // The lease is NOT closed and the call is NOT settled: the process "died"
+    // here. `pending` stays unresolved on purpose.
+    void pending.catch(() => undefined)
+
+    // ---- process 2: reopen the SAME durable store ---------------------------
+    const second = await openLedger()
+    const rows = second.ledger?.all() ?? []
+    expect(rows).toHaveLength(1)
+    const row = rows[0]
+    // THE CRASH WINDOW IS READABLE, and it is NOT misreported as a failure: the
+    // row carries its intent and no settlement.
+    expect(row?.subCallId).toBe('outer-reopen:ipython:1')
+    expect(row?.argsDigest).toMatch(/^[a-f0-9]{64}$/u)
+    expect(row?.settledAt).toBeUndefined()
+    // The row has no disposition: the lease never closed, so nothing disposed it.
+    // THIS is what distinguishes it from the abandoned call in the arm above, and
+    // it is why the predicate keys on the DISPOSITION rather than on `settledAt`.
+    expect(row?.disposition).toBeUndefined()
+    expect(second.ledger?.unknownOutcomes()).toHaveLength(1)
+    expect(second.ledger?.unknownOutcomes()[0]?.subCallId).toBe('outer-reopen:ipython:1')
+
+    // AND NOTHING WAS RE-SENT. Reopening the ledger dispatched no tool: the
+    // counter from process 1 is still 1, and process 2 registered no tool at all,
+    // so a replay would have had nowhere to go. The property under test is that
+    // the reopen path contains no dispatch -- which is a fact about the code that
+    // ran, not about a comment.
+    expect(executed).toBe(1)
+
+    // THE NEGATIVE, so this cannot pass by the ledger being unwritable: a
+    // reconciliation CAN still record the truth later. The brief requires that an
+    // unknown effect is not AUTO-replayed; it does not forbid a human or a
+    // tool-specific reconciler from settling it.
+    await second.ledger?.settled('outer-reopen:ipython:1', {
+      isError: false, resultDigest: 'a'.repeat(64), resultBytes: 2,
+    })
+    expect(second.ledger?.unknownOutcomes()).toHaveLength(0)
+
+    // UNWIND THE FIXTURE. The gate is released and the lease closed only NOW,
+    // after every observation above was taken, so the unwind cannot alter what was
+    // measured. (This is the step the first version of this arm was missing, which
+    // is why it hung; see the comment at the top of process 1.)
+    releaseHandler()
+    await lease.close('completed', 'the fixture unwinds after the observations')
+    await bridge.close()
+    await first.ctx.fiber.dispose()
+    await second.ctx.fiber.dispose()
+    await rm(dir, { recursive: true, force: true })
+  }, 120_000)
 })
