@@ -28,6 +28,7 @@ import type { Context } from '@deepseek-ai/cordis'
 import { Service } from '@deepseek-ai/cordis'
 import type { Agent } from '@deepseek-ai/dsh-agent'
 import { defineDomain, domainTable, type Domain } from '@deepseek-ai/dsh-storage-domain'
+import { SessionId } from '@deepseek-ai/dsh-session'
 import { createHash, randomUUID } from 'node:crypto'
 import { z } from 'zod'
 import {
@@ -60,6 +61,7 @@ import {
   type WorkAuthorizationEvidence,
 } from './authorization.ts'
 import { createContinuableLaunchPort } from './launch-port.ts'
+import { mountWorkCompletionObserver, type CompletionFailureReport } from './completion.ts'
 import {
   applySpend,
   budgetReport,
@@ -221,6 +223,35 @@ export interface CompletionFailure {
   readonly childId: string
   readonly stopReason: string
   readonly message: string
+}
+
+/** One slot-holding task as a boot sweep found it. */
+export interface HeldTaskReport {
+  readonly taskId: string
+  readonly state: AdmissionState
+  readonly childId: string | undefined
+  /** Whether a live Agent backs this task in THIS process. */
+  readonly childLive: boolean
+}
+
+/** One non-closed run as a boot sweep found it. */
+export interface RunSweepEntry {
+  readonly runId: string
+  readonly phase: string
+  readonly heldTasks: readonly HeldTaskReport[]
+  /** How many durable READY assignments this run is holding. */
+  readonly readyCount: number
+}
+
+/**
+ * What a boot sweep found (V5 §7.5).
+ *
+ * A REPORT rather than an action log, and the distinction is the §7.5 rule: the
+ * sweep reconciles by ENUMERATING, and it must not auto-replay anything. So there
+ * is no `relaunched` field here, because nothing is relaunched.
+ */
+export interface RunSweepReport {
+  readonly runs: readonly RunSweepEntry[]
 }
 
 /**
@@ -520,6 +551,8 @@ export class WorkService extends Service {
    * it lands here instead of being dropped or rethrown.
    */
   private readonly completionFailures: CompletionFailure[] = []
+  /** Whether `installCompletionObserver` has already mounted the listener. */
+  private completionObserverMounted = false
 
   constructor(ctx: Context, config: WorkServiceConfig) {
     super(ctx, 'dailyWork')
@@ -553,6 +586,39 @@ export class WorkService extends Service {
   /** The UI-settable target handle, or undefined when no settings provider is mounted. */
   get targetSettingHandle(): TargetSettingHandle | undefined {
     return this.targetSetting
+  }
+
+  /**
+   * Install the production `subagent/end` listener (V5 §7.4).
+   *
+   * SEPARATE FROM THE CONSTRUCTOR, and the reason is measured rather than
+   * stylistic. The constructor runs before `open()`, and the listener's work
+   * includes `requestDrain`, which refuses early when the domain is not open. A
+   * listener mounted in the constructor would therefore be live during the
+   * window in which every wake silently does nothing — the same class of defect
+   * as a mechanism that exists and is never called.
+   *
+   * IDEMPOTENT PER INSTANCE: a second call replaces the handle rather than
+   * registering a second listener, because two listeners on one event would wake
+   * the drain twice per completion. That is not harmful (a wake is idempotent)
+   * but it is dishonest about how many observers exist, and this project has
+   * recorded that class of drift before.
+   *
+   * @returns whether this call registered the listener.
+   */
+  installCompletionObserver(): boolean {
+    if (this.completionObserverMounted) return false
+    this.completionObserverMounted = true
+    // Mounted on the SERVICE's context, so the listener is owned by the fiber
+    // that owns the service and is removed with it — the same ownership rule
+    // `mountChildAdmissionGuard` follows in the constructor.
+    mountWorkCompletionObserver(this.ctx, {
+      service: this,
+      onFailure: failure => {
+        this.recordCompletionFailure(failure)
+      },
+    })
+    return true
   }
 
   /**
@@ -1174,6 +1240,100 @@ export class WorkService extends Service {
   /** Record how many ready tasks the root currently has. Mechanical, no model call. */
   setReadyTasks(runId: string, ready: number): void {
     this.readyTaskCount.set(runId, ready)
+  }
+
+  /**
+   * Enumerate the runs a boot has to account for, without replaying anything
+   * (V5 §7.5).
+   *
+   * §7.5 asks for four things when the service opens, and this method does all
+   * four while being explicit about which of them it can ACT on:
+   *
+   *   1. "enumerate open/paused/closing runs" -> the returned summary. `closed`
+   *      runs are excluded because nothing is outstanding for them.
+   *   2. "reconcile held task ids with DSH child/session state" -> for each
+   *      non-closed run, every slot-holding task is reported with whether a live
+   *      Agent currently backs it. This is a REPORT, not a mutation.
+   *   3. "do not auto-replay unknown child work" -> nothing here launches. There
+   *      is no `port.launch` call in this method and there must never be one:
+   *      this project's standing constraint is that an unestablished outcome is
+   *      quarantined rather than retried, and `states.ts` says `unknown` is
+   *      "deliberately NOT an error state that auto-retries".
+   *   4. "open runs with READY assignments call `requestDrain`" -> done, and it
+   *      is SAFE TO DO HERE even though a boot has no launch port yet. The
+   *      ready-driven pass refuses without a port and leaves the table intact
+   *      (see `runDrainPass`), so this call cannot consume the table into
+   *      `unknown` tasks. When a root is later re-authorized and `createRun`
+   *      installs the real port, a subsequent wake drains normally.
+   *
+   * WHY THIS IS NOT CALLED FROM `open()`. `open()` deliberately has no root
+   * Agent in hand, and the launch port is bound to the exact live root object
+   * (`installDefaultLaunchPort`). Calling the sweep from `open()` would mean
+   * either a sweep that can never launch anything, or a port bound to an agent
+   * this method invented — and the latter is precisely the stale-owner problem
+   * `tool-protocol-guards.ts` exists to close. So the sweep is an explicit
+   * operation the host calls when it has a generation to sweep for, and the
+   * plugin's `apply` is where that call belongs.
+   *
+   * @returns what was found, so a boot report can state it rather than claim it.
+   */
+  async sweepOpenRuns(): Promise<RunSweepReport> {
+    this.assertOpen()
+    const runs: RunSweepEntry[] = []
+    for (const runId of this.listRunIds()) {
+      const record = this.runs().get(runId)
+      if (record === undefined) continue
+      if (record.phase === 'closed') continue
+      const heldTasks: HeldTaskReport[] = []
+      for (const task of Object.values(record.tasks)) {
+        if (!holdsSlot(task.state)) continue
+        heldTasks.push({
+          taskId: task.taskId,
+          state: task.state,
+          childId: task.childId,
+          // Whether a live Agent currently backs this task IN THIS PROCESS. A
+          // resumed Session may exist on the medium with no live Agent, and that
+          // is a different situation (see `ChildEvidence.agentLive`).
+          childLive: task.childId === undefined ? false : this.isChildLive(task.childId),
+        })
+      }
+      const readyCount = Object.keys(record.readyAssignments ?? {}).length
+      runs.push({ runId, phase: record.phase, heldTasks, readyCount })
+      // §7.5's fourth item. Fire-and-forget would hide a failure, and awaiting a
+      // full drain would make a boot wait on child launches, so the wake is
+      // STARTED here and its rejection is recorded rather than dropped.
+      if (readyCount > 0) {
+        void this.requestDrain(runId).catch(error => {
+          this.recordCompletionFailure({
+            childId: '(boot sweep)',
+            stopReason: 'n/a',
+            message: `draining ready assignments for run ${runId} failed: `
+              + `${error instanceof Error ? error.message : String(error)}`,
+          })
+        })
+      }
+    }
+    return { runs }
+  }
+
+  /**
+   * Whether a live Agent with this session id exists in this process.
+   *
+   * Wrapped because `ctx.agents.get` needs a branded `SessionId`, and the
+   * `unknown`-exit topology measurement (`qualification/results/R9-recovery-topology/`)
+   * is the reason this is a read of the LIVE registry rather than of the durable
+   * Session: a Session on disk with no live Agent is not a running child.
+   */
+  private isChildLive(childId: string): boolean {
+    const agents = this.ctx.get('agents')
+    if (agents === undefined) return false
+    // `SessionId(...)` is the seam's own brand constructor, which is what
+    // `launch-port.ts:78` uses to mint the id in the first place. Using it here
+    // rather than a cast is deliberate: the ID-05 escape-hatch gate caught the
+    // first version of this line (a non-test `as never` grew the count from 3 to
+    // 4), and the gate is right — a cast would have asserted the brand instead of
+    // producing it, which is exactly the "make a gate pass" shape it forbids.
+    return agents.get(SessionId(childId)) !== undefined
   }
 
   /**
@@ -2069,6 +2229,11 @@ export class WorkService extends Service {
     switch (to) {
       case 'confirmed':
       case 'cancelled':
+      case 'completed':
+        // `completed` releases the TASK slot for the same reason the other two
+        // do: the child's activation is over, so the slot it held must be free
+        // or the target can never be sustained. It does NOT release the
+        // reservation — see the transition below, which retains it.
         this.gate.releaseTask(taskId)
         return
       case 'prepared':

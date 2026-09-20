@@ -51,6 +51,15 @@ export interface Counts {
   readonly stopping: number
   /** Outcome not establishable from local evidence. Still holds a slot. */
   readonly quarantinedUnknown: number
+  /**
+   * The child's activation ended and the slot is free, but no acceptance has
+   * judged the work.
+   *
+   * Reported SEPARATELY from `confirmed` on purpose: a reader that summed them
+   * would read unverified work as success, which is exactly the conflation the
+   * `completed` state exists to prevent (see `states.ts`).
+   */
+  readonly completed: number
   /** Tasks whose result is confirmed. */
   readonly confirmed: number
   /** Cancelled and confirmed. */
@@ -158,6 +167,7 @@ export function countRun(
   let providerWaiting = 0
   let stopping = 0
   let quarantinedUnknown = 0
+  let completed = 0
   let confirmed = 0
   let cancelled = 0
 
@@ -187,6 +197,14 @@ export function countRun(
       case 'unknown':
         quarantinedUnknown += 1
         break
+      case 'completed':
+        // Counted SEPARATELY from `confirmed`, and the separation is the whole
+        // reason the state exists: this task's child is gone (so it holds no
+        // slot), but no acceptance has judged the work. Folding it into
+        // `confirmed` would report unverified work as success, which is the
+        // reading the verification gate exists to prevent.
+        completed += 1
+        break
       case 'confirmed':
         confirmed += 1
         break
@@ -213,6 +231,7 @@ export function countRun(
     providerWaiting,
     stopping,
     quarantinedUnknown,
+    completed,
     confirmed,
     cancelled,
     heldReservations: held,
