@@ -1,0 +1,53 @@
+=== THE IDENTITY-STAMP QUESTION, measured ===
+
+current lock identity : 152e5c45c4aef97ba986b917077849173a66585146b67032ec7be64472c39b78
+identity_history      : 7 entries
+    0ca14d4ee0ebea5eb85a3f72d66f48d839356f1b336c0e4f11f9a4f8ddf2ab7c
+    73da4c62f93bc4f34544f46838f6eb9dbecd93d3f2043f0fd589ae9831c2b633
+    ece4037a9d5bbb014aa5a8395ed15531715a11949f2aa687166fcfeb5717576f
+    549732b5d8cad4e86d3df7c55dbf090598753a8fa015e8207ff6f851e376d813
+    0a0996f3944b552827f995defe98d9ea87ca9209f2957b2c244e6c89b14d9461
+    533c8cb08b2ccd7f94b8e0231ca9ea62918107dc6e8733471d23ca57c8d8a6fb
+    152e5c45c4aef97ba986b917077849173a66585146b67032ec7be64472c39b78
+
+=== evidence-entry identity distribution ===
+  0a0996f3944b5528: 314
+  152e5c45c4aef97b: 6
+  (none): 3
+  5146ee996bea2de8: 1
+
+=== what verify-spec reports ===
+  It flags every entry whose identity != the lock's current identity.
+  Count flagged: 315
+
+=== WHY RE-STAMPING THE 314 WOULD BE MISREPORTING ===
+  All 314 carry 0a0996f3944b5528..., which IS an entry in the lock's own
+  identity_history. It is a REAL past identity of this deployment, not a typo
+  and not a placeholder. Those entries are true statements about the artifact
+  they measured, at the time they measured it.
+  Rewriting the stamp to the current identity without re-running the measurement
+  would assert that a measurement was taken against the current artifact when it
+  was not. That is exactly the move this project's rules forbid: 'never obtain a
+  PASS by ... misreporting a result'. A gate that goes green by re-stamping is
+  worse than a gate that stays red, because the red is at least true.
+
+=== WHAT THE GATE ACTUALLY DOES WITH THIS (measured, not assumed) ===
+  release-gate.py check 1 records verify-spec's exit code as a CHECK but appends
+  NO blocker (lines 230-234). The gate's blocker list is driven by checks 2, 2b,
+  3/5/6, 7, 8 and 9. So the 315 verify-spec problems are REPORTED but do not
+  themselves make the release NOT_READY -- the FAIL count does.
+
+  This is a deliberate distinction the gate documents: verify-spec 'fails when a
+  hash is wrong -- a FILING error, fixable by re-filing evidence, and it says
+  nothing about the product'; release-gate 'fails when the candidate is not
+  releasable'. One file, two questions, and the tool that answers the easy one is
+  not allowed to answer the hard one.
+
+=== THE HONEST POSITION ===
+  The 314 identity-stamp mismatches are a STALE-EVIDENCE-INVENTORY signal, and the
+  correct remedy is RE-MEASUREMENT under the current identity, case by case -- not
+  re-stamping. That is what the round-3 closure did for CMP-02, BR-07, CAP-10 and
+  IPY-13, which is why check 9 now reads '3 of 64 assembled-product PASS cases'
+  rather than '0 of 61'.
+  A future reader should read the 315 as 'this many filed measurements predate the
+  current artifact' -- a work list, not a defect list.
