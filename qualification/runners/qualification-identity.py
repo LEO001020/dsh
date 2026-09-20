@@ -447,6 +447,66 @@ def checkout_reproducibility() -> dict[str, Any]:
     }
 
 
+def staleness_report(model: dict[str, Any]) -> dict[str, Any]:
+    """Is the filed result still bound to the identity the tree currently has?
+
+    WHY THIS EXISTS, AND WHY IT IS NOT A CONTRADICTION.
+
+    `implementation_commit` is a runtime identity input, so the identity CHANGES when
+    the tree is committed -- including when the commit is the one that ADDS the result
+    directory. So a result filed at revision X names identity X, and the commit that
+    carries it moves the tree to Y. The result is then a true statement about X and not
+    about Y.
+
+    That is the intended behaviour, not a bug: V3 requires every claim carry the
+    identity it was measured under, and a result for one revision is not a result for
+    another. The same property held in v1, which is why v1's lock carries an
+    `identity_history` and why its identity moved whenever an input moved.
+
+    What would be a defect is a reader being UNABLE TO TELL. So this reports the
+    comparison explicitly rather than leaving a stale identity-named directory sitting
+    in the tree looking current.
+    """
+    current = model["qualification_contract"]["qualification_contract_identity"]
+    filed_dirs = sorted(
+        p.name for p in RESULTS_ROOT.glob("trusted-local-v2.*")
+        if (p / "identity.json").is_file()
+    )
+    rows = []
+    for name in filed_dirs:
+        try:
+            filed = json.loads((RESULTS_ROOT / name / "identity.json").read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError) as exc:
+            rows.append({"directory": name, "current": None, "why": f"unreadable: {exc}"})
+            continue
+        filed_id = filed["qualification_contract"]["qualification_contract_identity"]
+        filed_rt = filed["runtime_deployment_identity"]
+        rows.append({
+            "directory": name,
+            "filed_contract_identity": filed_id,
+            "filed_runtime_identity": filed_rt,
+            "is_current": filed_id == current,
+            "contract_matches": filed_id == current,
+            "runtime_matches": filed_rt == model["runtime_deployment_identity"],
+            "why": ("current" if filed_id == current else
+                    "STALE: this result was filed at a different revision or definition. It "
+                    "remains a true statement about the identity it names, and it is NOT a "
+                    "result for the current tree. Re-derive with `--init-results` after the "
+                    "final integration commit."),
+        })
+    return {
+        "current_contract_identity": current,
+        "current_runtime_identity": model["runtime_deployment_identity"],
+        "filed_results": rows,
+        "all_current": all(r.get("is_current") for r in rows) if rows else None,
+        "note": ("`implementation_commit` is a runtime identity input, so committing a result "
+                 "directory moves the identity that directory names. This is intended: a "
+                 "result must name the revision it was measured at. The consequence to state "
+                 "plainly is that a result filed before the FINAL integration commit is stale "
+                 "by construction, and the root agent re-derives at integration."),
+    }
+
+
 def compute(probe_path: str | None) -> dict[str, Any]:
     probe = None
     probe_error = None
@@ -497,6 +557,7 @@ def compute(probe_path: str | None) -> dict[str, Any]:
         },
         "field_provenance": RUNTIME_INPUT_SOURCES,
         "checkout_reproducibility": checkout_reproducibility(),
+        "staleness": None,  # filled below, once the model is assembled
         "probe_path": probe_path,
         "probe_error": probe_error,
         "the_split": {
@@ -523,6 +584,10 @@ def main() -> int:
     args = parser.parse_args()
 
     model = compute(args.probe)
+    # Filled here rather than inside compute(), because the report reads the results
+    # directory and `compute` is also called on mutated copies of the tree during the
+    # mutation test, where the comparison would be noise.
+    model["staleness"] = staleness_report(model)
 
     # The structural property, checked on the computed model rather than asserted.
     problems: list[str] = []
@@ -537,7 +602,8 @@ def main() -> int:
         out_dir = RESULTS_ROOT / f"trusted-local-v2.{model['qualification_contract']['qualification_contract_identity'][:12]}"
         out_dir.mkdir(parents=True, exist_ok=True)
         (out_dir / "identity.json").write_text(
-            json.dumps(model, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+            json.dumps(model, indent=2, ensure_ascii=False) + "\n", encoding="utf-8",
+            newline="\n")
         print(f"wrote {out_dir / 'identity.json'}")
 
     if args.json:
@@ -580,6 +646,21 @@ def main() -> int:
         problems.append(
             "a COMMITTED contract input does not reproduce from a fresh checkout, so the "
             "identity describes this working tree rather than the repository")
+    print("")
+    stale = model["staleness"]
+    print("filed results, and whether they are current:")
+    if not stale["filed_results"]:
+        print("  (none filed yet)")
+    for row in stale["filed_results"]:
+        mark = "current" if row.get("is_current") else "STALE  "
+        print(f"  [{mark}] {row['directory']}")
+        if not row.get("is_current"):
+            print(f"           filed  ={str(row.get('filed_contract_identity'))[:16]}")
+            print(f"           current={stale['current_contract_identity'][:16]}")
+    print("  NOTE: implementation_commit is a runtime identity input, so the commit that")
+    print("        carries a result moves the identity that result names. A result filed")
+    print("        before the final integration commit is stale BY CONSTRUCTION; re-derive")
+    print("        with `file-result.py --init-results` after integration.")
     if problems:
         print("STRUCTURAL PROBLEM -- an identity input set contains a status/verdict/evidence field:")
         for problem in problems:
